@@ -33,78 +33,40 @@ def get_ts_df():
     return train_df
 
 
-def create_data(loader=False):
+def get_dataloader():
     df = get_ts_df()
     target = ["value", "extra feature"]
     tsdata_train, tsdata_val, tsdata_test =\
         TSDataset.from_pandas(df, dt_col="datetime", target_col=target,
                               with_split=True, test_ratio=0.1, val_ratio=0.1)
-    if loader:
-        train_loader = tsdata_train.to_torch_data_loader(roll=True, lookback=24, horizon=5,
-                                                        time_enc=True, label_len=12)
-        val_loader = tsdata_val.to_torch_data_loader(roll=True, lookback=24, horizon=5,
-                                                    time_enc=True, label_len=12, shuffle=False)
-        test_loader = tsdata_test.to_torch_data_loader(roll=True, lookback=24, horizon=5,
-                                                    time_enc=True, label_len=12, shuffle=False,
-                                                    is_predict=True)
-        return train_loader, val_loader, test_loader
-    else:
-        train_data = tsdata_train.roll(lookback=24, horizon=5, time_enc=True, label_len=12).to_numpy()
-        val_data = tsdata_val.roll(lookback=24, horizon=5, time_enc=True, label_len=12).to_numpy()
-        test_data = tsdata_test.roll(lookback=24, horizon=5, time_enc=True, label_len=12).to_numpy()
-        train_data = tuple(map(lambda x: x.astype(np.float32), train_data))
-        val_data = tuple(map(lambda x: x.astype(np.float32), val_data))
-        test_data = tuple(map(lambda x: x.astype(np.float32), test_data))
-        return train_data, val_data, test_data
+    train_loader = tsdata_train.to_torch_data_loader(roll=True, lookback=24, horizon=5,
+                                                     time_enc=True, label_len=12)
+    val_loader = tsdata_val.to_torch_data_loader(roll=True, lookback=24, horizon=5,
+                                                 time_enc=True, label_len=12, shuffle=False)
+    test_loader = tsdata_test.to_torch_data_loader(roll=True, lookback=24, horizon=5,
+                                                   time_enc=True, label_len=12, shuffle=False,
+                                                   is_predict=True)
+    return train_loader, val_loader, test_loader
 
-class TestChronosModelAutoformerForecaster(TestCase):
-    
+
+class TestChronosModelTCNForecaster(TestCase):
+
     def setUp(self):
-        pass
+        self.train_loader, self.val_loader, self.test_loader = get_dataloader()
 
     def tearDown(self):
         pass
 
-    def test_autoformer_forecaster_fit_eval_pred_loader(self):
-        train_loader, val_loader, test_loader = create_data(loader=True)
+    def test_autoformer_forecaster_fit_eval_pred(self):
         forecaster = AutoformerForecaster(past_seq_len=24,
                                           future_seq_len=5,
                                           input_feature_num=2,
                                           output_feature_num=2,
                                           label_len=12,
                                           freq='s')
-        forecaster.fit(train_loader, epochs=3, batch_size=32)
-        evaluate = forecaster.evaluate(val_loader)
-        pred = forecaster.predict(test_loader)
-        
-    def test_autoformer_forecaster_fit_eval_pred_array(self):
-        train_data, val_data, test_data = create_data(loader=False)
-        forecaster = AutoformerForecaster(past_seq_len=24,
-                                          future_seq_len=5,
-                                          input_feature_num=2,
-                                          output_feature_num=2,
-                                          label_len=12,
-                                          freq='s')
-        forecaster.fit(train_data, epochs=3, batch_size=32)
-        evaluate = forecaster.evaluate(val_data)
-        pred = forecaster.predict(test_data)
-    
-    def test_autoformer_forecaster_tune(self):
-        import bigdl.nano.automl.hpo.space as space
-        train_data, val_data, test_data = create_data(loader=False)
-        forecaster = AutoformerForecaster(past_seq_len=24,
-                                          future_seq_len=5,
-                                          input_feature_num=2,
-                                          output_feature_num=2,
-                                          label_len=12,
-                                          freq='s',
-                                          loss="mae",
-                                          metrics=['mae', 'mse', 'mape'],
-                                          lr=space.Real(0.001, 0.01, log=True))
-        forecaster.tune(train_data, validation_data=val_data,
-                        n_trials=2, target_metric='mse', direction="minimize")
-        forecaster.fit(train_data, epochs=3, batch_size=32)
-        evaluate = forecaster.evaluate(val_data)
+        forecaster.fit(self.train_loader, epochs=3, batch_size=32)
+        evaluate = forecaster.evaluate(self.val_loader)
+        pred = forecaster.predict(self.test_loader)
 
     def test_autoformer_forecaster_seed(self):
         evaluate_list = []

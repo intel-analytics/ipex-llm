@@ -21,7 +21,6 @@ from bigdl.nano.automl.hpo.space import (
     AutoObject, Space, SingleParam,
     _get_hp_prefix)
 import optuna
-from pytorch_lightning import seed_everything
 
 
 class OptunaBackend(object):
