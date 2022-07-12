@@ -54,7 +54,7 @@ class BasePytorchForecaster(Forecaster):
                                                  loss=self.loss_creator,
                                                  metrics=[ORCA_METRICS[name]()
                                                           for name in self.metrics],
-                                                 backend=self.distributed_backend,
+                                                 backend=self.remote_distributed_backend,
                                                  use_tqdm=True,
                                                  config={"lr": self.lr},
                                                  workers_per_node=self.workers_per_node)
@@ -322,7 +322,7 @@ class BasePytorchForecaster(Forecaster):
                                    checkpoint_callback=self.checkpoint_callback,
                                    num_processes=self.num_processes, use_ipex=self.use_ipex,
                                    flush_logs_every_n_steps=10, log_every_n_steps=10,
-                                   distributed_backend="subprocess")
+                                   distributed_backend=self.local_distributed_backend)
             # fitting
             if not validation_data:
                 self.trainer.fit(self.internal, data)
@@ -337,11 +337,15 @@ class BasePytorchForecaster(Forecaster):
                 delete_folder("./forecaster_tmp_log")
                 return fit_out
 
+            # This error is only triggered when the python interpreter starts additional processes.
+            # num_process=1 and subprocess will be safely started in the main process,
+            # so this error will not be triggered.
             main_process = is_main_process()
             if not main_process:
-                logging.warning("Make sure new Python interpreters can "
-                                "safely import the main module, "
-                                "you should use if __name__ == '__main__':")
+                invalidInputError("Make sure new Python interpreters can "
+                                  "safely import the main module, "
+                                  "you should use if __name__ == '__main__':, "
+                                  "otherwise performance will be degraded.")
 
             self.trainer.fit(self.internal, data)
             self.fitted = True
