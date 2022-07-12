@@ -132,7 +132,7 @@ class HPOSearcher:
         _sampler_kwargs = model._lazyobj.sampler_kwargs
         user_sampler_kwargs = kwargs.get("sampler_kwargs", {})
         _sampler_kwargs.update(user_sampler_kwargs)
-        if "sampler" in  kwargs and kwargs["sampler"] in [SamplerType.Grid]:
+        if "sampler" in kwargs and kwargs["sampler"] in [SamplerType.Grid]:
             search_kwargs["sampler_kwargs"] = _sampler_kwargs
 
         (self.create_kwargs, self.run_kwargs, self.fit_kwargs) \
