@@ -221,8 +221,12 @@ class BasePytorchForecaster(Forecaster):
                | should be the same as future_seq_len and output_feature_num.
                |
                | 4. A bigdl.chronos.data.tsdataset.TSDataset instance:
-               | We provide built-in time series classes,
-               | you only need a few operations to complete the data preprocessing.
+               | TSDataset provides some methods to prepare the dataset.
+               | If `TSDataset.roll` is called, the training speed will be faster,
+               | but but will consume more memory.
+               | Otherwise, the training speed may be slower,
+               | but the memory usage will be reduced.
+               | Returns a DataLoader if `TSDataset.to_torch_data_loader` is called.
 
         :param validation_data: Validation sample for validation loop. Defaults to 'None'.
                If you do not input data for 'validation_data', the validation_step will be skipped.
@@ -251,8 +255,10 @@ class BasePytorchForecaster(Forecaster):
         """
         # input transform
         if isinstance(data, TSDataset):
+            # if data.numpy_x is None, Need to call the roll method.
+            _rolled = data.numpy_x is None
             data = data.to_torch_data_loader(batch_size=batch_size,
-                                             roll=True,
+                                             roll=_rolled,
                                              lookback=self.data_config['past_seq_len'],
                                              horizon=self.data_config['future_seq_len'])
         if isinstance(data, DataLoader) and self.distributed:
@@ -348,9 +354,12 @@ class BasePytorchForecaster(Forecaster):
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | If returns x and y only get x.
-               | 4. A bigdl.chronos.data.tsdataset.TSDataset instance:
-               | We provide built-in time series classes,
-               | you only need a few operations to complete the data preprocessing.
+               | TSDataset provides some methods to prepare the dataset.
+               | If `TSDataset.roll` is called, the training speed will be faster,
+               | but but will consume more memory.
+               | Otherwise, the training speed may be slower,
+               | but the memory usage will be reduced.
+               | Returns a DataLoader if `TSDataset.to_torch_data_loader` is called.
 
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time).
@@ -365,8 +374,10 @@ class BasePytorchForecaster(Forecaster):
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
 
         if isinstance(data, TSDataset):
+            # if data.numpy_x is None, Need to call the roll method.
+            _rolled = data.numpy_x is None
             data = data.to_torch_data_loader(batch_size=batch_size,
-                                             roll=True,
+                                             roll=_rolled,
                                              lookback=self.data_config['past_seq_len'],
                                              horizon=self.data_config['future_seq_len'],
                                              shuffle=False)
@@ -429,8 +440,12 @@ class BasePytorchForecaster(Forecaster):
                | should be the same as past_seq_len and input_feature_num.
                | If returns x and y only get x.
                | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
-               | We provide built-in time series classes,
-               | you only need a few operations to complete the data preprocessing.
+               | TSDataset provides some methods to prepare the dataset.
+               | If `TSDataset.roll` is called, the training speed will be faster,
+               | but but will consume more memory.
+               | Otherwise, the training speed may be slower,
+               | but the memory usage will be reduced.
+               | Returns a DataLoader if `TSDataset.to_torch_data_loader` is called.
 
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time). Defaults
@@ -450,8 +465,10 @@ class BasePytorchForecaster(Forecaster):
             invalidInputError(False,
                               "You must call fit or restore first before calling predict!")
         if isinstance(data, TSDataset):
+            # if data.numpy_x is None, Need to call the roll method.
+            _rolled = data.numpy_x is None
             data = data.to_torch_data_loader(batch_size=batch_size,
-                                             roll=True,
+                                             roll=_rolled,
                                              lookback=self.data_config['past_seq_len'],
                                              horizon=self.data_config['future_seq_len'],
                                              shuffle=False)
@@ -537,8 +554,12 @@ class BasePytorchForecaster(Forecaster):
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
                | 4. A bigdl.chronos.data.tsdataset.TSDataset instance:
-               | We provide built-in time series classes,
-               | you only need a few operations to complete the data preprocessing.
+               | TSDataset provides some methods to prepare the dataset.
+               | If `TSDataset.roll` is called, the training speed will be faster,
+               | but but will consume more memory.
+               | Otherwise, the training speed may be slower,
+               | but the memory usage will be reduced.
+               | Returns a DataLoader if `TSDataset.to_torch_data_loader` is called.
 
         :param batch_size: evaluate batch size. The value will not affect evaluate
                result but will affect resources cost(e.g. memory and time).
@@ -554,8 +575,10 @@ class BasePytorchForecaster(Forecaster):
 
         # data transform
         if isinstance(data, TSDataset):
+            # if data.numpy_x is None, Need to call the roll method.
+            _rolled = data.numpy_x is None
             data = data.to_torch_data_loader(batch_size=batch_size,
-                                             roll=True,
+                                             roll=_rolled,
                                              lookback=self.data_config['past_seq_len'],
                                              horizon=self.data_config['future_seq_len'],
                                              shuffle=False)
@@ -625,8 +648,12 @@ class BasePytorchForecaster(Forecaster):
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
-               | We provide built-in time series classes,
-               | you only need a few operations to complete the data preprocessing.
+               | TSDataset provides some methods to prepare the dataset.
+               | If `TSDataset.roll` is called, the training speed will be faster,
+               | but but will consume more memory.
+               | Otherwise, the training speed may be slower,
+               | but the memory usage will be reduced.
+               | Returns a DataLoader if `TSDataset.to_torch_data_loader` is called.
 
         :param batch_size: evaluate batch size. The value will not affect evaluate
                result but will affect resources cost(e.g. memory and time).
@@ -648,8 +675,10 @@ class BasePytorchForecaster(Forecaster):
             invalidInputError(False,
                               "You must call fit or restore first before calling evaluate!")
         if isinstance(data, TSDataset):
+            # if data.numpy_x is None, Need to call the roll method.
+            _rolled = data.numpy_x is None
             data = data.to_torch_data_loader(batch_size=batch_size,
-                                             roll=True,
+                                             roll=_rolled,
                                              lookback=self.data_config['past_seq_len'],
                                              horizon=self.data_config['future_seq_len'],
                                              shuffle=False)
@@ -996,17 +1025,35 @@ class BasePytorchForecaster(Forecaster):
 
         :return: A Forecaster Model.
         """
-        if tsdataset.numpy_x is not None:
-            past_seq_len = tsdataset.numpy_x.shape[1]
-            future_seq_len = tsdataset.numpy_y.shape[1]
-        # TODO Support specify 'auto' as past_seq_len.
-        if all([past_seq_len is None, future_seq_len is None, tsdataset.numpy_x is None]):
+        if isinstance(tsdataset, TSDataset):
+            output_feature_num = len(tsdataset.target_col)
+            if isinstance(tsdataset.roll_additional_feature, list):
+                tsdataset.feature_col += tsdataset.roll_additional_feature
+            input_feature_num = output_feature_num + len(tsdataset.feature_col)
+            if tsdataset.numpy_x is not None:
+                past_seq_len = tsdataset.numpy_x.shape[1]
+                future_seq_len = tsdataset.numpy_y.shape[1]
+                output_feature_num = len(tsdataset.roll_target)
+                input_feature_num = output_feature_num + len(tsdataset.roll_feature)
+
+        # TODO Support specifying 'auto' as past_seq_len.
+        if isinstance(tsdataset, DataLoader):
+            from bigdl.chronos.data.utils.roll_dataset import RollDataset
+            if isinstance(tsdataset.dataset, RollDataset):
+                past_seq_len = tsdataset.dataset.lookback
+                horizon = tsdataset.dataset.horizon
+                future_seq_len = horizon if isinstance(horizon, int) else max(horizon)
+                output_feature_num = tsdataset.dataset.target_num
+                input_feature_num = tsdataset.dataset.all_feature_num
+            else:
+                past_seq_len, input_feature_num = tsdataset.dataset.tensors[0].shape[1:]
+                future_seq_len, output_feature_num = tsdataset.dataset.tensors[1].shape[1:]
+        if past_seq_len is None and future_seq_len is None:
             from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(False,
                               "Forecaster requires 'past_seq_len' and 'future_seq_len' to specify "
                               "the history time step and output time step.")
-        output_feature_num = len(tsdataset.target_col)
-        input_feature_num = output_feature_num + len(tsdataset.feature_col)
+
         return cls(past_seq_len=past_seq_len,
                    future_seq_len=future_seq_len,
                    input_feature_num=input_feature_num,

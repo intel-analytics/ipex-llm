@@ -66,8 +66,7 @@ def create_tsdataset(roll=True):
     timeseries = pd.date_range(start='2020-01-01', freq='D', periods=1000)
     df = pd.DataFrame(np.random.rand(1000, 1),
                       columns=['value1'],
-                      index=timeseries,
-                      dtype=np.float32)
+                      index=timeseries)
     df.reset_index(inplace=True)
     df.rename(columns={'index': 'timeseries'}, inplace=True)
     train, _, test = TSDataset.from_pandas(df=df,

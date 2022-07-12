@@ -93,6 +93,7 @@ class RollDataset(Dataset):
         self.lookback = lookback
         self.horizon = horizon
         self.target_num = len(target_col)
+        self.all_feature_num = len(feature_col + target_col)
 
         # time_enc
         self.time_enc = time_enc

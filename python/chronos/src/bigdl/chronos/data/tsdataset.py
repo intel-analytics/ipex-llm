@@ -49,8 +49,8 @@ class TSDataset:
 
         self.numpy_x = None
         self.numpy_y = None
-        self.roll_feature = None
-        self.roll_target = None
+        self.roll_feature = None  # Contains all feature_col column names
+        self.roll_target = None  # Contains all target_col column names
         self.roll_feature_df = None
         self.roll_additional_feature = None
         self.scaler = None

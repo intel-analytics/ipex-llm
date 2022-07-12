@@ -27,9 +27,8 @@ class NBeatsForecaster(BasePytorchForecaster):
                                          future_seq_len=1,
                                          stack_types=("generic", "generic"),
                                          ...)
+        >>>
         >>> # 2. The from_dataset method can also initialize a NBeatForecaster.
-        >>> tsdata = TSDataset.from_pandas(df, ...)
-        >>> tsdata.roll(lookback=10, horizon=1, ...)
         >>> forecaster.from_tsdataset(tsdata, **kwargs)
         >>> forecaster.fit(tsdata)
         >>> forecaster.to_local() # if you set distributed=True
@@ -185,11 +184,24 @@ class NBeatsForecaster(BasePytorchForecaster):
 
         :return: A Nbeats Forecaster Model.
         """
-        if tsdataset.numpy_x is not None:
+        from torch.utils.data import DataLoader
+        from bigdl.chronos.data.utils.roll_dataset import RollDataset
+        from bigdl.chronos.data.tsdataset import TSDataset
+
+        if isinstance(tsdataset, TSDataset) and tsdataset.numpy_x is not None:
             past_seq_len = tsdataset.numpy_x.shape[1]
             future_seq_len = tsdataset.numpy_y.shape[1]
         # TODO Support specify 'auto' as past_seq_len.
-        if all([past_seq_len is None, future_seq_len is None, tsdataset.numpy_x is None]):
+        if isinstance(tsdataset, DataLoader):
+            if isinstance(tsdataset.dataset, RollDataset):
+                past_seq_len = tsdataset.dataset.lookback
+                horizon = tsdataset.dataset.horizon
+                future_seq_len = horizon if isinstance(horizon, int) else max(horizon)
+            else:
+                past_seq_len = tsdataset.dataset.tensors[0].shape[1]
+                future_seq_len = tsdataset.dataset.tensors[1].shape[1]
+
+        if past_seq_len is None and future_seq_len is None:
             from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(False,
                               "Forecaster requires 'past_seq_len' and 'future_seq_len' to specify "

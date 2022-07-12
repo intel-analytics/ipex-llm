@@ -30,12 +30,10 @@ class Seq2SeqForecaster(BasePytorchForecaster):
                                                output_feature_num=1,
                                                ...)
             >>> # 2. Initialize Forecaster from from_tsdataset
-            >>> tsdata = TSDataset.from_pandas(df, ...)
-            >>> tsdata.roll(lookback=24, horizon=2, ...)
             >>> forecaster = Seq2SeqForecaster.from_tsdataset(tsdata, ...)
             >>> forecaster.fit(tsdata, ...)
             >>> forecaster.to_local()  # if you set distributed=True
-            >>> test_pred = forecaster.predict(x_test) # x_test also can be tsdata
+            >>> test_pred = forecaster.predict(x_test)
             >>> test_eval = forecaster.evaluate((x_test, y_test))
             >>> forecaster.save({ckpt_name})
             >>> forecaster.load({ckpt_name})
