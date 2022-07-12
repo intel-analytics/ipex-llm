@@ -37,7 +37,7 @@ With BigDL PPML, you can run trusted Big Data & AI applications
 ## Getting Started with PPML
 
 #### 0. Preparation your environment
-To secure your Big Data & AI applications in BigDL PPML manner, you should prepare your environment first, including K8s cluster setup, K8s-SGX plugin setup, key/secret preparation, KMS and attestation service setup, BigDL PPML Docker Image preparation. More details in [Prepare Environment](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/prepare_environment.md).
+To secure your Big Data & AI applications in BigDL PPML manner, you should prepare your environment first, including K8s cluster setup, K8s-SGX plugin setup, data/key/password preparation, KMS and attestation service setup, BigDL PPML Docker Image preparation. More details in [Prepare Environment](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/prepare_environment.md).
 
 #### 1. Encrypt and Upload Data
 Encrypt the input data of your Big Data & AI applications and then upload encrypted data to the nfs server. More details in [Encrypt Your Data](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/encrypt_and_decrypt.md).
