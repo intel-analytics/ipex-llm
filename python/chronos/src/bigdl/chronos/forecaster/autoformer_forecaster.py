@@ -272,7 +272,7 @@ class AutoformerForecaster(Forecaster):
         self.tune_internal = self._build_automodel(data, validation_data, batch_size, epochs)
 
         from pytorch_lightning.callbacks import Callback
-        
+
         # reset current epoch = 0 after each run
         class ResetCallback(Callback):
             def on_train_end(self, trainer, pl_module):
