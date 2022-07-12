@@ -195,7 +195,7 @@ class BasePytorchForecaster(Forecaster):
         # reset train and validation datasets
         self.tune_trainer.reset_train_val_dataloaders(self.internal)
 
-    def fit(self, data, epochs=1, batch_size=32):
+    def fit(self, data, val_data=None, epochs=1, batch_size=32):
         # TODO: give an option to close validation during fit to save time.
         """
         Fit(Train) the forecaster.
@@ -285,13 +285,22 @@ class BasePytorchForecaster(Forecaster):
                                                 torch.from_numpy(data[1])),
                                   batch_size=max(1, batch_size//self.num_processes),
                                   shuffle=True)
-
             # Trainer init and fitting
             self.trainer = Trainer(logger=False, max_epochs=epochs,
                                    checkpoint_callback=self.checkpoint_callback,
                                    num_processes=self.num_processes, use_ipex=self.use_ipex,
                                    distributed_backend="spawn")
-            self.trainer.fit(self.internal, data)
+            if isinstance(val_data, tuple):
+                if batch_size % self.num_processes != 0:
+                    warnings.warn("'batch_size' cannot be divided with no remainder by "
+                                    "'self.num_processes'. We got 'batch_size' = {} and "
+                                    "'self.num_processes' = {}".
+                                    format(batch_size, self.num_processes))
+                val_data = DataLoader(TensorDataset(torch.from_numpy(val_data[0]),
+                                                torch.from_numpy(val_data[1])),
+                                    batch_size=max(1, batch_size//self.num_processes),
+                                    shuffle=True)
+            self.trainer.fit(self.internal, data, val_data)
             self.fitted = True
 
     def predict(self, data, batch_size=32, quantize=False):

@@ -87,6 +87,12 @@ class LightningModuleFromTorch(LightningModule):
             acc = {"val/{}_{}".format(type(metric).__name__, i): metric(y_hat, batch[-1])
                    for i, metric in enumerate(self.metrics)}
             self.log_dict(acc, on_epoch=True, prog_bar=True, logger=True)
+        return loss
+
+    def validation_epoch_end(self, outputs):
+        avg_loss = torch.stack(outputs).mean()
+        self.log("ptl/val_loss", avg_loss)
+        print('------------------------------avg_loss:', avg_loss.item())
 
     def test_step(self, batch, batch_idx):
         """Define a single test step."""
