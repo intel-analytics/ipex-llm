@@ -21,7 +21,7 @@ from numpy import ndarray
 from bigdl.ppml.fl.nn.generated.nn_service_pb2 import TrainRequest, UploadModelRequest
 from bigdl.ppml.fl.nn.generated.nn_service_pb2_grpc import *
 from bigdl.ppml.fl.nn.utils import ndarray_map_to_tensor_map
-import uuid
+import yaml
 import threading
 from torch.utils.data import DataLoader
 from bigdl.dllib.utils.log4Error import invalidInputError
@@ -31,10 +31,15 @@ from bigdl.ppml.fl.nn.utils import ClassAndArgsWrapper
 class FLClient(object):
     channel = None
     _lock = threading.Lock()
-    def __init__(self, client_id, aggregator, target="localhost:8980") -> None: 
+    def __init__(self, client_id, aggregator, target="localhost:8980") -> None:
+        self.secure = False
+        self.load_config()
         with FLClient._lock:
-            if FLClient.channel == None:                
-                FLClient.channel = grpc.insecure_channel(target)
+            if FLClient.channel == None:
+                if self.secure:
+                    FLClient.channel = grpc.secure_channel(target, self.creds)
+                else:
+                    FLClient.channel = grpc.insecure_channel(target)
         self.nn_stub = NNServiceStub(FLClient.channel)
         self.client_uuid = client_id
         self.aggregator = aggregator
@@ -63,5 +68,11 @@ class FLClient(object):
                                      aggregator=self.aggregator)
         return self.nn_stub.upload_model(request)
 
+    def load_config(self):
+        with open('ppml-conf.yaml', 'r') as stream:
+            conf = yaml.safe_load(stream)
+            if 'privateKeyFilePath' in conf:
+                self.secure = True
+                with open(conf['privateKeyFilePath'], 'rb') as f:
+                    self.creds = grpc.ssl_channel_credentials(f.read())
 
-    
