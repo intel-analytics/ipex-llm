@@ -161,7 +161,7 @@ class EncryptDataFrameSpec extends DataFrameHelper {
     val outFile = dir + "/plain_big_file.csv"
     val enFile = dir + "/en_big_file.csv" + CryptoCodec.getDefaultExtension()
     val fw = new FileWriter(bigFile)
-    val genNum = 400
+    val genNum = 40000000
     (0 until genNum).foreach {i =>
       fw.append(s"gdni,$i,Engineer\npglyal,$i,Engineer\nyvomq,$i,Developer\n")
     }
