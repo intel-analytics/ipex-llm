@@ -35,7 +35,7 @@ With BigDL PPML, you can run trusted Big Data & AI applications
 - **Trusted FL (Federated Learning)**: TODO
 
 ## Getting Started with PPML
-In this part, first we will introduce the whole workflow of BigDL PPML， then we will go with examples from simple to hard to use the BigDL PPML workflow.
+In this part, first we will introduce the whole workflow of BigDL PPML，then we will go with examples from simple to hard to use the BigDL PPML workflow.
 ### End-to-End PPML Workflow
 ![image](https://user-images.githubusercontent.com/61072813/178393982-929548b9-1c4e-4809-a628-10fafad69628.png)
 
