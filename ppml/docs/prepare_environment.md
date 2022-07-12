@@ -3,16 +3,14 @@ Prior to run your Big Data & AI applications with BigDL PPML, please make sure t
 * Hardware that supports SGX
 * A fully configured Kubernetes cluster
 * [Intel SGX Device Plugin](https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html) to use SGX in K8S cluster
-* [Data, Key and Password Preparation](#prepare-data-key-and-password)
+* [Key and Password Preparation](#prepare-key-and-password)
 * [Configure the Environment](#configure-the-environment)
 * [KMS Service Setup](kms-key-management-service-setup)
 * [Attestation Service Setup](#attestation-service-setup)
-* [BigDL PPML Docker Image](#prepare-bigdl-ppml-docker-image)
+* [BigDL PPML Docker Image](#start-bigdl-ppml-docker-container)
 * (Optional) [K8s Monitioring](#optional-k8s-monitioring-setup)
 
-### Prepare data, key and password
-##### Prepare the Data
-To run Big Data & AI applications with ppml in BigDL, you need to prepare the data first. 
+### Prepare key and password
 
 ##### Prepare the Key
 
@@ -92,17 +90,69 @@ placeholder
 
 
 
-### Prepare BigDL PPML Docker Image
+### Start BigDL PPML Docker Container
+1. Prepare Docker Image
 
-Pull Docker image from Dockerhub
-```
-docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-graphene:2.1.0-SNAPSHOT
-```
-Alternatively, you can build Docker image from Dockerfile (this will take some time):
-```
-cd trusted-big-data-ml/python/docker-graphene
-./build-docker-image.sh
-```
+    Pull Docker image from Dockerhub
+    ```
+    docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-graphene:2.1.0-SNAPSHOT
+    ```
+
+    Alternatively, you can build Docker image from Dockerfile (this will take some time):
+    ```
+    cd trusted-big-data-ml/python/docker-graphene
+    ./build-docker-image.sh
+    ```
+    
+2. Start the client container
+    
+    Configure the environment variables in the following script before running it. Check [Bigdl ppml SGX related configurations](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-graphene#1-bigdl-ppml-sgx-related-configurations) for detailed memory configurations.
+    ```
+    export K8S_MASTER=k8s://$(sudo kubectl cluster-info | grep 'https.*6443' -o -m 1)
+    echo The k8s master is $K8S_MASTER .
+    export ENCLAVE_KEY=/YOUR_DIR/enclave-key.pem
+    export DATA_PATH=/YOUR_DIR/data
+    export KEYS_PATH=/YOUR_DIR/keys
+    export SECURE_PASSWORD_PATH=/YOUR_DIR/password
+    export KUBECONFIG_PATH=/YOUR_DIR/kubeconfig
+    export LOCAL_IP=$LOCAL_IP
+    export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT
+    sudo docker run -itd \
+        --privileged \
+        --net=host \
+        --name=spark-local-k8s-client \
+        --cpuset-cpus="0-4" \
+        --oom-kill-disable \
+        --device=/dev/sgx/enclave \
+        --device=/dev/sgx/provision \
+        -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
+        -v $ENCLAVE_KEY:/graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
+        -v $DATA_PATH:/ppml/trusted-big-data-ml/work/data \
+        -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
+        -v $SECURE_PASSWORD_PATH:/ppml/trusted-big-data-ml/work/password \
+        -v $KUBECONFIG_PATH:/root/.kube/config \
+        -e RUNTIME_SPARK_MASTER=$K8S_MASTER \
+        -e RUNTIME_K8S_SERVICE_ACCOUNT=spark \
+        -e RUNTIME_K8S_SPARK_IMAGE=$DOCKER_IMAGE \
+        -e RUNTIME_DRIVER_HOST=$LOCAL_IP \
+        -e RUNTIME_DRIVER_PORT=54321 \
+        -e RUNTIME_DRIVER_CORES=1 \
+        -e RUNTIME_EXECUTOR_INSTANCES=1 \
+        -e RUNTIME_EXECUTOR_CORES=8 \
+        -e RUNTIME_EXECUTOR_MEMORY=1g \
+        -e RUNTIME_TOTAL_EXECUTOR_CORES=4 \
+        -e RUNTIME_DRIVER_CORES=4 \
+        -e RUNTIME_DRIVER_MEMORY=1g \
+        -e SGX_DRIVER_MEM=32g \
+        -e SGX_DRIVER_JVM_MEM=8g \
+        -e SGX_EXECUTOR_MEM=32g \
+        -e SGX_EXECUTOR_JVM_MEM=12g \
+        -e SGX_ENABLED=true \
+        -e SGX_LOG_LEVEL=error \
+        -e SPARK_MODE=client \
+        -e LOCAL_IP=$LOCAL_IP \
+        $DOCKER_IMAGE bash
+    ```
 
 ### (Optional) K8s Monitioring Setup
 https://github.com/analytics-zoo/ppml-e2e-examples/blob/main/bigdl-ppml-sgx-k8s-prometheus/README.md
