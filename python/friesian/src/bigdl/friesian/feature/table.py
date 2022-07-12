@@ -2241,11 +2241,46 @@ class FeatureTable(Table):
         return FeatureTable(df)
 
     def string_embed(self, columns, bert_model='bert-base-uncased', reduce_dim=None, replace=True):
-        df = self.df
+        """
+        Convert the columns of string to bert embeddings in FeatureTable. The columns should be of
+        string type.
+
+        >>> tbl
+        +------------------------+
+        |sentence                |
+        +------------------------+
+        |hello BigDL, how are you|
+        |Thanks for visiting     |
+        +------------------------+
+        >>> tbl.string_embed("sentence", reduce_dim=10)
+        +----------------------------------------------------------------------------------+
+        |sentence                                                                          |
+        +----------------------------------------------------------------------------------+
+        |[6.552382655553642, 0.4968299244945677, 0.2790670453414006, -0.2955769430562254]  |
+        |[-4.4477494247704845, 0.4968299244945722, 0.2790670453414017, -0.2955769430562234]|
+        +----------------------------------------------------------------------------------+
+        :param columns: str or a list of str. Columns to convert to sampled list. Each column
+                should be of string type.
+        :param bert_model: str. The pretrained bert model to be used.
+        :param reduce_dim: int. PCA will be called to reduce the embedding dimension it's not None.
+               Default: None.
+        :param replace: bool. Indicates whether to replace the original columns. If replace=False,
+                 a corresponding column columname + "_embds" will be generated for each column.
+
+        :return: A FeatureTable with desired columns transformed to embeddings.
+        """
+        cols = str_to_list(columns, "cols")
+        schema = self.schema
+        for c in cols:
+            invalidInputError(c in self.df.columns, "Column '" + c +
+                              "' does not exist in this FeatureTable.")
+            c_type = schema[c].dataType
+            invalidInputError(isinstance(c_type, StringType),
+                              "Each column should be of string type, but the type of column '" + c +
+                              "' is " + c_type.simpleString())
+
         from transformers import BertTokenizer, BertModel
         import torch
-
-        cols = str_to_list(columns, "cols")
 
         model = BertModel.from_pretrained(bert_model,
                                           output_hidden_states=True)
@@ -2278,6 +2313,8 @@ class FeatureTable(Table):
 
         str2id_udf = udf(lambda x: str2id(x, tokenizer_br.value), ArrayType(IntegerType()))
         ids2embd_udf = udf(lambda x: ids2emb(x, model_br.value), ArrayType(DoubleType()))
+
+        df = self.df
         for c in cols:
             df = df.withColumn(c + "_ids", str2id_udf(pyspark_col(c))) \
                 .withColumn(c + "_embds", ids2embd_udf(pyspark_col(c + "_ids")))\
@@ -2293,7 +2330,7 @@ class FeatureTable(Table):
                 pca = PCA(k=reduce_dim, inputCol=c + "_embds", outputCol=c + "_pcaFeatures")
                 pca_model = pca.fit(df)
                 result = pca_model.transform(df)
-                df = result.drop(c +"_embds")\
+                df = result.drop(c + "_embds")\
                     .withColumnRenamed(c + "_pcaFeatures", c + "_embds")\
                     .withColumn(c + "_embds", tolist(c + "_embds"))
 

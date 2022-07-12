@@ -1477,7 +1477,7 @@ class TestTable(TestCase):
     def test_string_embed(self):
         spark = OrcaContext.get_spark_session()
         texts = [("Here is the sentence I want embeddings for.", "haha", 1),
-                 ("After stealing money from the bank vault, the bank robber was seen " \
+                 ("After stealing money from the bank vault, the bank robber was seen "\
                  "fishing on the Mississippi river bank.", "how are you", 2),
                  ("hello, how are you", "no so good, had a tough day", 3)]
         df = spark.createDataFrame(texts, schema=["text1", "text2", "id"])
@@ -1492,8 +1492,8 @@ class TestTable(TestCase):
             text_embeds = tbl.string_embed(["text1"], reduce_dim=1000)
         self.assertTrue("must be no less than k=1000" in str(context.exception))
         with self.assertRaises(Exception) as context:
-            text_embeds = tbl.string_embed(["text1"], bert_model ="hello", reduce_dim=5)
-        self.assertTrue("hello is not a local folder and is not a valid model identifier "+
+            text_embeds = tbl.string_embed(["text1"], bert_model="hello", reduce_dim=5)
+        self.assertTrue("hello is not a local folder and is not a valid model identifier " +
                         "listed on 'https://huggingface.co/models'" in str(context.exception))
 
 
