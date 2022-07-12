@@ -924,7 +924,7 @@ class FeatureTable(Table):
                  values with provided StringIndexes.
         """
         data_df = StringIndexer.encode_string(self.df, columns, indices, broadcast, do_split,
-                      sep, sort_for_array, keep_most_frequent)
+                                              sep, sort_for_array, keep_most_frequent)
         return FeatureTable(data_df)
 
     def filter_by_frequency(self, columns, min_freq=2):
@@ -1023,8 +1023,8 @@ class FeatureTable(Table):
                  integer values, and a list of StringIndex for the mapping.
         """
         StringIndexer.category_encode(self.df, columns, freq_limit, order_by_freq,
-                        do_split, sep, sort_for_array, keep_most_frequent,
-                        broadcast)
+                                      do_split, sep, sort_for_array, keep_most_frequent,
+                                      broadcast)
 
     def one_hot_encode(self, columns, sizes=None, prefix=None, keep_original_columns=False):
         """
@@ -1123,8 +1123,7 @@ class FeatureTable(Table):
                        do_split=False, sep=','):
         """
         Generate unique index value of categorical features. The resulting index would
-        start from 1 with 0 reserved for unknown features.
-    
+        start from 1 with 0 reserved for unknown features.    
         :param columns: str, dict or a list of str, dict, target column(s) to generate StringIndex.
          dict is a mapping of source column names -> target column name if needs to combine multiple
          source columns to generate index.
@@ -1139,12 +1138,11 @@ class FeatureTable(Table):
         :param do_split: bool, whether need to split column value to array to generate index.
         Default is False.
         :param sep: str, a string representing a regular expression to split a column value.
-         Default is ','.
-    
+         Default is ','.    
         :return: A StringIndex or a list of StringIndex.
         """
         StringIndexer.gen_string_idx(self.df, columns, freq_limit, order_by_freq,
-                       do_split, sep)
+                                     do_split, sep)
 
     def _clone(self, df):
         return FeatureTable(df)
