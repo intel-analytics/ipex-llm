@@ -14,7 +14,11 @@
 # limitations under the License.
 #
 
+from typing import Any
+
 import torch
+from torch import nn
+from torch.optim import Optimizer
 import pytorch_lightning as pl
 from pytorch_lightning.strategies import SingleDeviceStrategy
 from pytorch_lightning.accelerators.accelerator import Accelerator
@@ -66,3 +70,17 @@ class IPEXStrategy(SingleDeviceStrategy):
         model, optimizer = ipex.optimize(self.model, optimizer=self.optimizers[0],  # type: ignore
                                          inplace=True, dtype=dtype)
         self.optimizers = [optimizer]
+
+    def _setup_lite(self, model: nn.Module, *optimizers: Optimizer) -> Any:
+        """
+        Apply IPEX's optimization, which will be and only be used with LightningLite.
+
+        LightningLite won't call above `setup` method, instead,
+        we use this method to add IPEX's optimization.
+        """
+        if len(optimizers) > 1:
+            invalidInputError(False, "Ipex does not support more than one optimizers.")
+        dtype = torch.bfloat16 if self.enable_bf16 else None
+        model, optimizer = ipex.optimize(model, optimizer=optimizers[0],
+                                         inplace=True, dtype=dtype)
+        return model, (optimizer,)

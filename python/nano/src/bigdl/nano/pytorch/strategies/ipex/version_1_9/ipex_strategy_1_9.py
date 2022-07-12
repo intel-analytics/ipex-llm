@@ -17,6 +17,8 @@
 from typing import Union, Dict, Any, Optional
 
 import torch
+from torch import nn
+from torch.optim import Optimizer
 import pytorch_lightning as pl
 from pytorch_lightning.accelerators.accelerator import Accelerator
 from pytorch_lightning.plugins.precision import PrecisionPlugin, MixedPrecisionPlugin
@@ -64,6 +66,16 @@ class IPEXStrategy(SingleDeviceStrategy):
             invalidInputError(False, "amp is not supported in bigdl-nano.")
 
         super().setup(trainer)
+
+    def _setup_lite(self, model: nn.Module, *optimizers: Optimizer) -> Any:
+        """
+        Apply IPEX's optimization, which will be and only be used with LightningLite.
+
+        LightningLite won't call above `setup` method, instead,
+        we use this method to add IPEX's optimization.
+        """
+        # IPEX 1.9 has no need to do anything
+        return model, optimizers
 
     def training_step_end(self, output: _STEP_OUTPUT_TYPE) -> _STEP_OUTPUT_TYPE:
         """

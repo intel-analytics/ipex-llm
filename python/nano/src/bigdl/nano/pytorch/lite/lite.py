@@ -14,8 +14,11 @@
 # limitations under the License.
 #
 
+from typing import Any
 from logging import warning
 
+from torch import nn
+from torch.optim import Optimizer
 import pytorch_lightning.lite as lite
 
 from bigdl.nano.pytorch.strategies import create_IPEXStrategy
@@ -58,3 +61,36 @@ class LightningLite(lite.LightningLite):
 
         kwargs["strategy"] = strategy
         super().__init__(*args, **kwargs)
+
+    def setup(
+        self,
+        model: nn.Module,
+        *optimizers: Optimizer,
+        move_to_device: bool = True,
+    ) -> Any:
+        """
+        Setup a model and its optimizers for accelerated training.
+
+        LightningLite won't call `Strategy.setup()` method,
+        in which we add IPEX's optimization when using `trainer`.
+
+        When we call `LightningLite().run()`, it will call
+        `Strategy.setup_environment()` -> `Lanucher.launch()` -> user defined `run()` method.
+
+        However the model and optimizers haven't been specified when calling these three methods,
+        so we have to add optimizations in this method, which will be called in
+        user defined `run()` method.
+
+        :param model: A model to setup
+        :param *optimizers: The optimizer(s) to setup (no optimizers is also possible)
+        :param move_to_device: If set ``True`` (default), moves the model to the correct device.
+            Set this to ``False`` and alternatively use :meth:`to_device` manually.
+        :return: The tuple of the wrapped model and list of optimizers,
+            in the same order they were passed in.
+        """
+        # add IPEX's optimization
+        known_strategies = ["ipex"]
+        if self._strategy is not None and self._strategy.strategy_name in known_strategies:
+            model, optimizers = self._strategy._setup_lite(model, *optimizers)
+
+        return super().setup(model, *optimizers, move_to_device=move_to_device)
