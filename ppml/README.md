@@ -60,60 +60,88 @@ Here we take SimpleQuery as an example to go through the entire end-to-end PPML 
 Setup environment as documented in [Prepare Environment](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/prepare_environment.md).
 
 #### 1. Encrypt and Upload Data
-Generate the dataset `people.csv`
-Encrypt `people.csv`
-Upload the excrypted `people.csv` to xxx
+1. Generate the input data `people.csv` for SimpleQuery application
+you can use [generate_people_csv.py](https://github.com/analytics-zoo/ppml-e2e-examples/blob/main/spark-encrypt-io/generate_people_csv.py). The usage command of the script is `python generate_people.py </save/path/of/people.csv> <num_lines>`.
+
+2. Encrypt `people.csv`
+    ```
+    docker exec -i $KMSUTIL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh encrypt $appid $appkey $input_file_path"
+    ```
 
 #### 2. Build Big Data & AI applications
-Build the application SimpleQuery
+?? Build the application SimpleQuery, move simplequery from e2e repo to bigdl repo??
 
 #### 3. Submit Job
-Here we use PPML CLI to run jobs on Kubernetes, here we only demo k8s client mode, check other mode, please see xxx.
+Here we use PPML CLI to run jobs on Kubernetes, here we only demo k8s client mode, check other modes, please see [PPML CLI Usage Examples](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/submit_job.md#usage-examples). Alternatively, you can also use Helm to submit jobs automatically, see the details in [Helm Chart Usage](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/submit_job.md#helm-chart).
 
-enter the ppml container
-```
-docker exec -it spark-local-k8s-client bash
-```
-run simplequery on client mode
-```
-#!/bin/bash
-export secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
-bash bigdl-ppml-submit.sh \
-        --master $RUNTIME_SPARK_MASTER \
-        --deploy-mode client \
-        --sgx-enabled true \
-        --sgx-log-level error \
-        --sgx-driver-memory 64g \
-        --sgx-driver-jvm-memory 12g \
-        --sgx-executor-memory 64g \
-        --sgx-executor-jvm-memory 12g \
-        --driver-memory 32g \
-        --driver-cores 8 \
-        --executor-memory 32g \
-        --executor-cores 8 \
-        --num-executors 2 \
-        --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
-        --class org.apache.spark.examples.SparkPi \
-        --name spark-pi \
-        --verbose \
-        local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
-```
-exit the container
-```
-exit
-```
-Alternatively, you can also use Helm to submit jobs automatically, see the details in xxx.
 
-Check status
+1. enter the ppml container
+    ```
+    docker exec -it ppml-spark-client bash
+    ```
+2. run simplequery on k8s client mode
+    ```
+    #!/bin/bash
+    export secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
+    bash bigdl-ppml-submit.sh \
+            --master $RUNTIME_SPARK_MASTER \
+            --deploy-mode client \
+            --sgx-enabled true \
+            --sgx-log-level error \
+            --sgx-driver-memory 64g \
+            --sgx-driver-jvm-memory 12g \
+            --sgx-executor-memory 64g \
+            --sgx-executor-jvm-memory 12g \
+            --driver-memory 32g \
+            --driver-cores 8 \
+            --executor-memory 32g \
+            --executor-cores 8 \
+            --num-executors 2 \
+            --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
+            --name spark-pi \
+            --verbose \
+            --class com.intel.analytics.bigdl.ppml.examples.SimpleQuerySparkExample \
+            --jars local:///ppml/trusted-big-data-ml/spark-encrypt-io-0.3.0-SNAPSHOT.jar \
+            local:///ppml/trusted-big-data-ml/spark-encrypt-io-0.3.0-SNAPSHOT.jar \
+            --inputPath /ppml/trusted-big-data-ml/work/data/shaojie/simplequery/people_encrypted \
+            --outputPath /ppml/trusted-big-data-ml/work/data/shaojie/simplequery/people_encrypted_output \
+            --inputPartitionNum 8 \
+            --outputPartitionNum 8 \
+            --inputEncryptModeValue AES/CBC/PKCS5Padding \
+            --outputEncryptModeValue AES/CBC/PKCS5Padding \
+            --primaryKeyPath /ppml/trusted-big-data-ml/work/data/simplequery/keys/primaryKey \
+            --dataKeyPath /ppml/trusted-big-data-ml/work/data/simplequery/keys/dataKey \
+            --kmsType SimpleKeyManagementService \
+            --simpleAPPID 560704476455 \
+            --simpleAPPKEY 088347530263
+    ```
+
+
+3. check runtime status
+
+    Exit the container or open a new terminal
+
+* To check the logs of the Kubernetes job, run
+  ```
+  sudo kubectl logs $( sudo kubectl get pod | grep spark-pi-job | cut -d " " -f1 )
+  ```
+* To check the logs of the Spark driver, run
+  ```
+  sudo kubectl logs $( sudo kubectl get pod | grep "spark-pi-sgx.*-driver" -m 1 | cut -d " " -f1 )
+  ```
+* To check the logs of an Spark executor, run
+  ```
+  sudo kubectl logs $( sudo kubectl get pod | grep "spark-pi-.*-exec" -m 1 | cut -d " " -f1 )
+  ```
+
 
 #### 4. Decrypt and Read Result
-When job is done, check the result, which shoule be encrypted.
-
-decrypt the result
-```
-xxx
-```
-then cat xxx you will see the plaintext result.
+    
+  When job is done, check the result, which shoule be encrypted. Decrypt the result
+    
+  ```
+  docker exec -i $KMSUTIL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh decrypt $appid $appkey $input_path"
+  ```
 
 ## Develop your own Big Data & AI applications with BigDL PPML
 
