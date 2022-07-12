@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-from gc import callbacks
 import torch
 from bigdl.chronos.forecaster.abstract import Forecaster
 from bigdl.chronos.model.autoformer import model_creator, loss_creator
@@ -24,11 +23,7 @@ from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
 from bigdl.chronos.forecaster.utils import check_transformer_data
 from bigdl.chronos.pytorch import TSTrainer as Trainer
 from bigdl.nano.automl.hpo.space import Space
-<<<<<<< HEAD
 from bigdl.chronos.forecaster.utils_hpo import GenericTSTransformerLightningModule, _config_has_search_space
-=======
-from bigdl.chronos.forecaster.utils_hpo import GenericTSTransformerLightningModule
->>>>>>> enable tune
 
 from .utils_hpo import _format_metric_str
 import warnings
@@ -261,7 +256,6 @@ class AutoformerForecaster(Forecaster):
         self.tune_internal = self._build_automodel(data, validation_data, batch_size, epochs)
 
         from pytorch_lightning.callbacks import Callback
-
         # reset current epoch = 0 after each run
         class ResetCallback(Callback):
             def on_train_end(self, trainer, pl_module):
