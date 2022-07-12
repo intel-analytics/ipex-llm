@@ -155,7 +155,6 @@ class OptunaBackend(object):
     def create_sampler(sampler_type, kwargs):
         """Create a hyperparameter sampler by type."""
         sampler_class = OptunaBackend.sampler_map.get(sampler_type)
-        # return sampler_class(**kwargs)
         return sampler_class(kwargs)
 
     @staticmethod

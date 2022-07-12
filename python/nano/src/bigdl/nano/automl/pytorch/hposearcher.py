@@ -128,7 +128,7 @@ class HPOSearcher:
                                    HPOSearcher.EXTRA_FIT_KEYS,
                                    HPOSearcher.TUNE_CREATE_KEYS,
                                    HPOSearcher.TUNE_RUN_KEYS])
-        
+
         _sampler_kwargs = model._lazyobj.sampler_kwargs
         user_sampler_kwargs = kwargs.get("sampler_kwargs", {})
         _sampler_kwargs.update(user_sampler_kwargs)

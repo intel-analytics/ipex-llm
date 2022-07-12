@@ -385,11 +385,10 @@ def obj(**kwvars):
                                 k, SPLITTER, new_parameter.name)
                             # further add the sub_cs prefix onto the param
                             name = new_parameter.name
-                            try:
+                            if hasattr(new_parameter, "choices"):
+                                print("enter choices")
                                 choices = tuple(new_parameter.choices)
                                 self.sampler_kwargs[name] = choices
-                            except:
-                                pass
                     elif isinstance(v, Space):
                         self.kwspaces_[k] = v
                         hp = v.get_hp(name=k)
