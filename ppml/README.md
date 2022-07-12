@@ -55,10 +55,65 @@ When the Big Data & AI application and its input data is prepared, you are ready
 When the job is done, you can decrypt and read result of the job. More details in [Decrypt Job Result](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/services/kms-utils/docker/README.md#3-enroll-generate-key-encrypt-and-decrypt).
 
 ### Examples of using End-to-End PPML Workflow
-Here we take SimpleQuery as an example to go through the entire end-to-end PPML workflow.
+Here we take SimpleQuery as an example to go through the entire end-to-end PPML workflow. SimpleQuery is to query xxx.
+#### 0. Preparation your environment
+Setup environment as documented in [Prepare Environment](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/prepare_environment.md).
 
+#### 1. Encrypt and Upload Data
+Generate the dataset `people.csv`
+Encrypt `people.csv`
+Upload the excrypted `people.csv` to xxx
 
-Find more examples in [PPML examples](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/examples.md).
+#### 2. Build Big Data & AI applications
+Build the application SimpleQuery
+
+#### 3. Submit Job
+Here we use PPML CLI to run jobs on Kubernetes, here we only demo k8s client mode, check other mode, please see xxx.
+
+enter the ppml container
+```
+docker exec -it spark-local-k8s-client bash
+```
+run simplequery on client mode
+```
+#!/bin/bash
+export secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
+bash bigdl-ppml-submit.sh \
+        --master $RUNTIME_SPARK_MASTER \
+        --deploy-mode client \
+        --sgx-enabled true \
+        --sgx-log-level error \
+        --sgx-driver-memory 64g \
+        --sgx-driver-jvm-memory 12g \
+        --sgx-executor-memory 64g \
+        --sgx-executor-jvm-memory 12g \
+        --driver-memory 32g \
+        --driver-cores 8 \
+        --executor-memory 32g \
+        --executor-cores 8 \
+        --num-executors 2 \
+        --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
+        --class org.apache.spark.examples.SparkPi \
+        --name spark-pi \
+        --verbose \
+        local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
+```
+exit the container
+```
+exit
+```
+Alternatively, you can also use Helm to submit jobs automatically, see the details in xxx.
+
+Check status
+
+#### 4. Decrypt and Read Result
+When job is done, check the result, which shoule be encrypted.
+
+decrypt the result
+```
+xxx
+```
+then cat xxx you will see the plaintext result.
 
 ## Develop your own Big Data & AI applications with BigDL PPML
 
