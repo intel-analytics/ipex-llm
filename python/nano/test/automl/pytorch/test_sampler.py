@@ -76,6 +76,56 @@ class TestHPOSearcher(TestCase):
         study = trainer.search_summary()
         assert(study)
         assert(study.best_trial)
+    
+    def test_random_sampler(self):
+    
+        @hpo.plmodel()
+        class CustomModel(BoringModel):
+            def __init__(self,
+                        out_dim1,
+                        out_dim2,
+                        dropout_1,
+                        dropout_2):
+
+                super().__init__()
+                layers = []
+                input_dim = 32
+                for out_dim, dropout in [(out_dim1, dropout_1),
+                                        (out_dim2,dropout_2)]:
+                    layers.append(torch.nn.Linear(input_dim, out_dim))
+                    layers.append(torch.nn.Tanh())
+                    layers.append(torch.nn.Dropout(dropout))
+                    input_dim = out_dim
+
+                layers.append(torch.nn.Linear(input_dim, 2))
+
+                self.layers: torch.nn.Module = torch.nn.Sequential(*layers)
+
+        model = CustomModel(
+            out_dim1=space.Categorical(16,32),
+            out_dim2=space.Categorical(16,32),
+            dropout_1=space.Real(0.1,0.5),
+            dropout_2 = 0.2)
+
+        trainer = Trainer(
+            logger=True,
+            checkpoint_callback=False,
+            max_epochs=3,
+            use_hpo=True,
+        )
+        
+        from bigdl.nano.automl.hpo.backend import SamplerType
+        trainer.search(
+            model,
+            target_metric='val_loss',
+            direction='minimize',
+            n_trials=3,
+            max_epochs=3,
+            sampler=SamplerType.Random,
+        )
+        study = trainer.search_summary()
+        assert(study)
+        assert(study.best_trial)    
 
     def test_grid_sampler(self):
     
