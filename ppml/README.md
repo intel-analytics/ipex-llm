@@ -55,7 +55,8 @@ When the Big Data & AI application and its input data is prepared, you are ready
 When the job is done, you can decrypt and read result of the job. More details in [Decrypt Job Result](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/services/kms-utils/docker/README.md#3-enroll-generate-key-encrypt-and-decrypt).
 
 ### Examples of using End-to-End PPML Workflow
-Here we take SimpleQuery as an example to go through the entire end-to-end PPML workflow. SimpleQuery is to query xxx.
+Here we take SimpleQuery as an example to go through the entire end-to-end PPML workflow. SimpleQuery is simple example to query developers between the ages of 20 and 40 from people.csv.
+
 #### 0. Preparation your environment
 Setup environment as documented in [Prepare Environment](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/prepare_environment.md).
 
