@@ -59,7 +59,9 @@ class TestLightningModuleFromTorch(TestCase):
         data_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
         trainer = Trainer(max_epochs=4, log_every_n_steps=1)
         trainer.fit(pl_model, data_loader, data_loader)
+        trainer.validate(pl_model, data_loader)
         trainer.test(pl_model, data_loader)
+        trainer.predict(pl_model, data_loader)
 
     def test_load_state_dict_from_torch(self):
         torch.save(model.state_dict(), "resnet18_test.pth")

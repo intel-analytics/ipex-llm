@@ -52,6 +52,7 @@ class TestOpenVINO(TestCase):
 
         trainer.validate(openvino_model, dataloader)
         trainer.test(openvino_model, dataloader)
+        trainer.predict(openvino_model, dataloader)
 
     def test_trainer_save_openvino(self):
         trainer = Trainer(max_epochs=1)
