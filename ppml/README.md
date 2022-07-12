@@ -57,7 +57,8 @@ When the job is done, you can decrypt and read result of the job. More details i
 ### Examples of using End-to-End PPML Workflow
 Here we take SimpleQuery as an example to go through the entire end-to-end PPML workflow.
 
-Find more examples in [PPML examples](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/examples.md)
+
+Find more examples in [PPML examples](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/examples.md).
 
 ## Develop your own Big Data & AI applications with BigDL PPML
 
