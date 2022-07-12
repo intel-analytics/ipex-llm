@@ -154,6 +154,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         )
 
         if backend == "ray":
+            import torch.distributed as dist
             cores_per_node = ray_ctx.ray_node_cpu_cores // workers_per_node
             num_nodes = ray_ctx.num_ray_nodes * workers_per_node
             RemoteRunner = ray.remote(num_cpus=cores_per_node)(PytorchRayWorker)
@@ -166,12 +167,14 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             ])
 
             head_worker = self.remote_workers[0]
-            address = ray.get(head_worker.setup_address.remote())
+            driver_ip, driver_tcp_store_port = ray.get(head_worker.get_node_ip_port.remote())
 
-            logger.info(f"initializing pytorch process group on {address}")
+            _ = dist.TCPStore(driver_ip, driver_tcp_store_port, -1, True,
+                              dist.constants.default_pg_timeout)
 
             ray.get([
-                worker.setup_torch_distribute.remote(address, i, num_nodes)
+                worker.setup_torch_distribute.remote(
+                    driver_ip, driver_tcp_store_port, i, num_nodes)
                 for i, worker in enumerate(self.remote_workers)
             ])
 

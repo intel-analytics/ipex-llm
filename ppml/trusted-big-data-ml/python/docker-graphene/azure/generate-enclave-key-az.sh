@@ -1,6 +1,6 @@
 #!/bin/bash
 
-$VAULT_NAME=$1
+VAULT_NAME=$1
 
 openssl genrsa -3 -out /graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem 3072
 

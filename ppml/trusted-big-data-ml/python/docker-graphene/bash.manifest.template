@@ -14,8 +14,8 @@ sgx.debug = 0
 sgx.isvprodid = 1
 sgx.isvsvn = 3
 
-#sgx.remote_attestation = 1
-#sgx.ra_client_spid = ""
+sgx.remote_attestation = 1
+sgx.ra_client_spid = ""
 
 loader.env.LD_LIBRARY_PATH = "/usr/lib/python3.7/lib:/lib:/lib/x86_64-linux-gnu:/usr/lib:/usr/lib/x86_64-linux-gnu:$(JDK_HOME):$(JDK_HOME)/lib/amd64/jli:/ppml/trusted-big-data-ml/work/lib"
 loader.env.PATH = "/usr/lib/python3.7/bin:/:$(EXECDIR):/usr/sbin:/usr/bin:/sbin:/bin:$(JDK_HOME)/bin"

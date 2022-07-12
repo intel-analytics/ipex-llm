@@ -17,8 +17,8 @@
 from bigdl.dllib.utils.common import *
 
 
-def init_fl_context(target="localhost:8980"):
-    callBigDlFunc("float", "initFLContext", target)
+def init_fl_context(id, target="localhost:8980"):
+    callBigDlFunc("float", "initFLContext", id, target)
 
 class FLClientClosable(JavaValue):
     def __init__(self, jvalue=None, bigdl_type="float", *args):
@@ -35,6 +35,10 @@ class FLTest(unittest.TestCase):
     def __init__(self, methodName='FLTest') -> None:
         super().__init__(methodName)
         self.port = 8980
+        self.port = self.get_available_port(self.port, self.port + 10)
+        self.target = f"localhost:{self.port}"
+
+    def update_available_port(self):
         self.port = self.get_available_port(self.port, self.port + 10)
         self.target = f"localhost:{self.port}"
 

@@ -136,7 +136,7 @@ class LSTMForecaster(BasePytorchForecaster):
         self.use_ipex = False
         self.onnx_available = True
         self.quantize_available = True
-        self.checkpoint_callback = False
+        self.checkpoint_callback = True
         self.use_hpo = False
 
         super().__init__()

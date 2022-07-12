@@ -13,3 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+from .lstm_forecaster import LSTMForecaster
+from .mtnet_forecaster import MTNetForecaster
+from .seq2seq_forecaster import Seq2SeqForecaster
+from .tcn_forecaster import TCNForecaster

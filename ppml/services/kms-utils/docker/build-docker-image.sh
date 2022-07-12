@@ -7,7 +7,6 @@ export SPARK_JAR_REPO_URL=your_spark_jar_repo_url
 export ENROLL_IMAGE_VERSION=latest
 export ENROLL_IMAGE_NAME=bigdl-ppml-e2e-enroll
 
-cp -r ../../pyspark-encrypt-io/ ./
 
 sudo docker build \
     --no-cache=true \
@@ -19,5 +18,3 @@ sudo docker build \
     --build-arg HTTPS_PROXY_PORT=${HTTPS_PROXY_PORT} \
     --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
     -t $ENROLL_IMAGE_NAME:$ENROLL_IMAGE_VERSION -f ./Dockerfile .
-
-rm -r ./pyspark-encrypt-io
