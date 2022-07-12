@@ -1,4 +1,4 @@
-This document starts with simple native [python examples](#python-examples) and native [spark examples](#spark-examples), which is an easy way to verify if the Trusted PPML environment is correctly set up. 
+This document starts with simple native [python examples](#python-examples) and native [spark examples](#spark-examples), which is an easy way to verify if the Trusted PPML environment is correctly set up. Then [Trusted Data Analysis](#trusted-data-analysis), [Trusted ML](#trusted-ml), [Trusted DL](#trusted-dl) and [Trusted FL](#trusted-fl) examples are given.
 
 ## Python Examples
 ### Run Trusted Python Helloworld
@@ -91,7 +91,7 @@ The result should look something like this:
 #### spark local & k8s
 </details>
 
-## Trusted Data Analytics
+## Trusted Data Analysis
 ### Run Trusted Spark SQL
 <details><summary>This example shows how to run trusted Spark SQL.</summary>
 
