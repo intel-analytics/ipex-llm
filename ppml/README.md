@@ -43,7 +43,7 @@ In this part, first we will introduce the whole workflow of BigDL PPML，then we
 To secure your Big Data & AI applications in BigDL PPML manner, you should prepare your environment first, including K8s cluster setup, K8s-SGX plugin setup, data/key/password preparation, KMS and attestation service setup, BigDL PPML Docker Image preparation. More details in [Prepare Environment](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/prepare_environment.md).
 
 #### 1. Encrypt and Upload Data
-Encrypt the input data of your Big Data & AI applications and then upload encrypted data to the nfs server. More details in [Encrypt Your Data](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/encrypt_and_decrypt.md).
+Encrypt the input data of your Big Data & AI applications and then upload encrypted data to the nfs server. More details in [Encrypt Your Data](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/services/kms-utils/docker/README.md#3-enroll-generate-key-encrypt-and-decrypt).
 
 #### 2. Build Big Data & AI applications
 To build your own Big Data & AI applications, refer to [develop your own Big Data & AI applications with BigDL PPML](#develop-your-own-big-data--ai-applications-with-bigdl-ppml).
@@ -52,7 +52,7 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
 When the Big Data & AI application and its input data is prepared, you are ready to submit BigDL PPML jobs. You have two options to submit jobs: use PPML CLI to run jobs on Kubernetes manually, or use Helm to set everything up automatically. More details in [Submit BigDL PPML Job](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/submit_job.md).
 
 #### 4. Decrypt and Read Result
-When the job is done, you can decrypt and read result of the job. More details in [Decrypt Job Result](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/encrypt_and_decrypt.md).
+When the job is done, you can decrypt and read result of the job. More details in [Decrypt Job Result](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/services/kms-utils/docker/README.md#3-enroll-generate-key-encrypt-and-decrypt).
 
 ### Examples of using End-to-End PPML Workflow
 Here we take SimpleQuery as an example to go through the entire end-to-end PPML workflow.
