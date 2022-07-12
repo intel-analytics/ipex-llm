@@ -14,13 +14,16 @@
 # limitations under the License.
 #
 
-from typing import Any
+from typing import Any, Optional
 from logging import warning
 
 from torch import nn
+from torch import Tensor
 from torch.optim import Optimizer
 import pytorch_lightning.lite as lite
+from pytorch_lightning.lite.wrappers import _LiteModule
 
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 from bigdl.nano.pytorch.strategies import create_IPEXStrategy
 
 
@@ -94,3 +97,13 @@ class LightningLite(lite.LightningLite):
             model, optimizers = self._strategy._setup_lite(model, *optimizers)
 
         return super().setup(model, *optimizers, move_to_device=move_to_device)
+
+    def backward(self,
+                 tensor: Tensor,
+                 *args: Any,
+                 model: Optional[_LiteModule] = None,
+                 **kwargs: Any) -> None:
+        """IPEX 1.9 requires moving loss tensor to xpu, we do it here."""
+        if self.use_ipex and TORCH_VERSION_LESS_1_10:
+            tensor = tensor.to(self.device)
+        super().backward(tensor, *args, model=model, **kwargs)
