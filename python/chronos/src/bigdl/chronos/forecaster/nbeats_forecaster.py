@@ -184,24 +184,15 @@ class NBeatsForecaster(BasePytorchForecaster):
 
         :return: A Nbeats Forecaster Model.
         """
-        from torch.utils.data import DataLoader
-        from bigdl.chronos.data.utils.roll_dataset import RollDataset
         from bigdl.chronos.data.tsdataset import TSDataset
-
-        if isinstance(tsdataset, TSDataset) and tsdataset.numpy_x is not None:
-            past_seq_len = tsdataset.numpy_x.shape[1]
-            future_seq_len = tsdataset.numpy_y.shape[1]
+        if isinstance(tsdataset, TSDataset):
+            # TODO Support for gen_rolling_feature will be split into next pr
+            if tsdataset.numpy_x is not None:
+                past_seq_len = tsdataset.numpy_x.shape[1]
+                future_seq_len = tsdataset.numpy_y.shape[1]
         # TODO Support specify 'auto' as past_seq_len.
-        if isinstance(tsdataset, DataLoader):
-            if isinstance(tsdataset.dataset, RollDataset):
-                past_seq_len = tsdataset.dataset.lookback
-                horizon = tsdataset.dataset.horizon
-                future_seq_len = horizon if isinstance(horizon, int) else max(horizon)
-            else:
-                past_seq_len = tsdataset.dataset.tensors[0].shape[1]
-                future_seq_len = tsdataset.dataset.tensors[1].shape[1]
 
-        if past_seq_len is None and future_seq_len is None:
+        if past_seq_len is None or future_seq_len is None:
             from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(False,
                               "Forecaster requires 'past_seq_len' and 'future_seq_len' to specify "

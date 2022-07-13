@@ -153,43 +153,32 @@ class LSTMForecaster(BasePytorchForecaster):
         :param tsdataset: A bigdl.chronos.data.tsdataset.TSDataset instance.
         :param past_seq_len: Specify the history time steps (i.e. lookback).
                Do not specify the 'past_seq_len' if your tsdataset has called
-               the 'TSDataset.roll' method.
+               the 'TSDataset.roll' method or 'TSDataset.to_torch_data_loader'.
         :param kwargs: Specify parameters of Forecaster,
-               e.g. loss and optimizer, etc.
+               e.g. loss and optimizer, etc. More info, please refer to
+               LSTMForecaster.__init__ method.
 
         :return: A LSTM Forecaster Model.
         '''
-        from torch.utils.data import DataLoader
-        from bigdl.chronos.data.utils.roll_dataset import RollDataset
         from bigdl.chronos.data.tsdataset import TSDataset
-
         if isinstance(tsdataset, TSDataset):
             output_feature_num = len(tsdataset.target_col)
-            # TODO move this to gen_rolling_features
-            if isinstance(tsdataset.roll_additional_feature, list):
-                tsdataset.feature_col += tsdataset.roll_additional_feature
-            input_feature_num = output_feature_num + len(tsdataset.feature_col)
+            # TODO Support for gen_rolling_feature will be split into next pr
+            feature_num = len(tsdataset.feature_col)
+            input_feature_num = output_feature_num + feature_num
+
             if tsdataset.numpy_x is not None:
                 past_seq_len = tsdataset.numpy_x.shape[1]
                 output_feature_num = len(tsdataset.roll_target)
                 input_feature_num = output_feature_num + len(tsdataset.roll_feature)
 
         # TODO Support specifying 'auto' as past_seq_len.
-        if isinstance(tsdataset, DataLoader):
-            if isinstance(tsdataset.dataset, RollDataset):
-                past_seq_len = tsdataset.dataset.lookback
-                output_feature_num = tsdataset.dataset.target_num
-                input_feature_num = tsdataset.dataset.all_feature_num
-            else:
-                past_seq_len, input_feature_num = tsdataset.dataset.tensors[0].shape[1:]
-                output_feature_num = tsdataset.dataset.tensors[1].shape[-1]
-
         if past_seq_len is None:
             from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(False,
                               "Forecaster needs 'past_seq_len' to specify "
                               "the history time step of training.")
-
+        print(input_feature_num, output_feature_num)
         return cls(past_seq_len=past_seq_len,
                    input_feature_num=input_feature_num,
                    output_feature_num=output_feature_num,

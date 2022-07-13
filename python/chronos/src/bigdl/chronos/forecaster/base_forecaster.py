@@ -223,7 +223,7 @@ class BasePytorchForecaster(Forecaster):
                | 4. A bigdl.chronos.data.tsdataset.TSDataset instance:
                | TSDataset provides some methods to prepare the dataset.
                | If `TSDataset.roll` is called, the training speed will be faster,
-               | but but will consume more memory.
+               | but will consume more memory.
                | Otherwise, the training speed may be slower,
                | but the memory usage will be reduced.
                | Returns a DataLoader if `TSDataset.to_torch_data_loader` is called.
@@ -354,6 +354,7 @@ class BasePytorchForecaster(Forecaster):
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | If returns x and y only get x.
+               | 4. A bigdl.chrons.data.tsdataset.TSDataset instance.
                | TSDataset provides some methods to prepare the dataset.
                | If `TSDataset.roll` is called, the training speed will be faster,
                | but but will consume more memory.
@@ -1027,9 +1028,10 @@ class BasePytorchForecaster(Forecaster):
         """
         if isinstance(tsdataset, TSDataset):
             output_feature_num = len(tsdataset.target_col)
-            if isinstance(tsdataset.roll_additional_feature, list):
-                tsdataset.feature_col += tsdataset.roll_additional_feature
-            input_feature_num = output_feature_num + len(tsdataset.feature_col)
+            # TODO Support for gen_rolling_feature will be split into next pr
+            feature_num = len(tsdataset.feature_col)
+            input_feature_num = output_feature_num + feature_num
+
             if tsdataset.numpy_x is not None:
                 past_seq_len = tsdataset.numpy_x.shape[1]
                 future_seq_len = tsdataset.numpy_y.shape[1]
@@ -1037,18 +1039,7 @@ class BasePytorchForecaster(Forecaster):
                 input_feature_num = output_feature_num + len(tsdataset.roll_feature)
 
         # TODO Support specifying 'auto' as past_seq_len.
-        if isinstance(tsdataset, DataLoader):
-            from bigdl.chronos.data.utils.roll_dataset import RollDataset
-            if isinstance(tsdataset.dataset, RollDataset):
-                past_seq_len = tsdataset.dataset.lookback
-                horizon = tsdataset.dataset.horizon
-                future_seq_len = horizon if isinstance(horizon, int) else max(horizon)
-                output_feature_num = tsdataset.dataset.target_num
-                input_feature_num = tsdataset.dataset.all_feature_num
-            else:
-                past_seq_len, input_feature_num = tsdataset.dataset.tensors[0].shape[1:]
-                future_seq_len, output_feature_num = tsdataset.dataset.tensors[1].shape[1:]
-        if past_seq_len is None and future_seq_len is None:
+        if past_seq_len is None or future_seq_len is None:
             from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(False,
                               "Forecaster requires 'past_seq_len' and 'future_seq_len' to specify "

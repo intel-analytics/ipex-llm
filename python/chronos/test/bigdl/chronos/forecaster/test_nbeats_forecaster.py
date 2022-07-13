@@ -432,3 +432,34 @@ class TestChronosNBeatsForecaster(TestCase):
                   horizon=nbeats.data_config['future_seq_len'])
         _, y_test = test.to_numpy()
         assert yhat.shape == y_test.shape
+
+    @skip_onnxrt
+    def test_forecaster_from_tsdataset_data_loader_onnx(self):
+        train, test = create_tsdataset(roll=False)
+        nbeats = NBeatsForecaster.from_tsdataset(train,
+                                                 past_seq_len=24,
+                                                 future_seq_len=5)
+        loader = train.to_torch_data_loader(roll=True,
+                                            lookback=24,
+                                            horizon=5)
+        test_loader = test.to_torch_data_loader(roll=True,
+                                                lookback=24,
+                                                horizon=5)
+        nbeats.fit(loader, epochs=2)
+        yhat = nbeats.predict(test)
+        nbeats.quantize(calib_data=loader,
+                        metric='mse',
+                        framework=['pytorch_fx','onnxrt_qlinearops'])
+        onnx_yhat = nbeats.predict_with_onnx(test)
+        q_yhat = nbeats.predict(test)
+        q_onnx_yhat = nbeats.predict_with_onnx(test, quantize=True)
+        assert onnx_yhat.shape == q_yhat.shape == yhat.shape == q_onnx_yhat.shape
+
+        res = nbeats.evaluate(test_loader)
+        q_res = nbeats.evaluate(test_loader, quantize=True)
+        onnx_res = nbeats.evaluate_with_onnx(test_loader)
+        q_onnx_res = nbeats.evaluate_with_onnx(test_loader, quantize=True)
+
+
+if __name__ == '__main__':
+    pytest.main([__file__])
