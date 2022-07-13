@@ -369,11 +369,11 @@ def get_size(x):
                           " or a list of ndarrays, please check your input")
 
 
-def spark_df_to_pd_sparkxshards(df):
+def spark_df_to_pd_sparkxshards(df, squeeze=False, index_col=None,
+                                dtype=None, index_map=None):
     from bigdl.orca.data import SparkXShards
     from bigdl.orca import OrcaContext
     columns = df.columns
-    shard_size = OrcaContext._shard_size
 
     import pyspark.sql.functions as F
     import pyspark.sql.types as T
@@ -382,24 +382,17 @@ def spark_df_to_pd_sparkxshards(df):
         if colType == 'vector':
             df = df.withColumn(colName, to_array(colName))
 
-    pd_rdd = df.rdd.mapPartitions(lambda iter: to_pandas(iter, columns, shard_size))
+    shard_size = OrcaContext._shard_size
+    pd_rdd = df.rdd.mapPartitions(to_pandas(df.columns, squeeze, index_col, dtype, index_map,
+                                            batch_size=shard_size))
     spark_xshards = SparkXShards(pd_rdd)
     return spark_xshards
 
 
-def to_pandas(iter, columns, batch_size=None, squeeze=False, index_col=None,
-              dtype=None, index_map=None):
-    import pandas as pd
-    counter = 0
-    data = []
-    for row in iter:
-        counter += 1
-        data.append(row)
-        if batch_size and counter % batch_size == 0:
-            yield pd.DataFrame(data, columns=columns)
-            data = []
-    if data:
-        pd_df = pd.DataFrame(data, columns=columns)
+def to_pandas(columns, squeeze=False, index_col=None, dtype=None, index_map=None,
+              batch_size=None):
+
+    def postprocess(pd_df):
         if dtype is not None:
             if isinstance(dtype, dict):
                 for col, type in dtype.items():
@@ -421,8 +414,26 @@ def to_pandas(iter, columns, batch_size=None, squeeze=False, index_col=None,
             pd_df = pd_df.iloc[:, 0]
         if index_col:
             pd_df = pd_df.set_index(index_col)
+        return pd_df
 
-        yield pd_df
+    def f(iter):
+        import pandas as pd
+        counter = 0
+        data = []
+        for row in iter:
+            counter += 1
+            data.append(row)
+            if batch_size and counter % batch_size == 0:
+                pd_df = pd.DataFrame(data, columns=columns)
+                pd_df = postprocess(pd_df)
+                yield pd_df
+                data = []
+        if data:
+            pd_df = pd.DataFrame(data, columns=columns)
+            pd_df = postprocess(pd_df)
+            yield pd_df
+
+    return f
 
 
 def spark_xshards_to_ray_dataset(spark_xshards):
@@ -434,4 +445,3 @@ def spark_xshards_to_ray_dataset(spark_xshards):
 
     ray_dataset = ray.data.from_pandas_refs(partition_refs)
     return ray_dataset
-
