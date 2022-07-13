@@ -15,7 +15,7 @@ We highly recommend you to use [Anaconda](https://www.anaconda.com/distribution/
 ```
 conda create -n friesian python=3.7 #friesian is conda enviroment name, you can set another name you like.
 conda activate friesian
-pip install bigdl-orca[ray]
+pip install "bigdl-orca[ray]"
 pip install bigdl-friesian
 pip install tensorflow
 ```
@@ -31,7 +31,7 @@ jupyter notebook
 ```
 
 ## Run Demo
-If you don't have [Twitter Recsys Challenge 2021 dataset](https://recsys-twitter.com/data/show-downloads#), please run [`dummy_data_generating.ipynb`](./dummy_data_generating.ipynb) first and modify the file path in following steps.
+If you don't have [Twitter Recsys Challenge 2021 dataset](https://recsys-twitter.com/data/show-downloads#), please run [`dummy_data_generating.py`](./dummy_data_generating.py) first (you can run `python dummy_data_generating.py` to get more infomation) and modify the file path in following steps.
 
 After having a dataset, please run [`feature_engineering.ipynb`](./feature_engineering.ipynb) to process dataset for feature extraction.
 
