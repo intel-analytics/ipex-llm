@@ -1,7 +1,7 @@
 ## Description
 
 <!-- For small changes (<=3 files and <=50 lines of codes in the source folder), -->
-<!-- you may skip Sections 1-3 and just provide a simple description here -->
+<!-- you may remove Sections 1-3 below and just provide a simple description here -->
 
 ### 1. Why the change?
 
