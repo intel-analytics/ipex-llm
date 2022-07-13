@@ -1477,7 +1477,7 @@ class TestTable(TestCase):
     def test_string_embed(self):
         spark = OrcaContext.get_spark_session()
         texts = [("Here is the sentence I want embeddings for.", "haha", 1),
-                 ("After stealing money from the bank vault, the bank robber was seen "\
+                 ("After stealing money from the bank vault, the bank robber was seen "
                  "fishing on the Mississippi river bank.", "how are you", 2),
                  ("hello, how are you", "no so good, had a tough day", 3)]
         df = spark.createDataFrame(texts, schema=["text1", "text2", "id"])
