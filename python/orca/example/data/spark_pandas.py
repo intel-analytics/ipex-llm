@@ -51,4 +51,6 @@ if __name__ == "__main__":
     trans_data_shard = data_shard.transform_shard(process_feature)
     data2 = trans_data_shard.collect()
 
+    trans_data_shard = trans_data_shard.deduplicates()
+    
     stop_orca_context()

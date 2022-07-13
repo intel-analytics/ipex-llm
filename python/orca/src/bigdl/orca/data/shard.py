@@ -408,6 +408,18 @@ class SparkXShards(XShards):
             invalidInputError(False,
                               "Currently only support unique() on XShards of Pandas Series")
 
+    def deduplicates(self):
+        if self._get_class_name() == 'pandas.core.frame.DataFrame':
+            import pandas as pd
+            df = self.to_spark_df()
+            distinctDF = df.distinct()
+            data_shards = SparkXShards.from_spark_df(distinctDF)
+            return data_shards
+        else:
+            # we may support numpy or other types later
+            invalidInputError(False,
+                              "Currently only support dedup() on XShards of Pandas DataFrame")
+
     def split(self):
         """
 
