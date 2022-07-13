@@ -1,5 +1,7 @@
 image: your_ppml_image
 k8sMaster: k8s://https://master_ip:master_port
+jar: your_jar
+class: your_main_class
 pvc: your_pvc
 
 kmsURL: http://your_kms_url:port
