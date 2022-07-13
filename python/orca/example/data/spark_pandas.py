@@ -51,4 +51,8 @@ if __name__ == "__main__":
     trans_data_shard = data_shard.transform_shard(process_feature)
     data2 = trans_data_shard.collect()
 
+    from bigdl.orca.data.transform import *
+    encode = StringIndexer(inputCol="value")
+    encoded_data_shard = encode.fit_transform(trans_data_shard)
+
     stop_orca_context()
