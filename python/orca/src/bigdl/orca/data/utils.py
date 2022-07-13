@@ -370,26 +370,59 @@ def get_size(x):
 
 
 def spark_df_to_pd_sparkxshards(df):
-    def to_pandas(iter, columns, batch_size=None):
-        import pandas as pd
-        counter = 0
-        data = []
-        for row in iter:
-            counter += 1
-            data.append(row)
-            if batch_size and counter % batch_size == 0:
-                yield pd.DataFrame(data, columns=columns)
-                data = []
-        if data:
-            yield pd.DataFrame(data, columns=columns)
-
     from bigdl.orca.data import SparkXShards
     from bigdl.orca import OrcaContext
     columns = df.columns
     shard_size = OrcaContext._shard_size
+
+    import pyspark.sql.functions as F
+    import pyspark.sql.types as T
+    to_array = F.udf(lambda v: v.toArray().tolist(), T.ArrayType(T.FloatType()))
+    for colName, colType in df.dtypes:
+        if colType == 'vector':
+            df = df.withColumn(colName, to_array(colName))
+
     pd_rdd = df.rdd.mapPartitions(lambda iter: to_pandas(iter, columns, shard_size))
     spark_xshards = SparkXShards(pd_rdd)
     return spark_xshards
+
+
+def to_pandas(iter, columns, batch_size=None, squeeze=False, index_col=None,
+              dtype=None, index_map=None):
+    import pandas as pd
+    counter = 0
+    data = []
+    for row in iter:
+        counter += 1
+        data.append(row)
+        if batch_size and counter % batch_size == 0:
+            yield pd.DataFrame(data, columns=columns)
+            data = []
+    if data:
+        pd_df = pd.DataFrame(data, columns=columns)
+        if dtype is not None:
+            if isinstance(dtype, dict):
+                for col, type in dtype.items():
+                    if isinstance(col, str):
+                        if col not in pd_df.columns:
+                            invalidInputError(False,
+                                              "column to be set type is not"
+                                              " in current dataframe")
+                        pd_df[col] = pd_df[col].astype(type)
+                    elif isinstance(col, int):
+                        if index_map[col] not in pd_df.columns:
+                            invalidInputError(False,
+                                              "column index to be set type is not"
+                                              " in current dataframe")
+                        pd_df[index_map[col]] = pd_df[index_map[col]].astype(type)
+            else:
+                pd_df = pd_df.astype(dtype)
+        if squeeze and len(pd_df.columns) == 1:
+            pd_df = pd_df.iloc[:, 0]
+        if index_col:
+            pd_df = pd_df.set_index(index_col)
+
+        yield pd_df
 
 
 def spark_xshards_to_ray_dataset(spark_xshards):
@@ -401,3 +434,4 @@ def spark_xshards_to_ray_dataset(spark_xshards):
 
     ray_dataset = ray.data.from_pandas_refs(partition_refs)
     return ray_dataset
+

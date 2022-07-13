@@ -263,7 +263,10 @@ def read_file_spark(file_path, file_type, **kwargs):
 
             return f
 
-        pd_rdd = df.rdd.mapPartitions(to_pandas(df.columns, squeeze, index_col))
+        from bigdl.orca.data.utils import *
+        pd_rdd = df.rdd.mapPartitions(utils.to_pandas(df.columns, batch_size=None,
+                                                      squeeze=squeeze, index_col=index_col,
+                                                      dtype=dtype, index_map=index_map))
 
     try:
         data_shards = SparkXShards(pd_rdd)
