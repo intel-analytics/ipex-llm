@@ -5,7 +5,7 @@ This example demonstrates how to run a large-scale data recommendation task usin
 ## Environment
 * Apache Hadoop 2.7 or above
 * Python 3.7
-* tensorflow 2.0.0 or above
+* tensorflow 2.9.1
 * Apache Spark 2.4.6(pyspark)
 * ray 1.9.2
 
@@ -19,13 +19,10 @@ pip install "bigdl-orca[ray]"
 pip install bigdl-friesian
 pip install tensorflow
 ```
-If java is not installed, use command `java` to check if java is installed, you can use one of following commnads:  
-1. system's package management system(like apt): `sudo apt-get install openjdk-8-jdk`.  
-2. conda: `conda install openjdk=8.0.152`.
-3. Manual installation: [oracle jdk](https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html).
+If java is not installed, use command `java` to check if java is installed, you can follow [this document](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/python.html#install).
 
 ## Run Jupyter
-If you want to run spark local, just start jupyter notebook:
+You can start jupyter notebook with the follow command:
 ```
 jupyter notebook
 ```
