@@ -67,16 +67,6 @@ class IPEXStrategy(SingleDeviceStrategy):
 
         super().setup(trainer)
 
-    def _setup_lite(self, model: nn.Module, *optimizers: Optimizer) -> Any:
-        """
-        Apply IPEX's optimization, which will be and only be used with LightningLite.
-
-        LightningLite won't call above `setup` method, instead,
-        we use this method to add IPEX's optimization.
-        """
-        # IPEX 1.9 has no need to do anything
-        return model, optimizers
-
     def training_step_end(self, output: _STEP_OUTPUT_TYPE) -> _STEP_OUTPUT_TYPE:
         """
         A hook to do something at the end of the train step.

@@ -17,14 +17,17 @@
 from typing import Any, Optional
 from logging import warning
 
+import torch
 from torch import nn
 from torch import Tensor
 from torch.optim import Optimizer
 import pytorch_lightning.lite as lite
-from pytorch_lightning.lite.wrappers import _LiteModule
+from pytorch_lightning.lite.wrappers import _LiteModule, _LiteOptimizer
 
+from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
-from bigdl.nano.pytorch.strategies import create_IPEXStrategy
+from bigdl.nano.pytorch.strategies.ipex.ipex_api import ipex_optimize
+from bigdl.nano.pytorch.strategies import create_IPEXStrategy, DDPSpawnStrategy
 
 
 class LightningLite(lite.LightningLite):
@@ -38,7 +41,7 @@ class LightningLite(lite.LightningLite):
     def __init__(self, num_processes: int = 1,
                  use_ipex: bool = False,
                  enable_bf16: bool = False,
-                 distributed_backend: str = "subprocess",
+                 strategy: str = "subprocess",
                  *args, **kwargs) -> None:
         """
         Create a LightningLite with nano acceleration.
@@ -46,24 +49,36 @@ class LightningLite(lite.LightningLite):
         :param num_processes: number of processes in distributed training, defaults to 1
         :param use_ipex: whether use ipex acceleration, defaults to False
         :param enable_bf16: whether use bf16 acceleration, defaults to False
-        :param distributed_backend: use which backend in distributed mode, defaults to "subprocess"
+        :param strategy: use which backend in distributed mode, defaults to "subprocess"
         """
-        # Check keyword arguments
-        if "strategy" in kwargs:
-            warning(f"""strategy will be specified by bigdl-nano,
-            strategy entered {kwargs['strategy']} will be ignored.""")
+        # Check arguments
+        invalidInputError(isinstance(strategy, str),
+                          "strategy object will be created by bigdl-nano, "
+                          "you should pass the name of strategy.")
 
+        self.num_processes = num_processes
         self.use_ipex = use_ipex
         self.enable_bf16 = enable_bf16
 
-        strategy = None
-        if num_processes == 1:
-            strategy = create_IPEXStrategy(enable_bf16=self.enable_bf16)
-        else:
+        if self.num_processes == 1:
+            if self.use_ipex:
+                strategy = create_IPEXStrategy(enable_bf16=self.enable_bf16)
+            else:
+                strategy = None     # type: ignore
+        elif strategy == "spawn":
+            strategy = DDPSpawnStrategy(num_processes=self.num_processes,
+                                        use_ipex=self.use_ipex,
+                                        enable_bf16=self.enable_bf16)
+        elif strategy == "subprocess":
             pass
+        elif strategy == "ray":
+            pass
+        else:
+            warning(f"Bigdl-nano doesn't support '{strategy}' strategy now, "
+                    f"'{strategy}' strategy of pytorch_lightning will be used. "
+                    f"Supported strategies are 'spawn', 'subprocess' and 'ray'.")
 
-        kwargs["strategy"] = strategy
-        super().__init__(*args, **kwargs)
+        super().__init__(strategy=strategy, *args, **kwargs)
 
     def setup(
         self,
@@ -91,19 +106,30 @@ class LightningLite(lite.LightningLite):
         :return: The tuple of the wrapped model and list of optimizers,
             in the same order they were passed in.
         """
-        # add IPEX's optimization
-        known_strategies = ["ipex"]
-        if self._strategy is not None and self._strategy.strategy_name in known_strategies:
-            model, optimizers = self._strategy._setup_lite(model, *optimizers)
+        # add IPEX 1.11's optimization
+        if self.use_ipex and not TORCH_VERSION_LESS_1_10:
+            dtype = torch.bfloat16 if self.enable_bf16 else None
+            if len(optimizers) == 0:
+                ipex_optimize(model, inplace=True, dtype=dtype)
+            elif len(optimizers) == 1:
+                ipex_optimize(model, optimizer=optimizers[0], inplace=True, dtype=dtype)
+            else:
+                invalidInputError(False, "Ipex does not support more than one optimizers.")
 
-        return super().setup(model, *optimizers, move_to_device=move_to_device)
+        # the following codes are copied from pl's LightningLite's `setup` method,
+        # ipex 1.9 requires `_move_model_to_device` after `_setup_model_and_optimizers`, but
+        # pl's `setup` method calls `_move_model_to_device` before `_setup_model_and_optimizers`,
+        # so we copy the codes and swap their order.
+        self._validate_setup(model, optimizers)
 
-    def backward(self,
-                 tensor: Tensor,
-                 *args: Any,
-                 model: Optional[_LiteModule] = None,
-                 **kwargs: Any) -> None:
-        """IPEX 1.9 requires moving loss tensor to xpu, we do it here."""
-        if self.use_ipex and TORCH_VERSION_LESS_1_10:
-            tensor = tensor.to(self.device)
-        super().backward(tensor, *args, model=model, **kwargs)
+        model, optimizers = self._strategy._setup_model_and_optimizers(model, list(optimizers))
+        if move_to_device:
+            model = self._move_model_to_device(model=model, optimizers=list(optimizers))
+        model = _LiteModule(model, self._precision_plugin)
+        optimizers = [_LiteOptimizer(optimizer=optimizer, strategy=self._strategy)  # type: ignore
+                      for optimizer in optimizers]
+        self._models_setup += 1
+        if optimizers:
+            # join both types in a list for API convenience
+            return [model] + optimizers  # type: ignore
+        return model

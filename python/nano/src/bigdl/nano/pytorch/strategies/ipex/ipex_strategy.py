@@ -61,26 +61,12 @@ class IPEXStrategy(SingleDeviceStrategy):
 
         :param trainer: the trainer instance
         """
-        self.setup_precision_plugin()
-        self.setup_optimizers(trainer)
+        super().setup(trainer)
 
-        if len(self.optimizers) > 1:    # type: ignore
-            invalidInputError(False, "Ipex does not support more than one optimizers.")
         dtype = torch.bfloat16 if self.enable_bf16 else None
-        model, optimizer = ipex.optimize(self.model, optimizer=self.optimizers[0],  # type: ignore
-                                         inplace=True, dtype=dtype)
-        self.optimizers = [optimizer]
-
-    def _setup_lite(self, model: nn.Module, *optimizers: Optimizer) -> Any:
-        """
-        Apply IPEX's optimization, which will be and only be used with LightningLite.
-
-        LightningLite won't call above `setup` method, instead,
-        we use this method to add IPEX's optimization.
-        """
-        if len(optimizers) > 1:
+        if len(self.optimizers) == 0:
+            ipex.optimize(self.model, inplace=True, dtype=dtype)
+        elif len(self.optimizers) == 1:
+            ipex.optimize(self.model, optimizer=self.optimizers[0], inplace=True, dtype=dtype)
+        else:
             invalidInputError(False, "Ipex does not support more than one optimizers.")
-        dtype = torch.bfloat16 if self.enable_bf16 else None
-        model, optimizer = ipex.optimize(model, optimizer=optimizers[0],
-                                         inplace=True, dtype=dtype)
-        return model, (optimizer,)
