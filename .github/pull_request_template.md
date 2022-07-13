@@ -1,7 +1,7 @@
 ## Description
 
-<!-- For small changes (<=3 files and <=50 lines of codes in the source folder),
-     you may skip Sections 1-3 and just provide a simple description here -->
+<!-- For small changes (<=3 files and <=50 lines of codes in the source folder), -->
+<!-- you may skip Sections 1-3 and just provide a simple description here -->
 
 ### 1. Why the change?
 
@@ -9,8 +9,8 @@
 
 ### 2. Summary of the change
 
-<!-- Provide the design for both API changes and the implementation; 
-     alternatively, provide a link to the github issue link for the design -->
+<!-- Provide the design for both API changes and the implementation; -->
+<!-- alternatively, provide a link to the github issue link for the design -->
 
 ### 3. How to test?
 - [ ] N/A
