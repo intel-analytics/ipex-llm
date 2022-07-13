@@ -14,11 +14,7 @@
 # limitations under the License.
 #
 
-from typing import Any
-
 import torch
-from torch import nn
-from torch.optim import Optimizer
 import pytorch_lightning as pl
 from pytorch_lightning.strategies import SingleDeviceStrategy
 from pytorch_lightning.accelerators.accelerator import Accelerator

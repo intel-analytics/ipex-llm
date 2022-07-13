@@ -63,8 +63,8 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
     def launch(self, function: Callable, *args: Any,
                trainer: Optional["pl.Trainer"] = None, **kwargs: Any) -> Any:
         # pytorch_lightning 1.6 uses this method to create child processes
-        invalidInputError(trainer is not None and self._strategy.cluster_environment is not None,
-                          'strategy.cluster_environment and trainer cannot be None')
+        invalidInputError(self._strategy.cluster_environment is not None,
+                          'strategy.cluster_environment cannot be None')
 
         os.environ["MASTER_PORT"] = str(self._strategy.cluster_environment.main_port)
 
@@ -80,7 +80,7 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
             } for i in range(self._strategy.num_processes)]
 
         # fix bug, see ddp_spawn strategy for details
-        if self._strategy.use_ipex and TORCH_VERSION_LESS_1_10:
+        if self._strategy.use_ipex and TORCH_VERSION_LESS_1_10 and trainer is not None:
             if isinstance(args[1], LightningDataModule):
                 args[1].trainer = None
             elif isinstance(args[3], LightningDataModule):
@@ -119,10 +119,13 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
                 process.wait()
 
             for _, process in enumerate(processes):
-                assert process.returncode == 0, "Subprocess incorrectly exit, \
-                                                check the trainer configure or usage"
+                assert process.returncode == 0, "Subprocess incorrectly exit"
             # restore the state of child process
             spawn_output = return_queue.get()
+            
+            if trainer is None:
+                return spawn_output
+            
             self._recover_results_in_main_process(spawn_output, trainer)
             return spawn_output.trainer_results
 

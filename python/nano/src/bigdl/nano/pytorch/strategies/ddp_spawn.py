@@ -49,8 +49,6 @@ from pytorch_lightning.core.datamodule import LightningDataModule
 from pytorch_lightning.strategies.launchers import _SpawnLauncher
 from pytorch_lightning.strategies import DDPSpawnStrategy as _DDPSpawnStrategy
 from pytorch_lightning.plugins.environments import LightningEnvironment
-from pytorch_lightning.overrides import LightningDistributedModule
-from pytorch_lightning.utilities.optimizer import optimizers_to_device
 from pytorch_lightning.utilities.distributed import ReduceOp
 
 from bigdl.nano.common.cpu_schedule import schedule_processors

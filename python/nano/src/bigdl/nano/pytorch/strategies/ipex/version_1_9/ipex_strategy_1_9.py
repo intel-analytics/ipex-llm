@@ -17,8 +17,6 @@
 from typing import Union, Dict, Any, Optional
 
 import torch
-from torch import nn
-from torch.optim import Optimizer
 import pytorch_lightning as pl
 from pytorch_lightning.accelerators.accelerator import Accelerator
 from pytorch_lightning.plugins.precision import PrecisionPlugin, MixedPrecisionPlugin

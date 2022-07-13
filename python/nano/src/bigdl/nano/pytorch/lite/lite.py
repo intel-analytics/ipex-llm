@@ -27,7 +27,8 @@ from pytorch_lightning.lite.wrappers import _LiteModule, _LiteOptimizer
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 from bigdl.nano.pytorch.strategies.ipex.ipex_api import ipex_optimize
-from bigdl.nano.pytorch.strategies import create_IPEXStrategy, DDPSpawnStrategy
+from bigdl.nano.pytorch.strategies import create_IPEXStrategy, DDPSpawnStrategy, \
+    DDPSubprocessStrategy
 
 
 class LightningLite(lite.LightningLite):
@@ -70,7 +71,9 @@ class LightningLite(lite.LightningLite):
                                         use_ipex=self.use_ipex,
                                         enable_bf16=self.enable_bf16)
         elif strategy == "subprocess":
-            pass
+            strategy = DDPSubprocessStrategy(num_processes=self.num_processes,
+                                             use_ipex=self.use_ipex,
+                                             enable_bf16=self.enable_bf16)
         elif strategy == "ray":
             pass
         else:
