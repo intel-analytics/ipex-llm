@@ -1,3 +1,19 @@
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 import numpy as np
 import pandas as pd
 
@@ -5,6 +21,7 @@ import torch
 from torch import nn
 from bigdl.ppml.fl.estimator import Estimator
 from bigdl.ppml.fl.algorithms.psi import PSI
+from bigdl.ppml.fl.nn.fl_server import FLServer
 
 
 class LocalModel(nn.Module):
@@ -30,12 +47,16 @@ class ServerModel(nn.Module):
 
 
 if __name__ == '__main__':
+    # fl_server = FLServer(2)
+    # fl_server.build()
+    # fl_server.start()
     df_train = pd.read_csv('./python/ppml/example/pytorch_nn_lr/data/diabetes-vfl-1.csv')    
     
-    df_train['ID'] = df_train['ID'].astype(str)
-    psi = PSI()
-    intersection = psi.get_intersection(list(df_train['ID']))
-    df_train = df_train[df_train['ID'].isin(intersection)]
+    # this should wait for the merge of 2 FLServer (Py4J Java gRPC and Python gRPC)
+    # df_train['ID'] = df_train['ID'].astype(str)
+    # psi = PSI()
+    # intersection = psi.get_intersection(list(df_train['ID']))
+    # df_train = df_train[df_train['ID'].isin(intersection)]
 
     df_x = df_train.drop('Outcome', 1)
     df_y = df_train['Outcome']
@@ -55,3 +76,4 @@ if __name__ == '__main__':
                                server_model=server_model)
     response = ppl.fit(x, y)
     result = ppl.predict(x)
+    print(result[:5])

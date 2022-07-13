@@ -33,15 +33,10 @@ from bigdl.ppml.fl.estimator import Estimator
 ### 2.2 Private Set Intersection
 Then, read the data,
 
-Party 1:
 ```python
-df_train = pd.read_csv('pytorch_nn_lr/data/diabetes-vfl-1.csv')
+df_train = pd.read_csv(data_path)
 ```
 
-Party 2:
-```python
-df_train = pd.read_csv('pytorch_nn_lr/data/diabetes-vfl-2.csv')
-```
 
 To get the data intersection which the 2 parties can do federated learning, we have to the Private Set Intersection (PSI) algorithm first.
 ```python
@@ -54,7 +49,7 @@ df_train = df_train[df_train['ID'].isin(intersection)] # select the intersection
 ### 2.3 Data Preprocessing
 Since one party owns label data while another not, different operations should be done before training.
 
-Party 1:
+For example, in party 1:
 ```python
 df_x = df_train.drop('Outcome', 1)
 df_y = df_train['Outcome']
@@ -62,12 +57,7 @@ df_y = df_train['Outcome']
 x = df_x.to_numpy(dtype="float32")
 y = np.expand_dims(df_y.to_numpy(dtype="float32"), axis=1)
 ```
-Party 2:
-```
-df_x = df_train
-x = df_x.to_numpy(dtype="float32")
-y = None
-```
+
 
 ### 2.4 Create Model
 We create the following model for both clients, but with different number of inputs 
@@ -102,26 +92,19 @@ server_model = ServerModel()
 ### 2.5 Create Estimator
 Then, create Estimator and pass the arguments
 
-Party 1:
 ```python
 ppl = Estimator.from_torch(client_model=model,
-                           client_id='1',
+                           client_id=client_id,
                            loss_fn=loss_fn,
                            optimizer_cls=torch.optim.SGD,
                            optimizer_args={'lr':1e-3},
                            target='localhost:8980',
                            server_model=server_model)
-```
-Party 2:
+                           # if you want to upload server model from this estimator, pass server_model
+                           # otherwise, ignore this argument
 
-```python
-ppl = Estimator.from_torch(client_model=model,
-                           client_id='2',
-                           loss_fn=loss_fn,
-                           optimizer_cls=torch.optim.SGD,
-                           optimizer_args={'lr':1e-3},
-                           target='localhost:8980')
 ```
+
 ### 2.6 Training
 Then call `fit` method to train
 
