@@ -22,9 +22,6 @@ import faiss
 import sys
 import random
 import argparse
-from bigdl.orca import init_orca_context, OrcaContext, stop_orca_context
-from pyspark.sql.types import Row
-from pyspark.sql.types import StructType, StructField, IntegerType, ArrayType, FloatType
 
 
 def create_dummy_data(row_nums, vec_dim, verbose, rnd_seed=42, HEADER_LEN=8, only_item=False):
@@ -69,6 +66,10 @@ def gen_vector(x, vec_dim):
 
 
 def generate_data(args):
+    from bigdl.orca import init_orca_context, OrcaContext, stop_orca_context
+    from pyspark.sql.types import Row
+    from pyspark.sql.types import StructType, StructField, IntegerType, ArrayType, FloatType
+
     print("create emb_vecs and item_dict data >>>>>>")
     if args.use_spark:
         print('>>>>>> using spark >>>>>>')
@@ -92,7 +93,7 @@ def generate_data(args):
         item_dict = create_dummy_data(args.row_nums, args.vec_dim, args.verbose, rnd_seed=42,
                                       HEADER_LEN=args.header_len, only_item=True)
     else:
-        emb_vecs, item_dict = create_dummy_data(args.row_num, args.vec_dim,
+        emb_vecs, item_dict = create_dummy_data(args.row_nums, args.vec_dim,
                                                 args.verbose, rnd_seed=42,
                                                 HEADER_LEN=args.header_len)
     print("create index for faiss >>>>>>")
@@ -175,8 +176,8 @@ if __name__ == '__main__':
 
     parser.add_argument('--verbose', type=bool, default=True,
                         help='whether print more detail information')
-    parser.add_argument('--use_spark', type=bool, default=True,
-                        help='whether to use spark to generate vector embeddings')
+    parser.add_argument('--use_spark', action='store_true',
+                        help='Use spark to generate vector embeddings')
 
     parser.add_argument('--emb_path', type=str, default='./emb_vecs.pkl',
                         help='the path to save vector embeddings')

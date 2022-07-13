@@ -101,7 +101,8 @@ def search(args):
 
         args.faiss_index_path = args.faiss_index_path.split('/')[-1]
         args.dict_path = args.dict_path.split('/')[-1]
-
+    elif args.cluster_mode == "spark-submit":
+        sc = init_orca_context("spark-submit")
     elif args.cluster_mode == "local":
         sc = init_orca_context("local", cores=8)
         num_executors = 4
@@ -136,7 +137,7 @@ if __name__ == '__main__':
     parser.add_argument('--num_threads', type=int, default=8,
                         help='Set the environment variable OMP_NUM_THREADS for each faiss task')
     parser.add_argument('--cluster_mode', type=str, default='yarn',
-                        help='The cluster mode, such as local, yarn')
+                        help='The cluster mode, such as local, yarn or spark-submit')
 
     parser.add_argument('--dict_path', type=str, default='./item_dict.pkl',
                         help='Path to item_dict.pkl')
