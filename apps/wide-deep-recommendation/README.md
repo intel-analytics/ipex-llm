@@ -19,7 +19,7 @@ pip install "bigdl-orca[ray]"
 pip install bigdl-friesian
 pip install tensorflow
 ```
-If java is not installed, use command `java` to check if java is installed, you can follow [this document](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/python.html#install).
+If java is not installed, you can follow [this document](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/python.html#install).
 
 ## Run Jupyter
 You can start jupyter notebook with the follow command:
