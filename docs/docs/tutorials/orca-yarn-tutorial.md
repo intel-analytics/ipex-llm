@@ -312,8 +312,8 @@ In the `bigdl-submit` script:
 * `--driver-memory`: set the memory for the driver node;
 * `--executor-cores`: set the cores number for each executor;
 * `--num_executors`: set the number of executors;
-* `--archives`: upload the Conda archive to YARN;
 * `--py-files`: upload extra Python dependency files to YARN;
+* `--archives`: upload the Conda archive to YARN;
 * `--conf spark.pyspark.driver.python`: set the activate Python location on __Client Node__ as driver's Python environment;
 * `--conf spark.pyspark.python`: set the Python location in Conda archive as executors' Python environment;
 * `--cluster_mode`: set the cluster_mode in `init_orca_context`.
@@ -327,16 +327,16 @@ __Note:__
 Submit and run the program on `yarn-cluster` mode following `bigdl-submit` script below: 
 ```bash
 bigdl-submit \
-    --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=environment/bin/python \
-    --conf spark.executorEnv.PYSPARK_PYTHON=environment/bin/python \
     --master yarn \
     --deploy-mode cluster \
     --executor-memory 10g \
     --driver-memory 10g \
     --executor-cores 8 \
     --num-executors 2 \
-    --archives /path/to/environment.tar.gz#environment \
     --py-files /path/to/model.py \
+    --archives /path/to/environment.tar.gz#environment \
+    --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=environment/bin/python \
+    --conf spark.executorEnv.PYSPARK_PYTHON=environment/bin/python \
     train.py --cluster_mode bigdl-submit --remote_dir hdfs://url:port/path/to/remote/data
 ```
 In the `bigdl-submit` script:
@@ -346,10 +346,10 @@ In the `bigdl-submit` script:
 * `--driver-memory`: set the memory for the driver node;
 * `--executor-cores`: set the cores number for each executor;
 * `--num_executors`: set the number of executors;
+* `--py-files`: upload extra Python dependency files to YARN;
 * `--archives`: upload the Conda archive to YARN;
 * `--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON`: set the Python location in Conda archive as Python environment of Application Master process;
 * `--conf spark.executorEnv.PYSPARK_PYTHON`: set the Python location in Conda archive as Python environment of executors.
-* `--py-files`: upload extra Python dependency files to YARN;
 * `--cluster_mode`: set the cluster_mode in `init_orca_context`;
 * `--remote_dir`: load dataset and save model directory on a distributed storage.
 
@@ -393,12 +393,6 @@ When the __Client Node__ (where you submit applications) is not able to install 
 Submit and run the program on `yarn-client` mode following `spark-submit` script below: 
 ```bash
 ${SPARK_HOME}/bin/spark-submit \
-    --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
-    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,/path/to/model.py \
-    --conf spark.pyspark.driver.python=/path/to/python \
-    --conf spark.pyspark.python=environment/bin/python \
-    --conf spark.driver.extraClassPath=${BIGDL_HOME}/jars/* \
-    --conf spark.executor.extraClassPath=${BIGDL_HOME}/jars/* \
     --master yarn \
     --deploy-mode client \
     --executor-memory 10g \
@@ -406,6 +400,12 @@ ${SPARK_HOME}/bin/spark-submit \
     --executor-cores 8 \
     --num-executors 2 \
     --archives /path/to/environment.tar.gz#environment \
+    --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
+    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,/path/to/model.py \
+    --conf spark.pyspark.driver.python=/path/to/python \
+    --conf spark.pyspark.python=environment/bin/python \
+    --conf spark.driver.extraClassPath=${BIGDL_HOME}/jars/* \
+    --conf spark.executor.extraClassPath=${BIGDL_HOME}/jars/* \
     train.py --cluster_mode spark-submit --remote_dir hdfs://url:port/path/to/remote/data
 ```
 In the `spark-submit` script:
@@ -438,17 +438,17 @@ __Note:__
 Submit and run the program on `yarn-cluster` mode following `spark-submit` script below:
 ```bash
 ${SPARK_HOME}/bin/spark-submit \
-    --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=environment/bin/python \
-    --conf spark.executorEnv.PYSPARK_PYTHON=environment/bin/python \
-    --archives /path/to/environment.tar.gz#environment \
-    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,/path/to/model.py \
-    --jars ${BIGDL_HOME}/bigdl-dllib-spark_${SPAKR_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar,${BIGDL_HOME}/bigdl-orca-spark_${SPAKR_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
     --master yarn \
     --deploy-mode cluster \
     --executor-memory 10g \
     --driver-memory 10g \
     --executor-cores 4 \
     --num-executors 2 \
+    --archives /path/to/environment.tar.gz#environment \
+    --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=environment/bin/python \
+    --conf spark.executorEnv.PYSPARK_PYTHON=environment/bin/python \
+    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,/path/to/model.py \
+    --jars ${BIGDL_HOME}/bigdl-dllib-spark_${SPAKR_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar,${BIGDL_HOME}/bigdl-orca-spark_${SPAKR_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
     train.py --cluster_mode spark-submit --remote_dir hdfs://url:port/path/to/remote/data
 ```
 In the `spark-submit` script:
@@ -458,9 +458,9 @@ In the `spark-submit` script:
 * `--driver-memory`: set the memory for the driver node;
 * `--executor-cores`: set the cores number for each executor;
 * `--num_executors`: set the number of executors;
+* `--archives`: upload the Conda archive to YARN;
 * `--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON`: set the Python location in Conda archive as Python environment of Application Master process; 
 * `--conf spark.executorEnv.PYSPARK_PYTHON`: set the Python location in Conda archive as  executors' Python environment;
-* `--archives`: upload the Conda archive to YARN;
 * `--py-files`: upload extra Python dependency files to YARN;
 * `--jars`: upload and register BigDL dependency jars files to YARN;
 * `--cluster_mode`: set the cluster_mode in `init_orca_context`;
