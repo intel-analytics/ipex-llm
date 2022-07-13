@@ -118,6 +118,7 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
         cpu_for_each_process: Optional[List[List[int]]] = None,
         use_ipex=False,
         enable_bf16=False,
+        scale_lr=False
     ):
         """Create a DDPSpawnPlugin, adding a cpu_for_each_process parameter."""
         device = ipex_device() if use_ipex and TORCH_VERSION_LESS_1_10 else 'cpu'
@@ -130,6 +131,7 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
         self.is_distributed = True
         self.use_ipex = use_ipex
         self.enable_bf16 = enable_bf16
+        self.scale_lr = scale_lr
 
     @property
     def mp_spawn_kwargs(self):
@@ -139,6 +141,10 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
             "nprocs": self.num_processes,
             "cpu_procs": self.cpu_for_each_process
         }
+
+    def pre_dispatch(self):
+        if self.scale_lr:
+            self.scale_learning_rate()
 
     def start_training(self, trainer):
         """Setup start_training hook for the plugin."""
@@ -228,3 +234,13 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
             **self._ddp_kwargs,
         )
         self._register_ddp_hooks()
+
+    def scale_learning_rate(self):
+        optimizers = self.lightning_module.trainer.optimizers
+        for optimizer in optimizers:
+            for param_group in optimizer.param_groups:
+                param_group["lr"] *= self.world_size
+        lr_schedulers = self.lightning_module.trainer.lr_schedulers
+        for lr_scheduler in lr_schedulers:
+            scheduler = lr_scheduler["scheduler"]
+            scheduler.base_lrs = [lr * self.world_size for lr in scheduler.base_lrs]
