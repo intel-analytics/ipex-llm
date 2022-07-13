@@ -178,12 +178,17 @@ The example depends on few Python files, you could upload them to YARN on __Clie
     init_orca_context(cluster_mode, cores, memory, num_nodes,
                       extra_python_lib="/path/to/model.py")
     ```
+
+    Please see more details in [OrcaContext Python Dependencies](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/orca-context.html#python-dependencies).
+
 * When using `bigdl-submit` or `spark-submit` script, please specify `--py-files` option.
     ```bash
     --py-files /path/to/model.py
     ```
 
-## Optional (Using Zipped Packages)
+    Please see more details in [Spark Submitting Applications](https://spark.apache.org/docs/latest/submitting-applications.html). 
+
+## Optional (Use Zipped Packages)
 If your program depends on a nested directory of Python files, you could package them into a zipped packages on the __Client Node__ (where you submit applications) instead. 
 
 For example, `example` is the nested directory including `model.py` needed for this program.
@@ -303,8 +308,12 @@ bigdl-submit \
 In the `bigdl-submit` script:
 * `--master`: the spark master, set it to yarn;
 * `--deploy-mode`: set it to client when running programs on yarn-client mode;
+* `--executor-memory`: set the memory for each executor;
+* `--driver-memory`: set the memory for the driver node;
+* `--executor-cores`: set the cores number for each executor;
+* `--num_executors`: set the number of executors;
 * `--archives`: upload the Conda archive to YARN;
-* `--py-files`: upload the needed extra Python dependency files to YARN;
+* `--py-files`: upload extra Python dependency files to YARN;
 * `--conf spark.pyspark.driver.python`: set the activate Python location on __Client Node__ as driver's Python environment;
 * `--conf spark.pyspark.python`: set the Python location in Conda archive as executors' Python environment;
 * `--cluster_mode`: set the cluster_mode in `init_orca_context`.
@@ -331,12 +340,16 @@ bigdl-submit \
     train.py --cluster_mode bigdl-submit --remote_dir hdfs://url:port/path/to/remote/data
 ```
 In the `bigdl-submit` script:
-* `--master`: the spark master, set it to yarn;
-* `--deploy-mode`: set it to cluster when running programs on yarn-cluster mode;
+* `--master`: the spark master, set it to `yarn`;
+* `--deploy-mode`: set it to `cluster` when running programs on yarn-cluster mode;
+* `--executor-memory`: set the memory for each executor;
+* `--driver-memory`: set the memory for the driver node;
+* `--executor-cores`: set the cores number for each executor;
+* `--num_executors`: set the number of executors;
 * `--archives`: upload the Conda archive to YARN;
 * `--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON`: set the Python location in Conda archive as Python environment of Application Master process;
 * `--conf spark.executorEnv.PYSPARK_PYTHON`: set the Python location in Conda archive as Python environment of executors.
-* `--py-files`: upload needed extra Python dependency files to YARN;
+* `--py-files`: upload extra Python dependency files to YARN;
 * `--cluster_mode`: set the cluster_mode in `init_orca_context`;
 * `--remote_dir`: load dataset and save model directory on a distributed storage.
 
@@ -396,15 +409,19 @@ ${SPARK_HOME}/bin/spark-submit \
     train.py --cluster_mode spark-submit --remote_dir hdfs://url:port/path/to/remote/data
 ```
 In the `spark-submit` script:
-* `--master`: the spark master, set it to yarn;
-* `--deploy-mode`: set it to client when running programs on yarn-client mode;
+* `--master`: the spark master, set it to `yarn`;
+* `--deploy-mode`: set it to `client` when running programs on yarn-client mode;
+* `--executor-memory`: set the memory for each executor;
+* `--driver-memory`: set the memory for the driver node;
+* `--executor-cores`: set the cores number for each executor;
+* `--num_executors`: set the number of executors;
 * `--archives`: upload the Conda archive to YARN;
 * `--properties-file`: upload the BigDL configuration properties to YARN;
-* `--py-files`: upload needed extra Python dependency files to YARN;
+* `--py-files`: upload extra Python dependency files to YARN;
 * `--conf spark.pyspark.driver.python`: set the Python location in Conda archive as driver's Python environment;
 * `--conf spark.pyspark.python`: set the Python location in Conda archive as executors' Python environment;
-* `--conf spark.driver.extraClassPath`: load and register the BigDL jars files to the driver's classpath;
-* `--conf spark.executor.extraClassPath`: load and register the BigDL jars files to the executors' classpath;
+* `--conf spark.driver.extraClassPath`: upload and register the BigDL jars files to the driver's classpath;
+* `--conf spark.executor.extraClassPath`: upload and register the BigDL jars files to the executors' classpath;
 * `--cluster_mode`: set the cluster_mode in `init_orca_context`;
 * `--remote_dir`: load dataset and save model directory on a distributed storage.
 
@@ -435,13 +452,17 @@ ${SPARK_HOME}/bin/spark-submit \
     train.py --cluster_mode spark-submit --remote_dir hdfs://url:port/path/to/remote/data
 ```
 In the `spark-submit` script:
-* `--master`: the spark master, set it to yarn;
-* `--deploy-mode`: set it to cluster when running programs on yarn-cluster mode;
+* `--master`: the spark master, set it to `yarn`;
+* `--deploy-mode`: set it to `cluster` when running programs on yarn-cluster mode;
+* `--executor-memory`: set the memory for each executor;
+* `--driver-memory`: set the memory for the driver node;
+* `--executor-cores`: set the cores number for each executor;
+* `--num_executors`: set the number of executors;
 * `--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON`: set the Python location in Conda archive as Python environment of Application Master process; 
 * `--conf spark.executorEnv.PYSPARK_PYTHON`: set the Python location in Conda archive as  executors' Python environment;
 * `--archives`: upload the Conda archive to YARN;
-* `--py-files`: upload needed extra Python dependency files to YARN;
-* `--jars`: register and distribute BigDL dependency jars files;
+* `--py-files`: upload extra Python dependency files to YARN;
+* `--jars`: upload and register BigDL dependency jars files to YARN;
 * `--cluster_mode`: set the cluster_mode in `init_orca_context`;
 * `--remote_dir`: load dataset and save model directory on a distributed storage.
 
