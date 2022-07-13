@@ -156,7 +156,7 @@ class LSTMForecaster(BasePytorchForecaster):
                the 'TSDataset.roll' method or 'TSDataset.to_torch_data_loader'.
         :param kwargs: Specify parameters of Forecaster,
                e.g. loss and optimizer, etc. More info, please refer to
-               LSTMForecaster.__init__ method.
+               LSTMForecaster.__init__ methods.
 
         :return: A LSTM Forecaster Model.
         '''

@@ -1023,6 +1023,7 @@ class BasePytorchForecaster(Forecaster):
                the 'TSDataset.roll' method.
         :param kwargs: Specify parameters of Forecaster,
                e.g. loss and optimizer, etc.
+               More info, please refer to Forecaster.__init__ methods.
 
         :return: A Forecaster Model.
         """

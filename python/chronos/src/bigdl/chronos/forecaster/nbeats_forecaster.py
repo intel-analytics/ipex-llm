@@ -28,7 +28,7 @@ class NBeatsForecaster(BasePytorchForecaster):
                                          stack_types=("generic", "generic"),
                                          ...)
         >>>
-        >>> # 2. The from_dataset method can also initialize a NBeatForecaster.
+        >>> # 2. The from_tsdataset method can also initialize a NBeatForecaster.
         >>> forecaster.from_tsdataset(tsdata, **kwargs)
         >>> forecaster.fit(tsdata)
         >>> forecaster.to_local() # if you set distributed=True
@@ -180,7 +180,8 @@ class NBeatsForecaster(BasePytorchForecaster):
                Do not specify the 'future_seq_len' if your tsdataset has called
                the 'TSDataset.roll' method.
         :param kwargs: Specify parameters of Forecaster,
-               e.g. loss and optimizer, etc.
+               e.g. loss and optimizer, etc. More info, 
+               please refer to NbeatsForecaster.__init__ methods.
 
         :return: A Nbeats Forecaster Model.
         """
