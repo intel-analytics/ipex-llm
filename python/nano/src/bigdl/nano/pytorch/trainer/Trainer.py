@@ -28,6 +28,7 @@ from torch.optim.lr_scheduler import _LRScheduler
 import yaml
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11, \
     LIGHTNING_VERSION_LESS_1_6
+from bigdl.nano.pytorch.utils import ChannelsLastCallback
 from bigdl.nano.pytorch.amp import BF16Model
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
@@ -60,6 +61,7 @@ class Trainer(pl.Trainer):
                  distributed_backend="subprocess",
                  cpu_for_each_process: Optional[List[List[int]]] = None,
                  use_hpo=False,
+                 channels_last: bool = False,
                  *args: Any, **kwargs: Any) -> None:
         """
         A pytorch lightning trainer that uses bigdl-nano optimization.
@@ -94,6 +96,13 @@ class Trainer(pl.Trainer):
             self.hposearcher = None
 
         accelerator = None
+
+        if channels_last:
+            callbacks = kwargs.get("callbacks")
+            if callbacks:
+                callbacks.append(ChannelsLastCallback())
+            else:
+                kwargs["callbacks"] = [ChannelsLastCallback()]
 
         if TORCH_VERSION_LESS_1_11 and use_ipex and not check_avx512():
             warning("Enable ipex<=1.10 in a cpu instruction set"

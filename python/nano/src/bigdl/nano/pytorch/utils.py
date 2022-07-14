@@ -15,10 +15,42 @@
 #
 
 import operator
-from bigdl.nano.common.compare_version import _compare_version
+from pytorch_lightning.utilities.imports import _compare_version
+from types import MethodType
+import pytorch_lightning as pl
+from typing import Optional
+import torch
 
 TORCH_VERSION_LESS_1_10 = _compare_version("torch", operator.lt, "1.10")
 TORCH_VERSION_LESS_1_11 = _compare_version("torch", operator.lt, "1.11")
 TORCH_VERSION_LESS_1_12 = _compare_version("torch", operator.lt, "1.12")
 
 LIGHTNING_VERSION_LESS_1_6 = _compare_version("pytorch_lightning", operator.lt, "1.6")
+
+def wrap_data_fuction(model: pl.LightningModule):
+    if not getattr(model, "on_before_batch_transfer_wrapped", None):
+        fn = getattr(model, "on_before_batch_transfer")
+        def on_before_batch_transfer(self, batch, dataloader_idx):
+            if isinstance(batch, torch.Tensor) and batch.dim() == 4:
+                batch = fn(batch, dataloader_idx)
+                batch = batch.to(memory_format=torch.channels_last)
+            elif isinstance(batch, list) or isinstance(batch, tuple):
+                batch = list(batch)
+                for index, t in enumerate(batch):
+                    batch[index] = on_before_batch_transfer(self, t, dataloader_idx)
+            return batch
+        setattr(model, "on_before_batch_transfer_wrapped", fn)
+        model.on_before_batch_transfer = MethodType(on_before_batch_transfer, model)
+    else:
+        setattr(model, "on_before_batch_transfer", model.on_before_batch_transfer_wrapped)
+        delattr(model, "on_before_batch_transfer_wrapped")
+
+
+class ChannelsLastCallback(pl.Callback):
+    def setup(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule", stage: Optional[str] = None) -> None:
+        wrap_data_fuction(pl_module)
+        trainer.model = trainer.model.to(memory_format=torch.channels_last)
+        return super().setup(trainer, pl_module, stage)
+    def teardown(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule", stage: Optional[str] = None) -> None:
+        wrap_data_fuction(pl_module)
+        return super().teardown(trainer, pl_module, stage)
