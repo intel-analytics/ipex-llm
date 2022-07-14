@@ -48,6 +48,9 @@ class TestPPMLContext(unittest.TestCase):
 
         cls.sc = PPMLContext("testApp", args)
 
+        data = [("Java", "20000"), ("Python", "100000"), ("Scala", "3000")]
+        cls.df = cls.sc.spark.createDataFrame(data).toDF("language", "user")
+
     @classmethod
     def tearDownClass(cls) -> None:
         if os.path.exists(resource_path):
@@ -57,6 +60,16 @@ class TestPPMLContext(unittest.TestCase):
         print("**************** TEST DEBUG ******************")
         print(self.sc.spark.sparkContext.getConf().getAll())
 
+        self.sc.write(self.df, CryptoMode.AES_CBC_PKCS5PADDING) \
+            .mode('overwrite') \
+            .option("header", True) \
+            .csv(os.path.join(resource_path, "output/encrypt"))
+
+        df = self.sc.read(CryptoMode.AES_CBC_PKCS5PADDING) \
+            .option("header", "true") \
+            .csv(os.path.join(resource_path, "output/encrypt"))
+
+        df.show()
 
 
 if __name__ == "__main__":
