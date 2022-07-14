@@ -40,8 +40,8 @@ class TestPPMLContext(unittest.TestCase):
             os.mkdir(resource_path)
 
         args = {"kms_type": "SimpleKeyManagementService",
-                "simple_app_id": "429738913832",
-                "simple_app_key": "273066367938",
+                "simple_app_id": "465227134889",
+                "simple_app_key": "799072978028",
                 "primary_key_path": "/home/zehuan/test/keys/primaryKey",
                 "data_key_path": "/home/zehuan/test/keys/dataKey"
                 }
