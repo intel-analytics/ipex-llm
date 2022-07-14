@@ -37,6 +37,6 @@ entrypoint: >
         --num-executors {{ .Values.executorInstances }}
         --conf spark.kubernetes.container.image={{ .Values.image }}
         --class {{ .Values.class }}
-        --name spark-pi-sgx {{ .Values.name }}
+        --name {{ .Values.name }}
         --verbose
         local://{{ .Values.jar }} 500
