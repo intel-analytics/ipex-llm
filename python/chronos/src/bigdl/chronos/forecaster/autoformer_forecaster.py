@@ -49,6 +49,7 @@ class AutoformerForecaster(Forecaster):
                  optimizer="Adam",
                  loss="mse",
                  lr=0.0001,
+                 lr_scheduler_milestones=[3, 4, 5, 6, 7, 8, 9, 10],
                  metrics=["mse"],
                  seed=None,
                  distributed=False,
@@ -125,7 +126,8 @@ class AutoformerForecaster(Forecaster):
         }
         self.optim_config = {
             "lr": lr,
-            "optim": optimizer
+            "optim": optimizer,
+            "lr_scheduler_milestones": lr_scheduler_milestones,
         }
 
         self.model_config.update(self.loss_config)
