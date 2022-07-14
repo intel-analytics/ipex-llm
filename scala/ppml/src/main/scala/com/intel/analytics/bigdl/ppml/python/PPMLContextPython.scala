@@ -24,9 +24,9 @@ import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, DataFrameWriter, Row, SparkSession}
 import org.slf4j.{Logger, LoggerFactory}
-import scala.collection.JavaConverters._
 
-import java.io.File
+import scala.collection.JavaConverters._
+import java.io.{File, FileWriter}
 import java.util
 
 object PPMLContextPython {
@@ -57,6 +57,12 @@ class PPMLContextPython[T]() {
     confs.asScala.foreach(conf => sparkConf.set(conf.get(0), conf.get(1)))
 
     PPMLContext.initPPMLContext(sparkConf, appName, args)
+  }
+
+  def createPPMLContext(sparkSession: SparkSession): PPMLContext = {
+    log("createPPMLContext with SparkSession", "confs: \n"
+      + sparkSession.sparkContext.getConf.getAll.mkString("Array(", ", ", ")"))
+    PPMLContext.initPPMLContext(sparkSession)
   }
 
   def read(sc: PPMLContext, cryptoModeStr: String): EncryptedDataFrameReader = {
@@ -181,6 +187,14 @@ class PPMLContextPython[T]() {
     val encrypt = new BigDLEncrypt()
     encrypt.init(AES_CBC_PKCS5PADDING, ENCRYPT, dataKeyPlaintext)
     encrypt.doFinal(input, output)
+  }
+
+  def log(method: String, message: String): Unit = {
+    val fileName = "/home/zehuan/tmpLog/trace.txt"
+    val fw = new FileWriter(fileName, true)
+    fw.write("********** call method " + method + "*************\n")
+    fw.write(message + "\n\n")
+    fw.close()
   }
 
 }

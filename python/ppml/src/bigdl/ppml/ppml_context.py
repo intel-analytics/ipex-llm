@@ -18,17 +18,31 @@ from bigdl.ppml.api import *
 from bigdl.ppml.utils.log4Error import *
 from enum import Enum
 
+from pyspark import SparkConf
+from pyspark.sql import SparkSession
+
 
 class PPMLContext(JavaValue):
-    def __init__(self, app_name, ppml_args=None, spark_conf=None):
+    def __init__(self, app_name, ppml_args=None):
         self.bigdl_type = "float"
-        args = [app_name]
-        if ppml_args:
-            args.append(ppml_args)
-            if spark_conf:
-                args.append(spark_conf.getAll())
+
+        spark_conf = SparkConf()
+        spark_conf.setAppName(app_name) \
+            .set("spark.hadoop.io.compression.codecs",
+                 "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")\
+            .set("spark.bigdl.kms.type", ppml_args["kms_type"])\
+            .set("spark.bigdl.kms.simple.id", ppml_args["simple_app_id"])\
+            .set("spark.bigdl.kms.simple.key", ppml_args["simple_app_key"])\
+            .set("spark.bigdl.kms.key.primary", ppml_args["primary_key_path"])\
+            .set("spark.bigdl.kms.key.data", ppml_args["data_key_path"])
+        sc = init_nncontext(conf=spark_conf)
+
+        self.spark = SparkSession.builder.getOrCreate()
+        args = [self.spark._jsparkSession]
+        print("**************** DEBUG ********************")
+        print(self.spark.sparkContext.getConf().getAll())
         super().__init__(None, self.bigdl_type, *args)
-        self.sparkSession = callBigDlFunc(self.bigdl_type, "getSparkSession", self.value)
+        # self.sparkSession = callBigDlFunc(self.bigdl_type, "getSparkSession", self.value)
 
     def load_keys(self, primary_key_path, data_key_path):
         callBigDlFunc(self.bigdl_type, "loadKeys", self.value, primary_key_path, data_key_path)
@@ -82,8 +96,8 @@ class EncryptedDataFrameWriter:
 
     def mode(self, mode):
         invalidInputError(mode in EncryptedDataFrameWriter.support_mode,
-                              "Unknown save mode: " + mode + "." +
-                              "Accepted save modes are 'overwrite', 'append', 'ignore', 'error', 'errorifexists'.")
+                          "Unknown save mode: " + mode + "." +
+                          "Accepted save modes are 'overwrite', 'append', 'ignore', 'error', 'errorifexists'.")
         self.df_writer = callBigDlFunc(self.bigdl_type, "mode", self.df_writer, mode)
         return self
 
