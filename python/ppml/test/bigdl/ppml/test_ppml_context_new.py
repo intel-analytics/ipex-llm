@@ -135,14 +135,24 @@ class TestPPMLContext(unittest.TestCase):
         self.assertEqual(content, self.data_content)
 
     def test_plain_text_file(self):
-        path = os.path.join(resource_path, "csv/plain/*.csv")
+        path = os.path.join(resource_path, "csv/plain")
+        self.sc.write(self.df, CryptoMode.PLAIN_TEXT) \
+            .mode('overwrite') \
+            .option("header", True) \
+            .csv(path)
+
         rdd = self.sc.textfile(path)
         rdd_content = '\n'.join([line for line in rdd.collect()])
 
         self.assertEqual(rdd_content, "language,user\n" + self.data_content)
 
     def test_encrypted_text_file(self):
-        path = os.path.join(resource_path, "csv/encrypted/*.cbc")
+        path = os.path.join(resource_path, "csv/encrypted")
+        self.sc.write(self.df, CryptoMode.AES_CBC_PKCS5PADDING) \
+            .mode('overwrite') \
+            .option("header", True) \
+            .csv(path)
+
         rdd = self.sc.textfile(path=path, crypto_mode=CryptoMode.AES_CBC_PKCS5PADDING)
         rdd_content = '\n'.join([line for line in rdd.collect()])
         self.assertEqual(rdd_content, "language,user\n" + self.data_content)
