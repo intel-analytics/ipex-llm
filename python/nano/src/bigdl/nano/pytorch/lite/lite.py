@@ -28,7 +28,7 @@ from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 from bigdl.nano.pytorch.strategies.ipex.ipex_api import ipex_optimize
 from bigdl.nano.pytorch.strategies import create_IPEXStrategy, DDPSpawnStrategy, \
-    DDPSubprocessStrategy
+    DDPSubprocessStrategy, RayStrategy
 
 
 class LightningLite(lite.LightningLite):
@@ -75,7 +75,9 @@ class LightningLite(lite.LightningLite):
                                              use_ipex=self.use_ipex,
                                              enable_bf16=self.enable_bf16)
         elif strategy == "ray":
-            pass
+            strategy = RayStrategy(num_workers=self.num_processes,
+                                   use_ipex=self.use_ipex,
+                                   enable_bf16=self.enable_bf16)
         else:
             warning(f"Bigdl-nano doesn't support '{strategy}' strategy now, "
                     f"'{strategy}' strategy of pytorch_lightning will be used. "

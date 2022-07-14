@@ -122,10 +122,10 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
                 assert process.returncode == 0, "Subprocess incorrectly exit"
             # restore the state of child process
             spawn_output = return_queue.get()
-            
+
             if trainer is None:
                 return spawn_output
-            
+
             self._recover_results_in_main_process(spawn_output, trainer)
             return spawn_output.trainer_results
 
