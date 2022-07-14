@@ -117,9 +117,9 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
 
             for _, process in enumerate(processes):
                 process.wait()
-
             for _, process in enumerate(processes):
-                assert process.returncode == 0, "Subprocess incorrectly exit"
+                invalidInputError(process.returncode == 0, "subprocess exits incorrectly")
+
             # restore the state of child process
             spawn_output = return_queue.get()
 
