@@ -54,7 +54,7 @@ class PPMLContextPython[T]() {
   }
 
   def loadKeys(sc: PPMLContext,
-               primaryKeyPath: String, dataKeyPath: String): Unit = {
+               primaryKeyPath: String, dataKeyPath: String): PPMLContext = {
     sc.loadKeys(primaryKeyPath, dataKeyPath)
   }
 

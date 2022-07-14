@@ -25,9 +25,8 @@ resource_path = os.path.join(os.path.dirname(__file__), "resources")
 
 
 class TestPPMLContext(unittest.TestCase):
-    # generate app_id and app_key
-    app_id = ''.join([str(random.randint(0, 9)) for i in range(12)])
-    app_key = ''.join([str(random.randint(0, 9)) for j in range(12)])
+    app_id = "465227134889"
+    app_key = "799072978028"
 
     df = None
     data_content = None
