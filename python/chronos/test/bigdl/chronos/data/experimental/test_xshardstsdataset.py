@@ -236,7 +236,7 @@ class TestXShardsTSDataset(TestCase):
                         'DAYOFYEAR',
                         'WEEKOFYEAR',
                         'IS_AWAKE']
-            tsdata.gen_dt_feature(features)
+            tsdata.gen_dt_feature(features=features)
             collected_df = tsdata.shards.collect()
             collected_df = pd.concat(collected_df, axis=0)
             assert set(collected_df.columns) == {'MINUTE',
@@ -260,6 +260,52 @@ class TestXShardsTSDataset(TestCase):
                                               'DAY',
                                               'IS_WEEKEND',
                                               'WEEKDAY',
+                                              'MONTH',
+                                              'YEAR',
+                                              'DAYOFYEAR',
+                                              'WEEKOFYEAR',
+                                              "IS_AWAKE",
+                                              'extra feature'}
+
+            # interval = day, one_hot = ["WEEKDAY"]
+            tsdata = XShardsTSDataset.from_xshards(shards_tmp, dt_col="datetime", target_col="value",
+                                                   extra_feature_col=["extra feature"], id_col="id")
+            tsdata.gen_dt_feature(features=features, one_hot_features=['WEEKDAY'])
+            collected_df = tsdata.shards.collect()
+            collected_df = pd.concat(collected_df, axis=0)
+            assert set(collected_df.columns) == {'MINUTE',
+                                                'HOUR',
+                                                'IS_BUSY_HOURS',
+                                                'DAY',
+                                                'IS_WEEKEND',
+                                                'WEEKDAY_0',
+                                                'WEEKDAY_1',
+                                                'WEEKDAY_2',
+                                                'WEEKDAY_3',
+                                                'WEEKDAY_4',
+                                                'WEEKDAY_5',
+                                                'WEEKDAY_6',
+                                                'MONTH',
+                                                'YEAR',
+                                                'DAYOFYEAR',
+                                                'WEEKOFYEAR',
+                                                "IS_AWAKE",
+                                                'extra feature',
+                                                'value',
+                                                'datetime',
+                                                'id'}
+            assert set(tsdata.feature_col) == {'MINUTE',
+                                              'HOUR',
+                                              'IS_BUSY_HOURS',
+                                              'DAY',
+                                              'IS_WEEKEND',
+                                              'WEEKDAY_0',
+                                              'WEEKDAY_1',
+                                              'WEEKDAY_2',
+                                              'WEEKDAY_3',
+                                              'WEEKDAY_4',
+                                              'WEEKDAY_5',
+                                              'WEEKDAY_6',
                                               'MONTH',
                                               'YEAR',
                                               'DAYOFYEAR',
