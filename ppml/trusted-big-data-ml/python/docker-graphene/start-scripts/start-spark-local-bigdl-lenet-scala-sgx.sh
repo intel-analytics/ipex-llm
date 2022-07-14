@@ -1,6 +1,6 @@
 #!/bin/bash
 
-bash ppml-spark-submit.sh \
+bash bigdl-ppml-submit.sh \
         --master 'local[4]' \
         --conf spark.driver.port=10027 \
         --conf spark.scheduler.maxRegisteredResourcesWaitingTime=5000000 \

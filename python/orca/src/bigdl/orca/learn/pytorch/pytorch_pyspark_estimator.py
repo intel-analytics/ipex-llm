@@ -131,11 +131,12 @@ class PyTorchPySparkEstimator(BaseEstimator):
                                         self.total_cores * 4).repartition(self.num_workers)
 
         self.ip = get_node_ip()
-        self.port = find_free_port()
+        self.log_port = find_free_port()
         is_local = sc.master.startswith("local")
         self.need_to_log_to_driver = (not is_local) and log_to_driver
         if self.need_to_log_to_driver:
-            start_log_server(self.ip, self.port)
+            start_log_server(self.ip, self.log_port)
+        self.tcp_store_port = find_free_port()
 
         self.worker_init_params = dict(
             model_creator=self.model_creator,
@@ -154,7 +155,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
             model_dir=self.model_dir,
             log_to_driver=self.need_to_log_to_driver,
             driver_ip=self.ip,
-            driver_port=self.port)
+            driver_log_port=self.log_port,
+            driver_tcp_store_port=self.tcp_store_port)
 
         local_init_params = self.worker_init_params.copy()
         local_init_params["log_to_driver"] = False
@@ -164,6 +166,12 @@ class PyTorchPySparkEstimator(BaseEstimator):
             **local_init_params)
 
         self.state_dict = self.driver_runner.get_state_dict()
+
+    def create_tcpstore_server(self):
+        import torch.distributed as dist
+        server_store = dist.TCPStore(self.ip, self.tcp_store_port, -1, True,
+                                     dist.constants.default_pg_timeout)
+        return server_store
 
     def _get_cluster_info(self, sc):
         cluster_info = self.workerRDD.barrier().mapPartitions(find_ip_and_free_port).collect()
@@ -222,6 +230,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
                                                            num_workers=self.num_workers)
 
         sc = OrcaContext.get_spark_context()
+        _ = self.create_tcpstore_server()
         cluster_info = self._get_cluster_info(sc)
         state_dict = self._get_broadcasted_state_dict(sc)
         init_params = dict(

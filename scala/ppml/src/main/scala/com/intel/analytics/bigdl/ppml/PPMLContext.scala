@@ -51,6 +51,7 @@ class PPMLContext protected(kms: KeyManagementService, sparkSession: SparkSessio
   def loadKeys(primaryKeyPath: String, dataKeyPath: String): this.type = {
     dataKeyPlainText = kms.retrieveDataKeyPlainText(
       Paths.get(primaryKeyPath).toString, Paths.get(dataKeyPath).toString)
+    sparkSession.sparkContext.hadoopConfiguration.set("bigdl.kms.data.key", dataKeyPlainText)
     this
   }
 
@@ -129,9 +130,12 @@ object PPMLContext{
     }
     data.mapPartitions { iterator => {
       Supportive.logger.info("Decrypting bytes with JavaAESCBC...")
-      val crypto = Crypto(cryptoMode)
-      crypto.init(cryptoMode, DECRYPT, dataKeyPlaintext)
-      crypto.decryptBigContent(iterator)
+      iterator.flatMap{dataStream =>
+        val inputDataStream = dataStream._2.open()
+        val crypto = Crypto(cryptoMode)
+        crypto.init(cryptoMode, DECRYPT, dataKeyPlaintext)
+        crypto.decryptBigContent(inputDataStream)
+      }
     }} // .flatMap(_.split("\n")).flatMap(_.split("\r"))
   }
 
@@ -198,6 +202,8 @@ object PPMLContext{
    */
   def initPPMLContext(sparkConf: SparkConf, appName: String): PPMLContext = {
     val conf = createSparkConf(sparkConf)
+    conf.set("spark.hadoop.io.compression.codecs",
+        "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
     val sc = initNNContext(conf, appName)
     val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
     val kmsType = conf.get("spark.bigdl.kms.type", defaultValue = "SimpleKeyManagementService")

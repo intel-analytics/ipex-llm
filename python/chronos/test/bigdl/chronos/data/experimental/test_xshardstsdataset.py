@@ -351,6 +351,44 @@ class TestXShardsTSDataset(TestCase):
             df_train_unscale = get_local_df(tsdata)
             assert_frame_equal(df_train_unscale, df)
 
+    def test_xshardstsdataset_scale_unscale(self):
+        from sklearn.preprocessing import StandardScaler
+        scalers = [{0: StandardScaler(), 1: StandardScaler()}]
+        df = pd.read_csv(os.path.join(self.resource_path, "multiple.csv"))
+        for scaler in scalers:
+            shards_multiple = read_csv(os.path.join(self.resource_path, "multiple.csv"))
+            shards_multiple_test = read_csv(os.path.join(self.resource_path, "multiple.csv"))
+
+            tsdata = XShardsTSDataset.from_xshards(shards_multiple, dt_col="datetime",
+                                                   target_col="value",
+                                                   extra_feature_col=["extra feature"], id_col="id")
+            tsdata_test = XShardsTSDataset.from_xshards(shards_multiple_test, dt_col="datetime",
+                                                        target_col="value",
+                                                        extra_feature_col=["extra feature"], id_col="id")
+
+            tsdata.scale(scaler)
+            tsdata_test.scale(scaler, fit=False)
+
+            def get_local_df(tsdata):
+                collected_df = tsdata.shards.collect()
+                collected_df = pd.concat(collected_df, axis=0)
+                collected_df.reset_index(inplace=True)
+                collected_df["datetime"] = df["datetime"]
+                del collected_df["index"]
+                return collected_df
+
+            df_train = get_local_df(tsdata)
+            df_test = get_local_df(tsdata_test)
+            assert_frame_equal(df_train, df_test)
+
+            with pytest.raises(AssertionError):
+                assert_frame_equal(df_train, df)
+                assert_frame_equal(df_test, df)
+
+            tsdata.unscale()
+            df_train_unscale = get_local_df(tsdata)
+            assert_frame_equal(df_train_unscale, df)
+
     def test_xshardstsdataset_impute(self):
         from tempfile import TemporaryDirectory
         tmp_df = get_ugly_ts_df()

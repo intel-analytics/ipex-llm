@@ -76,10 +76,10 @@ class PytorchRayWorker(TorchRunner):
         self.setup_components_horovod()
         self.setup_operator(self.models)
 
-    def setup_address(self):
+    def get_node_ip_port(self):
         ip = self.get_node_ip()
         port = find_free_port()
-        return f"tcp://{ip}:{port}"
+        return ip, port
 
     def get_node_ip(self):
         """Returns the IP address of the current node."""

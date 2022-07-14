@@ -12,8 +12,8 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     env DEBIAN_FRONTEND=noninteractive apt-get install -y autoconf bison build-essential coreutils gawk git libcurl4-openssl-dev libprotobuf-c-dev protobuf-c-compiler python3-protobuf wget
 RUN git clone https://github.com/analytics-zoo/graphene.git /graphene
 RUN cd /graphene && \
-    git fetch origin branch-0.6 && \
-    git checkout branch-0.6
+    git fetch origin branch-0.7 && \
+    git checkout branch-0.7
 RUN cd /graphene/Pal/src/host/Linux-SGX && \
     git clone https://github.com/intel/SGXDataCenterAttestationPrimitives.git linux-sgx-driver && \
     cd linux-sgx-driver && \
@@ -261,7 +261,7 @@ ADD ./standalone/check-status.sh /ppml/trusted-big-data-ml/standalone/check-stat
 ADD ./standalone/start-spark-standalone-master-sgx.sh /ppml/trusted-big-data-ml/standalone/start-spark-standalone-master-sgx.sh
 ADD ./standalone/start-spark-standalone-worker-sgx.sh /ppml/trusted-big-data-ml/standalone/start-spark-standalone-worker-sgx.sh
 ADD ./standalone/start-spark-standalone-driver-sgx.sh /ppml/trusted-big-data-ml/standalone/start-spark-standalone-driver-sgx.sh
-ADD ./ppml-spark-submit.sh /ppml/trusted-big-data-ml/ppml-spark-submit.sh
+ADD ./bigdl-ppml-submit.sh /ppml/trusted-big-data-ml/bigdl-ppml-submit.sh
 ADD ./tracker.py ./tracker.py
 ADD ./start-scripts /ppml/trusted-big-data-ml/work/start-scripts
 ADD ./test-suites /ppml/trusted-big-data-ml/work/test-suites
@@ -281,7 +281,7 @@ RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION
     chmod a+x /ppml/trusted-big-data-ml/init.sh && \
     chmod a+x /ppml/trusted-big-data-ml/clean.sh && \
     chmod a+x /ppml/trusted-big-data-ml/standalone/* && \
-    chmod a+x /ppml/trusted-big-data-ml/ppml-spark-submit.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/bigdl-ppml-submit.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/* && \
     chmod a+x /ppml/trusted-big-data-ml/work/test-suites/pyspark-e2e-example.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/test-suites/pyspark-simple-examples.sh && \

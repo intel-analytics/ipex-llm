@@ -306,6 +306,7 @@ class XShardsTSDataset:
         features_generated = [fe for fe in features_generated 
                               if fe not in self.target_col + [self.dt_col, self.id_col]]
         self.feature_col += features_generated
+
     def scale(self, scaler, fit=True):
         '''
         Scale the time series dataset's feature column and target column.

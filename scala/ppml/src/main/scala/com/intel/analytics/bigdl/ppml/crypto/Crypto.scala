@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.ppml.utils.Supportive
 import org.apache.spark.input.PortableDataStream
 
-import java.io.{DataInputStream, DataOutputStream}
+import java.io.{DataInputStream, DataOutputStream, InputStream}
 import javax.crypto.Cipher
 
 /**
@@ -41,7 +41,7 @@ trait Crypto extends Supportive with Serializable {
    * @param ite stream iterator.
    * @return iterator of String.
    */
-  def decryptBigContent(ite: Iterator[(String, PortableDataStream)]): Iterator[String]
+  def decryptBigContent(in: InputStream): Iterator[String]
 
   /**
    * If encrypt data, should generate header and put return value to the head.
@@ -54,6 +54,12 @@ trait Crypto extends Supportive with Serializable {
    * @param header header bytes
    */
   def verifyHeader(header: Array[Byte]): Unit
+
+  /**
+   * Verify the header bytes when decrypt.
+   * @param header header bytes
+   */
+  def verifyHeader(in: InputStream): Unit
 
   /**
    * Continues a multiple-part encryption or decryption operation
@@ -181,6 +187,10 @@ object CryptoMode {
          AES_CBC_PKCS5PADDING
        case "plain_text" =>
          PLAIN_TEXT
+       case "aes_gcm_v1" =>
+         AES_GCM_V1
+       case "aes_gcm_ctr_v1" =>
+         AES_GCM_CTR_V1
      }
    }
 }

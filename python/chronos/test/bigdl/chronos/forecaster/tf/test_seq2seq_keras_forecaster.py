@@ -62,7 +62,6 @@ class TestSeq2SeqForecaster(TestCase):
 
     def tearDown(self):
         pass
-
     def test_seq2seq_fit_predict_evaluate(self):
         train_data, test_data = create_data()
         self.forecaster.fit(train_data,
@@ -96,6 +95,31 @@ class TestSeq2SeqForecaster(TestCase):
         assert yhat.shape == (400, 2, 2)
         np.testing.assert_almost_equal(yhat, load_model_yhat, decimal=5)
 
+    def test_s2s_customized_loss_metric(self):
+        train_data, test_data = create_data(tf_data=True)
+        loss = tf.keras.losses.MeanSquaredError()
+        def customized_metric(y_true, y_pred):
+            return tf.keras.losses.MeanSquaredError(tf.convert_to_tensor(y_pred),
+                                      tf.convert_to_tensor(y_true)).numpy()
+        from bigdl.chronos.forecaster.tf.seq2seq_forecaster import Seq2SeqForecaster
+        self.forecaster = Seq2SeqForecaster(past_seq_len=10,
+                                            future_seq_len=2,
+                                            input_feature_num=10,
+                                            output_feature_num=2,
+                                            loss=loss,
+                                            metrics=[customized_metric],
+                                            lr=0.01)
+        self.forecaster.fit(train_data, epochs=2, batch_size=32)
+        yhat = self.forecaster.predict(test_data)
+        with tempfile.TemporaryDirectory() as tmp_dir_file:
+            tmp_dir_file = os.path.join(tmp_dir_file, 'seq2seq.ckpt')
+            self.forecaster.save(tmp_dir_file)
+            self.forecaster.load(tmp_dir_file)
+            from bigdl.chronos.model.tf2.Seq2Seq_keras import LSTMSeq2Seq
+            assert isinstance(self.forecaster.internal, LSTMSeq2Seq)
+        load_model_yhat = self.forecaster.predict(test_data)
+        assert yhat.shape == (400, 2, 2)
+        np.testing.assert_almost_equal(yhat, load_model_yhat, decimal=5)
 
 if __name__ == '__main__':
     pytest.main([__file__])
