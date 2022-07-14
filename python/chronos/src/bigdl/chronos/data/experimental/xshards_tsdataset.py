@@ -303,7 +303,7 @@ class XShardsTSDataset:
         self.shards = self.shards.transform_shard(generate_dt_features, self.dt_col, features,
                                                   one_hot_features, None, features_generated)
         features_generated = self.shards.transform_shard(_get_features).collect()[0]
-        features_generated = [fe for fe in features_generated 
+        features_generated = [fe for fe in features_generated
                               if fe not in self.target_col + [self.dt_col, self.id_col]]
         self.feature_col += features_generated
 
