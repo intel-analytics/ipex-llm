@@ -1,43 +1,42 @@
-image: &image your_ppml_image
-k8sMaster: &k8sMaster k8s://https://master_ip:master_port
-jar: &jar your_jar
-class: &class your_main_class
-name: &name your_job_name
-pvc: &pvc your_pvc
+image: your_ppml_image
+k8sMaster: k8s://https://master_ip:master_port
+jar: your_jar
+class: your_main_class
+name: your_job_name
+pvc: your_pvc
 
 kmsURL: http://your_kms_url:port
-deployMode: &deployMode cluster
-driverCores: &driverCores "4"
-driverMem: &driverMem "1g"
-executorCores: &executorCores "8"
-executorMem: &executorMem "1g"
-executorInstances: &executorInstances "2"
-sgx: &sgx "true"
-sgxLog: &sgxLog "error"
-sgxDriverMem: &sgxDriverMem "32g"
-sgxDriverJvmMem: &sgxDriverJvmMem "8g"
-sgxExecutorMem: &sgxExecutorMem "32g"
-sgxExecutorJvmMem: &sgxExecutorJvmMem "12g"
+deployMode: client
+driverCores: "4"
+driverMem: "1g"
+executorCores: "8"
+executorMem: "1g"
+executorInstances: "2"
+sgx: "true"
+sgxLog: "error"
+sgxDriverMem: "32g"
+sgxDriverJvmMem: "8g"
+sgxExecutorMem: "32g"
+sgxExecutorJvmMem: "12g"
 
-entrypoint: !concat [
-              "export secure_password=$(openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin) &&",
-              "bash /ppml/trusted-big-data-ml/bigdl-ppml-submit.sh", 
-              "--master $RUNTIME_SPARK_MASTER", 
-              "--deploy-mode", *deployMode,
-              "--sgx-enabled", *sgx,
-              "--sgx-log-level", *sgxLog,
-              "--sgx-driver-memory", *sgxDriverMem,
-              "--sgx-driver-jvm-memory", *sgxDriverJvmMem,
-              "--sgx-executor-memory", *sgxExecutorMem,
-              "--sgx-executor-jvm-memory", *sgxExecutorJvmMem,
-              "--driver-memory", *driverMem,
-              "--driver-cores", *driverCores,
-              "--executor-memory", *executorMem,
-              "--executor-cores", *executorCores,
-              "--num-executors", *executorInstances,
-              "--conf spark.kubernetes.container.image={{ .Values.image }}",
-              "--class", *class,
-              "--name", *name,
-              "--verbose",
-              "local://{{ .Values.jar }} 500"
-            ]
+entrypoint: >
+        export secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin` && 
+        bash /ppml/trusted-big-data-ml/bigdl-ppml-submit.sh
+        --master $RUNTIME_SPARK_MASTER
+        --deploy-mode {{ .Values.deployMode }}
+        --sgx-enabled {{ .Values.sgx }}
+        --sgx-log-level {{ .Values.sgxLog }}
+        --sgx-driver-memory {{ .Values.sgxDriverMem }}
+        --sgx-driver-jvm-memory {{ .Values.sgxDriverJvmMem }}
+        --sgx-executor-memory {{ .Values.sgxExecutorMem }}
+        --sgx-executor-jvm-memory {{ .Values.sgxExecutorJvmMem }}
+        --driver-memory {{ .Values.driverMem }}
+        --driver-cores {{ .Values.driverCores }}
+        --executor-memory {{ .Values.executorMem }}
+        --executor-cores {{ .Values.executorCores }}
+        --num-executors {{ .Values.executorInstances }}
+        --conf spark.kubernetes.container.image={{ .Values.image }}
+        --class {{ .Values.class }}
+        --name spark-pi-sgx {{ .Values.name }}
+        --verbose
+        local://{{ .Values.jar }} 500
