@@ -54,6 +54,7 @@ class TestPPMLContext(unittest.TestCase):
         # generate a DataFrame for test
         data = [("Java", "20000"), ("Python", "100000"), ("Scala", "3000")]
         cls.df = cls.sc.spark.createDataFrame(data).toDF("language", "user")
+        cls.df = cls.df.repartition(1)
         cls.data_content = '\n'.join([str(v['language']) + "," + str(v['user'])
                                       for v in cls.df.orderBy('language').collect()])
 
@@ -134,14 +135,14 @@ class TestPPMLContext(unittest.TestCase):
         self.assertEqual(content, self.data_content)
 
     def test_plain_text_file(self):
-        path = os.path.join(resource_path, "csv/plain")
+        path = os.path.join(resource_path, "csv/plain/*.csv")
         rdd = self.sc.textfile(path)
         rdd_content = '\n'.join([line for line in rdd.collect()])
 
         self.assertEqual(rdd_content, "language,user\n" + self.data_content)
 
     def test_encrypted_text_file(self):
-        path = os.path.join(resource_path, "csv/encrypted")
+        path = os.path.join(resource_path, "csv/encrypted/*.cbc")
         rdd = self.sc.textfile(path=path, crypto_mode=CryptoMode.AES_CBC_PKCS5PADDING)
         rdd_content = '\n'.join([line for line in rdd.collect()])
         self.assertEqual(rdd_content, "language,user\n" + self.data_content)
