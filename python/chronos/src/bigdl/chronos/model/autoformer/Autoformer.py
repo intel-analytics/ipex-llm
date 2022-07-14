@@ -182,8 +182,9 @@ class AutoFormer(pl.LightningModule):
     def configure_optimizers(self):
         optimizer = getattr(optim, self.optim)(self.parameters(), lr=self.lr)
         if self.lr_scheduler_milestones is not None:
-            scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, gamma=0.5, verbose=True,
-                                                             milestones=self.lr_scheduler_milestones)
+            scheduler = torch.optim.lr_scheduler.MultiStepLR(
+                optimizer, gamma=0.5, verbose=True,
+                milestones=self.lr_scheduler_milestones)
             return [optimizer], [scheduler]
         else:
             return optimizer
