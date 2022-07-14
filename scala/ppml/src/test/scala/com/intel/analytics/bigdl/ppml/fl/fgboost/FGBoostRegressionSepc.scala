@@ -46,7 +46,7 @@ class FGBoostRegressionSepc extends FLSpec {
       XGBoostFormatValidator.addHeaders(flattenHeaders)
       flServer.build()
       flServer.start()
-      FLContext.initFLContext(target)
+      FLContext.initFLContext("1", target)
       val fGBoostRegression = new FGBoostRegression(
         learningRate = 0.1f, maxDepth = 7, minChildSize = 5)
       fGBoostRegression.fit(trainFeatures, trainLabels, 1)

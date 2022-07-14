@@ -24,7 +24,8 @@ import org.apache.log4j.LogManager
 
 import scala.io.Source
 
-class MockClient(dataPath: String,
+class MockClient(clientId: String,
+                 dataPath: String,
                  featureColumns: Array[String] = null,
                  labelColumns: Array[String] = null,
                  learningRate: Float = 0.005f,
@@ -32,7 +33,7 @@ class MockClient(dataPath: String,
 
   val logger = LogManager.getLogger(getClass)
   val testFlContext = new FlContextForTest()
-  testFlContext.initFLContext(target)
+  testFlContext.initFLContext(clientId, target)
   override def run(): Unit = {
     rawDataPipeline()
   }

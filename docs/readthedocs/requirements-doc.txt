@@ -15,7 +15,7 @@ setuptools==41.0.1
 docutils==0.17
 mock==1.0.1
 pillow==5.4.1
-sphinx==5.0.0
+sphinx==5.0.2
 alabaster>=0.7,<0.8,!=0.7.5
 commonmark==0.8.1
 recommonmark==0.5.0
@@ -32,3 +32,5 @@ torchmetrics==0.7.2
 pickle5==0.0.12
 protobuf~=3.19.0
 sphinx-tabs==3.4
+optuna==2.10.0
+ConfigSpace==0.5.0

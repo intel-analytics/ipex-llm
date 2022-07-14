@@ -89,10 +89,12 @@ class TorchDistBackend(DistBackend):
         import torch.distributed as dist
         return dist.is_initialized()
 
-    def all_reduce_min(self, tensor, group=None, async_op=False):
+    def all_reduce_min(self, tensor, *args, **kwargs):
         import torch.distributed as dist
-        return dist.all_reduce(tensor, op=dist.ReduceOp.MIN,
-                               group=group, async_op=async_op)
+        all_reduce_min_kwargs = dict(op=dist.ReduceOp.MIN)
+        all_reduce_min_kwargs.update(kwargs)
+        return dist.all_reduce(tensor, *args,
+                               **all_reduce_min_kwargs)
 
 
 class TorchRunner:
@@ -163,12 +165,14 @@ class TorchRunner:
         import torch
         torch.set_num_threads(cores_per_node)
 
-    def setup_torch_distribute(self, url, world_rank, world_size):
+    def setup_torch_distribute(self, tcp_store_host, tcp_store_port, world_rank,
+                               world_size):
         import torch.distributed as dist
         from torch.nn.parallel import DistributedDataParallel
+        client_store = dist.TCPStore(tcp_store_host, tcp_store_port, -1, False)
         dist.init_process_group(
             backend="gloo",
-            init_method=url,
+            store=client_store,
             rank=world_rank,
             world_size=world_size)
         self.backend = "torch-distributed"

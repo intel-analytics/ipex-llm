@@ -30,7 +30,7 @@ object FLContext {
   var flClient: FLClient = null
   var sparkSession: SparkSession = null
 
-  def initFLContext(target: String = null): Unit = {
+  def initFLContext(id: String, target: String = null): Unit = {
     createSparkSession()
     Engine.init
 
@@ -38,6 +38,7 @@ object FLContext {
       this.synchronized {
         if (flClient == null) {
           flClient = new FLClient()
+          flClient.setClientId(id)
           if (target != null) {
             flClient.setTarget(target)
           }

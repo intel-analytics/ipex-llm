@@ -16,10 +16,12 @@
 
 package com.intel.analytics.bigdl.ppml.fl.fgboost
 
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.ppml.fl.base.DataHolder
 import com.intel.analytics.bigdl.ppml.fl.common.FLPhase
 import com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceGrpc
 import com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto._
+import com.intel.analytics.bigdl.ppml.fl.utils.ServerUtils
 import io.grpc.stub.StreamObserver
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.logging.log4j.LogManager
@@ -70,6 +72,9 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
   override def uploadLabel(request: UploadLabelRequest,
                            responseObserver: StreamObserver[UploadResponse]): Unit = {
     val clientUUID = request.getClientuuid
+    Log4Error.invalidInputError(ServerUtils.checkClientId(clientNum, clientUUID),
+      s"Invalid client ID, should be in range of [1, $clientNum], got $clientUUID")
+
     val data = request.getData
     val version = data.getMetaData.getVersion
     try {
@@ -92,6 +97,8 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
   override def split(request: SplitRequest,
                      responseObserver: StreamObserver[SplitResponse]): Unit = {
     val clientUUID = request.getClientuuid
+    Log4Error.invalidInputError(ServerUtils.checkClientId(clientNum, clientUUID),
+      s"Invalid client ID, should be in range of [1, $clientNum], got $clientUUID")
     val split = request.getSplit
     try {
       aggregator.putClientData(FLPhase.SPLIT, clientUUID, split.getVersion, new DataHolder(split))
@@ -122,6 +129,8 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
   override def uploadTreeLeaf(request: UploadTreeLeafRequest,
                               responseObserver: StreamObserver[UploadResponse]): Unit = {
     val clientUUID = request.getClientuuid
+    Log4Error.invalidInputError(ServerUtils.checkClientId(clientNum, clientUUID),
+      s"Invalid client ID, should be in range of [1, $clientNum], got $clientUUID")
     val treeLeaf = request.getTreeLeaf
 
     try {
@@ -144,6 +153,8 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
   override def evaluate(request: EvaluateRequest,
                         responseObserver: StreamObserver[EvaluateResponse]): Unit = {
     val clientUUID = request.getClientuuid
+    Log4Error.invalidInputError(ServerUtils.checkClientId(clientNum, clientUUID),
+      s"Invalid client ID, should be in range of [1, $clientNum], got $clientUUID")
     val version = request.getVersion
     logger.debug(s"Server received Evaluate request of version: $version")
     if (!evalBufferMap.containsKey(clientUUID)) {
@@ -203,6 +214,8 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
   override def predict(request: PredictRequest,
                        responseObserver: StreamObserver[PredictResponse]): Unit = {
     val clientUUID = request.getClientuuid
+    Log4Error.invalidInputError(ServerUtils.checkClientId(clientNum, clientUUID),
+      s"Invalid client ID, should be in range of [1, $clientNum], got $clientUUID")
     val predicts: java.util.List[BoostEval] = request.getTreeEvalList
     // TODO: add same logic with evaluate
     try {

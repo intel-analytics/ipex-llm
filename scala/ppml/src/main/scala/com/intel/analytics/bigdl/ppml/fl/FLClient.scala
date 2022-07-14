@@ -41,6 +41,10 @@ class FLClient(val _args: Array[String]) extends GrpcClientBase(_args) {
     this(null)
   }
 
+  def setClientId(clientId: String): Unit = {
+    clientUUID = clientId
+  }
+
   @throws[IOException]
   override protected def parseConfig(): Unit = {
     val flHelper = getConfigFromYaml(classOf[FLHelper], configPath)
