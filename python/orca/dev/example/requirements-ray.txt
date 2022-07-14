@@ -6,3 +6,4 @@ opencv-python
 matplotlib
 tqdm
 pandas
+ray
