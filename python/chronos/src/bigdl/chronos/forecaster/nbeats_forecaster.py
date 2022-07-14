@@ -181,9 +181,9 @@ class NBeatsForecaster(BasePytorchForecaster):
                the 'TSDataset.roll' method.
         :param kwargs: Specify parameters of Forecaster,
                e.g. loss and optimizer, etc. More info, 
-               please refer to NbeatsForecaster.__init__ methods.
+               please refer to NBeatsForecaster.__init__ methods.
 
-        :return: A Nbeats Forecaster Model.
+        :return: A NBeats Forecaster Model.
         """
         from bigdl.chronos.data.tsdataset import TSDataset
         if isinstance(tsdataset, TSDataset) and tsdataset.horizon is not None:

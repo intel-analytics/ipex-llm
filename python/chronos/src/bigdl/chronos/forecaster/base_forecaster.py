@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-from bigdl.chronos.data.tsdataset import TSDataset
 from bigdl.chronos.forecaster.abstract import Forecaster
 from bigdl.chronos.forecaster.utils import *
 from bigdl.chronos.metric.forecast_metrics import Evaluator
@@ -28,6 +27,7 @@ from torch.utils.data import TensorDataset, DataLoader
 from bigdl.nano.automl.hpo.space import Space
 from .utils_hpo import GenericLightningModule, _format_metric_str, _config_has_search_space
 from bigdl.nano.utils.log4Error import invalidOperationError, invalidInputError
+from bigdl.chronos.data.tsdataset import TSDataset
 
 
 class BasePytorchForecaster(Forecaster):
