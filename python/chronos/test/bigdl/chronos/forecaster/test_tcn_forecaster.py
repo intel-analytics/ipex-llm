@@ -60,7 +60,7 @@ def create_data(loader=False):
         return train_data, val_data, test_data
 
 
-def create_tsdataset(roll=True):
+def create_tsdataset(roll=True, horizon=5):
     from bigdl.chronos.data import TSDataset
     import pandas as pd
     timeseries = pd.date_range(start='2020-01-01', freq='D', periods=1000)
@@ -76,7 +76,7 @@ def create_tsdataset(roll=True):
                                            with_split=True)
     if roll:
         for tsdata in [train, test]:
-            tsdata.roll(lookback=24, horizon=5)
+            tsdata.roll(lookback=24, horizon=horizon)
     return train, test
 
 
@@ -491,7 +491,7 @@ class TestChronosModelTCNForecaster(TestCase):
         assert yhat.shape == y_test.shape
 
         del tcn
-        train, test = create_tsdataset(roll=False)
+        train, test = create_tsdataset(roll=False, horizon=[1, 3, 5])
         tcn = TCNForecaster.from_tsdataset(train,
                                            past_seq_len=24,
                                            future_seq_len=5,
@@ -510,7 +510,6 @@ class TestChronosModelTCNForecaster(TestCase):
         train, test = create_tsdataset(roll=False)
         train.gen_dt_feature(one_hot_features=['WEEK'])
         test.gen_dt_feature(one_hot_features=['WEEK'])
-        tcn = TCNForecaster.from_tsdataset(train, past_seq_len=24, future_seq_len=5)
 
         loader = train.to_torch_data_loader(roll=True,
                                             lookback=24,
@@ -518,6 +517,7 @@ class TestChronosModelTCNForecaster(TestCase):
         test_loader = test.to_torch_data_loader(roll=True,
                                                 lookback=24,
                                                 horizon=5)
+        tcn = TCNForecaster.from_tsdataset(train)
 
         tcn.fit(loader, epochs=2)
         yhat = tcn.predict(test)

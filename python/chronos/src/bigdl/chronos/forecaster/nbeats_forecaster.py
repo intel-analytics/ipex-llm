@@ -186,13 +186,16 @@ class NBeatsForecaster(BasePytorchForecaster):
         :return: A Nbeats Forecaster Model.
         """
         from bigdl.chronos.data.tsdataset import TSDataset
-        if isinstance(tsdataset, TSDataset):
-            # TODO Support for gen_rolling_feature will be split into next pr
-            if tsdataset.numpy_x is not None:
-                past_seq_len = tsdataset.numpy_x.shape[1]
-                future_seq_len = tsdataset.numpy_y.shape[1]
-        # TODO Support specify 'auto' as past_seq_len.
+        if isinstance(tsdataset, TSDataset) and tsdataset.horizon is not None:
+            past_seq_len = tsdataset.lookback
+            future_seq_len = tsdataset.horizon
 
+            # TODO Support for gen_rolling_feature will be split into next pr
+            if tsdataset.roll_additional_feature is not None:
+                invalidInputError(False,
+                                  "We will add support for 'gen_rolling_feature' method later.")
+
+        # TODO Support specify 'auto' as past_seq_len.
         if past_seq_len is None or future_seq_len is None:
             from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(False,

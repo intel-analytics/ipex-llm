@@ -49,6 +49,8 @@ class TSDataset:
 
         self.numpy_x = None
         self.numpy_y = None
+        self.lookback = None
+        self.horizon = None
         self.roll_feature = None  # contains feature_col requested by roll/to_torch_data_loader
         self.roll_target = None  # contains target_col requested by roll/to_torch_data_loader
         self.roll_feature_df = None
@@ -620,6 +622,8 @@ class TSDataset:
                                                             feature_col=feature_col,
                                                             target_col=target_col,
                                                             label_len=label_len))
+        self.lookback = lookback
+        self.horizon = horizon if isinstance(horizon, int) else max(horizon)
 
         # concat the result on required axis
         concat_axis = 2 if id_sensitive else 0
@@ -778,6 +782,9 @@ class TSDataset:
                                         time_enc=time_enc,
                                         label_len=label_len,
                                         is_predict=is_predict)
+            horizon = torch_dataset.horizon
+            self.horizon = horizon if isinstance(horizon, int) else max(horizon)
+            self.lookback = torch_dataset.lookback
 
             batch_size = 32 if batch_size is None else batch_size  # _pytorch_fashion_inference
             return DataLoader(torch_dataset,

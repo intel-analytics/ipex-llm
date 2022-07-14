@@ -60,7 +60,7 @@ def create_data(loader=False):
         return train_data, val_data, test_data
 
 
-def create_tsdataset(roll=True):
+def create_tsdataset(roll=True, horizon=1):
     from bigdl.chronos.data import TSDataset
     import pandas as pd
     timeseries = pd.date_range(start='2020-01-01', freq='D', periods=1000)
@@ -75,7 +75,7 @@ def create_tsdataset(roll=True):
                                            with_split=True)
     if roll:
         for tsdata in [train, test]:
-            tsdata.roll(lookback=24, horizon=1)
+            tsdata.roll(lookback=24, horizon=horizon)
     return train, test
 
 
@@ -433,7 +433,7 @@ class TestChronosModelLSTMForecaster(TestCase):
         assert yhat.shape == y_test.shape
 
         del lstm
-        train, test = create_tsdataset(roll=False)
+        train, test = create_tsdataset(roll=False, horizon=[1, 3, 5])
         lstm = LSTMForecaster.from_tsdataset(train,
                                              past_seq_len=24,
                                              hidden_dim=16,
@@ -452,13 +452,13 @@ class TestChronosModelLSTMForecaster(TestCase):
         train, test = create_tsdataset(roll=False)
         train.gen_dt_feature(one_hot_features=['WEEK'])
         test.gen_dt_feature(one_hot_features=['WEEK'])
-        lstm = LSTMForecaster.from_tsdataset(train, past_seq_len=24)
         loader = train.to_torch_data_loader(roll=True,
                                             lookback=24,
                                             horizon=1)
         test_loader = test.to_torch_data_loader(roll=True,
                                                 lookback=24,
                                                 horizon=1)
+        lstm = LSTMForecaster.from_tsdataset(train)
  
         lstm.fit(loader, epochs=2, batch_size=32)
         yhat = lstm.predict(test)

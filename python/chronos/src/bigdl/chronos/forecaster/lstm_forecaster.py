@@ -161,20 +161,28 @@ class LSTMForecaster(BasePytorchForecaster):
         :return: A LSTM Forecaster Model.
         '''
         from bigdl.chronos.data.tsdataset import TSDataset
+        from bigdl.nano.utils.log4Error import invalidInputError
         if isinstance(tsdataset, TSDataset):
             output_feature_num = len(tsdataset.target_col)
-            # TODO Support for gen_rolling_feature will be split into next pr
-            feature_num = len(tsdataset.feature_col)
-            input_feature_num = output_feature_num + feature_num
+            input_feature_num = output_feature_num + len(tsdataset.feature_col)
 
+            # calling roll or to_torch_data_loader
+            if tsdataset.horizon is not None:
+                past_seq_len = tsdataset.lookback
+
+            # calling roll only
             if tsdataset.numpy_x is not None:
-                past_seq_len = tsdataset.numpy_x.shape[1]
                 output_feature_num = len(tsdataset.roll_target)
                 input_feature_num = output_feature_num + len(tsdataset.roll_feature)
+            
+
+            # TODO Support for gen_rolling_feature will be split into next pr
+            if tsdataset.roll_additional_feature is not None:
+                invalidInputError(False,
+                                  "We will add support for 'gen_rolling_feature' method later.")
 
         # TODO Support specifying 'auto' as past_seq_len.
         if past_seq_len is None:
-            from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(False,
                               "Forecaster needs 'past_seq_len' to specify "
                               "the history time step of training.")

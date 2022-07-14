@@ -60,7 +60,7 @@ def create_data(loader=False):
         return train_data, val_data, test_data
 
 
-def create_tsdataset(roll=True):
+def create_tsdataset(roll=True, horizon=5):
     from bigdl.chronos.data import TSDataset
     import pandas as pd
     timeseries = pd.date_range(start='2020-01-01', freq='D', periods=1000)
@@ -75,7 +75,7 @@ def create_tsdataset(roll=True):
                                            with_split=True)
     if roll:
         for tsdata in [train, test]:
-            tsdata.roll(lookback=24, horizon=5)
+            tsdata.roll(lookback=24, horizon=horizon)
     return train, test
 
 
@@ -375,7 +375,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         assert yhat.shape == y_test.shape
 
         del s2s
-        train, test = create_tsdataset(roll=False)
+        train, test = create_tsdataset(roll=False, horizon=[1, 3, 5])
         s2s = Seq2SeqForecaster.from_tsdataset(train,
                                                past_seq_len=24,
                                                future_seq_len=2,
@@ -395,13 +395,13 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         train, test = create_tsdataset(roll=False)
         train.gen_dt_feature(one_hot_features=['WEEK'])
         test.gen_dt_feature(one_hot_features=['WEEK'])
-        s2s = Seq2SeqForecaster(train, past_seq_len=24, future_seq_len=5)
         loader = train.to_torch_data_loader(roll=True,
                                             lookback=24,
                                             horizon=5)
         test_loader = test.to_torch_data_loader(roll=True,
                                                 lookback=24,
                                                 horizon=5)
+        s2s = Seq2SeqForecaster(train)
         s2s.fit(loader, epochs=2)
         yhat = s2s.predict(test)
         onnx_yhat = s2s.predict_with_onnx(test)
