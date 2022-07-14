@@ -299,7 +299,7 @@ class TorchRunner:
         if callbacks is not None:
             for callback in callbacks:
                 callback.set_model(self.given_models)
-                if isinstance(callback, ModelCheckpoint):
+                if hasattr(callback, "set_trainer"):
                     callback.set_trainer(self)
                 callback.on_train_begin()
         stats_list = list()
@@ -320,10 +320,10 @@ class TorchRunner:
             self.epochs_stats = stats
             if callbacks is not None:
                 for callback in callbacks:
-                    callback.on_epoch_end(epoch=self.epochs)
+                    callback.on_epoch_end(epoch=self.epochs, logs=self.epochs_stats)
         if callbacks is not None:
             for callback in callbacks:
-                callback.on_train_end()
+                callback.on_train_end(logs=self.epochs_stats)
         return stats_list
 
     def train_epoch(self,

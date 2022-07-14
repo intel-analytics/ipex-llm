@@ -19,7 +19,7 @@ BigDL makes it easy for data scientists and data engineers to build end-to-end, 
  
  * [PPML](#ppml-privacy-preserving-machine-learning): privacy preserving big data analysis and machine learning (*experimental*)
  
- * [Nano](https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html): automatically accelerate TensorFlow and PyTorch pipelines by applying model CPU optimizations
+ * [Nano](https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html): automatically accelerate TensorFlow and PyTorch pipelines by applying modern CPU optimizations
 
 For more information, you may [read the docs](https://bigdl.readthedocs.io/).
 

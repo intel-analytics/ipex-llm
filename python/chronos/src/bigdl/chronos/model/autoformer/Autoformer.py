@@ -52,6 +52,7 @@ import numpy as np
 import pytorch_lightning as pl
 
 from collections import namedtuple
+from ..utils import PYTORCH_REGRESSION_LOSS_MAP
 
 
 class AutoFormer(pl.LightningModule):
@@ -65,6 +66,9 @@ class AutoFormer(pl.LightningModule):
         self.label_len = configs.label_len
         self.pred_len = configs.pred_len
         self.output_attention = configs.output_attention
+        self.optim = configs.optim
+        self.lr = configs.lr
+        self.loss = _loss_creator(configs.loss)
 
         # Decomp
         kernel_size = configs.moving_avg
@@ -148,39 +152,53 @@ class AutoFormer(pl.LightningModule):
         batch_x, batch_y, batch_x_mark, batch_y_mark = map(lambda x: x.float(), batch)
         dec_inp = torch.zeros_like(batch_y[:, -self.pred_len:, :]).float()
         dec_inp = torch.cat([batch_y[:, :self.label_len, :], dec_inp], dim=1).float()
-        outputs = self(batch_x, batch_x_mark, dec_inp, batch_y_mark, batch_y)
+        outputs = self(batch_x, batch_x_mark, dec_inp, batch_y_mark)
 
         outputs = outputs[:, -self.pred_len:, :]
         batch_y = batch_y[:, -self.pred_len:, :]
-        loss = nn.MSELoss()
-        return loss(outputs, batch_y)
+        return self.loss(outputs, batch_y)
 
     def validation_step(self, batch, batch_idx):
         batch_x, batch_y, batch_x_mark, batch_y_mark = map(lambda x: x.float(), batch)
         dec_inp = torch.zeros_like(batch_y[:, -self.pred_len:, :]).float()
         dec_inp = torch.cat([batch_y[:, :self.label_len, :], dec_inp], dim=1).float()
         outputs = self(batch_x.float(), batch_x_mark.float(), dec_inp,
-                       batch_y_mark.float(), batch_y)
+                       batch_y_mark.float())
 
         outputs = outputs[:, -self.pred_len:, :]
         batch_y = batch_y[:, -self.pred_len:, :]
-        loss = nn.MSELoss()
-        self.log("val_loss", loss(outputs, batch_y))
+        self.log("val_loss", self.loss(outputs, batch_y))
 
     def predict_step(self, batch, batch_idx):
         batch_x, batch_y, batch_x_mark, batch_y_mark = map(lambda x: x.float(), batch)
-        dec_inp = torch.zeros_like(batch_y[:, -self.pred_len:, :]).float()
+        dec_inp = torch.zeros(batch_y.size(0), self.pred_len, batch_y.size(2)).float()
         dec_inp = torch.cat([batch_y[:, :self.label_len, :], dec_inp], dim=1).float()
         outputs = self(batch_x.float(), batch_x_mark.float(), dec_inp,
-                       batch_y_mark.float(), batch_y)
+                       batch_y_mark.float())
         outputs = outputs[:, -self.pred_len:, :]
         return outputs
 
     def configure_optimizers(self):
-        return optim.Adam(self.parameters(), lr=0.0001)
+        return getattr(optim, self.optim)(self.parameters(), lr=self.lr)
 
 
 def model_creator(config):
+    args = _transform_config_to_namedtuple(config)
+    return AutoFormer(args)
+
+
+def _loss_creator(loss_name):
+    if loss_name in PYTORCH_REGRESSION_LOSS_MAP:
+        loss_name = PYTORCH_REGRESSION_LOSS_MAP[loss_name]
+    else:
+        from bigdl.nano.utils.log4Error import invalidInputError
+        invalidInputError(False,
+                          f"Got '{loss_name}' for loss name, "
+                          "where 'mse', 'mae' or 'huber_loss' is expected")
+    return getattr(torch.nn, loss_name)()
+
+
+def _transform_config_to_namedtuple(config):
     args = namedtuple("config", ['seq_len', 'label_len',
                                  'pred_len', 'output_attention',
                                  'moving_avg', 'enc_in',
@@ -189,7 +207,8 @@ def model_creator(config):
                                  'dec_in', 'factor',
                                  'n_heads', 'd_ff',
                                  'activation', 'e_layers',
-                                 'c_out'])
+                                 'c_out', 'loss',
+                                 'optim', 'lr'])
     args.seq_len = config['seq_len']
     args.label_len = config['label_len']
     args.pred_len = config['pred_len']
@@ -208,5 +227,8 @@ def model_creator(config):
     args.e_layers = config.get('e_layers', 2)
     args.c_out = config['c_out']
     args.d_layers = config.get('d_layers', 1)
+    args.loss = config.get("loss", "mse")
+    args.optim = config.get("optim", "Adam")
+    args.lr = config.get("lr", 0.0001)
 
-    return AutoFormer(args)
+    return args

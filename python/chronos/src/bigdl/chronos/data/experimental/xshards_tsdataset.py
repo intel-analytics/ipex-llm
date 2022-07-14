@@ -305,6 +305,96 @@ class XShardsTSDataset:
         features_generated = self.shards.transform_shard(_get_features).collect()[0]
         features_generated = [fe for fe in features_generated if fe not in self.target_col + [self.dt_col, self.id_col]]
         self.feature_col += features_generated
+    def scale(self, scaler, fit=True):
+        '''
+        Scale the time series dataset's feature column and target column.
+
+        :param scaler: a dictionary of scaler instance, where keys are id name
+               and values are corresponding scaler instance. e.g. if you have
+               2 ids called "id1" and "id2", a legal scaler input can be
+               {"id1": StandardScaler(), "id2": StandardScaler()}
+        :param fit: if we need to fit the scaler. Typically, the value should
+               be set to True for training set, while False for validation and
+               test set. The value is defaulted to True.
+
+        :return: the xshardtsdataset instance.
+
+        Assume there is a training set tsdata and a test set tsdata_test.
+        scale() should be called first on training set with default value fit=True,
+        then be called on test set with the same scaler and fit=False.
+
+        >>> from sklearn.preprocessing import StandardScaler
+        >>> scaler = {"id1": StandardScaler(), "id2": StandardScaler()}
+        >>> tsdata.scale(scaler, fit=True)
+        >>> tsdata_test.scale(scaler, fit=False)
+        '''
+        def _fit(df, id_col, scaler, feature_col, target_col):
+            '''
+            This function is used to fit scaler dictionary on each shard.
+            returns a dictionary of id-scaler pair for each shard.
+
+            Note: this function will not transform the shard.
+            '''
+            scaler_for_this_id = scaler[df[id_col][0]]
+            df[feature_col + target_col] = scaler_for_this_id.fit(df[feature_col + target_col])
+
+            return {id_col: df[id_col][0], "scaler": scaler_for_this_id}
+
+        def _transform(df, id_col, scaler, feature_col, target_col):
+            '''
+            This function is used to transform the shard by fitted scaler.
+
+            Note: this function will not fit the scaler.
+            '''
+            from sklearn.utils.validation import check_is_fitted
+            from bigdl.nano.utils.log4Error import invalidInputError
+
+            scaler_for_this_id = scaler[df[id_col][0]]
+            invalidInputError(not check_is_fitted(scaler_for_this_id),
+                              "scaler is not fitted. When calling scale for the first time, "
+                              "you need to set fit=True.")
+            df[feature_col + target_col] =\
+                scaler_for_this_id.transform(df[feature_col + target_col])
+
+            return df
+
+        if fit:
+            self.shards_scaler = self.shards.transform_shard(_fit, self.id_col, scaler,
+                                                             self.feature_col, self.target_col)
+            self.scaler_dict = self.shards_scaler.collect()
+            self.scaler_dict = {sc[self.id_col]: sc["scaler"] for sc in self.scaler_dict}
+            scaler.update(self.scaler_dict)  # make the change up-to-date outside the tsdata
+
+            self.shards = self.shards.transform_shard(_transform, self.id_col, self.scaler_dict,
+                                                      self.feature_col, self.target_col)
+        else:
+            self.scaler_dict = scaler
+            self.shards = self.shards.transform_shard(_transform, self.id_col, self.scaler_dict,
+                                                      self.feature_col, self.target_col)
+        return self
+
+    def unscale(self):
+        '''
+        Unscale the time series dataset's feature column and target column.
+
+        :return: the xshardtsdataset instance.
+        '''
+        def _inverse_transform(df, id_col, scaler, feature_col, target_col):
+            from sklearn.utils.validation import check_is_fitted
+            from bigdl.nano.utils.log4Error import invalidInputError
+
+            scaler_for_this_id = scaler[df[id_col][0]]
+            invalidInputError(not check_is_fitted(scaler_for_this_id),
+                              "scaler is not fitted. When calling scale for the first time, "
+                              "you need to set fit=True.")
+
+            df[feature_col + target_col] =\
+                scaler_for_this_id.inverse_transform(df[feature_col + target_col])
+            return df
+
+        self.shards = self.shards.transform_shard(_inverse_transform, self.id_col,
+                                                  self.scaler_dict, self.feature_col,
+                                                  self.target_col)
         return self
 
     def impute(self,
