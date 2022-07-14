@@ -179,7 +179,9 @@ class AutoFormer(pl.LightningModule):
         return outputs
 
     def configure_optimizers(self):
-        return getattr(optim, self.optim)(self.parameters(), lr=self.lr)
+        optimizer = getattr(optim, self.optim)(self.parameters(), lr=self.lr)
+        scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[3,4,5,6,7,8,9,10], gamma=0.5, verbose=True)
+        return [optimizer], [scheduler]
 
 
 def model_creator(config):
