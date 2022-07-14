@@ -74,6 +74,17 @@ if not LIGHTNING_VERSION_LESS_1_6:
         def test_lite(self):
             Lite().run()
 
+        def test_lite_spawn(self):
+            Lite(num_processes=2, strategy="spawn").run()
+
+        # subprocess now has a issue, which was fixed in another PR,
+        # We'll uncomment this test after merging that PR
+        # def test_lite_subprocess(self):
+            # Lite(num_processes=2, strategy="subprocess").run()
+
+        def test_lite_ray(self):
+            Lite(num_processes=2, strategy="ray").run()
+
 
 if __name__ == '__main__':
     pytest.main([__file__])
