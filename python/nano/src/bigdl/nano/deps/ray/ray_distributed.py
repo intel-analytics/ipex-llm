@@ -167,8 +167,6 @@ class _RayLauncher(_SpawnLauncher):
                 return move_data_to_device(results, "cpu"), \
                     None, \
                     move_data_to_device(strategy.lightning_module.state_dict(), "cpu")
-        else:
-            return None
 
 
 class RayStrategy(DDPSpawnStrategy):
