@@ -176,8 +176,8 @@ if __name__ == '__main__':
 
     parser.add_argument('--verbose', action='store_true',
                         help='Print more detail information')
-    parser.add_argument('--not_use_spark', action='store_false',
-                        help='Not use spark to generate vector embeddings')
+    parser.add_argument('--use_spark', action='store_true',
+                        help='Use spark to generate vector embeddings')
 
     parser.add_argument('--emb_path', type=str, default='./emb_vecs.pkl',
                         help='the path to save vector embeddings')
