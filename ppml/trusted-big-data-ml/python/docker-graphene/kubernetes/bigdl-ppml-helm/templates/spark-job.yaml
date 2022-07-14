@@ -24,7 +24,7 @@ spec:
           privileged: true
         env:
           - name: ENTRYPOINT
-            value: {{ tpl (.Values.entrypoint | join " ") . }}
+            value: {{ tpl .Values.entrypoint . }}
           - name: SPARK_JAR
             value: {{ .Values.jar }}
           - name: SPARK_CLASS
