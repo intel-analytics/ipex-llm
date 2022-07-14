@@ -59,8 +59,13 @@ class TestPPMLContext(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        if os.path.exists(resource_path):
-            shutil.rmtree(resource_path)
+        csv_path = os.path.join(resource_path, "csv")
+        parquet_path = os.path.join(resource_path, "parquet")
+        if os.path.exists(csv_path):
+            shutil.rmtree(csv_path)
+
+        if os.path.exists(parquet_path):
+            shutil.rmtree(parquet_path)
 
     def test_write_and_read_plain_csv(self):
         path = os.path.join(resource_path, "csv/plain")
