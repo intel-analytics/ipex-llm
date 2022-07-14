@@ -31,7 +31,6 @@ class TestPPMLContext(unittest.TestCase):
 
     df = None
     data_content = None
-    csv_content = None
     sc = None
 
     @classmethod
@@ -39,37 +38,109 @@ class TestPPMLContext(unittest.TestCase):
         if not os.path.exists(resource_path):
             os.mkdir(resource_path)
 
+        # set key path
+        primary_key_path = os.path.join(resource_path, "primaryKey")
+        data_key_path = os.path.join(resource_path, "dataKey")
+
         args = {"kms_type": "SimpleKeyManagementService",
-                "simple_app_id": "465227134889",
-                "simple_app_key": "799072978028",
-                "primary_key_path": "/home/zehuan/test/keys/primaryKey",
-                "data_key_path": "/home/zehuan/test/keys/dataKey"
+                "simple_app_id": cls.app_id,
+                "simple_app_key": cls.app_key,
+                "primary_key_path": primary_key_path,
+                "data_key_path": data_key_path
                 }
 
+        # init a PPMLContext
         cls.sc = PPMLContext("testApp", args)
 
+        # generate a DataFrame for test
         data = [("Java", "20000"), ("Python", "100000"), ("Scala", "3000")]
         cls.df = cls.sc.spark.createDataFrame(data).toDF("language", "user")
+        cls.data_content = '\n'.join([str(v['language']) + "," + str(v['user'])
+                                      for v in cls.df.orderBy('language').collect()])
 
     @classmethod
     def tearDownClass(cls) -> None:
         if os.path.exists(resource_path):
             shutil.rmtree(resource_path)
 
-    def test_one(self):
-        print("**************** TEST DEBUG ******************")
-        print(self.sc.spark.sparkContext.getConf().getAll())
+    def test_write_and_read_plain_csv(self):
+        path = os.path.join(resource_path, "csv/plain")
+        # write as plain csv file
+        self.sc.write(self.df, CryptoMode.PLAIN_TEXT) \
+            .mode('overwrite') \
+            .option("header", True) \
+            .csv(path)
 
+        # read from a plain csv file
+        df = self.sc.read(CryptoMode.PLAIN_TEXT) \
+            .option("header", "true") \
+            .csv(path)
+
+        csv_content = '\n'.join([str(v['language']) + "," + str(v['user'])
+                                 for v in df.orderBy('language').collect()])
+
+        self.assertEqual(csv_content, self.data_content)
+
+    def test_write_and_read_encrypted_csv(self):
+        path = os.path.join(resource_path, "csv/encrypted")
+        # write as encrypted csv file
         self.sc.write(self.df, CryptoMode.AES_CBC_PKCS5PADDING) \
             .mode('overwrite') \
             .option("header", True) \
-            .csv(os.path.join(resource_path, "output/encrypt"))
+            .csv(path)
 
+        # read from an encrypted csv file
         df = self.sc.read(CryptoMode.AES_CBC_PKCS5PADDING) \
             .option("header", "true") \
-            .csv(os.path.join(resource_path, "output/encrypt"))
+            .csv(path)
 
-        df.show()
+        csv_content = '\n'.join([str(v['language']) + "," + str(v['user'])
+                                 for v in df.orderBy('language').collect()])
+
+        self.assertEqual(csv_content, self.data_content)
+
+    def test_write_and_read_plain_parquet(self):
+        parquet_path = os.path.join(resource_path, "parquet/plain-parquet")
+        # write as a parquet
+        self.sc.write(self.df, CryptoMode.PLAIN_TEXT) \
+            .mode('overwrite') \
+            .parquet(parquet_path)
+
+        # read from a parquet
+        df_from_parquet = self.sc.read(CryptoMode.PLAIN_TEXT) \
+            .parquet(parquet_path)
+
+        content = '\n'.join([str(v['language']) + "," + str(v['user'])
+                             for v in df_from_parquet.orderBy('language').collect()])
+        self.assertEqual(content, self.data_content)
+
+    def test_write_and_read_encrypted_parquet(self):
+        parquet_path = os.path.join(resource_path, "parquet/en-parquet")
+        # write as a parquet
+        self.sc.write(self.df, CryptoMode.AES_GCM_CTR_V1) \
+            .mode('overwrite') \
+            .parquet(parquet_path)
+
+        # read from a parquet
+        df_from_parquet = self.sc.read(CryptoMode.AES_GCM_CTR_V1) \
+            .parquet(parquet_path)
+
+        content = '\n'.join([str(v['language']) + "," + str(v['user'])
+                             for v in df_from_parquet.orderBy('language').collect()])
+        self.assertEqual(content, self.data_content)
+
+    def test_plain_text_file(self):
+        path = os.path.join(resource_path, "csv/plain")
+        rdd = self.sc.textfile(path)
+        rdd_content = '\n'.join([line for line in rdd.collect()])
+
+        self.assertEqual(rdd_content, "language,user\n" + self.data_content)
+
+    def test_encrypted_text_file(self):
+        path = os.path.join(resource_path, "csv/encrypted")
+        rdd = self.sc.textfile(path=path, crypto_mode=CryptoMode.AES_CBC_PKCS5PADDING)
+        rdd_content = '\n'.join([line for line in rdd.collect()])
+        self.assertEqual(rdd_content, "language,user\n" + self.data_content)
 
 
 if __name__ == "__main__":

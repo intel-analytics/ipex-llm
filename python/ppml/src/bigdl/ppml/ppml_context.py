@@ -25,21 +25,30 @@ from pyspark.sql import SparkSession
 class PPMLContext(JavaValue):
     def __init__(self, app_name, ppml_args=None):
         self.bigdl_type = "float"
+        conf = {"spark.app.name": app_name,
+                "spark.hadoop.io.compression.codecs": "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec"}
+        if ppml_args:
+            kms_type = ppml_args.get("kms_type", "SimpleKeyManagementService")
+            if kms_type == "SimpleKeyManagementService":
+                conf["spark.bigdl.kms.simple.id"] = ppml_args["simple_app_id"]
+                conf["spark.bigdl.kms.simple.key"] = ppml_args["simple_app_key"]
+                conf["spark.bigdl.kms.key.primary"] = ppml_args["primary_key_path"]
+                conf["spark.bigdl.kms.key.data"] = ppml_args["data_key_path"]
+            elif kms_type == "EHSMKeyManagementService":
+                conf["spark.bigdl.kms.ehs.ip"] = ppml_args["kms_server_ip"]
+                conf["spark.bigdl.kms.ehs.port"] = ppml_args["kms_server_port"]
+                conf["spark.bigdl.kms.ehs.id"] = ppml_args["ehsm_app_id"]
+                conf["spark.bigdl.kms.ehs.key"] = ppml_args["ehsm_app_key"]
+                conf["spark.bigdl.kms.key.primary"] = ppml_args["primary_key_path"]
+                conf["spark.bigdl.kms.key.data"] = ppml_args["data_key_path"]
+            else:
+                invalidInputError(False, "invalid KMS type")
 
-        conf = {"spark.hadoop.io.compression.codecs": "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec",
-                "spark.bigdl.kms.type": ppml_args["kms_type"],
-                "spark.bigdl.kms.simple.id": ppml_args["simple_app_id"],
-                "spark.bigdl.kms.simple.key": ppml_args["simple_app_key"],
-                "spark.bigdl.kms.key.primary": ppml_args["primary_key_path"],
-                "spark.bigdl.kms.key.data": ppml_args["data_key_path"]}
         sc = init_spark_on_local(conf=conf)
 
         self.spark = SparkSession.builder.getOrCreate()
         args = [self.spark._jsparkSession]
-        print("**************** DEBUG ********************")
-        print(self.spark.sparkContext.getConf().getAll())
         super().__init__(None, self.bigdl_type, *args)
-        # self.sparkSession = callBigDlFunc(self.bigdl_type, "getSparkSession", self.value)
 
     def load_keys(self, primary_key_path, data_key_path):
         callBigDlFunc(self.bigdl_type, "loadKeys", self.value, primary_key_path, data_key_path)
@@ -58,7 +67,7 @@ class PPMLContext(JavaValue):
 
     def textfile(self, path, min_partitions=None, crypto_mode="plain_text"):
         if min_partitions is None:
-            min_partitions = callBigDlFunc(self.bigdl_type, "getDefaultMinPartitions", self.sparkSession)
+            min_partitions = self.spark.sparkContext.defaultMinPartitions
         if isinstance(crypto_mode, CryptoMode):
             crypto_mode = crypto_mode.value
         return callBigDlFunc(self.bigdl_type, "textFile", self.value, path, min_partitions, crypto_mode)

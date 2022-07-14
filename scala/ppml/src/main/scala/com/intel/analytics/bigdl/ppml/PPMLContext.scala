@@ -193,6 +193,11 @@ object PPMLContext{
     initPPMLContext(conf, appName)
   }
 
+  /**
+   * init ppml context with an existed SparkSession
+   * @param sparkSession a SparkSession
+   * @return a PPMLContext
+   */
   def initPPMLContext(sparkSession: SparkSession): PPMLContext = {
     val conf = sparkSession.sparkContext.getConf
     val kmsType = conf.get("spark.bigdl.kms.type", defaultValue = "SimpleKeyManagementService")
