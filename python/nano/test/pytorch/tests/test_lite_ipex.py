@@ -14,14 +14,15 @@
 # limitations under the License.
 #
 
-
 import os
+import pytest
 from unittest import TestCase
 
-import pytest
 import torch
-from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
 from torch import nn
+from torch.utils.data import DataLoader, TensorDataset
+
+from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
 
 from bigdl.nano.pytorch.utils import LIGHTNING_VERSION_LESS_1_6
 if not LIGHTNING_VERSION_LESS_1_6:
@@ -56,8 +57,8 @@ if not LIGHTNING_VERSION_LESS_1_6:
             train_loader = self.setup_dataloaders(train_loader)
             model.train()
 
-            max_epochs = 1
-            for _i in range(max_epochs):
+            num_epochs = 1
+            for _i in range(num_epochs):
                 total_loss, num = 0, 0
                 for X, y in train_loader:
                     optimizer.zero_grad()
@@ -70,6 +71,43 @@ if not LIGHTNING_VERSION_LESS_1_6:
                 print(f'avg_loss: {total_loss / num}')
 
 
+    class LinearModel(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.fc1 = nn.Linear(1, 1, bias=False)
+            self.fc1.weight.data.fill_(1.0)
+
+        def forward(self, input_):
+            return self.fc1(input_)
+
+
+    class LiteCorrectness(LightningLite):
+        def run(self, lr):
+            dataset=TensorDataset(
+                torch.tensor([[0.0],[0.0],[1.0],[1.0]]),
+                torch.tensor([[0.0],[0.0],[0.0],[0.0]]),
+            )
+            train_loader = DataLoader(dataset=dataset, batch_size=2, shuffle=False)
+            origin_model = LinearModel()
+            loss = nn.MSELoss()
+            optimizer = torch.optim.SGD(origin_model.parameters(), lr=lr)
+
+            model, optimizer = self.setup(origin_model, optimizer)
+            train_loader = self.setup_dataloaders(train_loader)
+            model.train()
+
+            num_epochs = 2
+            for _i in range(num_epochs):
+                for X, y in train_loader:
+                    optimizer.zero_grad()
+                    l = loss(model(X), y)
+                    self.backward(l)
+                    optimizer.step()
+
+            assert origin_model.fc1.weight.data == 0.25, \
+                f"wrong weights: {origin_model.fc1.weight.data}"
+
+
     class TestLite(TestCase):
         def test_lite(self):
             Lite(use_ipex=True).run()
@@ -77,13 +115,23 @@ if not LIGHTNING_VERSION_LESS_1_6:
         def test_lite_spawn(self):
             Lite(use_ipex=True, num_processes=2, strategy="spawn").run()
 
-        # subprocess now has a issue, which was fixed in another PR,
-        # We'll uncomment this test after merging that PR
-        # def test_lite_subprocess(self):
-            # Lite(num_processes=2, strategy="subprocess").run()
+        def test_lite_subprocess(self):
+            Lite(use_ipex=True, num_processes=2, strategy="subprocess").run()
 
         def test_lite_ray(self):
             Lite(use_ipex=True, num_processes=2, strategy="ray").run()
+
+        def test_lite_correctness(self):
+            LiteCorrectness(use_ipex=True).run(0.25)
+
+        def test_lite_spawn_correctness(self):
+            LiteCorrectness(use_ipex=True, num_processes=2, strategy="spawn").run(0.5)
+
+        def test_lite_subprocess_correctness(self):
+            LiteCorrectness(use_ipex=True, num_processes=2, strategy="subprocess").run(0.5)
+
+        def test_lite_ray_correctness(self):
+            LiteCorrectness(use_ipex=True, num_processes=2, strategy="ray").run(0.5)
 
 
 if __name__ == '__main__':
