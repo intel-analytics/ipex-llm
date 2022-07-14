@@ -373,7 +373,8 @@ class TestChronosNBeatsForecaster(TestCase):
                                       hidden_layer_units=256,
                                       metrics=['mae'],
                                       lr=0.01)
-        forecaster.fit((train_data[0], train_data[1]), val_data, epochs=10)
+        val_loss = forecaster.fit((train_data[0], train_data[1]), val_data, epochs=10)
+        print(val_loss)
 
     def test_nbeats_forecaster_fit_loader_val(self):
         train_loader, val_loader, _ = create_data(loader=True)
@@ -381,4 +382,5 @@ class TestChronosNBeatsForecaster(TestCase):
                                      future_seq_len=5,
                                      loss='mae',
                                      lr=0.01)
-        forecater.fit(train_loader, val_loader, epochs=10)
+        val_loss = forecater.fit(train_loader, val_loader, epochs=10)
+        print(val_loss)

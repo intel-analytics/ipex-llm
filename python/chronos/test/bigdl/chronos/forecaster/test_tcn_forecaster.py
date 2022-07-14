@@ -443,7 +443,8 @@ class TestChronosModelTCNForecaster(TestCase):
                                    num_channels=[16, 16],
                                    loss="mae",
                                    lr=0.01)
-        forecaster.fit(train_data, val_data, epochs=10)
+        val_loss = forecaster.fit(train_data, val_data, epochs=10)
+        print(val_loss)
 
     def test_tcn_forecaster_fit_loader_val(self):
         train_loader, val_loader, _ = create_data(loader=True)
@@ -455,4 +456,5 @@ class TestChronosModelTCNForecaster(TestCase):
                                    num_channels=[16, 16],
                                    loss="mae",
                                    lr=0.01)
-        forecaster.fit(train_loader, val_loader, epochs=10)
+        val_loss = forecaster.fit(train_loader, val_loader, epochs=10)
+        print(val_loss)
