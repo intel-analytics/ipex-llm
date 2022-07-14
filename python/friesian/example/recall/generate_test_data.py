@@ -66,12 +66,12 @@ def gen_vector(x, vec_dim):
 
 
 def generate_data(args):
-    from bigdl.orca import init_orca_context, OrcaContext, stop_orca_context
-    from pyspark.sql.types import Row
-    from pyspark.sql.types import StructType, StructField, IntegerType, ArrayType, FloatType
-
     print("create emb_vecs and item_dict data >>>>>>")
     if args.use_spark:
+        from bigdl.orca import init_orca_context, OrcaContext, stop_orca_context
+        from pyspark.sql.types import Row
+        from pyspark.sql.types import StructType, StructField, IntegerType, ArrayType, FloatType
+
         print('>>>>>> using spark >>>>>>')
         sc = init_orca_context(cores="*", memory="125g", conf={"spark.driver.maxResultSize": "10g"})
         spark = OrcaContext.get_spark_session()
@@ -174,8 +174,8 @@ if __name__ == '__main__':
     parser.add_argument('--header_len', type=int, default=8,
                         help='The length of the unique item header')
 
-    parser.add_argument('--verbose', type=bool, default=True,
-                        help='whether print more detail information')
+    parser.add_argument('--verbose', action='store_true',
+                        help='Print more detail information')
     parser.add_argument('--use_spark', action='store_true',
                         help='Use spark to generate vector embeddings')
 

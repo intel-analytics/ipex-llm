@@ -20,6 +20,7 @@ python generate_test_data.py \
     --row_nums 200000 \
     --vec_dim 256 \
     --use_spark \
+    --verbose \
     --index_type FlatL2 \
     --emb_path /path/to/save/vector/embeddings \
     --dict_path /path/to/save/item_dict \
@@ -77,6 +78,7 @@ __Options for generate_test_data:__
 * `row_nums`: The number of vectors to be generated. Default to be 200000.
 * `vec_dim`: The dimension of vector. Default to be 256.
 * `use_spark`: Use spark to generate vector embeddings, saving to parquet file. Default to be False.
+* `verbose`: Print more detail information. Default to be False.
 * `index_type`: The faiss index_type: FlatL2 or IVFFlatL2. Default to be FlatL2.
 * `emb_path`: The path to save vector embeddings. Default to be ./emb_vecs.pkl.
 * `dict_path`: The path to save item_dict. Default to be ./item_dict.pkl.
