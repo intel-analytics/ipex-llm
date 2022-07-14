@@ -2252,7 +2252,7 @@ class FeatureTable(Table):
         |hello BigDL, how are you|
         |Thanks for visiting     |
         +------------------------+
-        >>> tbl.string_embed("sentence", reduce_dim=10)
+        >>> tbl.string_embed("sentence", reduce_dim=4)
         +----------------------------------------------------------------------------------+
         |sentence                                                                          |
         +----------------------------------------------------------------------------------+
@@ -2306,7 +2306,7 @@ class FeatureTable(Table):
                 outputs = model(tokens_tensor, segments_tensors)
                 hidden_states = outputs[2]
 
-            token_vecs = hidden_states[-2][0]
+            token_vecs = hidden_states[-1][0]
             embedding = torch.mean(token_vecs, dim=0)
             out = embedding.detach().numpy().tolist()
             return out
