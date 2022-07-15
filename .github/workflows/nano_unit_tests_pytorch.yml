@@ -164,7 +164,7 @@ jobs:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Run PyTorch unit tests (INC)
-        shell:
+        shell: bash
         run: |
           $CONDA/bin/conda create -n inc-pytorch -y python==3.7.10 setuptools=58.0.4
           source $CONDA/bin/activate inc-pytorch
@@ -230,10 +230,6 @@ jobs:
       matrix:
         os: ["ubuntu-20.04"]
         python-version: ["3.7"]
-        pytorch-version: [
-          "torch==1.9.0+cpu torchvision==0.10.0+cpu torch_ipex==1.9.0",
-          ""
-          ]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -255,7 +251,6 @@ jobs:
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
           SANITY_CHECK: "1"
-
 
   nano-unit-test-ipex:
     # The type of runner that the job will run on
