@@ -16,6 +16,7 @@
 
 import unittest
 import os
+import random
 import shutil
 
 from bigdl.ppml.ppml_context import *
@@ -24,8 +25,9 @@ resource_path = os.path.join(os.path.dirname(__file__), "resources")
 
 
 class TestPPMLContext(unittest.TestCase):
-    app_id = "465227134889"
-    app_key = "799072978028"
+    # generate app_id and app_key
+    app_id = ''.join([str(random.randint(0, 9)) for i in range(12)])
+    app_key = ''.join([str(random.randint(0, 9)) for j in range(12)])
 
     df = None
     data_content = None
@@ -39,6 +41,21 @@ class TestPPMLContext(unittest.TestCase):
         # set key path
         primary_key_path = os.path.join(resource_path, "primaryKey")
         data_key_path = os.path.join(resource_path, "dataKey")
+
+        # init a SparkContext
+        conf = {"spark.app.name": "PPML TEST",
+                "spark.hadoop.io.compression.codecs": "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec",
+                "spark.bigdl.kms.type": "SimpleKeyManagementService",
+                "spark.bigdl.kms.simple.id": cls.app_id,
+                "spark.bigdl.kms.simple.key": cls.app_key,
+                "spark.bigdl.kms.key.primary": primary_key_path,
+                "spark.bigdl.kms.key.data": data_key_path
+                }
+        init_spark_on_local(conf=conf)
+
+        # generate primaryKey and dataKey
+        init_keys(cls.app_id, cls.app_key,
+                  primary_key_path, data_key_path)
 
         args = {"kms_type": "SimpleKeyManagementService",
                 "simple_app_id": cls.app_id,

@@ -18,7 +18,6 @@ from bigdl.ppml.api import *
 from bigdl.ppml.utils.log4Error import *
 from enum import Enum
 
-from pyspark import SparkConf
 from pyspark.sql import SparkSession
 
 
@@ -29,6 +28,7 @@ class PPMLContext(JavaValue):
                 "spark.hadoop.io.compression.codecs": "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec"}
         if ppml_args:
             kms_type = ppml_args.get("kms_type", "SimpleKeyManagementService")
+            conf["spark.bigdl.kms.type"] = kms_type
             if kms_type == "SimpleKeyManagementService":
                 conf["spark.bigdl.kms.simple.id"] = ppml_args["simple_app_id"]
                 conf["spark.bigdl.kms.simple.key"] = ppml_args["simple_app_key"]
