@@ -391,6 +391,7 @@ def spark_df_to_rdd_pd(df, squeeze=False, index_col=None,
 def spark_df_to_pd_sparkxshards(df, squeeze=False, index_col=None,
                                 dtype=None, index_map=None):
     pd_rdd = spark_df_to_rdd_pd(df, squeeze, index_col, dtype, index_map)
+    from bigdl.orca.data import SparkXShards
     spark_xshards = SparkXShards(pd_rdd)
     return spark_xshards
 
