@@ -209,8 +209,8 @@ class AutoformerForecaster(Forecaster):
         """
         Search the hyper parameter.
 
-        :param data: train data, as numpy ndarray tuple (x, y)
-        :param validation_data: validation data, as numpy ndarray tuple (x,y)
+        :param data: train data, as numpy ndarray tuple (x, y, x_enc, y_enc)
+        :param validation_data: validation data, as numpy ndarray tuple (x, y, x_enc, y_enc)
         :param target_metric: the target metric to optimize,
                a string or an instance of torchmetrics.metric.Metric
         :param direction: in which direction to optimize the target metric,
