@@ -162,32 +162,18 @@ class LSTMForecaster(BasePytorchForecaster):
         '''
         from bigdl.chronos.data.tsdataset import TSDataset
         from bigdl.nano.utils.log4Error import invalidInputError
-        if isinstance(tsdataset, TSDataset):
-            output_feature_num = len(tsdataset.target_col)
-            input_feature_num = output_feature_num + len(tsdataset.feature_col)
 
-            # calling roll or to_torch_data_loader
-            if tsdataset.horizon is not None:
-                past_seq_len = tsdataset.lookback
-
-            # calling roll only
-            if tsdataset.numpy_x is not None:
-                output_feature_num = len(tsdataset.roll_target)
-                input_feature_num = output_feature_num + len(tsdataset.roll_feature)
-            
-
-            # TODO Support for gen_rolling_feature will be split into next pr
-            if tsdataset.roll_additional_feature is not None:
-                invalidInputError(False,
-                                  "We will add support for 'gen_rolling_feature' method later.")
-
-        # TODO Support specifying 'auto' as past_seq_len.
-        if past_seq_len is None:
+        if isinstance(tsdataset, TSDataset) and tsdataset.lookback is None:
             invalidInputError(False,
                               "Forecaster needs 'past_seq_len' to specify "
                               "the history time step of training.")
-        print(input_feature_num, output_feature_num)
-        return cls(past_seq_len=past_seq_len,
-                   input_feature_num=input_feature_num,
-                   output_feature_num=output_feature_num,
+
+        # TODO Support for gen_rolling_feature will be split into next pr
+        if tsdataset._has_generate_agg_feature:
+            invalidInputError(False,
+                              "We will add support for 'gen_rolling_feature' method later.")
+
+        return cls(past_seq_len=past_seq_len.lookback,
+                   input_feature_num=len(tsdataset.roll_target)+len(tsdataset.roll_feature),
+                   output_feature_num=len(tsdataset.roll_target),
                    **kwargs)

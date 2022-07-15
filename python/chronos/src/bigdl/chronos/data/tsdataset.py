@@ -49,8 +49,8 @@ class TSDataset:
 
         self.numpy_x = None
         self.numpy_y = None
-        self.lookback = None
-        self.horizon = None
+        self.lookback = None  # lookback stated by users if they called `roll`, `to_torch_data_loader`
+        self.horizon = None  #  horizon stated by users if they called `roll`, `to_torch_data_loader`
         self.roll_feature = None  # contains feature_col requested by roll/to_torch_data_loader
         self.roll_target = None  # contains target_col requested by roll/to_torch_data_loader
         self.roll_feature_df = None
@@ -605,25 +605,24 @@ class TSDataset:
         roll_feature_df = None if self.roll_feature_df is None \
             else self.roll_feature_df[additional_feature_col]
 
+        self.lookback, self.horizon = lookback, horizon
         # horizon_time is only for time_enc, the time_enc numpy ndarray won't have any
         # shape change when the dataset is for prediction.
-        horizon_time = horizon
+        horizon_time = self.horizon
         if is_predict:
-            horizon = 0
+            self.horizon = 0
 
-        if lookback == 'auto':
-            lookback = self.get_cycle_length('mode', top_k=3)
+        if self.lookback == 'auto':
+            self.lookback = self.get_cycle_length('mode', top_k=3)
         rolling_result = \
             self.df.groupby([self.id_col]) \
                 .apply(lambda df: roll_timeseries_dataframe(df=df,
                                                             roll_feature_df=roll_feature_df,
-                                                            lookback=lookback,
-                                                            horizon=horizon,
+                                                            lookback=self.lookback,
+                                                            horizon=self.horizon,
                                                             feature_col=feature_col,
                                                             target_col=target_col,
                                                             label_len=label_len))
-        self.lookback = lookback
-        self.horizon = horizon if isinstance(horizon, int) else max(horizon)
 
         # concat the result on required axis
         concat_axis = 2 if id_sensitive else 0
@@ -766,25 +765,32 @@ class TSDataset:
             target_col = _to_list(target_col, "target_col") if target_col is not None \
                 else self.target_col
 
+            if self.roll_additional_feature:
+                additional_feature_col =\
+                    list(set(feature_col).intersection(set(self.roll_additional_feature)))
+                feature_col =\
+                    list(set(feature_col) - set(self.roll_additional_feature))
+                self.roll_feature = feature_col + additional_feature_col
+            else:
+                self.roll_feature = feature_col
+
             # set scaler index for unscale_numpy
             self.scaler_index = [self.target_col.index(t) for t in target_col]
+            self.lookback, self.horizon = lookback, horizon
 
-            if lookback == 'auto':
-                lookback = self.get_cycle_length('mode', top_k=3)
+            if self.lookback == 'auto':
+                self.lookback = self.get_cycle_length('mode', top_k=3)
             torch_dataset = RollDataset(self.df,
                                         dt_col=self.dt_col,
                                         freq=self._freq,
-                                        lookback=lookback,
-                                        horizon=horizon,
-                                        feature_col=feature_col,
-                                        target_col=target_col,
+                                        lookback=self.lookback,
+                                        horizon=self.horizon,
+                                        feature_col=self.roll_feature,
+                                        target_col=self.roll_target,
                                         id_col=self.id_col,
                                         time_enc=time_enc,
                                         label_len=label_len,
                                         is_predict=is_predict)
-            horizon = torch_dataset.horizon
-            self.horizon = horizon if isinstance(horizon, int) else max(horizon)
-            self.lookback = torch_dataset.lookback
 
             batch_size = 32 if batch_size is None else batch_size  # _pytorch_fashion_inference
             return DataLoader(torch_dataset,

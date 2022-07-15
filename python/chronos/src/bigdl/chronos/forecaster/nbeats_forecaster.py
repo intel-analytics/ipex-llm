@@ -175,10 +175,10 @@ class NBeatsForecaster(BasePytorchForecaster):
         :param tsdataset: A bigdl.chronos.data.tsdataset.TSDataset instance.
         :param past_seq_len: Specify the history time steps (i.e. lookback).
                Do not specify the 'past_seq_len' if your tsdataset has called
-               the 'TSDataset.roll' method.
+               the 'TSDataset.roll' method or 'TSDataset.to_torch_data_loader'.
         :param future_seq_len: Specify the output time steps (i.e. horizon).
                Do not specify the 'future_seq_len' if your tsdataset has called
-               the 'TSDataset.roll' method.
+               the 'TSDataset.roll' method or 'TSDataset.to_torch_data_loader'.
         :param kwargs: Specify parameters of Forecaster,
                e.g. loss and optimizer, etc. More info, 
                please refer to NBeatsForecaster.__init__ methods.
@@ -186,22 +186,19 @@ class NBeatsForecaster(BasePytorchForecaster):
         :return: A NBeats Forecaster Model.
         """
         from bigdl.chronos.data.tsdataset import TSDataset
-        if isinstance(tsdataset, TSDataset) and tsdataset.horizon is not None:
-            past_seq_len = tsdataset.lookback
-            future_seq_len = tsdataset.horizon
-
-            # TODO Support for gen_rolling_feature will be split into next pr
-            if tsdataset.roll_additional_feature is not None:
-                invalidInputError(False,
-                                  "We will add support for 'gen_rolling_feature' method later.")
-
-        # TODO Support specify 'auto' as past_seq_len.
-        if past_seq_len is None or future_seq_len is None:
+        if isinstance(tsdataset, TSDataset) and tsdataset.lookback is None:
             from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(False,
                               "Forecaster requires 'past_seq_len' and 'future_seq_len' to specify "
                               "the history time step and output time step.")
 
-        return cls(past_seq_len=past_seq_len,
+            # TODO Support for gen_rolling_feature will be split into next pr
+        if tsdataset._has_generate_agg_feature:
+            invalidInputError(False,
+                              "We will add support for 'gen_rolling_feature' method later.")
+
+        future_seq_len = tsdataset.horizon if isinstance(tsdataset.horizon, int) \
+            else max(tsdataset.horizon)
+        return cls(past_seq_len=tsdataset.lookback,
                    future_seq_len=future_seq_len,
                    **kwargs)

@@ -255,8 +255,8 @@ class BasePytorchForecaster(Forecaster):
         """
         # input transform
         if isinstance(data, TSDataset):
-            # if data.numpy_x is None, Need to call the roll method.
-            _rolled = data.numpy_x is None
+            # if data.lookback is None, Need to call the roll method.
+            _rolled = data.lookback is None
             data = data.to_torch_data_loader(batch_size=batch_size,
                                              roll=_rolled,
                                              lookback=self.data_config['past_seq_len'],
@@ -375,8 +375,8 @@ class BasePytorchForecaster(Forecaster):
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
 
         if isinstance(data, TSDataset):
-            # if data.numpy_x is None, Need to call the roll method.
-            _rolled = data.numpy_x is None
+            # if data.lookback is None, Need to call the roll method.
+            _rolled = data.lookback is None
             data = data.to_torch_data_loader(batch_size=batch_size,
                                              roll=_rolled,
                                              lookback=self.data_config['past_seq_len'],
@@ -466,8 +466,8 @@ class BasePytorchForecaster(Forecaster):
             invalidInputError(False,
                               "You must call fit or restore first before calling predict!")
         if isinstance(data, TSDataset):
-            # if data.numpy_x is None, Need to call the roll method.
-            _rolled = data.numpy_x is None
+            # if data.lookback is None, Need to call the roll method.
+            _rolled = data.lookback is None
             data = data.to_torch_data_loader(batch_size=batch_size,
                                              roll=_rolled,
                                              lookback=self.data_config['past_seq_len'],
@@ -576,8 +576,8 @@ class BasePytorchForecaster(Forecaster):
 
         # data transform
         if isinstance(data, TSDataset):
-            # if data.numpy_x is None, Need to call the roll method.
-            _rolled = data.numpy_x is None
+            # if data.lookback is None, Need to call the roll method.
+            _rolled = data.lookback is None
             data = data.to_torch_data_loader(batch_size=batch_size,
                                              roll=_rolled,
                                              lookback=self.data_config['past_seq_len'],
@@ -676,8 +676,8 @@ class BasePytorchForecaster(Forecaster):
             invalidInputError(False,
                               "You must call fit or restore first before calling evaluate!")
         if isinstance(data, TSDataset):
-            # if data.numpy_x is None, Need to call the roll method.
-            _rolled = data.numpy_x is None
+            # if data.lookback is None, Need to call the roll method.
+            _rolled = data.lookbacknumpy_x is None
             data = data.to_torch_data_loader(batch_size=batch_size,
                                              roll=_rolled,
                                              lookback=self.data_config['past_seq_len'],
@@ -1017,39 +1017,37 @@ class BasePytorchForecaster(Forecaster):
         :param tsdataset: A bigdl.chronos.data.tsdataset.TSDataset instance.
         :param past_seq_len: Specify the history time steps (i.e. lookback).
                Do not specify the 'past_seq_len' if your tsdataset has called
-               the 'TSDataset.roll' method.
+               the 'TSDataset.roll' method or 'TSDataset.to_torch_data_loader'.
         :param future_seq_len: Specify the output time steps (i.e. horizon).
                Do not specify the 'future_seq_len' if your tsdataset has called
-               the 'TSDataset.roll' method.
+               the 'TSDataset.roll' method or 'TSDataset.to_torch_data_loader'.
         :param kwargs: Specify parameters of Forecaster,
                e.g. loss and optimizer, etc.
                More info, please refer to Forecaster.__init__ methods.
 
         :return: A Forecaster Model.
         """
-        if isinstance(tsdataset, TSDataset):
-            output_feature_num = len(tsdataset.target_col)
-            input_feature_num = output_feature_num + len(tsdataset.feature_col)
+        from bigdl.nano.utils.log4Error import invalidInputError
+        if not isinstance(tsdataset, TSDataset):
+            invalidInputError(False,
+                              f"We only supports input a TSDataset, but get{type(tsdataset)}.")
 
-            # calling roll or to_torch_data_loader
-            if tsdataset.horizon is not None:
-                past_seq_len = tsdataset.lookback
-                future_seq_len = tsdataset.horizon
-
-            # calling roll only
-            if tsdataset.numpy_x is not None:
-                output_feature_num = len(tsdataset.roll_target)
-                input_feature_num = output_feature_num + len(tsdataset.roll_feature)
-
+        if tsdataset.lookback is not None:
+            past_seq_len = tsdataset.lookback
+            future_seq_len = tsdataset.horizon if isinstance(tsdataset.horizon, int) \
+                else max(tsdataset.horizon)
+            output_feature_num = len(tsdataset.roll_target)
+            input_feature_num = len(tsdataset.roll_feature) + output_feature_num
             # TODO Support for gen_rolling_feature will be split into next pr
-            if tsdataset.roll_additional_feature is not None:
+        elif past_seq_len is not None and future_seq_len is not None:
+            past_seq_len = past_seq_len
+            future_seq_len = future_seq_len
+            output_feature_num = len(tsdataset.target_col)
+            input_feature_num = len(tsdataset.feature_col) + output_feature_num
+            if tsdataset._has_generate_agg_feature:
                 invalidInputError(False,
                                   "We will add support for 'gen_rolling_feature' method later.")
-
-
-        # TODO Support specifying 'auto' as past_seq_len.
-        if past_seq_len is None or future_seq_len is None:
-            from bigdl.nano.utils.log4Error import invalidInputError
+        else:
             invalidInputError(False,
                               "Forecaster requires 'past_seq_len' and 'future_seq_len' to specify "
                               "the history time step and output time step.")
