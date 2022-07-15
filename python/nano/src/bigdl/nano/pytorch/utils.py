@@ -28,33 +28,50 @@ TORCH_VERSION_LESS_1_12 = _compare_version("torch", operator.lt, "1.12")
 LIGHTNING_VERSION_LESS_1_6 = _compare_version("pytorch_lightning", operator.lt, "1.6")
 
 
-def wrap_data_fuction(model: pl.LightningModule):
-    if not getattr(model, "on_before_batch_transfer_wrapped", None):
-        fn = getattr(model, "on_before_batch_transfer")
+def batch_call(func):
+    """
+    Extending the behavior of the DataHook on_before_batch_transfer of pl_module to convert data
+    to channels_last at each step.
+    """
 
-        def on_before_batch_transfer(self, batch, dataloader_idx):
+    def on_before_batch_transfer(self, batch, dataloader_idx):
+
+        def convert_channels_last(batch):
             if isinstance(batch, torch.Tensor) and batch.dim() == 4:
-                batch = fn(batch, dataloader_idx)
                 batch = batch.to(memory_format=torch.channels_last)
             elif isinstance(batch, list) or isinstance(batch, tuple):
                 batch = list(batch)
                 for index, t in enumerate(batch):
-                    batch[index] = on_before_batch_transfer(self, t, dataloader_idx)
+                    batch[index] = convert_channels_last(t)
             return batch
-
-        setattr(model, "on_before_batch_transfer_wrapped", fn)
-        model.on_before_batch_transfer = MethodType(on_before_batch_transfer, model)
-    else:
-        setattr(model, "on_before_batch_transfer", model.on_before_batch_transfer_wrapped)
-        delattr(model, "on_before_batch_transfer_wrapped")
+        batch = func(batch, dataloader_idx)
+        batch = convert_channels_last(batch)
+        return batch
+    return on_before_batch_transfer
 
 
 class ChannelsLastCallback(pl.Callback):
+    """
+    Custom pl.Callback for converting model and data to channels_last
+    """
+
     def setup(self, trainer, pl_module, stage: Optional[str] = None) -> None:
-        wrap_data_fuction(pl_module)
+        """
+        Extending the hook to covert model to channels_last 
+        and wrap hook on_before_batch_transfer of pl_module at setup stage.
+        """
+        # wrap_data_fuction(pl_module)
         trainer.model = trainer.model.to(memory_format=torch.channels_last)
+        fn_old = getattr(pl_module, "on_before_batch_transfer")
+        fn = batch_call(fn_old)
+        setattr(pl_module, "on_before_batch_transfer_origin", fn_old)
+        pl_module.on_before_batch_transfer = MethodType(fn, pl_module)
         return super().setup(trainer, pl_module, stage)
 
     def teardown(self, trainer, pl_module, stage: Optional[str] = None) -> None:
-        wrap_data_fuction(pl_module)
+        """
+        Undo the changes to pl_module at end of fit, validate, tests, or predict.
+        """
+        setattr(pl_module, "on_before_batch_transfer", pl_module.on_before_batch_transfer_origin)
+        delattr(pl_module, "on_before_batch_transfer_origin")
         return super().teardown(trainer, pl_module, stage)
