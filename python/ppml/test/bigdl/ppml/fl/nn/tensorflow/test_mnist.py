@@ -16,9 +16,7 @@
 
 from multiprocessing import Process
 import unittest
-from cv2 import log
 import numpy as np
-import pandas as pd
 import os
 
 from bigdl.ppml.fl import *
