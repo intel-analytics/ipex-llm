@@ -34,7 +34,7 @@ private[bigdl] object OpenCVMethod {
    * @return opencv mat
    */
   def fromImageBytes(fileContent: Array[Byte],
-                     imageCodec: Int = Imgcodecs.CV_LOAD_IMAGE_UNCHANGED): OpenCVMat = {
+                     imageCodec: Int = Imgcodecs.IMREAD_UNCHANGED): OpenCVMat = {
     var mat: Mat = null
     var matOfByte: MatOfByte = null
     var result: OpenCVMat = null
