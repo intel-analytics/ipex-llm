@@ -369,8 +369,8 @@ def get_size(x):
                           " or a list of ndarrays, please check your input")
 
 
-def spark_df_to_pd_sparkxshards(df, squeeze=False, index_col=None,
-                                dtype=None, index_map=None):
+def spark_df_to_rdd_pd(df, squeeze=False, index_col=None,
+                       dtype=None, index_map=None):
     from bigdl.orca.data import SparkXShards
     from bigdl.orca import OrcaContext
     columns = df.columns
@@ -385,6 +385,12 @@ def spark_df_to_pd_sparkxshards(df, squeeze=False, index_col=None,
     shard_size = OrcaContext._shard_size
     pd_rdd = df.rdd.mapPartitions(to_pandas(df.columns, squeeze, index_col, dtype, index_map,
                                             batch_size=shard_size))
+    return pd_rdd
+
+
+def spark_df_to_pd_sparkxshards(df, squeeze=False, index_col=None,
+                                dtype=None, index_map=None):
+    pd_rdd = spark_df_to_rdd_pd(df, squeeze, index_col, dtype, index_map)
     spark_xshards = SparkXShards(pd_rdd)
     return spark_xshards
 

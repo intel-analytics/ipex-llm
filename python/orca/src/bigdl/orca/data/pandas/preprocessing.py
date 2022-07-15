@@ -232,9 +232,11 @@ def read_file_spark(file_path, file_type, **kwargs):
         if df.rdd.getNumPartitions() < node_num:
             df = df.repartition(node_num)
 
+        from bigdl.orca.data.utils import spark_df_to_rdd_pd
+        pd_rdd = spark_df_to_rdd_pd(df, squeeze, index_col, dtype, index_map)
+
     try:
-        from bigdl.orca.data.utils import spark_df_to_pd_sparkxshards
-        data_shards = spark_df_to_pd_sparkxshards(df, squeeze, index_col, dtype, index_map)
+        data_shards = SparkXShards(pd_rdd)
     except Exception as e:
         alternative_backend = "pandas" if backend == "spark" else "spark"
         print("An error occurred when reading files with '%s' backend, you may switch to '%s' "
