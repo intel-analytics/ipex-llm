@@ -20,7 +20,12 @@ from pyspark.sql.types import IntegerType, DataType, StructType, StringType, Str
 from bigdl.dllib.utils.log4Error import *
 from bigdl.orca.data import SparkXShards
 from bigdl.orca import OrcaContext
-from bigdl.orca.data.utils import generate_string_idx, check_col_exists
+from pyspark.ml.feature import MinMaxScaler as SparkMinMaxScaler
+from pyspark.ml.feature import VectorAssembler as SparkVectorAssembler
+from pyspark.ml import Pipeline as SparkPipeline
+
+from bigdl.orca.data.utils import *
+import uuid
 
 
 class StringIndexer:
@@ -34,14 +39,14 @@ class StringIndexer:
     def fit_transform(self, shard):
         df = shard.to_spark_df()
         indexedData, self.indices = self.category_encode(df, self.inputCol)
-        data_shards = SparkXShards.from_spark_df(indexedData)
+        data_shards = spark_df_to_pd_sparkxshards(indexedData)
         return data_shards
 
     def transform(self, shard):
         invalidInputError(self.indices, "Please call fit_transform first")
         df = shard.to_spark_df()
         indexedData = self.encode_string(df, self.inputCol, self.indices)
-        data_shards = SparkXShards.from_spark_df(indexedData)
+        data_shards = spark_df_to_pd_sparkxshards(indexedData)
         return data_shards
 
     def gen_string_idx(self, df, columns, freq_limit=None, order_by_freq=False,
@@ -308,3 +313,44 @@ class StringIndex:
         for row in rows:
             res_dict[row[col_id]] = row[index_id]
         return res_dict
+
+
+class MinMaxScaler:
+    def __init__(self, min=0.0, max=1.0, inputCol=None, outputCol=None):
+        self.min = min
+        self.max = max
+        self.inputCol = inputCol
+        self.outputCol = outputCol
+        self.scaler = None
+        self.scalerModel = None
+        if inputCol:
+            self.__createScaler__()
+
+    def __createScaler__(self):
+        invalidInputError(self.inputCol, "inputColumn cannot be empty")
+        invalidInputError(self.outputCol, "outputColumn cannot be empty")
+
+        vecOutputCol = str(uuid.uuid1()) + "x_vec"
+        assembler = SparkVectorAssembler(inputCols=self.inputCol, outputCol=vecOutputCol)
+        scaler = SparkMinMaxScaler(min=self.min, max=self.max,
+                                   inputCol=vecOutputCol, outputCol=self.outputCol)
+        self.scaler = SparkPipeline(stages=[assembler, scaler])
+
+    def setInputOutputCol(self, inputCol, outputCol):
+        self.inputCol = inputCol
+        self.outputCol = outputCol
+        self.__createScaler__()
+
+    def fit_transform(self, shard):
+        df = shard.to_spark_df()
+        self.scalerModel = self.scaler.fit(df)
+        scaledData = self.scalerModel.transform(df)
+        data_shards = spark_df_to_pd_sparkxshards(scaledData)
+        return data_shards
+
+    def transform(self, shard):
+        invalidInputError(self.scalerModel, "Please call fit_transform first")
+        df = shard.to_spark_df()
+        scaledData = self.scalerModel.transform(df)
+        data_shards = spark_df_to_pd_sparkxshards(scaledData)
+        return data_shards

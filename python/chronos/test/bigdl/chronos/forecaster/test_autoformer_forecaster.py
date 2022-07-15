@@ -68,6 +68,22 @@ class TestChronosModelTCNForecaster(TestCase):
         evaluate = forecaster.evaluate(self.val_loader)
         pred = forecaster.predict(self.test_loader)
 
+    def test_autoformer_forecaster_seed(self):
+        evaluate_list = []
+        for i in range(2):
+            forecaster = AutoformerForecaster(past_seq_len=24,
+                                            future_seq_len=5,
+                                            input_feature_num=2,
+                                            output_feature_num=2,
+                                            label_len=12,
+                                            freq='s',
+                                            seed=0)
+            forecaster.fit(self.train_loader, epochs=3, batch_size=32)
+            evaluate = forecaster.evaluate(self.val_loader)
+            pred = forecaster.predict(self.test_loader)
+            evaluate_list.append(evaluate)
+        assert evaluate_list[0][0]['val_loss'] == evaluate_list[1][0]['val_loss']
+
     def test_autoformer_forecaster_save_load(self):
         forecaster = AutoformerForecaster(past_seq_len=24,
                                           future_seq_len=5,

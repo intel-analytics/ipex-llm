@@ -17,3 +17,4 @@
 from .ipex.ipex_api import create_IPEXStrategy
 from .ddp_spawn import DDPSpawnStrategy
 from .ddp_subprocess import DDPSubprocessStrategy
+from .ray.ray_distributed import RayStrategy

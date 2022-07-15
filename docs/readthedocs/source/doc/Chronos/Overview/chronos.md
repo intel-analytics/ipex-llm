@@ -36,7 +36,7 @@ pip install bigdl-nano[tensorflow]
 pip install pmdarima==1.8.2
 pip install prophet==1.0.1
 pip install neural-compressor==1.8.1
-pip install pyarrow=6.0.1
+pip install pyarrow==6.0.1
 ```
 ```eval_rst
 .. note:: 

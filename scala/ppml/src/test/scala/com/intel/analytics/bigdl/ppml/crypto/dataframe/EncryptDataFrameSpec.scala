@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.ppml.crypto.dataframe
 
+import com.intel.analytics.bigdl.dllib.utils.LoggerFilter
 import com.intel.analytics.bigdl.ppml.PPMLContext
 import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, CryptoCodec, DECRYPT, ENCRYPT, PLAIN_TEXT}
 import org.apache.spark.{SparkConf, SparkContext}
@@ -24,6 +25,9 @@ import org.apache.spark.sql.SparkSession
 import java.io.{File, FileWriter}
 
 class EncryptDataFrameSpec extends DataFrameHelper {
+  LoggerFilter.redirectSparkInfoLogs()
+
+  val (plainFileName, encryptFileName, data, dataKeyPlaintext) = generateCsvData()
 
   val ppmlArgs = Map(
       "spark.bigdl.kms.simple.id" -> appid,
