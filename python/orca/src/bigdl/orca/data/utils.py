@@ -425,18 +425,23 @@ def to_pandas(columns, squeeze=False, index_col=None, dtype=None, index_map=None
 
     def f(iter):
         import pandas as pd
+        import pyarrow as pa
         counter = 0
         data = []
         for row in iter:
             counter += 1
-            data.append(row)
+            data.append(row.asDict())
             if batch_size and counter % batch_size == 0:
-                pd_df = pd.DataFrame(data, columns=columns)
+                table = pa.Table.from_pylist(data)
+                pandas_options = {"date_as_object": True}
+                pd_df = table.to_pandas(**pandas_options)
                 pd_df = postprocess(pd_df)
                 yield pd_df
                 data = []
         if data:
-            pd_df = pd.DataFrame(data, columns=columns)
+            table = pa.Table.from_pylist(data)
+            pandas_options = {"date_as_object": True}
+            pd_df = table.to_pandas(**pandas_options)
             pd_df = postprocess(pd_df)
             yield pd_df
 
