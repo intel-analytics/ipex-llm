@@ -43,7 +43,6 @@ class FLServer(JavaValue):
 
 if __name__ == '__main__':
     fl_server = FLServer()
-    fl_server.set_client_num(2)
     fl_server.build()
     fl_server.start()
     fl_server.block_until_shutdown()
