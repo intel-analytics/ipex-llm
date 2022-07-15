@@ -98,11 +98,10 @@ class TestChronosModelAutoformerForecaster(TestCase):
                                           output_feature_num=2,
                                           label_len=12,
                                           freq='s',
-                                          loss="mae",
+                                          loss="mse",
                                           metrics=['mae', 'mse', 'mape'],
                                           lr=space.Real(0.001, 0.01, log=True))
-        forecaster.tune(train_data, validation_data=val_data,
-                        n_trials=2, target_metric='mse', direction="minimize")
+        forecaster.tune(train_data, validation_data=val_data, n_trials=2)
         forecaster.fit(train_data, epochs=3, batch_size=32)
         evaluate = forecaster.evaluate(val_data)
 
