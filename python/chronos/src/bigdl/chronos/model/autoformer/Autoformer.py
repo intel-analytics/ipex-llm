@@ -39,16 +39,13 @@
 # code adapted from https://github.com/thuml/Autoformer
 
 
-from pickletools import optimize
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from .layers.Embed import DataEmbedding, DataEmbedding_wo_pos
+from .layers.Embed import DataEmbedding_wo_pos
 from .layers.AutoCorrelation import AutoCorrelation, AutoCorrelationLayer
 from .layers.Autoformer_EncDec import Encoder, Decoder, EncoderLayer,\
     DecoderLayer, my_Layernorm, series_decomp
 import torch.optim as optim
-import numpy as np
 import pytorch_lightning as pl
 
 from collections import namedtuple
