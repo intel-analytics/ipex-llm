@@ -175,7 +175,7 @@ object ImageSet {
    *              By default is Imgcodecs.CV_LOAD_IMAGE_UNCHANGED
    */
   def array(data: Array[Array[Byte]], resizeH: Int = -1, resizeW: Int = -1,
-            imageCodec: Int = Imgcodecs.IMREAD_UNCHANGED ,
+            imageCodec: Int = Imgcodecs.IMREAD_UNCHANGED,
             labelMap: Map[String, Int] = null): ImageSet = {
     val images = data.map(ImageFeature(_))
     val imageSet = ImageSet.array(images, labelMap)
@@ -201,7 +201,7 @@ object ImageSet {
    *              By default is Imgcodecs.CV_LOAD_IMAGE_UNCHANGED
    */
   def rddBytes(data: RDD[Array[Byte]], resizeH: Int = -1, resizeW: Int = -1,
-               imageCodec: Int = Imgcodecs.IMREAD_UNCHANGED ,
+               imageCodec: Int = Imgcodecs.IMREAD_UNCHANGED,
                labelMap: Map[String, Int] = null): ImageSet = {
     val images = data.map(ImageFeature(_))
     val imageSet = ImageSet.rdd(images, labelMap)
@@ -236,7 +236,7 @@ object ImageSet {
    */
   def read(path: String, sc: SparkContext = null, minPartitions: Int = 1,
            resizeH: Int = -1, resizeW: Int = -1,
-           imageCodec: Int = Imgcodecs.IMREAD_UNCHANGED ,
+           imageCodec: Int = Imgcodecs.IMREAD_UNCHANGED,
            withLabel: Boolean = false, oneBasedLabel: Boolean = true): ImageSet = {
     val imageSet = if (null != sc) {
       readToDistributedImageSet(path, minPartitions, sc, withLabel, oneBasedLabel)
