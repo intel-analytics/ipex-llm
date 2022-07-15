@@ -214,8 +214,8 @@ class AutoformerForecaster(Forecaster):
         :param target_metric: the target metric to optimize,
                a string or an instance of torchmetrics.metric.Metric
         :param direction: in which direction to optimize the target metric,
-               "maximize" - larger the better
-               "minimize" - smaller the better
+               "maximize" - larger the better.
+               "minimize" - smaller the better.
         :param n_trials: number of trials to run
         :param n_parallels: number of parallel processes used to run trials.
                to use parallel tuning you need to use a RDB url for storage and specify study_name.
