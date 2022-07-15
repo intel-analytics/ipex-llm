@@ -18,6 +18,21 @@ import argparse
 
 from bigdl.ppml.ppml_context import *
 
+"""
+execute the following command to run this example on local
+
+python simple_query_example.py \
+--simple_app_id your_app_id \
+--simple_app_key your_app_key \
+--primary_key_path /your/primary/key/path/primaryKey \
+--data_key_path /your/data/key/path/dataKey \
+--input_path /your/file/input/path \
+--output_path /your/file/output/path \
+--input_encrypt_mode AES/CBC/PKCS5Padding \
+--output_encrypt_mode plain_text
+
+"""
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--simple_app_id", type=str, required=True, help="simple app id")
 parser.add_argument("--simple_app_key", type=str, required=True, help="simple app key")
@@ -39,7 +54,7 @@ data = [("Tom", "20", "Developer"), ("Jane", "21", "Developer"), ("Tony", "19", 
 df = sc.spark.createDataFrame(data).toDF("name", "age", "job")
 
 # write DataFrame as an encrypted csv file
-sc.write(df, args.output_encrypt_mode) \
+sc.write(df, args.input_encrypt_mode) \
     .mode('overwrite') \
     .option("header", True) \
     .csv(args.input_path)
@@ -56,7 +71,7 @@ df.select(df["name"], df["age"] + 1).show()
 developers = df.filter((df["job"] == "Developer") & df["age"]
                        .between(20, 40)).toDF("name", "age", "job").repartition(1)
 
-sc.write(developers, CryptoMode.PLAIN_TEXT) \
+sc.write(developers, args.output_encrypt_mode) \
     .mode('overwrite') \
     .option("header", True) \
     .csv(args.output_path)
