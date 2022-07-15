@@ -1,3 +1,19 @@
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 import os
 from turtle import forward
 import pytest
@@ -48,11 +64,10 @@ class TestChannelsLast(TestCase):
     model = customResNet()
     loss = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
-    dummy_input = torch.rand(8, 3, 128, 128)
-    dummy_label = torch.randint(1, 10, (8,))
-
-    dataset = TensorDataset(dummy_input, dummy_label)
-    train_loader = DataLoader(dataset)
+    data_loader = create_data_loader(data_dir, batch_size, num_workers,
+                                        data_transform, subset=dataset_size)
+    test_data_loader = create_test_data_loader(data_dir, batch_size, num_workers,
+                                                data_transform, subset=dataset_size)
 
     def setUp(self):
         test_dir = os.path.dirname(__file__)
@@ -67,8 +82,8 @@ class TestChannelsLast(TestCase):
             metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
         )
         trainer = Trainer(max_epochs=1, channels_last=True)
-        trainer.fit(pl_model, self.train_loader)
-        trainer.test(pl_model, self.train_loader)
+        trainer.fit(pl_model, self.data_loader, self.test_data_loader)
+        trainer.test(pl_model, self.test_data_loader)
 
     def test_trainer_channels_last_subprocess(self):
         pl_model = LightningModuleFromTorch(
@@ -79,19 +94,18 @@ class TestChannelsLast(TestCase):
                           num_processes=2,
                           distributed_backend="subprocess", 
                           channels_last=True)
-        trainer.fit(pl_model, self.train_loader)
-        trainer.test(pl_model, self.train_loader)
+        trainer.fit(pl_model, self.data_loader, self.test_data_loader)
+        trainer.test(pl_model, self.test_data_loader)
 
 
 class TestChannelsLastSpawn(TestCase):
     model = customResNet()
     loss = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
-    dummy_input = torch.rand(8, 3, 128, 128)
-    dummy_label = torch.randint(1, 10, (8,))
-
-    dataset = TensorDataset(dummy_input, dummy_label)
-    train_loader = DataLoader(dataset)
+    data_loader = create_data_loader(data_dir, batch_size, num_workers,
+                                        data_transform, subset=dataset_size)
+    test_data_loader = create_test_data_loader(data_dir, batch_size, num_workers,
+                                                data_transform, subset=dataset_size)
 
     def test_trainer_channels_last_spaw(self):
         pl_model = LightningModuleFromTorch(
@@ -102,8 +116,8 @@ class TestChannelsLastSpawn(TestCase):
                           num_processes=2,
                           distributed_backend="spawn", 
                           channels_last=True)
-        trainer.fit(pl_model, self.train_loader)
-        trainer.test(pl_model, self.train_loader)
+        trainer.fit(pl_model, self.data_loader, self.test_data_loader)
+        trainer.test(pl_model, self.data_loader)
 
     
 if __name__ == '__main__':
