@@ -168,7 +168,7 @@ class BasePytorchForecaster(Forecaster):
 
         # build auto model
         self.tune_internal = self._build_automodel(data, validation_data, batch_size, epochs)
-        
+
         from pytorch_lightning.callbacks import Callback
 
         # reset current epoch = 0 after each run
@@ -181,7 +181,8 @@ class BasePytorchForecaster(Forecaster):
                                     checkpoint_callback=self.checkpoint_callback,
                                     num_processes=self.num_processes, use_ipex=self.use_ipex,
                                     use_hpo=True,
-                                    callbacks=[ResetCallback()] if self.num_processes == 1 else None)
+                                    callbacks=[ResetCallback()] if self.num_processes == 1
+                                                                else None)
         # run hyper parameter search
         self.internal = self.tune_trainer.search(
             self.tune_internal,
