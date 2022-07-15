@@ -30,6 +30,7 @@ LIGHTNING_VERSION_LESS_1_6 = _compare_version("pytorch_lightning", operator.lt, 
 def wrap_data_fuction(model: pl.LightningModule):
     if not getattr(model, "on_before_batch_transfer_wrapped", None):
         fn = getattr(model, "on_before_batch_transfer")
+
         def on_before_batch_transfer(self, batch, dataloader_idx):
             if isinstance(batch, torch.Tensor) and batch.dim() == 4:
                 batch = fn(batch, dataloader_idx)
@@ -39,6 +40,7 @@ def wrap_data_fuction(model: pl.LightningModule):
                 for index, t in enumerate(batch):
                     batch[index] = on_before_batch_transfer(self, t, dataloader_idx)
             return batch
+        
         setattr(model, "on_before_batch_transfer_wrapped", fn)
         model.on_before_batch_transfer = MethodType(on_before_batch_transfer, model)
     else:
@@ -47,10 +49,11 @@ def wrap_data_fuction(model: pl.LightningModule):
 
 
 class ChannelsLastCallback(pl.Callback):
-    def setup(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule", stage: Optional[str] = None) -> None:
+    def setup(self, trainer, pl_module, stage: Optional[str] = None) -> None:
         wrap_data_fuction(pl_module)
         trainer.model = trainer.model.to(memory_format=torch.channels_last)
         return super().setup(trainer, pl_module, stage)
-    def teardown(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule", stage: Optional[str] = None) -> None:
+
+    def teardown(self, trainer, pl_module, stage: Optional[str] = None) -> None:
         wrap_data_fuction(pl_module)
         return super().teardown(trainer, pl_module, stage)
