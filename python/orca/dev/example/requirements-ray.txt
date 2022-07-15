@@ -6,7 +6,7 @@ opencv-python
 matplotlib
 tqdm
 pandas
-ray==1.9.2
+ray[default]
 dm_tree
 gym[atari]==0.19.0
 analytics-zoo[ray]
