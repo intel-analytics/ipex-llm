@@ -25,7 +25,7 @@ import math
 from functools import partial
 from torch.utils.data import TensorDataset, DataLoader
 from bigdl.nano.automl.hpo.space import Space
-from .utils_hpo import GenericLightningModule, _format_metric_str
+from .utils_hpo import GenericLightningModule, _format_metric_str, _config_has_search_space
 from bigdl.nano.utils.log4Error import invalidOperationError, invalidInputError
 
 
@@ -63,7 +63,7 @@ class BasePytorchForecaster(Forecaster):
             # Model preparation
             self.fitted = False
 
-            has_space = self._config_has_search_space(
+            has_space = _config_has_search_space(
                 config={**self.model_config, **self.optim_config,
                         **self.loss_config, **self.data_config})
 
@@ -84,18 +84,6 @@ class BasePytorchForecaster(Forecaster):
             self.openvino_fp32 = None  # placeholader openvino session for fp32 precision
             self.onnxruntime_int8 = None  # onnxruntime session for int8 precision
             self.pytorch_int8 = None  # pytorch model for int8 precision
-
-    @staticmethod
-    def _config_has_search_space(config):
-        """Check if there's any search space in configuration."""
-        for _, v in config.items():
-            if isinstance(v, Space):
-                return True
-            if isinstance(v, list):
-                for item in v:
-                    if isinstance(item, Space):
-                        return True
-        return False
 
     def _build_automodel(self, data, validation_data=None, batch_size=32, epochs=1):
         """Build a Generic Model using config parameters."""

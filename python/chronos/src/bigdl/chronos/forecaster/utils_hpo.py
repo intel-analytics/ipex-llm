@@ -28,6 +28,7 @@ import torch
 import inspect
 from torch import nn, Tensor, fx
 from torch.utils.data import TensorDataset, DataLoader
+from bigdl.nano.automl.hpo.space import Space
 
 
 @hpo.plmodel()
@@ -301,3 +302,15 @@ def _format_metric_str(prefix, metric):
         invalidInputError(metric_func is not None,
                           "{} is not found in available metrics.".format(metric))
     return _format_metric(prefix, metric_func)
+
+
+def _config_has_search_space(config):
+        """Check if there's any search space in configuration."""
+        for _, v in config.items():
+            if isinstance(v, Space):
+                return True
+            if isinstance(v, list):
+                for item in v:
+                    if isinstance(item, Space):
+                        return True
+        return False

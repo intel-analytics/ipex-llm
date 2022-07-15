@@ -23,7 +23,7 @@ from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
 from bigdl.chronos.forecaster.utils import check_transformer_data
 from bigdl.chronos.pytorch import TSTrainer as Trainer
 from bigdl.nano.automl.hpo.space import Space
-from bigdl.chronos.forecaster.utils_hpo import GenericTSTransformerLightningModule
+from bigdl.chronos.forecaster.utils_hpo import GenericTSTransformerLightningModule, _config_has_search_space
 
 from .utils_hpo import _format_metric_str
 import warnings
@@ -159,13 +159,9 @@ class AutoformerForecaster(Forecaster):
         self.use_amp = False
         self.use_hpo = True
 
-        has_space = self._config_has_search_space(
+        has_space = _config_has_search_space(
             config={**self.model_config, **self.optim_config,
                     **self.loss_config, **self.data_config})
-
-        if not self.use_hpo and has_space:
-            invalidInputError(False, "Found search spaces in arguments but HPO is disabled."
-                              "Enable HPO or remove search spaces in arguments to use.")
 
         if not has_space:
             if self.use_hpo:
@@ -175,18 +171,6 @@ class AutoformerForecaster(Forecaster):
 
         self.model_creator = model_creator
         self.loss_creator = loss_creator
-
-    @staticmethod
-    def _config_has_search_space(config):
-        """Check if there's any search space in configuration."""
-        for _, v in config.items():
-            if isinstance(v, Space):
-                return True
-            if isinstance(v, list):
-                for item in v:
-                    if isinstance(item, Space):
-                        return True
-        return False
 
     def _build_automodel(self, data, validation_data=None, batch_size=32, epochs=1):
         """Build a Generic Model using config parameters."""
