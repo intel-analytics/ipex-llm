@@ -57,7 +57,7 @@ developers = df.filter((df["job"] == "Developer") & df["age"].between(20, 40)).t
 
 developers.repartition(1)
 
-sc.write(developers, args.output_encrypt_mode) \
+sc.write(developers, CryptoMode.PLAIN_TEXT) \
     .mode('overwrite') \
     .option("header", True) \
     .csv(args.output_path)
