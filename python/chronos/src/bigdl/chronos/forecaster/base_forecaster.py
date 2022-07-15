@@ -168,13 +168,20 @@ class BasePytorchForecaster(Forecaster):
 
         # build auto model
         self.tune_internal = self._build_automodel(data, validation_data, batch_size, epochs)
+        
+        from pytorch_lightning.callbacks import Callback
 
-        from bigdl.chronos.pytorch import TSTrainer as Trainer
+        # reset current epoch = 0 after each run
+        class ResetCallback(Callback):
+            def on_train_end(self, trainer, pl_module):
+                trainer.fit_loop.current_epoch = 0
+
         # shall we use the same trainier
         self.tune_trainer = Trainer(logger=False, max_epochs=epochs,
                                     checkpoint_callback=self.checkpoint_callback,
                                     num_processes=self.num_processes, use_ipex=self.use_ipex,
-                                    use_hpo=True)
+                                    use_hpo=True,
+                                    callbacks=[ResetCallback()] if self.num_processes == 1 else None)
         # run hyper parameter search
         self.internal = self.tune_trainer.search(
             self.tune_internal,
