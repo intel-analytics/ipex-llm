@@ -413,7 +413,7 @@ class SparkXShards(XShards):
             import pandas as pd
             df = self.to_spark_df()
             distinctDF = df.distinct()
-            data_shards = SparkXShards.from_spark_df(distinctDF)
+            data_shards = spark_df_to_pd_sparkxshards(distinctDF)
             return data_shards
         else:
             # we may support numpy or other types later
