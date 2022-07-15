@@ -53,9 +53,8 @@ df.select("name").count()
 
 df.select(df["name"], df["age"] + 1).show()
 
-developers = df.filter((df["job"] == "Developer") & df["age"].between(20, 40)).toDF("name", "age", "job")
-
-developers.repartition(1)
+developers = df.filter((df["job"] == "Developer") & df["age"]
+                       .between(20, 40)).toDF("name", "age", "job").repartition(1)
 
 sc.write(developers, CryptoMode.PLAIN_TEXT) \
     .mode('overwrite') \
