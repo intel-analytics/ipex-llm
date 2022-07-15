@@ -44,7 +44,7 @@ class AutoformerForecaster(Forecaster):
                  n_head=8,
                  d_ff=256,
                  activation='gelu',
-                 e_layer=2,
+                 e_layers=2,
                  d_layers=1,
                  optimizer="Adam",
                  loss="mse",
@@ -116,7 +116,7 @@ class AutoformerForecaster(Forecaster):
             "n_head": n_head,
             "d_ff": d_ff,
             "activation": activation,
-            "e_layer": e_layer,
+            "e_layers": e_layers,
             "c_out": output_feature_num,
             "d_layers": d_layers
         }
