@@ -72,45 +72,62 @@ jobs:
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
       
-      - name: Init conda environment
-        shell: bash
-        run: |
-          $CONDA/bin/conda create -n nano-pytorch -y python==3.7.10 setuptools=58.0.4
-          source $CONDA/bin/activate nano-pytorch
-          $CONDA/bin/conda info
-          bash python/nano/dev/build_and_install.sh linux default false pytorch
-          if [ ! -z "${{matrix.pytorch-version}}" ]; then
-            pip install ${{matrix.pytorch-version}} -f https://download.pytorch.org/whl/torch_stable.html
-          fi
-          pip install pytest
-          pip install ray[default]==1.11.0 prometheus_client==0.13.0
-          pip install ConfigSpace
-          pip install optuna
-          pip install neural-compressor==1.11
-          pip install onnxruntime onnxruntime-extensions onnx
-          source bigdl-nano-init
-      
+      # - name: Init conda environment
+      #   shell: bash
+      #   run: |
+      #     $CONDA/bin/conda create -n nano-pytorch -y python==3.7.10 setuptools=58.0.4
+      #     source $CONDA/bin/activate nano-pytorch
+      #     $CONDA/bin/conda info
+      #     bash python/nano/dev/build_and_install.sh linux default false pytorch
+      #     if [ ! -z "${{matrix.pytorch-version}}" ]; then
+      #       pip install ${{matrix.pytorch-version}} -f https://download.pytorch.org/whl/torch_stable.html
+      #     fi
+      #     pip install pytest
+      #     pip install ray[default]==1.11.0 prometheus_client==0.13.0
+      #     pip install ConfigSpace
+      #     pip install optuna
+      #     pip install neural-compressor==1.11
+      #     pip install onnxruntime onnxruntime-extensions onnx
+      #     source bigdl-nano-init
+
       - name: Run PyTorch unit tests
         shell: bash
         run: |
-          source $CONDA/bin/activate nano-pytorch
+          $CONDA/bin/conda create -n pytorch -y python==3.7.10 setuptools=58.0.4
+          source $CONDA/bin/activate pytorch
+          $CONDA/bin/conda info
+          bash python/nano/dev/build_and_install.sh linux default false pytorch
+          pip install pytest
+          if [ ! -z "${{matrix.pytorch-version}}" ]; then
+            pip install ${{matrix.pytorch-version}} -f https://download.pytorch.org/whl/torch_stable.html
+          fi
+          source bigdl-nano-init
           bash python/nano/test/run-nano-pytorch-tests.sh
-          bash python/nano/test/run-nano-pytorch-ray-tests.sh
-          bash python/nano/test/run-nano-automl-pytorch-tests.sh
-          bash python/nano/test/run-nano-pytorch-inc-tests.sh
-          bash python/nano/test/run-nano-pytorch-onnx-tests.sh
-          bash python/nano/benchmark/start_benchmark.sh
           source $CONDA/bin/deactivate
+          $CONDA/bin/conda remove -n pytorch --all
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-          SANITY_CHECK: "1"
 
-      - name: Post PyTorch Unit Tests
+      - name: Run PyTorch unit tests(Ray)
         shell: bash
         run: |
-          $CONDA/bin/conda remove -n nano-pytorch --all
+          $CONDA/bin/conda create -n ray-pytorch -y python==3.7.10 setuptools=58.0.4
+          source $CONDA/bin/activate ray-pytorch
+          $CONDA/bin/conda info
+          bash python/nano/dev/build_and_install.sh linux default false pytorch
+          pip install pytest
+          pip install ray[default]==1.11.0 prometheus_client==0.13.0
+          if [ ! -z "${{matrix.pytorch-version}}" ]; then
+            pip install ${{matrix.pytorch-version}} -f https://download.pytorch.org/whl/torch_stable.html
+          fi
+          source bigdl-nano-init
+          bash python/nano/test/run-nano-pytorch-ray-tests.sh
+          source $CONDA/bin/deactivate
+          $CONDA/bin/conda remove -n ray-pytorch --all
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
-      - name: Run Pytorch unit tests(OpenVINO)
+      - name: Run PyTorch unit tests (OpenVINO)
         shell: bash
         run: |
           $CONDA/bin/conda create -n openvino-pytorch -y python==3.7.10 setuptools=58.0.4
@@ -128,6 +145,117 @@ jobs:
           $CONDA/bin/conda remove -n openvino-pytorch --all
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Run PyTorch unit tests (Automl)
+        shell: bash
+        run: |
+          $CONDA/bin/conda create -n nano-automl-pytorch -y python==3.7.10 setuptools=58.0.4
+          source $CONDA/bin/activate nano-automl-pytorch
+          $CONDA/bin/conda info
+          bash python/nano/dev/build_and_install.sh linux default false pytorch
+          pip install pytest
+          pip install ConfigSpace
+          pip install optuna
+          source bigdl-nano-init
+          bash python/nano/test/run-nano-automl-pytorch-tests.sh
+          source $CONDA/bin/deactivate
+          $CONDA/bin/conda remove -n nano-automl-pytorch --all
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Run PyTorch unit tests (INC)
+        shell:
+        run: |
+          $CONDA/bin/conda create -n inc-pytorch -y python==3.7.10 setuptools=58.0.4
+          source $CONDA/bin/activate inc-pytorch
+          $CONDA/bin/conda info
+          bash python/nano/dev/build_and_install.sh linux default false pytorch
+          pip install pytest
+          if [ ! -z "${{matrix.pytorch-version}}" ]; then
+            pip install ${{matrix.pytorch-version}} -f https://download.pytorch.org/whl/torch_stable.html
+          fi
+          pip install neural-compressor==1.11
+          source bigdl-nano-init
+          bash python/nano/test/run-nano-pytorch-inc-tests.sh
+          source $CONDA/bin/deactivate
+          $CONDA/bin/conda remove -n inc-pytorch --all
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Run PyTorch unit tests (ONNX)
+        shell: bash
+        run: |
+          $CONDA/bin/conda create -n onnx-pytorch -y python==3.7.10 setuptools=58.0.4
+          source $CONDA/bin/activate onnx-pytorch
+          $CONDA/bin/conda info
+          bash python/nano/dev/build_and_install.sh linux default false pytorch
+          if [ ! -z "${{matrix.pytorch-version}}" ]; then
+            pip install ${{matrix.pytorch-version}} -f https://download.pytorch.org/whl/torch_stable.html
+          fi
+          pip install pytest
+          pip install neural-compressor==1.11
+          pip install onnxruntime onnxruntime-extensions onnx
+          source bigdl-nano-init
+          bash python/nano/test/run-nano-pytorch-onnx-tests.sh
+          source $CONDA/bin/deactivate
+          $CONDA/bin/conda remove -n onnx-pytorch --all
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+      
+      # - name: Run PyTorch unit tests
+      #   shell: bash
+      #   run: |
+      #     source $CONDA/bin/activate nano-pytorch
+      #     bash python/nano/test/run-nano-pytorch-tests.sh
+      #     bash python/nano/test/run-nano-pytorch-ray-tests.sh
+      #     bash python/nano/test/run-nano-automl-pytorch-tests.sh
+      #     bash python/nano/test/run-nano-pytorch-inc-tests.sh
+      #     bash python/nano/test/run-nano-pytorch-onnx-tests.sh
+      #     bash python/nano/benchmark/start_benchmark.sh
+      #     source $CONDA/bin/deactivate
+      #   env:
+      #     ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+      #     SANITY_CHECK: "1"
+
+      # - name: Post PyTorch Unit Tests
+      #   shell: bash
+      #   run: |
+      #     $CONDA/bin/conda remove -n nano-pytorch --all
+
+  nano-unit-test-benchmark-sanity:
+    # The type of runner that the job will run on
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-20.04"]
+        python-version: ["3.7"]
+        pytorch-version: [
+          "torch==1.9.0+cpu torchvision==0.10.0+cpu torch_ipex==1.9.0",
+          ""
+          ]
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools==58.0.4
+          python -m pip install --upgrade wheel
+
+      - name: Run benchmark sanity check
+        shell: bash
+        run: bash python/nano/benchmark/start_benchmark.sh
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+          SANITY_CHECK: "1"
+
 
   nano-unit-test-ipex:
     # The type of runner that the job will run on
