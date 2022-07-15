@@ -2,7 +2,7 @@ package com.intel.analytics.bigdl.friesian.nearline.feature;
 
 import com.intel.analytics.bigdl.friesian.nearline.utils.NearlineHelper;
 import com.intel.analytics.bigdl.friesian.nearline.utils.NearlineUtils;
-import com.intel.analytics.bigdl.friesian.serving.feature.utils.RedisUtils;
+import com.intel.analytics.bigdl.friesian.serving.feature.utils.LettuceUtils;
 import com.intel.analytics.bigdl.friesian.serving.utils.CMDParser;
 import com.intel.analytics.bigdl.grpc.ConfigParser;
 import org.apache.spark.sql.SparkSession;
@@ -10,11 +10,14 @@ import org.apache.spark.sql.SparkSession;
 import java.io.IOException;
 
 public class FeatureInitializer {
-    private RedisUtils redis;
+    private LettuceUtils redis;
 
     FeatureInitializer() {
-        redis = RedisUtils.getInstance(256, NearlineUtils.helper().redisHostPort(),
-                NearlineUtils.helper().getRedisKeyPrefix(), NearlineUtils.helper().itemSlotType());
+        redis = LettuceUtils.getInstance(NearlineUtils.helper().redisTypeEnum(),
+                NearlineUtils.helper().redisHostPort(), NearlineUtils.helper().getRedisKeyPrefix(),
+                NearlineUtils.helper().redisSentinelMasterURL(),
+                NearlineUtils.helper().redisSentinelMasterName(),
+                NearlineUtils.helper().itemSlotType());
     }
 
     public void init() {

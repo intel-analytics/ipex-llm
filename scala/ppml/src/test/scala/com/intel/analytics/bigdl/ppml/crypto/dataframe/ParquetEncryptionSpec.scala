@@ -29,9 +29,7 @@ import java.util.Base64
  * A test suite that tests parquet modular encryption usage.
  */
 class ParquetEncryptionSpec extends DataFrameHelper {
-  override val repeatedNum = 100
-
-  private val encoder = Base64.getEncoder
+  val (plainFileName, encryptFileName, data, dataKeyPlaintext) = generateCsvData()
 
   val ppmlArgs = Map(
     "spark.bigdl.kms.simple.id" -> appid,
@@ -41,27 +39,6 @@ class ParquetEncryptionSpec extends DataFrameHelper {
   )
   val conf = new SparkConf().setMaster("local[4]")
   val sc = PPMLContext.initPPMLContext(conf, "SimpleQuery", ppmlArgs)
-  val sparkSession = sc.getSparkSession()
-  import sparkSession.implicits._
-
-  "SPARK-34990: Write and read an encrypted parquet" should "work" in {
-    val input = Seq((1, 22, 333))
-    val inputDF = input.toDF("a", "b", "c")
-    val parquetDir = new File(dir, "parquet").getCanonicalPath
-    sc.write(inputDF, AES_GCM_CTR_V1)
-      .parquet(parquetDir)
-
-    verifyParquetEncrypted(parquetDir)
-
-    val parquetDF = sparkSession.read.parquet(parquetDir)
-    parquetDF.inputFiles.nonEmpty should be (true)
-    val readDataset = parquetDF.select("a", "b", "c")
-    val result = readDataset.collect()
-    result.length should be (1)
-    result(0).get(0) should be (input.head._1)
-    result(0).get(1) should be (input.head._2)
-    result(0).get(2) should be (input.head._3)
-  }
 
   "write/read encrypted parquet format" should "work" in {
     val enParquetPath = dir + "/en-parquet"
@@ -78,6 +55,27 @@ class ParquetEncryptionSpec extends DataFrameHelper {
     val d2 = df2.schema.map(_.name).mkString(",") + "\n" +
       df2.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
     d2 + "\n" should be (data)
+  }
+
+  "SPARK-34990: Write and read an encrypted parquet" should "work" in {
+    val sparkSession = sc.getSparkSession()
+    import sparkSession.implicits._
+    val input = Seq((1, 22, 333))
+    val inputDF = input.toDF("a", "b", "c")
+    val parquetDir = new File(dir, "parquet").getCanonicalPath
+    sc.write(inputDF, AES_GCM_CTR_V1)
+      .parquet(parquetDir)
+
+    verifyParquetEncrypted(parquetDir)
+
+    val parquetDF = sparkSession.read.parquet(parquetDir)
+    parquetDF.inputFiles.nonEmpty should be (true)
+    val readDataset = parquetDF.select("a", "b", "c")
+    val result = readDataset.collect()
+    result.length should be (1)
+    result(0).get(0) should be (input.head._1)
+    result(0).get(1) should be (input.head._2)
+    result(0).get(2) should be (input.head._3)
   }
 
   "write/read parquet" should "work" in {

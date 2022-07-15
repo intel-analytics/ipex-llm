@@ -16,18 +16,15 @@
 
 package com.intel.analytics.bigdl.friesian.serving.utils.feature
 
-import java.util.{Base64, List => JList}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.T
-import com.intel.analytics.bigdl.friesian.serving.feature.utils.RedisUtils
-import com.intel.analytics.bigdl.friesian.serving.utils.{EncodeUtils, Utils}
-import com.intel.analytics.bigdl.orca.inference.InferenceModel
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto._
-import EncodeUtils.objToBytes
+import com.intel.analytics.bigdl.friesian.serving.utils.EncodeUtils
+import com.intel.analytics.bigdl.friesian.serving.utils.EncodeUtils.objToBytes
+import com.intel.analytics.bigdl.orca.inference.InferenceModel
 import org.apache.logging.log4j.{LogManager, Logger}
-import org.apache.spark.sql.functions.col
-import org.apache.spark.sql.{Row, SparkSession}
 
+import java.util.{Base64, List => JList}
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer

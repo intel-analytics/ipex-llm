@@ -232,38 +232,8 @@ def read_file_spark(file_path, file_type, **kwargs):
         if df.rdd.getNumPartitions() < node_num:
             df = df.repartition(node_num)
 
-        def to_pandas(columns, squeeze=False, index_col=None):
-            def f(iter):
-                import pandas as pd
-                data = list(iter)
-                pd_df = pd.DataFrame(data, columns=columns)
-                if dtype is not None:
-                    if isinstance(dtype, dict):
-                        for col, type in dtype.items():
-                            if isinstance(col, str):
-                                if col not in pd_df.columns:
-                                    invalidInputError(False,
-                                                      "column to be set type is not"
-                                                      " in current dataframe")
-                                pd_df[col] = pd_df[col].astype(type)
-                            elif isinstance(col, int):
-                                if index_map[col] not in pd_df.columns:
-                                    invalidInputError(False,
-                                                      "column index to be set type is not"
-                                                      " in current dataframe")
-                                pd_df[index_map[col]] = pd_df[index_map[col]].astype(type)
-                    else:
-                        pd_df = pd_df.astype(dtype)
-                if squeeze and len(pd_df.columns) == 1:
-                    pd_df = pd_df.iloc[:, 0]
-                if index_col:
-                    pd_df = pd_df.set_index(index_col)
-
-                return [pd_df]
-
-            return f
-
-        pd_rdd = df.rdd.mapPartitions(to_pandas(df.columns, squeeze, index_col))
+        from bigdl.orca.data.utils import spark_df_to_rdd_pd
+        pd_rdd = spark_df_to_rdd_pd(df, squeeze, index_col, dtype, index_map)
 
     try:
         data_shards = SparkXShards(pd_rdd)
