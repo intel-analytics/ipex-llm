@@ -57,7 +57,7 @@ class ChannelsLastCallback(pl.Callback):
 
     def setup(self, trainer, pl_module, stage: Optional[str] = None) -> None:
         """
-        Extending the hook to covert model to channels_last 
+        Extending the hook to covert model to channels_last
         and wrap hook on_before_batch_transfer of pl_module at setup stage.
         """
         # wrap_data_fuction(pl_module)
