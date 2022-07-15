@@ -7,7 +7,7 @@ matplotlib
 tqdm
 pandas
 ray
-gym
+gym==0.19
 numpy
 tensorflow
 mxnet==1.6.0
