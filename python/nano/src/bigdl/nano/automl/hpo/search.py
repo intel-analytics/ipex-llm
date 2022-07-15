@@ -111,7 +111,7 @@ def _prepare_args(kwargs,
     # prepare sampler and pruner args
     sampler_type = create_kwargs.get('sampler', None)
     if sampler_type:
-        sampler_args = create_kwargs.get('sampler_kwargs', {})
+        sampler_args = create_kwargs.get('sampler_kwargs', None)
         sampler = backend.create_sampler(sampler_type, sampler_args)
         create_kwargs['sampler'] = sampler
         create_kwargs.pop('sampler_kwargs', None)

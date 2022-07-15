@@ -351,6 +351,7 @@ def obj(**kwvars):
                 self._inited = False
                 self.kwspaces_ = OrderedDict()
                 self.kwvars = dict()
+                self.sampler_kwargs = dict()
                 self._update_kw()
                 self._callgraph = None  # keep a reference to the call graph
 
@@ -378,6 +379,15 @@ def obj(**kwvars):
                     if isinstance(v, NestedSpace):
                         self.kwspaces_[k] = v
                         self.kwargs[k] = v
+                        for hp in v.cs.get_hyperparameters():
+                            new_parameter = copy.deepcopy(hp)
+                            new_parameter.name = "{}{}{}".format(
+                                k, SPLITTER, new_parameter.name)
+                            # further add the sub_cs prefix onto the param
+                            name = new_parameter.name
+                            if hasattr(new_parameter, "choices"):
+                                choices = tuple(new_parameter.choices)
+                                self.sampler_kwargs[name] = choices
                     elif isinstance(v, Space):
                         self.kwspaces_[k] = v
                         hp = v.get_hp(name=k)
