@@ -7,7 +7,7 @@ matplotlib
 tqdm
 pandas
 ray
-gym[atari]
+gym[atari]==0.19.0
 analytics-zoo[ray]
 numpy
 tensorflow
