@@ -181,7 +181,7 @@ class BasePytorchForecaster(Forecaster):
                                     checkpoint_callback=self.checkpoint_callback,
                                     num_processes=self.num_processes, use_ipex=self.use_ipex,
                                     use_hpo=True,
-                                    callbacks=[ResetCallback()] if self.num_processes == 1 \
+                                    callbacks=[ResetCallback()] if self.num_processes == 1
                                     else None)
         # run hyper parameter search
         self.internal = self.tune_trainer.search(
