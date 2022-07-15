@@ -7,3 +7,10 @@ matplotlib
 tqdm
 pandas
 ray
+gym
+numpy
+tensorflow
+mxnet==1.6.0
+xgboost_ray
+argparse
+PIL
