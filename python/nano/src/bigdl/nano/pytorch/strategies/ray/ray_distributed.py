@@ -29,6 +29,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# type: ignore
 import os
 from shutil import move
 import warnings
@@ -106,13 +107,7 @@ class _RayLauncher(_SpawnLauncher):
 
         strategy = self._strategy
 
-        # reset datamodule to fix bug:
-        # in pytorch lightning 1.6, `datamodule` has a `trainer` member,
-        # if this datamodule has been used for training, its `trainer` member will refers
-        # to the previous trainer, which will causes errors when creating child processes.
-        # pytorch lightning 1.4 resets datamodule automatically before creating child processes,
-        # so we do not need to do this, but 1.6 resets datamodule after creating child processes,
-        # so we must reset datamodule here.
+        # fix bug, see ddp_spawn strategy for details
         if strategy.use_ipex and TORCH_VERSION_LESS_1_10:
             if isinstance(args[1], LightningDataModule):
                 args[1].trainer = None
@@ -234,9 +229,9 @@ class RayStrategy(DDPSpawnStrategy):
 
     def _create_worker(self):
         """Creates Ray actor."""
-        from bigdl.nano.common.cpu_schedule import schedule_workers
+        from bigdl.nano.common.cpu_schedule import schedule_processors
 
-        cpu_procs = schedule_workers(self.num_workers)
+        envs = schedule_processors(self.num_workers)
 
         workers = []
         for i in range(self.num_workers):
@@ -245,10 +240,8 @@ class RayStrategy(DDPSpawnStrategy):
                 num_gpus=int(self.use_gpu)
             ).remote()
 
-            KMP_AFFINITY_vars = f"granularity=fine,proclist"\
-                f"=[{','.join([str(i) for i in cpu_procs[i]])}],explicit"
-            ray.get(worker.set_env_var.remote("KMP_AFFINITY", KMP_AFFINITY_vars))
-            ray.get(worker.set_env_var.remote("OMP_NUM_THREADS", str(len(cpu_procs[i]))))
+            ray.get(worker.set_env_var.remote("KMP_AFFINITY", envs[i]['KMP_AFFINITY']))
+            ray.get(worker.set_env_var.remote("OMP_NUM_THREADS", envs[i]['OMP_NUM_THREADS']))
 
             workers.append(worker)
 
