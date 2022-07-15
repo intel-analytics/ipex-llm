@@ -47,8 +47,8 @@ class BaseINCMetric(ABC):
 
     def result(self):
         # calculate accuracy
-        preds, labels = self.stack(self.pred_list, self.label_list)
-        accuracy = self.metric(preds, labels)
+        labels, preds = self.stack(self.label_list, self.pred_list)
+        accuracy = self.metric(labels, preds)
         return self.to_scalar(accuracy)
 
     @abstractmethod
