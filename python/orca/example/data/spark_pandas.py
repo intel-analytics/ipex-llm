@@ -51,7 +51,7 @@ if __name__ == "__main__":
     trans_data_shard = data_shard.transform_shard(process_feature)
     data2 = trans_data_shard.collect()
 
-    from bigdl.orca.data.transform import *
+    from bigdl.orca.data.transformer import *
     scale = MinMaxScaler(inputCol=["hours", "awake"], outputCol="x_scaled")
     data_shard = scale.fit_transform(trans_data_shard)
 
