@@ -30,8 +30,10 @@ LIGHTNING_VERSION_LESS_1_6 = _compare_version("pytorch_lightning", operator.lt, 
 
 def batch_call(func):
     """
-    Extending the behavior of the DataHook on_before_batch_transfer of pl_module to convert data
-    to channels_last at each step.
+    Decorator to extending hook of pl_module.
+
+    Extending behavior hook on_before_batch_transfer to convert data to channels_last
+    at each step.
     """
 
     def on_before_batch_transfer(self, batch, dataloader_idx):
@@ -52,13 +54,12 @@ def batch_call(func):
 
 class ChannelsLastCallback(pl.Callback):
     """
-    Custom pl.Callback for converting model and data to channels_last
+    Custom pl.Callback for converting model and data to channels_last.
     """
 
     def setup(self, trainer, pl_module, stage: Optional[str] = None) -> None:
         """
-        Extending the hook to covert model to channels_last
-        and wrap hook on_before_batch_transfer of pl_module at setup stage.
+        Override hook setup to convert model to channels_last and wrap DataHook.
         """
         # wrap_data_fuction(pl_module)
         trainer.model = trainer.model.to(memory_format=torch.channels_last)
