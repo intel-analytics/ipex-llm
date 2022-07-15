@@ -68,6 +68,7 @@ class AutoFormer(pl.LightningModule):
         self.output_attention = configs.output_attention
         self.optim = configs.optim
         self.lr = configs.lr
+        self.lr_scheduler_milestones = configs.lr_scheduler_milestones
         self.loss = _loss_creator(configs.loss)
 
         # Decomp
@@ -179,7 +180,14 @@ class AutoFormer(pl.LightningModule):
         return outputs
 
     def configure_optimizers(self):
-        return getattr(optim, self.optim)(self.parameters(), lr=self.lr)
+        optimizer = getattr(optim, self.optim)(self.parameters(), lr=self.lr)
+        if self.lr_scheduler_milestones is not None:
+            scheduler = torch.optim.lr_scheduler.MultiStepLR(
+                optimizer, gamma=0.5, verbose=True,
+                milestones=self.lr_scheduler_milestones)
+            return [optimizer], [scheduler]
+        else:
+            return optimizer
 
 
 def model_creator(config):
@@ -208,7 +216,8 @@ def _transform_config_to_namedtuple(config):
                                  'n_heads', 'd_ff',
                                  'activation', 'e_layers',
                                  'c_out', 'loss',
-                                 'optim', 'lr'])
+                                 'optim', 'lr',
+                                 'lr_scheduler_milestones'])
     args.seq_len = config['seq_len']
     args.label_len = config['label_len']
     args.pred_len = config['pred_len']
@@ -230,5 +239,6 @@ def _transform_config_to_namedtuple(config):
     args.loss = config.get("loss", "mse")
     args.optim = config.get("optim", "Adam")
     args.lr = config.get("lr", 0.0001)
+    args.lr_scheduler_milestones = config.get("lr_scheduler_milestones", None)
 
     return args

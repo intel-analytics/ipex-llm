@@ -49,6 +49,7 @@ class AutoformerForecaster(Forecaster):
                  optimizer="Adam",
                  loss="mse",
                  lr=0.0001,
+                 lr_scheduler_milestones=[3, 4, 5, 6, 7, 8, 9, 10],
                  metrics=["mse"],
                  seed=None,
                  distributed=False,
@@ -72,6 +73,10 @@ class AutoformerForecaster(Forecaster):
                from "mse", "mae", "huber_loss" or any customized loss instance
                you want to use.
         :param lr: Specify the learning rate. This value defaults to 0.001.
+        :param lr_scheduler_milestones: Specify the milestones parameters in
+               torch.optim.lr_scheduler.MultiStepLR.This value defaults to
+               [3, 4, 5, 6, 7, 8, 9, 10]. If you don't want to use scheduler,
+               set this parameter to None to disbale lr_scheduler.
         :param metrics: A list contains metrics for evaluating the quality of
                forecasting. You may only choose from "mse" and "mae" for a
                distributed forecaster. You may choose from "mse", "mae",
@@ -125,7 +130,8 @@ class AutoformerForecaster(Forecaster):
         }
         self.optim_config = {
             "lr": lr,
-            "optim": optimizer
+            "optim": optimizer,
+            "lr_scheduler_milestones": lr_scheduler_milestones,
         }
 
         self.model_config.update(self.loss_config)
