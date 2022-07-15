@@ -27,6 +27,7 @@ TORCH_VERSION_LESS_1_12 = _compare_version("torch", operator.lt, "1.12")
 
 LIGHTNING_VERSION_LESS_1_6 = _compare_version("pytorch_lightning", operator.lt, "1.6")
 
+
 def wrap_data_fuction(model: pl.LightningModule):
     if not getattr(model, "on_before_batch_transfer_wrapped", None):
         fn = getattr(model, "on_before_batch_transfer")
@@ -40,7 +41,7 @@ def wrap_data_fuction(model: pl.LightningModule):
                 for index, t in enumerate(batch):
                     batch[index] = on_before_batch_transfer(self, t, dataloader_idx)
             return batch
-        
+
         setattr(model, "on_before_batch_transfer_wrapped", fn)
         model.on_before_batch_transfer = MethodType(on_before_batch_transfer, model)
     else:
