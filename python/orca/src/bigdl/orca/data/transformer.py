@@ -19,6 +19,7 @@ from pyspark.ml.feature import VectorAssembler as SparkVectorAssembler
 from pyspark.ml import Pipeline as SparkPipeline
 
 from bigdl.orca.data import SparkXShards
+from bigdl.orca.data.utils import *
 from bigdl.dllib.utils.log4Error import *
 import uuid
 
@@ -53,12 +54,12 @@ class MinMaxScaler:
         df = shard.to_spark_df()
         self.scalerModel = self.scaler.fit(df)
         scaledData = self.scalerModel.transform(df)
-        data_shards = SparkXShards.from_spark_df(scaledData)
+        data_shards = spark_df_to_pd_sparkxshards(scaledData)
         return data_shards
 
     def transform(self, shard):
         invalidInputError(self.scalerModel, "Please call fit_transform first")
         df = shard.to_spark_df()
         scaledData = self.scalerModel.transform(df)
-        data_shards = SparkXShards.from_spark_df(scaledData)
+        data_shards = spark_df_to_pd_sparkxshards(scaledData)
         return data_shards
