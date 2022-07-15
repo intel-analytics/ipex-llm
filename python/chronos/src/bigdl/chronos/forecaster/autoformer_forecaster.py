@@ -200,8 +200,8 @@ class AutoformerForecaster(Forecaster):
     def tune(self,
              data,
              validation_data,
-             target_metric,
-             direction,
+             target_metric='mse',
+             direction="minimize",
              n_trials=2,
              n_parallels=1,
              epochs=1,
@@ -213,10 +213,11 @@ class AutoformerForecaster(Forecaster):
         :param data: train data, as numpy ndarray tuple (x, y, x_enc, y_enc)
         :param validation_data: validation data, as numpy ndarray tuple (x, y, x_enc, y_enc)
         :param target_metric: the target metric to optimize,
-               a string or an instance of torchmetrics.metric.Metric
+               a string or an instance of torchmetrics.metric.Metric, default to 'mse'.
         :param direction: in which direction to optimize the target metric,
-               "maximize" - larger the better.
-               "minimize" - smaller the better.
+               "maximize" - larger the better
+               "minimize" - smaller the better
+               default to "minimize".
         :param n_trials: number of trials to run
         :param n_parallels: number of parallel processes used to run trials.
                to use parallel tuning you need to use a RDB url for storage and specify study_name.
