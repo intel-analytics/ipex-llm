@@ -21,7 +21,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Asia/Shanghai
 
 ADD ./install-python-env.sh /opt
-ADD ./colab-notebook /opt/work
+ADD ./colab-notebook /opt/work/colab-notebook
 RUN chmod a+x /opt/install-python-env.sh
 
 RUN apt-get update --fix-missing && \
@@ -43,4 +43,5 @@ RUN apt-get update --fix-missing && \
 
 RUN echo "source activate chronos" > ~/.bashrc
 RUN echo "export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/" >> ~/.bashrc
-ENV PATH /usr/local/envs/bigdl/bin:$PATH
+ENV PATH /usr/local/envs/chronos/bin:$PATH
+
