@@ -42,7 +42,7 @@ df = sc.spark.createDataFrame(data).toDF("name", "age", "job")
 sc.write(df, args.output_encrypt_mode) \
     .mode('overwrite') \
     .option("header", True) \
-    .csv(args.output_path)
+    .csv(args.input_path)
 
 # get a DataFrame from an encrypted csv file
 df = sc.read(args.input_encrypt_mode) \
