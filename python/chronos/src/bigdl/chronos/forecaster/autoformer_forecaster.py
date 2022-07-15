@@ -74,7 +74,7 @@ class AutoformerForecaster(Forecaster):
                you want to use.
         :param lr: Specify the learning rate. This value defaults to 0.001.
         :param lr_scheduler_milestones: Specify the milestones parameters in
-               torch.optim.lr_scheduler.MultiStepLR.This value defaults to 
+               torch.optim.lr_scheduler.MultiStepLR.This value defaults to
                [3, 4, 5, 6, 7, 8, 9, 10]. If you don't want to use scheduler,
                set this parameter to None to disbale lr_scheduler.
         :param metrics: A list contains metrics for evaluating the quality of
