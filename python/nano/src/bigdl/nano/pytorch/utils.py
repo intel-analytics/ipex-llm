@@ -53,14 +53,10 @@ def batch_call(func):
 
 
 class ChannelsLastCallback(pl.Callback):
-    """
-    Custom pl.Callback for converting model and data to channels_last.
-    """
+    """Custom pl.Callback for converting model and data to channels_last."""
 
     def setup(self, trainer, pl_module, stage: Optional[str] = None) -> None:
-        """
-        Override hook setup to convert model to channels_last and wrap DataHook.
-        """
+        """Override hook setup to convert model to channels_last and wrap DataHook."""
         # wrap_data_fuction(pl_module)
         trainer.model = trainer.model.to(memory_format=torch.channels_last)
         fn_old = getattr(pl_module, "on_before_batch_transfer")
@@ -70,9 +66,7 @@ class ChannelsLastCallback(pl.Callback):
         return super().setup(trainer, pl_module, stage)
 
     def teardown(self, trainer, pl_module, stage: Optional[str] = None) -> None:
-        """
-        Undo the changes to pl_module at end of fit, validate, tests, or predict.
-        """
+        """Undo the changes to pl_module at end of fit, validate, tests, or predict."""
         setattr(pl_module, "on_before_batch_transfer", pl_module.on_before_batch_transfer_origin)
         delattr(pl_module, "on_before_batch_transfer_origin")
         return super().teardown(trainer, pl_module, stage)
