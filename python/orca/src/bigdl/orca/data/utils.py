@@ -452,3 +452,16 @@ def spark_xshards_to_ray_dataset(spark_xshards):
 
     ray_dataset = ray.data.from_pandas_refs(partition_refs)
     return ray_dataset
+
+
+def generate_string_idx(df, columns, freq_limit, order_by_freq):
+    from bigdl.dllib.utils.file_utils import callZooFunc
+    return callZooFunc("float", "generateStringIdx", df, columns, freq_limit, order_by_freq)
+
+
+def check_col_exists(df, columns):
+    df_cols = df.columns
+    col_not_exist = list(filter(lambda x: x not in df_cols, columns))
+    if len(col_not_exist) > 0:
+        invalidInputError(False,
+                          str(col_not_exist) + " do not exist in this Table")
