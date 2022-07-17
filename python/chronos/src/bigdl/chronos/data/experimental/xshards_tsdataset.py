@@ -268,7 +268,8 @@ class XShardsTSDataset:
             else self.target_col
         self.numpy_shards = self.shards.transform_shard(roll_timeseries_dataframe,
                                                         None, lookback, horizon,
-                                                        feature_col, target_col)
+                                                        feature_col, target_col,
+                                                        self.id_col, 0, True)
         return self
 
     def scale(self, scaler, fit=True):
@@ -392,11 +393,13 @@ class XShardsTSDataset:
         self.shards = self.shards.transform_shard(df_reset_index)
         return self
 
-    def to_xshards(self):
+    def to_xshards(self, partition_num=1):
         '''
-        Export rolling result in form of a dict of numpy ndarray {'x': ..., 'y': ...}
+        Export rolling result in form of a dict of numpy ndarray {'x': ..., 'y': ..., 'id': ...}
 
-        :return: a 2-element dict xshard. each value is a 3d numpy ndarray. The ndarray
+        :param partition_num: how many partition you would like to split your data.
+
+        :return: a 3-element dict xshard. each value is a 3d numpy ndarray. The ndarray
                  is casted to float32.
         '''
         from bigdl.nano.utils.log4Error import invalidInputError
@@ -404,4 +407,4 @@ class XShardsTSDataset:
             invalidInputError(False,
                               "Please call 'roll' method "
                               "before transform a XshardsTSDataset to numpy ndarray!")
-        return self.numpy_shards.transform_shard(transform_to_dict)
+        return self.numpy_shards.transform_shard(transform_to_dict).repartition(partition_num)
