@@ -288,42 +288,44 @@ class BasePytorchForecaster(Forecaster):
             # Trainer init and fitting
             if not val_data:
                 self.trainer = Trainer(logger=None, max_epochs=epochs,
-                                    checkpoint_callback=self.checkpoint_callback,
-                                    num_processes=self.num_processes, use_ipex=self.use_ipex, 
-                                    flush_logs_every_n_steps=10, log_every_n_steps=10,
-                                    distributed_backend="spawn")
+                                       checkpoint_callback=self.checkpoint_callback,
+                                       num_processes=self.num_processes, use_ipex=self.use_ipex,
+                                       flush_logs_every_n_steps=10, log_every_n_steps=10,
+                                       distributed_backend="spawn")
                 self.trainer.fit(self.internal, data)
                 self.fitted = True
             else:
                 from pytorch_lightning.loggers import CSVLogger
-                logger = CSVLogger("python/chronos/src/bigdl/chronos/forecaster", name="val_data_test")
+                logger = CSVLogger("python/chronos/src/bigdl/chronos/forecaster",
+                                   name="val_data_test")
 
                 self.trainer = Trainer(logger=logger, max_epochs=epochs,
-                                    checkpoint_callback=self.checkpoint_callback,
-                                    num_processes=self.num_processes, use_ipex=self.use_ipex, 
-                                    flush_logs_every_n_steps=10, log_every_n_steps=10,
-                                    distributed_backend="spawn")
+                                       checkpoint_callback=self.checkpoint_callback,
+                                       num_processes=self.num_processes, use_ipex=self.use_ipex,
+                                       flush_logs_every_n_steps=10, log_every_n_steps=10,
+                                       distributed_backend="spawn")
 
                 if isinstance(val_data, tuple):
                     if batch_size % self.num_processes != 0:
                         warnings.warn("'batch_size' cannot be divided with no remainder by "
-                                    "'self.num_processes'. We got 'batch_size' = {} and "
-                                    "'self.num_processes' = {}".
-                                    format(batch_size, self.num_processes))
+                                      "'self.num_processes'. We got 'batch_size' = {} and "
+                                      "'self.num_processes' = {}".
+                                      format(batch_size, self.num_processes))
                     val_data = DataLoader(TensorDataset(torch.from_numpy(val_data[0]),
-                                                    torch.from_numpy(val_data[1])),
-                                    batch_size=max(1, batch_size//self.num_processes),
-                                    shuffle=True)
+                                                        torch.from_numpy(val_data[1])),
+                                          batch_size=max(1, batch_size//self.num_processes),
+                                          shuffle=True)
 
                 self.trainer.fit(self.internal, data, val_data)
                 self.fitted = True
                 import codecs
                 import csv
                 fit_out = {}
-                with codecs.open('python/chronos/src/bigdl/chronos/forecaster/val_data_test/version_0/metrics.csv', encoding='utf-8-sig') as f:
+                with codecs.open('python/chronos/src/bigdl/chronos/forecaster/val_data_test/'\
+                                 'version_0/metrics.csv', encoding='utf-8-sig') as f:
                     for row in csv.DictReader(f, skipinitialspace=True):
                         if row['val/loss']:
-                            fit_out[row['epoch'] ] = {'val_loss':row['val/loss']}
+                            fit_out[row['epoch']] = {'val_loss': row['val/loss']}
                 import shutil
                 shutil.rmtree("python/chronos/src/bigdl/chronos/forecaster/val_data_test")
                 return fit_out
