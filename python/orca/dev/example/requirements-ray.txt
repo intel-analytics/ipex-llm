@@ -28,4 +28,4 @@ xgboost_ray
 argparse
 Pillow
 torchmetrics
-pyarrow==0.17.0
+pyarrow==3.0.0
