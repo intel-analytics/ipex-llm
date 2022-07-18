@@ -53,4 +53,3 @@ def KerasOpenVINOModel(model, input_sample=None):
 def OpenVINOModel(model, device='CPU'):
     from .core.model import OpenVINOModel
     return OpenVINOModel(model, device)
-    
