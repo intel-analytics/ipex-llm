@@ -45,7 +45,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.core.datamodule import LightningDataModule
 
 from bigdl.nano.pytorch.strategies.ddp_spawn import DDPSpawnStrategy, _DDPSpawnLauncher
-from bigdl.nano.common.cpu_schedule import schedule_workers
+from bigdl.nano.common.cpu_schedule import schedule_processors
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 from bigdl.nano.utils.log4Error import invalidInputError
 
@@ -68,13 +68,18 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
 
         os.environ["MASTER_PORT"] = str(self._strategy.cluster_environment.main_port)
 
-        if self._strategy.cpu_for_each_process is None:
-            cpu_procs = schedule_workers(self._strategy.num_processes)
+        cpu_procs = self._strategy.cpu_for_each_process
+        if cpu_procs is None:
+            envs = schedule_processors(self._strategy.num_processes)
         else:
-            cpu_procs = self._strategy.cpu_for_each_process
+            envs = [{
+                "KMP_AFFINITY": f"granularity=fine,proclist"
+                                f"=[{','.join([str(i) for i in cpu_procs[i]])}],explicit",
+                "OMP_NUM_THREADS": str(len(cpu_procs[i])),
+                "PROCESS_IDX": str(i),
+            } for i in range(self._strategy.num_processes)]
 
-        # fix bug
-        # args[1] is dataloader, args[3] and args[4] is datamodule
+        # fix bug, see ddp_spawn strategy for details
         if self._strategy.use_ipex and TORCH_VERSION_LESS_1_10:
             if isinstance(args[1], LightningDataModule):
                 args[1].trainer = None
@@ -102,20 +107,13 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
             processes = []
             cwd_path = os.path.split(os.path.realpath(__file__))[0]
             for i in range(self._strategy.num_processes):
-                env = copy.deepcopy(os.environ)
+                envs[i]["AUTHKEY"] = authkey
 
-                env.update({
-                    "KMP_AFFINITY": f"granularity=fine,proclist"
-                                    f"=[{','.join([str(i) for i in cpu_procs[i]])}],explicit",
-                    "OMP_NUM_THREADS": str(len(cpu_procs[i])),
-                    "PROCESS_IDX": str(i),
-                    "AUTHKEY": authkey,
-                })
-                log.debug(f"[Process {i}]: using KMP_AFFINITY: {env['KMP_AFFINITY']}")
-                log.debug(f"[Process {i}]: using OMP_NUM_THREADS: {env['OMP_NUM_THREADS']}")
+                log.debug(f"[Process {i}]: using KMP_AFFINITY: {envs[i]['KMP_AFFINITY']}")
+                log.debug(f"[Process {i}]: using OMP_NUM_THREADS: {envs[i]['OMP_NUM_THREADS']}")
 
                 processes.append(subprocess.Popen([sys.executable, f"{cwd_path}/worker.py",
-                                                   temp_dir], env=env))
+                                                   temp_dir], env=envs[i]))
 
             for _, process in enumerate(processes):
                 process.wait()
