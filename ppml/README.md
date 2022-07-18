@@ -1,11 +1,16 @@
 #### Table of Contents  
-[What is BigDL PPML?](#what-is-bigdl-ppml)  
-[Why BigDL PPML?](#why-bigdl-ppml)  
-[Getting Started with PPML](#getting-started-with-ppml)  
-[Develop your own Big Data & AI applications with BigDL PPML](#develop-your-own-big-data--ai-applications-with-bigdl-ppml)
+[1. What is BigDL PPML?](#1-what-is-bigdl-ppml)  
+[2. Why BigDL PPML?](#2-why-bigdl-ppml)  
+[3. Getting Started with PPML](#3-getting-started-with-ppml)  \
+&ensp;&ensp;[0. Preparation your environment](): Detailed Steps in  \
+&ensp;&ensp;[1. Encrypt and Upload Data]() \
+&ensp;&ensp;[2. Build Big Data & AI applications]() \
+&ensp;&ensp;[3. Submit Job](): Detailed Steps in  \
+&ensp;&ensp;[4. Decrypt and Read Result]() \
+[4. Develop your own Big Data & AI applications with BigDL PPML](#4-develop-your-own-big-data--ai-applications-with-bigdl-ppml)
 
 
-## What is BigDL PPML?
+## 1. What is BigDL PPML?
 
 Protecting data privacy and confidentiality is critical in a world where data is everywhere. In recent years, more and more countries have enacted data privacy legislation or are expected to pass comprehensive legislation to protect data privacy, the importance of privacy and data protection is increasingly recognized.
 
@@ -21,7 +26,7 @@ Among these, [Confidential computing](https://www.intel.com/content/www/us/en/se
 
 [PPML](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html) (Privacy Preserving Machine Learning) in [BigDL 2.0](https://github.com/intel-analytics/BigDL) provides a Trusted Cluster Environment for secure Big Data & AI applications, even on untrusted cloud environment. By combining Intel Software Guard Extensions (SGX) with several other security technologies (e.g., attestation, key management service, private set intersection, federated learning, homomorphic encryption, etc.), BigDL PPML ensures end-to-end security enabled for the entire distributed workflows, such as Apache Spark, Apache Flink, XGBoost, TensorFlow, PyTorch, etc.
 
-## Why BigDL PPML?
+## 2. Why BigDL PPML?
 PPML allows organizations to explore powerful AI techniques while working to minimize the security risks associated with handling large amounts of sensitive data. PPML protects data at rest, in transit and in use: compute and memory protected by SGX Enclaves, storage (e.g., data and model) protected by encryption, network communication protected by remote attestation and Transport Layer Security (TLS), and optional Federated Learning support. 
 
 <p align="left">
@@ -34,13 +39,101 @@ With BigDL PPML, you can run trusted Big Data & AI applications
 - **Trusted DL**: with the trusted Big Data analytics and ML/DL support, users can run distributed deep learning (such as BigDL, Orca, Nano, DLlib) in a secure and trusted fashion.
 - **Trusted FL (Federated Learning)**: TODO
 
-## Getting Started with PPML
-In this part, first we will introduce the whole workflow of BigDL PPML, then we will go with an example to use the BigDL PPML workflow.
-### End-to-End PPML Workflow
+## 3. Getting Started with PPML
+In this part, first we use native Python HelloWorld and Spark Pi to verify if the Trusted PPML environment is correctly set up, then we introduce the end-to-end workflow of BigDL PPML and go with an example SimpleQuery to use the BigDL PPML workflow.
+
+### 3.1 BigDL PPML Hello World
+In this part, you can started with running a simple native python HelloWorld program and a simple native Spark Pi program in a BigDL PPML client container to get familiar with 
+
+a. Start the BigDL PPML client container
+<details><summary>expand/fold to see details</summary>
+
+```
+#!/bin/bash
+
+# ENCLAVE_KEY_PATH means the absolute path to the "enclave-key.pem" in https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/prepare_environment.md#prepare-key-and-password
+# KEYS_PATH means the absolute path to the keys in https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/prepare_environment.md#prepare-key-and-password
+# LOCAL_IP means your local IP address.
+export ENCLAVE_KEY_PATH=YOUR_LOCAL_ENCLAVE_KEY_PATH
+export KEYS_PATH=YOUR_LOCAL_KEYS_PATH
+export LOCAL_IP=YOUR_LOCAL_IP
+export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT
+
+sudo docker pull $DOCKER_IMAGE
+
+sudo docker run -itd \
+    --privileged \
+    --net=host \
+    --cpuset-cpus="0-5" \
+    --oom-kill-disable \
+    --device=/dev/gsgx \
+    --device=/dev/sgx/enclave \
+    --device=/dev/sgx/provision \
+    -v $ENCLAVE_KEY_PATH:/graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
+    -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
+    -v $DATA_PATH:/ppml/trusted-big-data-ml/work/data \
+    -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
+    --name=spark-local \
+    -e LOCAL_IP=$LOCAL_IP \
+    -e SGX_MEM_SIZE=64G \
+    $DOCKER_IMAGE bash
+```
+
+</details>
+
+b. Run Python Helloworld in PPML client Container
+    <details><summary>expand/fold to see details</summary>
+
+    Run the script to run Trusted Python Helloworld in PPML container:
+
+        ```
+        bash work/start-scripts/start-python-helloworld-sgx.sh
+        ```
+
+    Open another terminal and check the log:
+
+    ```bash
+    sudo docker exec -it spark-local cat /ppml/trusted-big-data-ml/test-helloworld-sgx.log | egrep "Hello World"
+    ```
+
+    The result should look something like this:
+
+    > Hello World
+
+    </details>
+
+c. Trusted Spark Pi in PPML client Container
+<details><summary>expand/fold to see details</summary>
+Run the script to run trusted Spark Pi in PPML container:
+
+```bash
+bash work/start-scripts/start-spark-local-pi-sgx.sh
+```
+
+Open another terminal and check the log:
+
+```bash
+sudo docker exec -it spark-local cat /ppml/trusted-big-data-ml/test-pi-sgx.log | egrep "roughly"
+```
+
+The result should look something like this:
+
+> Pi is roughly 3.146760
+
+</details>
+
+### 3.2 End-to-End PPML Workflow
 ![image](https://user-images.githubusercontent.com/61072813/178393982-929548b9-1c4e-4809-a628-10fafad69628.png)
 
 #### 0. Preparation your environment
-To secure your Big Data & AI applications in BigDL PPML manner, you should prepare your environment first, including K8s cluster setup, K8s-SGX plugin setup, data/key/password preparation, KMS and attestation service setup, BigDL PPML Docker Image preparation. More details in [Prepare Environment](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/prepare_environment.md).
+To secure your Big Data & AI applications in BigDL PPML manner, you should prepare your environment first, including 
+K8s cluster setup
+K8s-SGX plugin setup
+data/key/password preparation
+KMS and attestation service setup
+BigDL PPML Client Container preparation
+Detailed steps in [Prepare Environment](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/prepare_environment.md). 
+
 
 #### 1. Encrypt and Upload Data
 Encrypt the input data of your Big Data & AI applications and then upload encrypted data to the nfs server. More details in [Encrypt Your Data](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/services/kms-utils/docker/README.md#3-enroll-generate-key-encrypt-and-decrypt).
@@ -146,6 +239,6 @@ Here we use PPML CLI to run jobs on Kubernetes, here we only demo k8s client mod
   docker exec -i $KMSUTIL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh decrypt $appid $appkey $input_path"
   ```
 
-## Develop your own Big Data & AI applications with BigDL PPML
+## 4. Develop your own Big Data & AI applications with BigDL PPML
 
 xxxx
