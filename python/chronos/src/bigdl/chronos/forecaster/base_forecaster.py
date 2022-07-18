@@ -195,7 +195,7 @@ class BasePytorchForecaster(Forecaster):
         # reset train and validation datasets
         self.tune_trainer.reset_train_val_dataloaders(self.internal)
 
-    def fit(self, data, val_data=None, epochs=1, batch_size=32):
+    def fit(self, data, val_data=None, epochs=1, batch_size=32, val_mode='output'):
         # TODO: give an option to close validation during fit to save time.
         """
         Fit(Train) the forecaster.
@@ -219,12 +219,31 @@ class BasePytorchForecaster(Forecaster):
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
 
+        :param val_data: Validation sample for validation loop. Defaults to 'None'.
+               If you do not input data for 'val_data', the validation_step will be skipped.
+               The val_data support following formats:
+        
+               | 1. a numpy ndarray tuple (x, y):
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
+               | should be the same as future_seq_len and output_feature_num.
+               |
+               | 2. pytorch dataloader:
+               | the dataloader should return x, y in each iteration with the shape as following:
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
+               | should be the same as future_seq_len and output_feature_num.
+
         :param epochs: Number of epochs you want to train. The value defaults to 1.
         :param batch_size: Number of batch size you want to train. The value defaults to 32.
-               if you input a pytorch dataloader for `data`, the batch_size will follow the
+               If you input a pytorch dataloader for `data`, the batch_size will follow the
                batch_size setted in `data`.if the forecaster is distributed, the batch_size will be
                evenly distributed to all workers.
-
+        :param val_mode: Operation mode while having 'val_data'. Defaults to 'output'.
+               If you choose 'output' for val_mode, it will return a dict that records the average
+               validation loss of each epoch.
         :return: Evaluation results on data.
         """
         # input transform
@@ -294,7 +313,7 @@ class BasePytorchForecaster(Forecaster):
                                        distributed_backend="spawn")
                 self.trainer.fit(self.internal, data)
                 self.fitted = True
-            else:
+            elif val_data and val_mode == 'output':
                 from pytorch_lightning.loggers import CSVLogger
                 logger = CSVLogger("python/chronos/src/bigdl/chronos/forecaster",
                                    name="val_data_test")
