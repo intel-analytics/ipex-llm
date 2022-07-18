@@ -7,7 +7,7 @@ There are two ways to submit PPML jobs:
 The PPML Command Line Interface is a unified tool to submit ppml spark jobs on a cluster.
 
 ### Synopsis
-Once a user application is bundled, it can be launched using the bigdl-ppml-submit.sh script. This script takes care of setting up sgx environment accoring to sgx configuration and cluster & deploy mode, running PPML jobs in secure environment:
+Once a user application is bundled, it can be launched using the [bigdl-ppml-submit.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/bigdl-ppml-submit.sh) script. This script takes care of setting up sgx configuration and cluster & deploy mode, running PPML jobs in secure environment:
 ```
 ./bigdl-ppml-submit.sh [options] <application-jar> [application-arguments]
 ```
