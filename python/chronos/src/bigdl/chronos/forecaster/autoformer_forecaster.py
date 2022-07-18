@@ -322,6 +322,10 @@ class AutoformerForecaster(Forecaster):
             self.trainer = Trainer(logger=False, max_epochs=epochs,
                                    checkpoint_callback=self.checkpoint_callback, num_processes=1,
                                    use_ipex=self.use_ipex, distributed_backend="spawn")
+        else:
+            # check whether the user called the tune function
+            invalidOperationError(hasattr(self, "trainer"), "There is no trainer, and you "
+                                  "should call .tune() before .fit()")
 
         self.trainer.fit(self.internal, data)
 
