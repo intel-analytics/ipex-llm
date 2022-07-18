@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import collections
 from typing import Any, Dict, Optional, Union
 
 import pytorch_lightning as pl
@@ -32,6 +33,7 @@ import copy
 
 def _is_creator(model):
     return inspect.ismethod(model) or inspect.isfunction(model)
+
 
 
 class Objective(object):
@@ -58,6 +60,9 @@ class Objective(object):
         self.searcher = searcher
         self.model_ = model
         self.target_metric = target_metric
+        self.multi_object = isinstance(self.target_metric, collections.abc.Sequence) and len(self.target_metric) > 1
+        # add automatic support for latency
+        
         self.pruning = pruning
         self.fit_kwargs = fit_kwargs
 
@@ -147,7 +152,13 @@ class Objective(object):
 
         self._pre_train(model, trial)
         self.searcher._run(model)
-        score = self.searcher.trainer.callback_metrics[self.target_metric].item()
+        if self.multi_object:
+            scores = []
+            for metric in self.target_metric:
+                score = self.searcher.trainer.callback_metrics[metric].item()
+                scores.append(score)
+        else:
+            scores = self.searcher.trainer.callback_metrics[self.target_metric].item()
         self._post_train(model)
 
-        return score
+        return scores
