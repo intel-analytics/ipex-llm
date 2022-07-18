@@ -163,17 +163,40 @@ class LSTMForecaster(BasePytorchForecaster):
         from bigdl.chronos.data.tsdataset import TSDataset
         from bigdl.nano.utils.log4Error import invalidInputError
 
-        if isinstance(tsdataset, TSDataset) and tsdataset.lookback is None:
+        invalidInputError(isinstance(tsdataset, TSDataset),
+                          f"We only supports input a TSDataset, but get{type(tsdataset)}.")
+
+        def check_time_steps(tsdataset, past_seq_len):
+            if tsdataset.lookback is not None and past_seq_len is not None:
+                return tsdataset.lookback == past_seq_len
+            return True
+
+        invalidInputError(not tsdataset._has_generate_agg_feature,
+                          "We will add su`pport for 'gen_rolling_feature' method later.")
+
+        if tsdataset.lookback is not None:  # calling roll or to_torch_data_loader
+            past_seq_len = tsdataset.lookback
+            output_feature_num = len(tsdataset.roll_target)
+            input_feature_num = len(tsdataset.roll_feature) + output_feature_num
+        elif past_seq_len is not None:  # initialize only
+            past_seq_len = past_seq_len if isinstance(past_seq_len, int)\
+                else tsdataset.get_cycle_length()
+            output_feature_num = len(tsdataset.target_col)
+            input_feature_num = len(tsdataset.feature_col) + output_feature_num
+        else:
             invalidInputError(False,
                               "Forecaster needs 'past_seq_len' to specify "
                               "the history time step of training.")
 
-        # TODO Support for gen_rolling_feature will be split into next pr
-        if tsdataset._has_generate_agg_feature:
-            invalidInputError(False,
-                              "We will add support for 'gen_rolling_feature' method later.")
+        invalidInputError(check_time_steps(tsdataset, past_seq_len),
+                          "tsdataset already has history time steps and "
+                          "differs from the given past_seq_len "
+                          f"Expected past_seq_len to be {tsdataset.lookback}, "
+                          f"but found {past_seq_len}.",
+                          fixMsg="Do not specify past_seq_len "
+                          "or call tsdataset.roll method again and specify time step.")
 
-        return cls(past_seq_len=past_seq_len.lookback,
-                   input_feature_num=len(tsdataset.roll_target)+len(tsdataset.roll_feature),
-                   output_feature_num=len(tsdataset.roll_target),
+        return cls(past_seq_len=past_seq_len,
+                   input_feature_num=input_feature_num,
+                   output_feature_num=output_feature_num,
                    **kwargs)

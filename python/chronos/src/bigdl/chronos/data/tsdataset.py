@@ -765,15 +765,6 @@ class TSDataset:
             target_col = _to_list(target_col, "target_col") if target_col is not None \
                 else self.target_col
 
-            if self.roll_additional_feature:
-                additional_feature_col =\
-                    list(set(feature_col).intersection(set(self.roll_additional_feature)))
-                feature_col =\
-                    list(set(feature_col) - set(self.roll_additional_feature))
-                self.roll_feature = feature_col + additional_feature_col
-            else:
-                self.roll_feature = feature_col
-
             # set scaler index for unscale_numpy
             self.scaler_index = [self.target_col.index(t) for t in target_col]
             self.lookback, self.horizon = lookback, horizon
@@ -785,8 +776,8 @@ class TSDataset:
                                         freq=self._freq,
                                         lookback=self.lookback,
                                         horizon=self.horizon,
-                                        feature_col=self.roll_feature,
-                                        target_col=self.roll_target,
+                                        feature_col=feature_col,
+                                        target_col=target_col,
                                         id_col=self.id_col,
                                         time_enc=time_enc,
                                         label_len=label_len,

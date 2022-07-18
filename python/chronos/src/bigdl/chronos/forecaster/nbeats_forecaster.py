@@ -186,19 +186,41 @@ class NBeatsForecaster(BasePytorchForecaster):
         :return: A NBeats Forecaster Model.
         """
         from bigdl.chronos.data.tsdataset import TSDataset
-        if isinstance(tsdataset, TSDataset) and tsdataset.lookback is None:
-            from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.log4Error import invalidInputError
+        invalidInputError(isinstance(tsdataset, TSDataset),
+                          f"We only supports input a TSDataset, but get{type(tsdataset)}.")
+
+        def check_time_steps(tsdataset, past_seq_len, future_seq_len):
+            if tsdataset.lookback is not None and past_seq_len is not None:
+                return tsdataset.lookback == past_seq_len and tsdataset.horizon == future_seq_len
+            return True
+
+        invalidInputError(not tsdataset._has_generate_agg_feature,
+                          "We will add support for 'gen_rolling_feature' method later.")
+
+        if tsdataset.lookback is None:  # calling roll or to_torch_data_loader
+            past_seq_len = tsdataset.lookback
+            future_seq_len = tsdataset.horizon if isinstance(tsdataset.horizon, int) \
+                else max(tsdataset.horizon)
+        elif past_seq_len is not None and future_seq_len is not None:  # initialize only
+            past_seq_len = past_seq_len if isinstance(past_seq_len, int)\
+                else tsdataset.get_cycle_length()
+            future_seq_len = future_seq_len if isinstance(future_seq_len, int) \
+                else max(future_seq_len)
+        else:
             invalidInputError(False,
                               "Forecaster requires 'past_seq_len' and 'future_seq_len' to specify "
                               "the history time step and output time step.")
 
-            # TODO Support for gen_rolling_feature will be split into next pr
-        if tsdataset._has_generate_agg_feature:
-            invalidInputError(False,
-                              "We will add support for 'gen_rolling_feature' method later.")
+        invalidInputError(check_time_steps(tsdataset, past_seq_len, future_seq_len),
+                            "tsdataset already has historical time steps and "
+                            "differs from the given past_seq_len and future_seq_len "
+                            "Expected past_seq_len and future_seq_len to be "
+                            f"{tsdataset.lookback, tsdataset.horizon}, "
+                            f"but found {past_seq_len, future_seq_len}",
+                            fixMsg="Do not specify past_seq_len and future seq_len "
+                            "or call tsdataset.roll method again and specify time step")
 
-        future_seq_len = tsdataset.horizon if isinstance(tsdataset.horizon, int) \
-            else max(tsdataset.horizon)
-        return cls(past_seq_len=tsdataset.lookback,
+        return cls(past_seq_len=past_seq_len,
                    future_seq_len=future_seq_len,
                    **kwargs)
