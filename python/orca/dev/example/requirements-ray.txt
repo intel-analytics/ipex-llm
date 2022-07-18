@@ -9,6 +9,7 @@ pandas
 ray[default]==1.9.2
 dm_tree
 gym[atari]==0.17.1
+atari-py==0.2.5
 analytics-zoo[ray]
 tabulate==0.8.7
 tensorboard==1.15.0
