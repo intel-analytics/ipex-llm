@@ -15,17 +15,14 @@
 #
 
 import os
-from turtle import forward
 import pytest
 import torch
 import torchmetrics
 from unittest import TestCase
 from bigdl.nano.pytorch import Trainer
 from torchvision.models.resnet import ResNet, BasicBlock
-from torch.utils.data import DataLoader, TensorDataset
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_12
-from test.pytorch.tests.test_lightning import ResNet18
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
 from test.pytorch.utils._train_torch_lightning import create_test_data_loader
 
@@ -63,7 +60,7 @@ class customResNet(ResNet):
 class ConvModel(torch.nn.Module):
     def __init__(self):
         super().__init__()
-        self.conv1 = torch.nn.Conv2d(1, 1, (1, 2), bias=False)
+        self.conv1 = torch.nn.Conv2d(2, 1, (1, 2), bias=False)
         self.conv1.weight.data.fill_(1.0)
     
     def forward(self, input):
@@ -99,37 +96,42 @@ class TestChannelsLast(TestCase):
         trainer.test(pl_model, self.test_data_loader)
 
     def test_trainer_channels_last_correctness(self):
-        # dataset: features: [[[[2, 0]]], [[[2, 0]]], [[[0, 1]]], [[[0, 1]]]] / labels: [0, 0, 0, 0]
-        # model: y = [I11, I12] * [c11, c12]
-        # loss = (I11 * c11 + I12 * c12) ^ 2
-        # dloss/dc11 = 2 * (I11 * c11 + I12 * c12) * I11
-        # dloss/dc12 = 2 * (I11 * c11 + I12 * c12) * I12
-        # end of first iteration:
-        #    avg_grad_c11 = avg([8, 8, 0, 0]) = 4
-        #    avg_grad_c12 = avg([0, 0, 2, 2]) = 1
-        #    weight_c11 = 1.0 - 0.25 * avg_grad_c11 = 0.0
-        #    weight_c12 = 1.0 - 0.25 * avg_grad_c12 = 0.75
-        # end of second iteration:
-        #    avg_grad_c11 = avg([0, 0, 0, 0]) = 0.0
-        #    avg_grad_c12 = avg([0, 0, 1.5, 1.5]) = 0.75
-        #    weight_c11 = 0.0 - 0.25 * avg_grad_c11 = 0.0
-        #    weight_c12 = 0.75 - 0.25 * avg_grad_c12 = 0.5625
+        # dataset: features: [[[[1, 0]] [[1, 0]] [[0, 3]] [[1, 1]]    
+        #                      [[1, 0]] [[2, 0]] [[1, 0]] [[2, 1]]]]    feature.shape=(4,2,1,2)
+        # dataset: labels: [[0], [1], [0], [1]]                         label.shape=(4,1)
+        # model: y = I * C = I1 * C1 + I2 * C2 = I11 * C11 + I12 * C12 + I21 * C21 + I22 * C22
+        # loss = (y - label) ^ 2
+        # dloss/dC11 = 2 * (y - label) * dy/dC11    dloss/dC12 = 2 * (y - label) * dy/dC12
+        # dloss/dC21 = 2 * (y - label) * dy/dC21    dloss/dC22 = 2 * (y - label) * dy/dC22
+        # end of iteration:
+        #    avg_grad_c11 = avg([4, 4, 0, 8])   = 4
+        #    avg_grad_c12 = avg([0, 0, 24, 8])  = 8
+        #    avg_grad_c21 = avg([4, 8, 8, 16])  = 9
+        #    avg_grad_c22 = avg([0, 0, 0, 8])   = 2
+        #    weight_C = 1 - 0.25 * avg_grad_C   =
+        #    [[[[1, 1]]         [[[[1,      2]]         [[[[0,     -1]]
+        #      [[1, 1]]]]   -     [[2.25, 0.5]]]]   =     [[-1.25 0.5]]]]
+        #
+        #
+        #
         model = ConvModel()
         optimizer = torch.optim.SGD(model.parameters(), lr=0.25)
         loss = torch.nn.MSELoss()
         pl_module = Trainer.compile(model=model, loss=loss, optimizer=optimizer)
         trainer = Trainer(max_epochs=1, channels_last=True)
 
-        x = torch.Tensor([[[[2, 0]]], [[[2, 0]]], [[[0, 1]]], [[[0, 1]]]])
-        y = torch.Tensor([[0.0], [0.0], [0.0], [0.0]])
+        x = torch.Tensor([
+            [[[1, 0]], [[1, 0]]],
+            [[[1, 0]], [[2, 0]]],
+            [[[0, 3]], [[1, 0]]],
+            [[[1, 1]], [[2, 1]]]
+                            ])
+        y = torch.Tensor([[0.0], [1.0], [0.0], [1.0]])
         dataset = torch.utils.data.TensorDataset(x, y)
         data_loader = torch.utils.data.DataLoader(dataset, batch_size=4, shuffle=False)
 
         trainer.fit(pl_module, data_loader)
-        result = torch.Tensor([[[[0.0, 0.75]]]])
-        assert pl_module.model.conv1.weight.equal(result)
-        trainer.fit(pl_module, data_loader)
-        result = torch.Tensor([[[[0.0, 0.5625]]]])
+        result = torch.tensor([[[[0.0, -1.0]], [[-1.25, 0.5]]]])
         assert pl_module.model.conv1.weight.equal(result)
 
     def test_trainer_channels_last_correctness_subprocess(self):
@@ -144,17 +146,19 @@ class TestChannelsLast(TestCase):
                           distributed_backend="subprocess",
                           num_processes=2)
 
-        x = torch.Tensor([[[[2, 0]], [[0, 0]]], [[[2, 0]], [[0, 0]]], [[[0, 1]], [[0, 0]]], [[[0, 1]], [[0, 0]]]])
-        y = torch.Tensor([[0], [0], [0], [0]])
+        x = torch.Tensor([
+            [[[1, 0]], [[1, 0]]],
+            [[[1, 0]], [[2, 0]]],
+            [[[0, 3]], [[1, 0]]],
+            [[[1, 1]], [[2, 1]]]
+                            ])
+        y = torch.Tensor([[0], [1], [0], [1]])
         dataset = torch.utils.data.TensorDataset(x, y)
         data_loader = torch.utils.data.DataLoader(dataset, batch_size=4, shuffle=False)
 
         trainer.fit(pl_module, data_loader)
-        result = torch.Tensor([[[[0.0, 0.75]]]])
-        assert pl_module.model.conv1.weight[:, :1, :, :].equal(result)
-        trainer.fit(pl_module, data_loader)
-        result = torch.Tensor([[[[0.0, 0.5625]]]])
-        assert pl_module.model.conv1.weight[:, :1, :, :].equal(result)
+        result = torch.tensor([[[[0.0, -1.0]], [[-1.25, 0.5]]]])
+        assert pl_module.model.conv1.weight.equal(result)
 
     def test_trainer_channels_last_subprocess(self):
         pl_model = LightningModuleFromTorch(
@@ -178,7 +182,7 @@ class TestChannelsLastSpawn(TestCase):
     test_data_loader = create_test_data_loader(data_dir, batch_size, num_workers,
                                                 data_transform, subset=dataset_size)
 
-    def test_trainer_channels_last_spaw(self):
+    def test_trainer_channels_last_spawn(self):
         pl_model = LightningModuleFromTorch(
             self.model, self.loss, self.optimizer,
             metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
@@ -189,6 +193,32 @@ class TestChannelsLastSpawn(TestCase):
                           channels_last=True)
         trainer.fit(pl_model, self.data_loader, self.test_data_loader)
         trainer.test(pl_model, self.data_loader)
+
+    def test_trainer_channels_last_correctness_spawn(self):
+        model = ConvModel()
+        model.conv1 = torch.nn.Conv2d(2, 1, (1, 2), bias=False)
+        model.conv1.weight.data.fill_(1.0)
+        optimizer = torch.optim.SGD(model.parameters(), lr=0.25)
+        loss = torch.nn.MSELoss()
+        pl_module = Trainer.compile(model=model, loss=loss, optimizer=optimizer)
+        trainer = Trainer(max_epochs=1,
+                          channels_last=True,
+                          distributed_backend="spawn",
+                          num_processes=2)
+
+        x = torch.Tensor([
+            [[[1, 0]], [[1, 0]]],
+            [[[1, 0]], [[2, 0]]],
+            [[[0, 3]], [[1, 0]]],
+            [[[1, 1]], [[2, 1]]]
+                            ])
+        y = torch.Tensor([[0], [1], [0], [1]])
+        dataset = torch.utils.data.TensorDataset(x, y)
+        data_loader = torch.utils.data.DataLoader(dataset, batch_size=4, shuffle=False)
+
+        trainer.fit(pl_module, data_loader)
+        result = torch.tensor([[[[0.0, -1.0]], [[-1.25, 0.5]]]])
+        assert pl_module.model.conv1.weight.equal(result)
 
     
 if __name__ == '__main__':
