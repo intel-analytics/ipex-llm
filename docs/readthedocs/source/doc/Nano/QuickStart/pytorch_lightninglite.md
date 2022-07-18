@@ -1,6 +1,6 @@
 # BigDL-Nano Pytorch LightningLite Quickstart
 
-**In this notebook we'll demonstrate how to use BigDL-Nano to accelerate custom train loop easily with very few changes.**
+**In this guide we'll demonstrate how to use BigDL-Nano to accelerate custom train loop easily with very few changes.**
 
 ### **Step 0: Prepare Environment**
 

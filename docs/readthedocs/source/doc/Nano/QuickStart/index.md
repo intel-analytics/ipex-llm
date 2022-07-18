@@ -11,7 +11,7 @@
 
     > ![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][Nano_pytorch_lightninglite]
 
-    In this guide we will describe how to accelerate the LightningLite tool using Nano
+    In this guide we'll describe how to use BigDL-Nano to accelerate custom train loop easily with very few changes
 
 ---------------------------
 

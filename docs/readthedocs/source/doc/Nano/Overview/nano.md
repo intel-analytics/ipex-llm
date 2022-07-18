@@ -59,13 +59,14 @@ trainer = Trainer(max_epochs=1, use_ipex=True, num_processes=4)
 trainer.fit(net, train_loader)
 ```
 
-If you are using LightningLite, you can use the following code to enable intel-extension-for-pytorch and multi-instance training.
+If you are using custom train loop, you can use the following code to enable intel-extension-for-pytorch, multi-instance training and other nano's optimizations.
 
 ```python
 from bigdl.nano.pytorch.lite import LightningLite
 
 class Lite(LightningLite):
     def run(...):
+      # copy your train loop here and make a few changes
       ...
 
 Lite(use_ipex=True, num_processes=2).run()

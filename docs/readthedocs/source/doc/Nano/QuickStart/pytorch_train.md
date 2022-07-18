@@ -64,19 +64,19 @@ Note that the effective batch size multi-instance training is the `batch_size` i
 
 The `LightningLite` (`bigdl.nano.pytorch.lite.LightningLite`) class is the place where we integrate most optimizations. It extends PyTorch Lightning's `LightningLite` class and has a few more parameters and methods specific to BigDL-Nano.
 
-Our `LightningLite` can be directly used to replace PyTorch Lightning's, all optimizations will be applied automatically, you don't need to change any training codes.
-
-For example,
+By using it, we only need to make very few changes to accelerate custom train loop. For example,
 
 ```python
 from bigdl.nano.pytorch.lite import LightningLite
 
 class Lite(LightningLite) :
     def run(self, ...):
-        # define train loop
+        # copy your train loop here and make a few changes
 
 Lite().run(...)
 ```
+
+- note: see [this tutorial](./pytorch_lightninglite.html) for details about our `LightningLite`.
 
 Our `LightningLite` also integrates IPEX and distributed training optimizations. For example,
 
