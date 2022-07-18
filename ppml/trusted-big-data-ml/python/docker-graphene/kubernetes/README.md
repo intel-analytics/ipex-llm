@@ -17,7 +17,6 @@ In `bigdl-ppml-helm/values.yaml`, configure the full values for:
 
 Please prepare the following and put them in your NFS directory:
 - The data (in a directory called `data`), 
-- The script used to submit your Spark job (defaulted to `./submit-spark-k8s.sh`) 
 - A kubeconfig file. Generate your Kubernetes config file with `kubectl config view --flatten --minify > kubeconfig`, then put it in your NFS.
 
 The other values have self-explanatory names and can be left alone.

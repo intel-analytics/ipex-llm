@@ -52,7 +52,7 @@ from pytorch_lightning.overrides import LightningDistributedModule
 from pytorch_lightning.utilities.optimizer import optimizers_to_device
 from pytorch_lightning.utilities.distributed import ReduceOp
 
-from bigdl.nano.common.cpu_schedule import schedule_workers
+from bigdl.nano.common.cpu_schedule import schedule_processors
 from bigdl.nano.pytorch.strategies.ipex.ipex_api import ipex_device, \
     ipex_optimize, create_IPEXAccelerator, to_cpu
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
@@ -80,10 +80,15 @@ class _DDPSpawnLauncher(_SpawnLauncher):
 
         os.environ["MASTER_PORT"] = str(self._strategy.cluster_environment.main_port)
 
-        if self._strategy.cpu_for_each_process is None:
-            cpu_procs = schedule_workers(self._strategy.num_processes)
+        cpu_procs = self._strategy.cpu_for_each_process
+        if cpu_procs is None:
+            envs = schedule_processors(self._strategy.num_processes)
         else:
-            cpu_procs = self._strategy.cpu_for_each_process
+            envs = [{
+                "KMP_AFFINITY": f"granularity=fine,proclist"
+                                f"=[{','.join([str(i) for i in cpu_procs[i]])}],explicit",
+                "OMP_NUM_THREADS": str(len(cpu_procs[i]))
+            } for i in range(self._strategy.num_processes)]
 
         # reset datamodule to fix bug:
         # in pytorch lightning 1.6, `datamodule` has a `trainer` member,
@@ -112,9 +117,8 @@ class _DDPSpawnLauncher(_SpawnLauncher):
         args = (trainer, function, args, kwargs, return_queue)
 
         for i in range(self._strategy.num_processes):
-            os.environ["KMP_AFFINITY"] = f"granularity=fine,proclist"\
-                                         f"=[{','.join([str(i) for i in cpu_procs[i]])}],explicit"
-            os.environ["OMP_NUM_THREADS"] = str(len(cpu_procs[i]))
+            os.environ["KMP_AFFINITY"] = envs[i]['KMP_AFFINITY']
+            os.environ["OMP_NUM_THREADS"] = envs[i]['OMP_NUM_THREADS']
             log.debug(f"[Process {i}]: using KMP_AFFINITY: {os.environ['KMP_AFFINITY']}")
             log.debug(f"[Process {i}]: using OMP_NUM_THREADS: {os.environ['OMP_NUM_THREADS']}")
             error_queue = mp.SimpleQueue()

@@ -64,7 +64,7 @@ class CorrectnessSpec extends FlatSpec with Matchers {
   def getBase64FromPath(path: String): String = {
 
     val b = FileUtils.readFileToByteArray(new File(path))
-    val img = OpenCVMethod.fromImageBytes(b, Imgcodecs.CV_LOAD_IMAGE_COLOR)
+    val img = OpenCVMethod.fromImageBytes(b, Imgcodecs.IMREAD_UNCHANGED)
     Imgproc.resize(img, img, new Size(224, 224))
     val matOfByte = new MatOfByte()
     Imgcodecs.imencode(".jpg", img, matOfByte)
