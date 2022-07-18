@@ -20,6 +20,7 @@ from bigdl.chronos.metric.forecast_metrics import Evaluator
 
 import numpy as np
 import warnings
+# Filter out useless Userwarnings
 warnings.filterwarnings('ignore', category=UserWarning, module='pytorch_lightning')
 warnings.filterwarnings('ignore', category=UserWarning, module='torch')
 import torch
@@ -340,12 +341,11 @@ class BasePytorchForecaster(Forecaster):
             # This error is only triggered when the python interpreter starts additional processes.
             # num_process=1 and subprocess will be safely started in the main process,
             # so this error will not be triggered.
-            main_process = is_main_process()
-            if not main_process:
-                invalidInputError("Make sure new Python interpreters can "
-                                  "safely import the main module, "
-                                  "you should use if __name__ == '__main__':, "
-                                  "otherwise performance will be degraded.")
+            invalidInputError(is_main_process(),
+                              "Make sure new Python interpreters can "
+                              "safely import the main module. ",
+                              fixMsg="you should use if __name__ == '__main__':, "
+                              "otherwise performance will be degraded.")
 
             self.trainer.fit(self.internal, data)
             self.fitted = True

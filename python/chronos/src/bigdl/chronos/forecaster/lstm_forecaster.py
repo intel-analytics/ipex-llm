@@ -53,7 +53,7 @@ class LSTMForecaster(BasePytorchForecaster):
                  seed=None,
                  distributed=False,
                  workers_per_node=1,
-                 remote_distributed_backend="ray",
+                 distributed_backend="ray",
                  local_distributed_backend="subprocess"):
         """
         Build a LSTM Forecast Model.
@@ -89,7 +89,7 @@ class LSTMForecaster(BasePytorchForecaster):
         :param workers_per_node: int, the number of worker you want to use.
                The value defaults to 1. The param is only effective when
                distributed is set to True.
-        :param remote_distributed_backend: str, select from "ray" or
+        :param distributed_backend: str, select from "ray" or
                "horovod". The value defaults to "ray", the distributed backend
                will be used in the cluster.
         :param local_distributed_backend: str, "spawn" or "subprocess",
@@ -128,7 +128,7 @@ class LSTMForecaster(BasePytorchForecaster):
 
         # distributed settings
         self.distributed = distributed
-        self.remote_distributed_backend = remote_distributed_backend
+        self.remote_distributed_backend = distributed_backend
         self.local_distributed_backend = local_distributed_backend
         self.workers_per_node = workers_per_node
 
