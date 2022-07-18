@@ -1,5 +1,6 @@
 torch
 torchvision
+torchmetrics
 albumentations
 scikit-learn==0.22.2.post1
 opencv-python
@@ -10,12 +11,10 @@ ray[default]==1.9.2
 dm_tree
 gym[atari]==0.17.1
 atari-py==0.2.5
-analytics-zoo[ray]
 tabulate==0.8.7
-tensorboard==1.15.0
+tensorflow==1.15.0
 mxnet==1.6.0
 xgboost_ray
 argparse
 Pillow
-torchmetrics
 pyarrow==4.0.1
