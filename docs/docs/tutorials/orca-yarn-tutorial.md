@@ -470,7 +470,7 @@ __Note:__
 * Please refer to __Section 4__ for the description of `extra_python_lib`.
 * For CDH Users, please speficy `ARROW_LIBHDFS_DIR` (see __Section 2.3__) as a Spark conf in the script.
     ```bash
-    spark-submit \
+    ${SPARK_HOME}/bin/spark-submit \
     ...
     --conf spark.executorEnv.ARROW_LIBHDFS_DIR=/opt/cloudera/parcels/CDH-${CHD_VERSION}/lib64/ \
     train.py --cluster_mode bigdl-submit --remote_dir hdfs://url:port/path/to/remote/data
@@ -517,7 +517,7 @@ __Note:__
 * Please refer to __Section 4__ for the description of `extra_python_lib`.
 * For CDH Users, please speficy `ARROW_LIBHDFS_DIR` (see __Section 2.3__) as a Spark conf in the script.
     ```bash
-    spark-submit \
+    ${SPARK_HOME}/bin/spark-submit \
     ...
     --conf spark.executorEnv.ARROW_LIBHDFS_DIR=/opt/cloudera/parcels/CDH-${CHD_VERSION}/lib64/ \
     train.py --cluster_mode bigdl-submit --remote_dir hdfs://url:port/path/to/remote/data
