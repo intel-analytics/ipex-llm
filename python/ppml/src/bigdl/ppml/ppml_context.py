@@ -21,6 +21,14 @@ from enum import Enum
 from pyspark.sql import SparkSession
 
 
+def check(ppml_args, arg_name):
+    try:
+        value = ppml_args[arg_name]
+        return value
+    except KeyError:
+        invalidInputError(False, "need argument " + arg_name)
+
+
 class PPMLContext(JavaValue):
     def __init__(self, app_name, ppml_args=None):
         self.bigdl_type = "float"
@@ -30,17 +38,17 @@ class PPMLContext(JavaValue):
             kms_type = ppml_args.get("kms_type", "SimpleKeyManagementService")
             conf["spark.bigdl.kms.type"] = kms_type
             if kms_type == "SimpleKeyManagementService":
-                conf["spark.bigdl.kms.simple.id"] = ppml_args["simple_app_id"]
-                conf["spark.bigdl.kms.simple.key"] = ppml_args["simple_app_key"]
-                conf["spark.bigdl.kms.key.primary"] = ppml_args["primary_key_path"]
-                conf["spark.bigdl.kms.key.data"] = ppml_args["data_key_path"]
+                conf["spark.bigdl.kms.simple.id"] = check(ppml_args, "simple_app_id")
+                conf["spark.bigdl.kms.simple.key"] = check(ppml_args, "simple_app_key")
+                conf["spark.bigdl.kms.key.primary"] = check(ppml_args, "primary_key_path")
+                conf["spark.bigdl.kms.key.data"] = check(ppml_args, "data_key_path")
             elif kms_type == "EHSMKeyManagementService":
-                conf["spark.bigdl.kms.ehs.ip"] = ppml_args["kms_server_ip"]
-                conf["spark.bigdl.kms.ehs.port"] = ppml_args["kms_server_port"]
-                conf["spark.bigdl.kms.ehs.id"] = ppml_args["ehsm_app_id"]
-                conf["spark.bigdl.kms.ehs.key"] = ppml_args["ehsm_app_key"]
-                conf["spark.bigdl.kms.key.primary"] = ppml_args["primary_key_path"]
-                conf["spark.bigdl.kms.key.data"] = ppml_args["data_key_path"]
+                conf["spark.bigdl.kms.ehs.ip"] = check(ppml_args, "kms_server_ip")
+                conf["spark.bigdl.kms.ehs.port"] = check(ppml_args, "kms_server_port")
+                conf["spark.bigdl.kms.ehs.id"] = check(ppml_args, "ehsm_app_id")
+                conf["spark.bigdl.kms.ehs.key"] = check(ppml_args, "ehsm_app_key")
+                conf["spark.bigdl.kms.key.primary"] = check(ppml_args, "primary_key_path")
+                conf["spark.bigdl.kms.key.data"] = check(ppml_args, "data_key_path")
             else:
                 invalidInputError(False, "invalid KMS type")
 

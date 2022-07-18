@@ -200,23 +200,23 @@ object PPMLContext{
    */
   def initPPMLContext(sparkSession: SparkSession): PPMLContext = {
     val conf = sparkSession.sparkContext.getConf
-    val kmsType = conf.get("spark.bigdl.kms.type", defaultValue = "SimpleKeyManagementService")
+    val kmsType = conf.get("spark.bigdl.kms.type")
     val kms = kmsType match {
       case KMS_CONVENTION.MODE_EHSM_KMS =>
-        val ip = conf.get("spark.bigdl.kms.ehs.ip", defaultValue = "0.0.0.0")
-        val port = conf.get("spark.bigdl.kms.ehs.port", defaultValue = "5984")
-        val appId = conf.get("spark.bigdl.kms.ehs.id", defaultValue = "ehsmAPPID")
-        val appKey = conf.get("spark.bigdl.kms.ehs.key", defaultValue = "ehsmAPPKEY")
+        val ip = conf.get("spark.bigdl.kms.ehs.ip")
+        val port = conf.get("spark.bigdl.kms.ehs.port")
+        val appId = conf.get("spark.bigdl.kms.ehs.id")
+        val appKey = conf.get("spark.bigdl.kms.ehs.key")
         new EHSMKeyManagementService(ip, port, appId, appKey)
       case KMS_CONVENTION.MODE_SIMPLE_KMS =>
-        val id = conf.get("spark.bigdl.kms.simple.id", defaultValue = "simpleAPPID")
+        val id = conf.get("spark.bigdl.kms.simple.id")
         // println(id + "=-------------------")
-        val key = conf.get("spark.bigdl.kms.simple.key", defaultValue = "simpleAPPKEY")
+        val key = conf.get("spark.bigdl.kms.simple.key")
         // println(key + "=-------------------")
         SimpleKeyManagementService(id, key)
       case KMS_CONVENTION.MODE_AZURE_KMS =>
-        val vaultName = conf.get("spark.bigdl.kms.azure.vault", defaultValue = "keyVaultName")
-        val clientId = conf.get("spark.bigdl.kms.azure.clientId", defaultValue = "")
+        val vaultName = conf.get("spark.bigdl.kms.azure.vault")
+        val clientId = conf.get("spark.bigdl.kms.azure.clientId")
         new AzureKeyManagementService(vaultName, clientId)
       case _ =>
         throw new EncryptRuntimeException("Wrong kms type")
