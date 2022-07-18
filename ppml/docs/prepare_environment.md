@@ -7,7 +7,7 @@ Prior to run your Big Data & AI applications with BigDL PPML, please make sure t
 * [Configure the Environment](#configure-the-environment)
 * [KMS Service Setup](kms-key-management-service-setup)
 * [Attestation Service Setup](#attestation-service-setup)
-* [BigDL PPML Docker Image](#start-bigdl-ppml-docker-container)
+* [BigDL PPML Client Container](#start-bigdl-ppml-client-container)
 * (Optional) [K8s Monitioring](#optional-k8s-monitioring-setup)
 
 ### Prepare key and password
@@ -90,7 +90,7 @@ placeholder
 
 
 
-### Start BigDL PPML Docker Container
+### Start BigDL PPML Client Container
 1. Prepare Docker Image
 
     Pull Docker image from Dockerhub
