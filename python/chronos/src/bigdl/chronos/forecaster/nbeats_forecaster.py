@@ -192,6 +192,8 @@ class NBeatsForecaster(BasePytorchForecaster):
 
         def check_time_steps(tsdataset, past_seq_len, future_seq_len):
             if tsdataset.lookback is not None and past_seq_len is not None:
+                future_seq_len = future_seq_len if isinstance(future_seq_len, int)\
+                    else max(future_seq_len)
                 return tsdataset.lookback == past_seq_len and tsdataset.horizon == future_seq_len
             return True
 

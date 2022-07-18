@@ -254,7 +254,6 @@ class BasePytorchForecaster(Forecaster):
         """
         # input transform
         if isinstance(data, TSDataset):
-            # if data.lookback is None, Need to call the roll method.
             _rolled = data.lookback is None
             data = data.to_torch_data_loader(batch_size=batch_size,
                                              roll=_rolled,
@@ -376,7 +375,6 @@ class BasePytorchForecaster(Forecaster):
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
 
         if isinstance(data, TSDataset):
-            # if data.lookback is None, Need to call the roll method.
             _rolled = data.lookback is None
             data = data.to_torch_data_loader(batch_size=batch_size,
                                              roll=_rolled,
@@ -468,7 +466,6 @@ class BasePytorchForecaster(Forecaster):
             invalidInputError(False,
                               "You must call fit or restore first before calling predict!")
         if isinstance(data, TSDataset):
-            # if data.lookback is None, Need to call the roll method.
             _rolled = data.lookback is None
             data = data.to_torch_data_loader(batch_size=batch_size,
                                              roll=_rolled,
@@ -579,7 +576,6 @@ class BasePytorchForecaster(Forecaster):
 
         # data transform
         if isinstance(data, TSDataset):
-            # if data.lookback is None, Need to call the roll method.
             _rolled = data.lookback is None
             data = data.to_torch_data_loader(batch_size=batch_size,
                                              roll=_rolled,
@@ -680,7 +676,6 @@ class BasePytorchForecaster(Forecaster):
             invalidInputError(False,
                               "You must call fit or restore first before calling evaluate!")
         if isinstance(data, TSDataset):
-            # if data.lookback is None, Need to call the roll method.
             _rolled = data.lookback is None
             data = data.to_torch_data_loader(batch_size=batch_size,
                                              roll=_rolled,
@@ -1040,6 +1035,8 @@ class BasePytorchForecaster(Forecaster):
 
         def check_time_steps(tsdataset, past_seq_len, future_seq_len):
             if tsdataset.lookback is not None and past_seq_len is not None:
+                future_seq_len = future_seq_len if isinstance(future_seq_len, int)\
+                    else max(future_seq_len)
                 return tsdataset.lookback == past_seq_len and tsdataset.horizon == future_seq_len
             return True
 
