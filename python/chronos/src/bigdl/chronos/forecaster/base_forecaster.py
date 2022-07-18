@@ -321,7 +321,7 @@ class BasePytorchForecaster(Forecaster):
                 import codecs
                 import csv
                 fit_out = {}
-                with codecs.open('python/chronos/src/bigdl/chronos/forecaster/val_data_test/'\
+                with codecs.open('python/chronos/src/bigdl/chronos/forecaster/val_data_test/'
                                  'version_0/metrics.csv', encoding='utf-8-sig') as f:
                     for row in csv.DictReader(f, skipinitialspace=True):
                         if row['val/loss']:
