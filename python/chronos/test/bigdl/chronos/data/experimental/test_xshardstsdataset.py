@@ -273,13 +273,13 @@ class TestXShardsTSDataset(TestCase):
                                                target_col="feature",
                                                id_col="id")
         tsdata.roll(lookback=4, horizon=2)
-        data = tsdata.to_xshards(partition_num=4)
+        data = tsdata.to_xshards(partition_num=5)
         data_collected = data.collect()
         assert data_collected[0]['x'].shape[1] == 4
         assert data_collected[0]['x'].shape[2] == 1
         assert data_collected[0]['y'].shape[1] == 2
         assert data_collected[0]['y'].shape[2] == 1
-        assert data.num_partitions() == 4
+        assert data.num_partitions() == 5
         assert "id" in data.collect()[0].keys()
         assert tsdata.shards.num_partitions() == 2
 
