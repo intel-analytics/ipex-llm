@@ -124,6 +124,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
                             "should call .tune() before .fit()"
 
     def test_autoformer_forecaster_seed(self):
+        train_loader, val_loader, test_loader = create_data(loader=True)
         evaluate_list = []
         for i in range(2):
             forecaster = AutoformerForecaster(past_seq_len=24,
@@ -133,24 +134,25 @@ class TestChronosModelAutoformerForecaster(TestCase):
                                             label_len=12,
                                             freq='s',
                                             seed=0)
-            forecaster.fit(self.train_loader, epochs=3, batch_size=32)
-            evaluate = forecaster.evaluate(self.val_loader)
-            pred = forecaster.predict(self.test_loader)
+            forecaster.fit(train_loader, epochs=3, batch_size=32)
+            evaluate = forecaster.evaluate(val_loader)
+            pred = forecaster.predict(test_loader)
             evaluate_list.append(evaluate)
         assert evaluate_list[0][0]['val_loss'] == evaluate_list[1][0]['val_loss']
 
     def test_autoformer_forecaster_save_load(self):
+        train_loader, val_loader, test_loader = create_data(loader=True)
         forecaster = AutoformerForecaster(past_seq_len=24,
                                           future_seq_len=5,
                                           input_feature_num=2,
                                           output_feature_num=2,
                                           label_len=12,
                                           freq='s')
-        forecaster.fit(self.train_loader, epochs=3, batch_size=32)
-        evaluate = forecaster.evaluate(self.val_loader)
+        forecaster.fit(train_loader, epochs=3, batch_size=32)
+        evaluate = forecaster.evaluate(val_loader)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             ckpt_name = os.path.join(tmp_dir_name, "af.ckpt")
             forecaster.save(ckpt_name)
             forecaster.load(ckpt_name)
-            evaluate2 = forecaster.evaluate(self.val_loader)
+            evaluate2 = forecaster.evaluate(val_loader)
         assert evaluate[0]['val_loss'] == evaluate2[0]['val_loss']
