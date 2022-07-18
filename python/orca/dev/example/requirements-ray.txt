@@ -8,7 +8,7 @@ tqdm
 pandas
 ray[default]==1.9.2
 dm_tree
-gym==0.17.1
+gym[atari]==0.17.1
 analytics-zoo[ray]
 tabulate==0.8.7
 tensorboard==1.15.0
