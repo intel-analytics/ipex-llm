@@ -218,7 +218,7 @@ class BasePytorchForecaster(Forecaster):
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
-
+               
         :param val_data: Validation sample for validation loop. Defaults to 'None'.
                If you do not input data for 'val_data', the validation_step will be skipped.
                The val_data support following formats:
