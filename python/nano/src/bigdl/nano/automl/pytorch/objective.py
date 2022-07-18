@@ -66,28 +66,30 @@ class Objective(object):
         # add automatic support for latency
         if self.multi_object and "latency" in self.target_metric:
             class LatencyCallback(Timer):
-                def on_validation_start(self, *args, **kwargs) -> None:
+                def on_validation_epoch_start(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule") -> None:
                     self.latencys = []
                 
-                def on_validation_end(self, *args, **kwargs) -> None:
+                def on_validation_epoch_end(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule") -> None:
                     # calculate the latency
                     self.latencys.sort()
                     #  if count is larger than 3, remove the top and least 10%
                     count = len(self.latencys)
                     # todo: which should be the threshold of count
-                    if count >= 3:
+                    if count >= 10:
                         infer_times_mid = self.latencys[int(0.1*count):-int(0.1*count)]
+                        # print(int(0.1*count), -int(0.1*count))
                     else:
                         infer_times_mid = self.latencys
                     latency = sum(infer_times_mid) / len(infer_times_mid)
-                    print("avg latency : ", latency)
+                    # print("avg latency : ", latency)
                     self.log("latency", latency)
+                    # self.latencys.clear()
                 
                 def on_validation_batch_start(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule", batch: Any, batch_idx: int, dataloader_idx: int) -> None:
                     self.batch_latency = time.perf_counter()
                 
                 def on_validation_batch_end(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule", outputs, batch: Any, batch_idx: int, dataloader_idx: int) -> None:
-                    print("batch id ", batch_idx, " latency : ", time.perf_counter() - self.batch_latency)
+                    print("batch id ", batch_idx, " data id : ", dataloader_idx, " latency : ", time.perf_counter() - self.batch_latency)
                     self.latencys.append(time.perf_counter() - self.batch_latency)
             
             self.latency_callback = LatencyCallback()

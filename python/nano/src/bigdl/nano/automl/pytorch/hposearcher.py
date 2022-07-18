@@ -54,6 +54,18 @@ class HPOSearcher:
         :param trainer: The pl.Trainer object.
         """
         self.trainer = trainer
+        if self.trainer.num_processes == 1:
+            # reset current epoch = 0 after each run
+            from pytorch_lightning.callbacks import Callback
+
+            class ResetCallback(Callback):
+                def on_train_end(self, trainer, pl_module):
+                    trainer.fit_loop.current_epoch = 0
+            
+            callbacks = self.trainer.callbacks or []
+            callbacks.append(ResetCallback())
+            self.trainer.callbacks = callbacks
+            print("num process == 1 and add reset callback ")
         self.model_class = pl.LightningModule
         self.study = None
         self.objective = None
@@ -159,11 +171,15 @@ class HPOSearcher:
             self._run_search()
 
         # it is not possible to know the best trial before runing search,
-        # so just apply the best trial at end of each search
-        self._lazymodel = _end_search(study=self.study,
-                                      model_builder=model._model_build,
-                                      use_trial_id=-1)
-        return self._lazymodel
+        # so just apply the best trial at end of each search.
+        # a single best trial cannot be retrieved from a multi-objective study.
+        if not self.objective.multi_object:
+            self._lazymodel = _end_search(study=self.study,
+                                        model_builder=model._model_build,
+                                        use_trial_id=-1)
+            return self._lazymodel
+        else:
+            return self.study.best_trials
 
     def search_summary(self):
         """
