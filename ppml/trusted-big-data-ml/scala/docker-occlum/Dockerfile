@@ -239,6 +239,7 @@ COPY ./entrypoint.sh /opt/
 
 RUN chmod a+x /opt/entrypoint.sh && \
     chmod a+x /opt/run_spark_on_occlum_glibc.sh && \
-    chmod a+x /root/demos/remote_attestation/init_ra_flow/run_attestation_server.sh
+    chmod a+x /root/demos/remote_attestation/init_ra_flow/run_attestation_server.sh && \
+    sed -i '/aesm/d' /root/.bashrc
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
