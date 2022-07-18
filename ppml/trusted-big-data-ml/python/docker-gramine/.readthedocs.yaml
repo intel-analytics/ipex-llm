@@ -1,4 +1,0 @@
-version: 2
-python:
-    install:
-        - requirements: Documentation/requirements.txt

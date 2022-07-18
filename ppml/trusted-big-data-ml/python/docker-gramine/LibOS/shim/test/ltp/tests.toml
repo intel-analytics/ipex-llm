@@ -1,3 +1,0 @@
-binary_dir = "install/testcases/bin"
-
-manifests_cmd = "LTP_CONFIG='ltp.cfg' ./test_ltp.py --list"

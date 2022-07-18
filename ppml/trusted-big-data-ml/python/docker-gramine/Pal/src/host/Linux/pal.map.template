@@ -1,4 +1,0 @@
-PAL {
-    global: @PAL_SYMBOLS@
-    local: *;
-};

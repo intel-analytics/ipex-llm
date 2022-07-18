@@ -1,2 +1,0 @@
-env.GLIBC_VERSION = '2.34'
-env.PYTHONVERSION = 'python3.6'

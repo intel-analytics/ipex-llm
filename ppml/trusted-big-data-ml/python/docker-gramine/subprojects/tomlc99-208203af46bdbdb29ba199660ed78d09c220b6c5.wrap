@@ -1,7 +1,0 @@
-[wrap-file]
-directory = tomlc99-208203af46bdbdb29ba199660ed78d09c220b6c5
-source_url = https://github.com/cktan/tomlc99/archive/208203af46bdbdb29ba199660ed78d09c220b6c5.tar.gz
-source_fallback_url = https://packages.gramineproject.io/distfiles/tomlc99-208203af46bdbdb29ba199660ed78d09c220b6c5.tar.gz
-source_filename = tomlc99-208203af46bdbdb29ba199660ed78d09c220b6c5.tar.gz
-source_hash = 7313913fde1ac0b0a31a34e4fc8e1048c0cb1b0813e7da24a44b4cc3c80f0e89
-patch_directory = tomlc99

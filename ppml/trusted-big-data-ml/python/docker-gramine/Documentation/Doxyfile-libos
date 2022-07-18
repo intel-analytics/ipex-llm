@@ -1,6 +1,0 @@
-@INCLUDE = Doxyfile
-PROJECT_NAME = "LibOS"
-OUTPUT_DIRECTORY = _build/doxygen-libos
-INPUT = \
-    ../LibOS/shim/include \
-    ../LibOS/shim/src

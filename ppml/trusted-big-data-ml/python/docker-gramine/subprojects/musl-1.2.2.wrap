@@ -1,7 +1,0 @@
-[wrap-file]
-directory = musl-1.2.2
-source_url = https://musl.libc.org/releases/musl-1.2.2.tar.gz
-source_fallback_url = https://packages.gramineproject.io/distfiles/musl-1.2.2.tar.gz
-source_filename = musl-1.2.2.tar.gz
-source_hash = 9b969322012d796dc23dda27a35866034fa67d8fb67e0e2c45c913c3d43219dd
-patch_directory = musl-1.2.2
