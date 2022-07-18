@@ -18,20 +18,58 @@ from bigdl.ppml.api import *
 from bigdl.ppml.utils.log4Error import *
 from enum import Enum
 
+from pyspark.sql import SparkSession
+
+
+def check(ppml_args, arg_name):
+    try:
+        value = ppml_args[arg_name]
+        return value
+    except KeyError:
+        invalidInputError(False, "need argument " + arg_name)
+
 
 class PPMLContext(JavaValue):
-    def __init__(self, app_name, ppml_args=None, spark_conf=None):
+    def __init__(self, app_name, ppml_args=None, master="local", deploy_mode="client", **kwargs):
         self.bigdl_type = "float"
-        args = [app_name]
+        conf = {"spark.app.name": app_name,
+                "spark.hadoop.io.compression.codecs": "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec"}
         if ppml_args:
-            args.append(ppml_args)
-            if spark_conf:
-                args.append(spark_conf.getAll())
+            kms_type = ppml_args.get("kms_type", "SimpleKeyManagementService")
+            conf["spark.bigdl.kms.type"] = kms_type
+            if kms_type == "SimpleKeyManagementService":
+                conf["spark.bigdl.kms.simple.id"] = check(ppml_args, "simple_app_id")
+                conf["spark.bigdl.kms.simple.key"] = check(ppml_args, "simple_app_key")
+                conf["spark.bigdl.kms.key.primary"] = check(ppml_args, "primary_key_path")
+                conf["spark.bigdl.kms.key.data"] = check(ppml_args, "data_key_path")
+            elif kms_type == "EHSMKeyManagementService":
+                conf["spark.bigdl.kms.ehs.ip"] = check(ppml_args, "kms_server_ip")
+                conf["spark.bigdl.kms.ehs.port"] = check(ppml_args, "kms_server_port")
+                conf["spark.bigdl.kms.ehs.id"] = check(ppml_args, "ehsm_app_id")
+                conf["spark.bigdl.kms.ehs.key"] = check(ppml_args, "ehsm_app_key")
+                conf["spark.bigdl.kms.key.primary"] = check(ppml_args, "primary_key_path")
+                conf["spark.bigdl.kms.key.data"] = check(ppml_args, "data_key_path")
+            else:
+                invalidInputError(False, "invalid KMS type")
+
+        # init a SparkContext
+        if master == "local":
+            sc = init_spark_on_local(conf=conf)
+        elif master.startswith("k8s"):
+            kwargs["conf"] = conf
+            if deploy_mode == "client":
+                sc = init_spark_on_k8s(**kwargs)
+            else:
+                sc = init_spark_on_k8s_cluster(**kwargs)
+        else:
+            invalidInputError(False, "master=" + master + " not support yet")
+
+        self.spark = SparkSession.builder.getOrCreate()
+        args = [self.spark._jsparkSession]
         super().__init__(None, self.bigdl_type, *args)
-        self.sparkSession = callBigDlFunc(self.bigdl_type, "getSparkSession", self.value)
 
     def load_keys(self, primary_key_path, data_key_path):
-        callBigDlFunc(self.bigdl_type, "loadKeys", self.value, primary_key_path, data_key_path)
+        self.value = callBigDlFunc(self.bigdl_type, "loadKeys", self.value, primary_key_path, data_key_path)
 
     def read(self, crypto_mode):
         if isinstance(crypto_mode, CryptoMode):
@@ -47,7 +85,7 @@ class PPMLContext(JavaValue):
 
     def textfile(self, path, min_partitions=None, crypto_mode="plain_text"):
         if min_partitions is None:
-            min_partitions = callBigDlFunc(self.bigdl_type, "getDefaultMinPartitions", self.sparkSession)
+            min_partitions = self.spark.sparkContext.defaultMinPartitions
         if isinstance(crypto_mode, CryptoMode):
             crypto_mode = crypto_mode.value
         return callBigDlFunc(self.bigdl_type, "textFile", self.value, path, min_partitions, crypto_mode)
@@ -82,8 +120,8 @@ class EncryptedDataFrameWriter:
 
     def mode(self, mode):
         invalidInputError(mode in EncryptedDataFrameWriter.support_mode,
-                              "Unknown save mode: " + mode + "." +
-                              "Accepted save modes are 'overwrite', 'append', 'ignore', 'error', 'errorifexists'.")
+                          "Unknown save mode: " + mode + "." +
+                          "Accepted save modes are 'overwrite', 'append', 'ignore', 'error', 'errorifexists'.")
         self.df_writer = callBigDlFunc(self.bigdl_type, "mode", self.df_writer, mode)
         return self
 
