@@ -13,16 +13,6 @@ atari-py==0.2.5
 analytics-zoo[ray]
 tabulate==0.8.7
 tensorboard==1.15.0
-tensorboard-data-server==0.6.1
-tensorboard-plugin-wit==1.8.0
-tensorboardX==2.2
-tensorflow==1.15.0
-tensorflow-datasets==3.2.0
-tensorflow-estimator==1.15.1
-tensorflow-gan==2.0.0
-tensorflow-hub==0.8.0
-tensorflow-metadata==0.21.1
-tensorflow-probability==0.7.0
 mxnet==1.6.0
 xgboost_ray
 argparse
