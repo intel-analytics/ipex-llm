@@ -103,18 +103,20 @@ Here we use PPML CLI to run jobs on Kubernetes, here we only demo k8s client mod
             --verbose \
             --class com.intel.analytics.bigdl.ppml.examples.SimpleQuerySparkExample \
             --jars local:///ppml/trusted-big-data-ml/spark-encrypt-io-0.3.0-SNAPSHOT.jar \
-            local:///ppml/trusted-big-data-ml/spark-encrypt-io-0.3.0-SNAPSHOT.jar \
-            --inputPath /ppml/trusted-big-data-ml/work/data/shaojie/simplequery/people_encrypted \
-            --outputPath /ppml/trusted-big-data-ml/work/data/shaojie/simplequery/people_encrypted_output \
+            local:///ppml/trusted-big-data-ml/work/data/simplequery/spark-encrypt-io-0.3.0-SNAPSHOT.jar \
+            --inputPath /ppml/trusted-big-data-ml/work/data/simplequery/people_encrypted \
+            --outputPath /ppml/trusted-big-data-ml/work/data/simplequery/people_encrypted_output \
             --inputPartitionNum 8 \
             --outputPartitionNum 8 \
             --inputEncryptModeValue AES/CBC/PKCS5Padding \
             --outputEncryptModeValue AES/CBC/PKCS5Padding \
             --primaryKeyPath /ppml/trusted-big-data-ml/work/data/simplequery/keys/primaryKey \
             --dataKeyPath /ppml/trusted-big-data-ml/work/data/simplequery/keys/dataKey \
-            --kmsType SimpleKeyManagementService \
-            --simpleAPPID 560704476455 \
-            --simpleAPPKEY 088347530263
+            --kmsType EHSMKeyManagementService
+            --kmsServerIP your_ehsm_kms_server_ip \
+            --kmsServerPort your_ehsm_kms_server_port \
+            --ehsmAPPID your_ehsm_kms_appid \
+            --ehsmAPPKEY your_ehsm_kms_appkey
     ```
 
 
