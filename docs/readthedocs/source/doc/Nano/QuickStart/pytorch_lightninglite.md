@@ -1,6 +1,6 @@
 # BigDL-Nano Pytorch LightningLite Quickstart
 
-**In this guide we will describe how to accelerate the LightningLite tool using Nano in 6 simple steps**
+**In this notebook we'll demonstrate how to use BigDL-Nano to accelerate custom train loop easily with very few changes.**
 
 ### **Step 0: Prepare Environment**
 
@@ -15,26 +15,11 @@ pip install --pre --upgrade bigdl-nano[pytorch]
 source bigdl-nano-init
 ```
 
-### **Step 1: Import BigDL-Nano**
-
-The `LightningLite` (`bigdl.nano.pytorch.lite.LightningLite`) class is the place where we integrate most optimizations. It extends PyTorch Lightning's `LightningLite` class and has a few more parameters and methods specific to BigDL-Nano.
-
-Our `LightningLite` can be directly used to replace PyTorch Lightning's, all optimizations will be applied automatically, you don't need to change any training codes.
-
-```python
-from bigdl.nano.pytorch.lite import LightningLite
-```
-
-Leveraging OpenCV and libjpeg-turbo, BigDL-Nano can accelerate computer vision data pipelines by providing a drop-in replacement of torch_vision's `datasets` and `transforms`.
-
-```python
-from bigdl.nano.pytorch.vision import transforms
-from bigdl.nano.pytorch.vision.datasets import CIFAR10
-```
-
-### **Step 2: Load the Data**
+### **Step 1: Load the Data**
 
 Import Cifar10 dataset from torch_vision and modify the train transform. You could access [CIFAR10](https://www.cs.toronto.edu/~kriz/cifar.html) for a view of the whole dataset.
+
+Leveraging OpenCV and libjpeg-turbo, BigDL-Nano can accelerate computer vision data pipelines by providing a drop-in replacement of torch_vision's `datasets` and `transforms`.
 
 ```python
 from torch.utils.data import DataLoader
@@ -61,7 +46,7 @@ def create_dataloader(data_path, batch_size):
     return train_loader
 ```
 
-### **Step 3: Define the Model**
+### **Step 2: Define the Model**
 
 You may define your model in the same way as the standard PyTorch models.
 
@@ -82,9 +67,9 @@ class ResNet18(nn.Module):
         return self.model(x)
 ```
 
-### Step 4: **Define Train Loop**
+### Step 3: **Define Train Loop**
 
-We define the train loop in the overrided `run` method of `LightningLite`, which is required by PyTorch Lightning.
+Suppose the custom train loop is as follows:
 
 ```python
 import os
@@ -93,16 +78,58 @@ import torch
 data_path = os.environ.get("DATA_PATH", ".")
 batch_size = 256
 max_epochs = 3
+lr = 0.01
+
+model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
+loss = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+train_loader = create_dataloader(data_path, batch_size)
+
+model.train()
+
+for _i in range(max_epochs):
+    total_loss, num = 0, 0
+    for X, y in train_loader:
+        optimizer.zero_grad()
+        l = loss(model(X), y)
+        l.backward()
+        optimizer.step()
+        
+        total_loss += l.sum()
+        num += 1
+    print(f'avg_loss: {total_loss / num}')
+```
+
+The `LightningLite` (`bigdl.nano.pytorch.lite.LightningLite`) class is the place where we integrate most optimizations. It extends PyTorch Lightning's `LightningLite` class and has a few more parameters and methods specific to BigDL-Nano.
+
+We can accelerate the train loop above by the following steps:
+
+- define a class `Lite` derived from our `LightningLite`
+- copy all codes into the `run` method of `Lite`
+- add two extra lines to setup model, optimizer and dataloader
+- change the backward call
+
+```python
+import os
+import torch
+
+from bigdl.nano.pytorch.lite import LightningLite
 
 class Lite(LightningLite):
     def run(self):
+        # copy all codes into this method
+        data_path = os.environ.get("DATA_PATH", ".")
+        batch_size = 256
+        max_epochs = 3
+        lr = 0.01
+
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
         loss = nn.CrossEntropyLoss()
-        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+        optimizer = torch.optim.Adam(model.parameters(), lr=lr)
         train_loader = create_dataloader(data_path, batch_size)
 
-        model, optimizer = self.setup(model, optimizer)
-        train_loader = self.setup_dataloaders(train_loader)
+        model, optimizer = self.setup(model, optimizer)      # add this line to setup model and optimizer
+        train_loader = self.setup_dataloaders(train_loader)  # add this line to setup dataloader
         model.train()
 
         for _i in range(max_epochs):
@@ -110,7 +137,7 @@ class Lite(LightningLite):
             for X, y in train_loader:
                 optimizer.zero_grad()
                 l = loss(model(X), y)
-                self.backward(l)
+                self.backward(l)  # change the backward call
                 optimizer.step()
                 
                 total_loss += l.sum()
