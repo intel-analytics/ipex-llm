@@ -7,6 +7,14 @@
 
 ---------------------------
 
+- [**BigDL-Nano PyTorch LightningLite Quickstart**](./pytorch_lightninglite.html)
+
+    > ![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][Nano_pytorch_lightninglite]
+
+    In this guide we will describe how to accelerate the LightningLite tool using Nano
+
+---------------------------
+
 - [**BigDL-Nano PyTorch ONNXRuntime Acceleration Quickstart**](./pytorch_onnxruntime.html)
 
     > ![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][Nano_pytorch_onnxruntime]
@@ -68,6 +76,7 @@
 
 
 [Nano_pytorch_training]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/tutorial/pytorch_train.ipynb>
+[Nano_pytorch_lightninglite]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/tutorial/pytorch_lightninglite.ipynb>
 [Nano_pytorch_onnxruntime]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/tutorial/pytorch_inference_onnx.ipynb>
 [Nano_pytorch_openvino]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/tutorial/pytorch_inference_openvino.ipynb>
 [Nano_pytorch_Quantization_inc]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/tutorial/pytorch_quantization_inc.ipynb>

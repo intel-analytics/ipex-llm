@@ -60,6 +60,40 @@ trainer = Trainer(max_epoch=10, num_processes=4)
 
 Note that the effective batch size multi-instance training is the `batch_size` in your `dataloader` times `num_processes` so the number of iterations of each epoch will be reduced `num_processes` fold. A common practice to compensate for that is to gradually increase the learning rate to `num_processes` times. You can find more details of this trick in the [Facebook paper](https://arxiv.org/abs/1706.02677).
 
+### BigDL-Nano PyTorch LightningLite
+
+The `LightningLite` (`bigdl.nano.pytorch.lite.LightningLite`) class is the place where we integrate most optimizations. It extends PyTorch Lightning's `LightningLite` class and has a few more parameters and methods specific to BigDL-Nano.
+
+Our `LightningLite` can be directly used to replace PyTorch Lightning's, all optimizations will be applied automatically, you don't need to change any training codes.
+
+For example,
+
+```python
+from bigdl.nano.pytorch.lite import LightningLite
+
+class Lite(LightningLite) :
+    def run(self, ...):
+        # define train loop
+
+Lite().run(...)
+```
+
+Our `LightningLite` also integrates IPEX and distributed training optimizations. For example,
+
+```python
+from bigdl.nano.pytorch.lite import LightningLite
+
+class Lite(LightningLite):
+    def run(self, ...):
+        # define train loop
+
+# enable IPEX optimizaiton
+Lite(use_ipex=True).run(...)
+
+# enable IPEX and distributed training, using spawn strategy
+Lite(use_ipex=True, num_processes=2, strategy="spawn")
+```
+
 ### Optimized Data pipeline
 
 Computer Vision task often needs a data processing pipeline that sometimes constitutes a non-trivial part of the whole training pipeline. Leveraging OpenCV and libjpeg-turbo, BigDL-Nano can accelerate computer vision data pipelines by providing a drop-in replacement of torch_vision's `datasets` and `transforms`.
