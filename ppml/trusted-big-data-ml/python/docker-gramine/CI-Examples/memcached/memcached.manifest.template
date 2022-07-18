@@ -1,0 +1,46 @@
+# Memcached manifest file example
+
+loader.entrypoint = "file:{{ gramine.libos }}"
+libos.entrypoint = "memcached"
+
+loader.log_level = "{{ log_level }}"
+
+loader.env.LD_LIBRARY_PATH = "/lib:{{ arch_libdir }}:/usr/{{ arch_libdir }}"
+
+loader.insecure__use_cmdline_argv = true
+
+sys.enable_sigterm_injection = true
+
+fs.mounts = [
+  { path = "/lib", uri = "file:{{ gramine.runtimedir() }}" },
+  { path = "{{ arch_libdir }}", uri = "file:{{ arch_libdir }}" },
+  { path = "/usr/{{ arch_libdir }}", uri = "file:/usr/{{ arch_libdir }}" },
+  { path = "/etc", uri = "file:/etc" },
+]
+
+sgx.debug = true
+sgx.nonpie_binary = true
+sgx.thread_num = 16
+
+# Memcached does not fail explicitly when enclave memory is exhausted. Instead, Memcached goes into
+# infinite loop without a listening socket. You can trigger this incorrect behavior by increasing
+# the number of threads to 12 (each thread requires 128MB of memory): `memcached -t 12`. This is an
+# issue in Memcached source code, not related to Gramine.
+sgx.enclave_size = "1024M"
+
+sgx.trusted_files = [
+  "file:{{ gramine.libos }}",
+  "file:memcached",
+  "file:{{ gramine.runtimedir() }}/",
+  "file:{{ arch_libdir }}/",
+  "file:/usr/{{ arch_libdir }}/",
+]
+
+sgx.allowed_files = [
+  "file:/etc/nsswitch.conf",
+  "file:/etc/ethers",
+  "file:/etc/hosts",
+  "file:/etc/group",
+  "file:/etc/passwd",
+  "file:/etc/gai.conf",
+]

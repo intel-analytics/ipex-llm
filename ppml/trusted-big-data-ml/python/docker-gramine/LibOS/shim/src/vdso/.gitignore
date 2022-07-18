@@ -1,0 +1,4 @@
+/.vdso-linked-for-reloc-check.so
+/.vdso-no-reloc-checked
+/vdso-data.c
+/vdso.so.dbg

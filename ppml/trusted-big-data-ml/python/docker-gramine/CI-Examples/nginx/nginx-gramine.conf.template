@@ -1,0 +1,64 @@
+# This configuration file is based on nginx.conf.default from Nginx v1.16.1.
+#
+# The following changes are made:
+# - Number of worker processes in increased from 1 to 4
+# - Number of worker connections is decrease from 1024 to 768 (because Linux by default
+#   limits FDs to 1024, and Gramine uses ~100 FDs for its own purposes, so we are left with
+#   about 900 FDs available for Nginx application itself)
+# - Listening port is changed from 80 to LISTEN_PORT
+# - Listening host is changed from localhost to LISTEN_HOST
+# - SSL/HTTPS with default params is enabled via LISTEN_SSL_PORT
+# - Added `access_log off` to disable verbose log info (skewed perf results)
+# - Added `daemon off` to run Nginx in the foreground
+
+# Uncomment "user nobody;" below to switch to this user. If you run under root, use
+# "user root;" instead. Typically there is no need to specify a non-default user.
+#user  nobody;
+worker_processes 4;
+
+#error_log  logs/error.log;
+#error_log  logs/error.log  notice;
+#error_log  logs/error.log  info;
+
+#pid        logs/nginx.pid;
+
+events {
+    worker_connections  768;
+}
+
+http {
+    include            mime.types;
+    default_type       application/octet-stream;
+    sendfile           on;
+    keepalive_timeout  65;
+
+    # a single HTTP/HTTPS server
+    server {
+        listen $(LISTEN_PORT);
+        listen  $(LISTEN_SSL_PORT) ssl;
+        server_name $(LISTEN_HOST);
+
+        ssl_certificate            server.crt;
+        ssl_certificate_key        server.key;
+        ssl_session_cache          shared:SSL:10m;
+        ssl_session_timeout        10m;
+        ssl_protocols              TLSv1 TLSv1.1 TLSv1.2;
+        ssl_ciphers                HIGH:!aNULL:!MD5;
+        ssl_prefer_server_ciphers  on;
+
+        location / {
+            root   html;
+            index  index.html index.htm;
+        }
+
+        # redirect server error pages to the static page /50x.html
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   html;
+        }
+
+        access_log off;
+    }
+}
+
+daemon off;

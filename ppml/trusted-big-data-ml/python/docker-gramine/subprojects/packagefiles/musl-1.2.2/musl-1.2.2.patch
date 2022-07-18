@@ -1,0 +1,204 @@
+diff --git a/arch/x86_64/syscall_arch.h b/arch/x86_64/syscall_arch.h
+index 92d5c179217b25418e257b2fd1b563abeeff6f65..32f14f828d19b6a2622bf59c53f79c45416cd30b 100644
+--- a/arch/x86_64/syscall_arch.h
++++ b/arch/x86_64/syscall_arch.h
+@@ -1,24 +1,26 @@
++#include "gramine_entry_api.h"
++
+ #define __SYSCALL_LL_E(x) (x)
+ #define __SYSCALL_LL_O(x) (x)
+ 
+ static __inline long __syscall0(long n)
+ {
+ 	unsigned long ret;
+-	__asm__ __volatile__ ("syscall" : "=a"(ret) : "a"(n) : "rcx", "r11", "memory");
++	__asm__ __volatile__ ("GRAMINE_SYSCALL" : "=a"(ret) : "a"(n) : "rcx", "r11", "memory");
+ 	return ret;
+ }
+ 
+ static __inline long __syscall1(long n, long a1)
+ {
+ 	unsigned long ret;
+-	__asm__ __volatile__ ("syscall" : "=a"(ret) : "a"(n), "D"(a1) : "rcx", "r11", "memory");
++	__asm__ __volatile__ ("GRAMINE_SYSCALL" : "=a"(ret) : "a"(n), "D"(a1) : "rcx", "r11", "memory");
+ 	return ret;
+ }
+ 
+ static __inline long __syscall2(long n, long a1, long a2)
+ {
+ 	unsigned long ret;
+-	__asm__ __volatile__ ("syscall" : "=a"(ret) : "a"(n), "D"(a1), "S"(a2)
++	__asm__ __volatile__ ("GRAMINE_SYSCALL" : "=a"(ret) : "a"(n), "D"(a1), "S"(a2)
+ 						  : "rcx", "r11", "memory");
+ 	return ret;
+ }
+@@ -26,7 +28,7 @@ static __inline long __syscall2(long n, long a1, long a2)
+ static __inline long __syscall3(long n, long a1, long a2, long a3)
+ {
+ 	unsigned long ret;
+-	__asm__ __volatile__ ("syscall" : "=a"(ret) : "a"(n), "D"(a1), "S"(a2),
++	__asm__ __volatile__ ("GRAMINE_SYSCALL" : "=a"(ret) : "a"(n), "D"(a1), "S"(a2),
+ 						  "d"(a3) : "rcx", "r11", "memory");
+ 	return ret;
+ }
+@@ -35,7 +37,7 @@ static __inline long __syscall4(long n, long a1, long a2, long a3, long a4)
+ {
+ 	unsigned long ret;
+ 	register long r10 __asm__("r10") = a4;
+-	__asm__ __volatile__ ("syscall" : "=a"(ret) : "a"(n), "D"(a1), "S"(a2),
++	__asm__ __volatile__ ("GRAMINE_SYSCALL" : "=a"(ret) : "a"(n), "D"(a1), "S"(a2),
+ 						  "d"(a3), "r"(r10): "rcx", "r11", "memory");
+ 	return ret;
+ }
+@@ -45,7 +47,7 @@ static __inline long __syscall5(long n, long a1, long a2, long a3, long a4, long
+ 	unsigned long ret;
+ 	register long r10 __asm__("r10") = a4;
+ 	register long r8 __asm__("r8") = a5;
+-	__asm__ __volatile__ ("syscall" : "=a"(ret) : "a"(n), "D"(a1), "S"(a2),
++	__asm__ __volatile__ ("GRAMINE_SYSCALL" : "=a"(ret) : "a"(n), "D"(a1), "S"(a2),
+ 						  "d"(a3), "r"(r10), "r"(r8) : "rcx", "r11", "memory");
+ 	return ret;
+ }
+@@ -56,7 +58,7 @@ static __inline long __syscall6(long n, long a1, long a2, long a3, long a4, long
+ 	register long r10 __asm__("r10") = a4;
+ 	register long r8 __asm__("r8") = a5;
+ 	register long r9 __asm__("r9") = a6;
+-	__asm__ __volatile__ ("syscall" : "=a"(ret) : "a"(n), "D"(a1), "S"(a2),
++	__asm__ __volatile__ ("GRAMINE_SYSCALL" : "=a"(ret) : "a"(n), "D"(a1), "S"(a2),
+ 						  "d"(a3), "r"(r10), "r"(r8), "r"(r9) : "rcx", "r11", "memory");
+ 	return ret;
+ }
+diff --git a/src/process/x86_64/vfork.s b/src/process/x86_64/vfork.S
+similarity index 73%
+rename from src/process/x86_64/vfork.s
+rename to src/process/x86_64/vfork.S
+index 9114439031bebc9af6505ad4cefb385ac83002dc..7a022dd051707729d88fa32d0b62a6257cbb0cb0 100644
+--- a/src/process/x86_64/vfork.s
++++ b/src/process/x86_64/vfork.S
+@@ -1,9 +1,11 @@
++#include "gramine_entry_api.h"
++
+ .global vfork
+ .type vfork,@function
+ vfork:
+ 	pop %rdx
+ 	mov $58,%eax
+-	syscall
++	GRAMINE_SYSCALL
+ 	push %rdx
+ 	mov %rax,%rdi
+ 	.hidden __syscall_ret
+diff --git a/src/signal/x86_64/restore.s b/src/signal/x86_64/restore.S
+similarity index 73%
+rename from src/signal/x86_64/restore.s
+rename to src/signal/x86_64/restore.S
+index 27d6cf310337a9e7227a0da422d3b37c9397091d..234a0b10bd287875c27c1154a83ad835c0446b76 100644
+--- a/src/signal/x86_64/restore.s
++++ b/src/signal/x86_64/restore.S
+@@ -1,8 +1,10 @@
++#include "gramine_entry_api.h"
++
+ 	nop
+ .global __restore_rt
+ .hidden __restore_rt
+ .type __restore_rt,@function
+ __restore_rt:
+ 	mov $15, %rax
+-	syscall
++	GRAMINE_SYSCALL
+ .size __restore_rt,.-__restore_rt
+diff --git a/src/thread/x86_64/__set_thread_area.s b/src/thread/x86_64/__set_thread_area.S
+similarity index 79%
+rename from src/thread/x86_64/__set_thread_area.s
+rename to src/thread/x86_64/__set_thread_area.S
+index 7347ff4dc1e12cc41815a19faa5e532d8fe53184..dbbb88695be6443e9de10ed6d2c8f626162ff5ce 100644
+--- a/src/thread/x86_64/__set_thread_area.s
++++ b/src/thread/x86_64/__set_thread_area.S
+@@ -1,4 +1,6 @@
+ /* Copyright 2011-2012 Nicholas J. Kain, licensed under standard MIT license */
++#include "gramine_entry_api.h"
++
+ .text
+ .global __set_thread_area
+ .hidden __set_thread_area
+@@ -7,5 +9,5 @@ __set_thread_area:
+ 	mov %rdi,%rsi           /* shift for syscall */
+ 	movl $0x1002,%edi       /* SET_FS register */
+ 	movl $158,%eax          /* set fs segment to */
+-	syscall                 /* arch_prctl(SET_FS, arg)*/
++	GRAMINE_SYSCALL         /* arch_prctl(SET_FS, arg)*/
+ 	ret
+diff --git a/src/thread/x86_64/__unmapself.s b/src/thread/x86_64/__unmapself.S
+similarity index 72%
+rename from src/thread/x86_64/__unmapself.s
+rename to src/thread/x86_64/__unmapself.S
+index e2689e65052ce76b4639324c3bcf239f97c36eee..6028bfb0d045111d0510ea328e6075ea50b9c77e 100644
+--- a/src/thread/x86_64/__unmapself.s
++++ b/src/thread/x86_64/__unmapself.S
+@@ -1,10 +1,12 @@
+ /* Copyright 2011-2012 Nicholas J. Kain, licensed under standard MIT license */
++#include "gramine_entry_api.h"
++
+ .text
+ .global __unmapself
+ .type   __unmapself,@function
+ __unmapself:
+ 	movl $11,%eax   /* SYS_munmap */
+-	syscall         /* munmap(arg2,arg3) */
++	GRAMINE_SYSCALL /* munmap(arg2,arg3) */
+ 	xor %rdi,%rdi   /* exit() args: always return success */
+ 	movl $60,%eax   /* SYS_exit */
+-	syscall         /* exit(0) */
++	GRAMINE_SYSCALL /* exit(0) */
+diff --git a/src/thread/x86_64/clone.s b/src/thread/x86_64/clone.S
+similarity index 84%
+rename from src/thread/x86_64/clone.s
+rename to src/thread/x86_64/clone.S
+index 6e47bc0a37dee7157ceaf1369659891a2d7d16bb..b6fae093823588c63a2ba7fe384302eed52c80da 100644
+--- a/src/thread/x86_64/clone.s
++++ b/src/thread/x86_64/clone.S
+@@ -1,3 +1,5 @@
++#include "gramine_entry_api.h"
++
+ .text
+ .global __clone
+ .hidden __clone
+@@ -14,7 +16,7 @@ __clone:
+ 	and $-16,%rsi
+ 	sub $8,%rsi
+ 	mov %rcx,(%rsi)
+-	syscall
++	GRAMINE_SYSCALL
+ 	test %eax,%eax
+ 	jnz 1f
+ 	xor %ebp,%ebp
+@@ -23,6 +25,6 @@ __clone:
+ 	mov %eax,%edi
+ 	xor %eax,%eax
+ 	mov $60,%al
+-	syscall
++	GRAMINE_SYSCALL
+ 	hlt
+ 1:	ret
+diff --git a/src/thread/x86_64/syscall_cp.s b/src/thread/x86_64/syscall_cp.S
+similarity index 90%
+rename from src/thread/x86_64/syscall_cp.s
+rename to src/thread/x86_64/syscall_cp.S
+index 4f101716d4ee0cd50461f45a0da6b2edb2be3d4c..ca38351ae2a0d1a7aaee7c81bc6d5fe09ae9c304 100644
+--- a/src/thread/x86_64/syscall_cp.s
++++ b/src/thread/x86_64/syscall_cp.S
+@@ -1,3 +1,5 @@
++#include "gramine_entry_api.h"
++
+ .text
+ .global __cp_begin
+ .hidden __cp_begin
+@@ -24,7 +26,7 @@ __cp_begin:
+ 	mov 8(%rsp),%r8
+ 	mov 16(%rsp),%r9
+ 	mov %r11,8(%rsp)
+-	syscall
++	GRAMINE_SYSCALL
+ __cp_end:
+ 	ret
+ __cp_cancel:

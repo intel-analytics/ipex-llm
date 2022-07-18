@@ -1,0 +1,41 @@
+loader.entrypoint = "file:{{ gramine.libos }}"
+libos.entrypoint = "{{ entrypoint }}"
+
+loader.argv0_override = "{{ entrypoint }}"
+loader.env.LD_LIBRARY_PATH = "/lib"
+loader.insecure__use_cmdline_argv = true
+
+# Keep the deprecated `fs.mount` syntax for test purposes
+# TODO: this syntax is deprecated in v1.2 and will be removed two versions after it.
+
+fs.mount.lib.type = "chroot"
+fs.mount.lib.path = "/lib"
+fs.mount.lib.uri = "file:{{ gramine.runtimedir(libc) }}"
+
+fs.mount.entrypoint.type = "chroot"
+fs.mount.entrypoint.path = "{{ entrypoint }}"
+fs.mount.entrypoint.uri = "file:{{ binary_dir }}/{{ entrypoint }}"
+
+fs.mount.bin.type = "chroot"
+fs.mount.bin.path = "/bin"
+fs.mount.bin.uri = "file:/bin"
+
+sgx.insecure__protected_files_key = "ffeeddccbbaa99887766554433221100"
+
+sgx.nonpie_binary = true
+sgx.debug = true
+sgx.remote_attestation = true
+
+# below three entries are irrelevant, only for test purposes
+sgx.seal_key.flags_mask = "0xffffffffffffffff"
+sgx.seal_key.xfrm_mask  = "0xfffffffffff9ff1b"
+sgx.seal_key.misc_mask  = "0xffffffff"
+
+sgx.ra_client_spid = "{{ env.get('RA_CLIENT_SPID', '') }}"
+sgx.ra_client_linkable = {{ 'true' if env.get('RA_CLIENT_LINKABLE', '0') == '1' else 'false' }}
+
+sgx.trusted_files = [
+  "file:{{ gramine.libos }}",
+  "file:{{ gramine.runtimedir(libc) }}/",
+  "file:{{ binary_dir }}/{{ entrypoint }}",
+]

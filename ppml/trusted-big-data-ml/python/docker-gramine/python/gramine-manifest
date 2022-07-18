@@ -1,0 +1,33 @@
+#!/usr/bin/python3
+# SPDX-License-Identifier: LGPL-3.0-or-later
+# Copyright (C) 2021 Intel Corporation
+#                    Borys Popławski <borysp@invisiblethingslab.com>
+
+import click
+
+from graminelibos import Manifest
+
+def validate_define(_ctx, _param, values):
+    ret = {}
+    for value in values:
+        try:
+            k, v = value.split('=', 1)
+        except ValueError:
+            k, v = value, True
+        ret[k] = v
+    return ret
+
+@click.command()
+@click.option('--string', '-c')
+@click.option('--define', '-D', multiple=True, callback=validate_define)
+@click.argument('infile', type=click.File('r'), required=False)
+@click.argument('outfile', type=click.File('w'), default='-')
+def main(string, define, infile, outfile):
+    if not bool(string) ^ bool(infile):
+        click.get_current_context().fail('specify exactly one of (infile, -c)')
+    template = infile.read() if infile else string
+    manifest = Manifest.from_template(template, define)
+    manifest.dump(outfile)
+
+if __name__ == '__main__':
+    main() # pylint: disable=no-value-for-parameter

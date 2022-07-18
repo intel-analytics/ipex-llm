@@ -1,0 +1,7 @@
+@INCLUDE = Doxyfile
+PROJECT_NAME = "PAL"
+OUTPUT_DIRECTORY = _build/doxygen-pal
+INPUT = ../Pal/include/arch/x86_64 ../Pal/include/pal ../Pal/include
+MACRO_EXPANSION = YES
+EXPAND_ONLY_PREDEF = YES
+PREDEFINED = noreturn= __x86_64__=1

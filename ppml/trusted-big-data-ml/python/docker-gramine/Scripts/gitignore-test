@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+set -eu -o pipefail
+
+# Intended to be run after a build. Returns 1 (i.e. failure) if there's at
+# least one modified or untracked file which is not gitignored.
+
+# Don't inline it in the if, since we want to exit on error return codes (set -e).
+status="$(git status --porcelain)"
+
+if [ -z "$status" ]; then
+    echo "No not-gitignored changes :]"
+    exit 0
+fi
+
+echo "================================================================================"
+echo "              ERROR: Files modified by build, but not gitignored:"
+echo "--------------------------------------------------------------------------------"
+echo "$status"
+git submodule foreach --recursive git status --porcelain
+echo "================================================================================"
+exit 1

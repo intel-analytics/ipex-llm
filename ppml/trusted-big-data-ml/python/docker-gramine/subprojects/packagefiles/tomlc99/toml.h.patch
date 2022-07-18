@@ -1,0 +1,36 @@
+diff --git a/toml.h b/toml.h
+index b91ef890303238e734f06bbfc95ab39b7851e031..735518d25d411d78ad417efb333683014c6d4c45 100644
+--- a/toml.h
++++ b/toml.h
+@@ -26,7 +26,6 @@
+ #define TOML_H
+ 
+ 
+-#include <stdio.h>
+ #include <stdint.h>
+ 
+ 
+@@ -41,13 +40,6 @@ typedef struct toml_table_t toml_table_t;
+ typedef struct toml_array_t toml_array_t;
+ typedef struct toml_datum_t toml_datum_t;
+ 
+-/* Parse a file. Return a table on success, or 0 otherwise.
+- * Caller must toml_free(the-return-value) after use.
+- */
+-TOML_EXTERN toml_table_t* toml_parse_file(FILE* fp,
+-										  char* errbuf,
+-										  int errbufsz);
+-
+ /* Parse a string containing the full config.
+  * Return a table on success, or 0 otherwise.
+  * Caller must toml_free(the-return-value) after use.
+@@ -110,9 +102,6 @@ TOML_EXTERN toml_table_t* toml_table_at(const toml_array_t* arr, int idx);
+ /* ... retrieve the key in table at keyidx. Return 0 if out of range. */
+ TOML_EXTERN const char* toml_key_in(const toml_table_t* tab, int keyidx);
+ /* ... retrieve values using key. */
+-TOML_EXTERN toml_datum_t toml_string_in(const toml_table_t* arr, const char* key);
+-TOML_EXTERN toml_datum_t toml_bool_in(const toml_table_t* arr, const char* key);
+-TOML_EXTERN toml_datum_t toml_int_in(const toml_table_t* arr, const char* key);
+ TOML_EXTERN toml_datum_t toml_double_in(const toml_table_t* arr, const char* key);
+ TOML_EXTERN toml_datum_t toml_timestamp_in(const toml_table_t* arr, const char* key);
+ /* .. retrieve array or table using key. */

@@ -1,0 +1,21 @@
+node('sgx_slave_2.6') {
+    checkout scm
+
+    env.SGX = '1'
+
+    load '.ci/lib/config-docker.jenkinsfile'
+    docker.build(
+        "local:${env.BUILD_TAG}",
+        '-f .ci/ubuntu20.04.dockerfile .'
+    ).inside("${env.DOCKER_ARGS_COMMON} ${env.DOCKER_ARGS_SGX}") {
+        load '.ci/lib/config.jenkinsfile'
+        load '.ci/lib/config-ubuntu20.04.jenkinsfile'
+        load '.ci/lib/config-release.jenkinsfile'
+
+        load '.ci/lib/stage-lint.jenkinsfile'
+        load '.ci/lib/stage-clean-check-prepare.jenkinsfile'
+        load '.ci/lib/stage-build-sgx.jenkinsfile'
+        load '.ci/lib/stage-test-sgx.jenkinsfile'
+        load '.ci/lib/stage-clean-check.jenkinsfile'
+    }
+}

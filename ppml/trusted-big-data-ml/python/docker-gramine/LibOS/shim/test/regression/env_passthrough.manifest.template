@@ -1,0 +1,27 @@
+{% set entrypoint = "bootstrap" -%}
+
+loader.entrypoint = "file:{{ gramine.libos }}"
+libos.entrypoint = "{{ entrypoint }}"
+
+loader.argv0_override = "{{ entrypoint }}"
+loader.env.LD_LIBRARY_PATH = "/lib"
+
+loader.env.A = { passthrough = true }
+loader.env.B = { value = "OVERWRITTEN_VALUE" }
+
+# loader.env.C = { passthrough = false }  # not allowed for security reasons
+# loader.env.E = { passthrough = true, value = "THIS_IS_INCORRECT_SYNTAX" }
+
+fs.mounts = [
+  { path = "/lib", uri = "file:{{ gramine.runtimedir(libc) }}" },
+  { path = "/{{ entrypoint }}", uri = "file:{{ binary_dir }}/{{ entrypoint }}" },
+]
+
+sgx.nonpie_binary = true
+sgx.debug = true
+
+sgx.trusted_files = [
+  "file:{{ gramine.libos }}",
+  "file:{{ gramine.runtimedir(libc) }}/",
+  "file:{{ binary_dir }}/{{ entrypoint }}",
+]

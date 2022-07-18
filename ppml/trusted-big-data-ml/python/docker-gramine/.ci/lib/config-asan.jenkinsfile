@@ -1,0 +1,2 @@
+env.ASAN = '1'
+env.LTP_TIMEOUT_FACTOR = '2'

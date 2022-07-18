@@ -1,0 +1,19 @@
+binary_dir = "@GRAMINE_PKGLIBDIR@/tests/libos/fs"
+
+manifests = [
+  "copy_mmap_rev",
+  "copy_mmap_seq",
+  "copy_mmap_whole",
+  "copy_rev",
+  "copy_sendfile",
+  "copy_seq",
+  "copy_whole",
+  "delete",
+  "multiple_writers",
+  "open_close",
+  "open_flags",
+  "read_write",
+  "seek_tell",
+  "stat",
+  "truncate",
+]

@@ -1,0 +1,12 @@
+{% set entrypoint = "Thread2" -%}
+
+loader.entrypoint = "file:{{ binary_dir }}/{{ entrypoint }}"
+loader.argv0_override = "{{ entrypoint }}"
+
+sgx.thread_num = 2
+sgx.rpc_thread_num = 2
+sgx.enable_stats = true
+sgx.nonpie_binary = true
+sgx.debug = true
+
+sgx.trusted_files = [ "file:{{ binary_dir }}/{{ entrypoint }}" ]

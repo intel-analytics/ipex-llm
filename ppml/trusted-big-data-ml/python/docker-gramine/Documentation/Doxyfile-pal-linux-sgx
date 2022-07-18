@@ -1,0 +1,4 @@
+@INCLUDE = Doxyfile
+PROJECT_NAME = "PAL Linux-SGX"
+OUTPUT_DIRECTORY = _build/doxygen-pal-linux-sgx
+INPUT = ../Pal/src/host/Linux-SGX

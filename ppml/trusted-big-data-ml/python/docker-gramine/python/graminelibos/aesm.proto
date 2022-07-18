@@ -1,0 +1,19 @@
+message GetTokenReqRaw {
+    required bytes signature      = 1;
+    required bytes key            = 2;
+    required bytes attributes     = 3;
+    required uint32 timeout       = 9;
+}
+
+message GetTokenReq {
+    required GetTokenReqRaw req   = 3;
+}
+
+message GetTokenRetRaw {
+    required int32 error          = 1;
+    optional bytes token          = 2;
+}
+
+message GetTokenRet {
+    required GetTokenRetRaw ret   = 3;
+}

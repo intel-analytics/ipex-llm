@@ -1,0 +1,20 @@
+node('nonsgx_slave') {
+    checkout scm
+
+    load '.ci/lib/config-docker.jenkinsfile'
+    docker.build(
+        "local:${env.BUILD_TAG}",
+        '-f .ci/ubuntu18.04.dockerfile .'
+    ).inside("${env.DOCKER_ARGS_COMMON}") {
+        load '.ci/lib/config.jenkinsfile'
+        load '.ci/lib/config-ubuntu18.04.jenkinsfile'
+        load '.ci/lib/config-debug.jenkinsfile'
+
+        load '.ci/lib/stage-lint.jenkinsfile'
+        load '.ci/lib/stage-clean-check-prepare.jenkinsfile'
+        load '.ci/lib/stage-build-nosgx.jenkinsfile'
+        load '.ci/lib/stage-test.jenkinsfile'
+        load '.ci/lib/stage-test-direct.jenkinsfile'
+        load '.ci/lib/stage-clean-check.jenkinsfile'
+    }
+}

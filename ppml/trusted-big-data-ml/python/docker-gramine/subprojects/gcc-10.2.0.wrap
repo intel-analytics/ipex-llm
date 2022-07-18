@@ -1,0 +1,7 @@
+[wrap-file]
+directory = gcc-10.2.0
+source_url = https://ftp.gnu.org/gnu/gcc/gcc-10.2.0/gcc-10.2.0.tar.gz
+source_fallback_url = https://packages.gramineproject.io/distfiles/gcc-10.2.0.tar.gz
+source_filename = gcc-10.2.0.tar.gz
+source_hash = 27e879dccc639cd7b0cc08ed575c1669492579529b53c9ff27b0b96265fa867d
+patch_directory = gcc-10.2.0

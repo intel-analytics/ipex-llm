@@ -1,0 +1,38 @@
+diff --git a/uthash.h b/uthash.h
+index 76bdca64199f11dbb6387633e2a651dcaee1bb4f..cbdb261b0078480597a573cc5384f9abca91f2ff 100644
+--- a/uthash.h
++++ b/uthash.h
+@@ -26,9 +26,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ 
+ #define UTHASH_VERSION 2.1.0
+ 
++#if defined(IN_PAL) || defined(IN_SHIM)
++#include "api.h"      /* ptrdiff_t, memcmp, memset, strlen */
++#else
+ #include <string.h>   /* memcmp, memset, strlen */
+ #include <stddef.h>   /* ptrdiff_t */
+ #include <stdlib.h>   /* exit */
++#endif
+ 
+ /* These macros use decltype or the earlier __typeof GNU extension.
+    As decltype is only available in newer compilers (VS2010 or gcc 4.3+
+@@ -128,7 +132,7 @@ typedef unsigned char uint8_t;
+ /* malloc failures result in lost memory, hash tables are unusable */
+ 
+ #ifndef uthash_fatal
+-#define uthash_fatal(msg) exit(-1)        /* fatal OOM error */
++#error You need to define uthash_fatal(msg)
+ #endif
+ 
+ #define HASH_RECORD_OOM(oomed) uthash_fatal("out of memory")
+@@ -519,7 +523,9 @@ do {
+  * This is for uthash developer only; it compiles away if HASH_DEBUG isn't defined.
+  */
+ #ifdef HASH_DEBUG
+-#define HASH_OOPS(...) do { fprintf(stderr,__VA_ARGS__); exit(-1); } while (0)
++#ifndef HASH_OOPS
++#error You need to define HASH_OOPS(...)
++#endif
+ #define HASH_FSCK(hh,head,where)                                                 \
+ do {                                                                             \
+   struct UT_hash_handle *_thh;                                                   \

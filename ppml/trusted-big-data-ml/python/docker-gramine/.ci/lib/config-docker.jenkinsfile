@@ -1,0 +1,24 @@
+env.PREFIX = env.WORKSPACE + '/usr'
+
+// don't mess with PATH before reading this: https://issues.jenkins.io/browse/JENKINS-49076
+env.DOCKER_ARGS_COMMON = """
+    --env=PATH=${env.PREFIX}/bin:${env.PATH}
+    --security-opt seccomp=${env.WORKSPACE}/Scripts/docker_seccomp.json
+"""
+env.DOCKER_ARGS_SGX = '''
+    --volume=/lib/modules:/lib/modules:ro
+    --volume=/usr/src:/usr/src:ro
+'''
+
+if (fileExists('/dev/sgx_enclave')) {
+    env.DOCKER_ARGS_SGX += ' --device=/dev/sgx_enclave:/dev/sgx_enclave'
+}
+if (fileExists('/dev/isgx')) {
+    env.DOCKER_ARGS_SGX += ' --device=/dev/isgx:/dev/isgx'
+}
+if (fileExists('/dev/gsgx')) {
+    env.DOCKER_ARGS_SGX += ' --device=/dev/gsgx:/dev/gsgx'
+}
+if (fileExists('/var/run/aesmd/aesm.socket')) {
+    env.DOCKER_ARGS_SGX += ' --volume=/var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket'
+}

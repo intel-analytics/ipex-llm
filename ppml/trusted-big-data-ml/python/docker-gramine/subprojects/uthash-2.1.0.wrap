@@ -1,0 +1,7 @@
+[wrap-file]
+directory = uthash-2.1.0
+source_url = https://github.com/troydhanson/uthash/archive/v2.1.0.tar.gz
+source_fallback_url = https://packages.gramineproject.io/distfiles/uthash-2.1.0.tar.gz
+source_filename = uthash-2.1.0.tar.gz
+source_hash = 152ccd8e64d0f495377232e3964d06c7ec8bb8c3fbd3217f8a5702614f9a669e
+patch_directory = uthash

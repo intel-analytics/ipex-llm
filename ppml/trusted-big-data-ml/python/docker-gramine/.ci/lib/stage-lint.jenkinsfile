@@ -1,0 +1,9 @@
+stage('lint') {
+    sh '''
+        if .ci/isdistro bionic
+        then
+            ./.ci/run-pylint -f text
+        fi
+        ./.ci/run-shellcheck
+    '''
+}

@@ -1,0 +1,3 @@
+/OUTPUT
+/scripts/testdir/*
+!/scripts/testdir/.dummy

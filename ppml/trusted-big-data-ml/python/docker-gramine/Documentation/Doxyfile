@@ -1,0 +1,16 @@
+# This is a common Doxyfile, actual listings are built from Doxyfile-*
+
+GENERATE_XML = YES
+XML_PROGRAMLISTING = NO
+XML_OUTPUT = xml
+
+GENERATE_HTML = NO
+GENERATE_LATEX = NO
+
+WARN_NO_PARAMDOC = YES
+WARN_AS_ERROR = NO
+OPTIMIZE_OUTPUT_FOR_C = YES
+EXTRACT_STATIC = YES
+
+ALIASES = "rst=\verbatim embed:rst:leading-asterisk"
+ALIASES += "endrst=\endverbatim"

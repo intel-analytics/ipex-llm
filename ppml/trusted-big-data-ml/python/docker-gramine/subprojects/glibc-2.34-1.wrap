@@ -1,0 +1,15 @@
+# NOTE: We use a custom version number (the `-1` suffix) to force Meson to rebuild when there is a
+# breaking change to the interface between Glibc and Gramine. The important part is that the
+# directory in `subprojects` has to change (`subprojects/glibc-2.34-1`, `subprojects/glibc-2.34-2`
+# etc.)
+
+[wrap-file]
+directory = glibc-2.34-1
+source_url = https://ftp.gnu.org/gnu/glibc/glibc-2.34.tar.gz
+source_fallback_url = https://packages.gramineproject.io/distfiles/glibc-2.34.tar.gz
+source_filename = glibc-2.34.tar.gz
+source_hash = 255b7632746b5fdd478cb7b36bebd1ec1f92c2b552ee364c940f48eb38d07f62
+patch_directory = glibc-2.34
+
+# this unpacks the sources to `glibc-2.34-1/glibc-2.34`
+lead_directory_missing = true

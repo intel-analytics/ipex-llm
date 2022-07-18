@@ -1,0 +1,131 @@
+stage('test-sgx') {
+    timeout(time: 5, unit: 'MINUTES') {
+        sh '''
+            cd CI-Examples/helloworld
+            make ${MAKEOPTS}
+            make ${MAKEOPTS} check
+        '''
+    }
+    timeout(time: 5, unit: 'MINUTES') {
+        sh '''
+            cd CI-Examples/python
+            RA_CLIENT_SPID=${ra_client_spid} make ${MAKEOPTS}
+            make ${MAKEOPTS} check
+        '''
+    }
+    timeout(time: 5, unit: 'MINUTES') {
+        sh '''
+            cd CI-Examples/bash
+            make ${MAKEOPTS}
+            make ${MAKEOPTS} regression
+        '''
+    }
+    timeout(time: 5, unit: 'MINUTES') {
+        sh '''
+            cd CI-Examples/busybox
+            make ${MAKEOPTS}
+            make ${MAKEOPTS} check
+        '''
+    }
+    timeout(time: 15, unit: 'MINUTES') {
+        sh '''
+            cd CI-Examples/memcached
+            make ${MAKEOPTS}
+            make SGX=1 start-gramine-server &
+            ../../Scripts/wait_for_server 60 127.0.0.1 11211
+            # memcslap populates server but doesn't report errors, use
+            # memcached-tool for this (must return two lines of stats)
+            memcslap --servers=127.0.0.1 --concurrency=8
+            src/scripts/memcached-tool 127.0.0.1 | wc -l | grep -w "2"
+        '''
+    }
+    timeout(time: 15, unit: 'MINUTES') {
+        sh '''
+            # TODO this logic is to check both epoll and select varants, and probably
+            # should be split to check both of those separately and on all distros
+            if .ci/isdistro xenial
+            then
+                USE_SELECT=1
+                export USE_SELECT
+            fi
+
+            cd CI-Examples/redis
+            make ${MAKEOPTS}
+            make ${MAKEOPTS} start-gramine-server &
+            ../../Scripts/wait_for_server 60 127.0.0.1 6379
+            ./src/src/redis-benchmark
+        '''
+    }
+    timeout(time: 15, unit: 'MINUTES') {
+        sh '''
+            cd CI-Examples/lighttpd
+            make ${MAKEOPTS}
+            make ${MAKEOPTS} start-gramine-server &
+            ../../Scripts/wait_for_server 60 127.0.0.1 8003
+            LOOP=1 CONCURRENCY_LIST="1 32" ../common_tools/benchmark-http.sh 127.0.0.1:8003
+        '''
+    }
+    timeout(time: 15, unit: 'MINUTES') {
+        sh '''
+            cd CI-Examples/nginx
+            make ${MAKEOPTS}
+            make ${MAKEOPTS} start-gramine-server &
+            ../../Scripts/wait_for_server 60 127.0.0.1 8002
+            LOOP=1 CONCURRENCY_LIST="1 32" ../common_tools/benchmark-http.sh 127.0.0.1:8002
+        '''
+    }
+    timeout(time: 15, unit: 'MINUTES') {
+        sh '''
+            cd CI-Examples/rust
+            make ${MAKEOPTS}
+            make ${MAKEOPTS} start-gramine-server &
+            ../../Scripts/wait_for_server 60 127.0.0.1 3000
+            LOOP=1 CONCURRENCY_LIST="1 32" ../common_tools/benchmark-http.sh 127.0.0.1:3000
+        '''
+    }
+    timeout(time: 5, unit: 'MINUTES') {
+        sh '''
+            cd CI-Examples/blender
+            make ${MAKEOPTS}
+            make ${MAKEOPTS} check
+        '''
+    }
+    timeout(time: 5, unit: 'MINUTES') {
+        sh '''
+            cd CI-Examples/sqlite
+            make ${MAKEOPTS} all
+            make ${MAKEOPTS} regression
+        '''
+    }
+    timeout(time: 5, unit: 'MINUTES') {
+        sh '''
+            cd CI-Examples/ra-tls-mbedtls
+            if [ "${ra_client_spid}" != "" ] && [ "${ra_client_key}" != "" ]; \
+            then \
+                make check_epid RA_CLIENT_SPID=${ra_client_spid} \
+                                        RA_TLS_EPID_API_KEY=${ra_client_key} \
+                                        RA_CLIENT_LINKABLE=0; \
+                make check_epid_fail RA_CLIENT_SPID=${ra_client_spid} \
+                                            RA_TLS_EPID_API_KEY=${ra_client_key} \
+                                            RA_CLIENT_LINKABLE=0; \
+            else \
+                echo "Failure: no ra_client_spid and/or ra_client_key!"; \
+                exit 1; \
+            fi
+        '''
+    }
+    timeout(time: 5, unit: 'MINUTES') {
+        sh '''
+            cd CI-Examples/ra-tls-secret-prov
+            if [ "${ra_client_spid}" != "" ] && [ "${ra_client_key}" != "" ]; \
+            then \
+                make SGX=1 check_epid RA_CLIENT_SPID=${ra_client_spid} \
+                                        RA_TLS_EPID_API_KEY=${ra_client_key} \
+                                        RA_CLIENT_LINKABLE=0; \
+            else \
+                echo "Failure: no ra_client_spid and/or ra_client_key!"; \
+                exit 1; \
+            fi
+        '''
+    }
+}

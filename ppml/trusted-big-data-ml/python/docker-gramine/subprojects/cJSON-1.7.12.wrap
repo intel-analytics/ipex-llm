@@ -1,0 +1,7 @@
+[wrap-file]
+directory = cJSON-1.7.12
+source_url = https://github.com/DaveGamble/cJSON/archive/v1.7.12.tar.gz
+source_fallback_url = https://packages.gramineproject.io/distfiles/cJSON-1.7.12.tar.gz
+source_filename = cJSON-1.7.12.tar.gz
+source_hash = 760687665ab41a5cff9c40b1053c19572bcdaadef1194e5cba1b5e6f824686e7
+patch_directory = cJSON

@@ -1,0 +1,4 @@
+@INCLUDE = Doxyfile
+PROJECT_NAME = "PAL Linux"
+OUTPUT_DIRECTORY = _build/doxygen-pal-linux
+INPUT = ../Pal/src/host/Linux

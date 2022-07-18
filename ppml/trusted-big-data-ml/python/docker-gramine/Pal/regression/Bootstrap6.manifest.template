@@ -1,0 +1,11 @@
+{% set entrypoint = "Bootstrap" -%}
+
+loader.entrypoint = "file:{{ binary_dir }}/{{ entrypoint }}"
+loader.log_level = "debug"
+loader.argv0_override = "{{ entrypoint }}"
+
+sgx.enclave_size = "8192M"
+sgx.nonpie_binary = true
+sgx.debug = true
+
+sgx.trusted_files = [ "file:{{ binary_dir }}/{{ entrypoint }}" ]

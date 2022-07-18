@@ -1,0 +1,12 @@
+env.CC = "clang"
+env.CXX = "clang++"
+env.AS = "clang"
+
+/*
+ * TODO: Our examples all use:
+ *
+ *     ARCH_LIBDIR ?= /lib/$(shell $(CC) -dumpmachine)
+ *
+ * which gives the wrong answer ("/lib/x86_64-pc-linux-gnu") when CC is "clang".
+ */
+env.ARCH_LIBDIR = "/lib/x86_64-linux-gnu"

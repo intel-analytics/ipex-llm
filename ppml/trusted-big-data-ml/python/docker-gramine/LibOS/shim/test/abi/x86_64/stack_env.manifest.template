@@ -1,0 +1,22 @@
+loader.entrypoint = "file:{{ gramine.libos }}"
+libos.entrypoint = "{{ entrypoint }}"
+
+loader.env.foo = "bar"
+loader.env.env0 = "val0"
+
+loader.insecure__use_cmdline_argv = true
+
+fs.mounts = [
+  { path = "/lib", uri = "file:{{ gramine.runtimedir() }}" },
+  { path = "/{{ entrypoint }}", uri = "file:{{ binary_dir }}/{{ entrypoint }}" },
+]
+
+sgx.nonpie_binary = true
+sgx.debug = true
+sgx.thread_num = 4
+
+sgx.trusted_files = [
+  "file:{{ gramine.libos }}",
+  "file:{{ binary_dir }}/{{ entrypoint }}",
+  "file:{{ gramine.runtimedir() }}/",
+]

@@ -1,0 +1,70 @@
+syntax = "proto2";
+
+message Request {
+    message InitQuoteRequest {
+        optional   uint32      timeout         = 9;
+    }
+
+    message GetQuoteRequest {
+        required   bytes       report          = 1;
+        required   uint32      quote_type      = 2;
+        required   bytes       spid            = 3;
+        optional   bytes       nonce           = 4;
+        optional   bytes       sig_rl          = 5;
+        required   uint32      buf_size        = 6;
+        optional   bool        qe_report       = 7;
+        optional   uint32      timeout         = 9;
+    }
+
+    message InitQuoteExRequest {
+        optional    bytes  att_key_id              = 1;
+        required    bool   b_pub_key_id            = 3;
+        optional    uint64 buf_size                = 4;
+        optional    uint32 timeout                 = 9;
+    }
+
+    message GetQuoteExRequest {
+        required    bytes   report          = 1;
+        optional    bytes   att_key_id      = 2;
+        optional    bytes   qe_report_info  = 3;
+        required    uint32  buf_size        = 4;
+        optional    uint32  timeout         = 9;
+    }
+
+    optional   InitQuoteRequest    initQuoteReq               = 1;
+    optional   GetQuoteRequest     getQuoteReq                = 2;
+    optional   InitQuoteExRequest  initQuoteExReq             = 15;
+    optional   GetQuoteExRequest   getQuoteExReq              = 17;
+}
+
+message Response {
+    message InitQuoteResponse {
+        required   uint32      errorCode       = 1 [default = 1];
+        optional   bytes       targetInfo      = 2;
+        optional   bytes       gid             = 3;
+    }
+
+    message GetQuoteResponse {
+        required   uint32      errorCode       = 1 [default = 1];
+        optional   bytes       quote           = 2;
+        optional   bytes       qe_report       = 3;
+    }
+
+    message InitQuoteExResponse {
+        required    uint32 errorCode       = 1 [default = 1];
+        optional    bytes  target_info     = 2;
+        optional    uint64 pub_key_id_size = 3;
+        optional    bytes  pub_key_id      = 4;
+    }
+
+    message GetQuoteExResponse {
+        required    uint32 errorCode      = 1 [default = 1];
+        optional    bytes  quote          = 2;
+        optional    bytes  qe_report_info = 3;
+    }
+
+    optional   InitQuoteResponse   initQuoteRes             = 1;
+    optional   GetQuoteResponse    getQuoteRes              = 2;
+    optional   InitQuoteExResponse initQuoteExRes           = 15;
+    optional   GetQuoteExResponse  getQuoteExRes            = 17;
+}

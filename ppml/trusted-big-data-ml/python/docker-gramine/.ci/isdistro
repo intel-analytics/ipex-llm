@@ -1,0 +1,5 @@
+#!/bin/sh
+
+test "$#" -eq 1 || exit 2
+. /etc/os-release || exit 3
+test "$1" = "$VERSION_CODENAME" || test "$1" = "$ID"-"$VERSION_ID" || exit 1

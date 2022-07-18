@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -eu -o pipefail
+
+# Creates a test copy where you can check `make clean` without messing with
+# your main dir.
+
+top_dir="$(readlink -m "${BASH_SOURCE[0]}/../..")"
+test_dir="$top_dir.clean-check.test"
+
+if [ -n "${JENKINS_HOME:-}" ] || [ -n "${HUDSON_HOME:-}" ]; then
+    test_dir="/tmp/$(basename "$test_dir")"
+fi
+
+rm -rf "$test_dir"
+cp -a "$top_dir" "$test_dir"
+echo "$test_dir"

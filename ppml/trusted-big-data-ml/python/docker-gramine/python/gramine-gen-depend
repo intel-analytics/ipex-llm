@@ -1,0 +1,32 @@
+#!/usr/bin/python3
+# SPDX-License-Identifier: LGPL-3.0-or-later
+# Copyright (C) 2021 Intel Corporation
+#                    Borys Popławski <borysp@invisiblethingslab.com>
+
+import os
+
+import click
+
+from graminelibos import Manifest, _CONFIG_PKGLIBDIR
+
+@click.command()
+@click.option('--manifest', '-m', 'manifest_file', type=click.File('r', encoding='utf-8'),
+              required=True, help='Input .manifest file')
+@click.option('--libpal', '-l', type=click.Path(exists=True, dir_okay=False),
+              default=os.path.join(_CONFIG_PKGLIBDIR, 'sgx/libpal.so'), help='Input libpal file',
+              show_default=True)
+@click.option('--output', '-o', type=click.File('w', encoding='utf-8'), required=True,
+              help='Output .manifest.d file')
+def main(manifest_file, libpal, output):
+    manifest = Manifest.load(manifest_file)
+
+    dependencies = manifest.get_dependencies()
+    dependencies.add(libpal)
+
+    output.write(f'{manifest_file.name}.sgx:')
+    for filename in dependencies:
+        output.write(f' \\\n\t{filename}')
+    output.write('\n')
+
+if __name__ == '__main__':
+    main() # pylint: disable=no-value-for-parameter

@@ -1,0 +1,356 @@
+diff --git a/Makerules b/Makerules
+index 596fa68376f45298dcf808cafe769f93d23ce78c..66458e36ddcc0b3d1c9f5fb3fea56777d5889e78 100644
+--- a/Makerules
++++ b/Makerules
+@@ -828,7 +828,7 @@ verbose	:=
+ endif						# not -s
+ 
+ ARFLAGS := r$(verbose)
+-CREATE_ARFLAGS := cru$(verbose)
++CREATE_ARFLAGS := cr$(verbose)
+ 
+ # This makes all the object files in the parent library archive.
+ 
+diff --git a/elf/Makefile b/elf/Makefile
+index d05f410592723f09915d263979d10ee37f6f3792..14ddc8745d8cdcd740a4f18398639f9a0b609b33 100644
+--- a/elf/Makefile
++++ b/elf/Makefile
+@@ -568,7 +568,7 @@ $(objpfx)librtld.map: $(objpfx)dl-allobjs.os $(common-objpfx)libc_pic.a
+ # For lld, skip preceding addresses and values before matching the archive and the member.
+ $(objpfx)librtld.mk: $(objpfx)librtld.map Makefile
+ 	LC_ALL=C \
+-	sed -n 's@^[0-9a-f ]*$(common-objpfx)\([^(]*\)(\([^)]*\.os\)) *.*$$@\1 \2@p' \
++	sed -n 's@^[0-9a-f ]*$(subst @,\@,$(common-objpfx))\([^(]*\)(\([^)]*\.os\)) *.*$$@\1 \2@p' \
+ 	    $< | \
+ 	while read lib file; do \
+ 	  case $$lib in \
+@@ -576,7 +576,7 @@ $(objpfx)librtld.mk: $(objpfx)librtld.map Makefile
+ 	    LC_ALL=C fgrep -l /$$file \
+ 		  $(common-objpfx)stamp.os $(common-objpfx)*/stamp.os | \
+ 	    LC_ALL=C \
+-	    sed 's@^$(common-objpfx)\([^/]*\)/stamp\.os$$@rtld-\1'" +=$$file@"\
++	    sed 's@^$(subst @,\@,$(common-objpfx))\([^/]*\)/stamp\.os$$@rtld-\1'" +=$$file@"\
+ 	    ;; \
+ 	  */*.a) \
+ 	    echo rtld-$${lib%%/*} += $$file ;; \
+diff --git a/elf/dl-load.c b/elf/dl-load.c
+index 650e4edc35e5e582652c1167f4275a93e8c33120..16feb22124886cef30799560ebbb31b43de5cb0a 100644
+--- a/elf/dl-load.c
++++ b/elf/dl-load.c
+@@ -74,6 +74,8 @@ struct filebuf
+ #include <dl-prop.h>
+ #include <not-cancel.h>
+ 
++#include "gramine_entry_api.h"
++
+ #include <endian.h>
+ #if BYTE_ORDER == BIG_ENDIAN
+ # define byteorder ELFDATA2MSB
+@@ -1504,6 +1506,8 @@ cannot enable executable stack as shared object requires");
+   DL_AFTER_LOAD (l);
+ #endif
+ 
++  gramine_register_library(l->l_name, l->l_addr);
++
+   /* Now that the object is fully initialized add it to the object list.  */
+   _dl_add_to_namespace_list (l, nsid);
+ 
+diff --git a/sysdeps/unix/sysv/linux/x86_64/____longjmp_chk.S b/sysdeps/unix/sysv/linux/x86_64/____longjmp_chk.S
+index aad3c7909f8965129ab47cd80f44f456f44c9f78..c45ec0073134736c1a9a82cb22a1ab90659c1939 100644
+--- a/sysdeps/unix/sysv/linux/x86_64/____longjmp_chk.S
++++ b/sysdeps/unix/sysv/linux/x86_64/____longjmp_chk.S
+@@ -89,7 +89,7 @@ ENTRY(____longjmp_chk)
+ 	xorl	%edi, %edi
+ 	lea	-sizeSS(%rsp), %RSI_LP
+ 	movl	$__NR_sigaltstack, %eax
+-	syscall
++	GRAMINE_SYSCALL
+ 	/* Without working sigaltstack we cannot perform the test.  */
+ 	testl	%eax, %eax
+ 	jne	.Lok2
+diff --git a/sysdeps/unix/sysv/linux/x86_64/__start_context.S b/sysdeps/unix/sysv/linux/x86_64/__start_context.S
+index 49381e369e903ad9595eff7a6179904917a4ba05..ac614d1de9ce96fa7830cdfe03870c2c6fbda6c4 100644
+--- a/sysdeps/unix/sysv/linux/x86_64/__start_context.S
++++ b/sysdeps/unix/sysv/linux/x86_64/__start_context.S
+@@ -52,7 +52,7 @@ ENTRY(__push___start_context)
+ 	movl	$ARCH_CET_ALLOC_SHSTK, %edi
+ 	movl	$__NR_arch_prctl, %eax
+ 	/* The new shadow stack base is returned in __ssp[1].  */
+-	syscall
++	GRAMINE_SYSCALL
+ 	testq	%rax, %rax
+ 	jne	L(hlt)		/* This should never happen.  */
+ 
+diff --git a/sysdeps/unix/sysv/linux/x86_64/clone.S b/sysdeps/unix/sysv/linux/x86_64/clone.S
+index 7418154c4b76bb3f277f962a8428c030c6ae7d71..f34fc738585d37e8dfab8023bd3d8ee05f9ec951 100644
+--- a/sysdeps/unix/sysv/linux/x86_64/clone.S
++++ b/sysdeps/unix/sysv/linux/x86_64/clone.S
+@@ -78,7 +78,7 @@ ENTRY (__clone)
+ 	/* End FDE now, because in the child the unwind info will be
+ 	   wrong.  */
+ 	cfi_endproc;
+-	syscall
++	GRAMINE_SYSCALL
+ 
+ 	testq	%rax,%rax
+ 	jl	SYSCALL_ERROR_LABEL
+@@ -101,7 +101,7 @@ L(thread_start):
+ 	/* Call exit with return value from function call. */
+ 	movq	%rax, %rdi
+ 	movl	$SYS_ify(exit), %eax
+-	syscall
++	GRAMINE_SYSCALL
+ 	cfi_endproc;
+ 
+ 	cfi_startproc;
+diff --git a/sysdeps/unix/sysv/linux/x86_64/clone3.S b/sysdeps/unix/sysv/linux/x86_64/clone3.S
+index 71caaecc29143cb00eff3bb63a0fd7496fea89b4..7ed57f403536841287332267f22d3d58a4afb66a 100644
+--- a/sysdeps/unix/sysv/linux/x86_64/clone3.S
++++ b/sysdeps/unix/sysv/linux/x86_64/clone3.S
+@@ -57,7 +57,7 @@ ENTRY (__clone3)
+ 	/* End FDE now, because in the child the unwind info will be
+ 	   wrong.  */
+ 	cfi_endproc
+-	syscall
++	GRAMINE_SYSCALL
+ 
+ 	test	%RAX_LP, %RAX_LP
+ 	jl	SYSCALL_ERROR_LABEL
+@@ -82,7 +82,7 @@ L(thread_start):
+ 	/* Call exit with return value from function call. */
+ 	movq	%rax, %rdi
+ 	movl	$SYS_ify(exit), %eax
+-	syscall
++	GRAMINE_SYSCALL
+ 	cfi_endproc
+ 
+ 	cfi_startproc
+diff --git a/sysdeps/unix/sysv/linux/x86_64/getcontext.S b/sysdeps/unix/sysv/linux/x86_64/getcontext.S
+index 5ca779b15b7c6c239fdc8ff34d151b6c3158075d..58a16b314ea484aa8802c610d279a0667b1a8bd5 100644
+--- a/sysdeps/unix/sysv/linux/x86_64/getcontext.S
++++ b/sysdeps/unix/sysv/linux/x86_64/getcontext.S
+@@ -73,7 +73,7 @@ ENTRY(__getcontext)
+ 	mov	%RSP_LP, %RSI_LP
+ 	movl	$ARCH_CET_STATUS, %edi
+ 	movl	$__NR_arch_prctl, %eax
+-	syscall
++	GRAMINE_SYSCALL
+ 	testq	%rax, %rax
+ 	jz	L(continue_no_err)
+ 
+@@ -125,7 +125,7 @@ L(no_shstk):
+ #endif
+ 	movl	$_NSIG8,%r10d
+ 	movl	$__NR_rt_sigprocmask, %eax
+-	syscall
++	GRAMINE_SYSCALL
+ 	cmpq	$-4095, %rax		/* Check %rax for error.  */
+ 	jae	SYSCALL_ERROR_LABEL	/* Jump to error handler if error.  */
+ 
+diff --git a/sysdeps/unix/sysv/linux/x86_64/libc_sigaction.c b/sysdeps/unix/sysv/linux/x86_64/libc_sigaction.c
+index 21367e97c17ba3f3e968a033112eaae71b1688f0..5e54f5f64b9c00da514ca0b4efb32000bfdf6475 100644
+--- a/sysdeps/unix/sysv/linux/x86_64/libc_sigaction.c
++++ b/sysdeps/unix/sysv/linux/x86_64/libc_sigaction.c
+@@ -78,7 +78,7 @@ asm									\
+    "	.type __" #name ",@function\n"					\
+    "__" #name ":\n"							\
+    "	movq $" #syscall ", %rax\n"					\
+-   "	syscall\n"							\
++   "	GRAMINE_SYSCALL\n"						\
+    ".LEND_" #name ":\n"							\
+    ".section .eh_frame,\"a\",@progbits\n"				\
+    ".LSTARTFRAME_" #name ":\n"						\
+diff --git a/sysdeps/unix/sysv/linux/x86_64/setcontext.S b/sysdeps/unix/sysv/linux/x86_64/setcontext.S
+index 2330bd2698b30492ac4ae18d075b1610f089dc72..c4ef89dc1c04daf6110a74928ac78a8fb6a88a5a 100644
+--- a/sysdeps/unix/sysv/linux/x86_64/setcontext.S
++++ b/sysdeps/unix/sysv/linux/x86_64/setcontext.S
+@@ -44,7 +44,7 @@ ENTRY(__setcontext)
+ 	movl	$SIG_SETMASK, %edi
+ 	movl	$_NSIG8,%r10d
+ 	movl	$__NR_rt_sigprocmask, %eax
+-	syscall
++	GRAMINE_SYSCALL
+ 	/* Pop the pointer into RDX. The choice is arbitrary, but
+ 	   leaving RDI and RSI available for use later can avoid
+ 	   shuffling values.  */
+diff --git a/sysdeps/unix/sysv/linux/x86_64/swapcontext.S b/sysdeps/unix/sysv/linux/x86_64/swapcontext.S
+index dbc1a3a840ddf4fe306f9321fdc0237ed5fea2ce..aed240f79a6fae9c4bc833af75d54a6a916e143d 100644
+--- a/sysdeps/unix/sysv/linux/x86_64/swapcontext.S
++++ b/sysdeps/unix/sysv/linux/x86_64/swapcontext.S
+@@ -77,7 +77,7 @@ ENTRY(__swapcontext)
+ 	movl	$SIG_SETMASK, %edi
+ 	movl	$_NSIG8,%r10d
+ 	movl	$__NR_rt_sigprocmask, %eax
+-	syscall
++	GRAMINE_SYSCALL
+ 	cmpq	$-4095, %rax		/* Check %rax for error.  */
+ 	jae	SYSCALL_ERROR_LABEL	/* Jump to error handler if error.  */
+ 
+@@ -117,7 +117,7 @@ ENTRY(__swapcontext)
+ 	mov	%RSP_LP, %RSI_LP
+ 	movl	$ARCH_CET_STATUS, %edi
+ 	movl	$__NR_arch_prctl, %eax
+-	syscall
++	GRAMINE_SYSCALL
+ 	testq	%rax, %rax
+ 	jz	L(continue_no_err)
+ 
+diff --git a/sysdeps/unix/sysv/linux/x86_64/syscall.S b/sysdeps/unix/sysv/linux/x86_64/syscall.S
+index 134c611017c71c27902b988751cdc61c52984984..c1150de0dbe3ef4488bc2e404e25c5cfbe0587c8 100644
+--- a/sysdeps/unix/sysv/linux/x86_64/syscall.S
++++ b/sysdeps/unix/sysv/linux/x86_64/syscall.S
+@@ -34,7 +34,7 @@ ENTRY (syscall)
+ 	movq %r8, %r10
+ 	movq %r9, %r8
+ 	movq 8(%rsp),%r9	/* arg6 is on the stack.  */
+-	syscall			/* Do the system call.  */
++	GRAMINE_SYSCALL		/* Do the system call.  */
+ 	cmpq $-4095, %rax	/* Check %rax for error.  */
+ 	jae SYSCALL_ERROR_LABEL	/* Jump to error handler if error.  */
+ 	ret			/* Return to caller.  */
+diff --git a/sysdeps/unix/sysv/linux/x86_64/sysdep.h b/sysdeps/unix/sysv/linux/x86_64/sysdep.h
+index 327e59388baebe87b43f7c2068acd9348da188e1..4eba19ddaeb8d88e3f05cf9e510f17f3d3745aa0 100644
+--- a/sysdeps/unix/sysv/linux/x86_64/sysdep.h
++++ b/sysdeps/unix/sysv/linux/x86_64/sysdep.h
+@@ -26,6 +26,8 @@
+ /* Defines RTLD_PRIVATE_ERRNO.  */
+ #include <dl-sysdep.h>
+ 
++#include "gramine_entry_api.h"
++
+ /* For Linux we can use the system call table in the header file
+ 	/usr/include/asm/unistd.h
+    of the kernel.  But these symbols do not follow the SYS_* syntax
+@@ -197,7 +199,7 @@
+     ZERO_EXTEND_##ulong_arg_1			\
+     ZERO_EXTEND_##ulong_arg_2			\
+     movl $SYS_ify (syscall_name), %eax;		\
+-    syscall;
++    GRAMINE_SYSCALL;
+ 
+ # define DOARGS_0 /* nothing */
+ # define DOARGS_1 /* nothing */
+@@ -243,7 +245,7 @@
+ ({									\
+     unsigned long int resultvar;					\
+     asm volatile (							\
+-    "syscall\n\t"							\
++    "GRAMINE_SYSCALL\n\t"						\
+     : "=a" (resultvar)							\
+     : "0" (number)							\
+     : "memory", REGISTERS_CLOBBERED_BY_SYSCALL);			\
+@@ -257,7 +259,7 @@
+     TYPEFY (arg1, __arg1) = ARGIFY (arg1);			 	\
+     register TYPEFY (arg1, _a1) asm ("rdi") = __arg1;			\
+     asm volatile (							\
+-    "syscall\n\t"							\
++    "GRAMINE_SYSCALL\n\t"						\
+     : "=a" (resultvar)							\
+     : "0" (number), "r" (_a1)						\
+     : "memory", REGISTERS_CLOBBERED_BY_SYSCALL);			\
+@@ -273,7 +275,7 @@
+     register TYPEFY (arg2, _a2) asm ("rsi") = __arg2;			\
+     register TYPEFY (arg1, _a1) asm ("rdi") = __arg1;			\
+     asm volatile (							\
+-    "syscall\n\t"							\
++    "GRAMINE_SYSCALL\n\t"						\
+     : "=a" (resultvar)							\
+     : "0" (number), "r" (_a1), "r" (_a2)				\
+     : "memory", REGISTERS_CLOBBERED_BY_SYSCALL);			\
+@@ -291,7 +293,7 @@
+     register TYPEFY (arg2, _a2) asm ("rsi") = __arg2;			\
+     register TYPEFY (arg1, _a1) asm ("rdi") = __arg1;			\
+     asm volatile (							\
+-    "syscall\n\t"							\
++    "GRAMINE_SYSCALL\n\t"						\
+     : "=a" (resultvar)							\
+     : "0" (number), "r" (_a1), "r" (_a2), "r" (_a3)			\
+     : "memory", REGISTERS_CLOBBERED_BY_SYSCALL);			\
+@@ -311,7 +313,7 @@
+     register TYPEFY (arg2, _a2) asm ("rsi") = __arg2;			\
+     register TYPEFY (arg1, _a1) asm ("rdi") = __arg1;			\
+     asm volatile (							\
+-    "syscall\n\t"							\
++    "GRAMINE_SYSCALL\n\t"						\
+     : "=a" (resultvar)							\
+     : "0" (number), "r" (_a1), "r" (_a2), "r" (_a3), "r" (_a4)		\
+     : "memory", REGISTERS_CLOBBERED_BY_SYSCALL);			\
+@@ -333,7 +335,7 @@
+     register TYPEFY (arg2, _a2) asm ("rsi") = __arg2;			\
+     register TYPEFY (arg1, _a1) asm ("rdi") = __arg1;			\
+     asm volatile (							\
+-    "syscall\n\t"							\
++    "GRAMINE_SYSCALL\n\t"						\
+     : "=a" (resultvar)							\
+     : "0" (number), "r" (_a1), "r" (_a2), "r" (_a3), "r" (_a4),		\
+       "r" (_a5)								\
+@@ -358,7 +360,7 @@
+     register TYPEFY (arg2, _a2) asm ("rsi") = __arg2;			\
+     register TYPEFY (arg1, _a1) asm ("rdi") = __arg1;			\
+     asm volatile (							\
+-    "syscall\n\t"							\
++    "GRAMINE_SYSCALL\n\t"						\
+     : "=a" (resultvar)							\
+     : "0" (number), "r" (_a1), "r" (_a2), "r" (_a3), "r" (_a4),		\
+       "r" (_a5), "r" (_a6)						\
+diff --git a/sysdeps/unix/sysv/linux/x86_64/vfork.S b/sysdeps/unix/sysv/linux/x86_64/vfork.S
+index 4c42e7ff7537ed3f09c4cc99642b795d29b6d017..d1b76370e4496b15e51e94c78726f5ee40bbf776 100644
+--- a/sysdeps/unix/sysv/linux/x86_64/vfork.S
++++ b/sysdeps/unix/sysv/linux/x86_64/vfork.S
+@@ -35,7 +35,7 @@ ENTRY (__vfork)
+ 
+ 	/* Stuff the syscall number in RAX and enter into the kernel.  */
+ 	movl	$SYS_ify (vfork), %eax
+-	syscall
++	GRAMINE_SYSCALL
+ 
+ 	/* Push back the return PC.  */
+ 	pushq	%rdi
+diff --git a/sysdeps/unix/sysv/linux/x86_64/x32/times.c b/sysdeps/unix/sysv/linux/x86_64/x32/times.c
+index aa0e01c3001cfa09d51da2842fd8abe52e131164..99e8d6c7f047189ee5ec8e351de32b69b178a1f6 100644
+--- a/sysdeps/unix/sysv/linux/x86_64/x32/times.c
++++ b/sysdeps/unix/sysv/linux/x86_64/x32/times.c
+@@ -26,7 +26,7 @@
+     TYPEFY (arg1, __arg1) = ARGIFY (arg1);			 	\
+     register TYPEFY (arg1, _a1) asm ("rdi") = __arg1;			\
+     asm volatile (							\
+-    "syscall\n\t"							\
++    "GRAMINE_SYSCALL\n\t"						\
+     : "=a" (resultvar)							\
+     : "0" (number), "r" (_a1)						\
+     : "memory", REGISTERS_CLOBBERED_BY_SYSCALL);			\
+diff --git a/sysdeps/unix/x86_64/sysdep.h b/sysdeps/unix/x86_64/sysdep.h
+index 225b6bdebc809f7291911764162020defab4f655..fee9524d6da4e8d0c85f3b2a88309b5bddf69f59 100644
+--- a/sysdeps/unix/x86_64/sysdep.h
++++ b/sysdeps/unix/x86_64/sysdep.h
+@@ -25,7 +25,7 @@
+ 
+ #define DO_CALL(syscall_name, args)					      \
+   lea SYS_ify (syscall_name), %rax;					      \
+-  syscall
++  GRAMINE_SYSCALL
+ 
+ #define	r0		%rax	/* Normal return-value register.  */
+ #define	r1		%rbx	/* Secondary return-value register.  */
+diff --git a/sysdeps/x86_64/nptl/tls.h b/sysdeps/x86_64/nptl/tls.h
+index a78c4f4d016002fa31f0172d82f5032d4b6048bb..2fc44db0e89c2849ee1ed4b4a08ebc7551c485c9 100644
+--- a/sysdeps/x86_64/nptl/tls.h
++++ b/sysdeps/x86_64/nptl/tls.h
+@@ -30,6 +30,8 @@
+ # include <kernel-features.h>
+ # include <dl-dtv.h>
+ 
++# include "gramine_entry_api.h"
++
+ /* Replacement type for __m128 since this file is included by ld.so,
+    which is compiled with -mno-sse.  It must not change the alignment
+    of rtld_savespace_sse.  */
+@@ -155,7 +157,7 @@ _Static_assert (offsetof (tcbhead_t, __glibc_unused2) == 0x80,
+      _head->self = _thrdescr;						      \
+ 									      \
+      /* It is a simple syscall to set the %fs value for the thread.  */	      \
+-     asm volatile ("syscall"						      \
++     asm volatile ("GRAMINE_SYSCALL"					      \
+ 		   : "=a" (_result)					      \
+ 		   : "0" ((unsigned long int) __NR_arch_prctl),		      \
+ 		     "D" ((unsigned long int) ARCH_SET_FS),		      \

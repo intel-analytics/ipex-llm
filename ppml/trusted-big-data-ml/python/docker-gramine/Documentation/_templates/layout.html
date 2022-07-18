@@ -1,0 +1,15 @@
+{% extends '!layout.html' %}
+{% block document %}
+{% if READTHEDOCS and current_version == 'latest' %}
+<div class="admonition caution">
+    <p class="admonition-title">Caution</p>
+    <p>
+        This is documentation for the development version of the project, aka
+        master branch. If you installed Gramine from packages, documentation
+        for the stable version is available at
+        <a href="https://gramine.readthedocs.io/en/stable/">https://gramine.readthedocs.io/en/stable/</a>.
+    </p>
+</div>
+{% endif %}
+{{ super() }}
+{% endblock %}

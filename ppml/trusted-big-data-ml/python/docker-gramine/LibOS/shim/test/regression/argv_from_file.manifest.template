@@ -1,0 +1,26 @@
+{% set entrypoint = "bootstrap" -%}
+
+loader.entrypoint = "file:{{ gramine.libos }}"
+libos.entrypoint = "{{ entrypoint }}"
+
+loader.argv0_override = "{{ entrypoint }}"
+loader.env.LD_LIBRARY_PATH = "/lib"
+loader.argv_src_file = "file:argv_test_input"
+
+fs.mounts = [
+  { path = "/lib", uri = "file:{{ gramine.runtimedir(libc) }}" },
+  { path = "/{{ entrypoint }}", uri = "file:{{ binary_dir }}/{{ entrypoint }}" },
+]
+
+sgx.nonpie_binary = true
+sgx.debug = true
+
+sgx.allowed_files = [
+  "file:argv_test_input",
+]
+
+sgx.trusted_files = [
+  "file:{{ gramine.libos }}",
+  "file:{{ gramine.runtimedir(libc) }}/",
+  "file:{{ binary_dir }}/{{ entrypoint }}",
+]

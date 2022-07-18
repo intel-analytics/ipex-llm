@@ -1,0 +1,14 @@
+sphinx==1.8.0
+breathe<4.13.0
+sphinx_rtd_theme<1
+toml>=0.10
+
+# Work around Sphinx/docutils incompatibility, see https://github.com/sphinx-doc/sphinx/issues/9727.
+# TODO: This shouldn't be necessary once we upgrade to newer Sphinx (Sphinx 4.2.0 is not yet
+# compatible with new docutils, but pins the docutils version by itself).
+docutils<0.18
+
+# jinja 3.1.0 removed quite a few functions used by sphinx
+# https://jinja.palletsprojects.com/en/3.1.x/changes/#version-3-1-0
+# https://github.com/pallets/jinja/pull/1544
+jinja2<3.1

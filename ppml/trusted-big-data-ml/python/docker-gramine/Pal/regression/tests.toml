@@ -1,0 +1,46 @@
+binary_dir = "@GRAMINE_PKGLIBDIR@/tests/pal"
+
+manifests = [
+  "..Bootstrap",
+  "avl_tree_test",
+  "Bootstrap",
+  "Bootstrap6",
+  "Bootstrap7",
+  "Directory",
+  "Event",
+  "Exit",
+  "File",
+  "File2",
+  "HelloWorld",
+  "Hex",
+  "Memory",
+  "Misc",
+  "Pie",
+  "Pipe",
+  "Process",
+  "Process4",
+  "SendHandle",
+  "Socket",
+  "Symbols",
+  "Tcp",
+  "Thread2",
+  "Thread2_exitless",
+  "Udp",
+  "normalize_path",
+  "printf_test",
+]
+
+[arch.x86_64]
+
+manifests = [
+  "Exception",
+  "Exception2",
+  "Segment",
+  "Thread",
+]
+
+[sgx]
+
+manifests = [
+  "AttestationReport",
+]
