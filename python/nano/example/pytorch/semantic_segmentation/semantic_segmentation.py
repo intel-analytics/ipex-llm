@@ -291,7 +291,7 @@ class SegModel(pl.LightningModule):
 
     @classmethod
     def from_argparse_args(cls, args: Union[Namespace, ArgumentParser], **kwargs):
-        return from_argparse_args(cls, args, **kwargs)
+        return from_argparse_args(cls, args, **kwargs)  # type: ignore
 
 
 def main(hparams: Namespace):
