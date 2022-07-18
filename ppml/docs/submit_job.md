@@ -170,7 +170,4 @@ export secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/pas
 
 ## Helm Chart
 
-
-CLI to submit job to K8s (only demo one mode here, put a video and doc link here to refer all 4 modes)
-Check the the state of driver and executor, whether it runs in sgx
-Check k8s monitioring
+https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/kubernetes/README.md
