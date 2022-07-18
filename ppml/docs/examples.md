@@ -143,7 +143,7 @@ https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/tpc-ds_with_sparksql_
 
 ### Run Trusted SimpleQuery
 <details><summary>Trusted SimpleQuery</summary>
-https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html
+https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/README.md#examples-of-using-end-to-end-ppml-workflow
 </details>
 
 ## Trusted ML 
