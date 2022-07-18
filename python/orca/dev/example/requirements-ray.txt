@@ -27,3 +27,4 @@ mxnet==1.6.0
 xgboost_ray
 argparse
 Pillow
+torchmetrics
