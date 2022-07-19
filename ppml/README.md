@@ -9,7 +9,7 @@
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 2. Build Big Data & AI applications](#step-2-build-big-data--ai-applications) \
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 3. Submit Job](#step-3-submit-job): 4 deploy modes and 2 options to submit job  \
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 4. Decrypt and Read Result](#step-4-decrypt-and-read-result) \
-&ensp;&ensp;[3.3 More Examples](#33-more-examples) \
+&ensp;&ensp;[3.3 More BigDL PPML Examples](#33-more-bigdl-ppml-examples) \
 [4. Develop your own Big Data & AI applications with BigDL PPML](#4-develop-your-own-big-data--ai-applications-with-bigdl-ppml)
 
 
@@ -118,7 +118,7 @@ The result should look something like this:
 
 ### 3.2 BigDL PPML End-to-End Workflow
 ![image](https://user-images.githubusercontent.com/61072813/178393982-929548b9-1c4e-4809-a628-10fafad69628.png)
-In this section we take SimpleQuery as an example to go through the entire end-to-end PPML workflow. SimpleQuery is simple example to query developers between the ages of 20 and 40 from people.csv. 
+In this section we take SimpleQuery as an example to go through the entire BigDL PPML end-to-end workflow. SimpleQuery is simple example to query developers between the ages of 20 and 40 from people.csv. 
 
 #### Step 0. Preparation your environment
 To secure your Big Data & AI applications in BigDL PPML manner, you should prepare your environment first, including K8s cluster setup, K8s-SGX plugin setup, key/password preparation, key management service (KMS) and attestation service (AS) setup, BigDL PPML client container preparation. **Please follow the detailed steps in** [Prepare Environment](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/prepare_environment.md). 
@@ -241,7 +241,7 @@ When the job is done, you can decrypt and read result of the job. More details i
   docker exec -i $KMSUTIL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh decrypt $appid $appkey $input_path"
   ```
 
-### 3.3 More Examples
+### 3.3 More BigDL PPML Examples
 In addition to the above Spark Pi and Python HelloWorld programs running locally, and simplequery application running on the k8s cluster, we also provide other examples including Trusted Data Analysis, Trusted ML, Trusted DL and Trusted FL. You can find these examples in [more examples](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/examples.md). 
 
 ## 4. Develop your own Big Data & AI applications with BigDL PPML
