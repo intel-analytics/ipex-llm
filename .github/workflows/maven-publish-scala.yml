@@ -37,7 +37,7 @@ jobs:
     - name: Build with Maven
       run: |
           ls
-          mvn -Dhttp.proxyHost=${{ HTTP_PROXY_HOST }} -Dhttp.proxyPort=${{ HTTP_PROXY_PORT }} -Dhttps.proxyHost=${{ HTTP_PROXY_HOST }} -Dhttps.proxyPort=${{ HTTP_PROXY_PORT }} -B package --file scala/pom.xml
+          mvn -Dhttp.proxyHost=${{ secrets.HTTP_PROXY_HOST }} -Dhttp.proxyPort=${{ secrets.HTTP_PROXY_PORT }} -Dhttps.proxyHost=${{ secrets.HTTP_PROXY_HOST }} -Dhttps.proxyPort=${{ secrets.HTTP_PROXY_PORT }} -B package --file scala/pom.xml
 
 #    - name: Publish to GitHub Packages Apache Maven
 #      run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml
