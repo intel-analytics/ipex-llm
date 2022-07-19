@@ -27,48 +27,19 @@ import scala.collection.JavaConverters._
 
 class PPMLContextPythonSpec extends DataFrameHelper{
   override val repeatedNum = 100
+  val (plainFileName, encryptFileName, data, dataKeyPlaintext) = generateCsvData()
   val ppmlArgs: Map[String, String] = Map(
+    "spark.bigdl.kms.type" -> "SimpleKeyManagementService",
     "spark.bigdl.kms.simple.id" -> appid,
     "spark.bigdl.kms.simple.key" -> appkey,
     "spark.bigdl.kms.key.primary" -> primaryKeyPath,
     "spark.bigdl.kms.key.data" -> dataKeyPath
   )
-
-  val pyPPMLArgs: Map[String, String] = Map(
-    "kms_type" -> "SimpleKeyManagementService",
-    "simple_app_id" -> appid,
-    "simple_app_key" -> appkey,
-    "primary_key_path" -> primaryKeyPath,
-    "data_key_path" -> dataKeyPath
-  )
-
   val conf: SparkConf = new SparkConf().setMaster("local[4]")
-  val sc: PPMLContext = PPMLContext.initPPMLContext(conf, "testApp", ppmlArgs)
-  val sparkSession: SparkSession = sc.getSparkSession()
   val ppmlContextPython: PPMLContextPython[Float] = PPMLContextPython.ofFloat
-  import sparkSession.implicits._
-
-
-  "init PPMLContext with app name" should "work" in {
-    ppmlContextPython.createPPMLContext("testApp")
-  }
-
-  "init PPMLContext with app name & args" should "work" in {
-    ppmlContextPython.createPPMLContext("testApp", pyPPMLArgs.asJava)
-  }
-
-  "init PPMLContext with app name & args & sparkConf" should "work" in {
-    val confs: util.List[util.List[String]] = new util.ArrayList[util.List[String]]()
-    conf.getAll.foreach(tuple => {
-      val conf = new util.ArrayList[String]()
-      conf.add(tuple._1)
-      conf.add(tuple._2)
-      confs.add(conf)
-    })
-    ppmlContextPython.createPPMLContext("testApp", pyPPMLArgs.asJava, confs)
-  }
 
   "read plain csv file" should "work" in {
+    val sc = PPMLContext.initPPMLContext(conf, "testApp", ppmlArgs)
     val encryptedDataFrameReader = ppmlContextPython.read(sc, "plain_text")
     ppmlContextPython.option(encryptedDataFrameReader, "header", "true")
     val df = ppmlContextPython.csv(encryptedDataFrameReader, plainFileName)
@@ -82,6 +53,7 @@ class PPMLContextPythonSpec extends DataFrameHelper{
   }
 
   "read encrypted csv file" should "work" in {
+    val sc = PPMLContext.initPPMLContext(conf, "testApp", ppmlArgs)
     val encryptedDataFrameReader = ppmlContextPython.read(sc, "AES/CBC/PKCS5Padding")
     ppmlContextPython.option(encryptedDataFrameReader, "header", "true")
     val df = ppmlContextPython.csv(encryptedDataFrameReader, encryptFileName)
@@ -95,6 +67,9 @@ class PPMLContextPythonSpec extends DataFrameHelper{
   }
 
   "write plain csv file" should "work" in {
+    val sc = PPMLContext.initPPMLContext(conf, "testApp", ppmlArgs)
+    val sparkSession = sc.getSparkSession()
+    import sparkSession.implicits._
     val data = Seq(("Java", "20000"), ("Python", "100000"), ("Scala", "3000"))
     val df = data.toDF("language", "user")
     val dataContent = df.orderBy("language").collect()
@@ -121,6 +96,9 @@ class PPMLContextPythonSpec extends DataFrameHelper{
   }
 
   "write encrypted csv file" should "work" in {
+    val sc = PPMLContext.initPPMLContext(conf, "testApp", ppmlArgs)
+    val sparkSession = sc.getSparkSession()
+    import sparkSession.implicits._
     val data = Seq(("Java", "20000"), ("Python", "100000"), ("Scala", "3000"))
     val df = data.toDF("language", "user")
     val dataContent = df.orderBy("language").collect()
@@ -147,6 +125,9 @@ class PPMLContextPythonSpec extends DataFrameHelper{
   }
 
   "write and read plain parquet file" should "work" in {
+    val sc = PPMLContext.initPPMLContext(conf, "testApp", ppmlArgs)
+    val sparkSession = sc.getSparkSession()
+    import sparkSession.implicits._
     val data = Seq(("Java", "20000"), ("Python", "100000"), ("Scala", "3000"))
     val df = data.toDF("language", "user")
     val dataContent = df.orderBy("language").collect()
@@ -171,6 +152,9 @@ class PPMLContextPythonSpec extends DataFrameHelper{
   }
 
   "write and read encrypted parquet file" should "work" in {
+    val sc = PPMLContext.initPPMLContext(conf, "testApp", ppmlArgs)
+    val sparkSession = sc.getSparkSession()
+    import sparkSession.implicits._
     val data = Seq(("Java", "20000"), ("Python", "100000"), ("Scala", "3000"))
     val df = data.toDF("language", "user")
     val dataContent = df.orderBy("language").collect()
@@ -195,6 +179,7 @@ class PPMLContextPythonSpec extends DataFrameHelper{
   }
 
   "textFile method with plain csv file" should "work" in {
+    val sc = PPMLContext.initPPMLContext(conf, "testApp", ppmlArgs)
     val minPartitions = sc.getSparkSession().sparkContext.defaultMinPartitions
     val cryptoMode = "plain_text"
     val rdd = ppmlContextPython.textFile(sc, plainFileName, minPartitions, cryptoMode)
@@ -204,6 +189,7 @@ class PPMLContextPythonSpec extends DataFrameHelper{
   }
 
   "textFile method with encrypted csv file" should "work" in {
+    val sc = PPMLContext.initPPMLContext(conf, "testApp", ppmlArgs)
     val minPartitions = sc.getSparkSession().sparkContext.defaultMinPartitions
     val cryptoMode = "AES/CBC/PKCS5Padding"
     val rdd = ppmlContextPython.textFile(sc, encryptFileName, minPartitions, cryptoMode)

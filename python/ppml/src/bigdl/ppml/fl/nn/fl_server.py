@@ -70,9 +70,13 @@ class FLServer(object):
             logging.warn('Loading config failed, using default config ')
         except Exception as e:
             logging.warn('Failed to find config file "ppml-conf.yaml", using default config')
+
+    def wait_for_termination(self):
+        self.server.wait_for_termination()
+
     
 if __name__ == '__main__':
-    fl_server = FLServer()
+    fl_server = FLServer(2)
     fl_server.build()
     fl_server.start()
-    fl_server.block_until_shutdown()
+    fl_server.wait_for_termination()

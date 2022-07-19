@@ -15,11 +15,12 @@
 #
 
 
+import torch
 import bigdl.ppml.fl.nn.pytorch.aggregator as pt_agg
 import bigdl.ppml.fl.nn.tensorflow.aggregator as tf_agg
 
 from bigdl.ppml.fl.nn.generated.fl_base_pb2 import TensorMap
-from bigdl.ppml.fl.nn.generated.nn_service_pb2 import TrainRequest, TrainResponse, UploadModelResponse
+from bigdl.ppml.fl.nn.generated.nn_service_pb2 import TrainRequest, TrainResponse, UploadMetaResponse
 from bigdl.ppml.fl.nn.generated.nn_service_pb2_grpc import *
 from bigdl.ppml.fl.nn.utils import tensor_map_to_ndarray_map
 import tensorflow as tf
@@ -37,6 +38,8 @@ class NNServiceImpl(NNServiceServicer):
         self.aggregator_map = {
             'tf': tf_agg.Aggregator(client_num, **kargs),
             'pt': pt_agg.Aggregator(client_num, **kargs)}
+        self.model_dir = tempfile.mkdtemp() # store tmp file dir
+        self.model_path = os.path.join(self.model_dir, "vfl_server_model")
 
     def train(self, request: TrainRequest, context):
         tensor_map = request.data.tensorMap
@@ -60,37 +63,41 @@ class NNServiceImpl(NNServiceServicer):
     def predict(self, request, context):
         return super().predict(request, context)
         
-    def upload_model(self, request, context):
-        try:            
-            model = pickle.loads(request.model_bytes) if request.aggregator == 'pt' else None
+    def upload_meta(self, request, context):
+        try:
             loss_fn = pickle.loads(request.loss_fn)
+
             aggregator = self.aggregator_map[request.aggregator]
-            aggregator.set_server(model, loss_fn, request.optimizer)
-            msg = "Upload sucess"
-        except Exception as e:
+            if aggregator.model is not None:
+                logging.warn(f'Model already exists, replacing...')
+            if request.aggregator == 'pt':
+                os.rename(self.model_path, f'{self.model_path}.pt')                
+                aggregator.model = torch.load(f'{self.model_path}.pt')
+            elif request.aggregator == 'tf':
+                os.rename(self.model_path, f'{self.model_path}.h5')
+                aggregator.model = tf.keras.models.load_model(f'{self.model_path}.h5')
+            else:
+                invalidInputError(False, f"Invalid aggregator, got {request.aggregator}")
+
+            aggregator.set_meta(loss_fn, request.optimizer)
+            msg = "Upload meta success, server model is ready."
+        except Exception as e:            
             msg = traceback.format_exc()
-        return UploadModelResponse(message=msg)
+            logging.error(msg)
+        return UploadMetaResponse(message=msg)
 
     def upload_file(self, request_iterator, context):
         try:
-            tmpdir = tempfile.mkdtemp()
-            model_path = os.path.join(tmpdir, "tf_vfl_server_model.h5")
-            with open(model_path, 'wb') as f:
+            with open(self.model_path, 'wb') as f:
                 for byte_chunk in request_iterator:
                     f.write(byte_chunk.buffer)
-            logging.info(f"Server received model file, length: {os.path.getsize(model_path)}")
-            # shutil.unpack_archive(zip_path, tmpdir)
-            # loaded = tf.saved_model.load(tmpdir)
-            model = tf.keras.models.load_model(model_path)
-            # hard code this func to use tf for now
-            aggregator = self.aggregator_map['tf']
-            aggregator.set_server_model(model)
-            msg = "Upload model through file sucess"
+            logging.info(f"Server received model file, length: {os.path.getsize(self.model_path)}")
+            
+            msg = "Upload model file sucess"
         except Exception as e:
             traceback.print_exc()
             msg = traceback.format_exc()
-        return UploadModelResponse(message=msg)
-
+        return UploadMetaResponse(message=msg)
             
     def validate_client_id(self, client_id):
         try:

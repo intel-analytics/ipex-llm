@@ -153,6 +153,11 @@ public class LettuceUtils {
         return get(hKey);
     }
 
+    public void setSchema(String keyPrefix, String value) {
+        String hKey = this.redisKeyPrefix + keyPrefix;
+        set(hKey, value);
+    }
+
     public String get(String key) {
         RedisStringAsyncCommands<String, String> async = getAsync();
         RedisFuture<String> future = async.get(key);
@@ -163,6 +168,12 @@ public class LettuceUtils {
             e.printStackTrace();
         }
         return result;
+    }
+
+    public void set(String key, String value) {
+        RedisStringAsyncCommands<String, String> async = getAsync();
+        async.set(key, value);
+        logger.info("1 valid records written to redis.");
     }
 
     public void MSet(String keyPrefix, String[][] dataArray) {

@@ -19,7 +19,7 @@ import logging
 import pickle
 import grpc
 from numpy import ndarray
-from bigdl.ppml.fl.nn.generated.nn_service_pb2 import TrainRequest, UploadModelRequest
+from bigdl.ppml.fl.nn.generated.nn_service_pb2 import TrainRequest, UploadMetaRequest
 from bigdl.ppml.fl.nn.generated.nn_service_pb2_grpc import *
 from bigdl.ppml.fl.nn.utils import ndarray_map_to_tensor_map
 import yaml
@@ -57,17 +57,15 @@ class FLClient(object):
                               response.response)
         return response
 
-    def upload_model(self, model, loss_fn, optimizer_cls, optimizer_args):
+    def upload_meta(self, loss_fn, optimizer_cls, optimizer_args):
         # upload model to server
-        model = pickle.dumps(model)
         loss_fn = pickle.dumps(loss_fn)
         optimizer = ClassAndArgsWrapper(optimizer_cls, optimizer_args).to_protobuf()
-        request = UploadModelRequest(client_uuid=self.client_uuid,
-                                     model_bytes=model,
-                                     loss_fn=loss_fn,
-                                     optimizer=optimizer,
-                                     aggregator=self.aggregator)
-        return self.nn_stub.upload_model(request)
+        request = UploadMetaRequest(client_uuid=self.client_uuid,
+                                    loss_fn=loss_fn,
+                                    optimizer=optimizer,
+                                    aggregator=self.aggregator)
+        return self.nn_stub.upload_meta(request)
 
     def load_config(self):
         try:

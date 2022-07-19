@@ -25,7 +25,7 @@ import math
 from functools import partial
 from torch.utils.data import TensorDataset, DataLoader
 from bigdl.nano.automl.hpo.space import Space
-from .utils_hpo import GenericLightningModule, _format_metric_str
+from .utils_hpo import GenericLightningModule, _format_metric_str, _config_has_search_space
 from bigdl.nano.utils.log4Error import invalidOperationError, invalidInputError
 
 
@@ -63,7 +63,7 @@ class BasePytorchForecaster(Forecaster):
             # Model preparation
             self.fitted = False
 
-            has_space = self._config_has_search_space(
+            has_space = _config_has_search_space(
                 config={**self.model_config, **self.optim_config,
                         **self.loss_config, **self.data_config})
 
@@ -84,18 +84,6 @@ class BasePytorchForecaster(Forecaster):
             self.openvino_fp32 = None  # placeholader openvino session for fp32 precision
             self.onnxruntime_int8 = None  # onnxruntime session for int8 precision
             self.pytorch_int8 = None  # pytorch model for int8 precision
-
-    @staticmethod
-    def _config_has_search_space(config):
-        """Check if there's any search space in configuration."""
-        for _, v in config.items():
-            if isinstance(v, Space):
-                return True
-            if isinstance(v, list):
-                for item in v:
-                    if isinstance(item, Space):
-                        return True
-        return False
 
     def _build_automodel(self, data, validation_data=None, batch_size=32, epochs=1):
         """Build a Generic Model using config parameters."""
@@ -181,12 +169,20 @@ class BasePytorchForecaster(Forecaster):
         # build auto model
         self.tune_internal = self._build_automodel(data, validation_data, batch_size, epochs)
 
-        from bigdl.chronos.pytorch import TSTrainer as Trainer
+        from pytorch_lightning.callbacks import Callback
+
+        # reset current epoch = 0 after each run
+        class ResetCallback(Callback):
+            def on_train_end(self, trainer, pl_module):
+                trainer.fit_loop.current_epoch = 0
+
         # shall we use the same trainier
         self.tune_trainer = Trainer(logger=False, max_epochs=epochs,
                                     checkpoint_callback=self.checkpoint_callback,
                                     num_processes=self.num_processes, use_ipex=self.use_ipex,
-                                    use_hpo=True)
+                                    use_hpo=True,
+                                    callbacks=[ResetCallback()] if self.num_processes == 1
+                                    else None)
         # run hyper parameter search
         self.internal = self.tune_trainer.search(
             self.tune_internal,
