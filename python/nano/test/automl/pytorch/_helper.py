@@ -79,6 +79,9 @@ class BoringModel(LightningModule):
         # An arbitrary loss to have a loss that updates the model weights during `Trainer.fit` calls
         return torch.nn.functional.mse_loss(prediction, torch.ones_like(prediction))
 
+    def mae(self, batch, prediction):
+        return torch.nn.functional.l1_loss(prediction, torch.ones_like(prediction))
+
     def step(self, x):
         x = self(x)
         out = torch.nn.functional.mse_loss(x, torch.ones_like(x))
@@ -99,6 +102,7 @@ class BoringModel(LightningModule):
         output = self(batch)
         loss = self.loss(batch, output)
         self.log("val_loss", loss)
+        self.log("val_mae", self.mae(batch, output))
         # self.log("hp_metric", accuracy, on_step=False, on_epoch=True)
         return {"x": loss}
 
