@@ -60,8 +60,10 @@ class HPOSearcher:
             except Exception:
                 num_processes = 1
         else:
-            # todo: add PL1.6 behaviour
-            num_processes = 1
+            try:
+                num_processes = len(self.trainer._accelerator_connector._strategy_flag.parallel_devices)
+            except:
+                num_processes = 1
         if num_processes == 1:
             # reset current epoch = 0 after each run
             from pytorch_lightning.callbacks import Callback
@@ -70,6 +72,7 @@ class HPOSearcher:
                 def on_train_end(self, trainer, pl_module) -> None:
                     super().on_train_end(trainer, pl_module)
                     trainer.fit_loop.current_epoch = 0
+                    print(trainer.fit_loop.current_epoch)
 
             callbacks = self.trainer.callbacks or []
             callbacks.append(ResetCallback())
@@ -223,10 +226,10 @@ class HPOSearcher:
         self.trainer.state.status = TrainerStatus.RUNNING
         self.trainer.training = True
         self.trainer._run(*args, **kwargs)
-        if not LIGHTNING_VERSION_LESS_1_6:
-            training_epoch_loop = TrainingEpochLoop(self.trainer.min_steps,  # type: ignore
-                                                    self.trainer.max_steps)  # type: ignore
-            fit_loop = FitLoop(self.trainer.min_epochs, self.trainer.max_epochs)
-            fit_loop.connect(training_epoch_loop)
-            self.trainer.fit_loop = fit_loop
+        # if not LIGHTNING_VERSION_LESS_1_6:
+        #     training_epoch_loop = TrainingEpochLoop(self.trainer.min_steps,  # type: ignore
+        #                                             self.trainer.max_steps)  # type: ignore
+        #     fit_loop = FitLoop(self.trainer.min_epochs, self.trainer.max_epochs)
+        #     fit_loop.connect(training_epoch_loop)
+        #     self.trainer.fit_loop = fit_loop
         self.trainer.tuning = True
