@@ -74,6 +74,9 @@ class _DDPSpawnLauncher(_SpawnLauncher):
     def launch(self, function: Callable, *args: Any,
                trainer: Optional["pl.Trainer"] = None, **kwargs: Any) -> Any:
         # pytorch_lightning 1.6 uses this method to create child processes
+
+        # the `self._strategy.cluster_environment` should not be None in normal circumstances,
+        # if you see this error message, please raise an issue in BigDL.
         invalidInputError(self._strategy.cluster_environment is not None,
                           'strategy.cluster_environment cannot be None')
 
@@ -141,6 +144,8 @@ class _DDPSpawnLauncher(_SpawnLauncher):
         # restore the state of child process
         spawn_output = return_queue.get()
 
+        # when using pytorch lightning's trainer, the `trainer` cannot be None,
+        # when using pytorch lightning's LightningLite, the `trainer` should be None
         if trainer is None:
             return spawn_output
 

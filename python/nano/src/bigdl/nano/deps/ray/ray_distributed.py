@@ -129,6 +129,8 @@ class _RayLauncher(_SpawnLauncher):
 
         results = ray.get(futures)  # type: ignore
 
+        # when using pytorch lightning's trainer, the `trainer` cannot be None,
+        # when using pytorch lightning's LightningLite, the `trainer` should be None
         if trainer is None:
             return results[0]
 
@@ -153,6 +155,8 @@ class _RayLauncher(_SpawnLauncher):
         strategy._worker_setup(global_rank)
         results = function(*args, **kwargs)
 
+        # when using pytorch lightning's trainer, the `trainer` cannot be None,
+        # when using pytorch lightning's LightningLite, the `trainer` should be None
         if trainer is None:
             return move_data_to_device(results, "cpu")
 
