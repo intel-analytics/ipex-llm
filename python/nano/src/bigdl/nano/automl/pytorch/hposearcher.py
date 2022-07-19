@@ -60,8 +60,8 @@ class HPOSearcher:
             except Exception:
                 num_processes = 1
         else:
-            # todo : to be added
-            pass
+            # todo: add PL1.6 behaviour
+            num_processes = 1
         if num_processes == 1:
             # reset current epoch = 0 after each run
             from pytorch_lightning.callbacks import Callback
