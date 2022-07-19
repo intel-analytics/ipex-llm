@@ -79,7 +79,8 @@ class Objective(object):
                     self.times.append(torch.Tensor([latency * 1000]).double())
 
                 def compute(self):
-                    #  achieve the core logic of how to average latency
+                    # achieve the core logic of how to average latency
+                    # todo : is there should any diff in single and multi process?
                     self.times.sort()
                     count = len(self.times)
                     if count >= 3:
@@ -104,7 +105,7 @@ class Objective(object):
                         pl_module.time_avg = self.time_avg
 
                 def on_validation_epoch_end(self, trainer, pl_module) -> None:
-                    self.log('latency', self.time_avg)
+                    pl_module.log('latency', pl_module.time_avg)
 
                 def on_validation_batch_start(self, trainer, pl_module, batch: Any,
                                               batch_idx: int, dataloader_idx: int) -> None:
@@ -113,7 +114,7 @@ class Objective(object):
                 def on_validation_batch_end(self, trainer, pl_module, outputs, batch: Any,
                                             batch_idx: int, dataloader_idx: int) -> None:
                     batch_latency = time.perf_counter() - self.batch_latency
-                    self.time_avg(batch_latency)
+                    pl_module.time_avg(batch_latency)
 
             callbacks = self.searcher.trainer.callbacks or []
             callbacks.append(LatencyCallback())
