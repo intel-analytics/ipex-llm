@@ -1,16 +1,16 @@
 Prior to run your Big Data & AI applications with BigDL PPML, please make sure the following is setup
 
-* Hardware that supports SGX
-* A fully configured Kubernetes cluster
+* Hardware that supports SGX [(3rd Gen Intel Xeon Scalable Processors)](https://www.intel.com/content/www/us/en/products/docs/processors/xeon/3rd-gen-xeon-scalable-processors-brief.html)
+* A fully configured Kubernetes cluster [(Production Cluster Setup)](https://kubernetes.io/docs/setup/production-environment/#production-cluster-setup)
 * [Intel SGX Device Plugin](https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html) to use SGX in K8S cluster
-* [Key and Password Preparation](#prepare-key-and-password)
+* [Prepare Key and Password](#prepare-key-and-password)
 * [Configure the Environment](#configure-the-environment)
-* [KMS Service Setup](kms-key-management-service-setup)
-* [Attestation Service Setup](#attestation-service-setup)
+* [Key Management Service (KMS) Setup](#key-management-service-kms-setup)
+* [Attestation Service (AS) Setup](#attestation-service-as-setup)
 * [BigDL PPML Client Container](#start-bigdl-ppml-client-container)
 * (Optional) [K8s Monitioring](#optional-k8s-monitioring-setup)
 
-### Prepare key and password
+### Prepare Key and Password
 
 ##### Prepare the Key
 
@@ -79,11 +79,12 @@ Prior to run your Big Data & AI applications with BigDL PPML, please make sure t
     kubectl create secret generic spark-secret --from-literal secret=YOUR_SECRET
     ```
 
-### KMS (key management service) Setup
-You can choose to use the KMS service which PPML provides or you own one.
-To use the KMS service in PPML, deploy kms first: https://github.com/intel-analytics/BigDL/blob/main/ppml/services/pccs-ehsm/kubernetes/README.md
+### Key Management Service (KMS) Setup
+Key Management Service (KMS) helps you manage cryptographic keys for your services. In BigDL PPML end-to-end workflow, KMS is used to generate keys, encrypt the input data and decrypt the result of Big Data & AI applications. You can choose to use the KMS service which PPML provides or your own one.
 
-### Attestation Service Setup
+To use the KMS service in PPML, follow the document: https://github.com/intel-analytics/BigDL/blob/main/ppml/services/pccs-ehsm/kubernetes/README.md
+
+### Attestation Service (AS) Setup
 placeholder
 
 
@@ -116,11 +117,11 @@ placeholder
     export SECURE_PASSWORD_PATH=/YOUR_DIR/password
     export KUBECONFIG_PATH=/YOUR_DIR/kubeconfig
     export LOCAL_IP=$LOCAL_IP
-    export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT
+    export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:devel
     sudo docker run -itd \
         --privileged \
         --net=host \
-        --name=spark-local-k8s-client \
+        --name=bigdl-ppml-client-k8s \
         --cpuset-cpus="0-4" \
         --oom-kill-disable \
         --device=/dev/sgx/enclave \
