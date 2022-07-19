@@ -383,6 +383,7 @@ class XShardsTSDataset:
                               "you need to set fit=True.")
 
             return unscale_timeseries_numpy(data['y'], scaler_for_this_id, scaler_index)
+
         def _get_features(df):
             return df.columns
 
