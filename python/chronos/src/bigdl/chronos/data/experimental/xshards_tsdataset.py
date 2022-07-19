@@ -363,7 +363,7 @@ class XShardsTSDataset:
                                                   self.scaler_dict, self.feature_col,
                                                   self.target_col)
         return self
-    
+
     def unscale_xshards(self, data):
         '''
         Unscale the time series forecaster's numpy prediction result/ground truth.
@@ -385,6 +385,7 @@ class XShardsTSDataset:
             return unscale_timeseries_numpy(data['y'], scaler_for_this_id, scaler_index)
         def _get_features(df):
             return df.columns
+
         cols = self.shards.transform_shard(_get_features).collect()[0]
         scaler_index = [cols.get_loc(col) + 1 for col in self.target_col]
         return data.transform_shard(_inverse_transform, self.scaler_dict, scaler_index)
