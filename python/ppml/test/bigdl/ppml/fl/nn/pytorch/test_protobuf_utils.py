@@ -51,7 +51,7 @@ class TestProtobufUtils(FLTest):
         model = SimpleNNModel()
         loss_fn = nn.BCELoss()
         logging.debug('uploading model to server')
-        cli.upload_model(model, loss_fn, torch.optim.SGD, {})
+        cli.upload_meta(loss_fn, torch.optim.SGD, {})
 
 
 class SimpleNNModel(nn.Module):

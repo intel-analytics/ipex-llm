@@ -168,7 +168,7 @@ ENV SPARK_VERSION=${SPARK_VERSION}
 ENV SPARK_HOME=/opt/spark
 ENV BIGDL_VERSION=${BIGDL_VERSION}
 ENV BIGDL_HOME=/opt/bigdl-${BIGDL_VERSION}
-ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 ENV SGX_MEM_SIZE=20GB
 
 ARG HTTP_PROXY_HOST
@@ -184,7 +184,7 @@ COPY --from=tini /usr/local/bin/tini /sbin/tini
 # Install occlum from package
 # RUN apt-get update && \
 #     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
-#         build-essential ca-certificates openjdk-11-jdk \
+#         build-essential ca-certificates openjdk-8-jdk \
 #         curl tzdata wget netcat gnupg2 jq make gdb libfuse-dev libtool \
 #         libprotobuf-c-dev protobuf-c-compiler libcurl4-openssl-dev libprotobuf-dev unzip
 # # Add 01.org & key
@@ -196,7 +196,7 @@ COPY --from=tini /usr/local/bin/tini /sbin/tini
 
 # RUN apt-get update && \
 #     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
-#         build-essential ca-certificates openjdk-11-jdk curl wget netcat net-tools \
+#         build-essential ca-certificates openjdk-8-jdk curl wget netcat net-tools \
 #         gnupg2 vim jq make gdb libfuse-dev libtool \
 #         libsgx-dcap-ql libsgx-epid libsgx-urts libsgx-quote-ex libsgx-uae-service \
 #         libsgx-dcap-quote-verify-dev \
@@ -207,7 +207,7 @@ COPY --from=tini /usr/local/bin/tini /sbin/tini
 
 RUN apt-get update && \
     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
-        openjdk-11-jdk && \
+        openjdk-8-jdk && \
     apt-get clean
 
 # prepare Spark
@@ -239,6 +239,8 @@ COPY ./entrypoint.sh /opt/
 
 RUN chmod a+x /opt/entrypoint.sh && \
     chmod a+x /opt/run_spark_on_occlum_glibc.sh && \
-    chmod a+x /root/demos/remote_attestation/init_ra_flow/run_attestation_server.sh
+    chmod a+x /root/demos/remote_attestation/init_ra_flow/run_attestation_server.sh && \
+    sed -i '/aesm/d' /root/.bashrc && \
+    rm -rf /var/run/aesmd
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
