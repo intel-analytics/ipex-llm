@@ -40,7 +40,6 @@ def _is_creator(model):
     return inspect.ismethod(model) or inspect.isfunction(model)
 
 
-
 class Objective(object):
     """The Tuning objective for HPO."""
 
@@ -65,7 +64,8 @@ class Objective(object):
         self.searcher = searcher
         self.model_ = model
         self.target_metric = target_metric
-        self.multi_object = isinstance(self.target_metric, collections.abc.Sequence) and len(self.target_metric) > 1
+        self.multi_object = isinstance(self.target_metric, collections.abc.Sequence) \
+                            and len(self.target_metric) > 1
         # add automatic support for latency
         if self.multi_object and "latency" in self.target_metric:
             from torchmetrics import Metric
@@ -98,21 +98,21 @@ class Objective(object):
                     super().__init__()
                     self.time_avg = LatencyAggregate()
 
-                def on_validation_start(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule") -> None:
+                def on_validation_start(self, trainer, pl_module) -> None:
                     super().on_validation_start(trainer, pl_module)
                     if not hasattr(pl_module, "time_avg"):
                         pl_module.time_avg = self.time_avg
 
-                def on_validation_epoch_end(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule") -> None:
+                def on_validation_epoch_end(self, trainer, pl_module) -> None:
                     self.log('latency', self.time_avg)
 
-                def on_validation_batch_start(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule", batch: Any, 
+                def on_validation_batch_start(self, trainer, pl_module, batch: Any,
                                               batch_idx: int, dataloader_idx: int) -> None:
                     self.batch_latency = time.perf_counter()
 
-                def on_validation_batch_end(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule", outputs, batch: Any, 
+                def on_validation_batch_end(self, trainer, pl_module, outputs, batch: Any,
                                             batch_idx: int, dataloader_idx: int) -> None:
-                    batch_latency  = time.perf_counter() - self.batch_latency
+                    batch_latency = time.perf_counter() - self.batch_latency
                     self.time_avg(batch_latency)
 
             callbacks = self.searcher.trainer.callbacks or []

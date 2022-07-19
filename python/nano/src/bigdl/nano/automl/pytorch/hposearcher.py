@@ -57,7 +57,7 @@ class HPOSearcher:
         if LIGHTNING_VERSION_LESS_1_6:
             try:
                 num_processes = len(self.trainer.accelerator_connector.plugins[0].parallel_devices)
-            except:
+            except Exception:
                 num_processes = 1
         else:
             # todo : to be added
@@ -67,10 +67,10 @@ class HPOSearcher:
             from pytorch_lightning.callbacks import Callback
 
             class ResetCallback(Callback):
-                def on_train_end(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule") -> None:
+                def on_train_end(self, trainer, pl_module) -> None:
                     super().on_train_end(trainer, pl_module)
                     trainer.fit_loop.current_epoch = 0
-            
+
             callbacks = self.trainer.callbacks or []
             callbacks.append(ResetCallback())
             self.trainer.callbacks = callbacks
@@ -184,8 +184,8 @@ class HPOSearcher:
         # a single best trial cannot be retrieved from a multi-objective study.
         if not self.objective.multi_object:
             self._lazymodel = _end_search(study=self.study,
-                                        model_builder=model._model_build,
-                                        use_trial_id=-1)
+                                          model_builder=model._model_build,
+                                          use_trial_id=-1)
             return self._lazymodel
         else:
             return self.study.best_trials
