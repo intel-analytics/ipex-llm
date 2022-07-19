@@ -54,7 +54,7 @@ class PPMLContext(JavaValue):
 
         # sc = SparkContext.getOrCreate(spark_conf)
 
-        self.spark = SparkSession.builder.config(spark_conf).getOrCreate()
+        self.spark = SparkSession.builder.config(conf=spark_conf).getOrCreate()
         args = [self.spark._jsparkSession]
         super().__init__(None, self.bigdl_type, *args)
 
