@@ -115,7 +115,7 @@ The Feature Initializer loads user & item feature and user embeddings into the r
 
 #### Feature Initializer Config Template
 
-The config template for the Recall Initializer is [config_feature.yaml](https://github.com/intel-analytics/BigDL/blob/main/scala/friesian/src/main/resources/nearlineConfig/config_feature.yaml).
+The config template for the Feature Initializer is [config_feature.yaml](https://github.com/intel-analytics/BigDL/blob/main/scala/friesian/src/main/resources/nearlineConfig/config_feature.yaml).
 
 You can uncomment the parameters you need and modify the values.
 
