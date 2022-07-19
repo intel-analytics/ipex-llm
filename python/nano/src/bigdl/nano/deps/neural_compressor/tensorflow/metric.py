@@ -23,7 +23,7 @@ class TensorflowINCMetric(BaseINCMetric):
         # calculate accuracy
         preds = tf.stack(preds)
         labels = tf.stack(labels)
-        return labels, preds
+        return preds, labels
 
     def to_scalar(self, tensor):
         return tensor.numpy()
