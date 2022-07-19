@@ -24,7 +24,6 @@
 
 import optuna
 from bigdl.nano.utils.log4Error import invalidInputError
-from sklearn import metrics
 
 
 def _filter_tuner_args(kwargs, tuner_keys):
