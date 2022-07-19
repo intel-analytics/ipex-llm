@@ -26,13 +26,18 @@ jobs:
       with:
         java-version: '8'
         distribution: 'temurin'
-        server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
-        settings-path: ${{ github.workspace }} # location for the settings.xml file
+        #server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
+        #settings-path: ${{ github.workspace }} # location for the settings.xml file
     
     - name: Set up Maven
       uses: stCarolas/setup-maven@v4.4
       with:
         maven-version: 3.8.2
+    
+    - name: Set up Maven Settings
+      uses: s4u/maven-settings-action@v2.6.0
+      with:
+        mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${{ secrets.ARDA_NEXUS }}" }]
 
     - name: Build with Maven
       run: |
