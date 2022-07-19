@@ -72,7 +72,7 @@ class TestTrainer(TestCase):
             resnet18, batch_size, num_workers, data_dir)
 
     def test_trainer_ray_compile(self):
-        trainer = Trainer(max_epochs=1, distributed_backend="ray")
+        trainer = Trainer(max_epochs=1, num_processes=2, distributed_backend="ray")
         pl_model = Trainer.compile(self.model, self.loss, self.optimizer)
         trainer.fit(pl_model, self.train_loader)
 
