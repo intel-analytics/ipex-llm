@@ -64,7 +64,7 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
         # pytorch_lightning 1.6 uses this method to create child processes
 
         # the `self._strategy.cluster_environment` should not be None in normal circumstances,
-        # if you see this error message, please raise an issue in BigDL.
+        # if you see this error message, please report an issue in BigDL.
         invalidInputError(self._strategy.cluster_environment is not None,
                           'strategy.cluster_environment cannot be None')
 
