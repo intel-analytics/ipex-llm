@@ -37,7 +37,19 @@ jobs:
     - name: Set up Maven Settings
       uses: s4u/maven-settings-action@v2.6.0
       with:
-        mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${{ secrets.ARDA_NEXUS }}" }]'
+        servers: |
+          [{
+            "id": "central",
+            "configuration": {
+              "httpConfiguration": {
+                "all": {
+                  "connectionTimeout": "120000",
+                  "readTimeout": "120000"
+                  }    
+                }
+              }
+          }]
+        # mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${{ secrets.ARDA_NEXUS }}" }]'
 
     - name: Build with Maven
       run: |
