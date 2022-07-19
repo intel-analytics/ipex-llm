@@ -1,7 +1,7 @@
 # This workflow will build a package using Maven and then publish it to GitHub packages when a release is created
 # For more information see: https://github.com/actions/setup-java/blob/main/docs/advanced-usage.md#apache-maven-with-a-settings-path
 
-name: Maven Package
+name: Maven Nightly Build Publish Scala
 
 on:
   release:
@@ -14,7 +14,7 @@ on:
 jobs:
   build:
 
-    runs-on: [self-hosted, linux, ARM64]
+    runs-on: [self-hosted, Linux, Gondolin]
     permissions:
       contents: read
       packages: write
