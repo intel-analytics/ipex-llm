@@ -42,7 +42,21 @@ jobs:
     - name: Build with Maven
       run: |
           ls
-          mvn -Dhttp.proxyHost=${{ secrets.HTTP_PROXY_HOST }} -Dhttp.proxyPort=${{ secrets.HTTP_PROXY_PORT }} -Dhttps.proxyHost=${{ secrets.HTTP_PROXY_HOST }} -Dhttps.proxyPort=${{ secrets.HTTP_PROXY_PORT }} -B package --file scala/pom.xml
+          cat ~/.m2/settings.xml
+          sed -i 's/<artifactId>${spark-version.project}<\/artifactId>/<artifactId>${spark-version.project}-${SPARK_PLATFORM}<\/artifactId>/' scala/dllib/pom.xml
+          sed -i 's/<artifactId>3.0<\/artifactId>/<artifactId>3.0-${SPARK_PLATFORM}<\/artifactId>/' scala/common/spark-version/3.0/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/common/spark-version/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/common/spark-version/3.0/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/dllib/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/orca/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/friesian/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/grpc/pom.xml
+          #sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/friesian.serving/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/serving/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/ppml/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/assembly/pom.xml
+          mvn -Dhttp.proxyHost=${{ secrets.HTTP_PROXY_HOST }} -Dhttp.proxyPort=${{ secrets.HTTP_PROXY_PORT }} -Dhttps.proxyHost=${{ secrets.HTTP_PROXY_HOST }} -Dhttps.proxyPort=${{ secrets.HTTP_PROXY_PORT }} clean deploy -DskipTests -Dspark.version=3.1.2 -DSPARK_PLATFORM=SPARK_3.1 -P spark_3.x --file scala/pom.xml
 
 #    - name: Publish to GitHub Packages Apache Maven
 #      run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml
