@@ -61,7 +61,7 @@ class HPOSearcher:
                 num_processes = 1
         else:
             try:
-                num_processes = len(self.trainer._accelerator_connector._strategy_flag. \
+                num_processes = len(self.trainer._accelerator_connector._strategy_flag.
                                     parallel_devices)
             except Exception:
                 num_processes = 1
