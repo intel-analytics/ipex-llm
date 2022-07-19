@@ -42,43 +42,6 @@ jobs:
           python -m pip install --upgrade wheel
           sudo apt-get install openmpi-bin openmpi-doc libopenmpi-dev
 
-      # - name: Init conda environment
-      #   run: |
-      #     $CONDA/bin/conda create -n nano-tensorflow -y python==3.7.10 setuptools=58.0.4
-      #     source $CONDA/bin/activate nano-tensorflow
-      #     $CONDA/bin/conda info
-      #     bash python/nano/dev/build_and_install.sh linux default false tensorflow
-      #     if [ ! -z "${{matrix.tf-version}}" ]; then
-      #       pip install ${{matrix.tf-version}}
-      #     fi
-      #     pip install pytest
-      #     HOROVOD_WITH_MPI=1 HOROVOD_WITH_TENSORFLOW=1 HOROVOD_WITHOUT_PYTORCH=1 pip install --no-cache-dir horovod==0.25.0
-      #     horovodrun --check-build
-      #     pip install ray[default]==1.11.0 prometheus_client==0.13.0
-      #     pip install ConfigSpace
-      #     pip install optuna
-      #     pip install neural-compressor==1.11
-      #     source bigdl-nano-init
-
-      # - name: Run tensorflow unit tests
-      #   shell: bash
-      #   run: |
-      #     source $CONDA/bin/activate nano-tensorflow
-      #     bash python/nano/test/run-nano-tf-tests.sh
-      #     bash python/nano/test/run-nano-tf-horovod-tests.sh
-      #     bash python/nano/test/run-nano-tf-ray-tests.sh
-      #     bash python/nano/test/run-nano-automl-common-tests.sh
-      #     bash python/nano/test/run-nano-automl-tf-tests.sh
-      #     bash python/nano/test/run-nano-tf-inc-tests.sh
-      #     source $CONDA/bin/deactivate
-      #   env:
-      #     ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-
-      # - name: Post tensorflow unit tests
-      #   shell: bash
-      #   run: |
-      #     $CONDA/bin/conda remove -n nano-tensorflow --all
-
       - name: Run TensorFlow unit tests
         shell: bash
         run: |

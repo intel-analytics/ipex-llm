@@ -71,24 +71,6 @@ jobs:
           $CONDA/bin/conda remove -n bigdl-init --all
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-      
-      # - name: Init conda environment
-      #   shell: bash
-      #   run: |
-      #     $CONDA/bin/conda create -n nano-pytorch -y python==3.7.10 setuptools=58.0.4
-      #     source $CONDA/bin/activate nano-pytorch
-      #     $CONDA/bin/conda info
-      #     bash python/nano/dev/build_and_install.sh linux default false pytorch
-      #     if [ ! -z "${{matrix.pytorch-version}}" ]; then
-      #       pip install ${{matrix.pytorch-version}} -f https://download.pytorch.org/whl/torch_stable.html
-      #     fi
-      #     pip install pytest
-      #     pip install ray[default]==1.11.0 prometheus_client==0.13.0
-      #     pip install ConfigSpace
-      #     pip install optuna
-      #     pip install neural-compressor==1.11
-      #     pip install onnxruntime onnxruntime-extensions onnx
-      #     source bigdl-nano-init
 
       - name: Run PyTorch unit tests
         shell: bash
@@ -202,26 +184,6 @@ jobs:
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
       
-      # - name: Run PyTorch unit tests
-      #   shell: bash
-      #   run: |
-      #     source $CONDA/bin/activate nano-pytorch
-      #     bash python/nano/test/run-nano-pytorch-tests.sh
-      #     bash python/nano/test/run-nano-pytorch-ray-tests.sh
-      #     bash python/nano/test/run-nano-automl-pytorch-tests.sh
-      #     bash python/nano/test/run-nano-pytorch-inc-tests.sh
-      #     bash python/nano/test/run-nano-pytorch-onnx-tests.sh
-      #     bash python/nano/benchmark/start_benchmark.sh
-      #     source $CONDA/bin/deactivate
-      #   env:
-      #     ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-      #     SANITY_CHECK: "1"
-
-      # - name: Post PyTorch Unit Tests
-      #   shell: bash
-      #   run: |
-      #     $CONDA/bin/conda remove -n nano-pytorch --all
-
   nano-unit-test-benchmark-sanity:
     # The type of runner that the job will run on
     runs-on: ${{ matrix.os }}
@@ -261,8 +223,11 @@ jobs:
         os: ["ubuntu-20.04"]
         python-version: ["3.7"]
         pytorch-version: [
+          # The reason why ipex1.10 is not currently supported is that the optimization of ipex1.10
+          # will change the require_grad attribute of layers, which will make some tests of nano fail.
           "torch==1.9.0+cpu torchvision==0.10.0+cpu torch_ipex==1.9.0",
           ""
+          # "torch==1.10.1+cpu torchvision==0.11.2+cpu intel_extension_for_pytorch==1.10.0 psutil"
           ]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
