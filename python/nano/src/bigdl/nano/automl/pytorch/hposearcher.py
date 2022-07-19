@@ -55,15 +55,15 @@ class HPOSearcher:
         """
         self.trainer = trainer
         if LIGHTNING_VERSION_LESS_1_6:
-            try:
+            if hasattr(self.trainer.accelerator_connector, "plugins"):
                 num_processes = len(self.trainer.accelerator_connector.plugins[0].parallel_devices)
-            except Exception:
+            else:
                 num_processes = 1
         else:
-            try:
+            if hasattr(self.trainer._accelerator_connector._strategy_flag, "parallel_devices"):
                 num_processes = len(self.trainer._accelerator_connector._strategy_flag.
                                     parallel_devices)
-            except Exception:
+            else:
                 num_processes = 1
         if num_processes == 1:
             # reset current epoch = 0 after each run
