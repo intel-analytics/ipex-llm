@@ -87,16 +87,12 @@ To use the KMS service in PPML, follow the document: https://github.com/intel-an
 ### Attestation Service (AS) Setup
 placeholder
 
-
-
-
-
 ### Start BigDL PPML Client Container
-1. Prepare Docker Image
+1. Prepare BigDL PPML Docker Image
 
     Pull Docker image from Dockerhub
     ```
-    docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-graphene:2.1.0-SNAPSHOT
+    docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-graphene:devel
     ```
 
     Alternatively, you can build Docker image from Dockerfile (this will take some time):
@@ -105,9 +101,11 @@ placeholder
     ./build-docker-image.sh
     ```
     
-2. Start the client container
+    **Note:** The above docker image `intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-graphene:devel` is only used for demo purposes. You are recommended to refer to the [BigDL PPML Dockerfile](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/Dockerfile) or use BigDL PPML image as a base image to build your own image and sign your image with your own enclave_key.
     
-    Configure the environment variables in the following script before running it. Check [Bigdl ppml SGX related configurations](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-graphene#1-bigdl-ppml-sgx-related-configurations) for detailed memory configurations.
+2. Start BigDL PPML client container
+    
+    Configure the environment variables in the following script before running it.
     ```
     export K8S_MASTER=k8s://$(sudo kubectl cluster-info | grep 'https.*6443' -o -m 1)
     echo The k8s master is $K8S_MASTER .
