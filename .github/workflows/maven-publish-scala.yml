@@ -4,8 +4,8 @@
 name: Maven Nightly Build Publish Scala
 
 on:
-  release:
-    types: [created]
+  #release:
+  #  types: [created]
   schedule:
     - cron: '0 15 * * *'
   # Allows you to run this workflow manually from the Actions tab
@@ -31,8 +31,8 @@ jobs:
 
     - name: Build with Maven
       run: |
-          cd scala
-          mvn -B package --file pom.xml
+          ls
+          mvn -B package --file scala/pom.xml
 
 #    - name: Publish to GitHub Packages Apache Maven
 #      run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml
