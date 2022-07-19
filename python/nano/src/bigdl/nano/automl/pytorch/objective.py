@@ -62,8 +62,8 @@ class Objective(object):
         self.searcher = searcher
         self.model_ = model
         self.target_metric = target_metric
-        self.multi_object = (isinstance(self.target_metric, list)
-                             or isinstance(self.target_metric, tuple)) and \
+        self.multi_object = (isinstance(self.target_metric, list) or
+                             isinstance(self.target_metric, tuple)) and \
                             (len(self.target_metric) > 1)
         # add automatic support for latency
         if self.multi_object and "latency" in self.target_metric:
