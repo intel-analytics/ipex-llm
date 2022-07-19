@@ -140,7 +140,7 @@ class _RayLauncher(_SpawnLauncher):
         strategy.lightning_module.trainer = trainer
         strategy.lightning_module.trainer.checkpoint_callback.best_model_path = best_path
 
-        return results.trainer_results
+        return results.trainer_results  # type: ignore
 
     @staticmethod
     def _wrapping_function(args_pack: tuple) -> Any:   # type: ignore[override]

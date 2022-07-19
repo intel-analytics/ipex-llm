@@ -14,21 +14,21 @@
 # limitations under the License.
 #
 
-from typing import Any, Optional
+from typing import Any, Union
 from logging import warning
 
 import torch
 from torch import nn
-from torch import Tensor
 from torch.optim import Optimizer
 import pytorch_lightning.lite as lite
+from pytorch_lightning.strategies import Strategy
 from pytorch_lightning.lite.wrappers import _LiteModule, _LiteOptimizer
 
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 from bigdl.nano.pytorch.strategies.ipex.ipex_api import ipex_optimize
 from bigdl.nano.pytorch.strategies import create_IPEXStrategy, DDPSpawnStrategy, \
-    DDPSubprocessStrategy, RayStrategy
+    DDPSubprocessStrategy, create_RayStrategy
 
 
 class LightningLite(lite.LightningLite):
@@ -42,7 +42,7 @@ class LightningLite(lite.LightningLite):
     def __init__(self, num_processes: int = 1,
                  use_ipex: bool = False,
                  enable_bf16: bool = False,
-                 strategy: str = "subprocess",
+                 strategy: Union[str, Strategy] = "subprocess",
                  *args, **kwargs) -> None:
         """
         Create a LightningLite with nano acceleration.
@@ -75,15 +75,16 @@ class LightningLite(lite.LightningLite):
                                              use_ipex=self.use_ipex,
                                              enable_bf16=self.enable_bf16)
         elif strategy == "ray":
-            strategy = RayStrategy(num_workers=self.num_processes,
-                                   use_ipex=self.use_ipex,
-                                   enable_bf16=self.enable_bf16)
+            strategy = create_RayStrategy(num_workers=self.num_processes,
+                                          use_ipex=self.use_ipex,
+                                          enable_bf16=self.enable_bf16)
         else:
             warning(f"Bigdl-nano doesn't support '{strategy}' strategy now, "
                     f"'{strategy}' strategy of pytorch_lightning will be used. "
                     f"Supported strategies are 'spawn', 'subprocess' and 'ray'.")
 
-        super().__init__(strategy=strategy, *args, **kwargs)
+        kwargs["strategy"] = strategy
+        super().__init__(*args, **kwargs)
 
     def setup(
         self,
