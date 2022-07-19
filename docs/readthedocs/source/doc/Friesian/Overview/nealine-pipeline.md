@@ -195,7 +195,7 @@ Users can pull the Friesian Serving docker image using `docker pull intelanalyti
 
 You should use the trained 2-tower model to predict the item embeddings, and save the results as parquet file.
 
-2. Prepare config file [config_recall.yaml](#recall_initializer_config_template): modify `itemIDColumn`, `itemEmbeddingColumn` and `initialDataPath` according to your embedding file location and column names. **Note** that we use the bind mount to mount the current directory into /opt/work/mnt in the container, so paths in the config file should start with `mnt/`.
+2. Prepare config file [config_recall.yaml](#recall-initializer-config-template): modify `itemIDColumn`, `itemEmbeddingColumn` and `initialDataPath` according to your embedding file location and column names. **Note** that we use the bind mount to mount the current directory into /opt/work/mnt in the container, so paths in the config file should start with `mnt/`.
 
 3. Your file structure will like:
    ```
@@ -216,8 +216,8 @@ You should use the trained 2-tower model to predict the item embeddings, and sav
       1. You should preprocess the user and item datasets and save the preprocessed features as parquet files. For example, `wnd_user.parquet` and `wnd_item.parquet`.
    2. Prepare user embedding parquet files
       1. You should use the trained 2-tower model to predict the user embeddings, and save the results as parquet file. For example, `user_emb.parquet`.
-   3. Prepare config file [config_feature.yaml](#feature_initializer_config_template): modify `initialUserDataPath`, `initialItemDataPath`, `userIDColumn`, `userFeatureColumns`, `itemIDColumn` and `itemFeatureColumns` according to your feature file location and feature names. **Note** that we use the bind mount to mount the current directory into /opt/work/mnt in the container, so paths in the config file should start with `mnt/`.
-   4. Prepare config file [config_feature_vec.yaml](#feature_initializer_config_template): modify `initialUserDataPath`, `userIDColumn` and `userFeatureColumns` according to your embedding file location and column names. **Note** that we use the bind mount to mount the current directory into /opt/work/mnt in the container, so paths in the config file should start with `mnt/`.
+   3. Prepare config file [config_feature.yaml](#feature-initializer-config-template): modify `initialUserDataPath`, `initialItemDataPath`, `userIDColumn`, `userFeatureColumns`, `itemIDColumn` and `itemFeatureColumns` according to your feature file location and feature names. **Note** that we use the bind mount to mount the current directory into /opt/work/mnt in the container, so paths in the config file should start with `mnt/`.
+   4. Prepare config file [config_feature_vec.yaml](#feature-initializer-config-template): modify `initialUserDataPath`, `userIDColumn` and `userFeatureColumns` according to your embedding file location and column names. **Note** that we use the bind mount to mount the current directory into /opt/work/mnt in the container, so paths in the config file should start with `mnt/`.
    5. Your file structure will like:
    ```
    └── $(pwd)
