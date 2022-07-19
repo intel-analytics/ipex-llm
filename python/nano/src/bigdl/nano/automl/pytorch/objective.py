@@ -16,6 +16,8 @@
 
 import collections
 from typing import Any, Dict, Optional, Union
+from cv2 import threshold
+from numpy import dtype, float32
 
 import pytorch_lightning as pl
 
@@ -23,7 +25,7 @@ from pytorch_lightning.utilities.exceptions import MisconfigurationException
 from pytorch_lightning.utilities.types import EVAL_DATALOADERS, TRAIN_DATALOADERS
 from pytorch_lightning.utilities import rank_zero_deprecation
 from pytorch_lightning.core.datamodule import LightningDataModule
-from pytorch_lightning.callbacks import Timer
+from pytorch_lightning.callbacks import Callback
 
 from bigdl.nano.automl.hpo.backend import create_pl_pruning_callback
 from bigdl.nano.utils.log4Error import invalidInputError
@@ -31,6 +33,7 @@ from bigdl.nano.pytorch.utils import LIGHTNING_VERSION_LESS_1_6
 import inspect
 import copy
 import time
+import torch
 
 
 def _is_creator(model):
@@ -65,35 +68,57 @@ class Objective(object):
         self.multi_object = isinstance(self.target_metric, collections.abc.Sequence) and len(self.target_metric) > 1
         # add automatic support for latency
         if self.multi_object and "latency" in self.target_metric:
-            class LatencyCallback(Timer):
-                def on_validation_epoch_start(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule") -> None:
-                    self.latencys = []
-                
-                def on_validation_epoch_end(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule") -> None:
-                    # calculate the latency
-                    self.latencys.sort()
-                    #  if count is larger than 3, remove the top and least 10%
-                    count = len(self.latencys)
-                    # todo: which should be the threshold of count
-                    if count >= 10:
-                        infer_times_mid = self.latencys[int(0.1*count):-int(0.1*count)]
-                        # print(int(0.1*count), -int(0.1*count))
+            from torchmetrics import Metric
+
+            class LatencyAggregate(Metric):
+                def __init__(self):
+                    super().__init__(compute_on_step=False)
+                    self.add_state("times", default=[])
+
+                def update(self, latency):
+                    self.times.append(torch.Tensor([latency * 1000]).double())
+
+                def compute(self):
+                    #  achieve the core logic of how to average latency
+                    self.times.sort()
+                    count = len(self.times)
+                    if count >= 3:
+                        threshold = max(int(0.1 * count), 1)
+                        infer_times_mid = self.times[threshold:-threshold]
                     else:
-                        infer_times_mid = self.latencys
+                        infer_times_mid = self.times[:]
                     latency = sum(infer_times_mid) / len(infer_times_mid)
-                    # print("avg latency : ", latency)
-                    self.log("latency", latency)
-                    # self.latencys.clear()
-                
-                def on_validation_batch_start(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule", batch: Any, batch_idx: int, dataloader_idx: int) -> None:
+                    return latency
+
+                def reset(self) -> None:
+                    self.times.clear()
+
+            class LatencyCallback(Callback):
+                def __init__(self) -> None:
+                    super().__init__()
+                    self.time_avg = LatencyAggregate()
+
+                def on_validation_start(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule") -> None:
+                    super().on_validation_start(trainer, pl_module)
+                    if not hasattr(pl_module, "time_avg"):
+                        pl_module.time_avg = self.time_avg
+
+                def on_validation_epoch_end(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule") -> None:
+                    self.log('latency', self.time_avg)
+
+                def on_validation_batch_start(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule", batch: Any, 
+                                              batch_idx: int, dataloader_idx: int) -> None:
                     self.batch_latency = time.perf_counter()
-                
-                def on_validation_batch_end(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule", outputs, batch: Any, batch_idx: int, dataloader_idx: int) -> None:
-                    print("batch id ", batch_idx, " data id : ", dataloader_idx, " latency : ", time.perf_counter() - self.batch_latency)
-                    self.latencys.append(time.perf_counter() - self.batch_latency)
-            
-            self.latency_callback = LatencyCallback()
-        
+
+                def on_validation_batch_end(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule", outputs, batch: Any, 
+                                            batch_idx: int, dataloader_idx: int) -> None:
+                    batch_latency  = time.perf_counter() - self.batch_latency
+                    self.time_avg(batch_latency)
+
+            callbacks = self.searcher.trainer.callbacks or []
+            callbacks.append(LatencyCallback())
+            self.searcher.trainer.callbacks = callbacks
+
         self.pruning = pruning
         self.fit_kwargs = fit_kwargs
 
@@ -113,11 +138,6 @@ class Objective(object):
             callbacks = self.searcher.trainer.callbacks or []
             pruning_cb = create_pl_pruning_callback(trial, monitor=self.target_metric)
             callbacks.append(pruning_cb)
-            self.searcher.trainer.callbacks = callbacks
-        
-        if self.multi_object and "latency" in self.target_metric:
-            callbacks = self.searcher.trainer.callbacks or []
-            callbacks.append(self.latency_callback)
             self.searcher.trainer.callbacks = callbacks
 
         # links data to the trainer

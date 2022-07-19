@@ -54,18 +54,27 @@ class HPOSearcher:
         :param trainer: The pl.Trainer object.
         """
         self.trainer = trainer
-        if self.trainer.num_processes == 1:
+        if LIGHTNING_VERSION_LESS_1_6:
+            try:
+                num_processes = len(self.trainer.accelerator_connector.plugins[0].parallel_devices)
+            except:
+                num_processes = 1
+        else:
+            # todo : to be added
+            pass
+        if num_processes == 1:
             # reset current epoch = 0 after each run
             from pytorch_lightning.callbacks import Callback
 
             class ResetCallback(Callback):
-                def on_train_end(self, trainer, pl_module):
+                def on_train_end(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule") -> None:
+                    super().on_train_end(trainer, pl_module)
                     trainer.fit_loop.current_epoch = 0
             
             callbacks = self.trainer.callbacks or []
             callbacks.append(ResetCallback())
             self.trainer.callbacks = callbacks
-            print("num process == 1 and add reset callback ")
+
         self.model_class = pl.LightningModule
         self.study = None
         self.objective = None
