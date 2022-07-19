@@ -18,7 +18,7 @@ pip install matplotlib
 pip install tqdm
 
 # For torch_distributed backend:
-pip install --pre --upgrade bigdl-orca[torch_distributed]
+pip install --pre --upgrade bigdl-orca[ray]
 
 # For spark backend:
 pip install --pre --upgrade bigdl-orca
