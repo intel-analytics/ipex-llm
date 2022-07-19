@@ -1,7 +1,6 @@
 conda create -y -n chronos python=3.7 setuptools=58.0.4 && \
 source activate chronos && \
-pip install --no-cache-dir pytest==5.4.1 && \
-conda install -c conda-forge prophet=1.0.1 -y && \
+pip install --no-cache-dir prophet==1.1.0 &&\
 pip install --no-cache-dir pmdarima==1.8.4 && \
 pip install --no-cache-dir neural_compressor==1.8.1 && \
 pip install --no-cache-dir onnxruntime==1.6.0 && \
