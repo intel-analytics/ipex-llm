@@ -3,7 +3,7 @@
 [2. Why BigDL PPML?](#2-why-bigdl-ppml)  
 [3. Getting Started with PPML](#3-getting-started-with-ppml)  \
 &ensp;&ensp;[3.1 BigDL PPML Hello World](#31-bigdl-ppml-hello-world) \
-&ensp;&ensp;[3.2 End-to-End PPML Workflow](#32-end-to-end-ppml-workflow) \
+&ensp;&ensp;[3.2 BigDL PPML End-to-End Workflow](#32-bigdl-ppml-end-to-end-workflow) \
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 0. Preparation your environment](#step-0-preparation-your-environment): detailed steps in [Prepare Environment](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/prepare_environment.md) \
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 1. Encrypt and Upload Data](#step-1-encrypt-and-upload-data) \
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 2. Build Big Data & AI applications](#step-2-build-big-data--ai-applications) \
@@ -45,9 +45,9 @@ With BigDL PPML, you can run trusted Big Data & AI applications
 ## 3. Getting Started with PPML
 
 ### 3.1 BigDL PPML Hello World
-In this section, you can started with running a simple native python HelloWorld program and a simple native Spark Pi program in a BigDL PPML client container without setting up K8s cluster. In the next Section, you can run applications in K8s cluster.
+In this section, you can get started with running a simple native python HelloWorld program and a simple native Spark Pi program locally in a BigDL PPML client container to get an initial understanding of the usage of ppml. 
 
-<details><summary>expand/fold</summary>
+<details><summary>Click to see detailed steps</summary>
 
 **a. Prepare [Keys](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/prepare_environment.md#prepare-key-and-password) and Start the BigDL PPML client container**
 
@@ -60,7 +60,7 @@ In this section, you can started with running a simple native python HelloWorld 
 export ENCLAVE_KEY_PATH=YOUR_LOCAL_ENCLAVE_KEY_PATH
 export KEYS_PATH=YOUR_LOCAL_KEYS_PATH
 export LOCAL_IP=YOUR_LOCAL_IP
-export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:devel
 
 sudo docker pull $DOCKER_IMAGE
 
@@ -76,38 +76,38 @@ sudo docker run -itd \
     -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
     -v $DATA_PATH:/ppml/trusted-big-data-ml/work/data \
     -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
-    --name=spark-local \
+    --name=bigdl-ppml-client-local \
     -e LOCAL_IP=$LOCAL_IP \
     -e SGX_MEM_SIZE=64G \
     $DOCKER_IMAGE bash
 ```
 
-**b. Run Python HelloWorld in PPML client Container**
+**b. Run Python HelloWorld in BigDL PPML Client Container**
   
-Run the script to run Trusted Python Helloworld in PPML container:
+Run the [script](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/start-scripts/start-python-helloworld-sgx.sh) to run trusted [Python HelloWorld](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/examples/helloworld.py) in BigDL PPML client container:
 ```
-bash work/start-scripts/start-python-helloworld-sgx.sh
+sudo docker exec -it bigdl-ppml-client-local bash work/start-scripts/start-python-helloworld-sgx.sh
 ```
-Open another terminal and check the log:
+Check the log:
 ```
-sudo docker exec -it spark-local cat /ppml/trusted-big-data-ml/test-helloworld-sgx.log | egrep "Hello World"
+sudo docker exec -it bigdl-ppml-client-local cat /ppml/trusted-big-data-ml/test-helloworld-sgx.log | egrep "Hello World"
 ```
 The result should look something like this:
 > Hello World
 
 
-**c. Run Spark Pi in PPML client Container**
+**c. Run Spark Pi in BigDL PPML Client Container**
 
-Run the script to run trusted Spark Pi in PPML container:
+Run the [script](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/start-scripts/start-spark-local-pi-sgx.sh) to run trusted [Spark Pi](https://github.com/apache/spark/blob/v3.1.2/examples/src/main/python/pi.py) in BigDL PPML client container:
 
 ```bash
-bash work/start-scripts/start-spark-local-pi-sgx.sh
+sudo docker exec -it bigdl-ppml-client-local bash work/start-scripts/start-spark-local-pi-sgx.sh
 ```
 
-Open another terminal and check the log:
+Check the log:
 
 ```bash
-sudo docker exec -it spark-local cat /ppml/trusted-big-data-ml/test-pi-sgx.log | egrep "roughly"
+sudo docker exec -it bigdl-ppml-client-local cat /ppml/trusted-big-data-ml/test-pi-sgx.log | egrep "roughly"
 ```
 
 The result should look something like this:
@@ -116,12 +116,12 @@ The result should look something like this:
 
 </details>
 
-### 3.2 End-to-End PPML Workflow
+### 3.2 BigDL PPML End-to-End Workflow
 ![image](https://user-images.githubusercontent.com/61072813/178393982-929548b9-1c4e-4809-a628-10fafad69628.png)
 In this section we take SimpleQuery as an example to go through the entire end-to-end PPML workflow. SimpleQuery is simple example to query developers between the ages of 20 and 40 from people.csv. 
 
 #### Step 0. Preparation your environment
-To secure your Big Data & AI applications in BigDL PPML manner, you should prepare your environment first, including K8s cluster setup, K8s-SGX plugin setup, key/password preparation, KMS and attestation service setup, BigDL PPML Client Container preparation. **Please follow the detailed steps in** [Prepare Environment](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/prepare_environment.md). 
+To secure your Big Data & AI applications in BigDL PPML manner, you should prepare your environment first, including K8s cluster setup, K8s-SGX plugin setup, key/password preparation, key management service (KMS) and attestation service (AS) setup, BigDL PPML client container preparation. **Please follow the detailed steps in** [Prepare Environment](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/prepare_environment.md). 
 
 
 #### Step 1. Encrypt and Upload Data
