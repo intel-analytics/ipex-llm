@@ -1,4 +1,4 @@
-# Chronos nightly build docker image
+# How to use chronos in docker
 This dockerfile helps user to build a docker image where Chronos nightly build version is deploied.
 
 ## Build an image
