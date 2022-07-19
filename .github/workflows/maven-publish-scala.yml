@@ -37,6 +37,9 @@ jobs:
     - name: Set up Maven Settings
       uses: s4u/maven-settings-action@v2.6.0
       with:
+        sonatypeSnapshots: true
+        apacheSnapshots: true
+        override: false
         servers: |
           [{
             "id": "central",
