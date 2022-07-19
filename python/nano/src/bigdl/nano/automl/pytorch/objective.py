@@ -16,8 +16,6 @@
 
 import collections
 from typing import Any, Dict, Optional, Union
-from cv2 import threshold
-from numpy import dtype, float32
 
 import pytorch_lightning as pl
 
