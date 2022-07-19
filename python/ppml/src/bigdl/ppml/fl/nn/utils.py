@@ -55,6 +55,14 @@ def tensor_map_to_ndarray_map(tensor_map: TensorMap):
         ndarray_map[k] = np.array(v.tensor, dtype=dtype).reshape(v.shape)
     return ndarray_map
 
+def file_chunk_generate(file_path):
+    CHUNK_SIZE = 1 * 1024 * 1024
+    with open(file_path, 'rb') as f:
+        while True:
+            piece = f.read(CHUNK_SIZE);
+            if not piece:
+                return
+            yield ByteChunk(buffer=piece)
 
 def print_file_size_in_dir(path='.'):
     import os
