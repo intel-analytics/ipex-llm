@@ -52,7 +52,6 @@ jobs:
           sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/orca/pom.xml
           sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/friesian/pom.xml
           sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/grpc/pom.xml
-          #sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/friesian.serving/pom.xml
           sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/serving/pom.xml
           sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/ppml/pom.xml
           sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/assembly/pom.xml
