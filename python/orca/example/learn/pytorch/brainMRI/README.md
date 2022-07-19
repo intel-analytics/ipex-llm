@@ -72,7 +72,7 @@ Options
 - `--model_dir` The model save dir when use spark backend. Default is the current working directory.
 
 ## Results
-**For "ray" and "spark" backend**
+**For "ray" and "spark" backends**
 
 Final test results will be printed at the end:
 ```

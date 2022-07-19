@@ -159,8 +159,8 @@ def denormalize(images):
 parser = argparse.ArgumentParser(description='PyTorch brainMRI Example')
 parser.add_argument('--cluster_mode', type=str, default="local",
                     help='The cluster mode, such as local, yarn-client, or spark-submit.')
-parser.add_argument('--backend', type=str, default="ray",
-                    help='The backend of PyTorch Estimator; ray and spark are supported')
+parser.add_argument('--backend', type=str, default="torch_distributed",
+                    help='The backend of PyTorch Estimator; torch_distributed and spark are supported')
 parser.add_argument('--batch_size', type=int, default=64, help='The training batch size')
 parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
 parser.add_argument('--data_dir', type=str, default='./kaggle_3m', help='The path to the dataset')
@@ -197,7 +197,7 @@ train_loader = train_loader_creator(config=config, batch_size=batch_size)
 # You should use jupyter notebook to show the images.
 show_batch(train_loader)
 
-if args.backend in ["ray", "spark"]:
+if args.backend in ["torch_distributed", "spark"]:
     orca_estimator = Estimator.from_torch(model=model_creator,
                                           optimizer=optim_creator,
                                           loss=loss_creator,
@@ -214,7 +214,7 @@ if args.backend in ["ray", "spark"]:
     for r, value in res.items():
         print(r, ":", value)
 else:
-    raise NotImplementedError("Only ray and spark are supported as the backend,"
+    raise NotImplementedError("Only torch_distributed and spark are supported as the backend,"
                               " but got {}".format(args.backend))
 
 stop_orca_context()
