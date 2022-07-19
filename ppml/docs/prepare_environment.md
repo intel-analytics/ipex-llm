@@ -11,73 +11,73 @@ Prior to run your Big Data & AI applications with BigDL PPML, please make sure t
 * (Optional) [K8s Monitioring](#optional-k8s-monitioring-setup)
 
 ### Prepare Key and Password
+Download scripts from [here](https://github.com/intel-analytics/BigDL).
 
-##### Prepare the Key
+```
+cd BigDL/ppml/
+```
 
-  * The ppml in bigdl needs secured keys to enable spark security such as Authentication, RPC Encryption, Local Storage Encryption and TLS, you need to prepare the **secure keys and keystores**. In this tutorial, you can generate keys and keystores with root permission (test only, need input security password for keys).
+* **Prepare the ssl_key and ssl_password**
+  
+  Note: Make sure to add `${JAVA_HOME}/bin` to `$PATH` to avoid `keytool: command not found error`.
 
-      ```bash
-      sudo bash ../../../scripts/generate-keys.sh
-      ```
-      This script will generate 7 files in ./ppml/scripts/keys dir.
-      ```
-      keystore.jks
-      keystore.pkcs12
-      server.crt
-      server.csr
-      server.key
-      server.pem
-      keys.yaml
-      ```
-
-  * You also need to generate your **enclave key** using the command below, and keep it safely for future remote attestations and to start SGX enclaves more securely.
-
-      It will generate a file `enclave-key.pem` in your present working directory, which will be your enclave key. To store the key elsewhere, modify the outputted file path.
-
-      ```bash
-      openssl genrsa -3 -out enclave-key.pem 3072
-      ```
-
-##### Prepare the Password
-
-  Next, you need to store the password you used for key generation, i.e., `generate-keys.sh`, in a secured file.
-
+  Run the script to generate **keys/keys.yaml** and **password/password.yaml**
   ```bash
-  sudo bash ../../../scripts/generate-password.sh used_password_when_generate_keys
+  sudo bash scripts/generate-keys.sh
+  sudo bash scripts/generate-password.sh YOUR_PASSWORD
   ```
-  This script will generate 3 files in ./ppml/scripts/password dir.
+
+  Deploy **keys/keys.yaml** and **password/password.yaml** as secrets for Kubernetes
   ```
-  key.txt
-  output.bin
-  password.yaml
+  kubectl apply -f keys/keys.yaml
+  kubectl apply -f password/password.yaml
   ```
+  Then two secrets **ssl_keys** and **ssl_password** should be listed in `kubectl get secret`
+
+
+
+* **Prepare the enclave key**
+
+  **enclave key** is the signing key for SGX Enclaves.
+  
+  Run the script to generate your enclave key and add it to your Kubernetes cluster as a secret.
+  ```
+  cd kubernetes
+  bash enclave-key-to-secret.sh
+  ```
+  Then the secret **enclave_key** should be listed in `kubectl get secret`
+  
+* **Prepare k8s secret**
+
+  The secret created `YOUR_PASSWORD` should be the same as the password you specified in step 1:
+
+   ```bash
+   kubectl create secret generic spark-secret --from-literal secret=YOUR_PASSWORD
+   ```
+   Then the secret **spark-secret** should be listed in `kubectl get secret`
+   
+
+>**Caution**: 
+>
+>It is important to protect your keys and passwords. The above steps for preparing keys and passwords are only for demo purposes, it is non-production. You are recommended to generate your keys and passwords according to your requirements and protect it safely.
+>
+>Besides, Kubernetes Secrets are, by default, stored unencrypted in the API server's underlying data store (etcd). Anyone with API access can retrieve or modify a Secret, and so can anyone with access to etcd. Additionally, anyone who is authorized to create a Pod in a namespace can use that access to read any Secret in that namespace; this includes indirect access such as the ability to create a Deployment. In order to safely use Secrets, take the steps in [safely use secrets](https://kubernetes.io/docs/concepts/configuration/secret/)
+
 ### Configure the Environment
 
-1. Enter `BigDL/ppml/trusted-big-data-ml/python/docker-graphene` dir. Refer to the previous section about [preparing data, key and password](#prepare-data-key-and-password). Then run the following commands to generate your enclave key and add it to your Kubernetes cluster as a secret. 
-
-    ```bash
-    kubectl apply -f keys/keys.yaml
-    kubectl apply -f password/password.yaml
-    cd kubernetes
-    bash enclave-key-to-secret.sh
-    ```
-2. Create the [RBAC(Role-based access control)](https://spark.apache.org/docs/latest/running-on-kubernetes.html#rbac) :
+1. Create the [RBAC(Role-based access control)](https://spark.apache.org/docs/latest/running-on-kubernetes.html#rbac) :
 
     ```bash
     kubectl create serviceaccount spark
     kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
     ```
 
-3. Generate k8s config file, modify `YOUR_DIR` to the location you want to store the config:
+2. Generate k8s config file, modify `YOUR_DIR` to the location you want to store the config:
 
     ```bash
     kubectl config view --flatten --minify > /YOUR_DIR/kubeconfig
     ```
-4. Create k8s secret, the secret created `YOUR_SECRET` should be the same as the password you specified in step 1:
 
-    ```bash
-    kubectl create secret generic spark-secret --from-literal secret=YOUR_SECRET
-    ```
 
 ### Key Management Service (KMS) Setup
 Key Management Service (KMS) helps you manage cryptographic keys for your services. In BigDL PPML end-to-end workflow, KMS is used to generate keys, encrypt the input data and decrypt the result of Big Data & AI applications. You can choose to use the KMS service which PPML provides or your own one.
