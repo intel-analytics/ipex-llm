@@ -62,11 +62,9 @@ class Objective(object):
         self.searcher = searcher
         self.model_ = model
         self.target_metric = target_metric
-        self.multi_object = (isinstance(self.target_metric, list)
-                             or isinstance(self.target_metric, tuple)) \
-            and len(self.target_metric) > 1
+        self.mo_hpo = isinstance(self.target_metric, list) and len(self.target_metric) > 1
         # add automatic support for latency
-        if self.multi_object and "latency" in self.target_metric:
+        if self.mo_hpo and "latency" in self.target_metric:
             from torchmetrics import Metric
 
             class LatencyAggregate(Metric):
@@ -205,7 +203,7 @@ class Objective(object):
 
         self._pre_train(model, trial)
         self.searcher._run(model)
-        if self.multi_object:
+        if self.mo_hpo:
             scores = []
             # print(self.searcher.trainer.callback_metrics)
             for metric in self.target_metric:

@@ -186,7 +186,7 @@ class HPOSearcher:
         # it is not possible to know the best trial before runing search,
         # so just apply the best trial at end of each search.
         # a single best trial cannot be retrieved from a multi-objective study.
-        if not self.objective.multi_object:
+        if not self.objective.mo_hpo:
             self._lazymodel = _end_search(study=self.study,
                                           model_builder=model._model_build,
                                           use_trial_id=-1)
@@ -227,10 +227,10 @@ class HPOSearcher:
         self.trainer.state.status = TrainerStatus.RUNNING
         self.trainer.training = True
         self.trainer._run(*args, **kwargs)
-        # if not LIGHTNING_VERSION_LESS_1_6:
-        #     training_epoch_loop = TrainingEpochLoop(self.trainer.min_steps,  # type: ignore
-        #                                             self.trainer.max_steps)  # type: ignore
-        #     fit_loop = FitLoop(self.trainer.min_epochs, self.trainer.max_epochs)
-        #     fit_loop.connect(training_epoch_loop)
-        #     self.trainer.fit_loop = fit_loop
+        if not LIGHTNING_VERSION_LESS_1_6:
+            training_epoch_loop = TrainingEpochLoop(self.trainer.min_steps,  # type: ignore
+                                                    self.trainer.max_steps)  # type: ignore
+            fit_loop = FitLoop(self.trainer.min_epochs, self.trainer.max_epochs)
+            fit_loop.connect(training_epoch_loop)
+            self.trainer.fit_loop = fit_loop
         self.trainer.tuning = True
