@@ -32,7 +32,7 @@ class PPMLContext(JavaValue):
     def __init__(self, app_name, ppml_args):
         self.bigdl_type = "float"
         spark_conf = SparkConf()
-        spark_conf.setAppName(app_name)
+        # spark_conf.setAppName(app_name)
         spark_conf.set("spark.hadoop.io.compression.codecs", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
 
         kms_type = ppml_args.get("kms_type", "SimpleKeyManagementService")
@@ -52,9 +52,9 @@ class PPMLContext(JavaValue):
         else:
             invalidInputError(False, "invalid KMS type")
 
-        # sc = SparkContext.getOrCreate(spark_conf)
+        sc = getOrCreateSparkContext(spark_conf, app_name)
 
-        self.spark = SparkSession.builder.config(conf=spark_conf).getOrCreate()
+        self.spark = SparkSession.builder.getOrCreate()
         args = [self.spark._jsparkSession]
         super().__init__(None, self.bigdl_type, *args)
 
