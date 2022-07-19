@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from .ipex.ipex_api import create_IPEXStrategy
-from .ddp_spawn import DDPSpawnStrategy
-from .ddp_subprocess import DDPSubprocessStrategy
-from .ray.ray_api import create_RayStrategy
+def create_RayStrategy(*args, **kwargs):
+    """Create ray strategy."""
+    from .ray_distributed import RayStrategy
+    return RayStrategy(*args, **kwargs)
