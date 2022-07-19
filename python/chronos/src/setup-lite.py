@@ -54,7 +54,7 @@ def setup_package():
         url='https://github.com/intel-analytics/BigDL',
         packages=get_bigdl_packages(),
         install_requires=['bigdl-nano[pytorch]', 'pandas>=1.0.5, <1.3.0',
-                          'scikit-learn', 'statsmodels'],
+                          'scikit-learn'],
         include_package_data=True,
         classifiers=[
             'License :: OSI Approved :: Apache Software License',

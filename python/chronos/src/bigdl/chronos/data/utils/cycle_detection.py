@@ -16,7 +16,6 @@
 
 from scipy.fftpack import fft, fftfreq
 import numpy as np
-from statsmodels.tsa.stattools import acf
 
 
 def cycle_length_est(data, top_k=3):
@@ -51,6 +50,7 @@ def cycle_length_est(data, top_k=3):
     # Expected time period
     largest_acf_score = -float("inf")
     cycle_length_est = None
+    from statsmodels.tsa.stattools import acf
     for lag in fft_periods:
         acf_score = acf(data, nlags=lag)[-1]
         if acf_score > largest_acf_score:
