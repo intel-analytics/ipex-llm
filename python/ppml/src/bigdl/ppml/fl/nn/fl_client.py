@@ -15,6 +15,7 @@
 #
 
 
+import logging
 import pickle
 import grpc
 from numpy import ndarray
@@ -69,10 +70,14 @@ class FLClient(object):
         return self.nn_stub.upload_model(request)
 
     def load_config(self):
-        with open('ppml-conf.yaml', 'r') as stream:
-            conf = yaml.safe_load(stream)
-            if 'privateKeyFilePath' in conf:
-                self.secure = True
-                with open(conf['privateKeyFilePath'], 'rb') as f:
-                    self.creds = grpc.ssl_channel_credentials(f.read())
-
+        try:
+            with open('ppml-conf.yaml', 'r') as stream:
+                conf = yaml.safe_load(stream)
+                if 'privateKeyFilePath' in conf:
+                    self.secure = True
+                    with open(conf['privateKeyFilePath'], 'rb') as f:
+                        self.creds = grpc.ssl_channel_credentials(f.read())
+        except yaml.YAMLError as e:
+            logging.warn('Loading config failed, using default config ')
+        except Exception as e:
+            logging.warn('Failed to find config file "ppml-conf.yaml", using default config')
