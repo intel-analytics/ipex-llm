@@ -19,7 +19,7 @@ from bigdl.ppml.utils.log4Error import *
 from enum import Enum
 
 from pyspark.sql import SparkSession
-
+from pyspark import SparkConf, SparkContext
 
 def check(ppml_args, arg_name):
     try:
@@ -30,39 +30,30 @@ def check(ppml_args, arg_name):
 
 
 class PPMLContext(JavaValue):
-    def __init__(self, app_name, ppml_args=None, master="local", deploy_mode="client", **kwargs):
+    def __init__(self, app_name, ppml_args):
         self.bigdl_type = "float"
-        conf = {"spark.app.name": app_name,
-                "spark.hadoop.io.compression.codecs": "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec"}
-        if ppml_args:
-            kms_type = ppml_args.get("kms_type", "SimpleKeyManagementService")
-            conf["spark.bigdl.kms.type"] = kms_type
-            if kms_type == "SimpleKeyManagementService":
-                conf["spark.bigdl.kms.simple.id"] = check(ppml_args, "simple_app_id")
-                conf["spark.bigdl.kms.simple.key"] = check(ppml_args, "simple_app_key")
-                conf["spark.bigdl.kms.key.primary"] = check(ppml_args, "primary_key_path")
-                conf["spark.bigdl.kms.key.data"] = check(ppml_args, "data_key_path")
-            elif kms_type == "EHSMKeyManagementService":
-                conf["spark.bigdl.kms.ehs.ip"] = check(ppml_args, "kms_server_ip")
-                conf["spark.bigdl.kms.ehs.port"] = check(ppml_args, "kms_server_port")
-                conf["spark.bigdl.kms.ehs.id"] = check(ppml_args, "ehsm_app_id")
-                conf["spark.bigdl.kms.ehs.key"] = check(ppml_args, "ehsm_app_key")
-                conf["spark.bigdl.kms.key.primary"] = check(ppml_args, "primary_key_path")
-                conf["spark.bigdl.kms.key.data"] = check(ppml_args, "data_key_path")
-            else:
-                invalidInputError(False, "invalid KMS type")
+        spark_conf = SparkConf()
+        spark_conf.setAppName(app_name)
+        spark_conf.set("spark.hadoop.io.compression.codecs", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
 
-        # init a SparkContext
-        if master == "local":
-            sc = init_spark_on_local(conf=conf)
-        elif master.startswith("k8s"):
-            kwargs["conf"] = conf
-            if deploy_mode == "client":
-                sc = init_spark_on_k8s(**kwargs)
-            else:
-                sc = init_spark_on_k8s_cluster(**kwargs)
+        kms_type = ppml_args.get("kms_type", "SimpleKeyManagementService")
+        spark_conf.set("spark.bigdl.kms.type", kms_type)
+        if kms_type == "SimpleKeyManagementService":
+            spark_conf.set("spark.bigdl.kms.simple.id", check(ppml_args, "simple_app_id"))
+            spark_conf.set("spark.bigdl.kms.simple.key", check(ppml_args, "simple_app_key"))
+            spark_conf.set("spark.bigdl.kms.key.primary", check(ppml_args, "primary_key_path"))
+            spark_conf.set("spark.bigdl.kms.key.data", check(ppml_args, "data_key_path"))
+        elif kms_type == "EHSMKeyManagementService":
+            spark_conf.set("spark.bigdl.kms.ehs.ip", check(ppml_args, "kms_server_ip"))
+            spark_conf.set("spark.bigdl.kms.ehs.port", check(ppml_args, "kms_server_port"))
+            spark_conf.set("spark.bigdl.kms.ehs.id", check(ppml_args, "ehsm_app_id"))
+            spark_conf.set("spark.bigdl.kms.ehs.key", check(ppml_args, "ehsm_app_key"))
+            spark_conf.set("spark.bigdl.kms.key.primary", check(ppml_args, "primary_key_path"))
+            spark_conf.set("spark.bigdl.kms.key.data", check(ppml_args, "data_key_path"))
         else:
-            invalidInputError(False, "master=" + master + " not support yet")
+            invalidInputError(False, "invalid KMS type")
+
+        sc = SparkContext.getOrCreate(spark_conf)
 
         self.spark = SparkSession.builder.getOrCreate()
         args = [self.spark._jsparkSession]
