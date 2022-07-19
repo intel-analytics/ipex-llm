@@ -110,11 +110,12 @@ class Trainer(pl.Trainer):
                         accelerator = create_IPEXAccelerator_1_9(enable_bf16=enable_bf16)
                     else:
                         accelerator = create_IPEXAccelerator(enable_bf16=enable_bf16)
-                super().__init__(accelerator=accelerator, *args, **kwargs)
+                super().__init__(accelerator=accelerator, *args, **kwargs)  # type: ignore
             else:
                 from bigdl.nano.pytorch.strategies import create_IPEXStrategy
                 strategy = create_IPEXStrategy(enable_bf16=enable_bf16) if self.use_ipex else None
-                super().__init__(strategy=strategy, *args, **kwargs)
+                kwargs["strategy"] = strategy
+                super().__init__(*args, **kwargs)
         else:
             plugin = None
             invalidInputError(distributed_backend in distributed_backends,
@@ -147,7 +148,8 @@ class Trainer(pl.Trainer):
                 if self.use_ipex and TORCH_VERSION_LESS_1_10:
                     accelerator = create_IPEXAccelerator_1_9(training_type_plugin=plugin,
                                                              enable_bf16=enable_bf16)
-                super().__init__(accelerator=accelerator, plugins=[plugin], *args, **kwargs)
+                super().__init__(accelerator=accelerator, plugins=[plugin],  # type: ignore
+                                 *args, **kwargs)
             else:
                 if distributed_backend == "spawn":
                     from bigdl.nano.pytorch.strategies import DDPSpawnStrategy
@@ -162,11 +164,12 @@ class Trainer(pl.Trainer):
                                                      use_ipex=self.use_ipex,
                                                      enable_bf16=enable_bf16)
                 elif distributed_backend == "ray":
-                    from bigdl.nano.pytorch.strategies import RayStrategy
-                    strategy = RayStrategy(num_workers=num_processes,
-                                           use_ipex=self.use_ipex,
-                                           enable_bf16=enable_bf16)
-                super().__init__(strategy=strategy, *args, **kwargs)
+                    from bigdl.nano.pytorch.strategies import create_RayStrategy
+                    strategy = create_RayStrategy(num_workers=num_processes,
+                                                  use_ipex=self.use_ipex,
+                                                  enable_bf16=enable_bf16)
+                kwargs["strategy"] = strategy
+                super().__init__(*args, **kwargs)
 
     @staticmethod
     def compile(model: nn.Module,
