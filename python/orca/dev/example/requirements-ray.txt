@@ -1,4 +1,4 @@
-torch
+torch==1.8.1
 torchvision
 torchmetrics
 albumentations
