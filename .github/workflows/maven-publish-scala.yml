@@ -37,17 +37,25 @@ jobs:
     - name: Set up Maven Settings
       uses: s4u/maven-settings-action@v2.6.0
       with:
+        path: ${{ github.workspace }}
         servers: |
           [{
             "id": "central",
             "configuration": {
               "httpConfiguration": {
                 "all": {
-                  "connectionTimeout": "120000",
-                  "readTimeout": "120000"
+                  "connectionTimeout": "3600000",
+                  "readTimeout": "3600000"
                   }    
                 }
               }
+          },{
+            "id": "ossrh",
+            "username": "${{ secrets.OSSRH_USERNAME }}",
+            "password": "${{ secrets.OSSRH_PASSWORD }}",
+            "configuration": {
+              "timeout": "3600000"
+            }
           }]
         # mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${{ secrets.ARDA_NEXUS }}" }]'
 
