@@ -91,9 +91,6 @@ class Objective(object):
                     latency = sum(infer_times_mid) / len(infer_times_mid)
                     return latency
 
-                def reset(self) -> None:
-                    self.times.clear()
-
             class LatencyCallback(Callback):
                 def __init__(self) -> None:
                     super().__init__()
