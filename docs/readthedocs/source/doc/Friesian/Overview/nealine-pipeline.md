@@ -6,15 +6,15 @@ The Friesian Nearline Pipeline encapsulates kv store initialization, faiss index
 
 1. KV store initialization
 
-Load user/item parquet files and keep them in the Key-Value store. Load user embedding parquet file and keep it in the Key-Value store.
+   Load user/item parquet files and keep them in the Key-Value store. Load user embedding parquet file and keep it in the Key-Value store.
 
 2. Faiss index generation
 
-Retrieve item embedding vectors and build the faiss index.
+   Retrieve item embedding vectors and build the faiss index.
 
 3. Near real-time updates (This feature will be released in a future version)
 
-Make updates to the features, user embeddings and faiss index from time to time.
+   Make updates to the features, user embeddings and faiss index from time to time.
 
 ## Key Concepts
 
