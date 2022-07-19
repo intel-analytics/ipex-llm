@@ -170,8 +170,8 @@ def _check_optimize_direction(direction, directions, metric):
         if stripped_metric in max_metrics:
             if direction != 'maximize':
                 invalidInputError(False,
-                                'should use maximize direction for optmize')
+                                  'should use maximize direction for optmize')
         elif stripped_metric in min_metrics:
             if direction != 'minimize':
                 invalidInputError(False,
-                                'should use minimize direction for optmize')
+                                  'should use minimize direction for optmize')
