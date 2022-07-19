@@ -57,12 +57,11 @@ class ChannelsLastCallback(pl.Callback):
 
     def setup(self, trainer, pl_module, stage: Optional[str] = None) -> None:
         """Override hook setup to convert model to channels_last and wrap DataHook."""
-        # wrap_data_fuction(pl_module)
-        trainer.model = trainer.model.to(memory_format=torch.channels_last)
         fn_old = getattr(pl_module, "on_before_batch_transfer")
         fn = batch_call(fn_old)
         setattr(pl_module, "on_before_batch_transfer_origin", fn_old)
         pl_module.on_before_batch_transfer = MethodType(fn, pl_module)
+        trainer.model = trainer.model.to(memory_format=torch.channels_last)
         return super().setup(trainer, pl_module, stage)
 
     def teardown(self, trainer, pl_module, stage: Optional[str] = None) -> None:
