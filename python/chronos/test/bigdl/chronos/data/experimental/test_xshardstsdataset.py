@@ -262,8 +262,8 @@ class TestXShardsTSDataset(TestCase):
             ori_tsdata = XShardsTSDataset.from_xshards(shards_multiple, dt_col="datetime",
                                                    target_col="value",
                                                    extra_feature_col=["extra feature"], id_col="id")
-            horizon = 1
-            lookback = 1
+            horizon = random.randint(1, 10)
+            lookback = random.randint(1, 20)
             ori_tsdata.roll(horizon=horizon, lookback=lookback)
             ori_arr_shards = ori_tsdata.to_xshards().collect()
             ori_arr_shards = [arr['y'] for arr in ori_arr_shards]
