@@ -54,26 +54,26 @@ class HPOSearcher:
         :param trainer: The pl.Trainer object.
         """
         self.trainer = trainer
-        if LIGHTNING_VERSION_LESS_1_6:
-            if hasattr(self.trainer.accelerator_connector, "plugins"):
-                num_processes = len(self.trainer.accelerator_connector.plugins[0].parallel_devices)
-            else:
-                num_processes = 1
+        if not LIGHTNING_VERSION_LESS_1_6:
+            num_processes = trainer.num_devices
         else:
-            if hasattr(self.trainer._accelerator_connector._strategy_flag, "parallel_devices"):
-                num_processes = len(self.trainer._accelerator_connector._strategy_flag.
-                                    parallel_devices)
-            else:
+            try:
+                num_processes = len(self.trainer.accelerator_connector.plugins[0].parallel_devices)
+            except Exception:
                 num_processes = 1
         if num_processes == 1:
             # reset current epoch = 0 after each run
             from pytorch_lightning.callbacks import Callback
-
-            class ResetCallback(Callback):
-                def on_train_end(self, trainer, pl_module) -> None:
-                    super().on_train_end(trainer, pl_module)
-                    trainer.fit_loop.current_epoch = 0
-                    print(trainer.fit_loop.current_epoch)
+            if LIGHTNING_VERSION_LESS_1_6:
+                class ResetCallback(Callback):
+                    def on_train_end(self, trainer, pl_module) -> None:
+                        super().on_train_end(trainer, pl_module)
+                        trainer.fit_loop.current_epoch = 0
+            else:
+                class ResetCallback(Callback):
+                    def on_train_end(self, trainer, pl_module) -> None:
+                        super().on_train_end(trainer, pl_module)
+                        trainer.fit_loop.epoch_progress.current.processed = 0
 
             callbacks = self.trainer.callbacks or []
             callbacks.append(ResetCallback())
@@ -227,10 +227,4 @@ class HPOSearcher:
         self.trainer.state.status = TrainerStatus.RUNNING
         self.trainer.training = True
         self.trainer._run(*args, **kwargs)
-        if not LIGHTNING_VERSION_LESS_1_6:
-            training_epoch_loop = TrainingEpochLoop(self.trainer.min_steps,  # type: ignore
-                                                    self.trainer.max_steps)  # type: ignore
-            fit_loop = FitLoop(self.trainer.min_epochs, self.trainer.max_epochs)
-            fit_loop.connect(training_epoch_loop)
-            self.trainer.fit_loop = fit_loop
         self.trainer.tuning = True

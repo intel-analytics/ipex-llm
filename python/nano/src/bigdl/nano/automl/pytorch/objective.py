@@ -85,7 +85,9 @@ class Objective(object):
                         infer_times_mid = self.times[threshold:-threshold]
                     else:
                         infer_times_mid = self.times[:]
+                    print(self.times, infer_times_mid)
                     latency = sum(infer_times_mid) / len(infer_times_mid)
+                    print("latency : ", latency)
                     return latency
 
             class LatencyCallback(Callback):
