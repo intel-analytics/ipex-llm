@@ -55,8 +55,7 @@ class TCNForecaster(BasePytorchForecaster):
                  seed=None,
                  distributed=False,
                  workers_per_node=1,
-                 distributed_backend="ray",
-                 local_distributed_backend="subprocess"):
+                 distributed_backend="ray"):
         """
         Build a TCN Forecast Model.
 
@@ -100,11 +99,7 @@ class TCNForecaster(BasePytorchForecaster):
                The value defaults to 1. The param is only effective when
                distributed is set to True.
         :param remote_distributed_backend: str, select from "ray" or
-               "horovod". The value defaults to "ray", the distributed backend
-               will be used in the cluster.
-        :param local_distributed_backend: str, "spawn" or "subprocess",
-               The value defaults to "subprocess", the distributed backend
-               will be used mode selection for local multiprocess.
+               "horovod". The value defaults to "ray".
         """
         # config setting
         self.data_config = {
@@ -140,7 +135,7 @@ class TCNForecaster(BasePytorchForecaster):
         # distributed settings
         self.distributed = distributed
         self.remote_distributed_backend = distributed_backend
-        self.local_distributed_backend = local_distributed_backend
+        self.local_distributed_backend = "subprocess"
         self.workers_per_node = workers_per_node
 
         # other settings
