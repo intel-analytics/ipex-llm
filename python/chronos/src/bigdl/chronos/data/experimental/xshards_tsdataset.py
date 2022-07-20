@@ -368,13 +368,14 @@ class XShardsTSDataset:
                                                   self.target_col)
         return self
 
-    def unscale_xshards(self, data, key='y'):
+    def unscale_xshards(self, data, key=None):
         '''
         Unscale the time series forecaster's numpy prediction result/ground truth.
 
         :param data: xshards same with self.numpy_xshards.
         :param key: str, 'y' or 'prediction', default to 'y'. if no "prediction"
-        or "y" return an error and require our users to input a key.
+        or "y" return an error and require our users to input a key. if key is
+        None, key will be set 'prediction'.
 
         :return: the unscaled xshardtsdataset instance.
         '''
@@ -392,6 +393,8 @@ class XShardsTSDataset:
 
             return unscale_timeseries_numpy(data[key], scaler_for_this_id, scaler_index)
 
+        if key is None:
+            key = 'prediction'
         invalidInputError(key in {'y', 'prediction'}, "key is not in {'y', 'prediction'}, "
                           "please input the correct key.")
 

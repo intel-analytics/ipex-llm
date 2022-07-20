@@ -272,7 +272,7 @@ class TestXShardsTSDataset(TestCase):
             tsdata.roll(horizon=horizon, lookback=lookback)
 
             scale_arr = tsdata.to_xshards()
-            numpy_tsdata = tsdata.unscale_xshards(scale_arr)
+            numpy_tsdata = tsdata.unscale_xshards(scale_arr, 'y')
             numpy_tsdata = numpy_tsdata.collect()
             y = np.concatenate(numpy_tsdata, axis=0)
             assert_array_almost_equal(ori_y, y)
