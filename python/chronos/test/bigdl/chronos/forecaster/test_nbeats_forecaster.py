@@ -374,7 +374,6 @@ class TestChronosNBeatsForecaster(TestCase):
                                       metrics=['mae'],
                                       lr=0.01)
         val_loss = forecaster.fit((train_data[0], train_data[1]), val_data, epochs=10)
-        print(val_loss)
 
     def test_nbeats_forecaster_fit_loader_val(self):
         train_loader, val_loader, _ = create_data(loader=True)
@@ -383,4 +382,3 @@ class TestChronosNBeatsForecaster(TestCase):
                                      loss='mae',
                                      lr=0.01)
         val_loss = forecater.fit(train_loader, val_loader, epochs=10)
-        print(val_loss)

@@ -195,7 +195,7 @@ class BasePytorchForecaster(Forecaster):
         # reset train and validation datasets
         self.tune_trainer.reset_train_val_dataloaders(self.internal)
 
-    def fit(self, data, val_data=None, epochs=1, batch_size=32, val_mode='output'):
+    def fit(self, data, validation_data=None, epochs=1, batch_size=32, validation_mode='output'):
         # TODO: give an option to close validation during fit to save time.
         """
         Fit(Train) the forecaster.
@@ -219,9 +219,9 @@ class BasePytorchForecaster(Forecaster):
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
 
-        :param val_data: Validation sample for validation loop. Defaults to 'None'.
-               If you do not input data for 'val_data', the validation_step will be skipped.
-               The val_data support following formats:
+        :param validation_data: Validation sample for validation loop. Defaults to 'None'.
+               If you do not input data for 'validation_data', the validation_step will be skipped.
+               The validation_data support following formats:
 
                | 1. a numpy ndarray tuple (x, y):
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
@@ -241,10 +241,8 @@ class BasePytorchForecaster(Forecaster):
                If you input a pytorch dataloader for `data`, the batch_size will follow the
                batch_size setted in `data`.if the forecaster is distributed, the batch_size will be
                evenly distributed to all workers.
-        :param val_mode: Operation mode while having 'val_data'. Defaults to 'output'.
-               If you choose 'output' for val_mode, it will return a dict that records the average
-               validation loss of each epoch.
-        :return: Evaluation results on data.
+        :param validation_mode: Operation mode while having 'validation_data'. Defaults to 'output'.
+        :return: A dict that records the average validation loss of each epoch.
         """
         # input transform
         if isinstance(data, DataLoader) and self.distributed:
@@ -295,58 +293,29 @@ class BasePytorchForecaster(Forecaster):
 
             # data transformation
             if isinstance(data, tuple):
-                if batch_size % self.num_processes != 0:
-                    warnings.warn("'batch_size' cannot be divided with no remainder by "
-                                  "'self.num_processes'. We got 'batch_size' = {} and "
-                                  "'self.num_processes' = {}".
-                                  format(batch_size, self.num_processes))
-                data = DataLoader(TensorDataset(torch.from_numpy(data[0]),
-                                                torch.from_numpy(data[1])),
-                                  batch_size=max(1, batch_size//self.num_processes),
-                                  shuffle=True)
-            # Trainer init and fitting
-            if not val_data:
-                self.trainer = Trainer(logger=None, max_epochs=epochs,
-                                       checkpoint_callback=self.checkpoint_callback,
-                                       num_processes=self.num_processes, use_ipex=self.use_ipex,
-                                       flush_logs_every_n_steps=10, log_every_n_steps=10,
-                                       distributed_backend="spawn")
+                data = np_to_dataloader(data, batch_size, self.num_processes)
+            from pytorch_lightning.loggers import CSVLogger
+            logger = False if validation_data is None else CSVLogger("python/chronos/src/bigdl/"
+                                                                     "chronos/forecaster",
+                                                                     name="val_data_test")
+            # Trainer init
+            self.trainer = Trainer(logger=logger, max_epochs=epochs,
+                                   checkpoint_callback=self.checkpoint_callback,
+                                   num_processes=self.num_processes, use_ipex=self.use_ipex,
+                                   flush_logs_every_n_steps=10, log_every_n_steps=10,
+                                   distributed_backend="spawn")
+            # fitting
+            if not validation_data:
                 self.trainer.fit(self.internal, data)
                 self.fitted = True
-            elif val_data and val_mode == 'output':
-                from pytorch_lightning.loggers import CSVLogger
-                logger = CSVLogger("python/chronos/src/bigdl/chronos/forecaster",
-                                   name="val_data_test")
-
-                self.trainer = Trainer(logger=logger, max_epochs=epochs,
-                                       checkpoint_callback=self.checkpoint_callback,
-                                       num_processes=self.num_processes, use_ipex=self.use_ipex,
-                                       flush_logs_every_n_steps=10, log_every_n_steps=10,
-                                       distributed_backend="spawn")
-
-                if isinstance(val_data, tuple):
-                    if batch_size % self.num_processes != 0:
-                        warnings.warn("'batch_size' cannot be divided with no remainder by "
-                                      "'self.num_processes'. We got 'batch_size' = {} and "
-                                      "'self.num_processes' = {}".
-                                      format(batch_size, self.num_processes))
-                    val_data = DataLoader(TensorDataset(torch.from_numpy(val_data[0]),
-                                                        torch.from_numpy(val_data[1])),
-                                          batch_size=max(1, batch_size//self.num_processes),
-                                          shuffle=True)
-
-                self.trainer.fit(self.internal, data, val_data)
+            else:
+                if isinstance(validation_data, tuple):
+                    validation_data = np_to_dataloader(validation_data, batch_size, self.num_processes)
+                self.trainer.fit(self.internal, data, validation_data)
                 self.fitted = True
-                import codecs
-                import csv
-                fit_out = {}
-                with codecs.open('python/chronos/src/bigdl/chronos/forecaster/val_data_test/'
-                                 'version_0/metrics.csv', encoding='utf-8-sig') as f:
-                    for row in csv.DictReader(f, skipinitialspace=True):
-                        if row['val/loss']:
-                            fit_out[row['epoch']] = {'val_loss': row['val/loss']}
-                import shutil
-                shutil.rmtree("python/chronos/src/bigdl/chronos/forecaster/val_data_test")
+                fit_out = read_csv('python/chronos/src/bigdl/chronos/forecaster/val_data_test/'
+                                   'version_0/metrics.csv')
+                delete_folder("python/chronos/src/bigdl/chronos/forecaster/val_data_test")
                 return fit_out
 
     def predict(self, data, batch_size=32, quantize=False):
