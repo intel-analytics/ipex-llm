@@ -107,6 +107,13 @@ class LiteCorrectness(LightningLite):
 
 
 class TestLite(TestCase):
+    def setUp(self):
+        test_dir = os.path.dirname(__file__)
+        project_test_dir = os.path.abspath(
+            os.path.join(os.path.join(os.path.join(test_dir, ".."), ".."), "..")
+        )
+        os.environ['PYTHONPATH'] = project_test_dir
+
     def test_lite(self):
         Lite().run()
 
@@ -116,9 +123,6 @@ class TestLite(TestCase):
     def test_lite_subprocess(self):
         Lite(num_processes=2, strategy="subprocess").run()
 
-    def test_lite_ray(self):
-        Lite(num_processes=2, strategy="ray").run()
-
     def test_lite_correctness(self):
         LiteCorrectness().run(0.25)
 
@@ -127,9 +131,6 @@ class TestLite(TestCase):
 
     def test_lite_subprocess_correctness(self):
         LiteCorrectness(num_processes=2, strategy="subprocess").run(0.5)
-
-    def test_lite_ray_correctness(self):
-        LiteCorrectness(num_processes=2, strategy="ray").run(0.5)
 
 
 if __name__ == '__main__':
