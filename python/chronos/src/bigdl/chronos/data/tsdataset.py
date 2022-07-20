@@ -771,6 +771,9 @@ class TSDataset:
 
             if self.lookback == 'auto':
                 self.lookback = self.get_cycle_length('mode', top_k=3)
+            invalidInputError(not self._has_generate_agg_feature,
+                              "Currently to_torch_data_loader does not support "
+                              "'gen_global_feature' and 'gen_rolling_feature' methods.")
             torch_dataset = RollDataset(self.df,
                                         dt_col=self.dt_col,
                                         freq=self._freq,
@@ -782,6 +785,9 @@ class TSDataset:
                                         time_enc=time_enc,
                                         label_len=label_len,
                                         is_predict=is_predict)
+            # TODO gen_rolling_feature and gen_global_feature will be support later
+            self.roll_target = target_col
+            self.roll_feature = feature_col
 
             batch_size = 32 if batch_size is None else batch_size  # _pytorch_fashion_inference
             return DataLoader(torch_dataset,
