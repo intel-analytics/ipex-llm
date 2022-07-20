@@ -94,7 +94,7 @@ The above environment variables should be available when running or debugging co
 
 #### **1.3 Terminal Setup**
 
-Alternatively, for linux user you can set up environment variables mentioned above mantually,   and we also provide a solution by following simple steps:
+Alternatively, for linux user you can set up environment variables mentioned above mantually, and we also provide a solution by following simple steps:
 
 ```bash
 cd BigDL/python/orca
