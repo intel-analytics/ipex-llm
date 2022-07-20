@@ -18,10 +18,10 @@ pip install matplotlib
 pip install tqdm
 
 # For torch_distributed backend:
-pip install bigdl-orca[ray]
+pip install --pre --upgrade bigdl-orca[ray]
 
 # For spark backend:
-pip install bigdl-orca
+pip install --pre --upgrade bigdl-orca
 ```
 
 ## Prepare the dataset
@@ -70,3 +70,13 @@ Options
 - `--data_dir` The path to the dataset. Default is `./kaggle_3m`.
 - `--additional_archive` The zip dataset if use `yarn-client` mode. Default is `kaggle_3m.zip#kaggle_3m`.
 - `--model_dir` The model save dir when use spark backend. Default is the current working directory.
+
+## Results
+**For "torch_distributed" and "spark" backends**
+
+Final test results will be printed at the end:
+```
+num_samples: 531
+dice_coef_metric: 0.8578884796683207
+val_loss: 0.16065971297957354
+```
