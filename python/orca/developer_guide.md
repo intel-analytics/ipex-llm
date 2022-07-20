@@ -44,7 +44,7 @@ pip3 install torch==1.10.1+cpu torchvision==0.11.2+cpu torchaudio==0.10.1+cpu -f
 
 ```bash
 cd BigDL/python/orca
-source dev/test/prepare_env.sh
+source dev/prepare_env.sh
 ```
 
 3. Run tests to verify environment
