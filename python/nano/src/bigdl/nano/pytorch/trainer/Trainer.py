@@ -90,11 +90,6 @@ class Trainer(pl.Trainer):
                                   f"{len(cpu_for_each_process)}) is not equal to the number of"
                                   f" processes {num_processes}.")
 
-        if use_hpo:
-            self.hposearcher = create_hpo_searcher(trainer=self)
-        else:
-            self.hposearcher = None
-
         accelerator = None
 
         if channels_last:
@@ -179,6 +174,11 @@ class Trainer(pl.Trainer):
                                                   enable_bf16=enable_bf16)
                 kwargs["strategy"] = strategy
                 super().__init__(*args, **kwargs)
+
+        if use_hpo:
+            self.hposearcher = create_hpo_searcher(trainer=self, num_processes=num_processes)
+        else:
+            self.hposearcher = None
 
     @staticmethod
     def compile(model: nn.Module,
