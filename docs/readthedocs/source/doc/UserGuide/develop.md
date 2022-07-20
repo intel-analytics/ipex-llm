@@ -92,6 +92,24 @@ export PYTHONPATH=BigDL/python/dist/conf/spark-bigdl.conf:$PYTHONPATH
 The above environment variables should be available when running or debugging code in the IDE. When running applications in PyCharm, you can add runtime environment variables by clicking  __Run__ -> __Edit Configurations__; then in the __Run/Debug Configurations__ panel, you can add necessary environment variables to your applications.
 
 
+#### **1.3 Terminal Setup**
+
+Alternatively, for linux user you can set up environment variables mentioned above mantually,   and we also provide a solution by following simple steps:
+
+```bash
+cd BigDL/python/orca
+source dev/prepare_env.sh
+```
+
+You can verify whether environment variables are available:
+
+```bash
+pytest test/bigdl/orca/learn/ray/pytorch/test_estimator_pyspark_backend.py
+```
+
+Note that this approach will only work temporarily for terminal this time. Achieving long-term support you can append environment variables mantually into your linux terminal shell script like `~/.bashrc`.
+
+
 ### **2. Scala**
 
 #### **2.1 Build**
