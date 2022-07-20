@@ -65,6 +65,13 @@ class TestTrainer(TestCase):
     train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
     user_defined_pl_model = LitResNet18(10)
 
+    def setUp(self):
+        test_dir = os.path.dirname(__file__)
+        project_test_dir = os.path.abspath(
+            os.path.join(os.path.join(test_dir, ".."), "..")
+        )
+        os.environ['PYTHONPATH'] = project_test_dir
+
     def test_resnet18(self):
         resnet18 = vision.resnet18(
             pretrained=False, include_top=False, freeze=True)
