@@ -204,10 +204,12 @@ class TestTable(TestCase):
                                     r"column_pairs and bin_sizes should have the same length"):
             tbl.cross_hash_encode([["A", "B", "C"], ["A", "D"]], [100])
         with self.assertRaisesRegex(RuntimeError,
-                                    r"crossed_col_names should be None or a list of crossed col names"):
+                                    r"crossed_col_names should be None or a list of crossed col "
+                                    r"names"):
             tbl.cross_hash_encode([["A", "B", "C"]], [100], "crossed_ABC")
         with self.assertRaisesRegex(RuntimeError,
-                                    r"column_pairs, bin_sizes and crossed_col_names should have the same length"):
+                                    r"column_pairs, bin_sizes and crossed_col_names should have "
+                                    r"the same length"):
             tbl.cross_hash_encode([["A", "B", "C"]], [100], ["crossed_ABC", "crossed_C"])
         with self.assertRaisesRegex(RuntimeError,
                                     r"each element in column_pairs should have >= 2 columns"):
@@ -313,7 +315,8 @@ class TestTable(TestCase):
         file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
         to_list_str = udf(lambda arr: ','.join(arr))
-        df = feature_tbl.dropna(['col_4', 'col_5']).df.withColumn("list1", array('col_4', 'col_5')) \
+        df = feature_tbl.dropna(['col_4', 'col_5']).df \
+            .withColumn("list1", array('col_4', 'col_5')) \
             .withColumn("list1", to_list_str(col("list1")))
         tbl = FeatureTable(df)
         string_idx_1 = tbl.gen_string_idx("list1", do_split=True, sep=",", freq_limit=1)

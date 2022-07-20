@@ -1036,7 +1036,8 @@ class FeatureTable(Table):
             invalidInputError(isinstance(crossed_col_names, list),
                               "crossed_col_names should be None or a list of crossed col names")
             invalidInputError(len(bin_sizes) == len(crossed_col_names),
-                              "column_pairs, bin_sizes and crossed_col_names should have the same length")
+                              "column_pairs, bin_sizes and crossed_col_names should have the same "
+                              "length")
 
         crossed_hash_df = self.df
         for i in range(len(column_pairs)):
@@ -1897,8 +1898,9 @@ class FeatureTable(Table):
                 out_col: (target_col, target_mean_dict[target_col])
                 for target_col, out_col in zip(target_cols, out_col_list)
             }
-            return TargetCode(fold_df, cat_col, out_target_mean_dict), \
-                   TargetCode(all_df, cat_col, out_target_mean_dict)
+            return TargetCode(fold_df, cat_col,
+                              out_target_mean_dict), TargetCode(all_df, cat_col,
+                                                                out_target_mean_dict)
 
         targets = list(map(gen_target_code, zip(cat_cols, out_cols)))
 
