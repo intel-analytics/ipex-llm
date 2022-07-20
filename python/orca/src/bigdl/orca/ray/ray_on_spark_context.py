@@ -400,8 +400,9 @@ class RayOnSparkContext(object):
         self.redis_port = random.randint(10000, 65535) if not redis_port else int(redis_port)
         self.ray_node_cpu_cores = ray_node_cpu_cores
         self.num_ray_nodes = num_ray_nodes
+        RayOnSparkContext._active_ray_context = self
 
-    def activateRayOnSparkContext(self):
+    def setUpRayOnSparkContext(self):
         if self.is_local:
             self.num_ray_nodes = 1
             spark_cores = self._get_spark_local_cores()
@@ -469,7 +470,6 @@ class RayOnSparkContext(object):
                 include_webui=self.include_webui,
                 extra_params=self.extra_params,
                 system_config=self.system_config)
-        RayOnSparkContext._active_ray_context = self
         self.total_cores = self.num_ray_nodes * self.ray_node_cpu_cores
 
     @classmethod
