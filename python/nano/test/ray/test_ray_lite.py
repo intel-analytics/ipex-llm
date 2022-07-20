@@ -115,10 +115,10 @@ class TestLite(TestCase):
         os.environ['PYTHONPATH'] = project_test_dir
 
     def test_lite_subprocess(self):
-        Lite(use_ipex=True, num_processes=2, strategy="ray").run()
+        Lite(num_processes=2, strategy="ray").run()
 
     def test_lite_subprocess_correctness(self):
-        LiteCorrectness(use_ipex=True, num_processes=2, strategy="ray").run(0.5)
+        LiteCorrectness(num_processes=2, strategy="ray").run(0.5)
 
 
 if __name__ == '__main__':
