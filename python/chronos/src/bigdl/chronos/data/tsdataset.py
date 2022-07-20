@@ -49,8 +49,8 @@ class TSDataset:
 
         self.numpy_x = None
         self.numpy_y = None
-        self.lookback = None  # lookback stated by users if they called `roll`, `to_torch_data_loader`
-        self.horizon = None  #  horizon stated by users if they called `roll`, `to_torch_data_loader`
+        self.lookback = None  # lookback stated by users if they called roll, to_torch_data_loader
+        self.horizon = None  # horizon stated by users if they called roll, to_torch_data_loader
         self.roll_feature = None  # contains feature_col requested by roll/to_torch_data_loader
         self.roll_target = None  # contains target_col requested by roll/to_torch_data_loader
         self.roll_feature_df = None

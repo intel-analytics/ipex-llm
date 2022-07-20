@@ -180,7 +180,7 @@ class NBeatsForecaster(BasePytorchForecaster):
                Do not specify the 'future_seq_len' if your tsdataset has called
                the 'TSDataset.roll' method or 'TSDataset.to_torch_data_loader'.
         :param kwargs: Specify parameters of Forecaster,
-               e.g. loss and optimizer, etc. More info, 
+               e.g. loss and optimizer, etc. More info,
                please refer to NBeatsForecaster.__init__ methods.
 
         :return: A NBeats Forecaster Model.
@@ -215,13 +215,13 @@ class NBeatsForecaster(BasePytorchForecaster):
                               "the history time step and output time step.")
 
         invalidInputError(check_time_steps(tsdataset, past_seq_len, future_seq_len),
-                            "tsdataset already has historical time steps and "
-                            "differs from the given past_seq_len and future_seq_len "
-                            "Expected past_seq_len and future_seq_len to be "
-                            f"{tsdataset.lookback, tsdataset.horizon}, "
-                            f"but found {past_seq_len, future_seq_len}",
-                            fixMsg="Do not specify past_seq_len and future seq_len "
-                            "or call tsdataset.roll method again and specify time step")
+                          "tsdataset already has historical time steps and "
+                          "differs from the given past_seq_len and future_seq_len "
+                          "Expected past_seq_len and future_seq_len to be "
+                          f"{tsdataset.lookback, tsdataset.horizon}, "
+                          f"but found {past_seq_len, future_seq_len}",
+                          fixMsg="Do not specify past_seq_len and future seq_len "
+                          "or call tsdataset.roll method again and specify time step")
 
         return cls(past_seq_len=past_seq_len,
                    future_seq_len=future_seq_len,
