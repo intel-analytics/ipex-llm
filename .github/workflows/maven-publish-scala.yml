@@ -14,7 +14,7 @@ on:
 jobs:
   build:
 
-    runs-on: [self-hosted, Linux, Shire]
+    runs-on: [self-hosted, Linux, Bree]
     permissions:
       contents: read
       packages: write
