@@ -19,19 +19,10 @@ package com.intel.analytics.bigdl.friesian.serving.recommender;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.protobuf.Empty;
-import com.intel.analytics.bigdl.dllib.utils.Table;
-import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureGrpc;
-import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features;
-import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs;
-import com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingGrpc;
-import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallGrpc;
-import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderGrpc;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.*;
 import com.intel.analytics.bigdl.friesian.serving.utils.Utils;
-import com.intel.analytics.bigdl.friesian.serving.utils.recommender.RecommenderUtils;
-import com.intel.analytics.bigdl.grpc.JacksonJsonSerializer;
 import com.intel.analytics.bigdl.grpc.GrpcServerBase;
 import io.grpc.*;
 import io.grpc.services.HealthStatusManager;
@@ -44,13 +35,11 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
-import scala.Tuple2;
 import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics;
 import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics$;
 import com.intel.analytics.bigdl.friesian.serving.utils.gRPCHelper;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -107,8 +96,7 @@ public class RecommenderServer extends GrpcServerBase {
     private static class RecommenderService extends RecommenderGrpc.RecommenderImplBase {
         private RecommenderImpl impl;
         private MetricRegistry metrics = new MetricRegistry();
-        // TODO: add recommend grpc overall
-        Timer overallTimer = metrics.timer("recommend.overall");
+        Timer overallTimer = metrics.timer("recommend.grpc.overall");
 
         RecommenderService() {
             impl = RecommenderImpl.getInstance();
@@ -151,7 +139,13 @@ public class RecommenderServer extends GrpcServerBase {
         @Override
         public void getMetrics(Empty request,
                                StreamObserver<ServerMessage> responseObserver) {
-            String metricsJson = impl.getMetrics();
+            // grpc metrics
+            Set<String> keys = metrics.getTimers().keySet();
+            List<TimerMetrics> grpcTimerMetrics = keys.stream()
+                    .map(key ->
+                            TimerMetrics$.MODULE$.apply(key, metrics.getTimers().get(key)))
+                    .collect(Collectors.toList());
+            String metricsJson = impl.getMetrics(grpcTimerMetrics );
             responseObserver.onNext(RecommenderProto.ServerMessage.newBuilder()
                     .setStr(metricsJson).build());
             responseObserver.onCompleted();
@@ -159,6 +153,8 @@ public class RecommenderServer extends GrpcServerBase {
 
         @Override
         public void resetMetrics(Empty request, StreamObserver<Empty> responseObserver) {
+            metrics = new MetricRegistry();
+            overallTimer = metrics.timer("recommend.grpc.overall");
             impl.resetMetrics();
             responseObserver.onNext(Empty.newBuilder().build());
             responseObserver.onCompleted();

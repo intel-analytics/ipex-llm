@@ -9,7 +9,6 @@ import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.Feature
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingGrpc;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallGrpc;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto;
-import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto;
 import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics;
 import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics$;
 import com.intel.analytics.bigdl.friesian.serving.utils.Utils;
@@ -19,14 +18,15 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import io.grpc.stub.StreamObserver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import scala.Tuple2;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class RecommenderImpl {
 
@@ -57,6 +57,29 @@ public class RecommenderImpl {
         recallStub = RecallGrpc.newBlockingStub(recallChannel);
         featureStub = FeatureGrpc.newBlockingStub(featureChannel);
         rankingStub = RankingGrpc.newBlockingStub(rankingChannel);
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            if (recallChannel != null) {
+                try {
+                    recallChannel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (featureChannel != null) {
+                try {
+                    featureChannel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (rankingChannel != null) {
+                try {
+                    rankingChannel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }));
     }
 
     public static RecommenderImpl getInstance() {
@@ -67,9 +90,10 @@ public class RecommenderImpl {
     }
 
     public IDProbList getRecommendIDs(int id, int canK, int k){
+        Timer.Context overallContext = overallTimer.time();
         if (canK < k) {
-            return new IDProbList(Status.FAILED_PRECONDITION.withDescription("CandidateNum" +
-                    " should be larger than recommendNum.").asRuntimeException());
+            return new IDProbList(Status.Code.FAILED_PRECONDITION, "CandidateNum" +
+                    " should be larger than recommendNum.");
         }
 
         RecallProto.Candidates candidates;
@@ -77,8 +101,8 @@ public class RecommenderImpl {
             candidates = this.searchCandidates(id, canK);
         } catch (StatusRuntimeException e) {
             e.printStackTrace();
-            return new IDProbList(Status.UNAVAILABLE.withDescription("recall " +
-                    "service unavailable: " + e.getMessage()).asRuntimeException());
+            return new IDProbList(Status.Code.UNAVAILABLE, "recall service unavailable: "
+                    + e.getMessage());
         }
 
         FeatureProto.Features userFeature;
@@ -86,8 +110,8 @@ public class RecommenderImpl {
             userFeature = this.getUserFeature(id);
         } catch (StatusRuntimeException e) {
             e.printStackTrace();
-            return new IDProbList(Status.UNAVAILABLE.withDescription("feature " +
-                    "service unavailable: " + e.getMessage()).asRuntimeException());
+            return new IDProbList(Status.Code.UNAVAILABLE, "feature service unavailable: "
+                    + e.getMessage());
         }
 
         FeatureProto.Features itemFeature;
@@ -95,8 +119,8 @@ public class RecommenderImpl {
             itemFeature = this.getItemFeatures(candidates);
         } catch (StatusRuntimeException e) {
             e.printStackTrace();
-            return new IDProbList(Status.UNAVAILABLE.withDescription("feature " +
-                    "service unavailable: " + e.getMessage()).asRuntimeException());
+            return new IDProbList(Status.Code.UNAVAILABLE, "feature service unavailable: "
+                    + e.getMessage());
         }
 
         Tuple2<int[], Table[]> itemInputTuple;
@@ -104,8 +128,7 @@ public class RecommenderImpl {
             itemInputTuple = this.buildRankingInput(userFeature, itemFeature);
         } catch (Exception e) {
             e.printStackTrace();
-            return new IDProbList(Status.FAILED_PRECONDITION
-                    .withDescription(e.getMessage()).asRuntimeException());
+            return new IDProbList(Status.Code.FAILED_PRECONDITION, e.getMessage());
         }
 
         IDProbList idProbList;
@@ -113,13 +136,18 @@ public class RecommenderImpl {
             idProbList = this.inferenceAndRanking(itemInputTuple, k);
         } catch (StatusRuntimeException e) {
             e.printStackTrace();
-            return new IDProbList(Status.UNAVAILABLE.withDescription("ranking " +
-                    "service unavailable: " + e.getMessage()).asRuntimeException());
+            return new IDProbList(Status.Code.UNAVAILABLE, "ranking service unavailable: "
+                    + e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
-            return new IDProbList(Status.UNAVAILABLE.withDescription(e.getMessage())
-                    .asRuntimeException());
+            return new IDProbList(Status.Code.UNAVAILABLE, e.getMessage());
         }
+
+        overallContext.stop();
+//        TODO: for test
+//        int[] ids = {1, 2, 5};
+//        float[] probs = {0.1f, 0.2f, 0.5f};
+//        IDProbList idProbList = new IDProbList(ids, probs);
 
         return idProbList;
     }
@@ -207,13 +235,20 @@ public class RecommenderImpl {
         return new IDProbList(topKIDs, topKProbs);
     }
 
-    public String getMetrics() {
+    public String getMetrics(List<TimerMetrics> grpcMetrics) {
         JacksonJsonSerializer jacksonJsonSerializer = new JacksonJsonSerializer();
         Set<String> keys = metrics.getTimers().keySet();
         List<TimerMetrics> timerMetrics = keys.stream()
                 .map(key ->
                         TimerMetrics$.MODULE$.apply(key, metrics.getTimers().get(key)))
                 .collect(Collectors.toList());
+
+        // Add grpcMetrics if grpcMetrics != null
+        if (grpcMetrics != null) {
+            timerMetrics = Stream.concat(grpcMetrics.stream(), timerMetrics.stream())
+                    .collect(Collectors.toList());
+        }
+
         return jacksonJsonSerializer.serialize(timerMetrics);
     }
 

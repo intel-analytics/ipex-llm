@@ -1,12 +1,17 @@
 package com.intel.analytics.bigdl.friesian.serving.recommender;
 
+import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import java.util.Arrays;
 
 public class IDProbList {
     private int[] ids;
     private float[] probs;
     private boolean success;
-    private StatusRuntimeException gRPCException;
+    private Status.Code errorCode;
+    private String errorMsg;
 
     public IDProbList(int[] ids, float[] probs) {
         this.ids = ids;
@@ -14,9 +19,10 @@ public class IDProbList {
         this.success = true;
     }
 
-    public IDProbList(StatusRuntimeException gRPCException) {
+    public IDProbList(Status.Code errorCode, String errorMsg) {
         this.success = false;
-        this.gRPCException = gRPCException;
+        this.errorCode = errorCode;
+        this.errorMsg = errorMsg;
     }
 
     public int[] getIds() {
@@ -31,7 +37,27 @@ public class IDProbList {
         return success;
     }
 
+    @JsonIgnore
     public StatusRuntimeException getgRPCException() {
-        return gRPCException;
+        return this.errorCode.toStatus().withDescription("CandidateNum" +
+                " should be larger than recommendNum.").asRuntimeException();
+    }
+
+    public String getErrorMsg() {
+        return errorMsg;
+    }
+
+    public Status.Code getErrorCode() {
+        return errorCode;
+    }
+
+    @Override
+    public String toString() {
+        return "IDProbList{" +
+                "ids=" + Arrays.toString(ids) +
+                ", probs=" + Arrays.toString(probs) +
+                ", success=" + success +
+//                ", gRPCException=" + gRPCException +
+                '}';
     }
 }
