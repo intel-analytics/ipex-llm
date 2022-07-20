@@ -16,7 +16,6 @@
 
 # Copyright 2022 MosaicML Composer authors
 # SPDX-License-Identifier: Apache-2.0
-
 """Core SelectiveBackprop class and functions."""
 
 from typing import Any, Callable, Tuple, Union
@@ -65,13 +64,14 @@ def should_selective_backprop(
     return is_interval and is_step
 
 
-def select_using_loss(batch: Union[torch.Tensor, torch.Tensor],
-                      batch_idx: int,
-                      trainer: "pl.Trainer",
-                      pl_module: "pl.LightningModule",
-                      keep: float = 0.5,
-                      scale_factor: float = 1,
-                      loss_fn: Callable = None) -> Tuple[torch.Tensor, torch.Tensor]:
+def select_using_loss(
+        batch: Union[torch.Tensor, torch.Tensor],
+        batch_idx: int,
+        trainer: "pl.Trainer",
+        pl_module: "pl.LightningModule",
+        keep: float = 0.5,
+        scale_factor: float = 1,
+        loss_fn: Callable = None) -> Tuple[torch.Tensor, torch.Tensor]:
     """Prunes minibatches as a subroutine of :class:`.SelectiveBackprop`. Computes the loss function on the provided training
     examples and runs minibatches according to the difficulty. The fraction of the minibatch that is kept for gradient
     computation is specified by the argument ``0 <= keep <= 1``.
@@ -109,7 +109,8 @@ def select_using_loss(batch: Union[torch.Tensor, torch.Tensor],
     if scale_factor != 1:
         if input.dim() not in INTERPOLATE_MODES:
             raise ValueError(
-                f'Input must be 3D, 4D, or 5D if scale_factor != 1, got {input.dim()}')
+                f'Input must be 3D, 4D, or 5D if scale_factor != 1, got {input.dim()}'
+            )
         interp_mode = INTERPOLATE_MODES[input.dim()]
 
     with torch.no_grad():
@@ -145,8 +146,10 @@ def select_using_loss(batch: Union[torch.Tensor, torch.Tensor],
         percs = np.arange(0.5, N, 1) / N
         probs = percs**((1.0 / keep) - 1.0)
         probs = probs / np.sum(probs)
-        select_percs_idx = np.random.choice(
-            N, n_select, replace=False, p=probs)
+        select_percs_idx = np.random.choice(N,
+                                            n_select,
+                                            replace=False,
+                                            p=probs)
         select_idx = sorted_idx[select_percs_idx]
 
     return input[select_idx], target[select_idx]
@@ -202,15 +205,13 @@ class SelectiveBackprop(Callback):
             )
     """
 
-    def __init__(
-        self,
-        start: float = 0.5,
-        end: float = 0.9,
-        keep: float = 0.5,
-        scale_factor: float = 1.,
-        interrupt: int = 2,
-        loss_fn: Callable = None
-    ):
+    def __init__(self,
+                 start: float = 0.5,
+                 end: float = 0.9,
+                 keep: float = 0.5,
+                 scale_factor: float = 1.,
+                 interrupt: int = 2,
+                 loss_fn: Callable = None):
         self.start = start
         self.end = end
         self.keep = keep
@@ -236,20 +237,19 @@ class SelectiveBackprop(Callback):
 
         return is_chosen
 
-    def on_train_batch_start(
-        self,
-        trainer: "pl.Trainer",
-        pl_module: "pl.LightningModule",
-        batch: Union[torch.Tensor, torch.Tensor],
-        batch_idx: int,
-        unused: Any = 0
-    ):
+    def on_train_batch_start(self,
+                             trainer: "pl.Trainer",
+                             pl_module: "pl.LightningModule",
+                             batch: Union[torch.Tensor, torch.Tensor],
+                             batch_idx: int,
+                             unused: Any = 0):
         if self.__match(trainer, batch_idx):
             input, target = batch[0], batch[1]
             assert isinstance(input, torch.Tensor) and isinstance(target, torch.Tensor), \
                 'Multiple tensors not supported for this method yet.'
 
-            input, target = select_using_loss(
-                batch, batch_idx, trainer, pl_module, self.keep, self.scale_factor, self._loss_fn)
+            input, target = select_using_loss(batch, batch_idx, trainer,
+                                              pl_module, self.keep,
+                                              self.scale_factor, self._loss_fn)
             batch[0] = input
             batch[1] = target
