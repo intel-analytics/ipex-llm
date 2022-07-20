@@ -22,6 +22,6 @@ individual training examples, and only computes weight gradients over the pruned
 speeding up training.
 """
 
-from bigdl.nano.pytorch.algorithms.selective_backprop import SelectiveBackprop as SelectiveBackprop
+from bigdl.nano.pytorch.algorithms.selective_backprop.selective_backprop import SelectiveBackprop as SelectiveBackprop
 
 __all__ = ['SelectiveBackprop']

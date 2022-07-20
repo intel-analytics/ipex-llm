@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from bigdl.nano.pytorch.algorithms.selective_backprop import selective_backprop
+from bigdl.nano.pytorch.algorithms.selective_backprop import SelectiveBackprop
 
 __all__ = [
     'SelectiveBackprop',
