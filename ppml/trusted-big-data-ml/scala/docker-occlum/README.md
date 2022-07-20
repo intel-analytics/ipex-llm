@@ -39,7 +39,7 @@ To run Spark Pi example, start the docker container with:
 bash start-spark-local.sh pi
 ```
 
-You can change the configuration in start-spark-local.sh
+You can change the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
 ``` bash
 #start-spark-local.sh
 -e SGX_MEM_SIZE=24GB \
