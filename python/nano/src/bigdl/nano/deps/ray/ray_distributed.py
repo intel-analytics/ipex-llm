@@ -100,14 +100,10 @@ class _RayLauncher(_SpawnLauncher):
     def launch(self, function: Callable, *args: Any,
                trainer: Optional["pl.Trainer"] = None, **kwargs: Any) -> Any:
         # pytorch_lightning 1.6 uses this method to create child processes
-        invalidInputError(trainer is not None and self._strategy.cluster_environment is not None,
-                          'strategy.cluster_environment and trainer cannot be None')
-        invalidInputError(self._strategy.model is not None, "You must specify the model.")
-
         strategy = self._strategy
 
         # fix bug, see ddp_spawn strategy for details
-        if strategy.use_ipex and TORCH_VERSION_LESS_1_10:
+        if strategy.use_ipex and TORCH_VERSION_LESS_1_10 and trainer is not None:
             if isinstance(args[1], LightningDataModule):
                 args[1].trainer = None
             elif isinstance(args[3], LightningDataModule):
@@ -126,25 +122,29 @@ class _RayLauncher(_SpawnLauncher):
         futures = [
             strategy.workers[i].execute.remote(
                 self._wrapping_function,
-                (i, trainer, function, args, kwargs)
+                (i, trainer, strategy, function, args, kwargs)
             )
             for i in range(strategy.num_workers)
         ]
 
         results = ray.get(futures)  # type: ignore
 
+        # when using pytorch lightning's trainer, the `trainer` cannot be None,
+        # when using pytorch lightning's LightningLite, the `trainer` should be None
+        if trainer is None:
+            return results[0]
+
         # Get the results, checkpoint path, and model weights from worker 0.
         results, best_path, state_dict = results[0]  # type: ignore
-        strategy._model.load_state_dict(state_dict)
+        strategy.model.load_state_dict(state_dict)
         strategy.lightning_module.trainer = trainer
         strategy.lightning_module.trainer.checkpoint_callback.best_model_path = best_path
 
-        return results
+        return results.trainer_results  # type: ignore
 
     @staticmethod
     def _wrapping_function(args_pack: tuple) -> Any:   # type: ignore[override]
-        global_rank, trainer, function, args, kwargs = args_pack
-        strategy = trainer.strategy
+        global_rank, trainer, strategy, function, args, kwargs = args_pack
         invalidInputError(isinstance(strategy, RayStrategy), "expect ray strategy here")
         invalidInputError(isinstance(strategy.cluster_environment, RayEnvironment),
                           "expect ray environment here")
@@ -155,8 +155,12 @@ class _RayLauncher(_SpawnLauncher):
         strategy._worker_setup(global_rank)
         results = function(*args, **kwargs)
 
-        if trainer is not None:
-            results = strategy._launcher._collect_rank_zero_results(trainer, results)
+        # when using pytorch lightning's trainer, the `trainer` cannot be None,
+        # when using pytorch lightning's LightningLite, the `trainer` should be None
+        if trainer is None:
+            return move_data_to_device(results, "cpu")
+
+        results = strategy._launcher._collect_rank_zero_results(trainer, results)
 
         if strategy.global_rank == 0:
             if trainer.checkpoint_callback is not None:
@@ -167,8 +171,6 @@ class _RayLauncher(_SpawnLauncher):
                 return move_data_to_device(results, "cpu"), \
                     None, \
                     move_data_to_device(strategy.lightning_module.state_dict(), "cpu")
-        else:
-            return None
 
 
 class RayStrategy(DDPSpawnStrategy):

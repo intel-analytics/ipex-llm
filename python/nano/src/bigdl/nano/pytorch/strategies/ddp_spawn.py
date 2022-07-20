@@ -38,6 +38,7 @@ import multiprocessing
 from typing import Any, List, Optional, Callable, Union, Dict
 
 import torch
+from torch import nn
 from torch import Tensor
 from torch.multiprocessing.spawn import _wrap, ProcessContext
 from torch.nn.parallel.distributed import DistributedDataParallel
@@ -48,8 +49,6 @@ from pytorch_lightning.core.datamodule import LightningDataModule
 from pytorch_lightning.strategies.launchers import _SpawnLauncher
 from pytorch_lightning.strategies import DDPSpawnStrategy as _DDPSpawnStrategy
 from pytorch_lightning.plugins.environments import LightningEnvironment
-from pytorch_lightning.overrides import LightningDistributedModule
-from pytorch_lightning.utilities.optimizer import optimizers_to_device
 from pytorch_lightning.utilities.distributed import ReduceOp
 
 from bigdl.nano.common.cpu_schedule import schedule_processors
@@ -75,8 +74,11 @@ class _DDPSpawnLauncher(_SpawnLauncher):
     def launch(self, function: Callable, *args: Any,
                trainer: Optional["pl.Trainer"] = None, **kwargs: Any) -> Any:
         # pytorch_lightning 1.6 uses this method to create child processes
-        invalidInputError(trainer is not None and self._strategy.cluster_environment is not None,
-                          'strategy.cluster_environment and trainer cannot be None')
+
+        # the `self._strategy.cluster_environment` should not be None in normal circumstances,
+        # if you see this error message, please report an issue in BigDL.
+        invalidInputError(self._strategy.cluster_environment is not None,
+                          'strategy.cluster_environment cannot be None')
 
         os.environ["MASTER_PORT"] = str(self._strategy.cluster_environment.main_port)
 
@@ -97,7 +99,7 @@ class _DDPSpawnLauncher(_SpawnLauncher):
         # pytorch lightning 1.4 resets datamodule automatically before creating child processes,
         # so we do not need to do this, but 1.6 resets datamodule after creating child processes,
         # so we must reset datamodule here.
-        if self._strategy.use_ipex and TORCH_VERSION_LESS_1_10:
+        if self._strategy.use_ipex and TORCH_VERSION_LESS_1_10 and trainer is not None:
             # args[1] is dataloader, args[3] is datamodule when training,
             # and args[4] is datamodule when testing
             if isinstance(args[1], LightningDataModule):
@@ -141,6 +143,12 @@ class _DDPSpawnLauncher(_SpawnLauncher):
 
         # restore the state of child process
         spawn_output = return_queue.get()
+
+        # when using pytorch lightning's trainer, the `trainer` cannot be None,
+        # when using pytorch lightning's LightningLite, the `trainer` should be None
+        if trainer is None:
+            return spawn_output
+
         self._recover_results_in_main_process(spawn_output, trainer)
         return spawn_output.trainer_results
 
@@ -230,18 +238,10 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
         # which is used by ipex==1.9, so we move this line here
         self.model_to_device()
 
-    def configure_ddp(self):
-        """Setup the configuration for pytorch ddp."""
+    def _setup_model(self, model: nn.Module) -> DistributedDataParallel:
+        """Wraps the model into a 'DistributedDataParallel' module."""
         # we should override this method to change the creation of `DistributedDataParallel`
-        self.pre_configure_ddp()
-        self._model = DistributedDataParallel(
-            LightningDistributedModule(self.model),
-            **self._ddp_kwargs,
-        )
-        self._register_ddp_hooks()
-
-        self.setup_optimizers(self.lightning_module.trainer)
-        optimizers_to_device(self.optimizers, self.root_device)
+        return DistributedDataParallel(model, **self._ddp_kwargs)
 
     def reduce(self, tensor, group: Optional[Any] = None,   # type: ignore[override]
                reduce_op: Union[ReduceOp, str] = "mean") -> Tensor:
