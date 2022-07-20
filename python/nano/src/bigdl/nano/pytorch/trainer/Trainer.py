@@ -447,6 +447,9 @@ class Trainer(pl.Trainer):
             return PytorchONNXRuntimeModel(model, input_sample, onnxruntime_session_options,
                                            **export_kwargs)
         if accelerator == 'jit' or use_ipex:
+            if use_ipex:
+                invalidInputError(not TORCH_VERSION_LESS_1_10,
+                                  "torch version should >=1.10 to use ipex")
             use_jit = (accelerator == "jit")
             channels_last = export_kwargs["channels_last"]\
                 if "channels_last" in export_kwargs else None
