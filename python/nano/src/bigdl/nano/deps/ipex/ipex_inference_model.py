@@ -31,7 +31,7 @@ class IPEXJITModel:
             self.model = model
             self.use_ipex = use_ipex
             self.use_jit = use_jit
-            self.channels_last=channels_last
+            self.channels_last = channels_last
             return
         self.channels_last = use_ipex if (channels_last is None or not use_ipex) else channels_last
         model.eval()
