@@ -36,8 +36,9 @@ from bigdl.nano.pytorch.plugins.ddp_subprocess import DDPSubprocessPlugin
 
 from bigdl.nano.deps.automl.hpo_api import create_hpo_searcher, check_hpo_status
 from bigdl.nano.deps.ray.ray_api import distributed_ray
-from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, create_IPEXAccelerator_1_9
 from bigdl.nano.openvino import PytorchOpenVINOModel, load_openvino_model
+from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, create_IPEXAccelerator_1_9, \
+    PytorchIPEXJITModel, load_ipexjit_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import PytorchONNXRuntimeModel, \
     load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model, quantize as inc_quantize
@@ -67,7 +68,7 @@ class Trainer(pl.Trainer):
         A pytorch lightning trainer that uses bigdl-nano optimization.
 
         :param num_processes: number of processes in distributed training. default: 4.
-        :param use_ipex: whether we use ipex as accelerator for trainer. default: True.
+        :param use_ipex: whether we use ipex as accelerator for trainer. default: False.
         :param cpu_for_each_process: A list of length `num_processes`, each containing a list of
             indices of cpus each process will be using. default: None, and the cpu will be
             automatically and evenly distributed among processes.
@@ -411,6 +412,7 @@ class Trainer(pl.Trainer):
     def trace(model: nn.Module,
               input_sample=None,
               accelerator=None,
+              use_ipex=False,
               onnxruntime_session_options=None,
               **export_kwargs):
         """
@@ -423,21 +425,29 @@ class Trainer(pl.Trainer):
                              model is a LightningModule with any dataloader attached.
         :param accelerator: The accelerator to use, defaults to None meaning staying in Pytorch
                             backend. 'openvino' and 'onnxruntime' are supported for now.
+        :param use_ipex: whether we use ipex as accelerator for inferencing. default: False.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
-        :param **export_kwargs: will be passed to torch.onnx.export function.
-        :return: Model with different acceleration(OpenVINO/ONNX Runtime).
+        :param **export_kwargs: will be passed to torch.onnx.export function, only valid when
+                                accelerator='onnxruntime'/'openvino', otherwise will be ignored.
+        :return: Model with different acceleration.
         """
         invalidInputError(
             isinstance(model, nn.Module) and not isinstance(model, AcceleratedLightningModule),
             "Expect a nn.Module instance that is not traced or quantized"
             "but got type {}".format(type(model))
         )
-        if accelerator == 'openvino':
+        if accelerator == 'openvino':  # openvino backend will not care about ipex usage
             return PytorchOpenVINOModel(model, input_sample, **export_kwargs)
-        if accelerator == 'onnxruntime':
+        if accelerator == 'onnxruntime':  # onnxruntime backend will not care about ipex usage
             return PytorchONNXRuntimeModel(model, input_sample, onnxruntime_session_options,
                                            **export_kwargs)
+        if accelerator == 'jit' or use_ipex:
+            use_jit = (accelerator == "jit")
+            channels_last = export_kwargs["channels_last"]\
+                if "channels_last" in export_kwargs else None
+            return PytorchIPEXJITModel(model, input_sample=input_sample, use_ipex=use_ipex,
+                                       use_jit=use_jit, channels_last=channels_last)
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
     @staticmethod
@@ -494,6 +504,8 @@ class Trainer(pl.Trainer):
             return load_onnxruntime_model(path)
         if model_type == 'PytorchQuantizedModel':
             return load_inc_model(path, model, 'pytorch')
+        if model_type == 'PytorchIPEXJITModel':
+            return load_ipexjit_model(path, model)
         if isinstance(model, nn.Module):
             # typically for models of nn.Module, LightningModule and LightningModuleFromTorch type
             model = copy.deepcopy(model)
