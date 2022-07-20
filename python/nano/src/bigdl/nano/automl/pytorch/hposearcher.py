@@ -57,6 +57,7 @@ class HPOSearcher:
         if num_processes == 1:
             # reset current epoch = 0 after each run
             from pytorch_lightning.callbacks import Callback
+
             class ResetCallback(Callback):
                 def on_train_end(self, trainer, pl_module) -> None:
                     super().on_train_end(trainer, pl_module)
