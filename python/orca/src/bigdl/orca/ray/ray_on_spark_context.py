@@ -401,7 +401,6 @@ class RayOnSparkContext(object):
         self.ray_node_cpu_cores = ray_node_cpu_cores
         self.num_ray_nodes = num_ray_nodes
 
-
     def activateRayOnSparkContext(self):
         if self.is_local:
             self.num_ray_nodes = 1
