@@ -77,7 +77,7 @@ import torch
 
 data_path = os.environ.get("DATA_PATH", ".")
 batch_size = 256
-max_epochs = 3
+max_epochs = 10
 lr = 0.01
 
 model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
@@ -120,7 +120,7 @@ class Lite(LightningLite):
         # copy all codes into this method
         data_path = os.environ.get("DATA_PATH", ".")
         batch_size = 256
-        max_epochs = 3
+        max_epochs = 10
         lr = 0.01
 
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
