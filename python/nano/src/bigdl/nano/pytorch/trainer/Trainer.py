@@ -37,7 +37,7 @@ from bigdl.nano.pytorch.plugins.ddp_subprocess import DDPSubprocessPlugin
 from bigdl.nano.deps.automl.hpo_api import create_hpo_searcher, check_hpo_status
 from bigdl.nano.deps.ray.ray_api import distributed_ray
 from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, create_IPEXAccelerator_1_9
-from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel, load_openvino_model
+from bigdl.nano.openvino import PytorchOpenVINOModel, load_openvino_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import PytorchONNXRuntimeModel, \
     load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model, quantize as inc_quantize

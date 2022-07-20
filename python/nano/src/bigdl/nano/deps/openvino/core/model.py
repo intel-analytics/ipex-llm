@@ -26,8 +26,9 @@ from .utils import save
 
 
 class OpenVINOModel:
-    def __init__(self, ie_network: str):
+    def __init__(self, ie_network: str, device='CPU'):
         self._ie = Core()
+        self._device = device
         self.ie_network = ie_network
 
     def forward_step(self, *inputs):
@@ -43,7 +44,8 @@ class OpenVINOModel:
             self._ie_network = self._ie.read_model(model=str(model))
         else:
             self._ie_network = model
-        self._compiled_model = self._ie.compile_model(model=self.ie_network, device_name='CPU')
+        self._compiled_model = self._ie.compile_model(model=self.ie_network,
+                                                      device_name=self._device)
         self._infer_request = self._compiled_model.create_infer_request()
 
     def _save_model(self, path):
