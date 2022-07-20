@@ -20,8 +20,8 @@ WORKDIR /opt/work
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Asia/Shanghai
 
-ADD ./install-python-env.sh /opt
-ADD ./../../python/chronos/colab-notebook /opt/work/colab-notebook
+ADD ./docker/chronos-nightly/install-python-env.sh /opt
+ADD ./python/chronos/colab-notebook /opt/work/colab-notebook
 RUN chmod a+x /opt/install-python-env.sh
 
 RUN apt-get update --fix-missing && \

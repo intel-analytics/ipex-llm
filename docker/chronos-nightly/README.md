@@ -1,4 +1,4 @@
-# Chronos nightly build docker image
+# How to use chronos in docker
 This dockerfile helps user to build a docker image where Chronos nightly build version is deploied.
 
 ## Build an image
@@ -6,9 +6,10 @@ First clone the repo `BigDL` to the local.
 ```bash
 git clone https://github.com/intel-analytics/BigDL.git
 ```
-Then `cd` to this directory where `README.md` is in. 
+Then `cd` to the root directory of `BigDL`, and copy the Dockerfile to it. 
 ```bash
-cd BigDL/docker/chronos-nightly
+cd BigDL
+cp docker/chronos-nightly/Dockerfile ./Dockerfile
 ```
 Then build your docker image with Dockerfile:
 ```bash
@@ -23,6 +24,7 @@ sudo docker build \
     -t chronos-nightly:b1 . # You may choose any NAME:TAG you want.
 ```
 According to your network status, this building will cost **15-30 mins**. 
+**Tips:** When errors happen like `E: Package 'apt-utils' has no installation candidate`, it's usually related to the bad network status. Please build with a proxy.
 
 ## Run the image
 ```bash
