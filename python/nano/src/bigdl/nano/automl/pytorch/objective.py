@@ -148,7 +148,7 @@ class Objective(object):
                 train_dataloaders=self.train_dataloaders,
                 val_dataloaders=self.val_dataloaders,
                 datamodule=self.datamodule
-            ) 
+            )
 
     def _post_train(self, model):
         pass
