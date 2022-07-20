@@ -31,23 +31,6 @@ or:
   --device=/dev/sgx/provision
 ```
 
-### Start BigDL PPML Occlum Attestation Server
-Modify `PCCL_URL`, `ATTESTATION_SERVER_IP` and `ATTESTATION_SERVER_PORT` in `start-occlum-attestation-server.sh`, Then
-```commandline
-bash start-occlum-attestation-server.sh
-```
-You will see:
-```
-Server listening on $ATTESTATION_SERVER_IP:$ATTESTATION_SERVER_PORT
-```
-
-Get `image_key`:
-```commandline
-docker cp bigdl-ppml-trusted-big-data-ml-scala-occlum-attestation-server:/root/demos/remote_attestation/init_ra_flow/image_key ./data
-```
-
-### Before you run examples, you need to mount this `image_key` to container's `/opt/occlum_spark/data/`.
-
 ## Spark 3.1.2 Pi example
 
 To run Spark Pi example, start the docker container with:
@@ -56,7 +39,16 @@ To run Spark Pi example, start the docker container with:
 bash start-spark-local.sh pi
 ```
 
-You can see Pi result in logs (`docker attach logs -f bigdl-ppml-trusted-big-data-ml-scala-occlum`)
+You can change the configuration in start-spark-local.sh
+``` bash
+#start-spark-local.sh
+-e SGX_MEM_SIZE=24GB \
+-e SGX_THREAD=512 \
+-e SGX_HEAP=512MB \
+-e SGX_KERNEL_HEAP=1GB \
+```
+
+You can see Pi result in logs (`docker logs -f bigdl-ppml-trusted-big-data-ml-scala-occlum`)
 
 ```bash
 Pi is roughly 3.1436957184785923
@@ -230,3 +222,20 @@ You can find XGBoost model under folder `/path/to/data/`.
 Modify the `SGX_LOG_LEVEL` to one of `off, error, warn, debug, info, and trace` in `start-spark-local.sh`. 
 The default value is off, showing no log messages at all. The most verbose level is trace.
 When you use attestation, `SGX_LOG_LEVEL` will be set to `off`.
+
+## Start BigDL PPML Occlum Attestation Server
+Modify `PCCL_URL`, `ATTESTATION_SERVER_IP` and `ATTESTATION_SERVER_PORT` in `start-occlum-attestation-server.sh`, Then
+```commandline
+bash start-occlum-attestation-server.sh
+```
+You will see:
+```
+Server listening on $ATTESTATION_SERVER_IP:$ATTESTATION_SERVER_PORT
+```
+
+Get `image_key`:
+```commandline
+docker cp bigdl-ppml-trusted-big-data-ml-scala-occlum-attestation-server:/root/demos/remote_attestation/init_ra_flow/image_key ./data
+```
+
+## Before you run examples, you need to mount this `image_key` to container's `/opt/occlum_spark/data/`. We have already done it for you.
