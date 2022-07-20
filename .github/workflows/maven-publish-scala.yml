@@ -72,6 +72,7 @@ jobs:
       run: |
           ls
           cat ~/.m2/settings.xml
+          #spark3.1.2
           cp scala/pom.xml scala/pom.xml.origin
           cp scala/common/spark-version/pom.xml scala/common/spark-version/pom.xml.origin
           cp scala/common/spark-version/3.0/pom.xml scala/common/spark-version/3.0/pom.xml.origin
