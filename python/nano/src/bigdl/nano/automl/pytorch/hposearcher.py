@@ -47,32 +47,22 @@ class HPOSearcher:
     TUNE_RUN_KEYS = {'n_trials', 'timeout', 'n_jobs', 'catch', 'tune_callbacks',
                      'gc_after_trial', 'show_progress_bar'}
 
-    def __init__(self, trainer: "pl.Trainer") -> None:
+    def __init__(self, trainer: "pl.Trainer", num_processes: int = 1) -> None:
         """
         Init a HPO Searcher.
 
         :param trainer: The pl.Trainer object.
         """
         self.trainer = trainer
-        if not LIGHTNING_VERSION_LESS_1_6:
-            num_processes = trainer.num_devices
-        else:
-            try:
-                num_processes = len(self.trainer.accelerator_connector.plugins[0].parallel_devices)
-            except Exception:
-                num_processes = 1
         if num_processes == 1:
             # reset current epoch = 0 after each run
             from pytorch_lightning.callbacks import Callback
-            if LIGHTNING_VERSION_LESS_1_6:
-                class ResetCallback(Callback):
-                    def on_train_end(self, trainer, pl_module) -> None:
-                        super().on_train_end(trainer, pl_module)
+            class ResetCallback(Callback):
+                def on_train_end(self, trainer, pl_module) -> None:
+                    super().on_train_end(trainer, pl_module)
+                    if LIGHTNING_VERSION_LESS_1_6:
                         trainer.fit_loop.current_epoch = 0
-            else:
-                class ResetCallback(Callback):
-                    def on_train_end(self, trainer, pl_module) -> None:
-                        super().on_train_end(trainer, pl_module)
+                    else:
                         trainer.fit_loop.epoch_progress.current.processed = 0
 
             callbacks = self.trainer.callbacks or []
@@ -225,6 +215,8 @@ class HPOSearcher:
         as this can be called multiple times."""
         # last `_run` call might have set it to `FINISHED`
         self.trainer.state.status = TrainerStatus.RUNNING
+        # Pytorch Lightning 1.6
+        self.trainer.state.fn = TrainerFn.FITTING
         self.trainer.training = True
         self.trainer._run(*args, **kwargs)
         self.trainer.tuning = True

@@ -167,7 +167,7 @@ class Trainer(pl.Trainer):
                 super().__init__(*args, **kwargs)
 
         if use_hpo:
-            self.hposearcher = create_hpo_searcher(trainer=self)
+            self.hposearcher = create_hpo_searcher(trainer=self, num_processes=num_processes)
         else:
             self.hposearcher = None
 
