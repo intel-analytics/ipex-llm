@@ -219,5 +219,6 @@ class HPOSearcher:
         # Pytorch Lightning 1.6
         self.trainer.state.fn = TrainerFn.FITTING
         self.trainer.training = True
-        self.trainer._run(*args, **kwargs)
+        # self.trainer._run(*args, **kwargs)
+        self.trainer.fit(*args, **kwargs)
         self.trainer.tuning = True
