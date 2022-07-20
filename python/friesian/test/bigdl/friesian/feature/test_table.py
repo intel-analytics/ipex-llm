@@ -195,13 +195,30 @@ class TestTable(TestCase):
         df = spark.createDataFrame(data, schema)
         cross_hash_df = df.withColumn("A_B_C", concat("A", "B", "C"))
         tbl = FeatureTable(df)
+        
+        tbl.cross_hash_encode(["A", "B", "C"], 100)
+        with self.assertRaisesRegex(RuntimeError, r"column_pairs should be a list of column pairs"):
+            tbl.cross_hash_encode("A", [100])
+        with self.assertRaisesRegex(RuntimeError, r"bin_sizes should be a list of bin sizes"):
+            tbl.cross_hash_encode([["A", "B", "C"]], 100)
+        with self.assertRaisesRegex(RuntimeError, r"column_pairs and bin_sizes should have the same length"):
+            tbl.cross_hash_encode([["A", "B", "C"], ["A", "D"]], [100])
+        with self.assertRaisesRegex(RuntimeError, r"crossed_col_names should be None or a list of crossed col names"):
+            tbl.cross_hash_encode([["A", "B", "C"]], [100], "crossed_ABC")
+        with self.assertRaisesRegex(RuntimeError, r"column_pairs, bin_sizes and crossed_col_names should have the same length"):
+            tbl.cross_hash_encode([["A", "B", "C"]], [100], ["crossed_ABC", "crossed_C"])
+        with self.assertRaisesRegex(RuntimeError, r"each element in column_pairs should have >= 2 columns"):
+            tbl.cross_hash_encode([["A"]], [100], ["crossed_ABC"])
+        with self.assertRaisesRegex(RuntimeError, r"each element in crossed_col_names should be string"):
+            tbl.cross_hash_encode([["A", "B", "C"]], [100], [0x14])
+
         cross_hash_str = lambda x: hashlib.md5(str(x).encode('utf-8', 'strict')).hexdigest()
         cross_hash_int = lambda x: int(cross_hash_str(x), 16) % 100
         cross_hash_value = []
         for row in cross_hash_df.collect():
             cross_hash_value.append(cross_hash_int(row[4]))
         tbl_cross_hash = []
-        for record in tbl.cross_hash_encode(["A", "B", "C"], 100).to_spark_df().collect():
+        for record in tbl.cross_hash_encode([["A", "B", "C"]], [100]).to_spark_df().collect():
             tbl_cross_hash.append(int(record[4]))
         invalidInputError(operator.eq(cross_hash_value, tbl_cross_hash),
                           "the crossed hash encoded value should be equal")
@@ -505,13 +522,13 @@ class TestTable(TestCase):
         file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path).fillna(0, ["col_2", "col_3"])
         crossed_tbl = feature_tbl.cross_columns([["col_2", "col_3"]], [100])
-        invalidInputError("col_2_col_3" in crossed_tbl.df.columns,
+        invalidInputError("crossed_col_2_col_3" in crossed_tbl.df.columns,
                           "crossed column is not created")
-        max_value = crossed_tbl.df.select("col_2_col_3") \
-            .agg(max(col("col_2_col_3")).alias("max")) \
+        max_value = crossed_tbl.df.select("crossed_col_2_col_3") \
+            .agg(max(col("crossed_col_2_col_3")).alias("max")) \
             .rdd.map(lambda row: row['max']).collect()[0]
-        min_value = crossed_tbl.df.select("col_2_col_3") \
-            .agg(min(col("col_2_col_3")).alias("min")) \
+        min_value = crossed_tbl.df.select("crossed_col_2_col_3") \
+            .agg(min(col("crossed_col_2_col_3")).alias("min")) \
             .rdd.map(lambda row: row['min']).collect()[0]
 
         invalidInputError(max_value <= 100,
@@ -1129,7 +1146,7 @@ class TestTable(TestCase):
         total_line_1 = feature_tbl.size()
         feature_tbl2 = feature_tbl.sample(0.5)
         total_line_2 = feature_tbl2.size()
-        invalidInputError(int(total_line_1/2) - 100 < total_line_2 < int(total_line_1/2) + 100,
+        invalidInputError(int(total_line_1 / 2) - 100 < total_line_2 < int(total_line_1 / 2) + 100,
                           "the number of rows should be half")
         total_distinct_line = feature_tbl2.distinct().size()
         invalidInputError(total_line_2 == total_distinct_line, "all rows should be distinct")
@@ -1262,14 +1279,14 @@ class TestTable(TestCase):
         value2 = dict2["abc"]
         for i in range(1, 4):
             if i == value1:
-                invalidInputError(record[i+1] == 1, "value error")
+                invalidInputError(record[i + 1] == 1, "value error")
             else:
-                invalidInputError(record[i+1] == 0, "value error")
+                invalidInputError(record[i + 1] == 0, "value error")
         for i in range(1, 5):
             if i == value2:
-                invalidInputError(record[i+5] == 1, "value error")
+                invalidInputError(record[i + 5] == 1, "value error")
             else:
-                invalidInputError(record[i+5] == 0, "value error")
+                invalidInputError(record[i + 5] == 0, "value error")
 
     def test_split(self):
         file_path = os.path.join(self.resource_path, "ncf.csv")

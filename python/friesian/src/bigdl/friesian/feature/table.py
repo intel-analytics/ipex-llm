@@ -264,13 +264,10 @@ class Table:
 
         :return A list of Tables
         """
-        for w in weights:
-            if w < 0.0:
-                invalidInputError(False,
-                                  "Weights must be positive. Found weight value: %s" % w)
-        seed = seed if seed is not None else random.randint(0, sys.maxsize)
         df_array = self.df.randomSplit(weights, seed)
         return [self._clone(df) for df in df_array]
+    
+    split=random_split
 
     def clip(self, columns, min=None, max=None):
         """
@@ -1004,31 +1001,62 @@ class FeatureTable(Table):
             hash_df = hash_df.withColumn(col_name, hash_int(pyspark_col(col_name)))
         return FeatureTable(hash_df)
 
-    def cross_hash_encode(self, columns, bins, cross_col_name=None, method='md5'):
+    def cross_hash_encode(self, column_pairs, bin_sizes, crossed_col_names=None, method='md5'):
         """
-        Hash encode for cross column(s).
+        Cross columns and hashed to specified bin size.
 
-        :param columns: a list of str, the categorical columns to be encoded as cross features.
+        :param columns: list[list[str]], list of categorical column pairs to be 
+               encoded as cross features. i.e. [['a', 'b'], ['c', 'd']].
                For dense features, you need to cut them into discrete intervals beforehand.
-        :param bins: int, defined the number of equal-width bins in the range of column(s) values.
-        :param cross_col_name: str, the column name for output cross column. Default is None, and
-               in this case the default cross column name will be 'crossed_col1_col2'
-               for ['col1', 'col2'].
+        :param bins: list[int], defined the numbers of equal-width bins in the range 
+               of columns values. i.e. [100, 200].
+        :param cross_col_name: list[str], the column names for output crossed columns. 
+               Default is None, and in this case the default cross column name will 
+               be 'crossed_col1_col2' for ['col1', 'col2'].
         :param method: hashlib supported method, like md5, sha256 etc.
 
         :return: A new FeatureTable with the target cross column.
         """
-        cross_hash_df = self.df
-        invalidInputError(isinstance(columns, list), "columns should be a list of column names")
-        invalidInputError(len(columns) >= 2, "cross_hash_encode should have >= 2 columns")
-        if cross_col_name is None:
-            cross_string = ''
-            for column in columns:
-                cross_string = cross_string + '_' + column
-            cross_col_name = 'crossed' + cross_string
-        cross_hash_df = cross_hash_df.withColumn(cross_col_name, concat(*columns))
-        cross_hash_df = FeatureTable(cross_hash_df).hash_encode([cross_col_name], bins, method)
-        return cross_hash_df
+        # For compatibility with previous versions
+        if isinstance(column_pairs, list) and all(isinstance(x, str) for x in column_pairs):
+            column_pairs=[column_pairs]
+            bin_sizes=[bin_sizes]
+            if crossed_col_names:
+                crossed_col_names=[crossed_col_names]
+                
+        # check input params
+        invalidInputError(isinstance(column_pairs, list) and all(isinstance(x, list) for x in column_pairs),
+                          "column_pairs should be a list of column pairs")
+        invalidInputError(isinstance(bin_sizes, list) and all(isinstance(x, int) for x in bin_sizes),
+                          "bin_sizes should be a list of bin sizes")
+        invalidInputError(len(column_pairs) == len(bin_sizes),
+                          "column_pairs and bin_sizes should have the same length")
+        if crossed_col_names != None:
+            invalidInputError(isinstance(crossed_col_names, list),
+                              "crossed_col_names should be None or a list of crossed col names")
+            invalidInputError(len(bin_sizes) == len(crossed_col_names),
+                              "column_pairs, bin_sizes and crossed_col_names should have the same length")
+
+        crossed_hash_df = self.df
+        for i in range(len(column_pairs)):
+            invalidInputError(len(column_pairs[i]) >= 2,
+                              "each element in column_pairs should have >= 2 columns")
+            if crossed_col_names is None or crossed_col_names[i] is None:
+                crossed_col_name = ''
+                for column_name in column_pairs[i]:
+                    crossed_col_name = crossed_col_name + '_' + column_name
+                crossed_col_name = 'crossed' + crossed_col_name
+            else:
+                invalidInputError(isinstance(crossed_col_names[i], str),
+                                  "each element in crossed_col_names should be string")
+                crossed_col_name = crossed_col_names[i]
+            crossed_hash_df = crossed_hash_df.withColumn(
+                crossed_col_name, concat(*column_pairs[i]))
+
+            crossed_hash_df = FeatureTable(crossed_hash_df).hash_encode([crossed_col_name], bin_sizes[i], method)
+        return crossed_hash_df
+
+    cross_columns=cross_hash_encode
 
     def category_encode(self, columns, freq_limit=None, order_by_freq=False,
                         do_split=False, sep=',', sort_for_array=False, keep_most_frequent=False,
@@ -1264,18 +1292,6 @@ class FeatureTable(Table):
     def _clone(self, df):
         return FeatureTable(df)
 
-    def cross_columns(self, crossed_columns, bucket_sizes):
-        """
-        Cross columns and hashed to specified bucket size
-
-        :param crossed_columns: list of column name pairs to be crossed.
-               i.e. [['a', 'b'], ['c', 'd']]
-        :param bucket_sizes: hash bucket size for crossed pairs. i.e. [1000, 300]
-
-        :return: A new FeatureTable with crossed columns.
-        """
-        df = cross_columns(self.df, crossed_columns, bucket_sizes)
-        return FeatureTable(df)
 
     def min_max_scale(self, columns, min=0.0, max=1.0):
         """
@@ -1688,20 +1704,6 @@ class FeatureTable(Table):
             return FeatureTable(result_df)
         else:
             return FeatureTable(agg_df)
-
-    def split(self, ratio, seed=None):
-        """
-        Split the FeatureTable into multiple FeatureTables for train, validation and test.
-
-        :param ratio: a list of portions as weights with which to split the FeatureTable.
-                      Weights will be normalized if they don't sum up to 1.0.
-        :param seed: The seed for sampling.
-
-        :return: A tuple of FeatureTables split by the given ratio.
-        """
-        df_list = self.df.randomSplit(ratio, seed)
-        tbl_list = [FeatureTable(df) for df in df_list]
-        return tuple(tbl_list)
 
     def target_encode(self, cat_cols, target_cols, target_mean=None, smooth=20, kfold=2,
                       fold_seed=None, fold_col="__fold__", drop_cat=False, drop_fold=True,
