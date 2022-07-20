@@ -33,10 +33,13 @@ def ipex_device():
     from bigdl.nano.deps.ipex.version_1_9 import DEVICE
     return DEVICE
 
-def PytorchIPEXJITModel(model, input_sample=None, use_ipex=False, use_jit=False, channels_last=None):
+
+def PytorchIPEXJITModel(model, input_sample=None, use_ipex=False,
+                        use_jit=False, channels_last=None):
     from .ipex_inference_model import PytorchIPEXJITModel
     return PytorchIPEXJITModel(model, input_sample=input_sample, use_ipex=use_ipex,
                                use_jit=use_jit, channels_last=channels_last)
+
 
 def load_ipexjit_model(path, model):
     from .ipex_inference_model import PytorchIPEXJITModel

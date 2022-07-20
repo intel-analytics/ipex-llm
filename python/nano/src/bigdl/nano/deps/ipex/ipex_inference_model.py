@@ -25,7 +25,14 @@ class IPEXJITModel:
                  input_sample=None,
                  use_ipex=False,
                  use_jit=False,
-                 channels_last=None):
+                 channels_last=None,
+                 from_load=False):
+        if from_load:
+            self.model = model
+            self.use_ipex = use_ipex
+            self.use_jit = use_jit
+            self.channels_last=channels_last
+            return
         self.channels_last = use_ipex if (channels_last is None or not use_ipex) else channels_last
         model.eval()
         self.original_state_dict = model.state_dict()
@@ -42,21 +49,23 @@ class IPEXJITModel:
 
     def forward_step(self, *inputs):
         if self.channels_last:
-            inputs = tuple(map(lambda x:x.to(memory_format=torch.channels_last), inputs))
+            inputs = tuple(map(lambda x: x.to(memory_format=torch.channels_last), inputs))
         return self.model(*inputs)
-    
+
     def _save_model(self, path):
         if self.use_jit:
             self.model.save(path / "ckpt.pth")
         else:
             torch.save(self.original_state_dict, path / "ckpt.pth")
 
+
 class PytorchIPEXJITModel(IPEXJITModel, AcceleratedLightningModule):
-    def __init__(self, model, input_sample=None, use_ipex=False, use_jit=False, channels_last=None):
+    def __init__(self, model, input_sample=None, use_ipex=False,
+                 use_jit=False, channels_last=None, from_load=False):
         AcceleratedLightningModule.__init__(self, None)
         IPEXJITModel.__init__(self, model, input_sample=input_sample,
-                              use_ipex=use_ipex, use_jit=use_jit)
-    
+                              use_ipex=use_ipex, use_jit=use_jit, from_load=from_load)
+
     def on_forward_start(self, inputs):
         return inputs
 
@@ -75,18 +84,22 @@ class PytorchIPEXJITModel(IPEXJITModel, AcceleratedLightningModule):
     @staticmethod
     def _load(path, model):
         status = PytorchIPEXJITModel._load_status(path)
+        checkpoint_path = path / status['checkpoint']
         if status["use_jit"]:
-            checkpoint_path = path / status['checkpoint']
             model = torch.jit.load(checkpoint_path)
+            model.eval()
+            model = torch.jit.freeze(model)
         else:
-            checkpoint_path = path / status['checkpoint']
             state_dict = torch.load(checkpoint_path)
             model.eval()
             model.load_state_dict(state_dict)
             if status["channels_last"]:
                 model = model.to(memory_format=torch.channels_last)
             model = ipex.optimize(model)
-        return model
+        return PytorchIPEXJITModel(model, use_ipex=status['use_ipex'],
+                                   use_jit=status['use_jit'],
+                                   channels_last=status['channels_last'],
+                                   from_load=True)
 
     def _save_model(self, path):
         super()._save_model(path)

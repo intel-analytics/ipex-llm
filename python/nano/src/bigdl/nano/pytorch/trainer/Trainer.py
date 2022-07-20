@@ -428,8 +428,12 @@ class Trainer(pl.Trainer):
         :param use_ipex: whether we use ipex as accelerator for inferencing. default: False.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
-        :param **export_kwargs: will be passed to torch.onnx.export function, only valid when
-                                accelerator='onnxruntime'/'openvino', otherwise will be ignored.
+        :param **kwargs: other extra advanced settings include
+                         1. those be passed to torch.onnx.export function, only valid when
+                         accelerator='onnxruntime'/'openvino', otherwise will be ignored.
+                         2. if channels_last is set and use_ipex=True, we will transform the
+                         data to be channels last according to the setting. Defaultly, channels_last
+                         will be set to True if use_ipex=True.
         :return: Model with different acceleration.
         """
         invalidInputError(
