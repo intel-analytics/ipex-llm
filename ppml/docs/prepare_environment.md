@@ -59,7 +59,7 @@ cd BigDL/ppml/
 
 >**Caution**: 
 >
->It is important to protect your keys and passwords. The above steps for preparing keys and passwords are only for demo purposes, it is non-production. You are recommended to generate your keys and passwords according to your requirements and protect it safely.
+>It is important to protect your keys and passwords. The above steps for preparing keys and passwords are only for demo purposes, it is non-production. You are recommended to generate your keys and passwords according to your requirements and protect them safely.
 >
 >Besides, Kubernetes Secrets are, by default, stored unencrypted in the API server's underlying data store (etcd). Anyone with API access can retrieve or modify a Secret, and so can anyone with access to etcd. Additionally, anyone who is authorized to create a Pod in a namespace can use that access to read any Secret in that namespace; this includes indirect access such as the ability to create a Deployment. In order to safely use Secrets, take the steps in [safely use secrets](https://kubernetes.io/docs/concepts/configuration/secret/)
 
