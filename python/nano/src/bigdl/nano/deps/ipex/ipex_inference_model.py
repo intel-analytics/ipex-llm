@@ -27,6 +27,17 @@ class IPEXJITModel:
                  use_jit=False,
                  channels_last=None,
                  from_load=False):
+        '''
+        :param model: the model(nn.module) to be transform if from_load is False
+               the accelerated model if from_load is True.
+        :param input_sample: torch tensor indicate the data sample to be used
+               for tracing.
+        :param use_ipex: if use ipex to optimize the model
+        :param use_jit: if use jit to accelerate the model
+        :param channels_last: if set model and data to be channels-last mode.
+               the parameter will be ignored if use_ipex is False.
+        :param from_load: this will only be set by _load method.
+        '''
         if from_load:
             self.model = model
             self.use_ipex = use_ipex
@@ -62,6 +73,22 @@ class IPEXJITModel:
 class PytorchIPEXJITModel(IPEXJITModel, AcceleratedLightningModule):
     def __init__(self, model, input_sample=None, use_ipex=False,
                  use_jit=False, channels_last=None, from_load=False):
+        '''
+        This is the accelerated model for pytorch and ipex/jit.
+        All the external API is based on Trainer, so what we have here is
+        basically internal APIs and subject to change.
+
+        This PytorchIPEXJITModel will serve for fp32 and ipex>1.9 models.
+        :param model: the model(nn.module) to be transform if from_load is False
+               the accelerated model if from_load is True.
+        :param input_sample: torch tensor indicate the data sample to be used
+               for tracing.
+        :param use_ipex: if use ipex to optimize the model
+        :param use_jit: if use jit to accelerate the model
+        :param channels_last: if set model and data to be channels-last mode.
+               the parameter will be ignored if use_ipex is False.
+        :param from_load: this will only be set by _load method.
+        '''
         AcceleratedLightningModule.__init__(self, None)
         IPEXJITModel.__init__(self, model, input_sample=input_sample,
                               use_ipex=use_ipex, use_jit=use_jit, from_load=from_load)

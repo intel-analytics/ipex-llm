@@ -424,7 +424,7 @@ class Trainer(pl.Trainer):
         :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
                              model is a LightningModule with any dataloader attached.
         :param accelerator: The accelerator to use, defaults to None meaning staying in Pytorch
-                            backend. 'openvino' and 'onnxruntime' are supported for now.
+                            backend. 'openvino', 'onnxruntime' and 'jit' are supported for now.
         :param use_ipex: whether we use ipex as accelerator for inferencing. default: False.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
@@ -459,8 +459,8 @@ class Trainer(pl.Trainer):
         """
         Save the model to local file.
 
-        :param model: Any model of torch.nn.Module, including PytorchOpenVINOModel,
-         PytorchONNXModel.
+        :param model: Any model of torch.nn.Module, including all models accelareted by
+               Trainer.trace/Trainer.quantize.
         :param path: Path to saved model. Path should be a directory.
         """
         path = Path(path)
@@ -485,8 +485,10 @@ class Trainer(pl.Trainer):
         Load a model from local.
 
         :param path: Path to model to be loaded. Path should be a directory.
-        :param model: Required FP32 model to load pytorch model. Optional for ONNX/OpenVINO.
-        :return: Model with different acceleration(None/OpenVINO/ONNX Runtime) or
+        :param model: Required FP32 model to load pytorch model, it is needed if you accelerated
+               the model with accelerator=None by Trainer.trace/Trainer.quantize. model
+               should be set to None if you choose accelerator="onnxruntime"/"openvino"/"jit".
+        :return: Model with different acceleration(None/OpenVINO/ONNX Runtime/JIT) or
                  precision(FP32/FP16/BF16/INT8).
         """
         path = Path(path)
