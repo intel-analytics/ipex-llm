@@ -108,7 +108,7 @@ jobs:
           mv scala/serving/pom.xml.origin scala/serving/pom.xml
           mv scala/ppml/pom.xml.origin scala/ppml/pom.xml
           mv scala/assembly/pom.xml.origin scala/assembly/pom.xml
-          
+          #spark2.4.6          
           cp scala/pom.xml scala/pom.xml.origin
           cp scala/common/spark-version/pom.xml scala/common/spark-version/pom.xml.origin
           cp scala/common/spark-version/2.0/pom.xml scala/common/spark-version/2.0/pom.xml.origin
