@@ -149,6 +149,7 @@ class Objective(object):
                 val_dataloaders=self.val_dataloaders,
                 datamodule=self.datamodule
             )
+            #  todo：多进程下可能需要别的修改？      
 
     def _post_train(self, model):
         pass

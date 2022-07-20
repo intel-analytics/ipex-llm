@@ -54,6 +54,7 @@ class HPOSearcher:
         :param trainer: The pl.Trainer object.
         """
         self.trainer = trainer
+        self.num_process = num_processes
         if num_processes == 1:
             # reset current epoch = 0 after each run
             from pytorch_lightning.callbacks import Callback
@@ -216,9 +217,10 @@ class HPOSearcher:
         as this can be called multiple times."""
         # last `_run` call might have set it to `FINISHED`
         self.trainer.state.status = TrainerStatus.RUNNING
-        # Pytorch Lightning 1.6
-        self.trainer.state.fn = TrainerFn.FITTING
         self.trainer.training = True
-        # self.trainer._run(*args, **kwargs)
-        self.trainer.fit(*args, **kwargs)
+        if self.num_process > 1 and not LIGHTNING_VERSION_LESS_1_6:
+            self.trainer.state.fn = TrainerFn.FITTING  # add in lightning 1.6
+            self.trainer.fit(*args, **kwargs)
+        else:
+            self.trainer._run(*args, **kwargs)
         self.trainer.tuning = True
