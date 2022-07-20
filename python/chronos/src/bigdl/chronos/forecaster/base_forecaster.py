@@ -310,7 +310,8 @@ class BasePytorchForecaster(Forecaster):
                 self.fitted = True
             else:
                 if isinstance(validation_data, tuple):
-                    validation_data = np_to_dataloader(validation_data, batch_size, self.num_processes)
+                    validation_data = np_to_dataloader(validation_data, batch_size,
+                                                       self.num_processes)
                 self.trainer.fit(self.internal, data, validation_data)
                 self.fitted = True
                 fit_out = read_csv('python/chronos/src/bigdl/chronos/forecaster/val_data_test/'
