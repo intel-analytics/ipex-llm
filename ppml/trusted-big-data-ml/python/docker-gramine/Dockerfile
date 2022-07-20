@@ -19,19 +19,6 @@ RUN cd /gramine && \
     ninja -C build/ install
 RUN gramine-sgx-gen-private-key
 
-COPY --from=spark /opt/jdk  /opt/jdk8
-COPY --from=spark /opt/scala-2.11.8  /opt/scala-2.11.8
-COPY --from=spark /opt/spark-${SPARK_VERSION} /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}
-COPY --from=spark /opt/spark-${SPARK_VERSION}/examples/src/main/resources /ppml/trusted-big-data-ml/examples/src/main/resources
-COPY --from=bigdl /bigdl-${BIGDL_VERSION} ${BIGDL_HOME}
-
-RUN apt-get update --fix-missing && \
-    env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y tzdata && \
-    apt-get install -y apt-utils vim curl nano wget unzip git tree zip && \
-    apt-get install -y libsm6 make build-essential && \
-    apt-get install -y autoconf gawk bison libcurl4-openssl-dev python3-protobuf libprotobuf-c-dev protobuf-c-compiler && \
-    apt-get install -y netcat net-tools
-
 # Stage.2 JDK & Scala & Spark & Hadoop
 FROM ubuntu:20.04 as spark
 ARG HTTP_PROXY_HOST
@@ -188,7 +175,7 @@ ENV PYTHONPATH                          /usr/lib/python3.6:/usr/lib/python3.6/li
 ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
 
-# Python
+
 RUN RUN mkdir -p /ppml/trusted-big-data-ml/work && \
     mkdir -p /ppml/trusted-big-data-ml/work/lib && \
     mkdir -p /ppml/trusted-big-data-ml/work/keys && \
@@ -201,7 +188,23 @@ RUN RUN mkdir -p /ppml/trusted-big-data-ml/work && \
     mkdir -p /root/.keras/datasets && \
     mkdir -p /root/.zinc && \
     mkdir -p /root/.m2 && \
-    mkdir -p /root/.kube/ && \
+    mkdir -p /root/.kube/
+
+COPY --from=spark /opt/jdk  /opt/jdk8
+COPY --from=spark /opt/scala-2.11.8  /opt/scala-2.11.8
+COPY --from=spark /opt/spark-${SPARK_VERSION} /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}
+COPY --from=spark /opt/spark-${SPARK_VERSION}/examples/src/main/resources /ppml/trusted-big-data-ml/examples/src/main/resources
+COPY --from=bigdl /bigdl-${BIGDL_VERSION} ${BIGDL_HOME}
+
+
+
+RUN apt-get update --fix-missing && \
+    env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y tzdata && \
+    apt-get install -y apt-utils vim curl nano wget unzip git tree zip && \
+    apt-get install -y libsm6 make build-essential && \
+    apt-get install -y autoconf gawk bison libcurl4-openssl-dev python3-protobuf libprotobuf-c-dev protobuf-c-compiler && \
+    apt-get install -y netcat net-tools && \
+    # python
     apt-get install -y python3-minimal && \
     apt-get install -y build-essential python3 python3-setuptools python3-dev python3-pip && \
     pip3 install --upgrade pip && \
@@ -222,6 +225,7 @@ RUN RUN mkdir -p /ppml/trusted-big-data-ml/work && \
     pip install --no-cache-dir dill==0.3.4 && \
     python3 -m pip install toml==0.10.2 click jinja2 && \
     python3 -m ipykernel.kernelspec
+
 ADD ./bash.manifest.template /ppml/trusted-big-data-ml/bash.manifest.template
 ADD ./Makefile /ppml/trusted-big-data-ml/Makefile
 ADD ./init.sh /ppml/trusted-big-data-ml/init.sh
