@@ -176,7 +176,7 @@ ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
 
 
-RUN RUN mkdir -p /ppml/trusted-big-data-ml/work && \
+RUN mkdir -p /ppml/trusted-big-data-ml/work && \
     mkdir -p /ppml/trusted-big-data-ml/work/lib && \
     mkdir -p /ppml/trusted-big-data-ml/work/keys && \
     mkdir -p /ppml/trusted-big-data-ml/work/password && \
