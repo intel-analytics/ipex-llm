@@ -21,10 +21,10 @@ import logging
 import os
 os.unsetenv('KMP_INIT_AT_FORK')
 
-class Disableprophet:
+class Disablelogging:
     def __enter__(self):
         logging.disable(logging.CRITICAL)
-    
+
     def __exit__(self, *args, **opts):
         logging.disable(logging.NOTSET)
 
@@ -47,7 +47,7 @@ try:
 except:
     warnings.warn("Please install `tensorflow>2.0.0` to use MTNetForecaster.")
 try:
-    with Disableprophet():
+    with Disablelogging():
         import prophet
     prophet_available = True
 except:
