@@ -34,7 +34,6 @@ from pyspark.sql.functions import col as pyspark_col, concat, udf, array, broadc
     lit, rank, monotonically_increasing_id, row_number, desc
 from pyspark.sql.types import ArrayType, DataType, StructType, StringType, StructField
 
-
 JAVA_INT_MIN = -2147483648
 JAVA_INT_MAX = 2147483647
 
@@ -266,8 +265,8 @@ class Table:
         """
         df_array = self.df.randomSplit(weights, seed)
         return [self._clone(df) for df in df_array]
-    
-    split=random_split
+
+    split = random_split
 
     def clip(self, columns, min=None, max=None):
         """
@@ -1005,13 +1004,13 @@ class FeatureTable(Table):
         """
         Cross columns and hashed to specified bin size.
 
-        :param columns: list[list[str]], list of categorical column pairs to be 
-               encoded as cross features. i.e. [['a', 'b'], ['c', 'd']].
+        :param columns: list[list[str]], list of categorical column pairs to be encoded
+               as cross features. i.e. [['a', 'b'], ['c', 'd']].
                For dense features, you need to cut them into discrete intervals beforehand.
-        :param bins: list[int], defined the numbers of equal-width bins in the range 
+        :param bins: list[int], defined the numbers of equal-width bins in the range
                of columns values. i.e. [100, 200].
-        :param cross_col_name: list[str], the column names for output crossed columns. 
-               Default is None, and in this case the default cross column name will 
+        :param cross_col_name: list[str], the column names for output crossed columns.
+               Default is None, and in this case the default cross column name will
                be 'crossed_col1_col2' for ['col1', 'col2'].
         :param method: hashlib supported method, like md5, sha256 etc.
 
@@ -1019,19 +1018,21 @@ class FeatureTable(Table):
         """
         # For compatibility with previous versions
         if isinstance(column_pairs, list) and all(isinstance(x, str) for x in column_pairs):
-            column_pairs=[column_pairs]
-            bin_sizes=[bin_sizes]
+            column_pairs = [column_pairs]
+            bin_sizes = [bin_sizes]
             if crossed_col_names:
-                crossed_col_names=[crossed_col_names]
-                
+                crossed_col_names = [crossed_col_names]
+
         # check input params
-        invalidInputError(isinstance(column_pairs, list) and all(isinstance(x, list) for x in column_pairs),
-                          "column_pairs should be a list of column pairs")
-        invalidInputError(isinstance(bin_sizes, list) and all(isinstance(x, int) for x in bin_sizes),
-                          "bin_sizes should be a list of bin sizes")
+        invalidInputError(
+            isinstance(column_pairs, list) and all(isinstance(x, list) for x in column_pairs),
+            "column_pairs should be a list of column pairs")
+        invalidInputError(
+            isinstance(bin_sizes, list) and all(isinstance(x, int) for x in bin_sizes),
+            "bin_sizes should be a list of bin sizes")
         invalidInputError(len(column_pairs) == len(bin_sizes),
                           "column_pairs and bin_sizes should have the same length")
-        if crossed_col_names != None:
+        if crossed_col_names is not None:
             invalidInputError(isinstance(crossed_col_names, list),
                               "crossed_col_names should be None or a list of crossed col names")
             invalidInputError(len(bin_sizes) == len(crossed_col_names),
@@ -1053,10 +1054,11 @@ class FeatureTable(Table):
             crossed_hash_df = crossed_hash_df.withColumn(
                 crossed_col_name, concat(*column_pairs[i]))
 
-            crossed_hash_df = FeatureTable(crossed_hash_df).hash_encode([crossed_col_name], bin_sizes[i], method)
+            crossed_hash_df = FeatureTable(crossed_hash_df).hash_encode(
+                [crossed_col_name], bin_sizes[i], method)
         return crossed_hash_df
 
-    cross_columns=cross_hash_encode
+    cross_columns = cross_hash_encode
 
     def category_encode(self, columns, freq_limit=None, order_by_freq=False,
                         do_split=False, sep=',', sort_for_array=False, keep_most_frequent=False,
@@ -1291,7 +1293,6 @@ class FeatureTable(Table):
 
     def _clone(self, df):
         return FeatureTable(df)
-
 
     def min_max_scale(self, columns, min=0.0, max=1.0):
         """
@@ -1889,7 +1890,7 @@ class FeatureTable(Table):
                     )
                     fold_df = fold_df.drop(cat_col_name + "_sum_" + target_col,
                                            cat_col_name + "_all_sum_" + target_col)
-                fold_df = fold_df.drop(cat_col_name + "_count")\
+                fold_df = fold_df.drop(cat_col_name + "_count") \
                     .withColumnRenamed(cat_col_name + "_all_count", "target_encode_count")
 
             out_target_mean_dict = {
@@ -1897,7 +1898,7 @@ class FeatureTable(Table):
                 for target_col, out_col in zip(target_cols, out_col_list)
             }
             return TargetCode(fold_df, cat_col, out_target_mean_dict), \
-                TargetCode(all_df, cat_col, out_target_mean_dict)
+                   TargetCode(all_df, cat_col, out_target_mean_dict)
 
         targets = list(map(gen_target_code, zip(cat_cols, out_cols)))
 
@@ -2128,7 +2129,7 @@ class FeatureTable(Table):
         columns = str_to_list(columns, "columns")
         vocabularies = {}
         for col in columns:
-            vocabularies[col] = self.df.select(col)\
+            vocabularies[col] = self.df.select(col) \
                 .distinct().rdd.map(lambda row: row[col]).collect()
         return vocabularies
 

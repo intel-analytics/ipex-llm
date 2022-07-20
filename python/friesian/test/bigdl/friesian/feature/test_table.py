@@ -195,21 +195,25 @@ class TestTable(TestCase):
         df = spark.createDataFrame(data, schema)
         cross_hash_df = df.withColumn("A_B_C", concat("A", "B", "C"))
         tbl = FeatureTable(df)
-        
         tbl.cross_hash_encode(["A", "B", "C"], 100)
         with self.assertRaisesRegex(RuntimeError, r"column_pairs should be a list of column pairs"):
             tbl.cross_hash_encode("A", [100])
         with self.assertRaisesRegex(RuntimeError, r"bin_sizes should be a list of bin sizes"):
             tbl.cross_hash_encode([["A", "B", "C"]], 100)
-        with self.assertRaisesRegex(RuntimeError, r"column_pairs and bin_sizes should have the same length"):
+        with self.assertRaisesRegex(RuntimeError,
+                                    r"column_pairs and bin_sizes should have the same length"):
             tbl.cross_hash_encode([["A", "B", "C"], ["A", "D"]], [100])
-        with self.assertRaisesRegex(RuntimeError, r"crossed_col_names should be None or a list of crossed col names"):
+        with self.assertRaisesRegex(RuntimeError,
+                                    r"crossed_col_names should be None or a list of crossed col names"):
             tbl.cross_hash_encode([["A", "B", "C"]], [100], "crossed_ABC")
-        with self.assertRaisesRegex(RuntimeError, r"column_pairs, bin_sizes and crossed_col_names should have the same length"):
+        with self.assertRaisesRegex(RuntimeError,
+                                    r"column_pairs, bin_sizes and crossed_col_names should have the same length"):
             tbl.cross_hash_encode([["A", "B", "C"]], [100], ["crossed_ABC", "crossed_C"])
-        with self.assertRaisesRegex(RuntimeError, r"each element in column_pairs should have >= 2 columns"):
+        with self.assertRaisesRegex(RuntimeError,
+                                    r"each element in column_pairs should have >= 2 columns"):
             tbl.cross_hash_encode([["A"]], [100], ["crossed_ABC"])
-        with self.assertRaisesRegex(RuntimeError, r"each element in crossed_col_names should be string"):
+        with self.assertRaisesRegex(RuntimeError,
+                                    r"each element in crossed_col_names should be string"):
             tbl.cross_hash_encode([["A", "B", "C"]], [100], [0x14])
 
         cross_hash_str = lambda x: hashlib.md5(str(x).encode('utf-8', 'strict')).hexdigest()
@@ -309,7 +313,7 @@ class TestTable(TestCase):
         file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
         to_list_str = udf(lambda arr: ','.join(arr))
-        df = feature_tbl.dropna(['col_4', 'col_5']).df.withColumn("list1", array('col_4', 'col_5'))\
+        df = feature_tbl.dropna(['col_4', 'col_5']).df.withColumn("list1", array('col_4', 'col_5')) \
             .withColumn("list1", to_list_str(col("list1")))
         tbl = FeatureTable(df)
         string_idx_1 = tbl.gen_string_idx("list1", do_split=True, sep=",", freq_limit=1)
@@ -322,8 +326,7 @@ class TestTable(TestCase):
         new_tbl2 = tbl.encode_string(['list1'], string_idx_1, do_split=True, sep=",",
                                      sort_for_array=True)
         l1 = new_tbl2.to_list("list1")[0]
-        l2 = l1.copy()
-        l2.sort()
+        l2 = sorted(l1.copy())
         invalidInputError(l1 == l2, "encode list with sort should sort")
 
         new_tbl3 = tbl.encode_string(['list1'], string_idx_1, do_split=True, sep=",",
@@ -818,12 +821,12 @@ class TestTable(TestCase):
         data2 = [(2, "alice")]
         data3 = [("amy", 3, 50)]
         schema1 = StructType([StructField("name", StringType(), True),
-                             StructField("id", IntegerType(), True)])
+                              StructField("id", IntegerType(), True)])
         schema2 = StructType([StructField("id", IntegerType(), True),
                               StructField("name", StringType(), True)])
         schema3 = StructType([StructField("name", StringType(), True),
-                             StructField("id", IntegerType(), True),
-                             StructField("weight", IntegerType(), True)])
+                              StructField("id", IntegerType(), True),
+                              StructField("weight", IntegerType(), True)])
         tbl1 = FeatureTable(spark.createDataFrame(data1, schema1))
         tbl2 = FeatureTable(spark.createDataFrame(data2, schema2))
         tbl3 = FeatureTable(spark.createDataFrame(data3, schema3))
