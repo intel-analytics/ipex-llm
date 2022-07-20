@@ -98,7 +98,7 @@ class TCNForecaster(BasePytorchForecaster):
         :param workers_per_node: int, the number of worker you want to use.
                The value defaults to 1. The param is only effective when
                distributed is set to True.
-        :param remote_distributed_backend: str, select from "ray" or
+        :param distributed_backend: str, select from "ray" or
                "horovod". The value defaults to "ray".
         """
         # config setting
