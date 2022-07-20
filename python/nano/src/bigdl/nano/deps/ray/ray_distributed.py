@@ -244,7 +244,7 @@ class RayStrategy(DDPSpawnStrategy):
             # pytest will set this environment variable to the path of `nano` directory,
             # and subprocess will use it to initialize its `sys.path`,
             # so we can import `test` module in subprocess
-            ray.get(worker.set_env_var.remote("PYTHONPATH", envs[i]['PYTHONPATH']))
+            ray.get(worker.set_env_var.remote("PYTHONPATH", envs[i].get("PYTHONPATH", "")))
 
             workers.append(worker)
 
