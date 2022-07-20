@@ -176,7 +176,8 @@ ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
 
 
-RUN mkdir -p /ppml/trusted-big-data-ml/work && \
+RUN mkdir -p /gramine && \
+    mkdir -p /ppml/trusted-big-data-ml/work && \
     mkdir -p /ppml/trusted-big-data-ml/work/lib && \
     mkdir -p /ppml/trusted-big-data-ml/work/keys && \
     mkdir -p /ppml/trusted-big-data-ml/work/password && \
@@ -190,6 +191,7 @@ RUN mkdir -p /ppml/trusted-big-data-ml/work && \
     mkdir -p /root/.m2 && \
     mkdir -p /root/.kube/
 
+COPY --from=gramine /gramine /gramine
 COPY --from=spark /opt/jdk  /opt/jdk8
 COPY --from=spark /opt/scala-2.11.8  /opt/scala-2.11.8
 COPY --from=spark /opt/spark-${SPARK_VERSION} /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}
