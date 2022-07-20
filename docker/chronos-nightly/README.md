@@ -24,6 +24,7 @@ sudo docker build \
     -t chronos-nightly:b1 . # You may choose any NAME:TAG you want.
 ```
 According to your network status, this building will cost **15-30 mins**. 
+
 **Tips:** When errors happen like `E: Package 'apt-utils' has no installation candidate`, it's usually related to the bad network status. Please build with a proxy.
 
 ## Run the image
