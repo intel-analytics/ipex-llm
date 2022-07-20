@@ -113,6 +113,12 @@ BigDL Documentation
 
 .. toctree::
    :maxdepth: 1
+   :caption: Friesian Overview
+
+   doc/Friesian/Overview/online-serving.md
+
+.. toctree::
+   :maxdepth: 1
    :caption: Common Use Case
 
    doc/Orca/QuickStart/orca-pytorch-distributed-quickstart.md
