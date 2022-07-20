@@ -4,7 +4,35 @@ ARG TINI_VERSION=v0.18.0
 ARG JDK_VERSION=8u192
 ARG JDK_URL
 ARG SPARK_JAR_REPO_URL
-# Stage.1 JDK & Scala & Spark & Hadoop
+
+# Stage.1 gramine
+FROM ubuntu:20.04 AS gramine
+RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
+    env DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential autoconf bison gawk git ninja-build python3 python3-click python3-jinja2 wget pkg-config cmake libcurl4-openssl-dev libprotobuf-c-dev protobuf-c-compiler python3-cryptography python3-pip python3-protobuf nasm
+RUN git clone https://github.com/analytics-zoo/gramine.git /gramine
+RUN git clone https://github.com/intel/SGXDataCenterAttestationPrimitives.git /opt/intel/SGXDataCenterAttestationPrimitives
+RUN python3 -m pip install 'meson>=0.55' 'toml>=0.10'
+RUN cd /gramine && \
+    git checkout devel-2022-5-29 && \
+    meson setup build/ --buildtype=release  -Dsgx=enabled   -Dsgx_driver=dcap1.10 && \
+    ninja -C build/ && \
+    ninja -C build/ install
+RUN gramine-sgx-gen-private-key
+
+COPY --from=spark /opt/jdk  /opt/jdk8
+COPY --from=spark /opt/scala-2.11.8  /opt/scala-2.11.8
+COPY --from=spark /opt/spark-${SPARK_VERSION} /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}
+COPY --from=spark /opt/spark-${SPARK_VERSION}/examples/src/main/resources /ppml/trusted-big-data-ml/examples/src/main/resources
+COPY --from=bigdl /bigdl-${BIGDL_VERSION} ${BIGDL_HOME}
+
+RUN apt-get update --fix-missing && \
+    env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y tzdata && \
+    apt-get install -y apt-utils vim curl nano wget unzip git tree zip && \
+    apt-get install -y libsm6 make build-essential && \
+    apt-get install -y autoconf gawk bison libcurl4-openssl-dev python3-protobuf libprotobuf-c-dev protobuf-c-compiler && \
+    apt-get install -y netcat net-tools
+
+# Stage.2 JDK & Scala & Spark & Hadoop
 FROM ubuntu:20.04 as spark
 ARG HTTP_PROXY_HOST
 ARG HTTP_PROXY_PORT
@@ -48,7 +76,7 @@ RUN cd /opt && \
     rm spark-${SPARK_VERSION}/jars/hadoop-common-3.2.0.jar && \
     rm spark-${SPARK_VERSION}/jars/hive-exec-2.3.7-core.jar
 ADD ./log4j2.xml /opt/spark-${SPARK_VERSION}/conf/log4j2.xml
-
+# spark modification
 RUN cd /opt && \
     wget $SPARK_JAR_REPO_URL/spark-core_2.12-$SPARK_VERSION.jar && \
     wget $SPARK_JAR_REPO_URL/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
@@ -116,7 +144,7 @@ RUN cd /opt && \
     mv /opt/hive/ql/target/hive-exec-2.3.7-core.jar /opt/spark-${SPARK_VERSION}/jars/hive-exec-2.3.7-core.jar
 
 
-# Stage.2 BigDL
+# Stage.3 BigDL
 FROM ubuntu:20.04 as bigdl
 ARG BIGDL_VERSION
 ARG SPARK_VERSION
@@ -130,7 +158,7 @@ RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2
 RUN ./download-bigdl.sh && \
     rm bigdl*.zip
 
-# Stage.3 PPML
+# Stage.4 PPML
 FROM ubuntu:20.04
 
 ARG BIGDL_VERSION
@@ -160,7 +188,8 @@ ENV PYTHONPATH                          /usr/lib/python3.6:/usr/lib/python3.6/li
 ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
 
-RUN mkdir -p /ppml/trusted-big-data-ml/work && \
+# Python
+RUN RUN mkdir -p /ppml/trusted-big-data-ml/work && \
     mkdir -p /ppml/trusted-big-data-ml/work/lib && \
     mkdir -p /ppml/trusted-big-data-ml/work/keys && \
     mkdir -p /ppml/trusted-big-data-ml/work/password && \
@@ -172,38 +201,8 @@ RUN mkdir -p /ppml/trusted-big-data-ml/work && \
     mkdir -p /root/.keras/datasets && \
     mkdir -p /root/.zinc && \
     mkdir -p /root/.m2 && \
-    mkdir -p /root/.kube/
-
-# Gramine
-RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
-    env DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential autoconf bison gawk ninja-build python3 python3-click python3-jinja2 wget pkg-config cmake libcurl4-openssl-dev libprotobuf-c-dev protobuf-c-compiler python3-cryptography python3-pip python3-protobuf nasm
-RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
-    env DEBIAN_FRONTEND=noninteractive apt-get install -y git
-RUN git clone https://github.com/analytics-zoo/gramine.git /gramine
-RUN git clone https://github.com/intel/SGXDataCenterAttestationPrimitives.git /opt/intel/SGXDataCenterAttestationPrimitives
-RUN python3 -m pip install 'meson>=0.55' 'toml>=0.10'
-RUN cd /gramine && \
-    git checkout devel-2022-5-29 && \
-    meson setup build/ --buildtype=release  -Dsgx=enabled   -Dsgx_driver=dcap1.10 && \
-    ninja -C build/ && \
-    ninja -C build/ install
-RUN gramine-sgx-gen-private-key
-
-COPY --from=spark /opt/jdk  /opt/jdk8
-COPY --from=spark /opt/scala-2.11.8  /opt/scala-2.11.8
-COPY --from=spark /opt/spark-${SPARK_VERSION} /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}
-COPY --from=spark /opt/spark-${SPARK_VERSION}/examples/src/main/resources /ppml/trusted-big-data-ml/examples/src/main/resources
-COPY --from=bigdl /bigdl-${BIGDL_VERSION} ${BIGDL_HOME}
-
-RUN apt-get update --fix-missing && \
-    env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y tzdata && \
-    apt-get install -y apt-utils vim curl nano wget unzip git tree zip && \
-    apt-get install -y libsm6 make build-essential && \
-    apt-get install -y autoconf gawk bison libcurl4-openssl-dev python3-protobuf libprotobuf-c-dev protobuf-c-compiler && \
-    apt-get install -y netcat net-tools
-
-# Python
-RUN apt-get install -y python3-minimal && \
+    mkdir -p /root/.kube/ && \
+    apt-get install -y python3-minimal && \
     apt-get install -y build-essential python3 python3-setuptools python3-dev python3-pip && \
     pip3 install --upgrade pip && \
     pip install setuptools==58.4.0 && \
