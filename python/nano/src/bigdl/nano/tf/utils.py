@@ -13,5 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import operator
+from bigdl.nano.common.compare_version import _compare_version
 
-from .ray_distributed import RayStrategy
+KERAS_VERSION_LESS_2_9 = _compare_version("keras", operator.lt, "2.9")

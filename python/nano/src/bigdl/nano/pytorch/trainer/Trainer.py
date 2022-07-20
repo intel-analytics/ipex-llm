@@ -28,6 +28,7 @@ from torch.optim.lr_scheduler import _LRScheduler
 import yaml
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11, \
     LIGHTNING_VERSION_LESS_1_6
+from bigdl.nano.pytorch.utils import ChannelsLastCallback
 from bigdl.nano.pytorch.amp import BF16Model
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
@@ -60,6 +61,7 @@ class Trainer(pl.Trainer):
                  distributed_backend="subprocess",
                  cpu_for_each_process: Optional[List[List[int]]] = None,
                  use_hpo=False,
+                 channels_last: bool = False,
                  *args: Any, **kwargs: Any) -> None:
         """
         A pytorch lightning trainer that uses bigdl-nano optimization.
@@ -95,6 +97,13 @@ class Trainer(pl.Trainer):
 
         accelerator = None
 
+        if channels_last:
+            callbacks = kwargs.get("callbacks")
+            if callbacks:
+                callbacks.append(ChannelsLastCallback())
+            else:
+                kwargs["callbacks"] = [ChannelsLastCallback()]
+
         if TORCH_VERSION_LESS_1_11 and use_ipex and not check_avx512():
             warning("Enable ipex<=1.10 in a cpu instruction set"
                     " without avx512 will crash."
@@ -110,11 +119,12 @@ class Trainer(pl.Trainer):
                         accelerator = create_IPEXAccelerator_1_9(enable_bf16=enable_bf16)
                     else:
                         accelerator = create_IPEXAccelerator(enable_bf16=enable_bf16)
-                super().__init__(accelerator=accelerator, *args, **kwargs)
+                super().__init__(accelerator=accelerator, *args, **kwargs)  # type: ignore
             else:
                 from bigdl.nano.pytorch.strategies import create_IPEXStrategy
                 strategy = create_IPEXStrategy(enable_bf16=enable_bf16) if self.use_ipex else None
-                super().__init__(strategy=strategy, *args, **kwargs)
+                kwargs["strategy"] = strategy
+                super().__init__(*args, **kwargs)
         else:
             plugin = None
             invalidInputError(distributed_backend in distributed_backends,
@@ -147,7 +157,8 @@ class Trainer(pl.Trainer):
                 if self.use_ipex and TORCH_VERSION_LESS_1_10:
                     accelerator = create_IPEXAccelerator_1_9(training_type_plugin=plugin,
                                                              enable_bf16=enable_bf16)
-                super().__init__(accelerator=accelerator, plugins=[plugin], *args, **kwargs)
+                super().__init__(accelerator=accelerator, plugins=[plugin],  # type: ignore
+                                 *args, **kwargs)
             else:
                 if distributed_backend == "spawn":
                     from bigdl.nano.pytorch.strategies import DDPSpawnStrategy
@@ -162,11 +173,12 @@ class Trainer(pl.Trainer):
                                                      use_ipex=self.use_ipex,
                                                      enable_bf16=enable_bf16)
                 elif distributed_backend == "ray":
-                    from bigdl.nano.pytorch.strategies import RayStrategy
-                    strategy = RayStrategy(num_workers=num_processes,
-                                           use_ipex=self.use_ipex,
-                                           enable_bf16=enable_bf16)
-                super().__init__(strategy=strategy, *args, **kwargs)
+                    from bigdl.nano.pytorch.strategies import create_RayStrategy
+                    strategy = create_RayStrategy(num_workers=num_processes,
+                                                  use_ipex=self.use_ipex,
+                                                  enable_bf16=enable_bf16)
+                kwargs["strategy"] = strategy
+                super().__init__(*args, **kwargs)
 
     @staticmethod
     def compile(model: nn.Module,

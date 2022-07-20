@@ -268,7 +268,8 @@ class XShardsTSDataset:
             else self.target_col
         self.numpy_shards = self.shards.transform_shard(roll_timeseries_dataframe,
                                                         None, lookback, horizon,
-                                                        feature_col, target_col)
+                                                        feature_col, target_col,
+                                                        self.id_col, 0, True)
         return self
 
     def scale(self, scaler, fit=True):
@@ -392,16 +393,24 @@ class XShardsTSDataset:
         self.shards = self.shards.transform_shard(df_reset_index)
         return self
 
-    def to_xshards(self):
+    def to_xshards(self, partition_num=None):
         '''
-        Export rolling result in form of a dict of numpy ndarray {'x': ..., 'y': ...}
+        Export rolling result in form of a dict of numpy ndarray {'x': ..., 'y': ..., 'id': ...},
+        where value for 'x' and 'y' are 3-dim numpy ndarray and value for 'id' is 2-dim ndarray
+        with shape (batch_size, 1)
 
-        :return: a 2-element dict xshard. each value is a 3d numpy ndarray. The ndarray
-                 is casted to float32.
+        :param partition_num: how many partition you would like to split your data.
+
+        :return: a 3-element dict xshard. each value is a 3d numpy ndarray. The ndarray
+                 is casted to float32. Default to None which will partition according
+                 to id.
         '''
         from bigdl.nano.utils.log4Error import invalidInputError
         if self.numpy_shards is None:
             invalidInputError(False,
                               "Please call 'roll' method "
                               "before transform a XshardsTSDataset to numpy ndarray!")
-        return self.numpy_shards.transform_shard(transform_to_dict)
+        if partition_num is None:
+            return self.numpy_shards.transform_shard(transform_to_dict)
+        else:
+            return self.numpy_shards.transform_shard(transform_to_dict).repartition(partition_num)

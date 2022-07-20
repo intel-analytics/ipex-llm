@@ -72,14 +72,14 @@ def setup_package():
 
     pytorch_requires = ["torch==1.11.0",
                         "torchvision==0.12.0",
-                        "pytorch_lightning==1.4.2",
+                        "pytorch_lightning==1.6.4",
                         "torchmetrics==0.7.2",
                         "opencv-python-headless",
                         "PyTurboJPEG",
                         "opencv-transforms",
                         "intel_extension_for_pytorch==1.11.0"]
 
-    install_requires = ["intel-openmp", "cloudpickle", "protobuf==3.20.1"]
+    install_requires = ["intel-openmp", "cloudpickle", "protobuf==3.19.4"]
 
     package_data = [
         "libs/libjemalloc.so",
