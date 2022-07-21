@@ -38,7 +38,7 @@ A conda environment is created for you automatically. `bigdl-chronos` and all of
 (chronos) root@cpx-3:/opt/work#
 ```
 
-## Run Unitest Examples on Jupyter Notebook for a quick use
+## Run unitest examples on Jupyter Notebook for a quick use
 You can run these on Jupyter Notebook on single node server if you pursue a quick use on Chronos.
 ```bash
 (chronos) root@cpx-3:/opt/work# cd /opt/work/colab-notebook #Unitest examples are here.
@@ -53,7 +53,7 @@ After the Jupyter Notebook service is successfully started, you can connect to t
 </br>As a result, you will see the Jupyter Notebook opened.
 3. Open one of these `.ipynb` files, run through the example and learn how to use Chronos to predict time series.
 
-## Shut Down Docker Container
+## Shut down docker container
 You should shut down the BigDL Docker container after using it.
 1. First, use `ctrl+p+q` to quit the container when you are still in it. 
 2. Then, you can list all the active Docker containers by command line:
