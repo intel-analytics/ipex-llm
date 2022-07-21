@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.ppml.crypto.dataframe
 
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.ppml.crypto.dataframe.EncryptedDataFrameWriter.writeCsv
 import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, AES_GCM_CTR_V1, AES_GCM_V1, Crypto, CryptoMode, ENCRYPT, PLAIN_TEXT}
 import org.apache.hadoop.fs.{FileSystem, Path}
@@ -51,8 +52,11 @@ class EncryptedDataFrameWriter(
       case "append" => SaveMode.Append
       case "ignore" => SaveMode.Ignore
       case "error" | "errorifexists" | "default" => SaveMode.ErrorIfExists
-      case _ => throw new IllegalArgumentException(s"Unknown save mode: $saveMode. " +
+      case _ =>
+        Log4Error.invalidOperationError(false,
+          s"Unknown save mode: $saveMode. " +
         "Accepted save modes are 'overwrite', 'append', 'ignore', 'error', 'errorifexists'.")
+        null
     }
     this
   }
@@ -62,14 +66,30 @@ class EncryptedDataFrameWriter(
       case PLAIN_TEXT =>
         df.write.options(extraOptions).mode(mode).csv(path)
       case AES_CBC_PKCS5PADDING =>
-        val header = if (extraOptions.getOrElse("header", "false").toBoolean) {
-          df.schema.fieldNames.mkString(",")
-        } else {
-          ""
-        }
-        writeCsv(df.rdd, sparkSession.sparkContext, path, encryptMode, dataKeyPlainText, header)
+        sparkSession.sparkContext.hadoopConfiguration
+          .set("hadoop.io.compression.codecs",
+          "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
+        df.write
+          .option("compression", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
+          .options(extraOptions).mode(mode).csv(path)
       case _ =>
-        throw new IllegalArgumentException("unknown EncryptMode " + CryptoMode.toString)
+        Log4Error.invalidOperationError(false, "unknown EncryptMode " + CryptoMode.toString)
+    }
+  }
+
+  def json(path: String): Unit = {
+    encryptMode match {
+      case PLAIN_TEXT =>
+        df.write.options(extraOptions).mode(mode).json(path)
+      case AES_CBC_PKCS5PADDING =>
+        sparkSession.sparkContext.hadoopConfiguration
+          .set("hadoop.io.compression.codecs",
+            "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
+        df.write
+          .option("compression", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
+          .options(extraOptions).mode(mode).json(path)
+      case _ =>
+        Log4Error.invalidOperationError(false, "unknown EncryptMode " + CryptoMode.toString)
     }
   }
 

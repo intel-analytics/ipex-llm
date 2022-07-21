@@ -95,44 +95,6 @@ class FriesianSpec extends ZooSpecHelper {
     dfClip.show()
   }
 
-  "AssignStringIdx limit null" should "work properly" in {
-    val path = resource.getFile + "/data1.parquet"
-    val df = sqlContext.read.parquet(path)
-    val cols = Array("col_4", "col_5")
-    val stringIdxList = friesian.generateStringIdx(df, cols.toList.asJava, null)
-    TestUtils.conditionFailTest(stringIdxList.get(0).count == 3)
-    TestUtils.conditionFailTest(stringIdxList.get(1).count == 2)
-  }
-
-  "AssignStringIdx limit int" should "work properly" in {
-    val path = resource.getFile + "/data1.parquet"
-    val df = sqlContext.read.parquet(path)
-    val cols = Array("col_4", "col_5")
-    val stringIdxList = friesian.generateStringIdx(df, cols.toList.asJava, "2")
-    TestUtils.conditionFailTest(stringIdxList.get(0).count == 1)
-    TestUtils.conditionFailTest(stringIdxList.get(1).count == 1)
-  }
-
-  "AssignStringIdx limit dict" should "work properly" in {
-    val path = resource.getFile + "/data1.parquet"
-    val df = sqlContext.read.parquet(path)
-    val cols = Array("col_4", "col_5")
-    val stringIdxList = friesian.generateStringIdx(df, cols.toList.asJava, "col_4:1,col_5:3")
-    TestUtils.conditionFailTest(stringIdxList.get(0).count == 3)
-    TestUtils.conditionFailTest(stringIdxList.get(1).count == 1)
-  }
-
-  "AssignStringIdx limit order by freq" should "work properly" in {
-    val path = resource.getFile + "/data1.parquet"
-    val df = sqlContext.read.parquet(path)
-    val cols = Array("col_4", "col_5")
-    val stringIdxList = friesian.generateStringIdx(df, cols.toList.asJava, orderByFrequency = true)
-    val col4Idx = stringIdxList.get(0).collect().sortBy(_.getInt(1))
-    val col5Idx = stringIdxList.get(1).collect().sortBy(_.getInt(1))
-    TestUtils.conditionFailTest(col4Idx(0).getString(0) == "abc")
-    TestUtils.conditionFailTest(col5Idx(0).getString(0) == "aa")
-  }
-
   "mask Int" should "work properly" in {
     val data = sc.parallelize(Seq(
       Row("jack", Seq(1, 2, 3, 4, 5)),

@@ -1,4 +1,4 @@
-name: Nano Unit Tests
+name: Nano Unit Tests PyTorch
 
 # Controls when the action will run. 
 on:
@@ -9,12 +9,11 @@ on:
     branches: [ main ]
     paths:
       - 'python/nano/**'
-      - '.github/workflows/nano_unit_tests.yml'
+      - '.github/workflows/nano_unit_tests_pytorch.yml'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   nano-unit-test-pytorch:
-    # The type of runner that the job will run on
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -24,12 +23,10 @@ jobs:
         pytorch-version: [
           "torch==1.9.0+cpu torchvision==0.10.0+cpu",
           "torch==1.10.1+cpu torchvision==0.11.2+cpu",
+          "torch==1.12.0+cpu torchvision==0.13.0+cpu",
           ""
           ]
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
@@ -75,7 +72,6 @@ jobs:
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
-
       - name: Run PyTorch unit tests
         shell: bash
         run: |
@@ -94,7 +90,7 @@ jobs:
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
-      - name: Run PyTorch unit tests (Ray)
+      - name: Run PyTorch unit tests(Ray)
         shell: bash
         run: |
           $CONDA/bin/conda create -n ray-pytorch -y python==3.7.10 setuptools=58.0.4
@@ -132,10 +128,9 @@ jobs:
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
-      - name: Run pytorch automl unit tests
+      - name: Run PyTorch unit tests (Automl)
         shell: bash
         run: |
-      
           $CONDA/bin/conda create -n nano-automl-pytorch -y python==3.7.10 setuptools=58.0.4
           source $CONDA/bin/activate nano-automl-pytorch
           $CONDA/bin/conda info
@@ -149,7 +144,76 @@ jobs:
           $CONDA/bin/conda remove -n nano-automl-pytorch --all
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-          
+
+      - name: Run PyTorch unit tests (INC)
+        shell: bash
+        run: |
+          $CONDA/bin/conda create -n inc-pytorch -y python==3.7.10 setuptools=58.0.4
+          source $CONDA/bin/activate inc-pytorch
+          $CONDA/bin/conda info
+          bash python/nano/dev/build_and_install.sh linux default false pytorch
+          pip install pytest
+          if [ ! -z "${{matrix.pytorch-version}}" ]; then
+            pip install ${{matrix.pytorch-version}} -f https://download.pytorch.org/whl/torch_stable.html
+          fi
+          pip install neural-compressor==1.11
+          source bigdl-nano-init
+          bash python/nano/test/run-nano-pytorch-inc-tests.sh
+          source $CONDA/bin/deactivate
+          $CONDA/bin/conda remove -n inc-pytorch --all
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Run PyTorch unit tests (ONNX)
+        shell: bash
+        run: |
+          $CONDA/bin/conda create -n onnx-pytorch -y python==3.7.10 setuptools=58.0.4
+          source $CONDA/bin/activate onnx-pytorch
+          $CONDA/bin/conda info
+          bash python/nano/dev/build_and_install.sh linux default false pytorch
+          if [ ! -z "${{matrix.pytorch-version}}" ]; then
+            pip install ${{matrix.pytorch-version}} -f https://download.pytorch.org/whl/torch_stable.html
+          fi
+          pip install pytest
+          pip install neural-compressor==1.11
+          pip install onnxruntime onnxruntime-extensions onnx
+          source bigdl-nano-init
+          bash python/nano/test/run-nano-pytorch-onnx-tests.sh
+          source $CONDA/bin/deactivate
+          $CONDA/bin/conda remove -n onnx-pytorch --all
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+      
+  nano-unit-test-benchmark-sanity:
+    # The type of runner that the job will run on
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-20.04"]
+        python-version: ["3.7"]
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools==58.0.4
+          python -m pip install --upgrade wheel
+
+      - name: Run benchmark sanity check
+        shell: bash
+        run: bash python/nano/benchmark/start_benchmark.sh
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+          SANITY_CHECK: "1"
+
   nano-unit-test-ipex:
     # The type of runner that the job will run on
     runs-on: ${{ matrix.os }}
@@ -159,12 +223,12 @@ jobs:
         os: ["ubuntu-20.04"]
         python-version: ["3.7"]
         pytorch-version: [
+          # The reason why ipex1.10 is not currently supported is that the optimization of ipex1.10
+          # will change the require_grad attribute of layers, which will make some tests of nano fail.
           "torch==1.9.0+cpu torchvision==0.10.0+cpu torch_ipex==1.9.0",
-          ""
-          # "torch==1.11.0+cpu torchvision==0.12.0+cpu intel_extension_for_pytorch==1.11.0",
-          # "torch==1.10.0+cpu torchvision==0.11.0+cpu intel_extension_for_pytorch==1.10.0",
-          # "torch==1.10.1+cpu torchvision==0.11.2+cpu",
-          # ""
+          "",
+          "torch==1.12.0+cpu torchvision==0.13.0+cpu intel_extension_for_pytorch==1.12.0"
+          # "torch==1.10.1+cpu torchvision==0.11.2+cpu intel_extension_for_pytorch==1.10.0 psutil"
           ]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -193,9 +257,6 @@ jobs:
             requirements=(${{matrix.pytorch-version}})
             pip install ${requirements[0]} ${requirements[1]} -f https://download.pytorch.org/whl/torch_stable.html
             pip install ${requirements[2]} -f https://software.intel.com/ipex-whl-stable
-            if [ ! -z "${{matrix.extra}}" ]; then
-               pip install ${{matrix.extra}}
-            fi
           fi
           source bigdl-nano-init
           bash python/nano/test/run-nano-pytorch-tests-ipex.sh
@@ -203,138 +264,3 @@ jobs:
           $CONDA/bin/conda remove -n pytorch-ipex --all
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-
-  nano-unit-test-tensorflow:
-    # The type of runner that the job will run on
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: ["ubuntu-20.04"]
-        python-version: ["3.7"]
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install --upgrade setuptools==58.0.4
-          python -m pip install --upgrade wheel
-
-      - name: Run tensorflow unit tests
-        shell: bash
-        run: |
-          $CONDA/bin/conda create -n nano-tensorflow -y python==3.7.10 setuptools=58.0.4
-          source $CONDA/bin/activate nano-tensorflow
-          $CONDA/bin/conda info
-          bash python/nano/dev/build_and_install.sh linux default false tensorflow
-          pip install pytest
-          source bigdl-nano-init
-          bash python/nano/test/run-nano-tf-tests.sh
-          source $CONDA/bin/deactivate
-          $CONDA/bin/conda remove -n nano-tensorflow --all
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-
-      - name: Run ray TF unit tests
-        shell: bash
-        run: |
-          $CONDA/bin/conda create -n ray-tf -y python==3.7.10 setuptools=58.0.4
-          source $CONDA/bin/activate ray-tf
-          $CONDA/bin/conda info
-          bash python/nano/dev/build_and_install.sh linux default false tensorflow
-          pip install pytest
-          pip install ray[default]==1.11.0 prometheus_client==0.13.0
-          source bigdl-nano-init
-          bash python/nano/test/run-nano-tf-ray-tests.sh
-          source $CONDA/bin/deactivate
-          $CONDA/bin/conda remove -n ray-tf --all
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-
-      - name: Run horovod unit tests
-        shell: bash
-        run: |
-          $CONDA/bin/conda create -n horovod-tf -y python==3.7.10 setuptools=58.0.4
-          source $CONDA/bin/activate horovod-tf
-          $CONDA/bin/conda info
-          bash python/nano/dev/build_and_install.sh linux default false tensorflow
-          pip install horovod==0.24.2
-          pip install pytest
-          source bigdl-nano-init
-          bash python/nano/test/run-nano-tf-horovod-tests.sh
-          source $CONDA/bin/deactivate
-          $CONDA/bin/conda remove -n horovod-tf --all
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-          
-      - name: Run tensorflow AutoML unit tests
-        shell: bash
-        run: |
-          $CONDA/bin/conda create -n nano-automl-tf -y python==3.7.10 setuptools=58.0.4
-          source $CONDA/bin/activate nano-automl-tf
-          $CONDA/bin/conda info
-          bash python/nano/dev/build_and_install.sh linux default false tensorflow
-          pip install pytest
-          pip install ConfigSpace
-          pip install optuna
-          source bigdl-nano-init
-          bash python/nano/test/run-nano-automl-common-tests.sh
-          bash python/nano/test/run-nano-automl-tf-tests.sh
-          source $CONDA/bin/deactivate
-          $CONDA/bin/conda remove -n nano-automl-tf --all
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-          
-      - name: Run Tensorflow unit tests (OpenVINO)
-        shell: bash
-        run: |
-          $CONDA/bin/conda create -n openvino-tensorflow -y python==3.7.10 setuptools=58.0.4
-          source $CONDA/bin/activate openvino-tensorflow
-          $CONDA/bin/conda info
-          bash python/nano/dev/build_and_install.sh linux default false tensorflow
-          pip install pytest
-          pip install openvino-dev
-          source bigdl-nano-init
-          bash python/nano/test/run-nano-tf-openvino-tests.sh
-          source $CONDA/bin/deactivate
-          $CONDA/bin/conda remove -n openvino-tensorflow --all
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-
-  nano-unit-benchmark-sanity-check:
-    # The type of runner that the job will run on
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
-    strategy:
-      fail-fast: false
-      matrix:
-        os: ["ubuntu-20.04"]
-        python-version: ["3.7"]
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install --upgrade setuptools==58.0.4
-          python -m pip install --upgrade wheel
-
-      - name: Run benchmark sanity check
-        shell: bash
-        run: bash python/nano/benchmark/start_benchmark.sh
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-          SANITY_CHECK: "1"

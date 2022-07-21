@@ -47,9 +47,8 @@ def generate_data():
               .scale(standard_scaler, fit=(tsdata is tsdata_train))
             
     train_loader = tsdata_train.to_torch_data_loader(roll=True, lookback=look_back, horizon=horizon)
-    test_loader = tsdata_test.to_torch_data_loader(roll=True, lookback=look_back, horizon=horizon)
-    test_loader = DataLoader(test_loader.dataset, batch_size=1, shuffle=False)
-
+    test_loader = tsdata_test.to_torch_data_loader(batch_size=1, roll=True, lookback=look_back, horizon=horizon, shuffle=False)
+    
     return train_loader, test_loader
 
 
@@ -67,17 +66,14 @@ if __name__ == '__main__':
                             lr = 0.001,
                             seed = 1)
     forecaster.num_processes = 1
-    forecaster.fit(train_loader, epochs=30, batch_size=32)
+    forecaster.fit(train_loader, epochs=30, batch_size=32) 
+    
 
-    y_list = []
-    yhat_list = []
+    metric = []
     for x, y in test_loader:
         yhat = forecaster.predict(x.numpy())
-        yhat_list.append(yhat)
-        y_list.append(y.detach().numpy())
-    y = np.concatenate(y_list, axis=0)
-    yhat = np.concatenate(yhat_list, axis=0)
-    print("MSE is:", Evaluator.evaluate("mse", y, yhat))
+        metric.append(Evaluator.evaluate("mse", y.detach().numpy(), yhat))
+    print("MSE is:", np.mean(metric))
 
     torch.set_num_threads(1)
     latency = []

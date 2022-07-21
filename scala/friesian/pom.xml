@@ -15,7 +15,7 @@
     <properties>
         <scoverage.plugin.version>1.1.1</scoverage.plugin.version>
         <scoverage.scalacPluginVersion>1.1.1</scoverage.scalacPluginVersion>
-        <grpc.version>1.37.0</grpc.version>
+        <grpc.version>1.47.0</grpc.version>
         <scoverage.aggregate>true</scoverage.aggregate>
         <runSpecsInParallel>false</runSpecsInParallel>
         <tagsToExclude>com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
@@ -139,12 +139,6 @@
             <artifactId>spark-sql_${scala.major.version}</artifactId>
             <version>${spark.version}</version>
             <scope>${spark-scope}</scope>
-        </dependency>
-        <dependency>
-            <groupId>redis.clients</groupId>
-            <artifactId>jedis</artifactId>
-            <version>3.6.3</version>
-            <scope>${serving.scope}</scope>
         </dependency>
         <dependency>
             <groupId>io.lettuce</groupId>

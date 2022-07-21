@@ -28,6 +28,8 @@ from torch.optim.lr_scheduler import _LRScheduler
 import yaml
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11, \
     LIGHTNING_VERSION_LESS_1_6
+from bigdl.nano.pytorch.utils import ChannelsLastCallback
+from bigdl.nano.pytorch.amp import BF16Model
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
 from bigdl.nano.pytorch.plugins.ddp_subprocess import DDPSubprocessPlugin
@@ -35,7 +37,7 @@ from bigdl.nano.pytorch.plugins.ddp_subprocess import DDPSubprocessPlugin
 from bigdl.nano.deps.automl.hpo_api import create_hpo_searcher, check_hpo_status
 from bigdl.nano.deps.ray.ray_api import distributed_ray
 from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, create_IPEXAccelerator_1_9
-from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel, load_openvino_model
+from bigdl.nano.openvino import PytorchOpenVINOModel, load_openvino_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import PytorchONNXRuntimeModel, \
     load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model, quantize as inc_quantize
@@ -59,6 +61,7 @@ class Trainer(pl.Trainer):
                  distributed_backend="subprocess",
                  cpu_for_each_process: Optional[List[List[int]]] = None,
                  use_hpo=False,
+                 channels_last: bool = False,
                  *args: Any, **kwargs: Any) -> None:
         """
         A pytorch lightning trainer that uses bigdl-nano optimization.
@@ -87,12 +90,14 @@ class Trainer(pl.Trainer):
                                   f"{len(cpu_for_each_process)}) is not equal to the number of"
                                   f" processes {num_processes}.")
 
-        if use_hpo:
-            self.hposearcher = create_hpo_searcher(trainer=self)
-        else:
-            self.hposearcher = None
-
         accelerator = None
+
+        if channels_last:
+            callbacks = kwargs.get("callbacks")
+            if callbacks:
+                callbacks.append(ChannelsLastCallback())
+            else:
+                kwargs["callbacks"] = [ChannelsLastCallback()]
 
         if TORCH_VERSION_LESS_1_11 and use_ipex and not check_avx512():
             warning("Enable ipex<=1.10 in a cpu instruction set"
@@ -109,11 +114,12 @@ class Trainer(pl.Trainer):
                         accelerator = create_IPEXAccelerator_1_9(enable_bf16=enable_bf16)
                     else:
                         accelerator = create_IPEXAccelerator(enable_bf16=enable_bf16)
-                super().__init__(accelerator=accelerator, *args, **kwargs)
+                super().__init__(accelerator=accelerator, *args, **kwargs)  # type: ignore
             else:
-                from bigdl.nano.pytorch.strategies.ipex.ipex_api import create_IPEXStrategy
+                from bigdl.nano.pytorch.strategies import create_IPEXStrategy
                 strategy = create_IPEXStrategy(enable_bf16=enable_bf16) if self.use_ipex else None
-                super().__init__(strategy=strategy, *args, **kwargs)
+                kwargs["strategy"] = strategy
+                super().__init__(*args, **kwargs)
         else:
             plugin = None
             invalidInputError(distributed_backend in distributed_backends,
@@ -125,31 +131,54 @@ class Trainer(pl.Trainer):
                                       f"`checkpoint_callback` set to False. "
                                       f"Currently, disable checkpoint callback make "
                                       f"distributed training backend work incorrect")
-            if distributed_backend == "spawn":
-                plugin = DDPSpawnPlugin(num_processes=num_processes,
-                                        cpu_for_each_process=cpu_for_each_process,
-                                        use_ipex=self.use_ipex,
-                                        enable_bf16=enable_bf16)
-            elif distributed_backend == "subprocess":
-                plugin = DDPSubprocessPlugin(num_processes=num_processes,
-                                             cpu_for_each_process=cpu_for_each_process,
+            if LIGHTNING_VERSION_LESS_1_6:
+                if distributed_backend == "spawn":
+                    plugin = DDPSpawnPlugin(num_processes=num_processes,
+                                            cpu_for_each_process=cpu_for_each_process,
+                                            use_ipex=self.use_ipex,
+                                            enable_bf16=enable_bf16)
+                elif distributed_backend == "subprocess":
+                    plugin = DDPSubprocessPlugin(num_processes=num_processes,
+                                                 cpu_for_each_process=cpu_for_each_process,
+                                                 use_ipex=self.use_ipex,
+                                                 enable_bf16=enable_bf16)
+                elif distributed_backend == "ray":
+                    # Import RayPlugins may entangle with openmp even if it has not been used,
+                    # which leads to an unacceptably low performance.
+                    # So we import when we need.
+                    plugin = distributed_ray(num_workers=num_processes,  # type: ignore
                                              use_ipex=self.use_ipex,
                                              enable_bf16=enable_bf16)
-            elif distributed_backend == "ray":
-                # Import RayPlugins may entangle with openmp even if it has not been used,
-                # which leads to an unacceptably low performance.
-                # So we import when we need.
-                plugin = distributed_ray(num_workers=num_processes,  # type: ignore
-                                         use_ipex=self.use_ipex,
-                                         enable_bf16=enable_bf16)
-            if self.use_ipex:
-                if TORCH_VERSION_LESS_1_10:
+                if self.use_ipex and TORCH_VERSION_LESS_1_10:
                     accelerator = create_IPEXAccelerator_1_9(training_type_plugin=plugin,
                                                              enable_bf16=enable_bf16)
-                else:
-                    accelerator = None
-            super().__init__(accelerator=accelerator,
-                             plugins=[plugin], *args, **kwargs)
+                super().__init__(accelerator=accelerator, plugins=[plugin],  # type: ignore
+                                 *args, **kwargs)
+            else:
+                if distributed_backend == "spawn":
+                    from bigdl.nano.pytorch.strategies import DDPSpawnStrategy
+                    strategy = DDPSpawnStrategy(num_processes=num_processes,
+                                                cpu_for_each_process=cpu_for_each_process,
+                                                use_ipex=self.use_ipex,
+                                                enable_bf16=enable_bf16)
+                elif distributed_backend == "subprocess":
+                    from bigdl.nano.pytorch.strategies import DDPSubprocessStrategy
+                    strategy = DDPSubprocessStrategy(num_processes=num_processes,
+                                                     cpu_for_each_process=cpu_for_each_process,
+                                                     use_ipex=self.use_ipex,
+                                                     enable_bf16=enable_bf16)
+                elif distributed_backend == "ray":
+                    from bigdl.nano.pytorch.strategies import create_RayStrategy
+                    strategy = create_RayStrategy(num_workers=num_processes,
+                                                  use_ipex=self.use_ipex,
+                                                  enable_bf16=enable_bf16)
+                kwargs["strategy"] = strategy
+                super().__init__(*args, **kwargs)
+
+        if use_hpo:
+            self.hposearcher = create_hpo_searcher(trainer=self, num_processes=num_processes)
+        else:
+            self.hposearcher = None
 
     @staticmethod
     def compile(model: nn.Module,
@@ -286,86 +315,97 @@ class Trainer(pl.Trainer):
         :param **export_kwargs: will be passed to torch.onnx.export function.
         :return:            A accelerated Pytorch-Lightning Model if quantization is sucessful.
         """
-        if not accelerator or accelerator == 'onnxruntime':
-            method_map = {
-                None: {
-                    'fx': 'pytorch_fx',
-                    'eager': 'pytorch',
-                    'ipex': 'pytorch_ipex',
-                    None: 'pytorch_fx'  # default
-                },
-                'onnxruntime': {
-                    'qlinear': 'onnxrt_qlinearops',
-                    'integer': 'onnxrt_integerops',
-                    None: 'onnxrt_qlinearops'   # default
+        if precision == 'bf16':
+            if accelerator is None:
+                bf16_model = BF16Model(model)
+                return bf16_model
+            else:
+                invalidInputError(False,
+                                  "Accelerator {} is invalid for BF16.".format(accelerator))
+        if precision == 'int8':
+            if not accelerator or accelerator == 'onnxruntime':
+                method_map = {
+                    None: {
+                        'fx': 'pytorch_fx',
+                        'eager': 'pytorch',
+                        'ipex': 'pytorch_ipex',
+                        None: 'pytorch_fx'  # default
+                    },
+                    'onnxruntime': {
+                        'qlinear': 'onnxrt_qlinearops',
+                        'integer': 'onnxrt_integerops',
+                        None: 'onnxrt_qlinearops'  # default
+                    }
                 }
-            }
-            framework = method_map[accelerator].get(method, None)
-            if accelerator == "onnxruntime":
-                if not type(model).__name__ == 'PytorchONNXRuntimeModel':
-                    # try to establish onnx model
+                framework = method_map[accelerator].get(method, None)
+                if accelerator == "onnxruntime":
+                    if not type(model).__name__ == 'PytorchONNXRuntimeModel':
+                        # try to establish onnx model
+                        if input_sample is None:
+                            # input_sample can be a dataloader
+                            input_sample = calib_dataloader
+                        model = Trainer.trace(
+                            model,
+                            input_sample=input_sample,
+                            accelerator='onnxruntime',
+                            onnxruntime_session_options=onnxruntime_session_options,
+                            **export_kwargs)
+                """
+                If accelerator==None, quantized model returned should be an object of PytorchModel
+                which is defined by neural-compressor containing a `GraphModule` for inference.
+                Otherwise accelerator=='onnxruntime', it returns an ONNXModel object. A supported
+                model which is able to run on Pytorch or ONNXRuntime can be fetched by
+                `quantized_model.model`.
+                """
+                return inc_quantize(model, calib_dataloader, metric,
+                                    framework=framework,
+                                    conf=conf,
+                                    approach=approach,
+                                    tuning_strategy=tuning_strategy,
+                                    accuracy_criterion=accuracy_criterion,
+                                    timeout=timeout,
+                                    max_trials=max_trials)
+
+            elif accelerator == 'openvino':
+                model_type = type(model).__name__
+                if not model_type == 'PytorchOpenVINOModel':
                     if input_sample is None:
                         # input_sample can be a dataloader
                         input_sample = calib_dataloader
                     model = Trainer.trace(model,
                                           input_sample=input_sample,
-                                          accelerator='onnxruntime',
-                                          onnxruntime_session_options=onnxruntime_session_options,
+                                          accelerator='openvino',
                                           **export_kwargs)
-            """
-            If accelerator==None, quantized model returned should be an object of PytorchModel
-            which is defined by neural-compressor containing a `GraphModule` for inference.
-            Otherwise accelerator=='onnxruntime', it returns an ONNXModel object. A supported
-            model which is able to run on Pytorch or ONNXRuntime can be fetched by
-            `quantized_model.model`.
-            """
-            return inc_quantize(model, calib_dataloader, metric,
-                                framework=framework,
-                                conf=conf,
-                                approach=approach,
-                                tuning_strategy=tuning_strategy,
-                                accuracy_criterion=accuracy_criterion,
-                                timeout=timeout,
-                                max_trials=max_trials)
+                invalidInputError(type(model).__name__ == 'PytorchOpenVINOModel',
+                                  "Invalid model to quantize. Please use a nn.Module or a model "
+                                  "from trainer.trance(accelerator=='openvino')")
+                drop_type = None
+                higher_is_better = None
+                maximal_drop = None
+                if metric:
+                    if not isinstance(accuracy_criterion, dict):
+                        accuracy_criterion = {'relative': 0.99, 'higher_is_better': True}
 
-        elif accelerator == 'openvino':
-            model_type = type(model).__name__
-            if not model_type == 'PytorchOpenVINOModel':
-                if input_sample is None:
-                    # input_sample can be a dataloader
-                    input_sample = calib_dataloader
-                model = Trainer.trace(model,
-                                      input_sample=input_sample,
-                                      accelerator='openvino',
-                                      **export_kwargs)
-            invalidInputError(type(model).__name__ == 'PytorchOpenVINOModel',
-                              "Invalid model to quantize. Please use a nn.Module or a model "
-                              "from trainer.trance(accelerator=='openvino')")
-            drop_type = None
-            higher_is_better = None
-            maximal_drop = None
-            if metric:
-                if not isinstance(accuracy_criterion, dict):
-                    accuracy_criterion = {'relative': 0.99, 'higher_is_better': True}
+                    drop_type = 'relative' if 'relative' in accuracy_criterion else 'absolute'
+                    higher_is_better = accuracy_criterion.get('higher_is_better', None)
+                    maximal_drop = accuracy_criterion.get(drop_type, None)
 
-                drop_type = 'relative' if 'relative' in accuracy_criterion else 'absolute'
-                higher_is_better = accuracy_criterion.get('higher_is_better', None)
-                maximal_drop = accuracy_criterion.get(drop_type, None)
-
-            kwargs = {
-                "metric": metric,
-                "higher_better": higher_is_better,
-                "drop_type": drop_type,
-                "maximal_drop": maximal_drop,
-                "max_iter_num": max_trials,
-                # TODO following two keys are optional, if there is need, we can add them
-                # "n_requests": None,
-                # "sample_size": 300
-            }
-            return model.pot(calib_dataloader, **kwargs)
-        else:
-            invalidInputError(False,
-                              "Accelerator {} is invalid.".format(accelerator))
+                kwargs = {
+                    "metric": metric,
+                    "higher_better": higher_is_better,
+                    "drop_type": drop_type,
+                    "maximal_drop": maximal_drop,
+                    "max_iter_num": max_trials,
+                    # TODO following two keys are optional, if there is need, we can add them
+                    # "n_requests": None,
+                    # "sample_size": 300
+                }
+                return model.pot(calib_dataloader, **kwargs)
+            else:
+                invalidInputError(False,
+                                  "Accelerator {} is invalid.".format(accelerator))
+        invalidInputError(False,
+                          "Precision {} is invalid.".format(precision))
 
     @staticmethod
     def trace(model: nn.Module,

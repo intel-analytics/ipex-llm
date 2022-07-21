@@ -18,12 +18,13 @@ spec:
                 sed -i \"s@nfsvolumeclaim@$NFS_PVC_NAME@g\" spark-executor-template.yaml;
                 export RUNTIME_DRIVER_HOST=$( hostname -I | awk '{print $1}' );
                 export LOCAL_IP=$( hostname -I | awk '{print $1}' );
-                bash ./init.sh;
-                bash /ppml/trusted-big-data-ml/submit-spark-k8s.sh | tee output.log
+                bash -c \"$ENTRYPOINT\"
                 "]
         securityContext:
           privileged: true
         env:
+          - name: ENTRYPOINT
+            value: {{ tpl .Values.entrypoint . }}
           - name: SPARK_JAR
             value: {{ .Values.jar }}
           - name: SPARK_CLASS
@@ -89,9 +90,12 @@ spec:
             mountPath: /ppml/trusted-big-data-ml/work/keys
           - name: secure-password
             mountPath: /ppml/trusted-big-data-ml/work/password
+#           - name: nfs-storage
+#             mountPath: "/ppml/trusted-big-data-ml/submit-spark-k8s.sh"
+#             subPath: submit-spark-k8s.sh
           - name: nfs-storage
-            mountPath: "/ppml/trusted-big-data-ml/submit-spark-k8s.sh"
-            subPath: submit-spark-k8s.sh
+            mountPath: /root/.kube/config
+            subPath: kubeconfig
       volumes:
       - name: device-plugin
         hostPath:

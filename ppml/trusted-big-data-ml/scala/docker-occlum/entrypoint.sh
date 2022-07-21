@@ -79,7 +79,7 @@ case "$SPARK_K8S_CMD" in
     cd /opt/occlum_spark
     DMLC_TRACKER_URI=$SPARK_DRIVER_BIND_ADDRESS
     CMD=(
-        /usr/lib/jvm/java-11-openjdk-amd64/bin/java \
+        /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
         -Divy.home="/tmp/.ivy" \
         -Dos.name="Linux" \
         -XX:-UseCompressedOops \
@@ -101,7 +101,7 @@ case "$SPARK_K8S_CMD" in
     cd /opt/occlum_spark
     DMLC_TRACKER_URI=$SPARK_DRIVER_BIND_ADDRESS
     CMD=(
-        /usr/lib/jvm/java-11-openjdk-amd64/bin/java \
+        /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
         "${SPARK_EXECUTOR_JAVA_OPTS[@]}" \
         -XX:-UseCompressedOops \
         -XX:MaxMetaspaceSize=$META_SPACE \

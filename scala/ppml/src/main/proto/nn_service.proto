@@ -24,8 +24,8 @@ service NNService {
     rpc train(TrainRequest) returns (TrainResponse) {}
     rpc evaluate(EvaluateRequest) returns (EvaluateResponse) {}
     rpc predict(PredictRequest) returns (PredictResponse) {}
-    rpc upload_model(UploadModelRequest) returns (UploadModelResponse) {}
-    rpc upload_file(stream ByteChunk) returns (UploadModelResponse) {}
+    rpc upload_meta(UploadMetaRequest) returns (UploadMetaResponse) {}
+    rpc upload_file(stream ByteChunk) returns (UploadMetaResponse) {}
 }
 
 message TrainRequest {
@@ -62,12 +62,11 @@ message PredictResponse {
     TensorMap data = 2;
     int32 code = 3;
 }
-message UploadModelRequest {
+message UploadMetaRequest {
     string client_uuid = 1;
-    bytes model_bytes = 2;
-    bytes loss_fn = 3;
-    ClassAndArgs optimizer = 4;
-    string aggregator = 5;
+    bytes loss_fn = 2;
+    ClassAndArgs optimizer = 3;
+    string aggregator = 4;
 }
 
 message ByteChunk {
@@ -78,7 +77,7 @@ message ClassAndArgs {
     bytes cls = 1;
     bytes args = 2;
 }
-message UploadModelResponse {
+message UploadMetaResponse {
     string message = 1;
 }
 
