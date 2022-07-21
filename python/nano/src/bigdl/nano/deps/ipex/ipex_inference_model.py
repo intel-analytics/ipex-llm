@@ -116,17 +116,16 @@ class PytorchIPEXJITModel(IPEXJITModel, AcceleratedLightningModule):
             model = torch.jit.load(checkpoint_path)
             model.eval()
             model = torch.jit.freeze(model)
+            from_load = True
         else:
             state_dict = torch.load(checkpoint_path)
             model.eval()
             model.load_state_dict(state_dict)
-            if status["channels_last"]:
-                model = model.to(memory_format=torch.channels_last)
-            model = ipex.optimize(model)
+            from_load = False
         return PytorchIPEXJITModel(model, use_ipex=status['use_ipex'],
                                    use_jit=status['use_jit'],
                                    channels_last=status['channels_last'],
-                                   from_load=True)
+                                   from_load=from_load)
 
     def _save_model(self, path):
         super()._save_model(path)
