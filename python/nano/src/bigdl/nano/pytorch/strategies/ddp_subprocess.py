@@ -103,8 +103,18 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
             return_queue = mp.Queue()
             error_queue = mp.Queue()
             args = (trainer, function, args, kwargs, return_queue)
+
+            # when using trainer, if we dump `trainer` and `self._wrapping_function` at the
+            # same time, then after we load them in the subprocess, the loaded `trainer` may
+            # be different from the one we dumped sometimes. so now, when using trianer, we
+            # don't dump the `self._wrapping_function` and access it through `trainer` in
+            # subprocess, when using LightningLite, the `trainer` is None, so we must dump
+            # `self._wrapping_function`.
             with open(os.path.join(temp_dir, "args.pkl"), "wb") as f:
-                cloudpickle.dump((self._wrapping_function, args, error_queue), f)
+                if trainer is not None:
+                    cloudpickle.dump((None, args, error_queue), f)
+                else:
+                    cloudpickle.dump((self._wrapping_function, args, error_queue), f)
 
             processes = []
             cwd_path = os.path.split(os.path.realpath(__file__))[0]
