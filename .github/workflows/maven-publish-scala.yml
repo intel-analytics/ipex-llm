@@ -45,6 +45,8 @@ jobs:
     - name: Set up Maven Settings
       uses: s4u/maven-settings-action@v2.6.0
       with:
+        OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+        OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}         
         sonatypeSnapshots: true
         apacheSnapshots: true
         servers: |
@@ -60,8 +62,8 @@ jobs:
               }
           },{
             "id": "ossrh",
-            "username": "${{ secrets.OSSRH_USERNAME }}",
-            "password": "${{ secrets.OSSRH_PASSWORD }}",
+            "username": "${OSSRH_USERNAME}",
+            "password": "${{OSSRH_PASSWORD}",
             "configuration": {
               "timeout": "3600000"
             }
