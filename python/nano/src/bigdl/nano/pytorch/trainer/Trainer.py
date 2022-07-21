@@ -184,7 +184,6 @@ class Trainer(pl.Trainer):
         else:
             self.hposearcher = None
 
-    
     def _add_algorithms(self, kwargs):
         callbacks = kwargs.get("callbacks")
         for algorithm in kwargs['algorithms']:
@@ -194,9 +193,8 @@ class Trainer(pl.Trainer):
                 else:
                     kwargs["callbacks"] = [algorithm]
         del kwargs['algorithms']
-        
-        return kwargs
 
+        return kwargs
 
     @staticmethod
     def compile(model: nn.Module,

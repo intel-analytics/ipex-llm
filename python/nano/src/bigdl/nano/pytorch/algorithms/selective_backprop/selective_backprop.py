@@ -74,7 +74,7 @@ def select_using_loss(batch: Union[torch.Tensor, torch.Tensor],
                       keep: float = 0.5,
                       scale_factor: float = 1,
                       loss_fn: Callable = None) -> Tuple[torch.Tensor, torch.Tensor]:
-    """Prunes minibatches as a subroutine of :class:`.SelectiveBackprop`. 
+    """Prunes minibatches as a subroutine of :class:`.SelectiveBackprop`.
     Computes the loss function on the provided training examples and runs minibatches
     according to the difficulty. The fraction of the minibatch that is kept for gradient
     computation is specified by the argument ``0 <= keep <= 1``.
@@ -91,7 +91,7 @@ def select_using_loss(batch: Union[torch.Tensor, torch.Tensor],
         keep (float, optional): Fraction of examples in the batch to keep. Default: ``0.5``.
         scale_factor (float, optional): Multiplier between 0 and 1 for spatial size. Downsampling
             requires the input tensor to be at least 3D. Default: ``1``.
-        loss_fn (Callable, optional): Loss function of the form 
+        loss_fn (Callable, optional): Loss function of the form
             ``loss(outputs, targets, reduction='none')``.
             The function must take the keyword argument ``reduction='none'``
             to ensure that per-sample losses are returned.
