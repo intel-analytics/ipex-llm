@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+from collections import namedtuple
 from typing import Optional, Union
 
 import pytorch_lightning as pl
@@ -169,6 +170,9 @@ class Objective(object):
             scores = self.searcher.trainer.callback_metrics[self.target_metric].item()
 
         if self.auto_optimize:
+            Score = namedtuple("Score", self.target_metric)
+            original_scores = Score(*scores)
+            best_scores = original_scores
             #  workaround : Monkey patch
             val_dataloader = model.val_dataloader
             validation_step = model.validation_step
@@ -192,15 +196,22 @@ class Objective(object):
                 for metric in self.target_metric:
                     score = self.searcher.trainer.callback_metrics[metric].item()
                     optim_scores.append(score)
-
+                
                 # compare optim_scores and original scores, and try to find a similar
                 # loss value with less latency
-                
-                
-                # todo: how to return corresponding optimization name ?
-                
-
-
+                optim_scores = Score(*optim_scores)
+                usable = True
+                for metric in self.target_metric:
+                    if metric != "latency":
+                        if abs(getattr(optim_scores, metric) - getattr(best_scores, metric)) >= 0.005:
+                            usable = False
+                            break
+                    else:
+                        if optim_scores.latency > best_scores.latency:
+                            usable = False
+                            break
+                if usable:
+                    best_scores = optim_scores
+            scores = tuple(best_scores)
         self._post_train(model)
-
         return scores
