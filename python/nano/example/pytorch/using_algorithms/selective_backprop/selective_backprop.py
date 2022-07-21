@@ -23,7 +23,9 @@ from torchvision.datasets import CIFAR10
 from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
 from torch.utils.data.sampler import SequentialSampler
+import pytorch_lightning as pl
 from pytorch_lightning.callbacks import Callback
+from pytorch_lightning.utilities.types import STEP_OUTPUT
 from typing import Any
 
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
@@ -64,8 +66,15 @@ class CheckBatchSize(Callback):
 
         return is_interval and is_step
 
-    def on_train_batch_end(self, trainer, pl_module, outputs, batch: Any, batch_idx: int,
-                           dataloader_idx: int) -> None:
+    def on_train_batch_end(  # type: ignore[override]
+        self,
+        trainer: "pl.Trainer",
+        pl_module: "pl.LightningModule",
+        outputs: STEP_OUTPUT,
+        batch: Any,
+        batch_idx: int,
+        dataloader_idx: int,
+    ) -> None:
         elapsed_duration = float(trainer.current_epoch) / \
             float(trainer.max_epochs)
         if self.__should_selective_backprop(elapsed_duration, batch_idx, self.start, self.end,
@@ -73,7 +82,7 @@ class CheckBatchSize(Callback):
             current_batch_size = len(batch[1])
             ideal_batch_size = int(self.keep * self.batch_size)
             assert current_batch_size == ideal_batch_size, \
-                'Batch size is not right. Selective_backprop may not work.'
+                'Batch size is not right.'
 
 
 class ResNet18(nn.Module):

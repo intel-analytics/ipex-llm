@@ -36,7 +36,8 @@ def should_selective_backprop(
     end: float = 0.9,
     interrupt: int = 2,
 ) -> bool:
-    """Decides if selective backprop should be run based on time in training.
+    """
+    Decides if selective backprop should be run based on time in training.
 
     Returns true if the ``current_duration`` is between ``start`` and
     ``end``. It is recommended that SB be applied during the later stages of
@@ -58,8 +59,10 @@ def should_selective_backprop(
         interrupt (int, optional): The number of batches between vanilla
             minibatch gradient updates. Default: ``2``.
 
-    Returns:
+    Returns
+    -------
         bool: If selective backprop should be performed on this batch.
+
     """
     is_interval = ((current_duration >= start) and (current_duration < end))
     is_step = ((interrupt == 0) or ((batch_idx + 1) % interrupt != 0))
@@ -74,7 +77,9 @@ def select_using_loss(batch: Union[torch.Tensor, torch.Tensor],
                       keep: float = 0.5,
                       scale_factor: float = 1,
                       loss_fn: Callable = None) -> Tuple[torch.Tensor, torch.Tensor]:
-    """Prunes minibatches as a subroutine of :class:`.SelectiveBackprop`.
+    """
+    Prunes minibatches as a subroutine of :class:`.SelectiveBackprop`.
+
     Computes the loss function on the provided training examples and runs minibatches
     according to the difficulty. The fraction of the minibatch that is kept for gradient
     computation is specified by the argument ``0 <= keep <= 1``.
@@ -98,8 +103,10 @@ def select_using_loss(batch: Union[torch.Tensor, torch.Tensor],
             If the module contains a ``training_step`` method which return per-sample losses,
             then the ``loss_fn`` is optional.
 
-    Returns:
+    Returns
+    -------
         (torch.Tensor, torch.Tensor): The pruned batch of inputs and targets
+
     """
     INTERPOLATE_MODES = {3: 'linear', 4: 'bilinear', 5: 'trilinear'}
 
@@ -142,7 +149,7 @@ def select_using_loss(batch: Union[torch.Tensor, torch.Tensor],
             It can be passed by ``loss_fn=`` when you initialize the class."
 
         # Sort losses
-        sorted_idx = torch.argsort(losses)
+        sorted_idx = torch.argsort(torch.Tensor(losses))
         n_select = int(keep * N)
 
         # Sample by loss
@@ -156,7 +163,8 @@ def select_using_loss(batch: Union[torch.Tensor, torch.Tensor],
 
 
 class SelectiveBackprop(Callback):
-    """Selectively backpropagate gradients from a subset of each batch.
+    """
+    Selectively backpropagate gradients from a subset of each batch.
 
     Based on (`Jiang et al, 2019`_), Selective Backprop (SB) prunes minibatches
     according to the difficulty of the individual training examples, and only
@@ -178,6 +186,7 @@ class SelectiveBackprop(Callback):
     .. _Jiang et al, 2019: https://arxiv.org/abs/1910.00762
 
     Args:
+    ----
         start (float, optional): SB interval start as fraction of training duration.
             Default: ``0.5``.
         end (float, optional): SB interval end as fraction of training duration.
@@ -196,6 +205,7 @@ class SelectiveBackprop(Callback):
             then the ``loss_fn`` is optional.
 
     Example:
+    -------
         .. testcode::
 
             from bigdl.nano.pytorch.algorithms.selective_backprop import SelectiveBackprop
@@ -206,6 +216,7 @@ class SelectiveBackprop(Callback):
             trainer = Trainer(
                 algorithms=[sb],
             )
+
     """
 
     def __init__(self,
@@ -215,6 +226,26 @@ class SelectiveBackprop(Callback):
                  scale_factor: float = 1.,
                  interrupt: int = 2,
                  loss_fn: Callable = None):
+        """
+        Selectively backpropagate gradients from a subset of each batch.
+
+        :param start: SB interval start as fraction of training duration.
+            Default: ``0.5``.
+        :param end: SB interval end as fraction of training duration.
+            Default: ``0.9``.
+        :param keep: fraction of minibatch to select and keep for gradient computation.
+            Default: ``0.5``.
+        :param scale_factor: scale for downsampling input for selection forward pass.
+            Default: ``1.``.
+        :param interrupt: interrupt SB with a vanilla minibatch step every
+            ``interrupt`` batches. Default: ``2``.
+        :param loss_fn: Loss function of the form
+            ``loss(outputs, targets, reduction='none')``.
+            The function must take the keyword argument ``reduction='none'``
+            to ensure that per-sample losses are returned.
+            If the module contains a ``training_step`` method which return per-sample losses,
+            then the ``loss_fn`` is optional.
+        """
         self.start = start
         self.end = end
         self.keep = keep
@@ -246,6 +277,7 @@ class SelectiveBackprop(Callback):
                              batch: Union[torch.Tensor, torch.Tensor],
                              batch_idx: int,
                              unused: Any = 0):
+        """Add PyTorch Lightning callback."""
         if self.__match(trainer, batch_idx):
             input, target = batch[0], batch[1]
             assert isinstance(input, torch.Tensor) and isinstance(target, torch.Tensor), \

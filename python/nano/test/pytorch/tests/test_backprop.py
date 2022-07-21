@@ -23,6 +23,7 @@ import torch
 import torchmetrics
 from torch import nn
 from pytorch_lightning.callbacks import Callback
+from pytorch_lightning.utilities.types import STEP_OUTPUT
 from typing import Any
 
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
@@ -64,7 +65,8 @@ class CheckBatchSize(Callback):
 
         return is_interval and is_step
 
-    def on_train_batch_end(self, trainer, pl_module, outputs, batch: Any, batch_idx: int,
+    def on_train_batch_end(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule",
+                           outputs: STEP_OUTPUT, batch: Any, batch_idx: int,
                            dataloader_idx: int) -> None:
         elapsed_duration = float(trainer.current_epoch) / \
             float(trainer.max_epochs)
