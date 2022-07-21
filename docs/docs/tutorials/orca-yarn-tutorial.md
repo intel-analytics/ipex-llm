@@ -327,7 +327,7 @@ bigdl-submit \
     --driver-memory 10g \
     --executor-cores 8 \
     --num-executors 2 \
-    --py-files /path/to/model.py \
+    --py-files model.py \
     --archives /path/to/environment.tar.gz#environment \
     --conf spark.pyspark.driver.python=/path/to/python \
     --conf spark.pyspark.python=environment/bin/python \
@@ -367,7 +367,7 @@ bigdl-submit \
     --driver-memory 10g \
     --executor-cores 8 \
     --num-executors 2 \
-    --py-files /path/to/model.py \
+    --py-files model.py \
     --archives /path/to/environment.tar.gz#environment \
     --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=environment/bin/python \
     --conf spark.executorEnv.PYSPARK_PYTHON=environment/bin/python \
@@ -442,7 +442,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --num-executors 2 \
     --archives /path/to/environment.tar.gz#environment \
     --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
-    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,/path/to/model.py \
+    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,model.py \
     --conf spark.pyspark.driver.python=/path/to/python \
     --conf spark.pyspark.python=environment/bin/python \
     --conf spark.driver.extraClassPath=${BIGDL_HOME}/jars/* \
@@ -473,7 +473,7 @@ __Note:__
     ${SPARK_HOME}/bin/spark-submit \
     ...
     --conf spark.executorEnv.ARROW_LIBHDFS_DIR=/opt/cloudera/parcels/CDH-${CHD_VERSION}/lib64/ \
-    train.py --cluster_mode bigdl-submit --remote_dir hdfs://url:port/path/to/remote/data
+    train.py --cluster_mode spark-submit --remote_dir hdfs://url:port/path/to/remote/data
     ```
 
 ### 5.3.2 Yarn-Cluster
@@ -494,7 +494,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --archives /path/to/environment.tar.gz#environment \
     --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=environment/bin/python \
     --conf spark.executorEnv.PYSPARK_PYTHON=environment/bin/python \
-    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,/path/to/model.py \
+    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,model.py \
     --jars ${BIGDL_HOME}/bigdl-dllib-spark_${SPAKR_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar,${BIGDL_HOME}/bigdl-orca-spark_${SPAKR_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
     train.py --cluster_mode spark-submit --remote_dir hdfs://url:port/path/to/remote/data
 ```
@@ -520,5 +520,5 @@ __Note:__
     ${SPARK_HOME}/bin/spark-submit \
     ...
     --conf spark.executorEnv.ARROW_LIBHDFS_DIR=/opt/cloudera/parcels/CDH-${CHD_VERSION}/lib64/ \
-    train.py --cluster_mode bigdl-submit --remote_dir hdfs://url:port/path/to/remote/data
+    train.py --cluster_mode spark-submit --remote_dir hdfs://url:port/path/to/remote/data
     ```
