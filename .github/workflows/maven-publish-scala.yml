@@ -46,9 +46,6 @@ jobs:
       env:
         OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
         OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-      run: |
-        echo "OSSRH_USERNAME = ${OSSRH_USERNAME}"
-        echo "OSSRH_PASSWORD = ${OSSRH_PASSWORD}"
     
     - name: Set up Maven Settings
       uses: s4u/maven-settings-action@v2.6.0
@@ -68,8 +65,8 @@ jobs:
               }
           },{
             "id": "ossrh",
-            "username": "${{ secrets.OSSRH_USERNAME }}",
-            "password": "${{ secrets.OSSRH_PASSWORD }}",
+            "username": "${OSSRH_USERNAME}",
+            "password": "${OSSRH_PASSWORD}",
             "configuration": {
               "timeout": "3600000"
             }
