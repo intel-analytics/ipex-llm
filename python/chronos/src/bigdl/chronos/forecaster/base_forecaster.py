@@ -254,7 +254,7 @@ class BasePytorchForecaster(Forecaster):
         """
         # input transform
         if isinstance(data, TSDataset):
-            _rolled = data.lookback is None
+            _rolled = data.numpy_x is None
             data = data.to_torch_data_loader(batch_size=batch_size,
                                              roll=_rolled,
                                              lookback=self.data_config['past_seq_len'],
@@ -375,7 +375,7 @@ class BasePytorchForecaster(Forecaster):
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
 
         if isinstance(data, TSDataset):
-            _rolled = data.lookback is None
+            _rolled = data.numpy_x is None
             data = data.to_torch_data_loader(batch_size=batch_size,
                                              roll=_rolled,
                                              lookback=self.data_config['past_seq_len'],
@@ -466,7 +466,7 @@ class BasePytorchForecaster(Forecaster):
             invalidInputError(False,
                               "You must call fit or restore first before calling predict!")
         if isinstance(data, TSDataset):
-            _rolled = data.lookback is None
+            _rolled = data.numpy_x is None
             data = data.to_torch_data_loader(batch_size=batch_size,
                                              roll=_rolled,
                                              lookback=self.data_config['past_seq_len'],
@@ -576,7 +576,7 @@ class BasePytorchForecaster(Forecaster):
 
         # data transform
         if isinstance(data, TSDataset):
-            _rolled = data.lookback is None
+            _rolled = data.numpy_x is None
             data = data.to_torch_data_loader(batch_size=batch_size,
                                              roll=_rolled,
                                              lookback=self.data_config['past_seq_len'],
@@ -676,7 +676,7 @@ class BasePytorchForecaster(Forecaster):
             invalidInputError(False,
                               "You must call fit or restore first before calling evaluate!")
         if isinstance(data, TSDataset):
-            _rolled = data.lookback is None
+            _rolled = data.numpy_x is None
             data = data.to_torch_data_loader(batch_size=batch_size,
                                              roll=_rolled,
                                              lookback=self.data_config['past_seq_len'],

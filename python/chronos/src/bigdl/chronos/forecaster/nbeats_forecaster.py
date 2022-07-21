@@ -200,7 +200,7 @@ class NBeatsForecaster(BasePytorchForecaster):
         invalidInputError(not tsdataset._has_generate_agg_feature,
                           "We will add support for 'gen_rolling_feature' method later.")
 
-        if tsdataset.lookback is None:  # calling roll or to_torch_data_loader
+        if tsdataset.lookback is not None:  # calling roll or to_torch_data_loader
             past_seq_len = tsdataset.lookback
             future_seq_len = tsdataset.horizon if isinstance(tsdataset.horizon, int) \
                 else max(tsdataset.horizon)
