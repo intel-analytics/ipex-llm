@@ -20,7 +20,6 @@ from enum import Enum
 
 from pyspark.sql import SparkSession
 
-
 def check(ppml_args, arg_name):
     try:
         value = ppml_args[arg_name]
@@ -30,7 +29,7 @@ def check(ppml_args, arg_name):
 
 
 class PPMLContext(JavaValue):
-    def __init__(self, app_name, ppml_args=None, master="local", deploy_mode="client", **kwargs):
+    def __init__(self, app_name, ppml_args):
         self.bigdl_type = "float"
         conf = {"spark.app.name": app_name,
                 "spark.hadoop.io.compression.codecs": "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec"}
@@ -52,17 +51,9 @@ class PPMLContext(JavaValue):
             else:
                 invalidInputError(False, "invalid KMS type")
 
-        # init a SparkContext
-        if master == "local":
-            sc = init_spark_on_local(conf=conf)
-        elif master.startswith("k8s"):
-            kwargs["conf"] = conf
-            if deploy_mode == "client":
-                sc = init_spark_on_k8s(**kwargs)
-            else:
-                sc = init_spark_on_k8s_cluster(**kwargs)
-        else:
-            invalidInputError(False, "master=" + master + " not support yet")
+        spark_conf = init_spark_conf(conf)
+
+        sc = SparkContext.getOrCreate(spark_conf)
 
         self.spark = SparkSession.builder.getOrCreate()
         args = [self.spark._jsparkSession]
