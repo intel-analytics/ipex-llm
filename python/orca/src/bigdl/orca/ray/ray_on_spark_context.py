@@ -541,7 +541,7 @@ class RayOnSparkContext(object):
         if self.initialized:
             print("The Ray cluster has been launched.")
         else:
-            self.activateRayOnSparkContext()
+            self.setupRayOnSparkContext()
             if self.is_local:
                 if self.env:
                     os.environ.update(self.env)
