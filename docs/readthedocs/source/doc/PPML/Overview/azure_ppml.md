@@ -348,6 +348,158 @@ export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
 
 ```
 
+## 4. Run TPC-H example
+TPC-H queries implemented in Spark using the DataFrames API running with BigDL PPML.
+
+### 4.1 Generating tables
+
+Go to [TPC Download](https://www.tpc.org/tpc_documents_current_versions/current_specifications5.asp) site, choose `TPC-H` source code, then download the TPC-H toolkits.
+After you download the tpc-h tools zip and uncompressed the zip file. Go to `dbgen` directory, and create a makefile based on `makefile.suite`, and run `make`.
+
+This should generate an executable called `dbgen`
+```
+./dbgen -h
+```
+
+gives you the various options for generating the tables. The simplest case is running:
+```
+./dbgen
+```
+which generates tables with extension `.tbl` with scale 1 (default) for a total of rougly 1GB size across all tables. For different size tables you can use the `-s` option:
+```
+./dbgen -s 10
+```
+will generate roughly 10GB of input data.
+
+### 4.2 Generate primary key and data key
+Generate primary key and data key, then save to file system.
+
+The example code of generate primary key and data key is like below:
+```
+java -cp '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/lib/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/* \
+   -Xmx10g \
+   com.intel.analytics.bigdl.ppml.examples.GenerateKeys \
+   --kmsType AzureKeyManagementService \
+   --vaultName xxx \
+   --primaryKeyPath xxx/keys/primaryKey \
+   --dataKeyPath xxx/keys/dataKey
+```
+
+### 4.3 Encrypt Data
+Encrypt data with specified BigDL `AzureKeyManagementService`
+
+The example code of encrypt data is like below:
+```
+java -cp '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/lib/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/* \
+   -Xmx10g \
+   com.intel.analytics.bigdl.ppml.examples.tpch.EncryptFiles \
+   --kmsType AzureKeyManagementService \
+   --vaultName xxx \
+   --primaryKeyPath xxx/keys/primaryKey \
+   --dataKeyPath xxx/keys/dataKey \
+   --inputPath xxx/dbgen \
+   --outputPath xxx/dbgen-encrypted
+```
+
+After encryption, you may upload encrypted data to Azure Data Lake store.
+
+The example script is like below:
+```bash
+az storage fs directory upload -f myFS --account-name myDataLakeAccount -s xxx/dbgen-encrypted -d myDirectory --recursive
+```
+
+### 4.4 Running
+Make sure you set the INPUT_DIR and OUTPUT_DIR in `TpchQuery` class before compiling to point to the
+location the of the input data and where the output should be saved.
+
+The example script to run a query is like:
+
+```
+secure_password=`az keyvault secret show --name "key-pass" --vault-name $KEY_VAULT_NAME --query "value" | sed -e 's/^"//' -e 's/"$//'`
+
+DATA_LAKE_NAME=
+DATA_LAKE_ACCESS_KEY=
+KEY_VAULT_NAME=
+PRIMARY_KEY_PATH=
+DATA_KEY_PATH=
+
+LOCAL_IP=
+RUNTIME_SPARK_MASTER=
+INPUT_DIR=xxx/dbgen-encrypted
+OUTPUT_DIR=xxx/output
+
+export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
+  /opt/jdk8/bin/java \
+    -cp '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/lib/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+    -Xmx10g \
+    -Dbigdl.mklNumThreads=1 \
+    org.apache.spark.deploy.SparkSubmit \
+    --master $RUNTIME_SPARK_MASTER \
+    --deploy-mode client \
+    --name spark-tpch-sgx \
+	--conf spark.driver.host=$LOCAL_IP
+    --conf spark.driver.memory=18g \
+    --conf spark.driver.cores=2 \
+    --conf spark.executor.cores=2 \
+    --conf spark.executor.memory=24g \
+    --conf spark.executor.instances=2 \
+    --conf spark.driver.defaultJavaOptions="-Dlog4j.configuration=/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/log4j2.xml" \
+    --conf spark.executor.defaultJavaOptions="-Dlog4j.configuration=/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/log4j2.xml" \
+    --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
+    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.1-SNAPSHOT \
+    --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/spark-driver-template-kv.yaml \
+    --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/spark-executor-template-kv.yaml \
+    --conf spark.kubernetes.executor.deleteOnTermination=false \
+    --conf spark.network.timeout=10000000 \
+    --conf spark.executor.heartbeatInterval=10000000 \
+    --conf spark.python.use.daemon=false \
+    --conf spark.python.worker.reuse=false \
+    --conf spark.sql.auto.repartition=true \
+    --conf spark.default.parallelism=400 \
+    --conf spark.sql.shuffle.partitions=400 \
+    --jars local://$SPARK_EXTRA_JAR_PATH \
+    --conf spark.kubernetes.sgx.enabled=true \
+    --conf spark.kubernetes.sgx.driver.mem=16g \
+    --conf spark.kubernetes.sgx.driver.jvm.mem=7g \
+    --conf spark.kubernetes.sgx.executor.mem=16g \
+    --conf spark.kubernetes.sgx.executor.jvm.mem=7g \
+    --conf spark.kubernetes.sgx.log.level=error \
+    --conf spark.authenticate=true \
+    --conf spark.authenticate.secret=$secure_password \
+    --conf spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" \
+    --conf spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" \
+    --conf spark.authenticate.enableSaslEncryption=true \
+    --conf spark.network.crypto.enabled=true \
+    --conf spark.network.crypto.keyLength=128 \
+    --conf spark.network.crypto.keyFactoryAlgorithm=PBKDF2WithHmacSHA1 \
+    --conf spark.io.encryption.enabled=true \
+    --conf spark.io.encryption.keySizeBits=128 \
+    --conf spark.io.encryption.keygen.algorithm=HmacSHA1 \
+    --conf spark.ssl.enabled=true \
+    --conf spark.ssl.port=8043 \
+    --conf spark.ssl.keyPassword=$secure_password \
+    --conf spark.ssl.keyStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
+    --conf spark.ssl.keyStorePassword=$secure_password \
+    --conf spark.ssl.keyStoreType=JKS \
+    --conf spark.ssl.trustStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
+    --conf spark.ssl.trustStorePassword=$secure_password \
+    --conf spark.ssl.trustStoreType=JKS \
+    --conf spark.hadoop.fs.azure.account.auth.type.${DATA_LAKE_NAME}.dfs.core.windows.net=SharedKey \
+    --conf spark.hadoop.fs.azure.account.key.${DATA_LAKE_NAME}.dfs.core.windows.net=${DATA_LAKE_ACCESS_KEY} \
+    --conf spark.hadoop.fs.azure.enable.append.support=true \
+    --conf spark.bigdl.kms.type=AzureKeyManagementService \
+    --conf spark.bigdl.kms.azure.vault=$KEY_VAULT_NAME \
+    --conf spark.bigdl.kms.key.primary=$PRIMARY_KEY_PATH \
+    --conf spark.bigdl.kms.key.data=$DATA_KEY_PATH \
+    --class $SPARK_JOB_MAIN_CLASS \
+    --verbose \
+    /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/lib/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar \
+    $INPUT_DIR $OUTPUT_DIR aes_cbc_pkcs5padding plain_text [QUERY]
+```
+
+INPUT_DIR is the tpch's data dir.
+OUTPUT_DIR is the dir to write the query result.
+The optional parameter [QUERY] is the number of the query to run e.g 1, 2, ..., 22
 
 
 
