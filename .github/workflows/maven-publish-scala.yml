@@ -42,14 +42,16 @@ jobs:
       with:
         maven-version: 3.8.2
     
-    - name: Set up Maven Settings
-      uses: s4u/maven-settings-action@v2.6.0
+    - name: Set up OSSRH
       env:
         OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
         OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
       run: |
         echo "OSSRH_USERNAME = ${OSSRH_USERNAME}"
         echo "OSSRH_PASSWORD = ${OSSRH_PASSWORD}"
+
+    - name: Set up Maven Settings
+      uses: s4u/maven-settings-action@v2.6.0
       with:
         sonatypeSnapshots: true
         apacheSnapshots: true
