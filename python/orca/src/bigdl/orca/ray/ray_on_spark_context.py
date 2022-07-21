@@ -402,7 +402,7 @@ class RayOnSparkContext(object):
         self.num_ray_nodes = num_ray_nodes
         RayOnSparkContext._active_ray_context = self
 
-    def setupRayOnSparkContext(self):
+    def setup(self):
         if self.is_local:
             self.num_ray_nodes = 1
             spark_cores = self._get_spark_local_cores()
@@ -541,7 +541,7 @@ class RayOnSparkContext(object):
         if self.initialized:
             print("The Ray cluster has been launched.")
         else:
-            self.setupRayOnSparkContext()
+            self.setup()
             if self.is_local:
                 if self.env:
                     os.environ.update(self.env)
