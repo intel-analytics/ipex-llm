@@ -157,3 +157,12 @@ Start Client 2:
 ```bash
 python pytorch_nn_lr_2.py
 ```
+### 3.3 Get Result
+The first 5 predict results are printed
+```
+[[2.3898797e-14]
+ [1.8246214e-06]
+ [6.7879863e-21]
+ [1.2120417e-23]
+ [0.0000000e+00]]
+```
