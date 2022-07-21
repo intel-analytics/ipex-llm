@@ -14,14 +14,14 @@
 # limitations under the License.
 #
 
-from multiprocessing import reduction
 import os
-from unittest import TestCase
 
-import pytest
 import torch
 import torchmetrics
 from torch import nn
+from torchvision.datasets import CIFAR10
+from torch.utils.data import DataLoader
+import torchvision.transforms as transforms
 from pytorch_lightning.callbacks import Callback
 from typing import Any
 
@@ -75,7 +75,7 @@ class CheckBatchSize(Callback):
             current_batch_size = len(batch[1])
             ideal_batch_size = int(self.keep * self.batch_size)
             assert current_batch_size == ideal_batch_size, \
-                'Batch size is not right.'
+                'Batch size is not right. Selective_backprop may not work.'
 
 
 class ResNet18(nn.Module):
@@ -93,42 +93,69 @@ class ResNet18(nn.Module):
         return self.model(x)
 
 
+def create_data_loader(dir, batch_size, num_workers, transform, subset=50, shuffle=True, sampler=False):
+    train_set = CIFAR10(root=dir, train=True,
+                        download=True, transform=transform)
+    # `subset` is the number of subsets. The larger the number, the smaller the training set.
+    mask = list(range(0, len(train_set), subset))
+    train_subset = torch.utils.data.Subset(train_set, mask)
+    if sampler:
+        sampler_set = SequentialSampler(train_subset)
+        data_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=shuffle,
+                             num_workers=num_workers, sampler=sampler_set)
+    else:
+        data_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=shuffle,
+                             num_workers=num_workers)
+    return data_loader
+
+data_transform = transforms.Compose([
+    transforms.Resize(256),
+    transforms.ColorJitter(),
+    transforms.RandomCrop(224),
+    transforms.RandomHorizontalFlip(),
+    transforms.Resize(128),
+    transforms.ToTensor()
+])
+
+
 model = ResNet18(pretrained=False, include_top=False, freeze=True)
 loss = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 
 
-class TestLightningModuleFromTorch(TestCase):
-
-    def test_selective_backprop(self):
-        pl_model = LightningModuleFromTorch(
-            model,
-            loss,
-            optimizer,
-            metrics=[
-                torchmetrics.F1(num_classes),
-                torchmetrics.Accuracy(num_classes=10)
-            ])
-        data_loader = create_data_loader(data_dir, batch_size, num_workers,
-                                         data_transform)
-        loss_fn = nn.CrossEntropyLoss(reduction='none')
-        sb = SelectiveBackprop(start=0.25,
-                               keep=0.53,
-                               end=0.5,
-                               scale_factor=0.1,
-                               interrupt=2,
-                               loss_fn=loss_fn)
-        batch_size_check = CheckBatchSize(start=0.25,
-                                          keep=0.53,
-                                          end=0.5,
-                                          interrupt=2,
-                                          batch_size=batch_size)
-        trainer = Trainer(max_epochs=4,
-                          log_every_n_steps=1,
-                          algorithms=[sb],
-                          callbacks=[batch_size_check])
-        trainer.fit(pl_model, data_loader, data_loader)
+def main():
+    pl_model = LightningModuleFromTorch(
+        model,
+        loss,
+        optimizer,
+        metrics=[
+            torchmetrics.F1(num_classes),
+            torchmetrics.Accuracy(num_classes=10)
+        ])
+    data_loader = create_data_loader(data_dir, batch_size, num_workers,
+                                        data_transform)
+    # get the loss function without reduction
+    loss_fn = nn.CrossEntropyLoss(reduction='none')
+    # pass proper arguments to selective backprop
+    sb = SelectiveBackprop(start=0.5,
+                            keep=0.5,
+                            end=0.9,
+                            scale_factor=1,
+                            interrupt=2,
+                            loss_fn=loss_fn)
+    # check if selective backprop works
+    batch_size_check = CheckBatchSize(start=0.5,
+                                        keep=0.5,
+                                        end=0.9,
+                                        interrupt=2,
+                                        batch_size=batch_size)
+    # pass the algorithm by algorithms=[sb,]
+    trainer = Trainer(max_epochs=10,
+                        log_every_n_steps=1,
+                        algorithms=[sb],
+                        callbacks=[batch_size_check])
+    trainer.fit(pl_model, data_loader, data_loader)
 
 
 if __name__ == '__main__':
-    pytest.main([__file__])
+    main()

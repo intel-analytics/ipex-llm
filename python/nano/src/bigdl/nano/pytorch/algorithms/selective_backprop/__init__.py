@@ -14,13 +14,16 @@
 # limitations under the License.
 #
 
+# This file is adapted from https://https://github.com/mosaicml/composer
+# /composer/composer/algorithms/selective_backprop/__init__.py
+
 # Copyright 2022 MosaicML Composer authors
 # SPDX-License-Identifier: Apache-2.0
-"""`Selective Backprop <https://arxiv.org/abs/1910.00762>`_ prunes minibatches according to the difficulty of the
-individual training examples, and only computes weight gradients over the pruned subset, reducing iteration time and
-speeding up training.
+"""`Selective Backprop <https://arxiv.org/abs/1910.00762>`_ prunes minibatches according 
+to the difficulty of the individual training examples, and only computes weight gradients
+over the pruned subset, reducing iteration time and speeding up training.
 """
 
-from bigdl.nano.pytorch.algorithms.selective_backprop.selective_backprop import SelectiveBackprop as SelectiveBackprop
+from bigdl.nano.pytorch.algorithms.selective_backprop.selective_backprop import SelectiveBackprop
 
 __all__ = ['SelectiveBackprop']
