@@ -192,12 +192,25 @@ config = {
     'val': val_df
 }
 train_loader = train_loader_creator(config=config, batch_size=batch_size)
-
+val_loader = val_loader_creator(config=config, batch_size=batch_size)
+test_loader = test_loader_creator(config=config, batch_size=batch_size)
 # plot some random training images.
 # You should use jupyter notebook to show the images.
 show_batch(train_loader)
+if args.backend == "bigdl":
+    net = model_creator(config={})
+    optimizer = optim_creator(model=net, config={"lr": 0.001})
+    orca_estimator = Estimator.from_torch(model=net,
+                                          optimizer=optimizer,
+                                          loss=bce_dice_loss,
+                                          backend="bigdl")
 
-if args.backend in ["ray", "spark"]:
+    orca_estimator.fit(data=train_loader, epochs=args.epochs, validation_data=val_loader)
+
+    res = orca_estimator.evaluate(data=test_loader)
+    print("Accuracy of the network on the test images: %s" % res)
+
+elif args.backend in ["ray", "spark"]:
     orca_estimator = Estimator.from_torch(model=model_creator,
                                           optimizer=optim_creator,
                                           loss=loss_creator,
