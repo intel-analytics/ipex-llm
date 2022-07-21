@@ -107,7 +107,7 @@ You can verify whether environment variables are available:
 pytest test/bigdl/orca/learn/ray/pytorch/test_estimator_pyspark_backend.py
 ```
 
-Note that this approach will only work temporarily for terminal this time. Achieving long-term support you can append environment variables mantually into your linux terminal shell script like `~/.bashrc`.
+Note that this approach will only work temporarily for terminal this time. 
 
 
 ### **2. Scala**
