@@ -134,13 +134,9 @@ class _RayLauncher(_SpawnLauncher):
         if trainer is None:
             return results[0]
 
-        # Get the results, checkpoint path, and model weights from worker 0.
-        results, best_path, state_dict = results[0]  # type: ignore
-        strategy.model.load_state_dict(state_dict)
-        strategy.lightning_module.trainer = trainer
-        strategy.lightning_module.trainer.checkpoint_callback.best_model_path = best_path
+        self._recover_results_in_main_process(results[0], trainer)
 
-        return results.trainer_results  # type: ignore
+        return results[0].trainer_results
 
     @staticmethod
     def _wrapping_function(args_pack: tuple) -> Any:   # type: ignore[override]
@@ -157,20 +153,11 @@ class _RayLauncher(_SpawnLauncher):
 
         # when using pytorch lightning's trainer, the `trainer` cannot be None,
         # when using pytorch lightning's LightningLite, the `trainer` should be None
-        if trainer is None:
-            return move_data_to_device(results, "cpu")
-
-        results = strategy._launcher._collect_rank_zero_results(trainer, results)
+        if trainer is not None:
+            results = strategy._launcher._collect_rank_zero_results(trainer, results)
 
         if strategy.global_rank == 0:
-            if trainer.checkpoint_callback is not None:
-                return move_data_to_device(results, "cpu"), \
-                    trainer.checkpoint_callback.best_model_path, \
-                    move_data_to_device(strategy.lightning_module.state_dict(), "cpu")
-            else:
-                return move_data_to_device(results, "cpu"), \
-                    None, \
-                    move_data_to_device(strategy.lightning_module.state_dict(), "cpu")
+            return move_data_to_device(results, "cpu")
 
 
 class RayStrategy(DDPSpawnStrategy):
