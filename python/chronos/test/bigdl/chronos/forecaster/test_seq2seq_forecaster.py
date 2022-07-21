@@ -401,7 +401,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         test_loader = test.to_torch_data_loader(roll=True,
                                                 lookback=24,
                                                 horizon=5)
-        s2s = Seq2SeqForecaster(train)
+        s2s = Seq2SeqForecaster.from_tsdataset(train)
         s2s.fit(loader, epochs=2)
         yhat = s2s.predict(test)
         onnx_yhat = s2s.predict_with_onnx(test)
