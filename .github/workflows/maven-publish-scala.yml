@@ -42,13 +42,6 @@ jobs:
       with:
         maven-version: 3.8.2
 
-    - name: ENV test
-      env:
-        BUILD: success
-      run: |
-        echo "BUILD = ${BUILD}"
-        echo BUILD: $BUILD
-   
     - name: Set up Maven Settings
       uses: s4u/maven-settings-action@v2.6.0
       env:
@@ -70,8 +63,8 @@ jobs:
               }
           },{
             "id": "ossrh",
-            "username": env.OSSRH_USERNAME,
-            "password": env.OSSRH_PASSWORD,
+            "username": "${OSSRH_USERNAME}",
+            "password": "${OSSRH_PASSWORD}",
             "configuration": {
               "timeout": "3600000"
             }
