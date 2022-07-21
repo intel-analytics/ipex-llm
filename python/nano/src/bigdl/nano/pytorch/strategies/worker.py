@@ -34,4 +34,9 @@ if __name__ == '__main__':
     with open(os.path.join(temp_dir, "args.pkl"), "rb") as f:
         (fn, args, error_queue) = cloudpickle.load(f)
 
-    _wrap(fn, process_idx, args, error_queue)
+    # args[0] is `trainer`, when it is None, it means when are using LightningLite,
+    # otherwise we are using trainer, for the details here, see `ddp_subprocess.py`
+    if args[0] is None:
+        _wrap(fn, process_idx, args, error_queue)
+    else:
+        _wrap(args[0].strategy._launcher._wrapping_function, process_idx, args, error_queue)

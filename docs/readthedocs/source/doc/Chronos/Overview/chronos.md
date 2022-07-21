@@ -36,7 +36,7 @@ pip install bigdl-nano[tensorflow]
 pip install pmdarima==1.8.2
 pip install prophet==1.0.1
 pip install neural-compressor==1.8.1
-pip install pyarrow=6.0.1
+pip install pyarrow==6.0.1
 ```
 ```eval_rst
 .. note:: 
@@ -48,7 +48,7 @@ pip install pyarrow=6.0.1
 .. note:: 
     **Supported Python Version**:
 
-     Chronos is thoroughly tested on Python3.6/3.7. Still, it is highly recommended to use python3.7.
+     Chronos only supports Python 3.7.2 ~ latest 3.7.x.
 ```
 ---
 ### **3. Run**

@@ -97,3 +97,34 @@ def check_data(x, y, data_config):
                       "The y shape should be (batch_size, future_seq_len, output_feature_num),"
                       " Got output_feature_num of {} in config while y input shape of {}."
                       .format(data_config["output_feature_num"], y.shape[-1]))
+
+
+def check_transformer_data(x, y, x_enc, y_enc, data_config):
+    from bigdl.nano.utils.log4Error import invalidInputError
+    invalidInputError(data_config["past_seq_len"] == x.shape[-2],
+                      "The x shape should be (batch_size, past_seq_len, input_feature_num), "
+                      "Got past_seq_len of {} in config while x input shape of {}."
+                      .format(data_config["past_seq_len"], x.shape[-2]))
+    invalidInputError(data_config["future_seq_len"] + data_config["label_len"] == y.shape[-2],
+                      "The y shape should be (batch_size, label_len + future_seq_len, "
+                      "output_feature_num), Got future_seq_len plus label_len of {} "
+                      "in config while y input shape of {}.".format(
+                      data_config["future_seq_len"] + data_config["label_len"], y.shape[-2]))
+    invalidInputError(data_config["input_feature_num"] == x.shape[-1],
+                      "The x shape should be (batch_size, past_seq_len, input_feature_num),"
+                      " Got input_feature_num of {} in config while x input shape of {}."
+                      .format(data_config["input_feature_num"], x.shape[-1]))
+    invalidInputError(data_config["output_feature_num"] == y.shape[-1],
+                      "The y shape should be (batch_size, label_len + future_seq_len, "
+                      "output_feature_num), Got output_feature_num of {} in config while "
+                      "y input shape of {}.".format(data_config["output_feature_num"],
+                                                    y.shape[-1]))
+    invalidInputError(data_config["past_seq_len"] == x_enc.shape[-2],
+                      "The x shape should be (batch_size, past_seq_len, time_feature_num), "
+                      "Got past_seq_len of {} in config while x_enc input shape of {}."
+                      .format(data_config["past_seq_len"], x_enc.shape[-2]))
+    invalidInputError(data_config["future_seq_len"] + data_config["label_len"] == y_enc.shape[-2],
+                      "The y shape should be (batch_size, label_len + future_seq_len, "
+                      "time_feature_num), Got future_seq_len plus labnel_len of {} in config while "
+                      "y_enc input shape of {}.".format(data_config["future_seq_len"] +
+                                                        data_config["label_len"], y_enc.shape[-2]))

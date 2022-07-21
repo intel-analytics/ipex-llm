@@ -36,7 +36,6 @@ import os
 import multiprocessing
 import subprocess
 import sys
-import copy
 import uuid
 from typing import Any, Optional, Callable
 from tempfile import TemporaryDirectory
@@ -45,7 +44,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.core.datamodule import LightningDataModule
 
 from bigdl.nano.pytorch.strategies.ddp_spawn import DDPSpawnStrategy, _DDPSpawnLauncher
-from bigdl.nano.common.cpu_schedule import schedule_workers
+from bigdl.nano.common.cpu_schedule import schedule_processors
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 from bigdl.nano.utils.log4Error import invalidInputError
 
@@ -63,19 +62,27 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
     def launch(self, function: Callable, *args: Any,
                trainer: Optional["pl.Trainer"] = None, **kwargs: Any) -> Any:
         # pytorch_lightning 1.6 uses this method to create child processes
-        invalidInputError(trainer is not None and self._strategy.cluster_environment is not None,
-                          'strategy.cluster_environment and trainer cannot be None')
+
+        # the `self._strategy.cluster_environment` should not be None in normal circumstances,
+        # if you see this error message, please report an issue in BigDL.
+        invalidInputError(self._strategy.cluster_environment is not None,
+                          'strategy.cluster_environment cannot be None')
 
         os.environ["MASTER_PORT"] = str(self._strategy.cluster_environment.main_port)
 
-        if self._strategy.cpu_for_each_process is None:
-            cpu_procs = schedule_workers(self._strategy.num_processes)
+        cpu_procs = self._strategy.cpu_for_each_process
+        if cpu_procs is None:
+            envs = schedule_processors(self._strategy.num_processes)
         else:
-            cpu_procs = self._strategy.cpu_for_each_process
+            envs = [{
+                "KMP_AFFINITY": f"granularity=fine,proclist"
+                                f"=[{','.join([str(i) for i in cpu_procs[i]])}],explicit",
+                "OMP_NUM_THREADS": str(len(cpu_procs[i])),
+                "PROCESS_IDX": str(i),
+            } for i in range(self._strategy.num_processes)]
 
-        # fix bug
-        # args[1] is dataloader, args[3] and args[4] is datamodule
-        if self._strategy.use_ipex and TORCH_VERSION_LESS_1_10:
+        # fix bug, see ddp_spawn strategy for details
+        if self._strategy.use_ipex and TORCH_VERSION_LESS_1_10 and trainer is not None:
             if isinstance(args[1], LightningDataModule):
                 args[1].trainer = None
             elif isinstance(args[3], LightningDataModule):
@@ -96,35 +103,43 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
             return_queue = mp.Queue()
             error_queue = mp.Queue()
             args = (trainer, function, args, kwargs, return_queue)
+
+            # when using trainer, if we dump `trainer` and `self._wrapping_function` at the
+            # same time, then after we load them in the subprocess, the loaded `trainer` may
+            # be different from the one we dumped sometimes. so now, when using trianer, we
+            # don't dump the `self._wrapping_function` and access it through `trainer` in
+            # subprocess, when using LightningLite, the `trainer` is None, so we must dump
+            # `self._wrapping_function`.
             with open(os.path.join(temp_dir, "args.pkl"), "wb") as f:
-                cloudpickle.dump((self._wrapping_function, args, error_queue), f)
+                if trainer is not None:
+                    cloudpickle.dump((None, args, error_queue), f)
+                else:
+                    cloudpickle.dump((self._wrapping_function, args, error_queue), f)
 
             processes = []
             cwd_path = os.path.split(os.path.realpath(__file__))[0]
             for i in range(self._strategy.num_processes):
-                env = copy.deepcopy(os.environ)
+                envs[i]["AUTHKEY"] = authkey
 
-                env.update({
-                    "KMP_AFFINITY": f"granularity=fine,proclist"
-                                    f"=[{','.join([str(i) for i in cpu_procs[i]])}],explicit",
-                    "OMP_NUM_THREADS": str(len(cpu_procs[i])),
-                    "PROCESS_IDX": str(i),
-                    "AUTHKEY": authkey,
-                })
-                log.debug(f"[Process {i}]: using KMP_AFFINITY: {env['KMP_AFFINITY']}")
-                log.debug(f"[Process {i}]: using OMP_NUM_THREADS: {env['OMP_NUM_THREADS']}")
+                log.debug(f"[Process {i}]: using KMP_AFFINITY: {envs[i]['KMP_AFFINITY']}")
+                log.debug(f"[Process {i}]: using OMP_NUM_THREADS: {envs[i]['OMP_NUM_THREADS']}")
 
                 processes.append(subprocess.Popen([sys.executable, f"{cwd_path}/worker.py",
-                                                   temp_dir], env=env))
+                                                   temp_dir], env=envs[i]))
 
             for _, process in enumerate(processes):
                 process.wait()
-
             for _, process in enumerate(processes):
-                assert process.returncode == 0, "Subprocess incorrectly exit, \
-                                                check the trainer configure or usage"
+                invalidInputError(process.returncode == 0, "subprocess exits incorrectly")
+
             # restore the state of child process
             spawn_output = return_queue.get()
+
+            # when using pytorch lightning's trainer, the `trainer` cannot be None,
+            # when using pytorch lightning's LightningLite, the `trainer` should be None
+            if trainer is None:
+                return spawn_output
+
             self._recover_results_in_main_process(spawn_output, trainer)
             return spawn_output.trainer_results
 
