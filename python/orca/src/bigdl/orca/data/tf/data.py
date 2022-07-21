@@ -14,7 +14,9 @@
 # limitations under the License.
 #
 import tensorflow as tf
+from pyspark.sql import DataFrame
 
+from bigdl.orca.learn.utils import dataframe_to_xshards_of_feature_dict
 from bigdl.orca.tfpark.tf_dataset import TensorMeta
 from bigdl.dllib.utils import nest
 from bigdl.orca.data import SparkXShards
@@ -126,6 +128,17 @@ class Dataset(object):
         log4Error.invalidInputError(isinstance(tbl, FeatureTable),
                                     "Only Friesian FeatureTable is supported")
         xshards = featuretable_to_xshards(tbl)
+        return TensorSliceDataset(xshards)
+
+    @staticmethod
+    def from_spark_df(df, columns=None):
+        log4Error.invalidInputError(isinstance(df, DataFrame),
+                                    "Only Spark DataFrame is supported")
+        if columns is None:
+            columns = df.columns
+        if columns and not isinstance(columns, list):
+            columns = [columns]
+        xshards = dataframe_to_xshards_of_feature_dict(df, columns, accept_str_col=True)
         return TensorSliceDataset(xshards)
 
     def map(self, map_func):

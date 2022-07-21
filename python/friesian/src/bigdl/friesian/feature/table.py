@@ -397,7 +397,7 @@ class Table:
         :param columns: str or a list of str that specifies the name(s) of the target column(s).
                If columns is None, then the function will return statistics for all numeric columns.
         :param aggr: str or a list of str or dict to specify aggregate functions,
-               min/max/avg/sum/count are supported.
+               min/max/avg/sum/count/stddev are supported.
                If aggr is a str or a list of str, it contains the name(s) of aggregate function(s).
                If aggr is a dict, the key is the column name, and the value is the aggregate
                function(s).
@@ -426,10 +426,10 @@ class Table:
                 aggr_strs = [aggr_strs]
             values = []
             for aggr_str in aggr_strs:
-                if aggr_str not in ["min", "max", "avg", "sum", "count"]:
+                if aggr_str not in ["min", "max", "avg", "sum", "count", "stddev"]:
                     invalidInputError(False,
-                                      "aggregate function must be one of min/max/avg/sum/count,"
-                                      " but got {}.".format(aggr_str))
+                                      "aggregate function must be one of min/max/avg/sum/count/"
+                                      "stddev, but got {}.".format(aggr_str))
                 values.append(self.df.agg({column: aggr_str}).collect()[0][0])
             stats[column] = values[0] if len(values) == 1 else values
         return stats

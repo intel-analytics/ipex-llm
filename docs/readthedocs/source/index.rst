@@ -71,7 +71,9 @@ BigDL Documentation
    doc/Orca/Overview/data-parallel-processing.md
    doc/Orca/Overview/distributed-training-inference.md
    doc/Orca/Overview/distributed-tuning.md
+   doc/Orca/Overview/orca-tf-dataset.md
    doc/Ray/Overview/ray.md
+   doc/Orca/Tutorial/apply-tensorflow-pipeline-to-spark-dataframe.md
    doc/Orca/Overview/known_issues.md
 
 .. toctree::
