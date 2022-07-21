@@ -295,9 +295,8 @@ class BasePytorchForecaster(Forecaster):
             if isinstance(data, tuple):
                 data = np_to_dataloader(data, batch_size, self.num_processes)
             from pytorch_lightning.loggers import CSVLogger
-            logger = False if validation_data is None else CSVLogger("python/chronos/src/bigdl/"
-                                                                     "chronos/forecaster",
-                                                                     name="val_data_test")
+            logger = False if validation_data is None else CSVLogger(".",
+                                                                     name="forecaster_tmp_log")
             # Trainer init
             self.trainer = Trainer(logger=logger, max_epochs=epochs,
                                    checkpoint_callback=self.checkpoint_callback,
@@ -314,9 +313,8 @@ class BasePytorchForecaster(Forecaster):
                                                        self.num_processes)
                 self.trainer.fit(self.internal, data, validation_data)
                 self.fitted = True
-                fit_out = read_csv('python/chronos/src/bigdl/chronos/forecaster/val_data_test/'
-                                   'version_0/metrics.csv')
-                delete_folder("python/chronos/src/bigdl/chronos/forecaster/val_data_test")
+                fit_out = read_csv('./forecaster_tmp_log/version_0/metrics.csv')
+                delete_folder("./forecaster_tmp_log")
                 return fit_out
 
     def predict(self, data, batch_size=32, quantize=False):
