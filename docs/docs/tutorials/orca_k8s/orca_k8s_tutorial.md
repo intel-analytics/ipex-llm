@@ -294,7 +294,6 @@ In the following part, we will show you how to submit and run the Orca example o
 * Use `spark-submit` script
 
 ## 6.1 Use `python` command
-
 ### 6.1.1 K8s-Client
 Before running the example on `k8s-client` mode, you should:
 On the __Client Container__:
@@ -457,8 +456,8 @@ In the script:
 * `spark.driver.host`: the localhost for driver pod (only required when submitting in client mode);
 * `spark.kubernetes.container.image`: the BigDL docker image you downloaded; 
 * `spark.kubernetes.authenticate.driver.serviceAccountName`: the service account for driver pod;
-* `spark.pyspark.driver.python`: the Python location in Conda archive as driver's Python environment;
-* `spark.pyspark.python`: the Python location in Conda archive as executors' Python environment;
+* `spark.pyspark.driver.python`: specify the Python location in Conda archive as driver's Python environment;
+* `spark.pyspark.python`: specify the Python location in Conda archive as executors' Python environment;
 * `archives`: upload the packed Conda archive to K8s;
 * `properties-file`: upload BigDL configuration properties to K8s;
 * `py-files`: upload extra Python dependency files to K8s;
@@ -539,7 +538,7 @@ In the script:
 * `archives`: upload the Conda archive to K8s;
 * `properties-file`: upload BigDL configuration properties to K8s;
 * `py-files`: upload needed extra Python dependency files to K8s;
-* `spark.pyspark.python`: the Python location in Conda archive as executors' Python environment;
+* `spark.pyspark.python`: specify the Python location in Conda archive as executors' Python environment;
 * `spark.executorEnv.PYTHONHOME`: the search path of Python libraries on executor pod;
 * `spark.kubernetes.file.upload.path`: the path to store files at spark submit side in cluster mode;
 * `spark.driver.extraClassPath`: upload and register the BigDL jars files to the driver's classpath;
