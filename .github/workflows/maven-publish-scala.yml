@@ -63,8 +63,8 @@ jobs:
               }
           },{
             "id": "ossrh",
-            "username": "${OSSRH_USERNAME}",
-            "password": "${OSSRH_PASSWORD}",
+            "username": ${OSSRH_USERNAME},
+            "password": ${OSSRH_PASSWORD},
             "configuration": {
               "timeout": "3600000"
             }
