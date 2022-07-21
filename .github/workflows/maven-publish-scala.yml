@@ -147,7 +147,6 @@ jobs:
           mv scala/ppml/pom.xml.origin scala/ppml/pom.xml
           mv scala/assembly/pom.xml.origin scala/assembly/pom.xml
 
-
 #    - name: Publish to GitHub Packages Apache Maven
 #      run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml
 #      env:
