@@ -1,5 +1,5 @@
 # BigDL-Nano TensorFlow Training Quickstart
-**In this guide we will describe how to accelerate TensorFlow Keras application on training workloads using BigDL-Nano in simple steps**
+**In this guide we will describe how to accelerate TensorFlow Keras application on training workloads using BigDL-Nano in 5 simple steps**
 
 ### **Step 0: Prepare Environment**
 
