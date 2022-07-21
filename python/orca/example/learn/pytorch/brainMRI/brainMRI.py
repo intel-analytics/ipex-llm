@@ -159,7 +159,7 @@ def denormalize(images):
 parser = argparse.ArgumentParser(description='PyTorch brainMRI Example')
 parser.add_argument('--cluster_mode', type=str, default="local",
                     help='The cluster mode, such as local, yarn-client, or spark-submit.')
-parser.add_argument('--backend', type=str, default="torch_distributed",
+parser.add_argument('--backend', type=str, default="ray",
                     help='The backend of PyTorch Estimator; torch_distributed and spark are supported')
 parser.add_argument('--batch_size', type=int, default=64, help='The training batch size')
 parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
@@ -197,7 +197,7 @@ train_loader = train_loader_creator(config=config, batch_size=batch_size)
 # You should use jupyter notebook to show the images.
 show_batch(train_loader)
 
-if args.backend in ["torch_distributed", "spark"]:
+if args.backend in ["ray", "spark"]:
     orca_estimator = Estimator.from_torch(model=model_creator,
                                           optimizer=optim_creator,
                                           loss=loss_creator,
