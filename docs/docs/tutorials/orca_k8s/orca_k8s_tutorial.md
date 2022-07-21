@@ -154,7 +154,7 @@ sudo docker exec -it <containerID> bash
 In the launched BigDL K8s Container, please setup environment following steps below:
 ## 3.1 Install Python Libraries
 ### 3.1.1 Install Conda
-Please use conda to prepare the Python environment on the __Client Container__ (where you submit applications), you could download and install Conda following [Conda User Guide]() or executing the command as below.
+Please use conda to prepare the Python environment on the __Client Container__ (where you submit applications), you could download and install Conda following [Conda User Guide](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html) or executing the command as below.
 
 ```bash
 # Download Anaconda installation script 
@@ -207,7 +207,7 @@ __Note:__
 
 * It's only need for you to install needed Python libraries using Conda, since the BigDL K8s container has already setup `JAVA_HOME`, `BIGDL_HOME`, `SPARK_HOME`, `SPARK_VERSION`, etc.
 
-Please see more details in [Python User Guide]().
+Please see more details in [Python User Guide](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/python.html).
 
 
 # 4. Prepare Dataset
