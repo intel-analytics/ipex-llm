@@ -21,6 +21,7 @@ import torch
 from torch import nn
 from bigdl.ppml.fl.estimator import Estimator
 from bigdl.ppml.fl.algorithms.psi import PSI
+from bigdl.ppml.fl.nn.pytorch.utils import set_one_like_parameter
 
 
 class LocalModel(nn.Module):
@@ -52,7 +53,7 @@ if __name__ == '__main__':
                                client_id='2',
                                loss_fn=loss_fn,
                                optimizer_cls=torch.optim.SGD,
-                               optimizer_args={'lr':1e-3},
+                               optimizer_args={'lr':1e-5},
                                target='localhost:8980')
     response = ppl.fit(x, y)
     result = ppl.predict(x)

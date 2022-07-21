@@ -14,14 +14,16 @@
 # limitations under the License.
 #
 
+from typing import List
 import numpy as np
 import pandas as pd
 
 import torch
-from torch import nn
+from torch import Tensor, nn
 from bigdl.ppml.fl.estimator import Estimator
 from bigdl.ppml.fl.algorithms.psi import PSI
 from bigdl.ppml.fl.nn.fl_server import FLServer
+from bigdl.ppml.fl.nn.pytorch.utils import set_one_like_parameter
 
 
 class LocalModel(nn.Module):
@@ -39,7 +41,7 @@ class ServerModel(nn.Module):
         super().__init__()
         self.sigmoid = nn.Sigmoid()
 
-    def forward(self, x):
+    def forward(self, x: List[Tensor]):
         x = torch.stack(x)
         x = torch.sum(x, dim=0) # above two act as interactive layer, CAddTable
         x = self.sigmoid(x)
@@ -71,7 +73,7 @@ if __name__ == '__main__':
                                client_id='1',
                                loss_fn=loss_fn,
                                optimizer_cls=torch.optim.SGD,
-                               optimizer_args={'lr':1e-3},
+                               optimizer_args={'lr':1e-5},
                                target='localhost:8980',
                                server_model=server_model)
     response = ppl.fit(x, y)
