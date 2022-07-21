@@ -44,9 +44,10 @@ jobs:
     
     - name: Set up Maven Settings
       uses: s4u/maven-settings-action@v2.6.0
-      with:
+      env:
         OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-        OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}         
+        OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+      with:
         sonatypeSnapshots: true
         apacheSnapshots: true
         servers: |
