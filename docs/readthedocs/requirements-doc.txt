@@ -4,6 +4,7 @@ sphinx-click
 sphinx-jsonschema
 sphinxemoji
 click
+markdown<3.4
 tensorflow==1.15.2
 bigdl==0.12.0
 cloudpickle
