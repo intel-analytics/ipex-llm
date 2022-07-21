@@ -41,7 +41,14 @@ jobs:
       uses: stCarolas/setup-maven@v4.4
       with:
         maven-version: 3.8.2
-    
+
+    - name: ENV test
+      env:
+        BUILD: success
+      run: |
+        echo "BUILD = ${BUILD}"
+        echo BUILD: $BUILD
+   
     - name: Set up Maven Settings
       uses: s4u/maven-settings-action@v2.6.0
       env:
