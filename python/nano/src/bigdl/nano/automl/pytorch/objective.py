@@ -14,8 +14,7 @@
 # limitations under the License.
 #
 
-import collections
-from typing import Any, Dict, Optional, Union
+from typing import Optional, Union
 
 import pytorch_lightning as pl
 
@@ -23,14 +22,12 @@ from pytorch_lightning.utilities.exceptions import MisconfigurationException
 from pytorch_lightning.utilities.types import EVAL_DATALOADERS, TRAIN_DATALOADERS
 from pytorch_lightning.utilities import rank_zero_deprecation
 from pytorch_lightning.core.datamodule import LightningDataModule
-from pytorch_lightning.callbacks import Callback
 
+from bigdl.nano.pytorch.trainer import Trainer
 from bigdl.nano.automl.hpo.backend import create_pl_pruning_callback
 from bigdl.nano.utils.log4Error import invalidInputError
 import inspect
 import copy
-import time
-import torch
 
 
 def _is_creator(model):
@@ -45,6 +42,8 @@ class Objective(object):
                  model=None,
                  target_metric=None,
                  pruning=False,
+                 auto_optimize=False,
+                 input_sample=None,
                  **fit_kwargs):
         """
         Init the objective.
@@ -56,6 +55,9 @@ class Objective(object):
             Defaults to None.
         :param: pruning: bool (optional): whether to enable pruning.
             Defaults to False.
+        :param auto_optimize: Whether to automatically consider the model after 
+            inference acceleration in the search process. It will only take 
+            effect if target_metric contains "latency". Default value is False.
         throw: ValueError: _description_
         """
         self.searcher = searcher
@@ -64,54 +66,14 @@ class Objective(object):
         self.mo_hpo = isinstance(self.target_metric, list) and len(self.target_metric) > 1
         # add automatic support for latency
         if self.mo_hpo and "latency" in self.target_metric:
-            from torchmetrics import Metric
-
-            class LatencyAggregate(Metric):
-                def __init__(self):
-                    super().__init__(compute_on_step=False)
-                    self.add_state("times", default=[])
-
-                def update(self, latency):
-                    self.times.append(torch.Tensor([latency * 1000]).double())
-
-                def compute(self):
-                    # achieve the core logic of how to average latency
-                    self.times.sort()
-                    count = len(self.times)
-                    if count >= 3:
-                        threshold = max(int(0.1 * count), 1)
-                        infer_times_mid = self.times[threshold:-threshold]
-                    else:
-                        infer_times_mid = self.times[:]
-                    latency = sum(infer_times_mid) / len(infer_times_mid)
-                    return latency
-
-            class LatencyCallback(Callback):
-                def __init__(self) -> None:
-                    super().__init__()
-                    self.time_avg = LatencyAggregate()
-
-                def on_validation_start(self, trainer, pl_module) -> None:
-                    super().on_validation_start(trainer, pl_module)
-                    if not hasattr(pl_module, "time_avg"):
-                        pl_module.time_avg = self.time_avg
-
-                def on_validation_epoch_end(self, trainer, pl_module) -> None:
-                    pl_module.log('latency', pl_module.time_avg)
-
-                def on_validation_batch_start(self, trainer, pl_module, batch: Any,
-                                              batch_idx: int, dataloader_idx: int) -> None:
-                    self.batch_latency = time.perf_counter()
-
-                def on_validation_batch_end(self, trainer, pl_module, outputs, batch: Any,
-                                            batch_idx: int, dataloader_idx: int) -> None:
-                    batch_latency = time.perf_counter() - self.batch_latency
-                    pl_module.time_avg(batch_latency)
-
             callbacks = self.searcher.trainer.callbacks or []
             callbacks.append(LatencyCallback())
             self.searcher.trainer.callbacks = callbacks
-
+            self.auto_optimize = auto_optimize
+            self.input_sample = input_sample
+        else:
+            self.auto_optimize = False
+        
         self.pruning = pruning
         self.fit_kwargs = fit_kwargs
 
@@ -134,13 +96,23 @@ class Objective(object):
             self.searcher.trainer.callbacks = callbacks
 
         # links data to the trainer
-        self.searcher.trainer._data_connector.attach_data(  # type: ignore
-            model,
-            train_dataloaders=self.train_dataloaders,
-            val_dataloaders=self.val_dataloaders,
-            datamodule=self.datamodule
-        )
-
+        if LIGHTNING_VERSION_LESS_1_6:
+            self.searcher.trainer.data_connector.attach_data(
+                model,
+                train_dataloaders=self.train_dataloaders,
+                val_dataloaders=self.val_dataloaders,
+                datamodule=self.datamodule
+            )
+        else:
+            self.searcher.trainer._data_connector.attach_data(  # type: ignore
+                model,
+                train_dataloaders=self.train_dataloaders,
+                val_dataloaders=self.val_dataloaders,
+                datamodule=self.datamodule
+            )
+        if self.val_dataloaders == None:
+            self.val_dataloaders = model.val_dataloader()
+            
     def _post_train(self, model):
         pass
 
@@ -178,11 +150,6 @@ class Objective(object):
         :param: trial: a trial object which provides the hyperparameter combinition.
         :return: the target metric value.
         """
-        # fit
-        # hyperparameters = dict(n_layers=n_layers, dropout=dropout, output_dims=output_dims)
-        # trainer.logger.log_hyperparams(hyperparameters)
-        # trainer.fit(self.model, datamodule=datamodule)
-        # return trainer.callback_metrics["val_acc"].item()
 
         if _is_creator(self.model):
             model = self.model(trial)
@@ -195,12 +162,45 @@ class Objective(object):
         self.searcher._run(model)
         if self.mo_hpo:
             scores = []
-            # print(self.searcher.trainer.callback_metrics)
             for metric in self.target_metric:
                 score = self.searcher.trainer.callback_metrics[metric].item()
                 scores.append(score)
         else:
             scores = self.searcher.trainer.callback_metrics[self.target_metric].item()
+
+        if self.auto_optimize:
+            #  workaround : Monkey patch
+            val_dataloader = model.val_dataloader
+            validation_step = model.validation_step
+            validation_epoch_end = model.validation_epoch_end
+            for optimization in ['openvino', 'onnxruntime']: 
+                # may enable more optimizations later
+                try:
+                    optim_model = Trainer.trace(model, accelerator=optimization,
+                                                input_sample=self.input_sample)
+                except Exception:
+                    # some optimizations may fail, just skip and try next
+                    continue
+                from functools import partial
+                optim_model.val_dataloader = partial(optim_model, val_dataloader)
+                optim_model.validation_step = partial(optim_model, validation_step)
+                optim_model.validation_epoch_end = partial(optim_model, validation_epoch_end)
+                #  may need partial more func
+                optim_model.eval()
+                self.searcher._validate(model, self.val_dataloaders)
+                optim_scores = []
+                for metric in self.target_metric:
+                    score = self.searcher.trainer.callback_metrics[metric].item()
+                    optim_scores.append(score)
+
+                # compare optim_scores and original scores, and try to find a similar
+                # loss value with less latency
+                
+                
+                # todo: how to return corresponding optimization name ?
+                
+
+
         self._post_train(model)
 
         return scores
