@@ -44,6 +44,7 @@ def quantize(model, dataloader=None, metric=None, **kwargs):
     }
     not_none_kwargs['approach'] = approach_map.get(kwargs['approach'], None)
     quantizer = None
+    onnxruntime_session_options = not_none_kwargs.pop('onnxruntime_session_options', None)
     if 'pytorch' in not_none_kwargs['framework']:
         from .pytorch.quantization import PytorchQuantization
         quantizer = PytorchQuantization(**not_none_kwargs)
@@ -51,7 +52,8 @@ def quantize(model, dataloader=None, metric=None, **kwargs):
         invalidInputError('torch' in str(type(dataloader)),
                           errMsg="ONNXRuntime quantization only support in Pytorch.")
         from .onnx.pytorch.quantization import PytorchONNXRuntimeQuantization
-        quantizer = PytorchONNXRuntimeQuantization(**not_none_kwargs)
+        quantizer = PytorchONNXRuntimeQuantization(onnxruntime_session_options=onnxruntime_session_options,
+                                                   **not_none_kwargs)
     if 'tensorflow' in not_none_kwargs['framework']:
         from .tensorflow.quantization import TensorflowQuantization
         quantizer = TensorflowQuantization(**not_none_kwargs)
