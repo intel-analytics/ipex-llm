@@ -200,9 +200,11 @@ class SelectiveBackprop(Callback):
 
             from bigdl.nano.pytorch.algorithms.selective_backprop import SelectiveBackprop
             from bigdl.nano.pytorch import Trainer
-            algorithm = SelectiveBackprop(start=0.5, end=0.9, keep=0.5)
+            from torch import nn
+            loss_fn = nn.CrossEntropyLoss(reduction='none')
+            sb = SelectiveBackprop(start=0.5, end=0.9, keep=0.5, loss_fn=loss_fn)
             trainer = Trainer(
-                callbacks=[algorithm],
+                algorithms=[sb],
             )
     """
 
