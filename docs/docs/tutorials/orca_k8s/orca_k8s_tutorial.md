@@ -296,6 +296,7 @@ In the following part, we will show you how to submit and run the Orca example o
 ## 6.1 Use `python` command
 
 ### 6.1.1 K8s-Client
+Before running the example on `k8s-client` mode, you should:
 On the __Client Container__:
 1. Please call `init_orca_context` at very begining part of each Orca program.
     ```python
@@ -316,6 +317,8 @@ On the __Client Container__:
     * `spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName`: specify the claim name of `persistentVolumeClaim` with volumnName `nfsvolumeclaim` to mount `persistentVolume` into executor pods;
     * `spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path`: add volumeName `nfsvolumeclaim` of the volumeType `persistentVolumeClaim` to executor pods on the NFS path specified in value;
 
+2. Using Conda to install BigDL and needed Python dependency libraries (see __Section 3__).
+
 Run the example:
 ```bash
 python train.py --cluster_mode k8s-client --remote_dir /bigdl/data
@@ -323,7 +326,7 @@ python train.py --cluster_mode k8s-client --remote_dir /bigdl/data
 
 In the script:
 * `cluster_mode`: set the cluster_mode in `init_orca_context`.
-* `remote_dir`: directory on a network file system for the dataset (see __Section 4__) and saving the model.
+* `remote_dir`: directory on NFS for the dataset (see __Section 4__) and saving the model.
 
 
 ### 6.1.2 K8s-Cluster
@@ -357,22 +360,24 @@ Before running the example on `k8s-cluster` mode, you should:
         * `spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path`: add volumeName `nfsvolumeclaim` of the volumeType `persistentVolumeClaim` to executor pods on the NFS path specified in value;
         * `spark.kubernetes.authenticate.driver.serviceAccountName`: the service account for driver pod;
         * `spark.kubernetes.file.upload.path`: the path to store files at spark submit side in cluster mode;
+    
+    2. Using Conda to install BigDL and needed Python dependency libraries (see __Section 3__).
 
-    2. Pack the current activate Conda environment to an archive.
+    3. Pack the current activate Conda environment to an archive.
         ```
         conda pack -o environment.tar.gz
         ```
 
 * On the __Host Node__:
-    1. Put the Conda archive to NFS.
+    1. Upload the Conda archive to NFS.
         ```bash
         docker cp <containerID>:/opt/spark/work-dir/environment.tar.gz /bigdl/nfsdata
         ```
-    2. Put the example Python file to NFS.
+    2. Upload the example Python file to NFS.
         ```bash
         docker cp <containerID>:/opt/spark/work-dir/train.py /bigdl/nfsdata
         ```
-    3. Put the extra Python dependency file to NFS.
+    3. Upload the extra Python dependency file to NFS.
         ```bash
         docker cp <containerID>:/opt/spark/work-dir/model.py /bigdl/nfsdata
         ```
@@ -384,7 +389,7 @@ python /bigdl/nfsdata/train.py --cluster_mode k8s-cluster --remote_dir /bigdl/nf
 
 In the script:
 * `cluster_mode`: set the cluster_mode in `init_orca_context`.
-* `remote_dir`: directory on a network file system for the dataset (see __Section 4__) and saving the model.
+* `remote_dir`: directory on NFS for the dataset (see __Section 4__) and saving the model.
 
 __Note:__
 * It will return a <driver-pod-name> when the application is completed.
@@ -411,7 +416,7 @@ Before submitting the example on `k8s-client` mode, you should:
 
         init_orca_context(cluster_mode="spark-submit")
         ```
-    2. Using Conda to install BigDL and needed Python dependency libraries (see __Section 4__).
+    2. Using Conda to install BigDL and needed Python dependency libraries (see __Section 3__).
     3. Pack the current activate Conda environment to an archive.
         ```bash
         conda pack -o environment.tar.gz
@@ -462,7 +467,7 @@ In the script:
 * `spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName`: specify the claim name of `persistentVolumeClaim` with specified volumnName to mount `persistentVolume` into executor pods;
 * `spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path`: add specified volumeName of the volumeType `persistentVolumeClaim` to executor pods on the NFS path specified in value;
 * `cluster_mode`: the cluster_mode in `init_orca_context`;
-* `remote_dir`: directory on a network file system for the dataset (see __Section 4__) and saving the model.
+* `remote_dir`: directory on NFS for the dataset (see __Section 4__) and saving the model.
 
 
 ### 6.2.2 K8s Cluster
@@ -474,7 +479,7 @@ Before submitting the example on `k8s-cluster` mode, you should:
 
         init_orca_context(cluster_mode="spark-submit")
         ```
-    2. Using Conda to install BigDL and needed Python dependency libraries (please refer to __Section __).
+    2. Using Conda to install BigDL and needed Python dependency libraries (see __Section 3__).
     3. Pack the current activate Conda environment to an archive.
         ```bash
         conda pack -o environment.tar.gz
@@ -544,7 +549,7 @@ In the script:
 * `spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName`: specify the claim name of `persistentVolumeClaim` with specified volumnName to mount `persistentVolume` into executor pods;
 * `spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path`: add specified volumeName of the volumeType `persistentVolumeClaim` to executor pods on the NFS path specified in value;
 * `cluster_mode`: specify the cluster_mode in `init_orca_context`;
-* `remote_dir`: directory on a network file system for the dataset (see __Section 4__) and saving the model.
+* `remote_dir`: directory on NFS for the dataset (see __Section 4__) and saving the model.
 
 
 Please retrieve training stats on the __Host Node__ following the commands below:
