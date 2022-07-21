@@ -756,6 +756,7 @@ class BasePytorchForecaster(Forecaster):
             sess_options = onnxruntime.SessionOptions()
             if thread_num is not None:
                 sess_options.intra_op_num_threads = thread_num
+                sess_options.inter_op_num_threads = thread_num
         if self.distributed:
             invalidInputError(False,
                               "build_onnx has not been supported for distributed "
@@ -819,7 +820,8 @@ class BasePytorchForecaster(Forecaster):
                  relative_drop=None,
                  absolute_drop=None,
                  timeout=0,
-                 max_trials=1):
+                 max_trials=1,
+                 sess_options=None):
         """
         Quantize the forecaster.
 
@@ -844,6 +846,9 @@ class BasePytorchForecaster(Forecaster):
         :param max_trials: Max tune times. Default to 1. Combine with timeout field to
                decide when to exit. "timeout=0, max_trials=1" means it will try quantization
                only once and return satisfying best model.
+        :param sess_options: The session option for onnxruntime, only valid when
+                             framework contains 'onnxrt_integerops' or 'onnxrt_qlinearops',
+                             otherwise will be ignored.
         """
         # check model support for quantization
         from bigdl.nano.utils.log4Error import invalidInputError
@@ -904,7 +909,8 @@ class BasePytorchForecaster(Forecaster):
                                             tuning_strategy=tuning_strategy,
                                             accuracy_criterion=accuracy_criterion,
                                             timeout=timeout,
-                                            max_trials=max_trials)
+                                            max_trials=max_trials,
+                                            onnxruntime_session_options=sess_options)
             if accelerator == 'onnxruntime':
                 self.onnxruntime_int8 = q_model
             if accelerator is None:
