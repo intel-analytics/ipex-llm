@@ -49,8 +49,8 @@ You can run these on Jupyter Notebook on single node server if you pursue a quic
 After the Jupyter Notebook service is successfully started, you can connect to the Jupyter Notebook service from a browser.
 1. Get the IP address of the container
 2. Launch a browser, and connect to the Jupyter Notebook service with the URL: 
-<\br>`https://container-ip-address:port-number/?token=your-token`
-<\br>As a result, you will see the Jupyter Notebook opened.
+</br>`https://container-ip-address:port-number/?token=your-token`
+</br>As a result, you will see the Jupyter Notebook opened.
 3. Open one of these `.ipynb` files, run through the example and learn how to use Chronos to predict time series.
 
 ## Shut Down Docker Container
