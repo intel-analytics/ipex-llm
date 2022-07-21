@@ -18,13 +18,18 @@ package com.intel.analytics.bigdl.ppml.fl
 
 import com.intel.analytics.bigdl.ppml.fl.example.DebugLogger
 import com.intel.analytics.bigdl.ppml.fl.utils.PortUtils
-import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.core.config.Configurator
+import org.apache.logging.log4j.{Level, LogManager}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class FLSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger {
   var port: Int = 8980
   var target: String = "localhost:8980"
   val logger = LogManager.getLogger(classOf[FLSpec])
+  Configurator.setLevel("org", Level.ERROR)
+  Configurator.setLevel("io", Level.ERROR)
+  Configurator.setLevel("com.intel.analytics.bigdl.dllib", Level.ERROR)
+  Configurator.setLevel("com.intel.analytics.bigdl.ppml", Level.INFO)
   before {
     // try only next 3 ports, if failed, it may well be
     // that server holds the port and fails to release

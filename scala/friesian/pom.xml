@@ -15,7 +15,7 @@
     <properties>
         <scoverage.plugin.version>1.1.1</scoverage.plugin.version>
         <scoverage.scalacPluginVersion>1.1.1</scoverage.scalacPluginVersion>
-        <grpc.version>1.37.0</grpc.version>
+        <grpc.version>1.47.0</grpc.version>
         <scoverage.aggregate>true</scoverage.aggregate>
         <runSpecsInParallel>false</runSpecsInParallel>
         <tagsToExclude>com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
@@ -25,7 +25,7 @@
         <orca.scope>compile</orca.scope>
         <core.scope>compile</core.scope>
         <serving.scope>compile</serving.scope>
-        <spark-scope>compile</spark-scope>
+        <spark-scope>provided</spark-scope>
         <bigdl.basedir>${project.parent.basedir}</bigdl.basedir>
     </properties>
 
@@ -141,12 +141,6 @@
             <scope>${spark-scope}</scope>
         </dependency>
         <dependency>
-            <groupId>redis.clients</groupId>
-            <artifactId>jedis</artifactId>
-            <version>3.6.3</version>
-            <scope>${serving.scope}</scope>
-        </dependency>
-        <dependency>
             <groupId>io.lettuce</groupId>
             <artifactId>lettuce-core</artifactId>
             <version>6.1.6.RELEASE</version>
@@ -204,13 +198,13 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.12.2</version>
-            <scope>${spark-scope}</scope>
+            <scope>${serving.scope}</scope>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-scala_${scala.major.version}</artifactId>
             <version>2.12.2</version>
-            <scope>${spark-scope}</scope>
+            <scope>${serving.scope}</scope>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -221,7 +215,7 @@
         <dependency>
             <groupId>commons-cli</groupId>
             <artifactId>commons-cli</artifactId>
-            <version>1.4</version>
+            <version>1.2</version>
             <scope>${serving.scope}</scope>
             <exclusions>
                 <exclusion>

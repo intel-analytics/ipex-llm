@@ -51,3 +51,38 @@ jobs:
             $CONDA/bin/conda remove -n notebooks-pytorch --all
         env:
             ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Run tutorial notebooks Pytorch unit tests
+        shell: bash
+        run: |
+            $CONDA/bin/conda create -n notebooks-tutorial-pytorch -y python==3.7.10 setuptools=58.0.4
+            source $CONDA/bin/activate notebooks-tutorial-pytorch
+            $CONDA/bin/conda info
+            bash python/nano/dev/build_and_install.sh linux default false pytorch
+            source bigdl-nano-init
+            pip install pytest nbmake
+            pip install neural-compressor==1.11
+            pip install onnx onnxruntime onnxruntime-extensions
+            pip install lightning-bolts
+            bash python/nano/notebooks/pytorch/tutorial/run-nano-notebooks-pytorch-tutorial-tests.sh false
+            source $CONDA/bin/deactivate
+            $CONDA/bin/conda remove -n notebooks-pytorch --all
+        env:
+            ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Run tutorial notebooks Pytorch unit tests(OpenVINO)
+        shell: bash
+        run: |
+            $CONDA/bin/conda create -n notebooks-tutorial-pytorch -y python==3.7.10 setuptools=58.0.4
+            source $CONDA/bin/activate notebooks-tutorial-pytorch
+            $CONDA/bin/conda info
+            bash python/nano/dev/build_and_install.sh linux default false pytorch
+            source bigdl-nano-init
+            pip install pytest nbmake
+            pip install ipykernel==5.5.6
+            pip install openvino-dev
+            bash python/nano/notebooks/pytorch/tutorial/run-nano-notebooks-pytorch-tutorial-tests.sh true
+            source $CONDA/bin/deactivate
+            $CONDA/bin/conda remove -n notebooks-tutorial-pytorch --all
+        env:
+            ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

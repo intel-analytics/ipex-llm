@@ -111,7 +111,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
       .map { data =>
         (data._1, data._2.getTensorList.asScala.toArray.map(_.toFloat))
       }.toMap
-    logger.info(s"$aggData")
+    logger.debug(s"$aggData")
     val label = aggData("label")
     validationSize = label.length
     basePrediction = if (aggData.contains("predict")) {
@@ -183,7 +183,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
 
   def predictWithTree(
         aggPredict: Array[Array[(String, Array[java.lang.Boolean])]]): Array[Float] = {
-    logger.info("Predict with new Tree")
+    logger.debug("Predict with new Tree")
     if (aggPredict.head.length == 1) {
       // Last tree
       aggPredict.map { predict =>
@@ -199,7 +199,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
   }
 
   def aggregateTreeLeaf(): Unit = {
-    logger.info(s"Add new Tree ${serverTreeLeaf.length}")
+    logger.info(s"Adding new Tree ${serverTreeLeaf.length}")
     val leafMap = getTreeLeafStorage().clientData.asScala
 
     val treeIndexes = leafMap.values.head.getLeafIndexList.asScala.map(Integer2int).toArray

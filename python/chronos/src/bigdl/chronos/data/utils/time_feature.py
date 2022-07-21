@@ -121,30 +121,30 @@ def time_features_from_frequency_str(offset) -> List[TimeFeature]:
     """
 
     features_by_offsets = (
-        (Timedelta(seconds=1), [
+        (Timedelta(seconds=60), [
             SecondOfMinute,
             MinuteOfHour,
             HourOfDay,
             DayOfWeek,
             DayOfMonth,
             DayOfYear]),
-        (Timedelta(minutes=1), [
+        (Timedelta(minutes=60), [
             MinuteOfHour,
             HourOfDay,
             DayOfWeek,
             DayOfMonth,
             DayOfYear,
         ]),
-        (Timedelta(hours=1), [HourOfDay, DayOfWeek, DayOfMonth, DayOfYear]),
-        (Timedelta(days=1), [DayOfWeek, DayOfMonth, DayOfYear]),
-        (Timedelta(days=7), [DayOfMonth, WeekOfYear]),
-        (Timedelta(days=30), [MonthOfYear]),
-        (Timedelta(days=365), [])
+        (Timedelta(hours=24), [HourOfDay, DayOfWeek, DayOfMonth, DayOfYear]),
+        (Timedelta(days=7), [DayOfWeek, DayOfMonth, DayOfYear]),
+        (Timedelta(days=30), [DayOfMonth, WeekOfYear]),
+        (Timedelta(days=365), [MonthOfYear]),
     )
 
     for offset_type, feature_classes in features_by_offsets:
-        if offset <= offset_type:
+        if offset < offset_type:
             return [cls() for cls in feature_classes]
+    return []  # freq larger than 1 year
 
 
 def time_features(dates, freq='h'):

@@ -65,12 +65,19 @@ class BaseTF2Forecaster(Forecaster):
 
         :params batch_size: predict batch size. The value will not affect evaluate
                 result but will affect resources cost(e.g. memory and time).
+                The value default to 32. If set to None,
+                the model will be used directly for inference.
+
+        :return: A numpy array with shape (num_samples, horizon, target_dim).
         """
         from bigdl.nano.utils.log4Error import invalidInputError
         if not self.fitted:
             invalidInputError(False,
                               "You must call fit or restore first before calling predict!")
-        yhat = self.internal.predict(data, batch_size=batch_size)
+        if batch_size:
+            yhat = self.internal.predict(data, batch_size=batch_size)
+        else:
+            yhat = self.internal(data, training=False).numpy()
         return yhat
 
     def evaluate(self, data, batch_size=32, multioutput="raw_values"):
@@ -99,6 +106,8 @@ class BaseTF2Forecaster(Forecaster):
                 String in ['raw_values', 'uniform_average']. The value defaults to
                 'raw_values'.The param is only effective when the forecaster is a
                 non-distribtued version.
+
+        :return: A list of evaluation results. Each item represents a metric.
         """
         from bigdl.nano.utils.log4Error import invalidInputError
         if not self.fitted:

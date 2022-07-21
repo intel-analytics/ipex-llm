@@ -37,15 +37,24 @@ def get_input_example(model, input_sample):
         if getattr(model, "example_input_array", None) is not None:
             input_sample = model.example_input_array
         elif getattr(model, "trainer", None):
-            dataloaders: Any = [model.test_dataloader(), model.train_dataloader(),
-                                model.val_dataloader()]
-            for dataloader in dataloaders:
-                if dataloader is not None:
+            # the default implementation of model.test_dataloader/train_dalaloader/val_dataloader
+            # /predict_dataloader will throw an exception in pytorch lightning 1.6
+            for dataloader_fn in [model.test_dataloader, model.train_dataloader,
+                                  model.val_dataloader]:
+                try:
+                    dataloader = dataloader_fn()
                     # TODO: This assumpe the last output is y
                     input_sample = tuple(next(iter(dataloader)))[:-1]
                     break
-            if input_sample is None and model.predict_dataloader():
-                input_sample = tuple(next(iter(model.predict_dataloader())))
+                except Exception as _e:
+                    pass
+
+            if input_sample is None:
+                try:
+                    predict_dataloader = model.predict_dataloader()
+                    input_sample = tuple(next(iter(predict_dataloader)))
+                except Exception as _e:
+                    pass
         else:
             invalidInputError(False,
                               "You must specify an input_sample or call `Trainer.fit` "
@@ -66,7 +75,10 @@ def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axe
     '''
     input_sample = get_input_example(model, input_sample)
     invalidInputError(input_sample is not None,
-                      'You should set either input_sample or model.example_input_array')
+                      'You should implement at least one of model.test_dataloader, '
+                      'model.train_dataloader, model.val_dataloader and '
+                      'model.predict_dataloader, '
+                      'or set one of input_sample and model.example_input_array')
     forward_args = get_forward_args(model)
     if dynamic_axes:
         dynamic_axes = {}

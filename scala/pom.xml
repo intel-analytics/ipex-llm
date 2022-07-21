@@ -122,7 +122,7 @@
         <maven-deploy-plugin.version>2.8.1</maven-deploy-plugin.version>
         <maven-site-plugin.version>3.4</maven-site-plugin.version>
         <maven-antrun-plugin.version>1.7</maven-antrun-plugin.version>
-        <maven-assembly-plugin.version>2.4</maven-assembly-plugin.version>
+        <maven-assembly-plugin.version>2.5</maven-assembly-plugin.version>
         <maven-dependency-plugin.version>2.8</maven-dependency-plugin.version>
         <maven-javadoc-plugin.version>2.10.1</maven-javadoc-plugin.version>
         <apache-rat-plugin.version>0.10</apache-rat-plugin.version>
@@ -332,6 +332,65 @@
                     <configuration>
                         <serverId>nexus</serverId>
                         <nexusUrl>http://10.239.45.219:8081/</nexusUrl>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>license-maven-plugin</artifactId>
+                    <version>2.0.0</version>
+                    <configuration>
+                        <includeTransitiveDependencies>true</includeTransitiveDependencies>                       
+                        <verbose>true</verbose>
+                        <cleanLicensesOutputDirectory>true</cleanLicensesOutputDirectory>
+                        <errorRemedy>ignore</errorRemedy>
+                        <failOnMissing>false</failOnMissing>
+                        <useMissingFile>true</useMissingFile>
+                        <excludedGroups>^com\.intel\.</excludedGroups>
+                        <includedScopes>compile</includedScopes>
+                        <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
+                        <missingFile>src/license/THIRD-PARTY.properties</missingFile>
+                        <licenseMerges>
+                            <licenseMerge>Apache-2.0|The Apache Software License, Version 2.0</licenseMerge>
+                            <licenseMerge>Apache-2.0|Apache License, Version 2.0</licenseMerge>
+                            <licenseMerge>Apache-2.0|Apache Public License 2.0</licenseMerge>
+                            <licenseMerge>Apache-2.0|Apache 2</licenseMerge>
+                            <licenseMerge>Apache-2.0|The Apache License, Version 2.0</licenseMerge>
+                            <licenseMerge>Apache-2.0|Apache License v2.0</licenseMerge>
+                            <licenseMerge>Apache-2.0|Apache 2.0 License</licenseMerge>
+                            <licenseMerge>Apache-2.0|Apache License</licenseMerge>
+                            <licenseMerge>Apache-2.0|Apache License 2.0</licenseMerge>    
+                            <licenseMerge>Apache-2.0|Apache License Version 2.0</licenseMerge>    
+                            <licenseMerge>Apache-2.0|Apache License, version 2.0</licenseMerge>    
+                            <licenseMerge>MIT|The MIT License (MIT)</licenseMerge>
+                            <licenseMerge>MIT|MIT License</licenseMerge>
+                            <licenseMerge>MIT|The MIT License</licenseMerge>
+                            <licenseMerge>BSD 2 Clause|BSD 2-Clause</licenseMerge>
+                            <licenseMerge>BSD 2 Clause|BSD-2-Clause</licenseMerge>
+                            <licenseMerge>BSD 2 Clause|2-Clause BSD License</licenseMerge>
+                            <licenseMerge>BSD 3 Clause|BSD 3-Clause</licenseMerge>
+                            <licenseMerge>BSD 3 Clause|BSD-3-Clause</licenseMerge>
+                            <licenseMerge>BSD 3 Clause|3-Clause BSD License</licenseMerge>
+                            <licenseMerge>BSD 3 Clause|New BSD License</licenseMerge>
+                            <licenseMerge>BSD 3 Clause|BSD 3-clause</licenseMerge>
+                            <licenseMerge>BSD|The BSD License</licenseMerge>
+                            <licenseMerge>EDL-1.0|Eclipse Distribution License - v 1.0</licenseMerge>
+                            <licenseMerge>EDL-1.0|EDL 1.0</licenseMerge>
+                            <licenseMerge>JSON|The JSON License</licenseMerge>
+                            <licenseMerge>Zlib-Libpng|The zlib/libpng License</licenseMerge>
+                            <licenseMerge>Public Domain|Public Domain, per Creative Commons CC0</licenseMerge>
+                            <licenseMerge>CPL-1.0|Common Public License Version 1.0</licenseMerge>
+                            <licenseMerge>CDDL-1.0|COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0</licenseMerge>
+                            <licenseMerge>CDDL-1.1|CDDL 1.1</licenseMerge>
+                            <licenseMerge>LGPL-2.1|LGPL, version 2.1</licenseMerge>
+                            <licenseMerge>LGPL-2.1|GNU Lesser General Public License (LGPL), Version 2.1</licenseMerge>
+                            <licenseMerge>LGPL-2.1|LGPL 2.1</licenseMerge>
+                        </licenseMerges>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.glassfish.copyright</groupId>
+                    <artifactId>glassfish-copyright-maven-plugin</artifactId>
+                    <configuration>
                     </configuration>
                 </plugin>
             </plugins>

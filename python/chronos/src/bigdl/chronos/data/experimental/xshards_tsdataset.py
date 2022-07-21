@@ -268,7 +268,100 @@ class XShardsTSDataset:
             else self.target_col
         self.numpy_shards = self.shards.transform_shard(roll_timeseries_dataframe,
                                                         None, lookback, horizon,
-                                                        feature_col, target_col)
+                                                        feature_col, target_col,
+                                                        self.id_col, 0, True)
+        return self
+
+    def scale(self, scaler, fit=True):
+        '''
+        Scale the time series dataset's feature column and target column.
+
+        :param scaler: a dictionary of scaler instance, where keys are id name
+               and values are corresponding scaler instance. e.g. if you have
+               2 ids called "id1" and "id2", a legal scaler input can be
+               {"id1": StandardScaler(), "id2": StandardScaler()}
+        :param fit: if we need to fit the scaler. Typically, the value should
+               be set to True for training set, while False for validation and
+               test set. The value is defaulted to True.
+
+        :return: the xshardtsdataset instance.
+
+        Assume there is a training set tsdata and a test set tsdata_test.
+        scale() should be called first on training set with default value fit=True,
+        then be called on test set with the same scaler and fit=False.
+
+        >>> from sklearn.preprocessing import StandardScaler
+        >>> scaler = {"id1": StandardScaler(), "id2": StandardScaler()}
+        >>> tsdata.scale(scaler, fit=True)
+        >>> tsdata_test.scale(scaler, fit=False)
+        '''
+        def _fit(df, id_col, scaler, feature_col, target_col):
+            '''
+            This function is used to fit scaler dictionary on each shard.
+            returns a dictionary of id-scaler pair for each shard.
+
+            Note: this function will not transform the shard.
+            '''
+            scaler_for_this_id = scaler[df[id_col][0]]
+            df[feature_col + target_col] = scaler_for_this_id.fit(df[feature_col + target_col])
+
+            return {id_col: df[id_col][0], "scaler": scaler_for_this_id}
+
+        def _transform(df, id_col, scaler, feature_col, target_col):
+            '''
+            This function is used to transform the shard by fitted scaler.
+
+            Note: this function will not fit the scaler.
+            '''
+            from sklearn.utils.validation import check_is_fitted
+            from bigdl.nano.utils.log4Error import invalidInputError
+
+            scaler_for_this_id = scaler[df[id_col][0]]
+            invalidInputError(not check_is_fitted(scaler_for_this_id),
+                              "scaler is not fitted. When calling scale for the first time, "
+                              "you need to set fit=True.")
+            df[feature_col + target_col] =\
+                scaler_for_this_id.transform(df[feature_col + target_col])
+
+            return df
+
+        if fit:
+            self.shards_scaler = self.shards.transform_shard(_fit, self.id_col, scaler,
+                                                             self.feature_col, self.target_col)
+            self.scaler_dict = self.shards_scaler.collect()
+            self.scaler_dict = {sc[self.id_col]: sc["scaler"] for sc in self.scaler_dict}
+            scaler.update(self.scaler_dict)  # make the change up-to-date outside the tsdata
+
+            self.shards = self.shards.transform_shard(_transform, self.id_col, self.scaler_dict,
+                                                      self.feature_col, self.target_col)
+        else:
+            self.scaler_dict = scaler
+            self.shards = self.shards.transform_shard(_transform, self.id_col, self.scaler_dict,
+                                                      self.feature_col, self.target_col)
+        return self
+
+    def unscale(self):
+        '''
+        Unscale the time series dataset's feature column and target column.
+
+        :return: the xshardtsdataset instance.
+        '''
+        def _inverse_transform(df, id_col, scaler, feature_col, target_col):
+            from sklearn.utils.validation import check_is_fitted
+            from bigdl.nano.utils.log4Error import invalidInputError
+
+            scaler_for_this_id = scaler[df[id_col][0]]
+            invalidInputError(not check_is_fitted(scaler_for_this_id),
+                              "scaler is not fitted. When calling scale for the first time, "
+                              "you need to set fit=True.")
+
+            df[feature_col + target_col] =\
+                scaler_for_this_id.inverse_transform(df[feature_col + target_col])
+            return df
+
+        self.shards = self.shards.transform_shard(_inverse_transform, self.id_col,
+                                                  self.scaler_dict, self.feature_col,
+                                                  self.target_col)
         return self
 
     def impute(self,
@@ -300,16 +393,24 @@ class XShardsTSDataset:
         self.shards = self.shards.transform_shard(df_reset_index)
         return self
 
-    def to_xshards(self):
+    def to_xshards(self, partition_num=None):
         '''
-        Export rolling result in form of a dict of numpy ndarray {'x': ..., 'y': ...}
+        Export rolling result in form of a dict of numpy ndarray {'x': ..., 'y': ..., 'id': ...},
+        where value for 'x' and 'y' are 3-dim numpy ndarray and value for 'id' is 2-dim ndarray
+        with shape (batch_size, 1)
 
-        :return: a 2-element dict xshard. each value is a 3d numpy ndarray. The ndarray
-                 is casted to float32.
+        :param partition_num: how many partition you would like to split your data.
+
+        :return: a 3-element dict xshard. each value is a 3d numpy ndarray. The ndarray
+                 is casted to float32. Default to None which will partition according
+                 to id.
         '''
         from bigdl.nano.utils.log4Error import invalidInputError
         if self.numpy_shards is None:
             invalidInputError(False,
                               "Please call 'roll' method "
                               "before transform a XshardsTSDataset to numpy ndarray!")
-        return self.numpy_shards.transform_shard(transform_to_dict)
+        if partition_num is None:
+            return self.numpy_shards.transform_shard(transform_to_dict)
+        else:
+            return self.numpy_shards.transform_shard(transform_to_dict).repartition(partition_num)

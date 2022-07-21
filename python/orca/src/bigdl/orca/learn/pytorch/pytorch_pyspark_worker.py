@@ -71,7 +71,8 @@ class PytorchPysparkWorker(TorchRunner):
                  model_dir=None,
                  log_to_driver=True,
                  driver_ip=None,
-                 driver_port=None,
+                 driver_log_port=None,
+                 driver_tcp_store_port=None
                  ):
         super().__init__(model_creator, optimizer_creator, loss_creator, metrics, scheduler_creator,
                          training_operator_cls, config, use_tqdm, scheduler_step_freq, sync_stats,
@@ -89,12 +90,12 @@ class PytorchPysparkWorker(TorchRunner):
         self.setup(cores_per_worker)
         if self.log_to_driver:
             self.log_path, self.logger_thread, self.thread_stop = \
-                PytorchPysparkWorker._start_log_monitor(driver_ip, driver_port)
+                PytorchPysparkWorker._start_log_monitor(driver_ip, driver_log_port)
         if self.backend == "torch-distributed":
-            self.setup_distributed(self.mode, cluster_info)
+            self.setup_distributed(self.mode, cluster_info, driver_ip, driver_tcp_store_port)
 
     @staticmethod
-    def _start_log_monitor(driver_ip, driver_port):
+    def _start_log_monitor(driver_ip, driver_log_port):
         if TaskContext.get():
             partition_id = TaskContext.get().partitionId()
         else:
@@ -104,17 +105,17 @@ class PytorchPysparkWorker(TorchRunner):
         duplicate_stdout_stderr_to_file(log_path)
         logger_thread, thread_stop = \
             LogMonitor.start_log_monitor(driver_ip=driver_ip,
-                                         driver_port=driver_port,
+                                         driver_port=driver_log_port,
                                          log_path=log_path,
                                          partition_id=partition_id)
         return log_path, logger_thread, thread_stop
 
-    def setup_distributed(self, mode, cluster_info):
+    def setup_distributed(self, mode, cluster_info, driver_ip, driver_tcp_store_port):
         if mode == "fit":
             self.rank = get_rank(cluster_info)
             logger.info(f"cluster is: {cluster_info}")
-            address = f"tcp://{cluster_info[0]}"
-            self.setup_torch_distribute(url=address,
+            self.setup_torch_distribute(tcp_store_host=driver_ip,
+                                        tcp_store_port=driver_tcp_store_port,
                                         world_rank=self.rank,
                                         world_size=self.size)
         else:

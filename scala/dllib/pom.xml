@@ -182,11 +182,11 @@
             <groupId>com.intel.analytics.bigdl.spark-version</groupId>
             <artifactId>${spark-version.project}</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
+    	</dependency>
+	<dependency>
             <groupId>org.scalanlp</groupId>
             <artifactId>breeze_${scala.major.version}</artifactId>
-            <version>${breeze.version}</version>
+	    <version>${breeze.version}</version>
             <exclusions>
                 <!-- This is included as a compile-scoped dependency by jtransforms, which is
                      a dependency of breeze. -->
@@ -197,10 +197,18 @@
                 <exclusion>
                     <groupId>org.apache.commons</groupId>
                     <artifactId>commons-math3</artifactId>
+	    	</exclusion>
+                <exclusion>
+                    <groupId>com.github.fommil.netlib</groupId>
+                    <artifactId>core</artifactId>
+	    	</exclusion>
+                <exclusion>
+                    <groupId>com.github.rwl</groupId>
+                    <artifactId>jtransforms</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
+	<dependency>
             <groupId>ml.dmlc</groupId>
             <artifactId>xgboost4j_${scala.major.version}</artifactId>
             <version>1.1.2</version>

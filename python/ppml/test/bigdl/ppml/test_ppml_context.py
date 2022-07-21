@@ -16,12 +16,10 @@
 
 import unittest
 import os
-import csv
 import random
 import shutil
 
 from bigdl.ppml.ppml_context import *
-from pyspark.sql import SparkSession
 
 resource_path = os.path.join(os.path.dirname(__file__), "resources")
 
@@ -40,29 +38,24 @@ class TestPPMLContext(unittest.TestCase):
         if not os.path.exists(resource_path):
             os.mkdir(resource_path)
 
-        # create a tmp csv file
-        with open(os.path.join(resource_path, "people.csv"), "w", encoding="utf-8", newline="") as f:
-            csv_writer = csv.writer(f)
-            csv_writer.writerow(["name", "age", "job"])
-            csv_writer.writerow(["jack", "18", "Developer"])
-            csv_writer.writerow(["alex", "20", "Researcher"])
-            csv_writer.writerow(["xuoui", "25", "Developer"])
-            csv_writer.writerow(["hlsgu", "29", "Researcher"])
-            csv_writer.writerow(["xvehlbm", "45", "Developer"])
-            csv_writer.writerow(["ehhxoni", "23", "Developer"])
-            csv_writer.writerow(["capom", "60", "Developer"])
-            csv_writer.writerow(["pjt", "24", "Developer"])
-
-        # generate primaryKey and dataKey
+        # set key path
         primary_key_path = os.path.join(resource_path, "primaryKey")
         data_key_path = os.path.join(resource_path, "dataKey")
-        kms = init_keys(TestPPMLContext.app_id, TestPPMLContext.app_key,
-                        primary_key_path, data_key_path)
 
-        # generate encrypted file
-        input_file = os.path.join(resource_path, "people.csv")
-        output_file = os.path.join(resource_path, "encrypted/people.csv")
-        generate_encrypted_file(kms, primary_key_path, data_key_path, input_file, output_file)
+        # init a SparkContext
+        conf = {"spark.app.name": "PPML TEST",
+                "spark.hadoop.io.compression.codecs": "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec",
+                "spark.bigdl.kms.type": "SimpleKeyManagementService",
+                "spark.bigdl.kms.simple.id": cls.app_id,
+                "spark.bigdl.kms.simple.key": cls.app_key,
+                "spark.bigdl.kms.key.primary": primary_key_path,
+                "spark.bigdl.kms.key.data": data_key_path
+                }
+        init_spark_on_local(conf=conf)
+
+        # generate primaryKey and dataKey
+        init_keys(cls.app_id, cls.app_key,
+                  primary_key_path, data_key_path)
 
         args = {"kms_type": "SimpleKeyManagementService",
                 "simple_app_id": cls.app_id,
@@ -71,45 +64,56 @@ class TestPPMLContext(unittest.TestCase):
                 "data_key_path": data_key_path
                 }
 
-        # generate a tmp dataframe for test
+        # init a PPMLContext
+        cls.sc = PPMLContext("testApp", args)
+
+        # generate a DataFrame for test
         data = [("Java", "20000"), ("Python", "100000"), ("Scala", "3000")]
-        spark = SparkSession.builder.appName('initData').getOrCreate()
-        cls.df = spark.createDataFrame(data).toDF("language", "user")
+        cls.df = cls.sc.spark.createDataFrame(data).toDF("language", "user")
+        cls.df = cls.df.repartition(1)
         cls.data_content = '\n'.join([str(v['language']) + "," + str(v['user'])
                                       for v in cls.df.orderBy('language').collect()])
-
-        cls.sc = PPMLContext("testApp", args)
 
     @classmethod
     def tearDownClass(cls) -> None:
         if os.path.exists(resource_path):
             shutil.rmtree(resource_path)
 
-    def test_read_plain_file(self):
-        input_path = os.path.join(resource_path, "people.csv")
-        df = self.sc.read(CryptoMode.PLAIN_TEXT) \
-            .option("header", "true") \
-            .csv(input_path)
-        self.assertEqual(df.count(), 8)
-
-    def test_read_encrypt_file(self):
-        input_path = os.path.join(resource_path, "encrypted/people.csv")
-        df = self.sc.read(CryptoMode.AES_CBC_PKCS5PADDING) \
-            .option("header", "true") \
-            .csv(input_path)
-        self.assertEqual(df.count(), 8)
-
-    def test_write_plain_file(self):
+    def test_write_and_read_plain_csv(self):
+        path = os.path.join(resource_path, "csv/plain")
+        # write as plain csv file
         self.sc.write(self.df, CryptoMode.PLAIN_TEXT) \
             .mode('overwrite') \
             .option("header", True) \
-            .csv(os.path.join(resource_path, "output/plain"))
+            .csv(path)
 
-    def test_write_encrypt_file(self):
+        # read from a plain csv file
+        df = self.sc.read(CryptoMode.PLAIN_TEXT) \
+            .option("header", "true") \
+            .csv(path)
+
+        csv_content = '\n'.join([str(v['language']) + "," + str(v['user'])
+                                 for v in df.orderBy('language').collect()])
+
+        self.assertEqual(csv_content, self.data_content)
+
+    def test_write_and_read_encrypted_csv(self):
+        path = os.path.join(resource_path, "csv/encrypted")
+        # write as encrypted csv file
         self.sc.write(self.df, CryptoMode.AES_CBC_PKCS5PADDING) \
             .mode('overwrite') \
             .option("header", True) \
-            .csv(os.path.join(resource_path, "output/encrypt"))
+            .csv(path)
+
+        # read from an encrypted csv file
+        df = self.sc.read(CryptoMode.AES_CBC_PKCS5PADDING) \
+            .option("header", "true") \
+            .csv(path)
+
+        csv_content = '\n'.join([str(v['language']) + "," + str(v['user'])
+                                 for v in df.orderBy('language').collect()])
+
+        self.assertEqual(csv_content, self.data_content)
 
     def test_write_and_read_plain_parquet(self):
         parquet_path = os.path.join(resource_path, "parquet/plain-parquet")
@@ -140,6 +144,29 @@ class TestPPMLContext(unittest.TestCase):
         content = '\n'.join([str(v['language']) + "," + str(v['user'])
                              for v in df_from_parquet.orderBy('language').collect()])
         self.assertEqual(content, self.data_content)
+
+    def test_plain_text_file(self):
+        path = os.path.join(resource_path, "csv/plain")
+        self.sc.write(self.df, CryptoMode.PLAIN_TEXT) \
+            .mode('overwrite') \
+            .option("header", True) \
+            .csv(path)
+
+        rdd = self.sc.textfile(path)
+        rdd_content = '\n'.join([line for line in rdd.collect()])
+
+        self.assertEqual(rdd_content, "language,user\n" + self.data_content)
+
+    def test_encrypted_text_file(self):
+        path = os.path.join(resource_path, "csv/encrypted")
+        self.sc.write(self.df, CryptoMode.AES_CBC_PKCS5PADDING) \
+            .mode('overwrite') \
+            .option("header", True) \
+            .csv(path)
+
+        rdd = self.sc.textfile(path=path, crypto_mode=CryptoMode.AES_CBC_PKCS5PADDING)
+        rdd_content = '\n'.join([line for line in rdd.collect()])
+        self.assertEqual(rdd_content, "language,user\n" + self.data_content)
 
 
 if __name__ == "__main__":

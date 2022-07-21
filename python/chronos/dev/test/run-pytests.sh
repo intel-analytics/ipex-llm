@@ -46,6 +46,7 @@ echo "Running chronos tests Part 1"
 python -m pytest -v test/bigdl/chronos/model \
                     test/bigdl/chronos/forecaster \
                     test/bigdl/chronos/metric \
+                    test/bigdl/chronos/pytorch \
        -k "not test_forecast_tcmf_distributed"
 exit_status_0=$?
 if [ $exit_status_0 -ne 0 ];

@@ -21,4 +21,5 @@ from bigdl.nano.tf.keras.inheritance_utils import inject_function
 
 
 # override_method(Model, TFModel, f_wrapper)
+Model.__doc__ = 'A wrapper class for tf.keras.Model adding more functions for BigDL-Nano.'
 inject_function(Model, TrainingUtils, InferenceUtils)

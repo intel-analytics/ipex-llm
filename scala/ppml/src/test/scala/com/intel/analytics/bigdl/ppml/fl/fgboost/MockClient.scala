@@ -24,7 +24,8 @@ import org.apache.log4j.LogManager
 
 import scala.io.Source
 
-class MockClient(dataPath: String,
+class MockClient(clientId: String,
+                 dataPath: String,
                  testPath: String = null,
                  rowKeyName: String = null,
                  labelName: String = null,
@@ -50,7 +51,7 @@ class MockClient(dataPath: String,
     val fgBoostRegression = new FGBoostRegression(
       learningRate = 0.1f, maxDepth = 7, minChildSize = 5)
     val testFlContext = new FlContextForTest()
-    testFlContext.initFLContext(target)
+    testFlContext.initFLContext(clientId, target)
     fgBoostRegression.setFlClient(testFlContext.getClient())
     logger.debug(s"Client2 calling fit...")
     fgBoostRegression.fit(trainFeatures, trainLabels, 15)

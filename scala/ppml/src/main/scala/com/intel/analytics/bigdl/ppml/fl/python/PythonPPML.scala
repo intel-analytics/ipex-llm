@@ -40,8 +40,8 @@ object PythonPPML {
 }
 class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T])
   extends PythonBigDL with TimingSupportive {
-  def initFLContext(target: String): Unit = {
-    FLContext.initFLContext(target)
+  def initFLContext(id: String, target: String): Unit = {
+    FLContext.initFLContext(id, target)
   }
   def createFLServer(): FLServer = {
     new FLServer()

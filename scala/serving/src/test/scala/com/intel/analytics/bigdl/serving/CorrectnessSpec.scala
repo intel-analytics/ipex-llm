@@ -20,16 +20,15 @@ import java.awt._
 import java.awt.image.BufferedImage
 import java.io.{ByteArrayOutputStream, File}
 import java.util.Base64
-
 import com.intel.analytics.bigdl.dllib.feature.image.OpenCVMethod
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.serving.http.{Instances, JsonUtil}
 import com.intel.analytics.bigdl.serving.postprocessing.PostProcessing
 import com.intel.analytics.bigdl.serving.utils.DeprecatedUtils
-import javax.imageio.ImageIO
 
+import javax.imageio.ImageIO
 import org.apache.commons.io.FileUtils
-import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.{Level, LogManager}
 import org.opencv.core._
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
@@ -38,12 +37,14 @@ import org.scalatest.{FlatSpec, Matchers}
 import scala.io.Source
 import scala.sys.process._
 import com.intel.analytics.bigdl.serving.utils.AssertUtils
+import org.apache.logging.log4j.core.config.Configurator
 
 class CorrectnessSpec extends FlatSpec with Matchers {
   val configPath = "/tmp/config.yaml"
   var redisHost: String = "localhost"
   var redisPort: Int = 6379
   val logger = LogManager.getLogger(getClass)
+  Configurator.setLevel("org", Level.ERROR)
   def resize(p: String): String = {
     val source = ImageIO.read(new File(p))
     val outputImage: BufferedImage = new BufferedImage(224, 224, source.getType)
@@ -63,7 +64,7 @@ class CorrectnessSpec extends FlatSpec with Matchers {
   def getBase64FromPath(path: String): String = {
 
     val b = FileUtils.readFileToByteArray(new File(path))
-    val img = OpenCVMethod.fromImageBytes(b, Imgcodecs.CV_LOAD_IMAGE_COLOR)
+    val img = OpenCVMethod.fromImageBytes(b, Imgcodecs.IMREAD_UNCHANGED)
     Imgproc.resize(img, img, new Size(224, 224))
     val matOfByte = new MatOfByte()
     Imgcodecs.imencode(".jpg", img, matOfByte)

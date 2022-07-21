@@ -18,7 +18,6 @@ package com.intel.analytics.bigdl.orca.utils
 import java.util.concurrent.{ExecutorService, Executors, ThreadFactory}
 
 import jep.{JepConfig, JepException, NamingConventionClassEnquirer, SharedInterpreter}
-import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.logging.log4j.LogManager
 
 import scala.concurrent.{Await, ExecutionContext, Future}

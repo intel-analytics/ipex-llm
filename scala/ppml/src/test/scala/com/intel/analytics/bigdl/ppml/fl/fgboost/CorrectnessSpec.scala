@@ -104,7 +104,7 @@ class CorrectnessSpec extends FLSpec {
       XGBoostFormatValidator.addHeaders(flattenHeaders)
       flServer.build()
       flServer.start()
-      FLContext.initFLContext(target)
+      FLContext.initFLContext("1", target)
       val fGBoostRegression = new FGBoostRegression(
         learningRate = 0.1f, maxDepth = 7, minChildSize = 5)
       fGBoostRegression.fit(trainFeatures, trainLabels, 15)
@@ -178,8 +178,9 @@ class CorrectnessSpec extends FLSpec {
       flServer.setClientNum(2)
       flServer.build()
       flServer.start()
-      FLContext.initFLContext(target)
+      FLContext.initFLContext("1", target)
       val mockClient = new MockClient(
+        clientId = "2",
         dataPath = getClass.getClassLoader
           .getResource("two-party/house-prices-train-2.csv").getPath,
         testPath = getClass.getClassLoader
@@ -249,8 +250,9 @@ class CorrectnessSpec extends FLSpec {
       flServer.setClientNum(3)
       flServer.build()
       flServer.start()
-      FLContext.initFLContext(target)
+      FLContext.initFLContext("1", target)
       val mockClient2 = new MockClient(
+        clientId = "2",
         dataPath = getClass.getClassLoader
           .getResource("three-party/house-prices-train-1.csv").getPath,
         testPath = getClass.getClassLoader
@@ -258,6 +260,7 @@ class CorrectnessSpec extends FLSpec {
         rowKeyName = "Id", labelName = "SalePrice", dataFormat = "raw", target = target)
       mockClient2.start()
       val mockClient3 = new MockClient(
+        clientId = "3",
         dataPath = getClass.getClassLoader
           .getResource("three-party/house-prices-train-2.csv").getPath,
         testPath = getClass.getClassLoader

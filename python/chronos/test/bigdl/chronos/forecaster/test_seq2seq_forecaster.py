@@ -82,8 +82,9 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         test_mse = forecaster.evaluate(test_data)
         assert test_mse[0].shape == test_data[1].shape[1:]
 
+    @skip_onnxrt
     def test_s2s_forecaster_fit_loader(self):
-        train_loader, _, _ = create_data(loader=True)
+        train_loader, val_loader, test_loader = create_data(loader=True)
         forecaster = Seq2SeqForecaster(past_seq_len=24,
                                        future_seq_len=5,
                                        input_feature_num=1,
@@ -91,6 +92,13 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        loss="mae",
                                        lr=0.01)
         train_loss = forecaster.fit(train_loader, epochs=2)
+        yhat = forecaster.predict(data=test_loader)
+        onnx_yhat = forecaster.predict_with_onnx(data=test_loader)
+        assert yhat.shape == onnx_yhat.shape == (400, 5, 1)
+        forecaster.evaluate(test_loader, batch_size=32)
+        forecaster.evaluate_with_onnx(test_loader)
+        forecaster.evaluate_with_onnx(test_loader, batch_size=32)
+
 
     @skip_onnxrt
     def test_s2s_forecaster_onnx_methods(self):
@@ -226,6 +234,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
     def test_s2s_forecaster_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_data, val_data, test_data = create_data()
+        _train_loader, _, _test_loader = create_data(loader=True)
 
         init_orca_context(cores=4, memory="2g")
 
@@ -254,7 +263,9 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
             import onnx
             import onnxruntime
             local_pred_onnx = forecaster.predict_with_onnx(test_data[0])
+            distributed_pred_onnx = forecaster.predict_with_onnx(_test_loader)
             local_eval_onnx = forecaster.evaluate_with_onnx(val_data)
+            distributed_eval_onnx = forecaster.evaluate_with_onnx(_test_loader)
             np.testing.assert_almost_equal(distributed_pred, local_pred_onnx, decimal=5)
         except ImportError:
             pass

@@ -167,7 +167,7 @@ abstract class FGBoostModel(continuous: Boolean,
 
     val perMsgSize = ObjectSizeCalculator.getObjectSize(boostEvals.head)
     val dataPerGroup = MAX_MSG_SIZE / perMsgSize
-    logger.info(s"data num: ${boostEvals.size}," +
+    logger.debug(s"data num: ${boostEvals.size}," +
       s" per msg size: $perMsgSize, data per group: $dataPerGroup")
     var sended = 0
     var lastBatch = false
@@ -267,9 +267,7 @@ abstract class FGBoostModel(continuous: Boolean,
       throw new IllegalArgumentException("FLClient not initialized.")
     }
     val response = flClient.fgbostStub.uploadLabel(gradData.build)
-    if (response.getCode == 1) {
-      Log4Error.invalidOperationError(false, response.getResponse)
-    }
+    Log4Error.invalidOperationError(response.getCode != 1, response.getResponse)
     logger.debug(response.getResponse)
   }
 

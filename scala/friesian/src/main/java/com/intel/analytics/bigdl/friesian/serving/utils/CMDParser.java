@@ -40,7 +40,7 @@ public class CMDParser {
     }
 
     public void parseOptions(String[] args) {
-        CommandLineParser parser = new DefaultParser();
+        CommandLineParser parser = new BasicParser();
         HelpFormatter formatter = new HelpFormatter();
         cmd = null;
         try {

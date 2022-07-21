@@ -473,13 +473,14 @@ You can export the trial statistics as pandas dataframe, as shown below.
 
 Below an example of the trials history we have exported as below.
 
+.. image:: ../../../../image/trial_dataframe.png
+   :width: 600
 
 
-
-Plot optimization history and hyperparameters importance
+Plot Hyperparamter Optimization History
 --------------------------------------------------------
 
-You can also examine the tuning results by making plots about the optimization history, importance of hyperparameters, etc.
+You can also plot the optimization history as shown below.
 
 .. tabs::
 
@@ -501,13 +502,207 @@ You can also examine the tuning results by making plots about the optimization h
          study = trainer.search_summary()
 
          from bigdl.nano.automl.hpo.visualization import plot_optimization_history
-         plot1=plot_optimization_history(study)
+         plot_optimization_history(study)
 
-An example optimization history chart is shown below. It is an interactive chart which you can zoom-in and zoom-out and select data points.
+Example plot as below. It is an interactive chart which you can zoom-in and zoom-out and select data points.
 
 .. only:: html
 
     .. raw:: html
 
-        <iframe src='../../../_static/visualization.html' height="400px" width="100%" scrolling='no'></iframe>
+        <iframe src='../../../_static/hpovis/optimization_history.html' height="400px" width="100%" scrolling='no'></iframe>
+
+
+Plot Intermediate Values
+--------------------------------------------------------
+
+You can also plot the intermediate values as shown below. This plot shows the metric result on each epoch/step of each trial, including pruned trials.
+
+.. tabs::
+
+    .. tab:: Tensorflow
+
+        .. code-block:: python
+
+         ...
+         study = model.search_summary()
+
+         from bigdl.nano.automl.hpo.visualization import plot_intermediate_values
+         plot_intermediate_values(study)
+
+    .. tab:: PyTorch
+
+        .. code-block:: python
+
+         ...
+         study = trainer.search_summary()
+
+         from bigdl.nano.automl.hpo.visualization import plot_intermediate_values
+         plot_intermediate_values(study)
+
+Example plot as below. It is an interactive chart which you can zoom-in and zoom-out and select data points.
+
+.. only:: html
+
+    .. raw:: html
+
+        <iframe src='../../../_static/hpovis/intermediate_values.html' height="400px" width="100%" scrolling='no'></iframe>
+
+
+Plot the Hyperparameters in Parallel Coordinates
+------------------------------------------------
+
+You can plot the hyperparamters in parallel coordinates chart.
+
+
+.. tabs::
+
+    .. tab:: Tensorflow
+
+        .. code-block:: python
+
+         ...
+         study = model.search_summary()
+
+         from bigdl.nano.automl.hpo.visualization import plot_parallel_coordinate
+         plot_parallel_coordinate(study)
+
+    .. tab:: PyTorch
+
+        .. code-block:: python
+
+         ...
+         study = trainer.search_summary()
+
+         from bigdl.nano.automl.hpo.visualization import plot_parallel_coordinate
+         plot_parallel_coordinate(study)
+
+
+Example plot as below. It is an interactive chart which you can zoom-in and zoom-out and select data points.
+
+
+.. only:: html
+
+    .. raw:: html
+
+        <iframe src='../../../_static/hpovis/parallel_coordinate.html' height="400px" width="100%" scrolling='no'></iframe>
+
+
+Plot the Hyperparameter Contour
+------------------------------------------------
+
+You can plot the hyperparameter contour chart.
+
+
+.. tabs::
+
+    .. tab:: Tensorflow
+
+        .. code-block:: python
+
+         ...
+         study = model.search_summary()
+
+         from bigdl.nano.automl.hpo.visualization import plot_contour
+         plot_contour(study)
+
+    .. tab:: PyTorch
+
+        .. code-block:: python
+
+         ...
+         study = trainer.search_summary()
+
+         from bigdl.nano.automl.hpo.visualization import plot_contour
+         plot_contour(study)
+
+
+Example plot as below. It is an interactive chart which you can zoom-in and zoom-out and select data points.
+
+
+.. only:: html
+
+    .. raw:: html
+
+        <iframe src='../../../_static/hpovis/contour.html' height="400px" width="100%" scrolling='no'></iframe>
+
+
+
+
+Inspect Hyperparameter Importance by accuracy
+---------------------------------------------
+
+You can plot the hyperparameter importance according to their relationship to accuracy.
+
+
+.. tabs::
+
+    .. tab:: Tensorflow
+
+        .. code-block:: python
+
+         ...
+         study = model.search_summary()
+
+         from bigdl.nano.automl.hpo.visualization import plot_param_importances
+         plot_param_importances(study)
+
+    .. tab:: PyTorch
+
+        .. code-block:: python
+
+         ...
+         study = trainer.search_summary()
+
+         from bigdl.nano.automl.hpo.visualization import plot_param_importances
+         plot_param_importances(study)
+
+
+Example plot as below. It is an interactive chart which you can zoom-in and zoom-out and select data points.
+
+
+.. only:: html
+
+    .. raw:: html
+
+        <iframe src='../../../_static/hpovis/param_importance.html' height="400px" width="100%" scrolling='no'></iframe>
+
+
+Inspect Hyperparameter Importance by latency
+--------------------------------------------
+
+
+You can plot the hyperparameter importance according to their relationship to latency.
+
+.. tabs::
+
+    .. tab:: Tensorflow
+
+        .. code-block:: python
+
+         ...
+         study = model.search_summary()
+
+         from bigdl.nano.automl.hpo.visualization import plot_param_importances
+         plot_param_importances(study, target=lambda t: t.duration.total_seconds(), target_name="duration")
+
+    .. tab:: PyTorch
+
+        .. code-block:: python
+
+         ...
+         study = trainer.search_summary()
+
+         from bigdl.nano.automl.hpo.visualization import plot_param_importances
+         plot_param_importances(study, target=lambda t: t.duration.total_seconds(), target_name="duration")
+
+
+Example plot as below. It is an interactive chart which you can zoom-in and zoom-out and select data points.
+
+
+.. only:: html
+
+    .. raw:: html
+
+        <iframe src='../../../_static/hpovis/param_importance_latency.html' height="400px" width="100%" scrolling='no'></iframe>
 

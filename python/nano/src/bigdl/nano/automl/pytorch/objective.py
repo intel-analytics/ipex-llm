@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import collections
 from typing import Any, Dict, Optional, Union
 
 import pytorch_lightning as pl
@@ -22,11 +23,15 @@ from pytorch_lightning.utilities.exceptions import MisconfigurationException
 from pytorch_lightning.utilities.types import EVAL_DATALOADERS, TRAIN_DATALOADERS
 from pytorch_lightning.utilities import rank_zero_deprecation
 from pytorch_lightning.core.datamodule import LightningDataModule
+from pytorch_lightning.callbacks import Callback
 
 from bigdl.nano.automl.hpo.backend import create_pl_pruning_callback
 from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.pytorch.utils import LIGHTNING_VERSION_LESS_1_6
 import inspect
 import copy
+import time
+import torch
 
 
 def _is_creator(model):
@@ -57,6 +62,60 @@ class Objective(object):
         self.searcher = searcher
         self.model_ = model
         self.target_metric = target_metric
+        self.mo_hpo = isinstance(self.target_metric, list) and len(self.target_metric) > 1
+        # add automatic support for latency
+        if self.mo_hpo and "latency" in self.target_metric:
+            from torchmetrics import Metric
+
+            class LatencyAggregate(Metric):
+                def __init__(self):
+                    super().__init__(compute_on_step=False)
+                    self.add_state("times", default=[])
+
+                def update(self, latency):
+                    self.times.append(torch.Tensor([latency * 1000]).double())
+
+                def compute(self):
+                    # achieve the core logic of how to average latency
+                    # todo : is there should any diff in single and multi process?
+                    self.times.sort()
+                    count = len(self.times)
+                    if count >= 3:
+                        threshold = max(int(0.1 * count), 1)
+                        infer_times_mid = self.times[threshold:-threshold]
+                    else:
+                        infer_times_mid = self.times[:]
+                    print(self.times, infer_times_mid)
+                    latency = sum(infer_times_mid) / len(infer_times_mid)
+                    print("latency : ", latency)
+                    return latency
+
+            class LatencyCallback(Callback):
+                def __init__(self) -> None:
+                    super().__init__()
+                    self.time_avg = LatencyAggregate()
+
+                def on_validation_start(self, trainer, pl_module) -> None:
+                    super().on_validation_start(trainer, pl_module)
+                    if not hasattr(pl_module, "time_avg"):
+                        pl_module.time_avg = self.time_avg
+
+                def on_validation_epoch_end(self, trainer, pl_module) -> None:
+                    pl_module.log('latency', pl_module.time_avg)
+
+                def on_validation_batch_start(self, trainer, pl_module, batch: Any,
+                                              batch_idx: int, dataloader_idx: int) -> None:
+                    self.batch_latency = time.perf_counter()
+
+                def on_validation_batch_end(self, trainer, pl_module, outputs, batch: Any,
+                                            batch_idx: int, dataloader_idx: int) -> None:
+                    batch_latency = time.perf_counter() - self.batch_latency
+                    pl_module.time_avg(batch_latency)
+
+            callbacks = self.searcher.trainer.callbacks or []
+            callbacks.append(LatencyCallback())
+            self.searcher.trainer.callbacks = callbacks
+
         self.pruning = pruning
         self.fit_kwargs = fit_kwargs
 
@@ -79,12 +138,20 @@ class Objective(object):
             self.searcher.trainer.callbacks = callbacks
 
         # links data to the trainer
-        self.searcher.trainer.data_connector.attach_data(
-            model,
-            train_dataloaders=self.train_dataloaders,
-            val_dataloaders=self.val_dataloaders,
-            datamodule=self.datamodule
-        )
+        if LIGHTNING_VERSION_LESS_1_6:
+            self.searcher.trainer.data_connector.attach_data(
+                model,
+                train_dataloaders=self.train_dataloaders,
+                val_dataloaders=self.val_dataloaders,
+                datamodule=self.datamodule
+            )
+        else:
+            self.searcher.trainer._data_connector.attach_data(  # type: ignore
+                model,
+                train_dataloaders=self.train_dataloaders,
+                val_dataloaders=self.val_dataloaders,
+                datamodule=self.datamodule
+            )
 
     def _post_train(self, model):
         pass
@@ -138,7 +205,14 @@ class Objective(object):
 
         self._pre_train(model, trial)
         self.searcher._run(model)
-        score = self.searcher.trainer.callback_metrics[self.target_metric].item()
+        if self.mo_hpo:
+            scores = []
+            # print(self.searcher.trainer.callback_metrics)
+            for metric in self.target_metric:
+                score = self.searcher.trainer.callback_metrics[metric].item()
+                scores.append(score)
+        else:
+            scores = self.searcher.trainer.callback_metrics[self.target_metric].item()
         self._post_train(model)
 
-        return score
+        return scores

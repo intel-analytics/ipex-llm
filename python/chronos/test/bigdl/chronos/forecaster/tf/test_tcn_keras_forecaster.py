@@ -99,5 +99,32 @@ class TestTCNForecaster(TestCase):
         assert yhat.shape == (400, 2, 2)
         np.testing.assert_almost_equal(yhat, load_model_yhat, decimal=5)
 
+    def test_tcn_customized_loss_metric(self):
+        train_data, test_data = create_data(tf_data=True)
+        loss = tf.keras.losses.MeanSquaredError()
+        def customized_metric(y_true, y_pred):
+            return tf.keras.losses.MeanSquaredError(tf.convert_to_tensor(y_pred),
+                                      tf.convert_to_tensor(y_true)).numpy()
+        from bigdl.chronos.forecaster.tf.tcn_forecaster import TCNForecaster
+        self.forecaster = TCNForecaster(past_seq_len=10,
+                                        future_seq_len=2,
+                                        input_feature_num=10,
+                                        output_feature_num=2,
+                                        num_channels=[15]*7,
+                                        loss=loss,
+                                        metrics=[customized_metric],
+                                        lr=0.01)
+        self.forecaster.fit(train_data, epochs=2, batch_size=32)
+        yhat = self.forecaster.predict(test_data)
+        with tempfile.TemporaryDirectory() as tmp_dir_file:
+            tmp_dir_file = os.path.join(tmp_dir_file, 'tcn.ckpt')
+            self.forecaster.save(tmp_dir_file)
+            self.forecaster.load(tmp_dir_file)
+            from bigdl.chronos.model.tf2.TCN_keras import TemporalConvNet
+            assert isinstance(self.forecaster.internal, TemporalConvNet)
+        load_model_yhat = self.forecaster.predict(test_data)
+        assert yhat.shape == (400, 2, 2)
+        np.testing.assert_almost_equal(yhat, load_model_yhat, decimal=5)
+
 if __name__ == '__main__':
     pytest.main([__file__])
