@@ -57,7 +57,8 @@ public class IDProbList {
                 "ids=" + Arrays.toString(ids) +
                 ", probs=" + Arrays.toString(probs) +
                 ", success=" + success +
-//                ", gRPCException=" + gRPCException +
+                ", errorCode=" + errorCode +
+                ", errorMsg='" + errorMsg + '\'' +
                 '}';
     }
 }

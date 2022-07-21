@@ -163,7 +163,7 @@ public class RecommenderServer extends GrpcServerBase {
         @Override
         public void getClientMetrics(Empty request,
                                      StreamObserver<ServerMessage> responseObserver) {
-            String metricsStr = impl.getClientMetrics(request);
+            String metricsStr = impl.getClientMetrics();
             responseObserver.onNext(ServerMessage.newBuilder().setStr(metricsStr).build());
             responseObserver.onCompleted();
         }

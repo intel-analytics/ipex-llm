@@ -2951,27 +2951,30 @@ public final class RecommenderProto {
   static {
     java.lang.String[] descriptorData = {
       "\n\021recommender.proto\022\013recommender\032\033google" +
-      "/protobuf/empty.proto\"#\n\007IDProbs\022\n\n\002ID\030\001" +
-      " \003(\005\022\014\n\004prob\030\002 \003(\002\"J\n\020RecommendRequest\022\024" +
-      "\n\014recommendNum\030\001 \001(\005\022\024\n\014candidateNum\030\002 \001" +
-      "(\005\022\n\n\002ID\030\003 \003(\005\"<\n\020RecommendIDProbs\022(\n\nID" +
-      "ProbList\030\001 \003(\0132\024.recommender.IDProbs\"\034\n\r" +
-      "ServerMessage\022\013\n\003str\030\001 \001(\t2\260\002\n\013Recommend" +
-      "er\022Q\n\017getRecommendIDs\022\035.recommender.Reco" +
-      "mmendRequest\032\035.recommender.RecommendIDPr" +
-      "obs\"\000\022B\n\ngetMetrics\022\026.google.protobuf.Em" +
-      "pty\032\032.recommender.ServerMessage\"\000\022@\n\014res" +
-      "etMetrics\022\026.google.protobuf.Empty\032\026.goog" +
-      "le.protobuf.Empty\"\000\022H\n\020getClientMetrics\022" +
-      "\026.google.protobuf.Empty\032\032.recommender.Se" +
-      "rverMessage\"\000B_\nEcom.intel.analytics.big" +
-      "dl.friesian.serving.grpc.generated.recom" +
-      "menderB\020RecommenderProto\242\002\003RTGb\006proto3"
+      "/protobuf/empty.proto\032\034google/api/annota" +
+      "tions.proto\"#\n\007IDProbs\022\n\n\002ID\030\001 \003(\005\022\014\n\004pr" +
+      "ob\030\002 \003(\002\"J\n\020RecommendRequest\022\024\n\014recommen" +
+      "dNum\030\001 \001(\005\022\024\n\014candidateNum\030\002 \001(\005\022\n\n\002ID\030\003" +
+      " \003(\005\"<\n\020RecommendIDProbs\022(\n\nIDProbList\030\001" +
+      " \003(\0132\024.recommender.IDProbs\"\034\n\rServerMess" +
+      "age\022\013\n\003str\030\001 \001(\t2\310\002\n\013Recommender\022i\n\017getR" +
+      "ecommendIDs\022\035.recommender.RecommendReque" +
+      "st\032\035.recommender.RecommendIDProbs\"\030\202\323\344\223\002" +
+      "\022\"\r/v1/recommend:\001*\022B\n\ngetMetrics\022\026.goog" +
+      "le.protobuf.Empty\032\032.recommender.ServerMe" +
+      "ssage\"\000\022@\n\014resetMetrics\022\026.google.protobu" +
+      "f.Empty\032\026.google.protobuf.Empty\"\000\022H\n\020get" +
+      "ClientMetrics\022\026.google.protobuf.Empty\032\032." +
+      "recommender.ServerMessage\"\000B_\nEcom.intel" +
+      ".analytics.bigdl.friesian.serving.grpc.g" +
+      "enerated.recommenderB\020RecommenderProto\242\002" +
+      "\003RTGb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           com.google.protobuf.EmptyProto.getDescriptor(),
+          com.google.api.AnnotationsProto.getDescriptor(),
         });
     internal_static_recommender_IDProbs_descriptor =
       getDescriptor().getMessageTypes().get(0);
@@ -2997,7 +3000,13 @@ public final class RecommenderProto {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_recommender_ServerMessage_descriptor,
         new java.lang.String[] { "Str", });
+    com.google.protobuf.ExtensionRegistry registry =
+        com.google.protobuf.ExtensionRegistry.newInstance();
+    registry.add(com.google.api.AnnotationsProto.http);
+    com.google.protobuf.Descriptors.FileDescriptor
+        .internalUpdateFileDescriptor(descriptor, registry);
     com.google.protobuf.EmptyProto.getDescriptor();
+    com.google.api.AnnotationsProto.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

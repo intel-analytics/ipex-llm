@@ -263,7 +263,8 @@ public class RecommenderImpl {
         topKTimer = metrics.timer("recommend.topK");
     }
 
-    public String getClientMetrics(Empty request) {
+    public String getClientMetrics() {
+        Empty request = Empty.newBuilder().build();
         StringBuilder sb = new StringBuilder();
         String vecMetrics = recallStub.getMetrics(request).getStr();
         recallStub.resetMetrics(request);
