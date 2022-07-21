@@ -92,11 +92,13 @@
 
 [Nano_pytorch_training]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/tutorial/pytorch_train.ipynb>
 [Nano_pytorch_nano]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/tutorial/pytorch_nano.ipynb>
+[Nano_tensorflow_training]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/tensorflow/tutorial/tensorflow_fit.ipynb>
 [Nano_pytorch_onnxruntime]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/tutorial/pytorch_inference_onnx.ipynb>
 [Nano_pytorch_openvino]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/tutorial/pytorch_inference_openvino.ipynb>
 [Nano_pytorch_Quantization_inc]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/tutorial/pytorch_quantization_inc.ipynb>
 [Nano_pytorch_quantization_inc_onnx]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/tutorial/pytorch_quantization_inc.ipynb>
 [Nano_pytorch_quantization_openvino]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/tutorial/pytorch_quantization_openvino.ipynb>
+[Nano_tensorflow_quantization_INC]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/tensorflow/tutorial/tensorflow_quantization.ipynb>
 [Nano_hpo_tf_seq_func]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/hpo/seq_and_func.ipynb>
 [Nano_hpo_tf_seq_func_colab]: <https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/nano/notebooks/hpo/seq_and_func.ipynb>
 [Nano_hpo_tf_subclassing]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/hpo/custom.ipynb>

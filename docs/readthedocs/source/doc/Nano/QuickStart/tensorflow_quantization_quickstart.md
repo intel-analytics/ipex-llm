@@ -1,5 +1,5 @@
 ## BigDL-Nano TensorFLow Quantization Quickstart
-**In this notebook we will demonstrates how to apply Post-training quantization on a keras model with BigDL-Nano in simple steps.**
+**In this notebook we will demonstrates how to apply Post-training quantization on a keras model with BigDL-Nano in 4 simple steps.**
 
 ### **Step 0: Prepare Environment**
 
