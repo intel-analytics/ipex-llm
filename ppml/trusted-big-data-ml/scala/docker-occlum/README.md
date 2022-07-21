@@ -171,29 +171,19 @@ And the log files will be saved to `data/olog` folder.
 
 ## BigDL XGBoost Example
 
-### Rebuild Image
-
-Enlarge these four configurations in [run_spark_on_occlum_glibc.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/run_spark_on_occlum_glibc.sh#L19) to:
-```
-.resource_limits.max_num_of_threads = 4096 |
-.process.default_heap_size = "32GB" |
-.resource_limits.kernel_space_heap_size="2GB" |
-```
-
-Then build the docker image:
-
-``` bash
-bash build-docker-image.sh
-```
-
 ### Download data
 You can download the criteo-1tb-click-logs-dataset from [here](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/). Split 10g data from the dataset and put it into a folder. Then mount `/path/to/data/10g_data` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
 ```
 -v /path/to/data/10g_data:/opt/occlum_spark/data
 ```
-Enlarge SGX memory in `start-spark-local.sh` to:
-```
-	-e SGX_MEM_SIZE=58GB \
+
+You can enlarge the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+``` bash
+#start-spark-local.sh
+-e SGX_MEM_SIZE=60GB \
+-e SGX_THREAD=1024 \
+-e SGX_HEAP=1GB \
+-e SGX_KERNEL_HEAP=1GB \
 ```
 
 Start run BigDL Spark XGBoost example:
