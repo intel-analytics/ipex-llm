@@ -59,18 +59,16 @@ class CheckBatchSize(Callback):
         end: float = 0.9,
         interrupt: int = 2,
     ) -> bool:
-        is_interval = ((current_duration >= start)
-                       and (current_duration < end))
+        is_interval = ((current_duration >= start) and (current_duration < end))
         is_step = ((interrupt == 0) or ((batch_idx + 1) % interrupt != 0))
 
         return is_interval and is_step
 
-    def on_train_batch_end(self, trainer, pl_module, outputs, batch: Any,
-                           batch_idx: int, dataloader_idx: int) -> None:
+    def on_train_batch_end(self, trainer, pl_module, outputs, batch: Any, batch_idx: int,
+                           dataloader_idx: int) -> None:
         elapsed_duration = float(trainer.current_epoch) / \
             float(trainer.max_epochs)
-        if self.__should_selective_backprop(elapsed_duration, batch_idx,
-                                            self.start, self.end,
+        if self.__should_selective_backprop(elapsed_duration, batch_idx, self.start, self.end,
                                             self.interrupt):
             current_batch_size = len(batch[1])
             ideal_batch_size = int(self.keep * self.batch_size)
@@ -82,9 +80,7 @@ class ResNet18(nn.Module):
 
     def __init__(self, pretrained=True, include_top=False, freeze=True):
         super().__init__()
-        backbone = vision.resnet18(pretrained=pretrained,
-                                   include_top=include_top,
-                                   freeze=freeze)
+        backbone = vision.resnet18(pretrained=pretrained, include_top=include_top, freeze=freeze)
         output_size = backbone.get_output_size()
         head = nn.Linear(output_size, num_classes)
         self.model = torch.nn.Sequential(backbone, head)
@@ -105,12 +101,9 @@ class TestLightningModuleFromTorch(TestCase):
             model,
             loss,
             optimizer,
-            metrics=[
-                torchmetrics.F1(num_classes),
-                torchmetrics.Accuracy(num_classes=10)
-            ])
-        data_loader = create_data_loader(data_dir, batch_size, num_workers,
-                                         data_transform)
+            metrics=[torchmetrics.F1(num_classes),
+                     torchmetrics.Accuracy(num_classes=10)])
+        data_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
         loss_fn = nn.CrossEntropyLoss(reduction='none')
         sb = SelectiveBackprop(start=0.25,
                                keep=0.53,

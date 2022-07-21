@@ -22,10 +22,10 @@ from torch import nn
 from torchvision.datasets import CIFAR10
 from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
+from torch.utils.data.sampler import SequentialSampler
 from pytorch_lightning.callbacks import Callback
 from typing import Any
 
-from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch.vision.models import vision
@@ -59,18 +59,16 @@ class CheckBatchSize(Callback):
         end: float = 0.9,
         interrupt: int = 2,
     ) -> bool:
-        is_interval = ((current_duration >= start)
-                       and (current_duration < end))
+        is_interval = ((current_duration >= start) and (current_duration < end))
         is_step = ((interrupt == 0) or ((batch_idx + 1) % interrupt != 0))
 
         return is_interval and is_step
 
-    def on_train_batch_end(self, trainer, pl_module, outputs, batch: Any,
-                           batch_idx: int, dataloader_idx: int) -> None:
+    def on_train_batch_end(self, trainer, pl_module, outputs, batch: Any, batch_idx: int,
+                           dataloader_idx: int) -> None:
         elapsed_duration = float(trainer.current_epoch) / \
             float(trainer.max_epochs)
-        if self.__should_selective_backprop(elapsed_duration, batch_idx,
-                                            self.start, self.end,
+        if self.__should_selective_backprop(elapsed_duration, batch_idx, self.start, self.end,
                                             self.interrupt):
             current_batch_size = len(batch[1])
             ideal_batch_size = int(self.keep * self.batch_size)
@@ -82,9 +80,7 @@ class ResNet18(nn.Module):
 
     def __init__(self, pretrained=True, include_top=False, freeze=True):
         super().__init__()
-        backbone = vision.resnet18(pretrained=pretrained,
-                                   include_top=include_top,
-                                   freeze=freeze)
+        backbone = vision.resnet18(pretrained=pretrained, include_top=include_top, freeze=freeze)
         output_size = backbone.get_output_size()
         head = nn.Linear(output_size, num_classes)
         self.model = torch.nn.Sequential(backbone, head)
@@ -93,20 +89,31 @@ class ResNet18(nn.Module):
         return self.model(x)
 
 
-def create_data_loader(dir, batch_size, num_workers, transform, subset=50, shuffle=True, sampler=False):
-    train_set = CIFAR10(root=dir, train=True,
-                        download=True, transform=transform)
+def create_data_loader(dir,
+                       batch_size,
+                       num_workers,
+                       transform,
+                       subset=50,
+                       shuffle=True,
+                       sampler=False):
+    train_set = CIFAR10(root=dir, train=True, download=True, transform=transform)
     # `subset` is the number of subsets. The larger the number, the smaller the training set.
     mask = list(range(0, len(train_set), subset))
     train_subset = torch.utils.data.Subset(train_set, mask)
     if sampler:
         sampler_set = SequentialSampler(train_subset)
-        data_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=shuffle,
-                             num_workers=num_workers, sampler=sampler_set)
+        data_loader = DataLoader(train_subset,
+                                 batch_size=batch_size,
+                                 shuffle=shuffle,
+                                 num_workers=num_workers,
+                                 sampler=sampler_set)
     else:
-        data_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=shuffle,
-                             num_workers=num_workers)
+        data_loader = DataLoader(train_subset,
+                                 batch_size=batch_size,
+                                 shuffle=shuffle,
+                                 num_workers=num_workers)
     return data_loader
+
 
 data_transform = transforms.Compose([
     transforms.Resize(256),
@@ -116,7 +123,6 @@ data_transform = transforms.Compose([
     transforms.Resize(128),
     transforms.ToTensor()
 ])
-
 
 model = ResNet18(pretrained=False, include_top=False, freeze=True)
 loss = nn.CrossEntropyLoss()
@@ -128,32 +134,29 @@ def main():
         model,
         loss,
         optimizer,
-        metrics=[
-            torchmetrics.F1(num_classes),
-            torchmetrics.Accuracy(num_classes=10)
-        ])
-    data_loader = create_data_loader(data_dir, batch_size, num_workers,
-                                        data_transform)
+        metrics=[torchmetrics.F1(num_classes),
+                 torchmetrics.Accuracy(num_classes=10)])
+    data_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
     # get the loss function without reduction
     loss_fn = nn.CrossEntropyLoss(reduction='none')
     # pass proper arguments to selective backprop
     sb = SelectiveBackprop(start=0.5,
-                            keep=0.5,
-                            end=0.9,
-                            scale_factor=1,
-                            interrupt=2,
-                            loss_fn=loss_fn)
+                           keep=0.5,
+                           end=0.9,
+                           scale_factor=1,
+                           interrupt=2,
+                           loss_fn=loss_fn)
     # check if selective backprop works
     batch_size_check = CheckBatchSize(start=0.5,
-                                        keep=0.5,
-                                        end=0.9,
-                                        interrupt=2,
-                                        batch_size=batch_size)
+                                      keep=0.5,
+                                      end=0.9,
+                                      interrupt=2,
+                                      batch_size=batch_size)
     # pass the algorithm by algorithms=[sb,]
     trainer = Trainer(max_epochs=10,
-                        log_every_n_steps=1,
-                        algorithms=[sb],
-                        callbacks=[batch_size_check])
+                      log_every_n_steps=1,
+                      algorithms=[sb],
+                      callbacks=[batch_size_check])
     trainer.fit(pl_model, data_loader, data_loader)
 
 
