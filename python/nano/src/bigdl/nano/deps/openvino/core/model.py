@@ -18,10 +18,6 @@ from tempfile import TemporaryDirectory
 from openvino.runtime import Core
 from bigdl.nano.utils.log4Error import invalidInputError
 from openvino.runtime import Model
-from openvino.tools.pot.graph import load_model, save_model
-from openvino.tools.pot.engines.ie_engine import IEEngine
-from openvino.tools.pot.pipeline.initializer import create_pipeline
-from openvino.tools.pot.graph.model_utils import compress_model_weights
 from .utils import save
 
 
@@ -69,7 +65,10 @@ class OpenVINOModel:
             max_iter_num=1,
             n_requests=None,
             sample_size=300) -> Model:
-
+        from openvino.tools.pot.graph import load_model, save_model
+        from openvino.tools.pot.engines.ie_engine import IEEngine
+        from openvino.tools.pot.pipeline.initializer import create_pipeline
+        from openvino.tools.pot.graph.model_utils import compress_model_weights
         # set batch as 1 if it's dynaminc or larger than 1
         orig_shape = dict()
         static_shape = dict()
