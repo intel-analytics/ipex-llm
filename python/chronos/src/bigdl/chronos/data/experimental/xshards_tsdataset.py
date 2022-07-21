@@ -22,6 +22,7 @@ from bigdl.chronos.data.utils.roll import roll_timeseries_dataframe
 from bigdl.chronos.data.utils.impute import impute_timeseries_dataframe
 from bigdl.chronos.data.utils.split import split_timeseries_dataframe
 from bigdl.chronos.data.experimental.utils import add_row, transform_to_dict
+from bigdl.chronos.data.utils.scale import unscale_timeseries_numpy
 
 
 _DEFAULT_ID_COL_NAME = "id"
