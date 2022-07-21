@@ -402,7 +402,7 @@ class RayOnSparkContext(object):
         self.num_ray_nodes = num_ray_nodes
         RayOnSparkContext._active_ray_context = self
 
-    def setUpRayOnSparkContext(self):
+    def setupRayOnSparkContext(self):
         if self.is_local:
             self.num_ray_nodes = 1
             spark_cores = self._get_spark_local_cores()
