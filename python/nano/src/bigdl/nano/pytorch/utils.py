@@ -20,6 +20,8 @@ from types import MethodType
 import pytorch_lightning as pl
 from typing import Optional
 import torch
+import copy
+from logging import warning
 
 TORCH_VERSION_LESS_1_10 = _compare_version("torch", operator.lt, "1.10")
 TORCH_VERSION_LESS_1_11 = _compare_version("torch", operator.lt, "1.11")
@@ -58,15 +60,21 @@ class ChannelsLastCallback(pl.Callback):
     def setup(self, trainer, pl_module, stage: Optional[str] = None) -> None:
         """Override hook setup to convert model to channels_last and wrap DataHook."""
         # TODO: Add check for module_states
+        try:
+            pl_module.model = pl_module.model.to(memory_format=torch.channels_last)
+        except Exception as e:
+            warning("Convert model to channels last failed, fall back to origin memory format." \
+                    + f"Exception msg: {e}")
+            return super().setup(trainer, pl_module, stage)
         fn_old = getattr(pl_module, "on_before_batch_transfer")
         fn = batch_call(fn_old)
         setattr(pl_module, "on_before_batch_transfer_origin", fn_old)
         pl_module.on_before_batch_transfer = MethodType(fn, pl_module)
-        trainer.model = trainer.model.to(memory_format=torch.channels_last)
         return super().setup(trainer, pl_module, stage)
 
     def teardown(self, trainer, pl_module, stage: Optional[str] = None) -> None:
         """Undo the changes to pl_module at end of fit, validate, tests, or predict."""
-        setattr(pl_module, "on_before_batch_transfer", pl_module.on_before_batch_transfer_origin)
-        delattr(pl_module, "on_before_batch_transfer_origin")
+        if hasattr(pl_module, "on_before_batch_transfer_origin"):
+            setattr(pl_module, "on_before_batch_transfer", pl_module.on_before_batch_transfer_origin)
+            delattr(pl_module, "on_before_batch_transfer_origin")
         return super().teardown(trainer, pl_module, stage)
