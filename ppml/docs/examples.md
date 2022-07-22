@@ -144,6 +144,10 @@ https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/tpc-ds_with_sparksql_
 ### Run Trusted SimpleQuery
 <details><summary>Trusted SimpleQuery</summary>
 
+spark native mode
+<p align="left">
+  <img src="https://user-images.githubusercontent.com/61072813/174703141-63209559-05e1-4c4d-b096-6b862a9bed8a.png" alt="data lifecycle" width='250px' />
+</p>
 
 ```
 bash bigdl-ppml-submit.sh \
@@ -173,6 +177,11 @@ bash bigdl-ppml-submit.sh \
         --ehsmAPPID appid \
         --ehsmAPPKEY apikey
 ```
+
+spark native mode, sgx enabled
+<p align="left">
+  <img src="https://user-images.githubusercontent.com/61072813/174703165-2afc280d-6a3d-431d-9856-dd5b3659214a.png" alt="data lifecycle" width='250px' />
+</p>
 
 ```
 bash bigdl-ppml-submit.sh \
@@ -207,6 +216,11 @@ bash bigdl-ppml-submit.sh \
         --ehsmAPPID appid \
         --ehsmAPPKEY apikey
 ```
+
+k8s client mode, sgx enabled
+<p align="left">
+  <img src="https://user-images.githubusercontent.com/61072813/174703216-70588315-7479-4b6c-9133-095104efc07d.png" alt="data lifecycle" width='500px' />
+</p>
 
 ```
 bash bigdl-ppml-submit.sh \
@@ -244,6 +258,11 @@ bash bigdl-ppml-submit.sh \
         --ehsmAPPID appid \
         --ehsmAPPKEY apikey
 ```
+  
+k8s cluster mode, sgx enabled
+<p align="left">
+  <img src="https://user-images.githubusercontent.com/61072813/174703234-e45b8fe5-9c61-4d17-93ef-6b0c961a2f95.png" alt="data lifecycle" width='500px' />
+</p>
 
 ```
 bash bigdl-ppml-submit.sh \
