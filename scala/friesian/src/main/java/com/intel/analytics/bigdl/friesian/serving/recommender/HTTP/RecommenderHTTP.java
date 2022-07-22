@@ -28,9 +28,14 @@ public class RecommenderHTTP {
         Utils.helper_$eq(ConfigParser.loadConfigFromPath(configPath, gRPCHelper.class));
         Utils.helper().parseConfigStrings();
 
+        int port = cmdParser.getIntOptionValue("p");
+        if (Utils.helper() != null && Utils.helper().getServicePort() != -1) {
+            port = Utils.helper().getServicePort();
+        }
+
         baseUri = UriBuilder
                 .fromUri("http://0.0.0.0/")
-                .port(cmdParser.getIntOptionValue("p"))
+                .port(port)
                 .build();
 
         // create a resource config that scans for JAX-RS resources and providers

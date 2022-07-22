@@ -27,7 +27,7 @@ if (( $# < 1)); then
   echo "Usage: service_type other_parameters"
   echo "Usage example: ranking -c /opt/work/config_ranking.yaml -p 8083"
   echo "Usage example: client -target localhost:8980 -dataDir wnd_user.parquet -k 50 -clientNum 4 -testNum 2"
-  echo "service_type can be one of ranking, recall, recommender, feature, client, recall-init and feature-init."
+  echo "service_type can be one of ranking, recall, recommender, recommender-http, feature, client, recall-init and feature-init."
   exit -1
 fi
 
@@ -50,6 +50,9 @@ elif [ "$service" == "recall" ]; then
 elif [ "$service" == "recommender" ]; then
     echo "Starting recommender service......"
     java -cp $SPARK_JAR_PATH:$SERVING_JAR_PATH com.intel.analytics.bigdl.friesian.serving.recommender.RecommenderServer $params
+elif [ "$service" == "recommender-http" ]; then
+    echo "Starting recommender http server......"
+    java -cp $SPARK_JAR_PATH:$SERVING_JAR_PATH com.intel.analytics.bigdl.friesian.serving.recommender.HTTP.RecommenderHTTP $params
 elif [ "$service" == "recall-init" ]; then
     echo "Starting initializing recall index......"
     java -Dspark.master=local[*] -cp $SPARK_JAR_PATH:$SERVING_JAR_PATH com.intel.analytics.bigdl.friesian.nearline.recall.RecallInitializer $params
@@ -59,5 +62,5 @@ elif [ "$service" == "feature-init" ]; then
 elif [ "$service" == "client" ]; then
     java -Dspark.master=local[*] -cp $SPARK_JAR_PATH:$SERVING_JAR_PATH com.intel.analytics.bigdl.friesian.serving.recommender.RecommenderMultiThreadClient $params
 else
-    echo "Unsupported service_type, service_type can be one of ranking, recall, recommender, feature, feature-init, recall-init and client."
+    echo "Unsupported service_type, service_type can be one of ranking, recall, recommender, recommender-http, feature, feature-init, recall-init and client."
 fi

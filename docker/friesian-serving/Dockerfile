@@ -17,7 +17,7 @@
 
 ARG SPARK_VERSION=2.4.6
 ARG BIGDL_VERSION=2.1.0-SNAPSHOT
-
+s
 # stage.1 spark
 FROM ubuntu:20.04 as spark
 ARG SPARK_VERSION=2.4.6
@@ -41,8 +41,8 @@ RUN apt-get update --fix-missing && \
     # remove conflict jars
     rm -f ${SPARK_HOME}/jars/guava* && \
     rm -f ${SPARK_HOME}/jars/metrics-core* && \
-    rm -f ${SPARK_HOME}/jars/jackson-annotations* ${SPARK_HOME}/jars/jackson-core-2.* ${SPARK_HOME}/jars/jackson-databind* ${SPARK_HOME}/jars/jackson-module-scala*
-
+    rm -f ${SPARK_HOME}/jars/jackson-annotations* ${SPARK_HOME}/jars/jackson-core-2.* ${SPARK_HOME}/jars/jackson-databind* ${SPARK_HOME}/jars/jackson-module-scala* && \
+    rm -f ${SPARK_HOME}/jars/hk2-* ${SPARK_HOME}/jars/jersey-client* ${SPARK_HOME}/jars/jersey-server* ${SPARK_HOME}/jars/jersey-common*
 
 # stage.2 friesian-serving-docker
 FROM ubuntu:20.04
