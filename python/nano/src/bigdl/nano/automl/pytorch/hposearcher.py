@@ -224,8 +224,7 @@ class HPOSearcher:
         self.trainer.tuning = True
 
     def _validate(self, *args: Any, **kwargs: Any) -> None:
-        """a wrapper to test optimization latency multiple times \
-        after training"""
+        """A wrapper to test optimization latency multiple times after training"""
         self.trainer.validate_loop = CustomEvaluationLoop()
         self.trainer.state.fn = TrainerFn.VALIDATING
         self.trainer.training = False

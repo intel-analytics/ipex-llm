@@ -149,7 +149,6 @@ class Objective(object):
         :param: trial: a trial object which provides the hyperparameter combinition.
         :return: the target metric value.
         """
-
         if _is_creator(self.model):
             model = self.model(trial)
         else:
