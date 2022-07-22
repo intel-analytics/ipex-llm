@@ -19,7 +19,6 @@ from pathlib import Path
 from typing import Any, List, Optional
 import pytorch_lightning as pl
 import torch
-from pytorch_lightning import LightningModule
 from torch import nn
 from torch.nn.modules.loss import _Loss
 from torch.utils.data import DataLoader
@@ -30,7 +29,7 @@ from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS
     LIGHTNING_VERSION_LESS_1_6
 from bigdl.nano.pytorch.utils import ChannelsLastCallback
 from bigdl.nano.pytorch.amp import BF16Model
-from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
+from bigdl.nano.pytorch.lightning import LightningModule
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
 from bigdl.nano.pytorch.plugins.ddp_subprocess import DDPSubprocessPlugin
 
@@ -212,7 +211,7 @@ class Trainer(pl.Trainer):
                               " is a pytorch-lightning model.")
             pl_model = model
         else:
-            pl_model = LightningModuleFromTorch(model, loss, optimizer, scheduler, metrics)
+            pl_model = LightningModule(model, loss, optimizer, scheduler, metrics)
 
         return pl_model
 
@@ -458,7 +457,7 @@ class Trainer(pl.Trainer):
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
     @staticmethod
-    def save(model: LightningModule, path):
+    def save(model: pl.LightningModule, path):
         """
         Save the model to local file.
 
@@ -471,7 +470,7 @@ class Trainer(pl.Trainer):
         if hasattr(model, '_save'):
             model._save(path)
         else:
-            # typically for models of nn.Module, LightningModule and LightningModuleFromTorch type
+            # typically for models of nn.Module, pl.LightningModule type
             meta_path = Path(path) / "nano_model_meta.yml"
             with open(meta_path, 'w+') as f:
                 metadata = {
@@ -483,7 +482,7 @@ class Trainer(pl.Trainer):
             torch.save(model.state_dict(), checkpoint_path)
 
     @staticmethod
-    def load(path, model: LightningModule = None):
+    def load(path, model: pl.LightningModule = None):
         """
         Load a model from local.
 
@@ -516,7 +515,7 @@ class Trainer(pl.Trainer):
         if model_type == 'PytorchIPEXJITModel':
             return load_ipexjit_model(path, model)
         if isinstance(model, nn.Module):
-            # typically for models of nn.Module, LightningModule and LightningModuleFromTorch type
+            # typically for models of nn.Module, pl.LightningModule type
             model = copy.deepcopy(model)
             checkpoint_path = metadata.get('checkpoint', None)
             if checkpoint_path:

@@ -108,6 +108,11 @@ class TestOnnx(TestCase):
             forward_res = onnx_model(x).numpy()
             # np.testing.assert_almost_equal(y.numpy(), forward_res, decimal=5)  # same result
 
+        # test with pytorch-lightning trainer functions
+        trainer.validate(onnx_model, train_loader)
+        trainer.test(onnx_model, train_loader)
+        trainer.predict(onnx_model, train_loader)
+
         # save the quantized model
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             trainer.save(onnx_model, tmp_dir_name)
