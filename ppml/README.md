@@ -49,7 +49,7 @@ In this section, you can get started with running a simple native python HelloWo
 
 <details><summary>Click to see detailed steps</summary>
 
-**a. Prepare [Keys](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/prepare_environment.md#prepare-key-and-password) and Start the BigDL PPML client container**
+**a. Prepare [Keys](/docs/prepare_environment.md#prepare-key-and-password) and Start the BigDL PPML client container**
 
 ```
 #!/bin/bash
