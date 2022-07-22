@@ -63,9 +63,8 @@ class ChannelsLastCallback(pl.Callback):
         try:
             pl_module.model = pl_module.model.to(memory_format=torch.channels_last)
         except Exception as e:
-            warning("Convert model to channels last failed,"
-                    + "fall back to origin memory format."
-                    + f"Exception msg: {e}")
+            warning(f"Convert model to channels last failed, \
+                    fall back to origin memory format. Exception msg: {e}")
             return super().setup(trainer, pl_module, stage)
         fn_old = getattr(pl_module, "on_before_batch_transfer")
         fn = batch_call(fn_old)
