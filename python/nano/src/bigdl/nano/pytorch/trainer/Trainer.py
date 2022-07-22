@@ -138,14 +138,42 @@ class Trainer(pl.Trainer):
                 strategy = DDPSubprocessStrategy(num_processes=num_processes,
                                                  cpu_for_each_process=cpu_for_each_process,
                                                  use_ipex=self.use_ipex,
-                                                 enable_bf16=enable_bf16)
-            elif distributed_backend == "ray":
-                from bigdl.nano.pytorch.strategies import create_RayStrategy
-                strategy = create_RayStrategy(num_workers=num_processes,
-                                              use_ipex=self.use_ipex,
-                                              enable_bf16=enable_bf16)
-            kwargs["strategy"] = strategy
-            super().__init__(*args, **kwargs)
+                                                 enable_bf16=enable_bf16,
+                                                 scale_lr=scale_lr)
+                elif distributed_backend == "ray":
+                    # Import RayPlugins may entangle with openmp even if it has not been used,
+                    # which leads to an unacceptably low performance.
+                    # So we import when we need.
+                    plugin = distributed_ray(num_workers=num_processes,  # type: ignore
+                                             use_ipex=self.use_ipex,
+                                             enable_bf16=enable_bf16)
+                if self.use_ipex and TORCH_VERSION_LESS_1_10:
+                    accelerator = create_IPEXAccelerator_1_9(training_type_plugin=plugin,
+                                                             enable_bf16=enable_bf16)
+                super().__init__(accelerator=accelerator, plugins=[plugin],  # type: ignore
+                                 *args, **kwargs)
+            else:
+                if distributed_backend == "spawn":
+                    from bigdl.nano.pytorch.strategies import DDPSpawnStrategy
+                    strategy = DDPSpawnStrategy(num_processes=num_processes,
+                                                cpu_for_each_process=cpu_for_each_process,
+                                                use_ipex=self.use_ipex,
+                                                enable_bf16=enable_bf16,
+                                                scale_lr=scale_lr)
+                elif distributed_backend == "subprocess":
+                    from bigdl.nano.pytorch.strategies import DDPSubprocessStrategy
+                    strategy = DDPSubprocessStrategy(num_processes=num_processes,
+                                                     cpu_for_each_process=cpu_for_each_process,
+                                                     use_ipex=self.use_ipex,
+                                                     enable_bf16=enable_bf16,
+                                                     scale_lr=scale_lr)
+                elif distributed_backend == "ray":
+                    from bigdl.nano.pytorch.strategies import create_RayStrategy
+                    strategy = create_RayStrategy(num_workers=num_processes,
+                                                  use_ipex=self.use_ipex,
+                                                  enable_bf16=enable_bf16)
+                kwargs["strategy"] = strategy
+                super().__init__(*args, **kwargs)
 
         if use_hpo:
             self.hposearcher = create_hpo_searcher(trainer=self, num_processes=num_processes)

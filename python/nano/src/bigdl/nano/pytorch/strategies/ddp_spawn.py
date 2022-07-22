@@ -42,9 +42,11 @@ from torch import nn
 from torch import Tensor
 from torch.multiprocessing.spawn import _wrap, ProcessContext
 from torch.nn.parallel.distributed import DistributedDataParallel
+from torch.optim.lr_scheduler import _LRScheduler
 
 import pytorch_lightning as pl
 from pytorch_lightning.trainer.states import TrainerFn
+from pytorch_lightning.core.optimizer import LightningOptimizer
 from pytorch_lightning.core.datamodule import LightningDataModule
 from pytorch_lightning.strategies.launchers import _SpawnLauncher
 from pytorch_lightning.strategies import DDPSpawnStrategy as _DDPSpawnStrategy
@@ -164,6 +166,7 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
         cpu_for_each_process: Optional[List[List[int]]] = None,
         use_ipex=False,
         enable_bf16=False,
+        scale_lr=False,
         **kwargs: Any
     ):
         """Create a DDPSpawnStrategy, adding a cpu_for_each_process parameter."""
@@ -182,6 +185,7 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
         self.is_distributed = True
         self.use_ipex = use_ipex
         self.enable_bf16 = enable_bf16
+        self.scale_lr = scale_lr
 
     def _configure_launcher(self):
         self._launcher = _DDPSpawnLauncher(self)
@@ -220,6 +224,23 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
             # then the following `ipex_optimize()` call will report an error,
             # so we need to set it to `False` manuallay
             self.model.eval()
+
+        if trainer.training and self.scale_lr:
+
+            def _unpack_lightning_optimizer(opt):
+                return opt._optimizer if isinstance(opt, LightningOptimizer) else opt
+
+            optimizers = self.optimizers
+            optimizers = [_unpack_lightning_optimizer(opt) for opt in optimizers]
+
+            for optimizer in optimizers:
+                for param_group in optimizer.param_groups:
+                    param_group["lr"] *= self.world_size
+
+            lr_scheduler_configs = self.lr_scheduler_configs
+            for config in lr_scheduler_configs:
+                scheduler = config.scheduler
+                scheduler.base_lrs = [lr * self.world_size for lr in scheduler.base_lrs]
 
         if self.use_ipex and not TORCH_VERSION_LESS_1_10:
             dtype = torch.bfloat16 if self.enable_bf16 else None

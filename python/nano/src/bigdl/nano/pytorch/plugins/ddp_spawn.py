@@ -40,9 +40,11 @@ from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 import torch
 from torch.nn.parallel.distributed import DistributedDataParallel
 from torch.multiprocessing.spawn import _wrap, ProcessContext
+from torch.optim.lr_scheduler import _LRScheduler
 
 import pytorch_lightning as pl
 from pytorch_lightning.overrides import LightningDistributedModule
+from pytorch_lightning.core.optimizer import LightningOptimizer
 from pytorch_lightning.plugins.environments.cluster_environment import ClusterEnvironment
 from pytorch_lightning.plugins.environments import LightningEnvironment
 from pytorch_lightning.utilities.distributed import rank_zero_only
@@ -143,8 +145,26 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
         }
 
     def pre_dispatch(self):
-        if self.scale_lr:
-            self.scale_learning_rate()
+        if not self.lightning_module.trainer.training or not self.scale_lr:
+
+            return
+        
+        def _unpack_lightning_optimizer(opt):
+            return opt._optimizer if isinstance(opt, LightningOptimizer) else opt
+
+        optimizers = self.lightning_module.trainer.optimizers
+        optimizers = [_unpack_lightning_optimizer(opt) for opt in optimizers]
+
+        for optimizer in optimizers:
+            for param_group in optimizer.param_groups:
+                param_group["lr"] *= self.world_size
+
+        lr_schedulers = self.lightning_module.trainer.lr_schedulers
+        for scheduler in lr_schedulers:
+            scheduler = scheduler["scheduler"]
+            if isinstance(scheduler, _LRScheduler):
+                scheduler.base_lrs = [lr * self.world_size for lr in scheduler.base_lrs]
+
 
     def start_training(self, trainer):
         """Setup start_training hook for the plugin."""
@@ -234,13 +254,3 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
             **self._ddp_kwargs,
         )
         self._register_ddp_hooks()
-
-    def scale_learning_rate(self):
-        optimizers = self.lightning_module.trainer.optimizers
-        for optimizer in optimizers:
-            for param_group in optimizer.param_groups:
-                param_group["lr"] *= self.world_size
-        lr_schedulers = self.lightning_module.trainer.lr_schedulers
-        for lr_scheduler in lr_schedulers:
-            scheduler = lr_scheduler["scheduler"]
-            scheduler.base_lrs = [lr * self.world_size for lr in scheduler.base_lrs]
