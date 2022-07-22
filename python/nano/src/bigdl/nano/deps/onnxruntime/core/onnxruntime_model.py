@@ -48,8 +48,19 @@ class ONNXRuntimeModel:
 
         :param sess_options: ortsess options in ort.SessionOptions type
         '''
-        self.onnx_model = onnx.load(self.onnx_filepath)
-        self.ortsess = ort.InferenceSession(self.onnx_filepath, sess_options=sess_options)
+        onnx_path_or_bytes = self.onnx_filepath
+        if isinstance(self.onnx_filepath, str):
+            self.onnx_model = onnx.load(self.onnx_filepath)
+        elif isinstance(self.onnx_filepath, bytes):
+            self.onnx_model = onnx.load_model_from_string(self.onnx_filepath)
+        else:
+            invalidInputError(
+                isinstance(self.onnx_filepath, onnx.ModelProto),
+                errMsg="Model type {} is not a legal ONNX model.".format(type(self.onnx_filepath))
+            )
+            self.onnx_model = self.onnx_filepath
+            onnx_path_or_bytes = self.onnx_filepath.SerializeToString()
+        self.ortsess = ort.InferenceSession(onnx_path_or_bytes, sess_options=sess_options)
         self._forward_args = list(map(lambda x: x.name, self.ortsess.get_inputs()))
 
     def _save_model(self, path):
