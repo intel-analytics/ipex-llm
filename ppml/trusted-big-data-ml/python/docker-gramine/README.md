@@ -1,6 +1,8 @@
-# Gramine dockerfile and related tests
-## Build Gramine Docker image
+# Gramine
+## 1. Build Docker Image
 
-Pull [BigDL](https://github.com/intel-analytics/BigDL). In `ppml/trusted-big-data-ml/python/docker-graphene`, replace the original `Dockerfile`, `Makefile` and `bash.manifest.template` with the files here. 
+Before running the following command, please modify the paths in `build-docker-image.sh`. Then build the docker image with the following command.
 
-In `build-docker-image.sh`, change the output name to `intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine:2.1.0-SNAPSHOT`, then run the script. 
+```bash
+./build-docker-image.sh
+```
