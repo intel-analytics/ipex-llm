@@ -35,7 +35,7 @@ def batch_call(func):
     Decorator to extending hook of pl_module.
 
     Extending behavior hook on_before_batch_transfer to convert data to channels_last
-    at each step.
+    for each batch.
     """
 
     def on_before_batch_transfer(self, batch, dataloader_idx):
