@@ -14,4 +14,4 @@
 # limitations under the License.
 #
 
-from .lite import LightningLite
+from .lite import NanoLite

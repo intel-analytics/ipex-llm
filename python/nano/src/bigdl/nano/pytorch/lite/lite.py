@@ -16,11 +16,13 @@
 
 from typing import Any, Union
 from logging import warning
+from functools import partial
+from abc import abstractmethod
 
 import torch
 from torch import nn
 from torch.optim import Optimizer
-import pytorch_lightning.lite as lite
+from pytorch_lightning.lite import LightningLite
 from pytorch_lightning.strategies import Strategy
 from pytorch_lightning.lite.wrappers import _LiteModule, _LiteOptimizer
 
@@ -32,12 +34,11 @@ from bigdl.nano.pytorch.strategies import create_IPEXStrategy, DDPSpawnStrategy,
     DDPSubprocessStrategy, create_RayStrategy
 
 
-class LightningLite(lite.LightningLite):
+class NanoLite(LightningLite):
     """
-    LightningLite for BigDL-Nano pytorch.
+    NanoLite for BigDL-Nano pytorch.
 
-    This LightningLite extends PyTorch Lightning's LightningLite by adding
-    various options to accelerate pytorch training.
+    It can be used to accelerate custom pytorch training loops with very few code changes.
     """
 
     def __init__(self, num_processes: int = 1,
@@ -46,7 +47,7 @@ class LightningLite(lite.LightningLite):
                  strategy: Union[str, Strategy] = "subprocess",
                  *args, **kwargs) -> None:
         """
-        Create a LightningLite with nano acceleration.
+        Create a NanoLite with nano acceleration.
 
         :param num_processes: number of processes in distributed training, defaults to 1
         :param use_ipex: whether use ipex acceleration, defaults to False
@@ -93,6 +94,8 @@ class LightningLite(lite.LightningLite):
         kwargs["strategy"] = strategy
         super().__init__(*args, **kwargs)
 
+        setattr(self, "train", partial(self._run_impl, self.train))
+
     def setup(
         self,
         model: nn.Module,
@@ -102,16 +105,6 @@ class LightningLite(lite.LightningLite):
         """
         Setup a model and its optimizers for accelerated training.
 
-        LightningLite won't call `Strategy.setup()` method,
-        in which we add IPEX's optimization when using `trainer`.
-
-        When we call `LightningLite().run()`, it will call
-        `Strategy.setup_environment()` -> `Lanucher.launch()` -> user defined `run()` method.
-
-        However the model and optimizers haven't been specified when calling these three methods,
-        so we have to add optimizations in this method, which will be called in
-        user defined `run()` method.
-
         :param model: A model to setup
         :param *optimizers: The optimizer(s) to setup (no optimizers is also possible)
         :param move_to_device: If set ``True`` (default), moves the model to the correct device.
@@ -119,6 +112,16 @@ class LightningLite(lite.LightningLite):
         :return: The tuple of the wrapped model and list of optimizers,
             in the same order they were passed in.
         """
+        # LightningLite won't call `Strategy.setup()` method,
+        # in which we add IPEX's optimization when using `trainer`.
+
+        # When we call `LightningLite().run()`, it will call
+        # `Strategy.setup_environment()` -> `Lanucher.launch()` -> user defined `run()` method.
+
+        # However the model and optimizers haven't been specified when calling these three methods,
+        # so we have to add optimizations in this method, which will be called in
+        # user defined `run()` method.
+
         # add IPEX 1.11's optimization
         if self.use_ipex and not TORCH_VERSION_LESS_1_10:
             dtype = torch.bfloat16 if self.enable_bf16 else None
@@ -146,3 +149,15 @@ class LightningLite(lite.LightningLite):
             # join both types in a list for API convenience
             return [model] + optimizers  # type: ignore
         return model
+
+    @abstractmethod
+    def train(self, *args: Any, **kwargs: Any) -> Any:
+        """
+        All the code inside this run method gets accelerated by Lite.
+
+        You can pass arbitrary arguments to this function when overriding it.
+        """
+
+    def run(self, *args: Any, **kwargs: Any) -> Any:
+        # this is a abstract method, so we must implement it
+        pass
