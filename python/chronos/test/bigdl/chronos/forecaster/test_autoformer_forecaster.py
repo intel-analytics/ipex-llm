@@ -39,7 +39,6 @@ def create_data(loader=False):
     tsdata_train, tsdata_val, tsdata_test =\
         TSDataset.from_pandas(df, dt_col="datetime", target_col=target,
                               with_split=True, test_ratio=0.1, val_ratio=0.1)
-
     if loader:
         train_loader = tsdata_train.to_torch_data_loader(roll=True, lookback=24, horizon=5,
                                                         time_enc=True, label_len=12)
@@ -82,6 +81,7 @@ def create_tsdataset():
 
 
 class TestChronosModelAutoformerForecaster(TestCase):
+
     def setUp(self):
         pass
 
