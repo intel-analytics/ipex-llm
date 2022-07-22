@@ -109,7 +109,7 @@ class TestHPOSearcher(TestCase):
             checkpoint_callback=True,
             max_epochs=3,
             num_processes=2,
-            distributed_backend="ray",
+            # distributed_backend="ray",
         )
         searcher = HPOSearcher(trainer, num_processes=2)
         searcher.search(

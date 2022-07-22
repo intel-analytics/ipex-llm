@@ -214,7 +214,7 @@ class TestMOHPO(TestCase):
             max_epochs=2,
             use_hpo=True,
             num_processes=2,
-            distributed_backend="ray",
+            # distributed_backend="ray",
         )
         
         best_trials = trainer.search(
