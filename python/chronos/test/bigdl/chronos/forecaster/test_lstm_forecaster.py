@@ -78,7 +78,7 @@ class TestChronosModelLSTMForecaster(TestCase):
                                     dropout=[0.1, 0.2],
                                     loss="mae",
                                     lr=0.01)
-        train_loss = forecaster.fit(train_data, epochs=2)
+        forecaster.fit(train_data, epochs=2)
         test_pred = forecaster.predict(test_data[0])
         assert test_pred.shape == test_data[1].shape
         test_mse = forecaster.evaluate(test_data)
@@ -226,7 +226,7 @@ class TestChronosModelLSTMForecaster(TestCase):
                                     output_feature_num=2,
                                     loss="mae",
                                     lr=0.01)
-        train_mse = forecaster.fit(train_data, epochs=2)
+        forecaster.fit(train_data, epochs=2)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             ckpt_name = os.path.join(tmp_dir_name, "ckpt")
             test_pred_save = forecaster.predict(test_data[0])
@@ -374,3 +374,27 @@ class TestChronosModelLSTMForecaster(TestCase):
             forecaster.load(ckpt_name)
             test_pred_load = forecaster.predict(test_data[0])
         np.testing.assert_almost_equal(test_pred_save, test_pred_load)
+
+    def test_lstm_forecaster_fit_val(self):
+        train_data, val_data, _ = create_data()
+        forecaster = LSTMForecaster(past_seq_len=24,
+                                    input_feature_num=2,
+                                    output_feature_num=2,
+                                    hidden_dim=[32, 16],
+                                    layer_num=2,
+                                    dropout=[0.1, 0.2],
+                                    loss="mae",
+                                    lr=0.01)
+        val_loss = forecaster.fit(train_data, val_data, epochs=10)
+
+    def test_lstm_forecaster_fit_loader_val(self):
+        train_loader, val_loader, _ = create_data(loader=True)
+        forecaster = LSTMForecaster(past_seq_len=24,
+                                    input_feature_num=2,
+                                    output_feature_num=2,
+                                    hidden_dim=[32, 16],
+                                    layer_num=2,
+                                    dropout=[0.1, 0.2],
+                                    loss="mae",
+                                    lr=0.01)
+        val_loss = forecaster.fit(train_loader, val_loader, epochs=10)

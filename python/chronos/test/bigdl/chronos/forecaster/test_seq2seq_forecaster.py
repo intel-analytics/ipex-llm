@@ -76,7 +76,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        output_feature_num=1,
                                        loss="mae",
                                        lr=0.01)
-        train_loss = forecaster.fit(train_data, epochs=2)
+        forecaster.fit(train_data, epochs=2)
         test_pred = forecaster.predict(test_data[0])
         assert test_pred.shape == test_data[1].shape
         test_mse = forecaster.evaluate(test_data)
@@ -165,7 +165,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        output_feature_num=1,
                                        loss="mae",
                                        lr=0.01)
-        train_mse = forecaster.fit(train_data, epochs=2)
+        forecaster.fit(train_data, epochs=2)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             ckpt_name = os.path.join(tmp_dir_name, "ckpt")
             test_pred_save = forecaster.predict(test_data[0])
@@ -320,3 +320,23 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
             forecaster.load(ckpt_name)
             test_pred_load = forecaster.predict(test_data[0])
         np.testing.assert_almost_equal(test_pred_save, test_pred_load)
+
+    def test_s2s_forecaster_fit_val(self):
+        train_data, val_data, _ = create_data()
+        forecaster = Seq2SeqForecaster(past_seq_len=24,
+                                       future_seq_len=5,
+                                       input_feature_num=1,
+                                       output_feature_num=1,
+                                       loss="mae",
+                                       lr=0.01)
+        val_loss = forecaster.fit(train_data, val_data, epochs=10)
+
+    def test_s2s_forecaster_fit_loader_val(self):
+        train_loader, val_loarder, _ = create_data(loader=True)
+        forecaster = Seq2SeqForecaster(past_seq_len=24,
+                                       future_seq_len=5,
+                                       input_feature_num=1,
+                                       output_feature_num=1,
+                                       loss="mae",
+                                       lr=0.01)
+        val_loss = forecaster.fit(train_loader, val_loarder, epochs=10)

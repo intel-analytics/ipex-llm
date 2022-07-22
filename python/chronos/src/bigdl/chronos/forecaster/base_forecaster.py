@@ -195,7 +195,7 @@ class BasePytorchForecaster(Forecaster):
         # reset train and validation datasets
         self.tune_trainer.reset_train_val_dataloaders(self.internal)
 
-    def fit(self, data, epochs=1, batch_size=32):
+    def fit(self, data, validation_data=None, epochs=1, batch_size=32, validation_mode='output'):
         # TODO: give an option to close validation during fit to save time.
         """
         Fit(Train) the forecaster.
@@ -219,13 +219,30 @@ class BasePytorchForecaster(Forecaster):
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
 
+        :param validation_data: Validation sample for validation loop. Defaults to 'None'.
+               If you do not input data for 'validation_data', the validation_step will be skipped.
+               The validation_data support following formats:
+
+               | 1. a numpy ndarray tuple (x, y):
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
+               | should be the same as future_seq_len and output_feature_num.
+               |
+               | 2. pytorch dataloader:
+               | the dataloader should return x, y in each iteration with the shape as following:
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
+               | should be the same as future_seq_len and output_feature_num.
+
         :param epochs: Number of epochs you want to train. The value defaults to 1.
         :param batch_size: Number of batch size you want to train. The value defaults to 32.
-               if you input a pytorch dataloader for `data`, the batch_size will follow the
+               If you input a pytorch dataloader for `data`, the batch_size will follow the
                batch_size setted in `data`.if the forecaster is distributed, the batch_size will be
                evenly distributed to all workers.
-
-        :return: Evaluation results on data.
+        :param validation_mode: Operation mode while having 'validation_data'. Defaults to 'output'.
+        :return: A dict that records the average validation loss of each epoch.
         """
         # input transform
         if isinstance(data, DataLoader) and self.distributed:
@@ -276,23 +293,29 @@ class BasePytorchForecaster(Forecaster):
 
             # data transformation
             if isinstance(data, tuple):
-                if batch_size % self.num_processes != 0:
-                    warnings.warn("'batch_size' cannot be divided with no remainder by "
-                                  "'self.num_processes'. We got 'batch_size' = {} and "
-                                  "'self.num_processes' = {}".
-                                  format(batch_size, self.num_processes))
-                data = DataLoader(TensorDataset(torch.from_numpy(data[0]),
-                                                torch.from_numpy(data[1])),
-                                  batch_size=max(1, batch_size//self.num_processes),
-                                  shuffle=True)
-
-            # Trainer init and fitting
-            self.trainer = Trainer(logger=False, max_epochs=epochs,
+                data = np_to_dataloader(data, batch_size, self.num_processes)
+            from pytorch_lightning.loggers import CSVLogger
+            logger = False if validation_data is None else CSVLogger(".",
+                                                                     name="forecaster_tmp_log")
+            # Trainer init
+            self.trainer = Trainer(logger=logger, max_epochs=epochs,
                                    checkpoint_callback=self.checkpoint_callback,
                                    num_processes=self.num_processes, use_ipex=self.use_ipex,
+                                   flush_logs_every_n_steps=10, log_every_n_steps=10,
                                    distributed_backend="spawn")
-            self.trainer.fit(self.internal, data)
-            self.fitted = True
+            # fitting
+            if not validation_data:
+                self.trainer.fit(self.internal, data)
+                self.fitted = True
+            else:
+                if isinstance(validation_data, tuple):
+                    validation_data = np_to_dataloader(validation_data, batch_size,
+                                                       self.num_processes)
+                self.trainer.fit(self.internal, data, validation_data)
+                self.fitted = True
+                fit_out = read_csv('./forecaster_tmp_log/version_0/metrics.csv')
+                delete_folder("./forecaster_tmp_log")
+                return fit_out
 
     def predict(self, data, batch_size=32, quantize=False):
         """

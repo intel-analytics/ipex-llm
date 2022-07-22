@@ -363,3 +363,22 @@ class TestChronosNBeatsForecaster(TestCase):
             forecaster.load(ckpt_name)
             test_pred_load = forecaster.predict(test_data[0])
         np.testing.assert_almost_equal(test_pred_save, test_pred_load)
+
+    def test_nbeats_forecaster_fit_val(self):
+        train_data, val_data, _ = create_data()
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      stack_types=('generic', 'generic'),
+                                      nb_blocks_per_stack=3,
+                                      hidden_layer_units=256,
+                                      metrics=['mae'],
+                                      lr=0.01)
+        val_loss = forecaster.fit((train_data[0], train_data[1]), val_data, epochs=10)
+
+    def test_nbeats_forecaster_fit_loader_val(self):
+        train_loader, val_loader, _ = create_data(loader=True)
+        forecater = NBeatsForecaster(past_seq_len=24,
+                                     future_seq_len=5,
+                                     loss='mae',
+                                     lr=0.01)
+        val_loss = forecater.fit(train_loader, val_loader, epochs=10)
