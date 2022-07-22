@@ -822,8 +822,10 @@ class TSDataset:
                               "before transform a TSDataset to tf dataset!")
         data = tf.data.Dataset.from_tensor_slices((self.numpy_x, self.numpy_y))
         if shuffle:
-            data = data.shuffle(self.numpy_x.shape[0])
-        return data.cache().batch(batch_size).prefetch(tf.data.AUTOTUNE)
+            data = data.cache().shuffle(self.numpy_x.shape[0]).batch(batch_size)
+        else:
+            data = data.batch(batch_size).cache()
+        return data.prefetch(tf.data.AUTOTUNE)
 
     def to_numpy(self):
         '''
