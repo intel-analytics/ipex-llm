@@ -49,8 +49,10 @@ class TSDataset:
 
         self.numpy_x = None
         self.numpy_y = None
-        self.roll_feature = None
-        self.roll_target = None
+        self.lookback = None  # lookback stated by users if they called roll, to_torch_data_loader
+        self.horizon = None  # horizon stated by users if they called roll, to_torch_data_loader
+        self.roll_feature = None  # contains feature_col requested by roll/to_torch_data_loader
+        self.roll_target = None  # contains target_col requested by roll/to_torch_data_loader
         self.roll_feature_df = None
         self.roll_additional_feature = None
         self.scaler = None
@@ -603,20 +605,21 @@ class TSDataset:
         roll_feature_df = None if self.roll_feature_df is None \
             else self.roll_feature_df[additional_feature_col]
 
+        self.lookback, self.horizon = lookback, horizon
         # horizon_time is only for time_enc, the time_enc numpy ndarray won't have any
         # shape change when the dataset is for prediction.
-        horizon_time = horizon
+        horizon_time = self.horizon
         if is_predict:
-            horizon = 0
+            self.horizon = 0
 
-        if lookback == 'auto':
-            lookback = self.get_cycle_length('mode', top_k=3)
+        if self.lookback == 'auto':
+            self.lookback = self.get_cycle_length('mode', top_k=3)
         rolling_result = \
             self.df.groupby([self.id_col]) \
                 .apply(lambda df: roll_timeseries_dataframe(df=df,
                                                             roll_feature_df=roll_feature_df,
-                                                            lookback=lookback,
-                                                            horizon=horizon,
+                                                            lookback=self.lookback,
+                                                            horizon=self.horizon,
                                                             feature_col=feature_col,
                                                             target_col=target_col,
                                                             label_len=label_len))
@@ -764,20 +767,29 @@ class TSDataset:
 
             # set scaler index for unscale_numpy
             self.scaler_index = [self.target_col.index(t) for t in target_col]
+            self.lookback, self.horizon = lookback, horizon
 
-            if lookback == 'auto':
-                lookback = self.get_cycle_length('mode', top_k=3)
+            if self.lookback == 'auto':
+                self.lookback = self.get_cycle_length('mode', top_k=3)
+            invalidInputError(not self._has_generate_agg_feature,
+                              "Currently to_torch_data_loader does not support "
+                              "'gen_global_feature' and 'gen_rolling_feature' methods.")
             torch_dataset = RollDataset(self.df,
                                         dt_col=self.dt_col,
                                         freq=self._freq,
-                                        lookback=lookback,
-                                        horizon=horizon,
+                                        lookback=self.lookback,
+                                        horizon=self.horizon,
                                         feature_col=feature_col,
                                         target_col=target_col,
                                         id_col=self.id_col,
                                         time_enc=time_enc,
                                         label_len=label_len,
                                         is_predict=is_predict)
+            # TODO gen_rolling_feature and gen_global_feature will be support later
+            self.roll_target = target_col
+            self.roll_feature = feature_col
+
+            batch_size = 32 if batch_size is None else batch_size  # _pytorch_fashion_inference
             return DataLoader(torch_dataset,
                               batch_size=batch_size,
                               shuffle=shuffle)
