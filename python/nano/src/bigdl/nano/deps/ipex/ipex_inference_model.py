@@ -91,7 +91,9 @@ class PytorchIPEXJITModel(IPEXJITModel, AcceleratedLightningModule):
         '''
         AcceleratedLightningModule.__init__(self, None)
         IPEXJITModel.__init__(self, model, input_sample=input_sample,
-                              use_ipex=use_ipex, use_jit=use_jit, from_load=from_load)
+                              use_ipex=use_ipex, use_jit=use_jit,
+                              channels_last=channels_last,
+                              from_load=from_load)
 
     def on_forward_start(self, inputs):
         return inputs

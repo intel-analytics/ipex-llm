@@ -114,6 +114,8 @@ class Objective(object):
                 val_dataloaders=self.val_dataloaders,
                 datamodule=self.datamodule
             )
+        if self.val_dataloaders == None:
+            self.val_dataloaders = model.val_dataloader()
 
     def _post_train(self, model):
         pass
@@ -148,43 +150,35 @@ class Objective(object):
     def _auto_optimize(self, model, scores):
         Score = namedtuple("Score", self.target_metric)
         best_score = Score(*scores)
-        print(scores)
         model.eval()
-        #  workaround : Monkey patch
-        # val_dataloader = model.val_dataloader
-        # validation_step = model.validation_step
-        # validation_epoch_end = model.validation_epoch_end
+
+        # here we suppose nn.model is attached to plmodel by attribute "model"
         original_model = model.model
-        for optimization in ['openvino', 'onnxruntime']:
+        for optimization in ['openvino', 'onnxruntime', 'jit']:
             # may enable more optimizations later
             try:
-                optim_model = Trainer.trace(original_model, accelerator=optimization,
-                                            input_sample=self.input_sample)
+                if optimization == 'jit':
+                    optim_model = Trainer.trace(original_model, input_sample=self.input_sample,
+                                                accelerator=optimization,
+                                                use_ipex=True, channels_last=False)
+                else:
+                    optim_model = Trainer.trace(original_model, input_sample=self.input_sample,
+                                                accelerator=optimization)
             except Exception:
                 # some optimizations may fail, just skip and try next
                 continue
-            # from functools import partial
-            # optim_model.val_dataloader = partial(optim_model, val_dataloader)
-            # optim_model.validation_step = partial(optim_model, validation_step)
-            # optim_model.validation_epoch_end = partial(optim_model, validation_epoch_end) 
-            # print(optim_model.val_dataloader())
-            #  may need partial more func
             model.model = optim_model
-            model.eval()
-            self.searcher._validate(model)
+            self.searcher._validate(model, self.val_dataloaders)
             optim_score = []
             for metric in self.target_metric:
                 score = self.searcher.trainer.callback_metrics[metric].item()
                 optim_score.append(score)
-            print(optim_score)
             # compare optim_scores with original scores to find a similar
             # loss value with less latency
             optim_score = Score(*optim_score)
             usable = True
             for metric in self.target_metric:
                 if metric != "latency":
-                    # some bug for different direction like mse.
-                    # need more detailed design
                     if abs(getattr(optim_score, metric) - getattr(best_score, metric)) >= 0.005:
                         usable = False
                         break
@@ -220,7 +214,6 @@ class Objective(object):
                 scores.append(score)
         else:
             scores = self.searcher.trainer.callback_metrics[self.target_metric].item()
-        print("automize: ", self.auto_optimize)
         if self.auto_optimize:
             scores = self._auto_optimize(model, scores)
         self._post_train(model)
