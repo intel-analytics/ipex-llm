@@ -89,6 +89,16 @@ export PYTHONPATH=BigDL/python/dllib/src:BigDL/python/nano/src:BigDL/python/orca
 export PYTHONPATH=BigDL/python/dist/conf/spark-bigdl.conf:$PYTHONPATH
 ```
 
+- Install and add `tflibs` to `TF_LIBS_PATH`:
+```bash
+# Install bigdl-tf and bigdl-math
+pip install bigdl-tf bigdl-math
+
+# Configure TF_LIBS_PATH
+export TF_LIBS_PATH=$(python -c 'import site; print(site.getsitepackages()[0])')/bigdl/share/tflibs
+```
+
+
 The above environment variables should be available when running or debugging code in the IDE. When running applications in PyCharm, you can add runtime environment variables by clicking  __Run__ -> __Edit Configurations__; then in the __Run/Debug Configurations__ panel, you can add necessary environment variables to your applications.
 
 
@@ -97,7 +107,10 @@ The above environment variables should be available when running or debugging co
 Besides setting the environment variables mentioned above manually for Linux users, we also provide a solution to set them with a script:
 
 ```bash
-cd BigDL/python/orca
+# Install bigdl-tf and bigdl-math
+pip install bigdl-tf bigdl-math
+
+cd BigDL/python/friesian
 source dev/prepare_env.sh
 ```
 
