@@ -63,9 +63,9 @@ class ChannelsLastCallback(pl.Callback):
         try:
             pl_module.model = pl_module.model.to(memory_format=torch.channels_last)
         except Exception as e:
-            warning("Convert model to channels last failed," +
-                    "fall back to origin memory format." +
-                    f"Exception msg: {e}")
+            warning("Convert model to channels last failed,"
+                    + "fall back to origin memory format."
+                    + f"Exception msg: {e}")
             return super().setup(trainer, pl_module, stage)
         fn_old = getattr(pl_module, "on_before_batch_transfer")
         fn = batch_call(fn_old)
@@ -76,6 +76,7 @@ class ChannelsLastCallback(pl.Callback):
     def teardown(self, trainer, pl_module, stage: Optional[str] = None) -> None:
         """Undo the changes to pl_module at end of fit, validate, tests, or predict."""
         if hasattr(pl_module, "on_before_batch_transfer_origin"):
-            setattr(pl_module, "on_before_batch_transfer", pl_module.on_before_batch_transfer_origin)
+            setattr(pl_module, "on_before_batch_transfer",
+                    pl_module.on_before_batch_transfer_origin)
             delattr(pl_module, "on_before_batch_transfer_origin")
         return super().teardown(trainer, pl_module, stage)
