@@ -1,4 +1,4 @@
-name: Nano Unit Tests PyTorch
+name: Nano Unit Tests Basic
 
 # Controls when the action will run. 
 on:
@@ -78,6 +78,6 @@ jobs:
           source bigdl-nano-init
           bash python/nano/test/run-nano-basic-openvino-tests.sh
           source $CONDA/bin/deactivate
-          $CONDA/bin/conda remove -n openvino-pytorch --all
+          $CONDA/bin/conda remove -n openvino-basic --all
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
