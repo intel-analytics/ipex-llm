@@ -37,6 +37,7 @@ pip install ray==1.9.2
 pip install aiohttp==3.7.4 # dependencis introduced by ray, latest version has api changes
 pip install aioredis==1.3.1 # dependencis introduced by ray, latest version has api changes
 pip install pytest pyarrow pandas
+pip install bigdl-math bigdl-tf # dependecis introduced by bigdl-orca
 pip3 install torch==1.10.1+cpu torchvision==0.11.2+cpu torchaudio==0.10.1+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html
 ```
 
