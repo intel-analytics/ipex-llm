@@ -36,7 +36,7 @@ num_classes = 10
 batch_size = 32
 dataset_size = 256
 num_workers = 0
-data_dir = os.path.join(os.path.dirname(__file__), "../data")
+data_dir = os.path.join(os.path.dirname(__file__), "/root/cifar10")
 
 # Linear Model: 1 unit without bias, initialize to 1
 class LinearModel(nn.Module):
@@ -68,6 +68,24 @@ class TestPlugin(TestCase):
     def test_trainer_subprocess_plugin(self):
         pl_model = LightningModuleFromTorch(
             self.model, self.loss, self.optimizer,
+            metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
+        )
+        trainer = Trainer(num_processes=2, distributed_backend="subprocess",
+                          max_epochs=4)
+        trainer.fit(pl_model, self.data_loader, self.test_data_loader)
+        trainer.test(pl_model, self.test_data_loader)
+
+    def test_trainer_subprocess_sys_path(self):
+        """test whether child process can inherit parent process's sys.path"""
+        # add current directory to sys.path and
+        # import model from test_lightning.py which is in current directory
+        import sys
+        sys.path.append(os.path.dirname(__file__))
+        from test_lightning import ResNet18
+
+        model = ResNet18(pretrained=False, include_top=False, freeze=True)
+        pl_model = LightningModuleFromTorch(
+            model, self.loss, self.optimizer,
             metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
         )
         trainer = Trainer(num_processes=2, distributed_backend="subprocess",
