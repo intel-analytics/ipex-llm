@@ -203,12 +203,15 @@ if args.backend == "bigdl":
     orca_estimator = Estimator.from_torch(model=net,
                                           optimizer=optimizer,
                                           loss=bce_dice_loss,
-                                          backend="bigdl")
+                                          metrics=[],
+                                          config=config,
+                                          backend=args.backend)
 
-    orca_estimator.fit(data=train_loader, epochs=args.epochs, validation_data=val_loader)
+    orca_estimator.fit(data=train_loader_creator, batch_size=batch_size, epochs=args.epochs,
+                       validation_data=val_loader_creator)
 
-    res = orca_estimator.evaluate(data=test_loader)
-    print("Accuracy of the network on the test images: %s" % res)
+    res = orca_estimator.evaluate(data=test_loader_creator, batch_size=batch_size)
+    print("The test result: ", res)
 
 elif args.backend in ["ray", "spark"]:
     orca_estimator = Estimator.from_torch(model=model_creator,
