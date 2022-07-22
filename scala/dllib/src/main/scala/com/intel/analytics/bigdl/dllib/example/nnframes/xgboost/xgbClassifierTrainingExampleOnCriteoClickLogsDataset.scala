@@ -16,13 +16,13 @@
 
 package com.intel.analytics.bigdl.dllib.examples.nnframes.xgboost
 
-import ml.dmlc.xgboost4j.scala.spark.TrackerConf
 import com.intel.analytics.bigdl.dllib.NNContext
 import com.intel.analytics.bigdl.dllib.nnframes.XGBClassifier
+import ml.dmlc.xgboost4j.scala.spark.TrackerConf
 import org.apache.spark.ml.feature.{StringIndexer, VectorAssembler}
-import org.apache.spark.sql.types.{StructField, StructType, LongType}
-import org.apache.spark.sql.{SQLContext, SparkSession, Row}
-import org.apache.spark.SparkContext
+import org.apache.spark.sql.types.{LongType, StructField, StructType}
+import org.apache.spark.sql.{Row, SQLContext}
+import scopt.OptionParser
 
 /*
     The dataset is tab separated with the following schema:
@@ -31,7 +31,7 @@ import org.apache.spark.SparkContext
     We set missing value to -999.
     Categorical feature is in hexadecimal format and we convert them into long type.
 */
-class Task extends Serializable{
+class Task extends Serializable {
 
   val default_missing_value = "-999"
 
@@ -39,41 +39,60 @@ class Task extends Serializable{
     0 until row.length flatMap {
       case 0 => Some(row(0).toString)
       case i if row(i) == null => Some(default_missing_value)
-      case i => Some( (if (i < 14) row(i)
-        else java.lang.Long.parseLong(row(i).toString, 16)).toString )
+      case i => Some((if (i < 14) row(i)
+      else java.lang.Long.parseLong(row(i).toString, 16)).toString)
     } mkString " "
   }
 }
+
+case class Params(
+                   inputPath: String = "/host/data",
+                   modelSavePath: String = "/host/data/model",
+                   numThreads: Int = 2,
+                   numRound: Int = 100,
+                   maxDepth: Int = 2,
+                   numWorkers: Int = 1
+                 )
 
 object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
 
   val feature_nums = 39
 
   def main(args: Array[String]): Unit = {
-    if (args.length < 5) {
-      println("Usage: program input_path modelsave_path num_threads num_round max_depth")
-      sys.exit(1)
-    }
+    //    if (args.length < 5) {
+    //      println("Usage: program inputPath modelSavePath numThreads numRound maxDepth numWorkers")
+    //      sys.exit(1)
+    //    }
+    val tStart = System.nanoTime()
+
+    // parse params and set value
+
+    val params = parser.parse(args, new Params).get
+    val inputPath = params.inputPath // path to data
+    val modelSavePath = params.modelSavePath // save model to this path
+    val numThreads = params.numThreads // xgboost threads
+    val numRound = params.numRound //  train round
+    val maxDepth = params.maxDepth // tree max depth
+    val numWorkers = params.numWorkers //  Workers num
 
     val sc = NNContext.initNNContext()
     val spark = SQLContext.getOrCreate(sc)
     val task = new Task()
 
-    val input_path = args(0) // path to data
-    val modelsave_path = args(1) // save model to this path
-    val num_threads = args(2).toInt // xgboost threads
-    val num_round = args(3).toInt //  train round
-    val max_depth = args(4).toInt // tree max depth
 
     // read csv files to dataframe
     var df = spark.read.option("header", "false").
-      option("inferSchema", "true").option("delimiter", "\t").csv(input_path)
+      option("inferSchema", "true").option("delimiter", "\t").csv(inputPath)
+
+    val tBeforePreprocess = System.nanoTime()
+    var elapsed = (tBeforePreprocess - tStart) / 1000000000.0f // second
+    print("reading data time is " + elapsed + "s")
     // preprocess data
     val processedRdd = df.rdd.map(task.rowToLibsvm)
 
     // declare schema
     var structFieldArray = new Array[StructField](feature_nums + 1)
-    for(i <- 0 to feature_nums) {
+    for (i <- 0 to feature_nums) {
       structFieldArray(i) = StructField("_c" + i.toString, LongType, true)
     }
     var schema = new StructType(structFieldArray)
@@ -96,7 +115,7 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
     val labelTransformed = stringIndexer.transform(df).drop("_c0")
 
     var inputCols = new Array[String](feature_nums)
-    for(i <- 0 to feature_nums-1) {
+    for (i <- 0 to feature_nums - 1) {
       inputCols(i) = "_c" + (i + 1).toString
     }
 
@@ -108,6 +127,9 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
     // randomly split dataset to (train, eval1, eval2, test) in proportion 6:2:1:1
     val Array(train, eval1, eval2, test) = xgbInput.randomSplit(Array(0.6, 0.2, 0.1, 0.1))
 
+    val tBeforeTraining = System.nanoTime()
+    elapsed = (tBeforeTraining - tBeforePreprocess) / 1000000000.0f // second
+    print("preprocess time is " + elapsed + "s")
     // use scala tracker
     val xgbParam = Map("tracker_conf" -> TrackerConf(0L, "scala"),
       "eval_sets" -> Map("eval1" -> eval1, "eval2" -> eval2)
@@ -117,18 +139,51 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
     xgbClassifier.setFeaturesCol("features")
     xgbClassifier.setLabelCol("classIndex")
     xgbClassifier.setNumClass(2)
-    xgbClassifier.setNumWorkers(1)
-    xgbClassifier.setMaxDepth(max_depth)
-    xgbClassifier.setNthread(num_threads)
-    xgbClassifier.setNumRound(num_round)
+    xgbClassifier.setNumWorkers(numWorkers)
+    xgbClassifier.setMaxDepth(maxDepth)
+    xgbClassifier.setNthread(numThreads)
+    xgbClassifier.setNumRound(numRound)
     xgbClassifier.setTreeMethod("auto")
     xgbClassifier.setObjective("multi:softprob")
     xgbClassifier.setTimeoutRequestWorkers(180000L)
 
     // start training model
     val xgbClassificationModel = xgbClassifier.fit(train)
-    xgbClassificationModel.save(modelsave_path)
+    xgbClassificationModel.save(modelSavePath)
+
+    val tAfterTraining = System.nanoTime()
+    elapsed = (tAfterTraining - tBeforeTraining) / 1000000000.0f // second
+    print("training time is " + elapsed + "s")
 
     sc.stop()
+  }
+
+  val parser: OptionParser[Params] = new OptionParser[Params]("input xgboost config") {
+    opt[String]('i', "inputPath")
+      .text("data inputPath")
+      .action((v, p) => p.copy(inputPath = v))
+      .required()
+
+    opt[String]('s', "modelSavePath")
+      .text("savePath of model")
+      .action((v, p) => p.copy(modelSavePath = v))
+      .required()
+
+    opt[Int]('t', "numThreads")
+      .text("threads num")
+      .action((v, p) => p.copy(numThreads = v))
+
+    opt[Int]('r', "numRound")
+      .text("Round num")
+      .action((v, p) => p.copy(numRound = v))
+
+    opt[Int]('d', "maxDepth")
+      .text("maxDepth")
+      .action((v, p) => p.copy(maxDepth = v))
+
+    opt[Int]('w', "numWorkers")
+      .text("Workers num")
+      .action((v, p) => p.copy(numWorkers = v))
+
   }
 }
