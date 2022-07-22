@@ -143,10 +143,112 @@ https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/tpc-ds_with_sparksql_
 
 ### Run Trusted SimpleQuery
 <details><summary>Trusted SimpleQuery</summary>
+
+
+```
+bash bigdl-ppml-submit.sh \
+        --sgx-enabled false \
+        --master local[2] \
+        --driver-memory 32g \
+        --driver-cores 8 \
+        --executor-memory 32g \
+        --executor-cores 8 \
+        --num-executors 2 \
+        --name simplequery \
+        --verbose \
+        --class com.intel.analytics.bigdl.ppml.examples.SimpleQuerySparkExample \
+        --jars local://$SPARK_HOME/examples/jars/scopt_2.12-3.7.1.jar,local://$BIGDL_HOME/jars/bigdl-dllib-spark_3.1.2-2.1.0-SNAPSHOT.jar \
+        local://$BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar \
+        --inputPath /ppml/trusted-big-data-ml/work/data/ppml_e2e_demo/input_data/ \
+        --outputPath /ppml/trusted-big-data-ml/work/data/ppml_e2e_demo/input_data/people.csv.encrypted.decrypted1 \
+        --inputPartitionNum 8 \
+        --outputPartitionNum 8 \
+        --inputEncryptModeValue AES/CBC/PKCS5Padding \
+        --outputEncryptModeValue AES/CBC/PKCS5Padding \
+        --primaryKeyPath /ppml/trusted-big-data-ml/work/data/ppml_e2e_demo/key/ehsm_encrypted_primary_key \
+        --dataKeyPath /ppml/trusted-big-data-ml/work/data/ppml_e2e_demo/key/ehsm_encrypted_data_key \
+        --kmsType EHSMKeyManagementService \
+        --kmsServerIP kms_server_ip \
+        --kmsServerPort kms_server_port \
+        --ehsmAPPID appid \
+        --ehsmAPPKEY apikey
+```
+
+```
+bash bigdl-ppml-submit.sh \
+        --master local[2] \
+        --sgx-enabled true \
+        --sgx-log-level error \
+        --sgx-driver-memory 64g \
+        --sgx-driver-jvm-memory 12g \
+        --sgx-executor-memory 64g \
+        --sgx-executor-jvm-memory 12g \
+        --driver-memory 32g \
+        --driver-cores 8 \
+        --executor-memory 32g \
+        --executor-cores 8 \
+        --num-executors 2 \
+        --name simplequery \
+        --verbose \
+        --class com.intel.analytics.bigdl.ppml.examples.SimpleQuerySparkExample \
+        --jars local://$SPARK_HOME/examples/jars/scopt_2.12-3.7.1.jar,local://$BIGDL_HOME/jars/bigdl-dllib-spark_3.1.2-2.1.0-SNAPSHOT.jar \
+        local://$BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar \
+        --inputPath /ppml/trusted-big-data-ml/work/data/ppml_e2e_demo/input_data/ \
+        --outputPath /ppml/trusted-big-data-ml/work/data/ppml_e2e_demo/input_data/people.csv.encrypted.decrypted1 \
+        --inputPartitionNum 8 \
+        --outputPartitionNum 8 \
+        --inputEncryptModeValue AES/CBC/PKCS5Padding \
+        --outputEncryptModeValue AES/CBC/PKCS5Padding \
+        --primaryKeyPath /ppml/trusted-big-data-ml/work/data/ppml_e2e_demo/key/ehsm_encrypted_primary_key \
+        --dataKeyPath /ppml/trusted-big-data-ml/work/data/ppml_e2e_demo/key/ehsm_encrypted_data_key \
+        --kmsType EHSMKeyManagementService \
+        --kmsServerIP kms_server_ip \
+        --kmsServerPort kms_server_port \
+        --ehsmAPPID appid \
+        --ehsmAPPKEY apikey
+```
+
 ```
 bash bigdl-ppml-submit.sh \
         --master $RUNTIME_SPARK_MASTER \
         --deploy-mode client \
+        --sgx-enabled true \
+        --sgx-log-level error \
+        --sgx-driver-memory 64g \
+        --sgx-driver-jvm-memory 12g \
+        --sgx-executor-memory 64g \
+        --sgx-executor-jvm-memory 12g \
+        --driver-memory 32g \
+        --driver-cores 4 \
+        --executor-memory 32g \
+        --executor-cores 4 \
+        --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
+        --num-executors 2 \
+        --conf spark.cores.max=8 \
+        --name simplequery \
+        --verbose \
+        --class com.intel.analytics.bigdl.ppml.examples.SimpleQuerySparkExample \
+        --jars local://$SPARK_HOME/examples/jars/scopt_2.12-3.7.1.jar,local://$BIGDL_HOME/jars/bigdl-dllib-spark_3.1.2-2.1.0-SNAPSHOT.jar \
+        local://$BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar \
+        --inputPath /ppml/trusted-big-data-ml/work/data/ppml_e2e_demo/input_data/ \
+        --outputPath /ppml/trusted-big-data-ml/work/data/ppml_e2e_demo/input_data/people.csv.encrypted.decrypted1 \
+        --inputPartitionNum 8 \
+        --outputPartitionNum 8 \
+        --inputEncryptModeValue AES/CBC/PKCS5Padding \
+        --outputEncryptModeValue AES/CBC/PKCS5Padding \
+        --primaryKeyPath /ppml/trusted-big-data-ml/work/data/ppml_e2e_demo/key/ehsm_encrypted_primary_key \
+        --dataKeyPath /ppml/trusted-big-data-ml/work/data/ppml_e2e_demo/key/ehsm_encrypted_data_key \
+        --kmsType EHSMKeyManagementService \
+        --kmsServerIP kms_server_ip \
+        --kmsServerPort kms_server_port \
+        --ehsmAPPID appid \
+        --ehsmAPPKEY apikey
+```
+
+```
+bash bigdl-ppml-submit.sh \
+        --master $RUNTIME_SPARK_MASTER \
+        --deploy-mode cluster \
         --sgx-enabled true \
         --sgx-log-level error \
         --sgx-driver-memory 64g \
