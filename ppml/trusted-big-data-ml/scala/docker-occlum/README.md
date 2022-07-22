@@ -195,6 +195,17 @@ You can enlarge the configuration in [start-spark-local.sh](https://github.com/i
 -e SGX_KERNEL_HEAP=1GB \
 ```
 
+You can change the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+``` bash
+#start-spark-local.sh
+-i /host/data        // -i means inputpath of training data
+-s /host/data/model  // -s means savepath of model
+-t 2                 // -t means threads num
+-r 100               // -r means Round num
+-d 2                 // -d means maxdepth
+-w 1                 // -w means Workers num
+```
+
 Start run BigDL Spark XGBoost example:
 ```
 bash start-spark-local.sh xgboost
