@@ -70,7 +70,7 @@ class LatencyCallback(Callback):
         pl_module.log('latency', pl_module.time_avg)
 
     def on_validation_batch_start(self, trainer, pl_module, batch: Any,
-                                    batch_idx: int, dataloader_idx: int) -> None:
+                                  batch_idx: int, dataloader_idx: int) -> None:
         self.batch_latency = time.perf_counter()
 
     def on_validation_batch_end(self, trainer, pl_module, outputs, batch: Any,
@@ -82,7 +82,7 @@ class LatencyCallback(Callback):
 class CustomEvaluationLoop(EvaluationLoop):
     def __init__(self, verbose: bool = True) -> None:
         super().__init__()
-    
+
     def on_run_end(self):
         self.trainer._logger_connector.epoch_end_reached()
 

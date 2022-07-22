@@ -56,8 +56,8 @@ class Objective(object):
             Defaults to None.
         :param: pruning: bool (optional): whether to enable pruning.
             Defaults to False.
-        :param auto_optimize: Whether to automatically consider the model after 
-            inference acceleration in the search process. It will only take 
+        :param auto_optimize: Whether to automatically consider the model after
+            inference acceleration in the search process. It will only take
             effect if target_metric contains "latency". Default value is False.
         throw: ValueError: _description_
         """
@@ -74,7 +74,7 @@ class Objective(object):
             self.input_sample = input_sample
         else:
             self.auto_optimize = False
-        
+
         self.pruning = pruning
         self.fit_kwargs = fit_kwargs
 
@@ -111,9 +111,7 @@ class Objective(object):
                 val_dataloaders=self.val_dataloaders,
                 datamodule=self.datamodule
             )
-        if self.val_dataloaders == None:
-            self.val_dataloaders = model.val_dataloader()
-            
+
     def _post_train(self, model):
         pass
 
@@ -171,13 +169,13 @@ class Objective(object):
 
         if self.auto_optimize:
             Score = namedtuple("Score", self.target_metric)
-            original_scores = Score(*scores)
-            best_scores = original_scores
+            original_score = Score(*scores)
+            best_score = original_score
             #  workaround : Monkey patch
             val_dataloader = model.val_dataloader
             validation_step = model.validation_step
             validation_epoch_end = model.validation_epoch_end
-            for optimization in ['openvino', 'onnxruntime']: 
+            for optimization in ['openvino', 'onnxruntime']:
                 # may enable more optimizations later
                 try:
                     optim_model = Trainer.trace(model, accelerator=optimization,
@@ -192,26 +190,26 @@ class Objective(object):
                 #  may need partial more func
                 optim_model.eval()
                 self.searcher._validate(model, self.val_dataloaders)
-                optim_scores = []
+                optim_score = []
                 for metric in self.target_metric:
                     score = self.searcher.trainer.callback_metrics[metric].item()
-                    optim_scores.append(score)
-                
+                    optim_score.append(score)
+
                 # compare optim_scores and original scores, and try to find a similar
                 # loss value with less latency
-                optim_scores = Score(*optim_scores)
+                optim_score = Score(*optim_score)
                 usable = True
                 for metric in self.target_metric:
                     if metric != "latency":
-                        if abs(getattr(optim_scores, metric) - getattr(best_scores, metric)) >= 0.005:
+                        if abs(getattr(optim_score, metric) - getattr(best_score, metric)) >= 0.005:
                             usable = False
                             break
                     else:
-                        if optim_scores.latency > best_scores.latency:
+                        if optim_score.latency > best_score.latency:
                             usable = False
                             break
                 if usable:
-                    best_scores = optim_scores
-            scores = tuple(best_scores)
+                    best_score = optim_score
+            scores = tuple(best_score)
         self._post_train(model)
         return scores

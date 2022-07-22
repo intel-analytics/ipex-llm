@@ -68,7 +68,7 @@ class HPOSearcher:
         self.run_kwargs = None
         self.fit_kwargs = None
 
-    def _create_objective(self, model, target_metric, create_kwargs, auto_optimize, 
+    def _create_objective(self, model, target_metric, create_kwargs, auto_optimize,
                           input_sample, fit_kwargs):
         # target_metric = self._fix_target_metric(target_metric, search_kwargs)
         isprune = True if create_kwargs.get('pruner', None) else False
@@ -126,10 +126,11 @@ class HPOSearcher:
             defaults to False.
         :param target_metric: the object metric to optimize,
             defaults to None.
-        :param auto_optimize: Whether to automatically consider the model after 
-            inference acceleration in the search process. It will only take 
+        :param auto_optimize: Whether to automatically consider the model after
+            inference acceleration in the search process. It will only take
             effect if target_metric contains "latency". Default value is False.
-        :param input_sample: 
+        :param input_sample: A set of inputs for trace, defaults to None if you have
+            trace before or model is a LightningModule with any dataloader attached.
         :param return: the model with study meta info attached.
         """
         search_kwargs = kwargs or {}
