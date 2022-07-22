@@ -46,7 +46,7 @@ class Task extends Serializable {
 }
 
 case class Params(
-                   inputPath: String = "/host/data",
+                   trainingDataPath: String = "/host/data",
                    modelSavePath: String = "/host/data/model",
                    numThreads: Int = 2,
                    numRound: Int = 100,
@@ -59,16 +59,12 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
   val feature_nums = 39
 
   def main(args: Array[String]): Unit = {
-    //    if (args.length < 5) {
-    //      println("Usage: program inputPath modelSavePath numThreads numRound maxDepth numWorkers")
-    //      sys.exit(1)
-    //    }
     val tStart = System.nanoTime()
 
     // parse params and set value
 
     val params = parser.parse(args, new Params).get
-    val inputPath = params.inputPath // path to data
+    val trainingDataPath = params.trainingDataPath // path to data
     val modelSavePath = params.modelSavePath // save model to this path
     val numThreads = params.numThreads // xgboost threads
     val numRound = params.numRound //  train round
@@ -82,7 +78,7 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
 
     // read csv files to dataframe
     var df = spark.read.option("header", "false").
-      option("inferSchema", "true").option("delimiter", "\t").csv(inputPath)
+      option("inferSchema", "true").option("delimiter", "\t").csv(trainingDataPath)
 
     val tBeforePreprocess = System.nanoTime()
     var elapsed = (tBeforePreprocess - tStart) / 1000000000.0f // second
@@ -159,9 +155,9 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
   }
 
   val parser: OptionParser[Params] = new OptionParser[Params]("input xgboost config") {
-    opt[String]('i', "inputPath")
-      .text("data inputPath")
-      .action((v, p) => p.copy(inputPath = v))
+    opt[String]('i', "trainingDataPath")
+      .text("trainingData Path")
+      .action((v, p) => p.copy(trainingDataPath = v))
       .required()
 
     opt[String]('s', "modelSavePath")

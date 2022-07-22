@@ -333,7 +333,7 @@ run_spark_xgboost() {
                 --executor-memory 9G \
                 --driver-memory 2G \
                 /bin/jars/bigdl-dllib-spark_3.1.2-2.1.0-SNAPSHOT.jar \
-                -i "/host/data" -s "/host/data/model" -t 2 -r 100 -d 2 -w 1
+                -i /host/data -s /host/data/model -t 2 -r 100 -d 2 -w 1
 }
 
 
