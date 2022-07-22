@@ -197,7 +197,7 @@ Here we use **k8s client mode** and **PPML CLI** to run SimpleQuery. Check other
               --executor-cores 8 \
               --num-executors 2 \
               --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
-              --name spark-pi \
+              --name simplequery \
               --verbose \
               --class com.intel.analytics.bigdl.ppml.examples.SimpleQuerySparkExample \
               --jars local:///ppml/trusted-big-data-ml/spark-encrypt-io-0.3.0-SNAPSHOT.jar \
@@ -220,17 +220,13 @@ Here we use **k8s client mode** and **PPML CLI** to run SimpleQuery. Check other
 
   3. check runtime status: exit the container or open a new terminal
 
-      To check the logs of the Kubernetes job, run
-      ```
-      sudo kubectl logs $( sudo kubectl get pod | grep spark-pi-job | cut -d " " -f1 )
-      ```
       To check the logs of the Spark driver, run
       ```
-      sudo kubectl logs $( sudo kubectl get pod | grep "spark-pi-sgx.*-driver" -m 1 | cut -d " " -f1 )
+      sudo kubectl logs $( sudo kubectl get pod | grep "simplequery.*-driver" -m 1 | cut -d " " -f1 )
       ```
       To check the logs of an Spark executor, run
       ```
-      sudo kubectl logs $( sudo kubectl get pod | grep "spark-pi-.*-exec" -m 1 | cut -d " " -f1 )
+      sudo kubectl logs $( sudo kubectl get pod | grep "simplequery-.*-exec" -m 1 | cut -d " " -f1 )
       ```
   
   4. If you setup [PPML Monitoring](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/prepare_environment.md#optional-k8s-monitioring-setup), you can check PPML Dashboard to monitor the status in http://kubernetes_master_url:3000
