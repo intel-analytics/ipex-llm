@@ -176,7 +176,7 @@ Here we use **k8s client mode** and **PPML CLI** to run SimpleQuery. Check other
 
   1. enter the ppml container
       ```
-      docker exec -it ppml-spark-client bash
+      docker exec -it bigdl-ppml-client-k8s bash
       ```
   2. run simplequery on k8s client mode
       ```
