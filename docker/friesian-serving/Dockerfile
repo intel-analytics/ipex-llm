@@ -17,7 +17,7 @@
 
 ARG SPARK_VERSION=2.4.6
 ARG BIGDL_VERSION=2.1.0-SNAPSHOT
-s
+
 # stage.1 spark
 FROM ubuntu:20.04 as spark
 ARG SPARK_VERSION=2.4.6

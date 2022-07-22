@@ -144,10 +144,6 @@ public class RecommenderImpl {
         }
 
         overallContext.stop();
-//        TODO: for test
-//        int[] ids = {1, 2, 5};
-//        float[] probs = {0.1f, 0.2f, 0.5f};
-//        IDProbList idProbList = new IDProbList(ids, probs);
 
         return idProbList;
     }
