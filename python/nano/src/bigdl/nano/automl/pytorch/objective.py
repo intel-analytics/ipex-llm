@@ -147,32 +147,36 @@ class Objective(object):
 
     def _auto_optimize(self, model, scores):
         Score = namedtuple("Score", self.target_metric)
-        original_score = Score(*scores)
-        best_score = original_score
+        best_score = Score(*scores)
+        print(scores)
+        model.eval()
         #  workaround : Monkey patch
-        val_dataloader = model.val_dataloader
-        validation_step = model.validation_step
-        validation_epoch_end = model.validation_epoch_end
+        # val_dataloader = model.val_dataloader
+        # validation_step = model.validation_step
+        # validation_epoch_end = model.validation_epoch_end
+        original_model = model.model
         for optimization in ['openvino', 'onnxruntime']:
             # may enable more optimizations later
             try:
-                optim_model = Trainer.trace(model, accelerator=optimization,
+                optim_model = Trainer.trace(original_model, accelerator=optimization,
                                             input_sample=self.input_sample)
             except Exception:
                 # some optimizations may fail, just skip and try next
                 continue
-            from functools import partial
-            optim_model.val_dataloader = partial(optim_model, val_dataloader)
-            optim_model.validation_step = partial(optim_model, validation_step)
-            optim_model.validation_epoch_end = partial(optim_model, validation_epoch_end)
+            # from functools import partial
+            # optim_model.val_dataloader = partial(optim_model, val_dataloader)
+            # optim_model.validation_step = partial(optim_model, validation_step)
+            # optim_model.validation_epoch_end = partial(optim_model, validation_epoch_end) 
+            # print(optim_model.val_dataloader())
             #  may need partial more func
-            optim_model.eval()
-            self.searcher._validate(model, self.val_dataloaders)
+            model.model = optim_model
+            model.eval()
+            self.searcher._validate(model)
             optim_score = []
             for metric in self.target_metric:
                 score = self.searcher.trainer.callback_metrics[metric].item()
                 optim_score.append(score)
-
+            print(optim_score)
             # compare optim_scores with original scores to find a similar
             # loss value with less latency
             optim_score = Score(*optim_score)
@@ -216,7 +220,7 @@ class Objective(object):
                 scores.append(score)
         else:
             scores = self.searcher.trainer.callback_metrics[self.target_metric].item()
-
+        print("automize: ", self.auto_optimize)
         if self.auto_optimize:
             scores = self._auto_optimize(model, scores)
         self._post_train(model)

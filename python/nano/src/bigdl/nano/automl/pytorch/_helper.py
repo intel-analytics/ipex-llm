@@ -20,6 +20,7 @@ import time
 from bigdl.nano.pytorch.utils import LIGHTNING_VERSION_LESS_1_6
 from pytorch_lightning.callbacks import Callback
 from pytorch_lightning.loops.dataloader.evaluation_loop import EvaluationLoop
+from bigdl.nano.utils.log4Error import invalidInputError
 from collections import ChainMap
 from torchmetrics import Metric
 
@@ -81,7 +82,7 @@ class LatencyCallback(Callback):
 
 class CustomEvaluationLoop(EvaluationLoop):
     def __init__(self, verbose: bool = True) -> None:
-        super().__init__()
+        super().__init__(verbose=verbose)
 
     def on_run_end(self):
         self.trainer._logger_connector.epoch_end_reached()
@@ -108,7 +109,7 @@ class CustomEvaluationLoop(EvaluationLoop):
         self._on_evaluation_end()
 
         if self.verbose and self.trainer.is_global_zero:
-            assert self.trainer.state.stage is not None
+            invalidInputError(self.trainer.state.stage is not None, "stage is wrong")
             self._print_results(logged_outputs, self.trainer.state.stage)
 
         return logged_outputs
