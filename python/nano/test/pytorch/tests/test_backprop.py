@@ -22,6 +22,7 @@ import pytest
 import torch
 import torchmetrics
 from torch import nn
+import pytorch_lightning as pl
 from pytorch_lightning.callbacks import Callback
 from pytorch_lightning.utilities.types import STEP_OUTPUT
 from typing import Any

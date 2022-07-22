@@ -75,8 +75,11 @@ class CheckBatchSize(Callback):
         batch_idx: int,
         dataloader_idx: int,
     ) -> None:
-        elapsed_duration = float(trainer.current_epoch) / \
-            float(trainer.max_epochs)
+        if trainer.max_epochs is None:
+            raise ValueError('trainer.max_epochs is none, cannot get training progress')
+        else:
+            elapsed_duration = float(trainer.current_epoch) / \
+                float(trainer.max_epochs)
         if self.__should_selective_backprop(elapsed_duration, batch_idx, self.start, self.end,
                                             self.interrupt):
             current_batch_size = len(batch[1])
@@ -148,7 +151,8 @@ def main():
     data_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
     # get the loss function without reduction
     loss_fn = nn.CrossEntropyLoss(reduction='none')
-    # pass proper arguments to selective backprop
+    # pass proper arguments to selective backprop,
+    # note that loss_fn must be passed to it
     sb = SelectiveBackprop(start=0.5,
                            keep=0.5,
                            end=0.9,

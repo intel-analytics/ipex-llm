@@ -14,8 +14,9 @@
 # limitations under the License.
 #
 
-# This file is adapted from https://https://github.com/mosaicml/composer
-# /composer/composer/algorithms/selective_backprop/__init__.py
+# This file is adapted from https://github.com/mosaicml/composer
+# https://github.com/mosaicml/composer/
+# blob/dev/composer/algorithms/selective_backprop/selective_backprop.py
 
 # Copyright 2022 MosaicML Composer authors
 # SPDX-License-Identifier: Apache-2.0

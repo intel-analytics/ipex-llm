@@ -14,14 +14,16 @@
 # limitations under the License.
 #
 
-# This file is adapted from https://https://github.com/mosaicml/composer
-# /composer/composer/algorithms/selective_backprop/selective_backprop.py
+# This file is adapted from https://github.com/mosaicml/composer
+# https://github.com/mosaicml/composer/
+# blob/dev/composer/algorithms/selective_backprop/selective_backprop.py
 
 # Copyright 2022 MosaicML Composer authors
 # SPDX-License-Identifier: Apache-2.0
 """Core SelectiveBackprop class and functions."""
 
 from typing import Any, Callable, Tuple, Union
+import warnings
 import numpy as np
 import torch
 from torch.nn import functional as F
@@ -96,12 +98,10 @@ def select_using_loss(batch: Union[torch.Tensor, torch.Tensor],
         keep (float, optional): Fraction of examples in the batch to keep. Default: ``0.5``.
         scale_factor (float, optional): Multiplier between 0 and 1 for spatial size. Downsampling
             requires the input tensor to be at least 3D. Default: ``1``.
-        loss_fn (Callable, optional): Loss function of the form
+        loss_fn (Callable): Loss function of the form
             ``loss(outputs, targets, reduction='none')``.
             The function must take the keyword argument ``reduction='none'``
             to ensure that per-sample losses are returned.
-            If the module contains a ``training_step`` method which return per-sample losses,
-            then the ``loss_fn`` is optional.
 
     Returns
     -------
@@ -138,7 +138,7 @@ def select_using_loss(batch: Union[torch.Tensor, torch.Tensor],
 
         # Get per-examples losses
         if loss_fn is None:
-            losses = pl_module.training_step([input, target], batch_idx)
+            raise ValueError('loss_fn must be passed explicitly to the class.')
         else:
             losses = loss_fn(trainer.model(input), target)
 
@@ -157,7 +157,7 @@ def select_using_loss(batch: Union[torch.Tensor, torch.Tensor],
         probs = percs**((1.0 / keep) - 1.0)
         probs = probs / np.sum(probs)
         select_percs_idx = np.random.choice(N, n_select, replace=False, p=probs)
-        select_idx = sorted_idx[select_percs_idx]
+        select_idx = sorted_idx[torch.Tensor(select_percs_idx)]
 
     return input[select_idx], target[select_idx]
 
@@ -197,12 +197,10 @@ class SelectiveBackprop(Callback):
             Default: ``1.``.
         interrupt (int, optional): interrupt SB with a vanilla minibatch step every
             ``interrupt`` batches. Default: ``2``.
-        loss_fn (Callable, optional): Loss function of the form
+        loss_fn (Callable): Loss function of the form
             ``loss(outputs, targets, reduction='none')``.
             The function must take the keyword argument ``reduction='none'``
             to ensure that per-sample losses are returned.
-            If the module contains a ``training_step`` method which return per-sample losses,
-            then the ``loss_fn`` is optional.
 
     Example:
     -------
@@ -243,8 +241,6 @@ class SelectiveBackprop(Callback):
             ``loss(outputs, targets, reduction='none')``.
             The function must take the keyword argument ``reduction='none'``
             to ensure that per-sample losses are returned.
-            If the module contains a ``training_step`` method which return per-sample losses,
-            then the ``loss_fn`` is optional.
         """
         self.start = start
         self.end = end
@@ -258,8 +254,14 @@ class SelectiveBackprop(Callback):
         if not is_keep:
             return False
 
-        elapsed_duration = float(trainer.current_epoch) / \
-            float(trainer.max_epochs)
+        if trainer.max_epochs is None:
+            warnings.warn("Cannot get trainer.max_epochs information, \
+                selective_backprop's start and end control will not work. \
+                0.5 will be used as training progress forever.")
+            elapsed_duration = 0.5
+        else:
+            elapsed_duration = float(trainer.current_epoch) / \
+                float(trainer.max_epochs)
 
         is_chosen = should_selective_backprop(
             current_duration=float(elapsed_duration),
