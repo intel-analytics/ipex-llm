@@ -27,6 +27,9 @@ from pytorch_lightning.core.datamodule import LightningDataModule
 from bigdl.nano.pytorch.trainer import Trainer
 from bigdl.nano.automl.hpo.backend import create_pl_pruning_callback
 from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.pytorch.utils import LIGHTNING_VERSION_LESS_1_6
+from sklearn.metrics import SCORERS
+from ._helper import LatencyCallback
 import inspect
 import copy
 
@@ -142,6 +145,52 @@ class Objective(object):
                               "or `val_dataloaders` to `trainer.search(datamodule=...)`")
         return train_dataloaders, val_dataloaders, datamodule
 
+    def _auto_optimize(self, model, score):
+        Score = namedtuple("Score", self.target_metric)
+        original_score = Score(*scores)
+        best_score = original_score
+        #  workaround : Monkey patch
+        val_dataloader = model.val_dataloader
+        validation_step = model.validation_step
+        validation_epoch_end = model.validation_epoch_end
+        for optimization in ['openvino', 'onnxruntime']:
+            # may enable more optimizations later
+            try:
+                optim_model = Trainer.trace(model, accelerator=optimization,
+                                            input_sample=self.input_sample)
+            except Exception:
+                # some optimizations may fail, just skip and try next
+                continue
+            from functools import partial
+            optim_model.val_dataloader = partial(optim_model, val_dataloader)
+            optim_model.validation_step = partial(optim_model, validation_step)
+            optim_model.validation_epoch_end = partial(optim_model, validation_epoch_end)
+            #  may need partial more func
+            optim_model.eval()
+            self.searcher._validate(model, self.val_dataloaders)
+            optim_score = []
+            for metric in self.target_metric:
+                score = self.searcher.trainer.callback_metrics[metric].item()
+                optim_score.append(score)
+
+            # compare optim_scores with original scores to find a similar
+            # loss value with less latency
+            optim_score = Score(*optim_score)
+            usable = True
+            for metric in self.target_metric:
+                if metric != "latency":
+                    if abs(getattr(optim_score, metric) - getattr(best_score, metric)) >= 0.005:
+                        usable = False
+                        break
+                else:
+                    if optim_score.latency > best_score.latency:
+                        usable = False
+                        break
+            if usable:
+                best_score = optim_score
+        scores = tuple(best_score)
+        return scores
+
     def __call__(self, trial):
         """
         Execute Training and return target metric in each trial.
@@ -167,48 +216,6 @@ class Objective(object):
             scores = self.searcher.trainer.callback_metrics[self.target_metric].item()
 
         if self.auto_optimize:
-            Score = namedtuple("Score", self.target_metric)
-            original_score = Score(*scores)
-            best_score = original_score
-            #  workaround : Monkey patch
-            val_dataloader = model.val_dataloader
-            validation_step = model.validation_step
-            validation_epoch_end = model.validation_epoch_end
-            for optimization in ['openvino', 'onnxruntime']:
-                # may enable more optimizations later
-                try:
-                    optim_model = Trainer.trace(model, accelerator=optimization,
-                                                input_sample=self.input_sample)
-                except Exception:
-                    # some optimizations may fail, just skip and try next
-                    continue
-                from functools import partial
-                optim_model.val_dataloader = partial(optim_model, val_dataloader)
-                optim_model.validation_step = partial(optim_model, validation_step)
-                optim_model.validation_epoch_end = partial(optim_model, validation_epoch_end)
-                #  may need partial more func
-                optim_model.eval()
-                self.searcher._validate(model, self.val_dataloaders)
-                optim_score = []
-                for metric in self.target_metric:
-                    score = self.searcher.trainer.callback_metrics[metric].item()
-                    optim_score.append(score)
-
-                # compare optim_scores and original scores, and try to find a similar
-                # loss value with less latency
-                optim_score = Score(*optim_score)
-                usable = True
-                for metric in self.target_metric:
-                    if metric != "latency":
-                        if abs(getattr(optim_score, metric) - getattr(best_score, metric)) >= 0.005:
-                            usable = False
-                            break
-                    else:
-                        if optim_score.latency > best_score.latency:
-                            usable = False
-                            break
-                if usable:
-                    best_score = optim_score
-            scores = tuple(best_score)
+            scores = self._auto_optimize(model, scores)
         self._post_train(model)
         return scores
