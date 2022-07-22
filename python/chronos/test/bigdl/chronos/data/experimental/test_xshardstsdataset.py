@@ -245,6 +245,37 @@ class TestXShardsTSDataset(TestCase):
             tsdata.unscale()
             df_train_unscale = get_local_df(tsdata)
             assert_frame_equal(df_train_unscale, df)
+            
+    def test_xshardstsdataset_unscale_numpy(self):
+        from sklearn.preprocessing import  StandardScaler, MaxAbsScaler, MinMaxScaler, RobustScaler
+        scalers = [{0: StandardScaler(), 1: StandardScaler()}, 
+                   {0: MaxAbsScaler(), 1: MaxAbsScaler()},
+                   {0: MinMaxScaler(), 1: MinMaxScaler()},
+                   {0: RobustScaler(), 1: RobustScaler()}]
+        for scaler in scalers:
+            shards_multiple = read_csv(os.path.join(self.resource_path, "multiple.csv"))
+
+            tsdata = XShardsTSDataset.from_xshards(shards_multiple, dt_col="datetime",
+                                                   target_col="value",
+                                                   extra_feature_col=["extra feature"], id_col="id")
+
+            ori_tsdata = XShardsTSDataset.from_xshards(shards_multiple, dt_col="datetime",
+                                                   target_col="value",
+                                                   extra_feature_col=["extra feature"], id_col="id")
+            horizon = random.randint(1, 10)
+            lookback = random.randint(1, 20)
+            ori_tsdata.roll(horizon=horizon, lookback=lookback)
+            ori_arr_shards = ori_tsdata.to_xshards().collect()
+            ori_arr_shards = [arr['y'] for arr in ori_arr_shards]
+            ori_y = np.concatenate(ori_arr_shards, axis=0)
+            tsdata.scale(scaler)
+            tsdata.roll(horizon=horizon, lookback=lookback)
+
+            scale_arr = tsdata.to_xshards()
+            numpy_tsdata = tsdata.unscale_xshards(scale_arr, 'y')
+            numpy_tsdata = numpy_tsdata.collect()
+            y = np.concatenate(numpy_tsdata, axis=0)
+            assert_array_almost_equal(ori_y, y)
 
     def test_xshardstsdataset_impute(self):
         from tempfile import TemporaryDirectory
