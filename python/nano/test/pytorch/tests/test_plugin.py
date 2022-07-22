@@ -36,7 +36,7 @@ num_classes = 10
 batch_size = 32
 dataset_size = 256
 num_workers = 0
-data_dir = os.path.join(os.path.dirname(__file__), "/root/cifar10")
+data_dir = os.path.join(os.path.dirname(__file__), "../data")
 
 # Linear Model: 1 unit without bias, initialize to 1
 class LinearModel(nn.Module):
