@@ -23,6 +23,7 @@ import org.apache.spark.ml.feature.{StringIndexer, VectorAssembler}
 import org.apache.spark.sql.types.{LongType, StructField, StructType}
 import org.apache.spark.sql.{Row, SQLContext}
 import scopt.OptionParser
+import org.slf4j.{Logger, LoggerFactory}
 
 /*
     The dataset is tab separated with the following schema:
@@ -60,6 +61,8 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
 
   def main(args: Array[String]): Unit = {
     val tStart = System.nanoTime()
+    val log: Logger = LoggerFactory.getLogger(this.getClass)
+
 
     // parse params and set value
 
@@ -75,14 +78,13 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
     val spark = SQLContext.getOrCreate(sc)
     val task = new Task()
 
-
     // read csv files to dataframe
     var df = spark.read.option("header", "false").
       option("inferSchema", "true").option("delimiter", "\t").csv(trainingDataPath)
 
     val tBeforePreprocess = System.nanoTime()
     var elapsed = (tBeforePreprocess - tStart) / 1000000000.0f // second
-    print("reading data time is " + elapsed + "s")
+    log.info("--reading data time is " + elapsed + "s")
     // preprocess data
     val processedRdd = df.rdd.map(task.rowToLibsvm)
 
@@ -125,7 +127,7 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
 
     val tBeforeTraining = System.nanoTime()
     elapsed = (tBeforeTraining - tBeforePreprocess) / 1000000000.0f // second
-    print("preprocess time is " + elapsed + "s")
+    log.info("--preprocess time is " + elapsed + "s")
     // use scala tracker
     val xgbParam = Map("tracker_conf" -> TrackerConf(0L, "scala"),
       "eval_sets" -> Map("eval1" -> eval1, "eval2" -> eval2)
@@ -149,7 +151,7 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
 
     val tAfterTraining = System.nanoTime()
     elapsed = (tAfterTraining - tBeforeTraining) / 1000000000.0f // second
-    print("training time is " + elapsed + "s")
+    log.info("--training time is " + elapsed + "s")
 
     sc.stop()
   }
