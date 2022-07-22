@@ -139,11 +139,11 @@ The result should look something like this:
 In this section we take SimpleQuery as an example to go through the entire BigDL PPML end-to-end workflow. SimpleQuery is simple example to query developers between the ages of 20 and 40 from people.csv. 
 
 #### Step 0. Preparation your environment
-To secure your Big Data & AI applications in BigDL PPML manner, you should prepare your environment first, including K8s cluster setup, K8s-SGX plugin setup, key/password preparation, key management service (KMS) and attestation service (AS) setup, BigDL PPML client container preparation. **Please follow the detailed steps in** [Prepare Environment](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/prepare_environment.md). 
+To secure your Big Data & AI applications in BigDL PPML manner, you should prepare your environment first, including K8s cluster setup, K8s-SGX plugin setup, key/password preparation, key management service (KMS) and attestation service (AS) setup, BigDL PPML client container preparation. **Please follow the detailed steps in** [Prepare Environment](./docs/prepare_environment.md). 
 
 
 #### Step 1. Encrypt and Upload Data
-Encrypt the input data of your Big Data & AI applications (here we use SimpleQuery) and then upload encrypted data to the nfs server. More details in [Encrypt Your Data](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/services/kms-utils/docker/README.md#3-enroll-generate-key-encrypt-and-decrypt).
+Encrypt the input data of your Big Data & AI applications (here we use SimpleQuery) and then upload encrypted data to the nfs server. More details in [Encrypt Your Data](./services/kms-utils/docker/README.md#3-enroll-generate-key-encrypt-and-decrypt).
 
 1. Generate the input data `people.csv` for SimpleQuery application
 you can use [generate_people_csv.py](https://github.com/analytics-zoo/ppml-e2e-examples/blob/main/spark-encrypt-io/generate_people_csv.py). The usage command of the script is `python generate_people.py </save/path/of/people.csv> <num_lines>`.
@@ -185,10 +185,10 @@ When the Big Data & AI application and its input data is prepared, you are ready
 
 
 * **There are two options to submit PPML jobs**:
-    * use [PPML CLI](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/submit_job.md#ppml-cli) to submit jobs manually
-    * use [helm chart](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/submit_job.md#helm-chart) to submit jobs automatically
+    * use [PPML CLI](./docs/submit_job.md#ppml-cli) to submit jobs manually
+    * use [helm chart](./docs/submit_job.md#helm-chart) to submit jobs automatically
 
-Here we use **k8s client mode** and **PPML CLI** to run SimpleQuery. Check other modes, please see [PPML CLI Usage Examples](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/submit_job.md#usage-examples). Alternatively, you can also use Helm to submit jobs automatically, see the details in [Helm Chart Usage](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/submit_job.md#helm-chart).
+Here we use **k8s client mode** and **PPML CLI** to run SimpleQuery. Check other modes, please see [PPML CLI Usage Examples](./docs/submit_job.md#usage-examples). Alternatively, you can also use Helm to submit jobs automatically, see the details in [Helm Chart Usage](./docs/submit_job.md#helm-chart).
 
   <details><summary>expand to see details of submitting SimpleQuery</summary>
 
@@ -247,21 +247,21 @@ Here we use **k8s client mode** and **PPML CLI** to run SimpleQuery. Check other
       sudo kubectl logs $( sudo kubectl get pod | grep "simplequery-.*-exec" -m 1 | cut -d " " -f1 )
       ```
   
-  4. If you setup [PPML Monitoring](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/prepare_environment.md#optional-k8s-monitioring-setup), you can check PPML Dashboard to monitor the status in http://kubernetes_master_url:3000
+  4. If you setup [PPML Monitoring](docs/prepare_environment.md#optional-k8s-monitioring-setup), you can check PPML Dashboard to monitor the status in http://kubernetes_master_url:3000
     ![image](https://user-images.githubusercontent.com/61072813/179948818-a2f6844f-0009-49d1-aeac-2e8c5a7ef677.png)
 
   </details>
 <br />
 
 #### Step 4. Decrypt and Read Result
-When the job is done, you can decrypt and read result of the job. More details in [Decrypt Job Result](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/services/kms-utils/docker/README.md#3-enroll-generate-key-encrypt-and-decrypt).
+When the job is done, you can decrypt and read result of the job. More details in [Decrypt Job Result](./services/kms-utils/docker/README.md#3-enroll-generate-key-encrypt-and-decrypt).
 
   ```
   docker exec -i $KMSUTIL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh decrypt $appid $appkey $input_path"
   ```
 
 ### 3.3 More BigDL PPML Examples
-In addition to the above Spark Pi and Python HelloWorld programs running locally, and simplequery application running on the k8s cluster, we also provide other examples including Trusted Data Analysis, Trusted ML, Trusted DL and Trusted FL. You can find these examples in [more examples](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/examples.md). 
+In addition to the above Spark Pi and Python HelloWorld programs running locally, and simplequery application running on the k8s cluster, we also provide other examples including Trusted Data Analysis, Trusted ML, Trusted DL and Trusted FL. You can find these examples in [more examples](./docs/examples.md). 
 
 ## 4. Develop your own Big Data & AI applications with BigDL PPML
 
