@@ -54,7 +54,7 @@ def setup_package():
         url='https://github.com/intel-analytics/BigDL',
         packages=get_bigdl_packages(),
         # neural_compressor, prophet, openvino-dev
-        install_requires=['bigdl-orca=='+VERSION, 'bigdl-nano=='+VERSION,
+        install_requires=['bigdl-orca=='+VERSION, 'bigdl-nano[pytorch]=='+VERSION,
                           'pandas>=1.0.5, <1.3.0', 'scikit-learn>=0.22.0, <=1.0.2',
                           'onnx>=1.8.0, <=1.11.0', 'onnxruntime>=1.6.0, <=1.11.1'],
         extras_require={'all': ['bigdl-orca[automl]=='+VERSION]},
