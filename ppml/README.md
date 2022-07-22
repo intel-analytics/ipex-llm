@@ -49,13 +49,31 @@ In this section, you can get started with running a simple native python HelloWo
 
 <details><summary>Click to see detailed steps</summary>
 
-**a. Prepare [Keys](docs/prepare_environment.md#prepare-key-and-password) and Start the BigDL PPML client container**
+**a. Prepare Keys**
 
+* generate ssl_key
+
+  Download scripts from [here](https://github.com/intel-analytics/BigDL).
+
+  ```
+  cd BigDL/ppml/
+  sudo bash scripts/generate-keys.sh
+  ```
+  This script will generate keys under keys/ folder
+
+* generate enclave-key.pem
+
+  ```
+  openssl genrsa -3 -out enclave-key.pem 3072
+  ```
+  This script generates a file enclave-key.pem which is used to sign image.
+
+**b. Start the BigDL PPML client container**
 ```
 #!/bin/bash
 
-# ENCLAVE_KEY_PATH means the absolute path to the "enclave-key.pem"
-# KEYS_PATH means the absolute path to the keys
+# ENCLAVE_KEY_PATH means the absolute path to the "enclave-key.pem" in step a
+# KEYS_PATH means the absolute path to the keys folder in step a
 # LOCAL_IP means your local IP address.
 export ENCLAVE_KEY_PATH=YOUR_LOCAL_ENCLAVE_KEY_PATH
 export KEYS_PATH=YOUR_LOCAL_KEYS_PATH
@@ -74,7 +92,6 @@ sudo docker run -itd \
     --device=/dev/sgx/provision \
     -v $ENCLAVE_KEY_PATH:/graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
     -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
-    -v $DATA_PATH:/ppml/trusted-big-data-ml/work/data \
     -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
     --name=bigdl-ppml-client-local \
     -e LOCAL_IP=$LOCAL_IP \
@@ -82,7 +99,7 @@ sudo docker run -itd \
     $DOCKER_IMAGE bash
 ```
 
-**b. Run Python HelloWorld in BigDL PPML Client Container**
+**c. Run Python HelloWorld in BigDL PPML Client Container**
   
 Run the [script](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/start-scripts/start-python-helloworld-sgx.sh) to run trusted [Python HelloWorld](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/examples/helloworld.py) in BigDL PPML client container:
 ```
@@ -96,7 +113,7 @@ The result should look something like this:
 > Hello World
 
 
-**c. Run Spark Pi in BigDL PPML Client Container**
+**d. Run Spark Pi in BigDL PPML Client Container**
 
 Run the [script](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/start-scripts/start-spark-local-pi-sgx.sh) to run trusted [Spark Pi](https://github.com/apache/spark/blob/v3.1.2/examples/src/main/python/pi.py) in BigDL PPML client container:
 
@@ -115,6 +132,7 @@ The result should look something like this:
 > Pi is roughly 3.146760
 
 </details>
+<br />
 
 ### 3.2 BigDL PPML End-to-End Workflow
 ![image](https://user-images.githubusercontent.com/61072813/178393982-929548b9-1c4e-4809-a628-10fafad69628.png)
@@ -233,6 +251,7 @@ Here we use **k8s client mode** and **PPML CLI** to run SimpleQuery. Check other
     ![image](https://user-images.githubusercontent.com/61072813/179948818-a2f6844f-0009-49d1-aeac-2e8c5a7ef677.png)
 
   </details>
+<br />
 
 #### Step 4. Decrypt and Read Result
 When the job is done, you can decrypt and read result of the job. More details in [Decrypt Job Result](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/services/kms-utils/docker/README.md#3-enroll-generate-key-encrypt-and-decrypt).
