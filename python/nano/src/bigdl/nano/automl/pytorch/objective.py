@@ -145,7 +145,7 @@ class Objective(object):
                               "or `val_dataloaders` to `trainer.search(datamodule=...)`")
         return train_dataloaders, val_dataloaders, datamodule
 
-    def _auto_optimize(self, model, score):
+    def _auto_optimize(self, model, scores):
         Score = namedtuple("Score", self.target_metric)
         original_score = Score(*scores)
         best_score = original_score
@@ -179,6 +179,8 @@ class Objective(object):
             usable = True
             for metric in self.target_metric:
                 if metric != "latency":
+                    # some bug for different direction like mse.
+                    # need more detailed design
                     if abs(getattr(optim_score, metric) - getattr(best_score, metric)) >= 0.005:
                         usable = False
                         break
