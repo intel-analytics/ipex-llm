@@ -135,6 +135,7 @@ def check_transformer_data(x, y, x_enc, y_enc, data_config):
                       "y_enc input shape of {}.".format(data_config["future_seq_len"] +
                                                         data_config["label_len"], y_enc.shape[-2]))
 
+
 def np_to_dataloader(data, batch_size, num_processes):
     if batch_size % num_processes != 0:
         warnings.warn("'batch_size' cannot be divided with no remainder by "
@@ -161,6 +162,7 @@ def read_csv(filename):
 def delete_folder(path):
     import shutil
     shutil.rmtree(path)
+
 
 def is_main_process():
     return mp.current_process().name == "MainProcess"
