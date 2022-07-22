@@ -114,7 +114,7 @@ class Objective(object):
                 val_dataloaders=self.val_dataloaders,
                 datamodule=self.datamodule
             )
-        if self.val_dataloaders == None:
+        if self.val_dataloaders is None:
             self.val_dataloaders = model.val_dataloader()
 
     def _post_train(self, model):
