@@ -196,7 +196,8 @@ class BasePytorchForecaster(Forecaster):
         # reset train and validation datasets
         self.tune_trainer.reset_train_val_dataloaders(self.internal)
 
-    def fit(self, data, validation_data=None, epochs=1, batch_size=32, validation_mode='output'):
+    def fit(self, data, validation_data=None, epochs=1, batch_size=32, validation_mode='output',
+            earlystop_patience=1):
         # TODO: give an option to close validation during fit to save time.
         """
         Fit(Train) the forecaster.
@@ -250,7 +251,21 @@ class BasePytorchForecaster(Forecaster):
                batch_size setted in `data`.if the forecaster is distributed, the batch_size will be
                evenly distributed to all workers.
         :param validation_mode: Operation mode while having 'validation_data'. Defaults to 'output'.
-        :return: A dict that records the average validation loss of each epoch.
+               The validation_mode includes the following types:
+
+               | 1. output:
+               | If you choose 'output' for validation_mode, it will return a dict that records the
+               | average validation loss of each epoch.
+               |
+               | 2. earlystop:
+               | Monitor the val_loss and stop training when it stops improving.
+
+        :param earlystop_patience: Number of checks with no improvement after which training will
+               be stopped. It takes effect when 'validation_mode' is 'earlystop'. Under the default
+               configuration, one check happens after every training epoch. However, the frequency
+               of validation can be modified by setting various parameters on the Trainer, for
+               example check_val_every_n_epoch and val_check_interval.
+        :return: Validation loss if you input 'validation_data'.
         """
         # input transform
         if isinstance(data, TSDataset):
@@ -314,9 +329,12 @@ class BasePytorchForecaster(Forecaster):
             from pytorch_lightning.loggers import CSVLogger
             logger = False if validation_data is None else CSVLogger(".",
                                                                      name="forecaster_tmp_log")
+            from pytorch_lightning.callbacks import EarlyStopping
+            early_stopping = EarlyStopping('val/loss', patience=earlystop_patience)
+            callbacks = [early_stopping] if validation_mode == 'earlystop' else None
             # Trainer init
             self.trainer = Trainer(logger=logger, max_epochs=epochs,
-                                   checkpoint_callback=self.checkpoint_callback,
+                                   checkpoint_callback=self.checkpoint_callback, callbacks=callbacks,
                                    num_processes=self.num_processes, use_ipex=self.use_ipex,
                                    flush_logs_every_n_steps=10, log_every_n_steps=10,
                                    distributed_backend="spawn")
