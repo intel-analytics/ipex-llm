@@ -34,6 +34,8 @@ According to your network status, this building will cost **10-20 mins**. If bui
 
 **Tips:** When errors happen like `E: Package 'apt-utils' has no installation candidate`, it's usually related to the bad network status. Please build with a proxy.
 
+**Tips:** There are several installation modes. You can choose the mode according to your need and build with corresponding args like `--build-arg MODE=<yourmode>`. All modes and their meanings are listed at the end of this `README.md`.
+
 ## Run the image
 ```bash
 sudo docker run -it --rm --net=host chronos-args:b1 bash
@@ -56,8 +58,8 @@ You can run these on Jupyter Notebook on single node server if you pursue a quic
 After the Jupyter Notebook service is successfully started, you can connect to the Jupyter Notebook service from a browser.
 1. Get the IP address of the container
 2. Launch a browser, and connect to the Jupyter Notebook service with the URL: 
-<\br>`https://container-ip-address:port-number/?token=your-token`
-<\br>As a result, you will see the Jupyter Notebook opened.
+</br>`https://container-ip-address:port-number/?token=your-token`
+</br>As a result, you will see the Jupyter Notebook opened.
 3. Open one of these `.ipynb` files, run through the example and learn how to use Chronos to predict time series.
 
 ## Shut Down Docker Container
@@ -76,3 +78,9 @@ CONTAINER ID        IMAGE                                        COMMAND        
 ```bash
 sudo docker rm -f 40de2cdad025
 ```
+
+## All Installation Modes Available
+</br>default all pytorch-only pytorch-onnx pytorch-automl pytorch-dist pytorch-automl-dist tf-only tf-automl tf-dist tf-automl-dist automl-prophet
+
+
+
