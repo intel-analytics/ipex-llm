@@ -80,7 +80,7 @@ sudo docker rm -f 40de2cdad025
 ```
 
 ## All Installation Modes Available
-default all pytorch-only pytorch-onnx pytorch-automl pytorch-dist pytorch-automl-dist tf-only tf-automl tf-dist tf-automl-dist automl-prophet
+`default` `all` `pytorch-only` `pytorch-onnx` `pytorch-automl` `pytorch-dist` `pytorch-automl-dist` `tf-only` `tf-automl` `tf-dist` `tf-automl-dist` `automl-prophet`
 
 
 
