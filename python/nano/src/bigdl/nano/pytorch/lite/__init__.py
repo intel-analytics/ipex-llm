@@ -14,4 +14,4 @@
 # limitations under the License.
 #
 
-from .ray_distributed import RayStrategy
+from .lite import LightningLite

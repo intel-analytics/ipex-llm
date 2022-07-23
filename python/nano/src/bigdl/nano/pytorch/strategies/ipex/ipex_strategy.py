@@ -57,12 +57,12 @@ class IPEXStrategy(SingleDeviceStrategy):
 
         :param trainer: the trainer instance
         """
-        self.setup_precision_plugin()
-        self.setup_optimizers(trainer)
+        super().setup(trainer)
 
-        if len(self.optimizers) > 1:    # type: ignore
-            invalidInputError(False, "Ipex does not support more than one optimizers.")
         dtype = torch.bfloat16 if self.enable_bf16 else None
-        model, optimizer = ipex.optimize(self.model, optimizer=self.optimizers[0],  # type: ignore
-                                         inplace=True, dtype=dtype)
-        self.optimizers = [optimizer]
+        if len(self.optimizers) == 0:
+            ipex.optimize(self.model, inplace=True, dtype=dtype)
+        elif len(self.optimizers) == 1:
+            ipex.optimize(self.model, optimizer=self.optimizers[0], inplace=True, dtype=dtype)
+        else:
+            invalidInputError(False, "Ipex does not support more than one optimizers.")

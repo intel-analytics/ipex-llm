@@ -36,21 +36,9 @@ class Aggregator(object):
         self._lock = threading.Lock()
         logging.info(f"Initialized Tensorflow aggregator [client_num: {client_num}]")
 
-    # deprecated, use set_server_model for fully customized NN Model
-    def add_server_model(self, model):
-        with self._lock:
-            if self.model is not None:
-                logging.warn("model exists on server, the add model operation is skipped")
-            else:
-                self.model = model
-                self.init_loss_fn()
-                self.init_optimizer()
 
-    def set_server(self, model, loss_fn, optimizer):
-        with self._lock:
-            if model is not None:
-                logging.warn(f"This is Tensorflow Aggregator::set_server, \
-                    model should be None, but got {model}, please check.")
+    def set_meta(self, loss_fn, optimizer):
+        with self._lock:            
             self.set_loss_fn(loss_fn)
             optimizer_cls = pickle.loads(optimizer.cls)
             optimizer_args = pickle.loads(optimizer.args)
@@ -65,21 +53,6 @@ class Aggregator(object):
             return
         self.optimizer = optimizer_cls(**optimizer_args)
 
-    def set_server_model(self, model):
-        with self._lock:
-            if self.model is not None:
-                logging.warn("model exists on server, the add model operation is skipped")
-            self.model = model
-
-    def set_server_loss(self, loss_fn):
-        with self._lock:
-            self.set_loss_fn(loss_fn)
-
-    def set_server_optimizer(self, optimizer):
-        with self._lock:
-            optimizer_cls = pickle.loads(optimizer.cls)
-            optimizer_args = pickle.loads(optimizer.args)
-            self.set_optimizer(optimizer_cls, optimizer_args)
 
     def put_client_data(self, client_id, data):
         self.condition.acquire()

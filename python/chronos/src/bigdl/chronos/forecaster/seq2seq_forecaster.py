@@ -23,12 +23,15 @@ class Seq2SeqForecaster(BasePytorchForecaster):
     """
         Example:
             >>> #The dataset is split into x_train, x_val, x_test, y_train, y_val, y_test
+            >>> # 1. Initialize Forecaster directly
             >>> forecaster = Seq2SeqForecaster(past_seq_len=24,
                                                future_seq_len=2,
                                                input_feature_num=1,
                                                output_feature_num=1,
                                                ...)
-            >>> forecaster.fit((x_train, y_train))
+            >>> # 2. Initialize Forecaster from from_tsdataset
+            >>> forecaster = Seq2SeqForecaster.from_tsdataset(tsdata, ...)
+            >>> forecaster.fit(tsdata, ...)
             >>> forecaster.to_local()  # if you set distributed=True
             >>> test_pred = forecaster.predict(x_test)
             >>> test_eval = forecaster.evaluate((x_test, y_test))
