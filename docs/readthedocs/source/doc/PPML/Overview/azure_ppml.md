@@ -3,40 +3,40 @@
 ## 1. Introduction
 Protecting privacy and confidentiality is critical for large-scale data analysis and machine learning. BigDL ***PPML*** combines various low-level hardware and software security technologies (e.g., [Intel® Software Guard Extensions (Intel® SGX)](https://www.intel.com/content/www/us/en/architecture-and-technology/software-guard-extensions.html), [Library Operating System (LibOS)](https://events19.linuxfoundation.org/wp-content/uploads/2017/12/Library-OS-is-the-New-Container-Why-is-Library-OS-A-Better-Option-for-Compatibility-and-Sandboxing-Chia-Che-Tsai-UC-Berkeley.pdf) such as [Graphene](https://github.com/gramineproject/graphene) and [Occlum](https://github.com/occlum/occlum), [Federated Learning](https://en.wikipedia.org/wiki/Federated_learning), etc.), so that users can continue to apply standard Big Data and AI technologies (such as Apache Spark, Apache Flink, Tensorflow, PyTorch, etc.) without sacrificing privacy.
 
-Azure PPML solution integrate BigDL ***PPML*** technology with Azure Services(Azure Kubernetes Service, Azure Storage Account, Azure Key Vault, etc.) to faciliate Azure customer to create Big Data and AI applications while getting high privacy and confidentiality protection. 
+BigDL PPML on Azure solution integrate BigDL ***PPML*** technology with Azure Services(Azure Kubernetes Service, Azure Storage Account, Azure Key Vault, etc.) to faciliate Azure customer to create Big Data and AI applications while getting high privacy and confidentiality protection.
 
 ### Overall Architecture
-<img title="" src="../../../../../../image/ppml_azure_latest.png" alt="ppml_azure_lastest.png" data-align="center">
+![](../images/ppml_azure_latest.png)
 
 ### End-to-End Workflow
-<img title="" src="../../../../../../image/ppml_azure_workflow.png" alt="ppml_azure_workflow.png" data-align="center">
-
+![](../images/ppml_azure_workflow.png)
 
 ## 2. Setup
 ### 2.1 Install Azure CLI
-Before you setup your environment, please install Azure CLI on your machine according to [guide](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli).
+Before you setup your environment, please install Azure CLI on your machine according to [Azure CLI guide](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli).
 
 Then run `az login` to login to Azure system before you run following Azure commands.
 
-### 2.2 Create Azure VM with BigDL PPML image
+### 2.2 Create Azure VM for hosting BigDL PPML image
 #### 2.2.1 Create Resource Group
-Create resource group or use your existing resource group. Example code to create resource group with Azure CLI:
+On your machine, create resource group or use your existing resource group. Example code to create resource group with Azure CLI:
 ```
-region="eastus2"
 az group create \
     --name myResourceGroup \
-    --location $region \
+    --location myLocation \
     --output none
 ```
     
-#### 2.2.2 Create Linux client with sgx support
-Create Linux VM through Azure [CLI](https://docs.microsoft.com/en-us/azure/developer/javascript/tutorial/nodejs-virtual-machine-vm/create-linux-virtual-machine-azure-cli)/[Portal](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/quick-create-portal)/Powershell. Please choose East US 2 region.
-For size of the VM, please choose DC-Series VM with more than 4 vCPU cores.
+#### 2.2.2 Create Linux client with SGX support
+Create Linux VM through Azure [CLI](https://docs.microsoft.com/en-us/azure/developer/javascript/tutorial/nodejs-virtual-machine-vm/create-linux-virtual-machine-azure-cli)/[Portal](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/quick-create-portal)/Powershell.
+For size of the VM, please choose DC-V3 Series VM with more than 4 vCPU cores.
 
-#### 2.2.3 Pull BigDL PPML image and start
-* Login to the created VM, pull BigDL PPML image using such command:
+#### 2.2.3 Pull BigDL PPML image and run on Linux client
+* Go to Azure Marketplace, search "BigDL" and find "BigDL PPML". Click "Create" button which will lead you to `Subscribe` page.
+On `Subscribe` page, input your subscription, your Azure container registry, your resource group, location. Then click `Subscribe` to subscribe BigDL PPML to your container registry.
+* Login to the created VM. Then login to your Azure container registry, pull BigDL PPML image using such command:
 ```bash
-docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT
+docker pull myContainerRegistry/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT
 ```
 * Start container of this image
 ```bash
@@ -60,10 +60,10 @@ sudo docker run -itd \
     $DOCKER_IMAGE bash
 ```
 
-### 2.3 Create AKS(Azure Kubernetes Services)
-Create AKS or use existing one. 
+### 2.3 Create AKS(Azure Kubernetes Services) or use existing AKS
+Create AKS or use existing AKS with Intel SGX support.
 
-You can run `/ppml/trusted-big-data-ml/azure/create-aks.sh` to create AKS with confidential computing support.
+In your BigDL PPML container, you can run `/ppml/trusted-big-data-ml/azure/create-aks.sh` to create AKS with confidential computing support.
 
 Note: Please use same VNet information of your client to create AKS. And use DC-Series VM size(i.e.Standard_DC8ds_v3) to create AKS.
 ```bash
@@ -123,7 +123,7 @@ az storage account keys list -g MyResourceGroup -n myDataLakeAccount
 Use one of the keys in authentication.
 
 ## 2.5 Create Azure Key Vault
-### 2.5.1 Create or use an existing Azure key vault
+### 2.5.1 Create or use an existing Azure Key Vault
 Example command to create key vault
 ```bash
 az keyvault create -n myKeyVault -g myResourceGroup -l location
@@ -136,7 +136,7 @@ Take note of the following properties for use in the next section:
 * The Azure tenant ID that the subscription belongs to
 
 ### 2.5.2 Set access policy for the client VM
-* Login to the client VM, and get the system identity:
+* Run such command to get the system identity:
 ```bash
 az vm identity assign -g myResourceGroup -n myVM
 ```
@@ -155,9 +155,9 @@ Example command:
 az keyvault set-policy --name myKeyVault --object-id <mySystemAssignedIdentity> --secret-permissions all --key-permissions all --certificate-permissions all
 ```
 
-### 2.5.3 AKS access key vault
+### 2.5.3 AKS access Key Vault
 #### 2.5.3.1 Set access for AKS VM ScaleSet
-##### a. Find your VM ScaleSet in your AKS, and assign system managed identity to VM scale set.
+##### a. Find your VM ScaleSet in your AKS, and assign system managed identity to VM ScaleSet.
 ```bash
 az vm identity assign -g myResourceGroup -n myAKSVMSS
 ```
@@ -193,7 +193,7 @@ Be sure that a Secrets Store CSI Driver pod and an Azure Key Vault Provider pod 
 ```bash
 az aks update -g myResourceGroup -n myAKSCluster --enable-secret-rotation
 ```
-#### b. Provide an identity to access the Azure key vault
+#### b. Provide an identity to access the Azure Key Vault
 There are several ways to provide identity for Azure Key Vault Provider for Secrets Store CSI Driver to access Azure Key Vault: `An Azure Active Directory pod identity`, `user-assigned identity` or `system-assigned managed identity`. In our solution, we use user-assigned managed identity.
 * Enable managed identity in AKS
 ```bash
@@ -215,7 +215,7 @@ Example command:
 az keyvault set-policy -n myKeyVault --key-permissions get --spn f95519c1-3fe8-441b-a7b9-368d5e13b534
 az keyvault set-policy -n myKeyVault --secret-permissions get --spn f95519c1-3fe8-441b-a7b9-368d5e13b534
 ```
-#### c. Create a SecretProviderClass to access your key vault
+#### c. Create a SecretProviderClass to access your Key Vault
 On your client docker container, edit `/ppml/trusted-big-data-ml/azure/secretProviderClass.yaml` file, modify `<client-id>` to your user-assigned managed identity of Azure KeyVault Secrets Provider, and modify `<key-vault-name>` and  `<tenant-id>` to your real key vault name and tenant id.
 
 Then run:
@@ -262,6 +262,7 @@ Run such script to save kube config to secret
 kubectl create serviceaccount spark
 kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
 ```
+
 ### 3.6 Run PPML spark job
 The example script to run PPML spark job on AKS is as below. You can also refer to `/ppml/trusted-big-data-ml/azure/submit-spark-sgx-az.sh`
 ```bash
