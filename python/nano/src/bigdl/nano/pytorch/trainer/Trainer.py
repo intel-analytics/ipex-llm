@@ -348,7 +348,6 @@ class Trainer(pl.Trainer):
                             model,
                             input_sample=input_sample,
                             accelerator='onnxruntime',
-                            onnxruntime_session_options=onnxruntime_session_options,
                             **export_kwargs)
                 """
                 If accelerator==None, quantized model returned should be an object of PytorchModel
@@ -364,7 +363,8 @@ class Trainer(pl.Trainer):
                                     tuning_strategy=tuning_strategy,
                                     accuracy_criterion=accuracy_criterion,
                                     timeout=timeout,
-                                    max_trials=max_trials)
+                                    max_trials=max_trials,
+                                    onnxruntime_session_options=onnxruntime_session_options)
 
             elif accelerator == 'openvino':
                 model_type = type(model).__name__
