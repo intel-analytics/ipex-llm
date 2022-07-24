@@ -117,7 +117,7 @@ source dev/prepare_env.sh
 You can verify the BigDL environment by running the following example.
 
 ```bash
-python python/dllib/examples/autograd/custom.py
+python BigDL/python/dllib/examples/autograd/custom.py
 ```
 
 Note that this approach will only work temporarily for this terminal. 
