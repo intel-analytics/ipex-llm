@@ -1,5 +1,5 @@
 # How to use chronos in docker
-This dockerfile helps user to build a docker image where Chronos nightly build version is deploied.
+This dockerfile helps user to build a docker image where Chronos nightly build version with customized build modes is deploied.
 
 ## Build an image
 First clone the repo `BigDL` to the local.
