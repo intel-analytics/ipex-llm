@@ -37,6 +37,12 @@ bash build-docker-image.sh
       value: "512m"
     - name: SGX_MEM_SIZE
       value: "8GB"
+    - name: SGX_THREAD
+      value: "256"
+    - name: SGX_HEAP
+      value: "1GB"
+    - name: SGX_KERNEL_HEAP
+      value: "1GB"
 ```
 
 ```yaml
@@ -44,6 +50,12 @@ bash build-docker-image.sh
     env:
     - name: SGX_MEM_SIZE
       value: "8GB"
+    - name: SGX_THREAD
+      value: "256"
+    - name: SGX_HEAP
+      value: "1GB"
+    - name: SGX_KERNEL_HEAP
+      value: "1GB"
 ```
 
 ### Spark ML LogisticRegression example
