@@ -145,7 +145,7 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
         }
 
     def pre_dispatch(self):
-        """Hook to config optimizers before training starts"""
+        """Hook to config optimizers before training starts."""
         if not self.lightning_module.trainer.training or not self.scale_lr:
             return
 
