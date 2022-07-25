@@ -21,7 +21,9 @@ from abc import abstractmethod
 
 import torch
 from torch import nn
+from torch.nn.modules.loss import _Loss
 from torch.optim import Optimizer
+from torch.utils.data import DataLoader
 from pytorch_lightning.lite import LightningLite
 from pytorch_lightning.strategies import Strategy
 from pytorch_lightning.lite.wrappers import _LiteModule, _LiteOptimizer
@@ -33,10 +35,12 @@ from bigdl.nano.pytorch.strategies.ipex.ipex_api import ipex_optimize
 from bigdl.nano.pytorch.strategies import create_IPEXStrategy, DDPSpawnStrategy, \
     DDPSubprocessStrategy, create_RayStrategy
 
+from .wrapper import _LossFuncWrapper
 
-class NanoLite(LightningLite):
+
+class TorchNano(LightningLite):
     """
-    NanoLite for BigDL-Nano pytorch.
+    TorchNano for BigDL-Nano pytorch.
 
     It can be used to accelerate custom pytorch training loops with very few code changes.
     """
@@ -47,7 +51,7 @@ class NanoLite(LightningLite):
                  strategy: Union[str, Strategy] = "subprocess",
                  *args, **kwargs) -> None:
         """
-        Create a NanoLite with nano acceleration.
+        Create a TorchNano with nano acceleration.
 
         :param num_processes: number of processes in distributed training, defaults to 1
         :param use_ipex: whether use ipex acceleration, defaults to False
@@ -96,22 +100,13 @@ class NanoLite(LightningLite):
 
         setattr(self, "train", partial(self._run_impl, self.train))
 
-    def setup(
+    def _setup(
         self,
         model: nn.Module,
         *optimizers: Optimizer,
         move_to_device: bool = True,
     ) -> Any:
-        """
-        Setup a model and its optimizers for accelerated training.
-
-        :param model: A model to setup
-        :param *optimizers: The optimizer(s) to setup (no optimizers is also possible)
-        :param move_to_device: If set ``True`` (default), moves the model to the correct device.
-            Set this to ``False`` and alternatively use :meth:`to_device` manually.
-        :return: The tuple of the wrapped model and list of optimizers,
-            in the same order they were passed in.
-        """
+        """Used to replace LightningLite's setup method."""
         # LightningLite won't call `Strategy.setup()` method,
         # in which we add IPEX's optimization when using `trainer`.
 
@@ -150,14 +145,35 @@ class NanoLite(LightningLite):
             return [model] + optimizers  # type: ignore
         return model
 
+    def setup(self, model: nn.Module, optimizer: Optimizer,     # type: ignore[override]
+              loss_func: _Loss, *dataloaders: DataLoader, move_to_device: bool = True):
+        """
+        Setup model, optimizer, loss function and dataloaders for accelerated training.
+
+        :param model: A model to setup
+        :param optimizer: The optimizer to setup
+        :param loss_func: The loss function to setup
+        :param *dataloaders: The dataloader(s) to setup
+        :param move_to_device: If set ``True`` (default), moves the model to the correct device.
+            Set this to ``False`` and alternatively use :meth:`to_device` manually.
+        :return: The tuple of the wrapped model, optimizer, loss_func and dataloaders,
+            in the same order they were passed in.
+        """
+        model, optimizer = self._setup(model, optimizer, move_to_device=move_to_device)
+        dataloaders = self.setup_dataloaders(*dataloaders,  # type: ignore
+                                             move_to_device=move_to_device)
+        loss_func = _LossFuncWrapper(self, loss_func)
+        return model, optimizer, loss_func, dataloaders
+
     @abstractmethod
     def train(self, *args: Any, **kwargs: Any) -> Any:
         """
-        All the code inside this run method gets accelerated by Lite.
+        All the code inside this train method gets accelerated by TorchNano.
 
         You can pass arbitrary arguments to this function when overriding it.
         """
 
     def run(self, *args: Any, **kwargs: Any) -> Any:
+        """Only for compatibility, don't use it."""
         # this is a abstract method, so we must implement it
         pass
