@@ -18,7 +18,7 @@ import glob
 import shutil
 import urllib
 
-autodoc_mock_imports = ["openvino", "pytorch_lightning", "keras"]
+autodoc_mock_imports = ["openvino", "pytorch_lightning", "keras", "tensorflow"]
 
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, '.')
@@ -90,6 +90,8 @@ extensions = [
     'recommonmark',
     'sphinx_markdown_tables',
     'sphinx_tabs.tabs',
+    'sphinx_design',
+    'sphinx_external_toc',
 ]
 
 
@@ -152,6 +154,14 @@ html_static_path = ['_static']
 htmlhelp_basename = 'BigDL Documentation'
 
 
+
+# -- Options for external TOC tree ---
+external_toc_exclude_missing = False
+external_toc_path = "_toc.yml"
+
+
+suppress_warnings = ["etoc.toctree"]
+# this is to surpresswarnings about explicit "toctree" directives
 # -- Options for LaTeX output ------------------------------------------------
 
 latex_elements = {
