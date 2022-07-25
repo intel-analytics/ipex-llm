@@ -1,7 +1,6 @@
 format: jb-book
 root: index
 parts:
-  - caption: Overview
   - caption: Nano
     hidden: True
     chapters:
