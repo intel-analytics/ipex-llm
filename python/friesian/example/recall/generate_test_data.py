@@ -175,7 +175,7 @@ if __name__ == '__main__':
                         help='The length of the unique item header')
 
     parser.add_argument('--verbose', action='store_true',
-                        help='Print more detail information')
+                        help='Print more detailed information')
     parser.add_argument('--use_spark', action='store_true',
                         help='Use spark to generate vector embeddings')
 

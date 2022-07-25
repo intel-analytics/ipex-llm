@@ -1,10 +1,12 @@
-# Recall items by using faiss
-This example demonstrates how to use BigDL Friesian 
-to get the recalled items by using the retrieval algorithms provided by faiss.
+# Offline Recall with Faiss on Spark
+This example demonstrates how to use the retrieval algorithms provided by faiss 
+to perform the offline recall task efficiently on Spark. 
+
 
 ## Prepare the environment
 We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux) to prepare the environments, especially if you want to run on a yarn cluster (yarn-client mode only).
-Also Need to install faiss via conda to get reasonable performance on CPU, referring [faiss install](https://github.com/facebookresearch/faiss/blob/main/INSTALL.md).
+Faiss needs to be installed via conda to get promising performance on CPU. 
+Please refer to [faiss install](https://github.com/facebookresearch/faiss/blob/main/INSTALL.md) for more installation guidance. 
 
 ```
 conda create -n bigdl python=3.7  # "bigdl" is the conda environment name, you can use any name you like.
@@ -14,7 +16,11 @@ pip install --pre --upgrade bigdl-friesian
 ```
 
 ## Generate data
-You can generate some test data for testing, example command:
+You can generate some test data for testing. 
+The generated data will have a total of **row_nums** items, where each item is a **vec_dim** dimensional vector. 
+All the vectors will be saved as embeddings and used to 
+generate the index file for faiss. 
+Example command:
 ```bash
 python generate_test_data.py \
     --row_nums 200000 \
@@ -28,12 +34,25 @@ python generate_test_data.py \
     --parquet_path /path/to/save/vector/embeddings/in/parquet/
 ```
 
+__Options for generate_test_data:__
+* `row_nums`: The number of vectors to be generated. Default to be 200000.
+* `vec_dim`: The dimension of vector. Default to be 256.
+* `use_spark`: Use spark to generate vector embeddings, saving to parquet file. Default to be False.
+* `verbose`: Print more detail information. Default to be False.
+* `index_type`: The faiss index_type: FlatL2 or IVFFlatL2. Default to be FlatL2.
+* `emb_path`: The path to save vector embeddings. Default to be ./emb_vecs.pkl.
+* `dict_path`: The path to save item_dict. Default to be ./item_dict.pkl.
+* `index_save_path`: The path to save faiss index data. Default to be ./index_FlatL2.pkl.
+* `parquet_path`: The path to save vector embeddings with spark, only work when use_spark is True. Default to be ./data.parquet/.
+
+__NOTE:__ 
+The file paths (like '*emb_path*') can be used directly as the corresponding input parameters for the next *search.py*.
+
 ## Retrieving items
 * Spark local, example command:
 ```bash
 python search.py \
-    --num_threads 8 \
-    --num_repartition 4 \
+    --num_threads 32 \
     --cluster_mode local \
     --top_k 100 \
     --batch_size 50000 \
@@ -46,8 +65,7 @@ python search.py \
 * Spark spark-submit, example command:
 ```bash
 python search.py \
-    --num_threads 8 \
-    --num_repartition 4 \
+    --num_threads 32 \
     --cluster_mode spark-submit \
     --top_k 100 \
     --batch_size 50000 \
@@ -61,11 +79,9 @@ python search.py \
 ```bash
 python search.py \
     --num_threads 8 \
-    --num_repartition 12 \
     --cluster_mode yarn \
-    --num_nodes 4 \
-    --executor_cores 8 \
-    --executor_memory 50g \
+    --num_tasks 4 \
+    --memory 50g \
     --top_k 100 \
     --batch_size 50000 \
     --dict_path /path/to/the/folder/of/item_dict \
@@ -74,27 +90,18 @@ python search.py \
     --parquet_output_path /path/to/the/folder/to/save/retrieval/results 
 ```
 
-__Options for generate_test_data:__
-* `row_nums`: The number of vectors to be generated. Default to be 200000.
-* `vec_dim`: The dimension of vector. Default to be 256.
-* `use_spark`: Use spark to generate vector embeddings, saving to parquet file. Default to be False.
-* `verbose`: Print more detail information. Default to be False.
-* `index_type`: The faiss index_type: FlatL2 or IVFFlatL2. Default to be FlatL2.
-* `emb_path`: The path to save vector embeddings. Default to be ./emb_vecs.pkl.
-* `dict_path`: The path to save item_dict. Default to be ./item_dict.pkl.
-* `index_save_path`: The path to save faiss index data. Default to be ./index_FlatL2.pkl.
-* `parquet_path`: The path to save vector embeddings with spark, only work when use_spark is True. Default to be ./data.parquet/.
-
 __Options for search:__
 * `num_threads`: Set the environment variable OMP_NUM_THREADS for each faiss task. Default to be 8.
-* `num_repartition`: The number of repartition. Default to be 12.
 * `cluster_mode`: The cluster mode, one of local, spark-submit or yarn. Default to be local.
-* `num_nodes`: The number of nodes to use in the cluster. Default to be 4.
-* `executor_cores`: The number of cores to use on each node. Default to be 8.
-* `executor_memory`: The amount of memory to allocate on each node. Default to be 50g.
+* `num_tasks`: The number of nodes to use in the cluster. Default to be 4.
+* `memory`: The amount of memory to allocate on each node. Default to be 50g.
 * `top_k`: The number of items to be searched for each query item. Default to be 100.
 * `batch_size`: The batch size for each faiss task. Default to be 50000.
 * `dict_path`: The path to item_dict.pkl. Default to be ./item_dict.pkl.
 * `faiss_index_path`: The path to faiss index data. Default to be ./index_FlatL2.pkl.
 * `parquet_path`: The Path to input parquet data (query items). Default to be ./data.parquet. 
 * `parquet_output_path`: The path to save output parquet date (search results). Default to be ./similarity_search_L2.parquet.
+
+__NOTE:__
+When the *cluster_mode* is yarn, *dict_path*, *faiss_index_path*,
+*parquet_path* and *parquet_output_path* can be HDFS paths. 
