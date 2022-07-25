@@ -112,3 +112,19 @@ class CustomEvaluationLoop(EvaluationLoop):
             self._print_results(logged_outputs, self.trainer.state.stage)
 
         return logged_outputs
+
+
+def _remove_metric_prefix(metric):
+    """Format the string metric to remove prefix."""
+    if isinstance(metric, (list, tuple)):
+        metrics = []
+        for target_metric in metric:
+            if target_metric == "latency":
+                metrics.append(target_metric)
+            else:
+                metrics.append(_remove_metric_prefix(target_metric))
+        return metrics
+    if isinstance(metric, str):
+        if '/' in metric:
+            metric = metric.split('/')[-1]
+        return metric

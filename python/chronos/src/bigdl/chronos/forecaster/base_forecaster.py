@@ -120,10 +120,13 @@ class BasePytorchForecaster(Forecaster):
              validation_data,
              target_metric,
              direction,
+             directions=None,
              n_trials=2,
              n_parallels=1,
              epochs=1,
              batch_size=32,
+             auto_optimize=False,
+             input_sample=None,
              **kwargs):
         """
         Search the hyper parameter.
@@ -141,6 +144,7 @@ class BasePytorchForecaster(Forecaster):
                For more information, refer to Nano AutoML user guide.
         :param epochs: the number of epochs to run in each trial fit, defaults to 1
         :param batch_size: number of batch size for each trial fit, defaults to 32
+        to add !
         """
         invalidInputError(not self.distributed,
                           "HPO is not supported in distributed mode."
@@ -174,31 +178,29 @@ class BasePytorchForecaster(Forecaster):
         # build auto model
         self.tune_internal = self._build_automodel(data, validation_data, batch_size, epochs)
 
-        from pytorch_lightning.callbacks import Callback
-
-        # reset current epoch = 0 after each run
-        class ResetCallback(Callback):
-            def on_train_end(self, trainer, pl_module):
-                trainer.fit_loop.current_epoch = 0
-
         # shall we use the same trainier
         self.tune_trainer = Trainer(logger=False, max_epochs=epochs,
                                     checkpoint_callback=self.checkpoint_callback,
                                     num_processes=self.num_processes, use_ipex=self.use_ipex,
-                                    use_hpo=True,
-                                    callbacks=[ResetCallback()] if self.num_processes == 1
-                                    else None)
+                                    use_hpo=True)
+
         # run hyper parameter search
         self.internal = self.tune_trainer.search(
             self.tune_internal,
             n_trials=n_trials,
             target_metric=formated_target_metric,
             direction=direction,
+            directions=directions,
             n_parallels=n_parallels,
+            auto_optimize=auto_optimize,
+            input_sample=input_sample,
             **kwargs)
-
-        # reset train and validation datasets
-        self.tune_trainer.reset_train_val_dataloaders(self.internal)
+        
+        if self.tune_trainer.hposearcher.objective.mo_hpo:
+            return self.internal
+        else:
+            # reset train and validation datasets
+            self.tune_trainer.reset_train_val_dataloaders(self.internal)
 
     def fit(self, data, validation_data=None, epochs=1, batch_size=32, validation_mode='output',
             earlystop_patience=1):

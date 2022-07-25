@@ -16,7 +16,7 @@
 
 from collections import namedtuple
 from pickletools import optimize
-from typing import Optional, Union
+from typing import Optional, Tuple, Union
 
 import pytorch_lightning as pl
 
@@ -29,7 +29,7 @@ from bigdl.nano.pytorch.trainer import Trainer
 from bigdl.nano.automl.hpo.backend import create_pl_pruning_callback
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch.utils import LIGHTNING_VERSION_LESS_1_6
-from ._helper import LatencyCallback
+from ._helper import LatencyCallback, _remove_metric_prefix, _is_list_or_tuple
 import inspect
 import copy
 
@@ -67,7 +67,8 @@ class Objective(object):
         self.searcher = searcher
         self.model_ = model
         self.target_metric = target_metric
-        self.mo_hpo = isinstance(self.target_metric, list) and len(self.target_metric) > 1
+        self.mo_hpo = isinstance(target_metric, (list, tuple)) \
+            and len(self.target_metric) > 1
         # add automatic support for latency
         if self.mo_hpo and "latency" in self.target_metric:
             callbacks = self.searcher.trainer.callbacks or []
@@ -148,13 +149,16 @@ class Objective(object):
         return train_dataloaders, val_dataloaders, datamodule
 
     def _auto_optimize(self, model, scores):
-        Score = namedtuple("Score", self.target_metric)
+        # for compatibility with metric of Chronos, remove the prefix before '/'
+        format_target_metric = _remove_metric_prefix(self.target_metric)
+        Score = namedtuple("Score", format_target_metric)
         best_score = Score(*scores)
         optim_model_type = "original"
         model.eval()
 
         # here we suppose nn.model is attached to plmodel by attribute "model"
         original_model = model.model
+        # may define a default_range later
         for optimization in ['openvino', 'onnxruntime', 'jit']:
             # may enable more optimizations later
             try:
@@ -178,7 +182,7 @@ class Objective(object):
             # Here, we use usable to represent whether the optimized model can get smaller latency
             # with other performance indicators basically unchanged
             usable = True
-            for metric in self.target_metric:
+            for metric in format_target_metric:
                 if metric != "latency":
                     if abs(getattr(optim_score, metric) - getattr(best_score, metric)) >= \
                             0.01 * getattr(best_score, metric):

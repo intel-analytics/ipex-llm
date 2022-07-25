@@ -57,6 +57,11 @@ class IPEXJITModel:
         if self.use_jit:
             self.model = torch.jit.trace(self.model, input_sample)
             self.model = torch.jit.freeze(self.model)
+    
+    @property
+    def forward_args(self):
+        return [input_value.debugName() for input_value in self.model.graph.inputs() 
+                if not input_value.debugName().startswith('self')]
 
     def forward_step(self, *inputs):
         if self.channels_last:
