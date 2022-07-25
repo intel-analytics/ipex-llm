@@ -159,9 +159,9 @@ htmlhelp_basename = 'BigDL Documentation'
 external_toc_exclude_missing = False
 external_toc_path = "_toc.yml"
 
-
-suppress_warnings = ["etoc.toctree"]
 # this is to surpresswarnings about explicit "toctree" directives
+suppress_warnings = ["etoc.toctree"]
+
 # -- Options for LaTeX output ------------------------------------------------
 
 latex_elements = {
