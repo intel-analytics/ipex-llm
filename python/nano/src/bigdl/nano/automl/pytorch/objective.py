@@ -29,7 +29,7 @@ from bigdl.nano.pytorch.trainer import Trainer
 from bigdl.nano.automl.hpo.backend import create_pl_pruning_callback
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch.utils import LIGHTNING_VERSION_LESS_1_6
-from ._helper import LatencyCallback, _remove_metric_prefix, _is_list_or_tuple
+from ._helper import LatencyCallback, _remove_metric_prefix
 import inspect
 import copy
 
@@ -46,7 +46,7 @@ class Objective(object):
                  model=None,
                  target_metric=None,
                  pruning=False,
-                 auto_optimize=False,
+                 acceleration=False,
                  input_sample=None,
                  **fit_kwargs):
         """
@@ -59,7 +59,7 @@ class Objective(object):
             Defaults to None.
         :param: pruning: bool (optional): whether to enable pruning.
             Defaults to False.
-        :param auto_optimize: Whether to automatically consider the model after
+        :param acceleration: Whether to automatically consider the model after
             inference acceleration in the search process. It will only take
             effect if target_metric contains "latency". Default value is False.
         throw: ValueError: _description_
@@ -74,10 +74,10 @@ class Objective(object):
             callbacks = self.searcher.trainer.callbacks or []
             callbacks.append(LatencyCallback())
             self.searcher.trainer.callbacks = callbacks
-            self.auto_optimize = auto_optimize
+            self.acceleration = acceleration
             self.input_sample = input_sample
         else:
-            self.auto_optimize = False
+            self.acceleration = False
 
         self.pruning = pruning
         self.fit_kwargs = fit_kwargs
@@ -148,7 +148,7 @@ class Objective(object):
                               "or `val_dataloaders` to `trainer.search(datamodule=...)`")
         return train_dataloaders, val_dataloaders, datamodule
 
-    def _auto_optimize(self, model, scores):
+    def _auto_acceleration(self, model, scores):
         # for compatibility with metric of Chronos, remove the prefix before '/'
         format_target_metric = _remove_metric_prefix(self.target_metric)
         Score = namedtuple("Score", format_target_metric)
@@ -221,8 +221,8 @@ class Objective(object):
                 scores.append(score)
         else:
             scores = self.searcher.trainer.callback_metrics[self.target_metric].item()
-        if self.auto_optimize:
-            scores, optimization = self._auto_optimize(model, scores)
+        if self.acceleration:
+            scores, optimization = self._auto_acceleration(model, scores)
             # via user_attr returns the choosed optimization corresponding
             # to the minimum latency
             trial.set_user_attr("optimization", optimization)

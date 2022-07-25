@@ -125,7 +125,7 @@ class BasePytorchForecaster(Forecaster):
              n_parallels=1,
              epochs=1,
              batch_size=32,
-             auto_optimize=False,
+             acceleration=False,
              input_sample=None,
              **kwargs):
         """
@@ -144,7 +144,11 @@ class BasePytorchForecaster(Forecaster):
                For more information, refer to Nano AutoML user guide.
         :param epochs: the number of epochs to run in each trial fit, defaults to 1
         :param batch_size: number of batch size for each trial fit, defaults to 32
-        to add !
+        :param acceleration: Whether to automatically consider the model after
+            inference acceleration in the search process. It will only take
+            effect if target_metric contains "latency". Default value is False.
+        :param input_sample: A set of inputs for trace, defaults to None if you have
+            trace before or model is a LightningModule with any dataloader attached.
         """
         invalidInputError(not self.distributed,
                           "HPO is not supported in distributed mode."
@@ -192,7 +196,7 @@ class BasePytorchForecaster(Forecaster):
             direction=direction,
             directions=directions,
             n_parallels=n_parallels,
-            auto_optimize=auto_optimize,
+            acceleration=acceleration,
             input_sample=input_sample,
             **kwargs)
         

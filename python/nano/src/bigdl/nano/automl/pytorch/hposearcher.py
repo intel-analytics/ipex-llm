@@ -69,7 +69,7 @@ class HPOSearcher:
         self.run_kwargs = None
         self.fit_kwargs = None
 
-    def _create_objective(self, model, target_metric, create_kwargs, auto_optimize,
+    def _create_objective(self, model, target_metric, create_kwargs, acceleration,
                           input_sample, fit_kwargs):
         # target_metric = self._fix_target_metric(target_metric, search_kwargs)
         isprune = True if create_kwargs.get('pruner', None) else False
@@ -78,7 +78,7 @@ class HPOSearcher:
             model=model._model_build,
             target_metric=target_metric,
             pruning=isprune,
-            auto_optimize=auto_optimize,
+            acceleration=acceleration,
             input_sample=input_sample,
             **fit_kwargs,
         )
@@ -116,7 +116,7 @@ class HPOSearcher:
                resume=False,
                target_metric=None,
                n_parallels=1,
-               auto_optimize=False,
+               acceleration=False,
                input_sample=None,
                **kwargs):
         """
@@ -127,7 +127,7 @@ class HPOSearcher:
             defaults to False.
         :param target_metric: the object metric to optimize,
             defaults to None.
-        :param auto_optimize: Whether to automatically consider the model after
+        :param acceleration: Whether to automatically consider the model after
             inference acceleration in the search process. It will only take
             effect if target_metric contains "latency". Default value is False.
         :param input_sample: A set of inputs for trace, defaults to None if you have
@@ -162,7 +162,7 @@ class HPOSearcher:
             self.study = _create_study(resume, self.create_kwargs, self.backend)
 
         if self.objective is None:
-            self._create_objective(model, self.target_metric, self.create_kwargs, auto_optimize,
+            self._create_objective(model, self.target_metric, self.create_kwargs, acceleration,
                                    input_sample, self.fit_kwargs)
 
         if n_parallels and n_parallels > 1:

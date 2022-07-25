@@ -203,7 +203,7 @@ class Trainer(pl.Trainer):
                resume: bool = False,
                target_metric=None,
                n_parallels=1,
-               auto_optimize=False,
+               acceleration=False,
                input_sample=None,
                **kwargs):
         """
@@ -215,7 +215,7 @@ class Trainer(pl.Trainer):
         :param target_metric: the object metric to optimize,
             defaults to None.
         :param n_parallels: the number of parallel processes for running trials.
-        :param auto_optimize: Whether to automatically consider the model after
+        :param acceleration: Whether to automatically consider the model after
             inference acceleration in the search process. It will only take
             effect if target_metric contains "latency". Default value is False.
         :param input_sample: A set of inputs for trace, defaults to None if you have
@@ -230,7 +230,7 @@ class Trainer(pl.Trainer):
                                        resume=resume,
                                        target_metric=target_metric,
                                        n_parallels=n_parallels,
-                                       auto_optimize=auto_optimize,
+                                       acceleration=acceleration,
                                        input_sample=input_sample,
                                        **kwargs)
 
