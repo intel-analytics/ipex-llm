@@ -57,8 +57,31 @@ def create_data(loader=False):
         test_data = tuple(map(lambda x: x.astype(np.float32), test_data))
         return train_data, val_data, test_data
 
+
+def create_tsdataset():
+    from bigdl.chronos.data import TSDataset
+    import pandas as pd
+    timeserious = pd.date_range(start='2020-01-01', freq='s', periods=1000)
+    df = pd.DataFrame(np.random.rand(1000, 2),
+                      columns=['value1', 'value2'],
+                      index=timeserious,
+                      dtype=np.float32)
+    df.reset_index(inplace=True)
+    df.rename(columns={'index': 'timeserious'}, inplace=True)
+    train, _, test = TSDataset.from_pandas(df=df,
+                                           dt_col='timeserious',
+                                           target_col=['value1', 'value2'],
+                                           with_split=True)
+    for tsdata in [train, test]:
+        tsdata.roll(lookback=24,
+                    horizon=5,
+                    time_enc=True,
+                    label_len=12)
+    return train, test
+
+
 class TestChronosModelAutoformerForecaster(TestCase):
-    
+
     def setUp(self):
         pass
 

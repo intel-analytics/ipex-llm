@@ -24,8 +24,9 @@ import pytorch_lightning.lite as lite
 from pytorch_lightning.strategies import Strategy
 from pytorch_lightning.lite.wrappers import _LiteModule, _LiteOptimizer
 
+from bigdl.nano.common import check_avx512
 from bigdl.nano.utils.log4Error import invalidInputError
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11
 from bigdl.nano.pytorch.strategies.ipex.ipex_api import ipex_optimize
 from bigdl.nano.pytorch.strategies import create_IPEXStrategy, DDPSpawnStrategy, \
     DDPSubprocessStrategy, create_RayStrategy
@@ -60,6 +61,12 @@ class LightningLite(lite.LightningLite):
         self.num_processes = num_processes
         self.use_ipex = use_ipex
         self.enable_bf16 = enable_bf16
+
+        if TORCH_VERSION_LESS_1_11 and use_ipex and not check_avx512():
+            warning("Enable ipex<=1.10 in a cpu instruction set"
+                    " without avx512 will crash."
+                    "Fall back to regular pytorch.")
+            self.use_ipex = False
 
         if self.num_processes == 1:
             if self.use_ipex:

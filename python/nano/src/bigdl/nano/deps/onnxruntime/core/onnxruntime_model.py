@@ -33,9 +33,13 @@ class ONNXRuntimeModel:
         invalidInputError(len(self._forward_args) >= len(inputs), "The length of inputs is "
                           "inconsistent with the length of ONNX Runtime session's inputs, "
                           "there may be some redundant inputs.")
-        inputs = dict(zip(self._forward_args, inputs))
+        inputs = dict(zip(self.forward_args, inputs))
         ort_outs = self.ortsess.run(None, inputs)
         return ort_outs
+
+    @property
+    def forward_args(self):
+        return self._forward_args
 
     def _build_ortsess(self,
                        sess_options=None):
