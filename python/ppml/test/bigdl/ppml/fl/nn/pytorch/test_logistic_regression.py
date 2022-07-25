@@ -31,6 +31,8 @@ import logging
 from bigdl.ppml.fl.estimator import Estimator
 from bigdl.ppml.fl.utils import FLTest
 from typing import List
+from torch.testing._internal.jit_utils import clear_class_registry
+
 
 resource_path = os.path.join(os.path.dirname(__file__), "../../resources")
 
@@ -71,6 +73,7 @@ class TestLogisticRegression(FLTest):
         self.fl_server.set_port(self.port)
         self.fl_server.build() 
         self.fl_server.start()
+        clear_class_registry()
 
     def tearDown(self) -> None:
         self.fl_server.stop()
