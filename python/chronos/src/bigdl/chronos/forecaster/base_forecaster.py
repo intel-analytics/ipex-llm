@@ -250,8 +250,8 @@ class BasePytorchForecaster(Forecaster):
                If you input a pytorch dataloader for `data`, the batch_size will follow the
                batch_size setted in `data`.if the forecaster is distributed, the batch_size will be
                evenly distributed to all workers.
-        :param validation_mode: Operation mode while having 'validation_data'. Defaults to 'output'.
-               The validation_mode includes the following types:
+        :param validation_mode:  A str represent the operation mode while having 'validation_data'.
+               Defaults to 'output'. The validation_mode includes the following types:
 
                | 1. output:
                | If you choose 'output' for validation_mode, it will return a dict that records the
