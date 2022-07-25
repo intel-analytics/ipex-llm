@@ -262,10 +262,8 @@ class BasePytorchForecaster(Forecaster):
 
         :param earlystop_patience: Number of checks with no improvement after which training will
                be stopped. It takes effect when 'validation_mode' is 'earlystop'. Under the default
-               configuration, one check happens after every training epoch. However, the frequency
-               of validation can be modified by setting various parameters on the Trainer, for
-               example check_val_every_n_epoch and val_check_interval.
-        :return: Validation loss if you input 'validation_data'.
+               configuration, one check happens after every training epoch.
+        :return: Validation loss if 'validation_data' is not None.
         """
         # input transform
         if isinstance(data, TSDataset):
