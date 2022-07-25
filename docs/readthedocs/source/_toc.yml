@@ -1,12 +1,8 @@
-root: intro
-subtrees:
-- entries:
-  - file: doc1
-    subtrees:
-    - entries:
-      - file: doc2
-        subtrees:
-        - entries:
-          - file: doc3
-  - url: https://example.com
-  - glob: subfolder/other*
+format: jb-book
+root: index
+parts:
+  - caption: Overview
+    chapters:
+      - file: doc/Nano/Overview/nano
+      - file: doc/Nano/Overview/known_issues
+      - file: doc/Nano/Overview/windows_guide
