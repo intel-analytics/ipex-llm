@@ -2,7 +2,6 @@ root: index
 subtrees:
   - caption: Nano
     hidden: True
-    maxdepth: 4
     entries:
       - file: doc/Nano/Overview/nano
       - file: doc/Nano/Overview/windows_guide
@@ -16,18 +15,23 @@ subtrees:
 
   - caption: Orca
     hidden: True
-    maxdepth: 4
     entries:
       - file: doc/Orca/Overview/orca
+        title: "Orca User Guide"
       - file: doc/Orca/Overview/orca-context
       - file: doc/Orca/Overview/data-parallel-processing
       - file: doc/Orca/Overview/distributed-training-inference
       - file: doc/Orca/Overview/distributed-tuning
       - file: doc/Ray/Overview/ray
       - file: doc/Orca/Overview/known_issues
+      entries:
+        - file: doc/Orca/QuickStart/orca-pytorch-distributed-quickstart
+        - file: doc/UseCase/spark-dataframe
+        - file: doc/UseCase/xshards-pandas
+        - file: doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart
+        - file: doc/Orca/QuickStart/orca-autoxgboost-quickstart
 
   - caption: DLlib
-    maxdepth: 1
     entries:
       - file: doc/DLlib/Overview/dllib
       - file: doc/DLlib/Overview/keras-api
@@ -37,8 +41,8 @@ subtrees:
     entries:
       - file: doc/Chronos/Overview/chronos
       - file: doc/Chronos/Overview/deep_dive
-      - file: doc/Chronos/QuickStart/index.md
-      - file: doc/Chronos/Overview/chronos_known_issue.md
+      - file: doc/Chronos/QuickStart/index
+      - file: doc/Chronos/Overview/chronos_known_issue
 
 
   - caption: PPML
