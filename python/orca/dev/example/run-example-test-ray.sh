@@ -175,6 +175,7 @@ fi
 
 start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/brainMRI/brainMRI.py
+python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/brainMRI/brainMRI.py --backend=bigdl
 now=$(date "+%s")
 time14=$((now-start))
 
