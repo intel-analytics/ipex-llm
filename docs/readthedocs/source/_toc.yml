@@ -3,6 +3,7 @@ root: index
 parts:
   - caption: Nano
     hidden: True
+    maxdepth: 1
     chapters:
       - file: doc/Nano/Overview/nano
       - file: doc/Nano/Overview/windows_guide
@@ -16,6 +17,7 @@ parts:
 
   - caption: Orca
     hidden: True
+    maxdepth: 1
     chapters:
       - file: doc/Orca/Overview/orca
       - file: doc/Orca/Overview/orca-context
@@ -26,6 +28,7 @@ parts:
       - file: doc/Orca/Overview/known_issues
 
   - caption: DLlib
+    maxdepth: 1
     chapters:
       - file: doc/DLlib/Overview/dllib
       - file: doc/DLlib/Overview/keras-api
