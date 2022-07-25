@@ -219,7 +219,7 @@ class Objective(object):
             scores = self.searcher.trainer.callback_metrics[self.target_metric].item()
         if self.auto_optimize:
             scores, optimization = self._auto_optimize(model, scores)
-            # via user_attr returns the choosed optimization corresponding 
+            # via user_attr returns the choosed optimization corresponding
             # to the minimum latency
             trial.set_user_attr("optimization", optimization)
         self._post_train(model)
