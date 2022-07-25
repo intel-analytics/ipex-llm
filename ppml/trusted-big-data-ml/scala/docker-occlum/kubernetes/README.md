@@ -34,8 +34,14 @@ bash build-docker-image.sh
 #driver.yaml
     env:
     - name: DRIVER_MEMORY
-      value: "500m"
+      value: "512m"
     - name: SGX_MEM_SIZE
+      value: "8GB"
+    - name: SGX_THREAD
+      value: "256"
+    - name: SGX_HEAP
+      value: "1GB"
+    - name: SGX_KERNEL_HEAP
       value: "1GB"
 ```
 
@@ -43,6 +49,12 @@ bash build-docker-image.sh
 #executor.yaml
     env:
     - name: SGX_MEM_SIZE
+      value: "8GB"
+    - name: SGX_THREAD
+      value: "256"
+    - name: SGX_HEAP
+      value: "1GB"
+    - name: SGX_KERNEL_HEAP
       value: "1GB"
 ```
 
@@ -134,7 +146,7 @@ Add these configurations to [script](https://github.com/intel-analytics/BigDL/bl
 Change the `parameters` to:
 
 ```commandline
-/host/data/xgboost_data /host/data/xgboost_criteo_model 32 100 10
+-i /host/data/xgboost_data -s /host/data/xgboost_criteo_model -t 32 -r 100 -d 10 -w 2
 ```
 
 Then:
@@ -144,16 +156,17 @@ Then:
 ```
 Parameters:
 
-* path_to_Criteo_data : String.
+* -i means inputpath_to_Criteo_data : String.
 
     For example, yout host path to Criteo dateset is `/tmp/xgboost_data/criteo` then this parameter in `run_spark_xgboost.sh` is `/host/data/xgboost_data`.
-* path_to_model_to_be_saved : String.
+* -s means savepath_to_model_to_be_saved : String.
 
     After training, you can find xgboost model in folder `/tmp/path_to_model_to_be_saved`.
 
-* num_threads : Int
-* num_round : Int
-* max_depth: Int. Tree max depth.
+* -t means num_threads : Int
+* -r means num_round : Int
+* -d means max_depth: Int.
+* -w means num_workers: Int.
 
 **Note: make sure num_threads is larger than spark.task.cpus.**
 

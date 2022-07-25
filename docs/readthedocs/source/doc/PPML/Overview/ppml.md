@@ -130,10 +130,10 @@ Enter `BigDL/ppml/trusted-big-data-ml/python/docker-graphene` dir.
 
 ##### 2.2.2.2 Run Your Spark Program with BigDL PPML on SGX
 
-To run your pyspark program, you need to prepare your own pyspark program and put it under the trusted directory in SGX  `/ppml/trusted-big-data-ml/work`. Then run with `ppml-spark-submit.sh` using the command:
+To run your pyspark program, you need to prepare your own pyspark program and put it under the trusted directory in SGX  `/ppml/trusted-big-data-ml/work`. Then run with `bigdl-ppml-submit.sh` using the command:
 
 ```bash
-./ppml-spark-submit.sh work/YOUR_PROMGRAM.py | tee YOUR_PROGRAM-sgx.log
+./bigdl-ppml-submit.sh work/YOUR_PROMGRAM.py | tee YOUR_PROGRAM-sgx.log
 ```
 
 When the program finishes, check the results with the log `YOUR_PROGRAM-sgx.log`.
@@ -427,10 +427,10 @@ Enter `BigDL/ppml/trusted-big-data-ml/python/docker-graphene` directory.
 
 ##### 2.3.2.2 Run Your Pyspark Program with BigDL PPML on SGX
 
-To run your pyspark program, you need to prepare your own pyspark program and put it under the trusted directory in SGX  `/ppml/trusted-big-data-ml/work`. Then run with `ppml-spark-submit.sh` using the command:
+To run your pyspark program, you need to prepare your own pyspark program and put it under the trusted directory in SGX  `/ppml/trusted-big-data-ml/work`. Then run with `bigdl-ppml-submit.sh` using the command:
 
 ```bash
-./ppml-spark-submit.sh work/YOUR_PROMGRAM.py | tee YOUR_PROGRAM-sgx.log
+./bigdl-ppml-submit.sh work/YOUR_PROMGRAM.py | tee YOUR_PROGRAM-sgx.log
 ```
 
 When the program finishes, check the results with the log `YOUR_PROGRAM-sgx.log`.

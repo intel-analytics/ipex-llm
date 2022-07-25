@@ -16,14 +16,18 @@
 
 package com.intel.analytics.bigdl.ppml.crypto.dataframe
 
+import com.intel.analytics.bigdl.dllib.utils.LoggerFilter
 import com.intel.analytics.bigdl.ppml.PPMLContext
-import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, DECRYPT, ENCRYPT, PLAIN_TEXT}
+import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, CryptoCodec, DECRYPT, ENCRYPT, PLAIN_TEXT}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.SparkSession
 
 import java.io.{File, FileWriter}
 
 class EncryptDataFrameSpec extends DataFrameHelper {
+  LoggerFilter.redirectSparkInfoLogs()
+
+  val (plainFileName, encryptFileName, data, dataKeyPlaintext) = generateCsvData()
 
   val ppmlArgs = Map(
       "spark.bigdl.kms.simple.id" -> appid,
@@ -155,7 +159,7 @@ class EncryptDataFrameSpec extends DataFrameHelper {
   "encrypt/Decrypt BigFile" should "work" in {
     val bigFile = dir + "/big_file.csv"
     val outFile = dir + "/plain_big_file.csv"
-    val enFile = dir + "/en_big_file.csv"
+    val enFile = dir + "/en_big_file.csv" + CryptoCodec.getDefaultExtension()
     val fw = new FileWriter(bigFile)
     val genNum = 40000000
     (0 until genNum).foreach {i =>
@@ -172,6 +176,28 @@ class EncryptDataFrameSpec extends DataFrameHelper {
 
     val read = sc.read(AES_CBC_PKCS5PADDING).csv(enFile)
     read.count() should be (genNum * 3)
+  }
+
+  "csv read/write different size" should "work" in {
+    val filteredPath = dir + "/filtered-csv"
+    val df = sc.read(cryptoMode = PLAIN_TEXT)
+      .option("header", "true").csv(plainFileName)
+    df.count() should be (repeatedNum * 3)
+    (1 to 10).foreach{ i =>
+      val step = 1000
+      val filtered = df.filter(_.getString(1).toInt < i * step)
+      val filteredData = df.collect()
+      sc.write(filtered, AES_CBC_PKCS5PADDING).mode("overwrite")
+        .option("header", "true").csv(filteredPath)
+      val readed = sc.read(AES_CBC_PKCS5PADDING).option("header", "true").csv(filteredPath)
+      readed.count() should be (i * step * 3)
+      val a = readed.collect()
+      readed.collect().zip(filteredData).foreach{v =>
+        v._1.getAs[String]("age") should be (v._2.getAs[String]("age"))
+        v._1.getAs[String]("job") should be (v._2.getAs[String]("job"))
+        v._1.getAs[String]("name") should be (v._2.getAs[String]("name"))
+      }
+    }
   }
 
 }

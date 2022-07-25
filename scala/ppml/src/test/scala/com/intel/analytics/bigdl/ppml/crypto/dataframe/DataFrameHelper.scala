@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.ppml.crypto.dataframe
 
 import com.intel.analytics.bigdl.dllib.common.zooUtils
 import com.intel.analytics.bigdl.ppml.BigDLSpecHelper
-import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, ENCRYPT}
+import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, CryptoCodec, ENCRYPT}
 import com.intel.analytics.bigdl.ppml.kms.SimpleKeyManagementService
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -33,22 +33,19 @@ class DataFrameHelper extends BigDLSpecHelper {
   val simpleKms = SimpleKeyManagementService(appid, appkey)
   val dir = createTmpDir("rwx------")
 
-  val primaryKeyPath = dir + "/primary.key"
-  val dataKeyPath = dir + "/data.key"
-  var dataKeyPlaintext: String = null
-  simpleKms.retrievePrimaryKey(primaryKeyPath)
-  simpleKms.retrieveDataKey(primaryKeyPath, dataKeyPath)
-  lazy val (plainFileName, encryptFileName, data) = generateCsvData()
+  val primaryKeyPath = dir + s"/primary.key"
+  val dataKeyPath = dir + s"/data.key"
 
   def generateKeys(): (String, String) = {
-    val appid: String = (1 to 12).map(x => Random.nextInt(10)).mkString
-    val appkey: String = (1 to 12).map(x => Random.nextInt(10)).mkString
+    val appid: String = "123456789012"
+    val appkey: String = "210987654321"
     (appid, appkey)
   }
 
-  def generateCsvData(): (String, String, String) = {
+  def generateCsvData(): (String, String, String, String) = {
+    Random.setSeed(1)
     val fileName = dir + "/people.csv"
-    val encryptFileName = dir + "/en_people.csv"
+    val encryptFileName = dir + "/en_people.csv" + CryptoCodec.getDefaultExtension()
     val fw = new FileWriter(fileName)
     val data = new StringBuilder()
     data.append(header)
@@ -58,11 +55,14 @@ class DataFrameHelper extends BigDLSpecHelper {
     fw.append(data)
     fw.close()
 
+    simpleKms.retrievePrimaryKey(primaryKeyPath)
+    simpleKms.retrieveDataKey(primaryKeyPath, dataKeyPath)
+    logger.info("write primaryKey to " + primaryKeyPath)
     val crypto = new BigDLEncrypt()
-    dataKeyPlaintext = simpleKms.retrieveDataKeyPlainText(primaryKeyPath, dataKeyPath)
+    val dataKeyPlaintext = simpleKms.retrieveDataKeyPlainText(primaryKeyPath, dataKeyPath)
     crypto.init(AES_CBC_PKCS5PADDING, ENCRYPT, dataKeyPlaintext)
     crypto.doFinal(fileName, encryptFileName)
-    (fileName, encryptFileName, data.toString())
+    (fileName, encryptFileName, data.toString(), dataKeyPlaintext)
   }
 
 }

@@ -3,9 +3,7 @@
 export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
 export NANO_HOME=${ANALYTICS_ZOO_ROOT}/python/nano/src
 export PYTORCH_NANO_NOTEBOOKS_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/notebooks/pytorch/cifar10
-export LIMIT_TRAIN_BATCHES=0.005
-export LIMIT_VAL_BATCHES=0.01
-export FIT_EPOCHS=3
+export DEV_RUN=True
 export SUBSET=50
 
 wget -nv ${FTP_URI}/analytics-zoo-data/cifar-10-python.tar.gz -P ${PYTORCH_NANO_NOTEBOOKS_DIR}/

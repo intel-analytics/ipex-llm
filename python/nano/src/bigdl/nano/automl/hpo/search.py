@@ -111,7 +111,7 @@ def _prepare_args(kwargs,
     # prepare sampler and pruner args
     sampler_type = create_kwargs.get('sampler', None)
     if sampler_type:
-        sampler_args = create_kwargs.get('sampler_kwargs', {})
+        sampler_args = create_kwargs.get('sampler_kwargs', None)
         sampler = backend.create_sampler(sampler_type, sampler_args)
         create_kwargs['sampler'] = sampler
         create_kwargs.pop('sampler_kwargs', None)
@@ -138,8 +138,8 @@ def _validate_args(search_kwargs,
         search_args=search_kwargs,
         legal_keys=legal_keys)
 
-    direction = search_kwargs.get('direction', None),
-    directions = search_kwargs.get('directions', None),
+    direction = search_kwargs.get('direction', None)
+    directions = search_kwargs.get('directions', None)
     _check_optimize_direction(
         direction=direction,
         directions=directions,
@@ -154,19 +154,23 @@ def _strip_val_prefix(metric):
 
 def _check_optimize_direction(direction, directions, metric):
     # TODO check common metrics and corresponding directions
-    if directions:
-        # TODO we don't check for multiobjective cases
-        return
-    if not direction and not directions:
-        direction = 'minimize'
-    max_metrics = ['accuracy', 'auc', 'acc']
-    min_metrics = ['loss', 'mae', 'mse']
-    stripped_metric = _strip_val_prefix(metric).lower()
-    if stripped_metric in max_metrics:
-        if direction != 'maximize':
-            invalidInputError(False,
-                              'should use maximize direction for optmize')
-    elif stripped_metric in min_metrics:
-        if direction != 'minimize':
-            invalidInputError(False,
-                              'should use minimize direction for optmize')
+    if (isinstance(metric, list) or isinstance(metric, tuple)) and len(metric) > 1:
+        # multi-objective search
+        from bigdl.nano.utils.log4Error import invalidInputError
+        invalidInputError(directions is not None and len(directions) == len(metric),
+                          "In multi-objective optimization, you must explicitly specify "
+                          "the direction for each metric")
+    else:
+        if not direction and not directions:
+            direction = 'minimize'
+        max_metrics = ['accuracy', 'auc', 'acc']
+        min_metrics = ['loss', 'mae', 'mse']
+        stripped_metric = _strip_val_prefix(metric).lower()
+        if stripped_metric in max_metrics:
+            if direction != 'maximize':
+                invalidInputError(False,
+                                  'should use maximize direction for optmize')
+        elif stripped_metric in min_metrics:
+            if direction != 'minimize':
+                invalidInputError(False,
+                                  'should use minimize direction for optmize')

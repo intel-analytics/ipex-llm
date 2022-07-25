@@ -48,3 +48,8 @@ def KerasOpenVINOModel(model, input_sample=None):
     """
     from .tf.model import KerasOpenVINOModel
     return KerasOpenVINOModel(model)
+
+
+def OpenVINOModel(model, device='CPU'):
+    from .core.model import OpenVINOModel
+    return OpenVINOModel(model, device)
