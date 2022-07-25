@@ -168,6 +168,36 @@ class TestPPMLContext(unittest.TestCase):
         rdd_content = '\n'.join([line for line in rdd.collect()])
         self.assertEqual(rdd_content, "language,user\n" + self.data_content)
 
+    def test_write_and_read_plain_json(self):
+        json_path = os.path.join(resource_path, "json/plain-json")
+        # write as a json
+        self.sc.write(self.df, CryptoMode.PLAIN_TEXT) \
+            .mode('overwrite') \
+            .json(json_path)
+
+        # read from a json
+        df_from_json = self.sc.read(CryptoMode.PLAIN_TEXT) \
+            .json(json_path)
+
+        content = '\n'.join([str(v['language']) + "," + str(v['user'])
+                             for v in df_from_json.orderBy('language').collect()])
+        self.assertEqual(content, self.data_content)
+
+    def test_write_and_read_encrypted_json(self):
+        json_path = os.path.join(resource_path, "json/en-json")
+        # write as a json
+        self.sc.write(self.df, CryptoMode.AES_CBC_PKCS5PADDING) \
+            .mode('overwrite') \
+            .json(json_path)
+
+        # read from a json
+        df_from_json = self.sc.read(CryptoMode.AES_CBC_PKCS5PADDING) \
+            .json(json_path)
+
+        content = '\n'.join([str(v['language']) + "," + str(v['user'])
+                             for v in df_from_json.orderBy('language').collect()])
+        self.assertEqual(content, self.data_content)
+
 
 if __name__ == "__main__":
     unittest.main()
