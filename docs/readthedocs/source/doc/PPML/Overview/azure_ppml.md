@@ -32,7 +32,7 @@ Create Linux VM through Azure [CLI](https://docs.microsoft.com/en-us/azure/devel
 For size of the VM, please choose DC-V3 Series VM with more than 4 vCPU cores.
 
 #### 2.2.3 Pull BigDL PPML image and run on Linux client
-* Go to Azure Marketplace, search "BigDL" and find "BigDL PPML". Click "Create" button which will lead you to `Subscribe` page.
+* Go to Azure Marketplace, search "BigDL PPML" and find `BigDL PPML` product. Click "Create" button which will lead you to `Subscribe` page.
 On `Subscribe` page, input your subscription, your Azure container registry, your resource group, location. Then click `Subscribe` to subscribe BigDL PPML to your container registry.
 * Login to the created VM. Then login to your Azure container registry, pull BigDL PPML image using such command:
 ```bash
