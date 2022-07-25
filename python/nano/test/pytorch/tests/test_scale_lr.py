@@ -1,3 +1,20 @@
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+
 import os
 
 import pytest
@@ -7,6 +24,7 @@ from test.pytorch.utils._train_torch_lightning import create_data_loader, data_t
 from test.pytorch.utils._train_torch_lightning import create_test_data_loader
 from bigdl.nano.pytorch.vision.models import vision
 from bigdl.nano.pytorch import Trainer
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import LearningRateMonitor
 import torch
@@ -71,10 +89,16 @@ class Resnet_2_2(pl.LightningModule):
             self.head.parameters(),
             lr=self.hparams.learning_rate2
         )
-        lr_scheduler1 = torch.optim.lr_scheduler.LinearLR(
-            optimizer1,
-            start_factor=0.25
-        )
+        if not TORCH_VERSION_LESS_1_10:
+            lr_scheduler1 = torch.optim.lr_scheduler.LinearLR(
+                optimizer1,
+                start_factor=0.25
+            )
+        else:
+            lr_scheduler1 = torch.optim.lr_scheduler.ConstantLR(
+                optimizer1,
+                factor=0.25
+            )
         lr_scheduler2 = torch.optim.lr_scheduler.ConstantLR(
             optimizer2,
             factor=0.5
