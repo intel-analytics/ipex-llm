@@ -53,17 +53,17 @@ class LightningModule(pl.LightningModule):
         self.optimizer = optimizer
         self.scheduler = scheduler
         self.metrics = metrics
+        self._forward_args_ = None
 
     @property
     def forward_args(self):  # noqa
-        from bigdl.nano.deps.openvino.pytorch.model import PytorchOpenVINOModel
-        from bigdl.nano.deps.ipex.ipex_inference_model import PytorchIPEXJITModel
-        from bigdl.nano.deps.onnxruntime.pytorch.pytorch_onnxruntime_model \
-            import PytorchONNXRuntimeModel
-        if isinstance(self.model, (PytorchOpenVINOModel, PytorchIPEXJITModel,
-                                   PytorchONNXRuntimeModel)):
-            return self.model.forward_args
-        return inspect.getfullargspec(self.model.forward).args[1:]
+        if self._forward_args_ is None:
+            self._forward_args_ = inspect.getfullargspec(self.model.forward).args[1:]
+        return self._forward_args_
+    
+    @forward_args.setter
+    def forward_args(self, forward_args):
+        self._forward_args_ = forward_args
 
     @property
     def _nargs(self):

@@ -173,6 +173,7 @@ class Objective(object):
                 # some optimizations may fail, just skip and try next
                 continue
             model.model = optim_model
+            model.forward_args = optim_model.forward_args
             self.searcher._validate(model, self.val_dataloaders)
             optim_score = []
             for metric in self.target_metric:

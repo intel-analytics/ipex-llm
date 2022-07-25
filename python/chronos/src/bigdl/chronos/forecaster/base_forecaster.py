@@ -199,7 +199,7 @@ class BasePytorchForecaster(Forecaster):
             acceleration=acceleration,
             input_sample=input_sample,
             **kwargs)
-        
+
         if self.tune_trainer.hposearcher.objective.mo_hpo:
             return self.internal
         else:
