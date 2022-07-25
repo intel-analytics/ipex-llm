@@ -35,4 +35,4 @@ sphinx-tabs==3.4
 optuna==2.10.0
 ConfigSpace==0.5.0
 sphinx-design==0.2.0
-sphinx-external-toc==0.2.3
+sphinx-external-toc==0.3.0
