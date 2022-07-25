@@ -305,6 +305,7 @@ class BasePytorchForecaster(Forecaster):
                                      batch_size=batch_size)
         else:
             from bigdl.chronos.pytorch import TSTrainer as Trainer
+            from bigdl.nano.utils.log4Error import invalidInputError
 
             # numpy data shape checking
             if isinstance(data, tuple):
@@ -341,7 +342,7 @@ class BasePytorchForecaster(Forecaster):
             # This error is only triggered when the python interpreter starts additional processes.
             # num_process=1 and subprocess will be safely started in the main process,
             # so this error will not be triggered.
-            from bigdl.nano.utils.log4Error import invalidInputError
+
             invalidInputError(is_main_process(),
                               "Make sure new Python interpreters can "
                               "safely import the main module. ",
