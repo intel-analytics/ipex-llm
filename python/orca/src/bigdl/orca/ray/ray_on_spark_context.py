@@ -397,11 +397,17 @@ class RayOnSparkContext(object):
                 self.system_config = self.extra_params.pop("_system_config")
         self.include_webui = include_webui
         self._address_info = None
+        self.redis_port = random.randint(10000, 65535) if not redis_port else int(redis_port)
+        self.ray_node_cpu_cores = ray_node_cpu_cores
+        self.num_ray_nodes = num_ray_nodes
+        RayOnSparkContext._active_ray_context = self
+
+    def setup(self):
         if self.is_local:
             self.num_ray_nodes = 1
             spark_cores = self._get_spark_local_cores()
-            if ray_node_cpu_cores:
-                ray_node_cpu_cores = int(ray_node_cpu_cores)
+            if self.ray_node_cpu_cores:
+                ray_node_cpu_cores = int(self.ray_node_cpu_cores)
                 if ray_node_cpu_cores > spark_cores:
                     warnings.warn("ray_node_cpu_cores is larger than available Spark cores, "
                                   "make sure there are enough resources on your machine")
@@ -416,8 +422,8 @@ class RayOnSparkContext(object):
                 executor_cores = int(self.sc.getConf().get("spark.executor.cores"))
             else:
                 executor_cores = None
-            if ray_node_cpu_cores:
-                ray_node_cpu_cores = int(ray_node_cpu_cores)
+            if self.ray_node_cpu_cores:
+                ray_node_cpu_cores = int(self.ray_node_cpu_cores)
                 if executor_cores and ray_node_cpu_cores > executor_cores:
                     warnings.warn("ray_node_cpu_cores is larger than Spark executor cores, "
                                   "make sure there are enough resources on your cluster")
@@ -437,8 +443,8 @@ class RayOnSparkContext(object):
                     int(self.sc.getConf().get("spark.cores.max")) / self.ray_node_cpu_cores)
             else:
                 num_executors = None
-            if num_ray_nodes:
-                num_ray_nodes = int(num_ray_nodes)
+            if self.num_ray_nodes:
+                num_ray_nodes = int(self.num_ray_nodes)
                 if num_executors and num_ray_nodes > num_executors:
                     warnings.warn("num_ray_nodes is larger than the number of Spark executors, "
                                   "make sure there are enough resources on your cluster")
@@ -453,7 +459,6 @@ class RayOnSparkContext(object):
 
             from bigdl.dllib.utils.utils import detect_python_location
             self.python_loc = os.environ.get("PYSPARK_PYTHON", detect_python_location())
-            self.redis_port = random.randint(10000, 65535) if not redis_port else int(redis_port)
             self.ray_service = RayServiceFuncGenerator(
                 python_loc=self.python_loc,
                 redis_port=self.redis_port,
@@ -465,7 +470,6 @@ class RayOnSparkContext(object):
                 include_webui=self.include_webui,
                 extra_params=self.extra_params,
                 system_config=self.system_config)
-        RayOnSparkContext._active_ray_context = self
         self.total_cores = self.num_ray_nodes * self.ray_node_cpu_cores
 
     @classmethod
@@ -537,6 +541,7 @@ class RayOnSparkContext(object):
         if self.initialized:
             print("The Ray cluster has been launched.")
         else:
+            self.setup()
             if self.is_local:
                 if self.env:
                     os.environ.update(self.env)
