@@ -17,7 +17,6 @@
 from bigdl.nano.pytorch.lightning import LightningModule
 from bigdl.nano.utils.log4Error import invalidInputError
 from typing import List
-from numpy import append
 import pytorch_lightning as pl
 from torchmetrics.metric import Metric
 from torch.optim.lr_scheduler import _LRScheduler
