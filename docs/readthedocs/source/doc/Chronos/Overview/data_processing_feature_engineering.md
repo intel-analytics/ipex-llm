@@ -4,8 +4,7 @@ Time series data is a special data formulation with its specific operations. _Ch
 
 [`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) is designed for general time series processing while providing many specific operations for the convenience of different tasks(e.g. forecasting, anomaly detection).
 
-Time series data is a special data formulation with its specific operations. 
-_Chronos_ provides [`XSardsDataset`](../../PythonAPI/Chronos/tsdataset.html#xshardstsdataset) as a time series dataset abstract for data processing (e.g. impute, scale/unscale, roll) and feature engineering methods (e.g. datetime feature, aggregation feature). Cascade call is supported for most of the methods. [`XSardsDataset`](../../PythonAPI/Chronos/tsdataset.html#xshardstsdataset) can be initialized from xshards of pandas dataframe. It can also be converted to  xshards of numpy in an distributed and parallized fashion.
+Time series data is a special data formulation with its specific operations. XSardsDataset is an abstract of time series dataset with distributed fashion. _Chronos_ provides [`XSardsDataset`](../../PythonAPI/Chronos/tsdataset.html#xshardstsdataset) as a time series dataset abstract for data processing (e.g. impute, scale/unscale, roll) and feature engineering methods (e.g. datetime feature, aggregation feature). Cascade call is supported for most of the methods. [`XSardsDataset`](../../PythonAPI/Chronos/tsdataset.html#xshardstsdataset) can be initialized from xshards of pandas dataframe. It can also be converted to  xshards of numpy in an distributed and parallized fashion.
         
 [`XSardsDataset`](../../PythonAPI/Chronos/tsdataset.html#xshardstsdataset) is designed for general time series processing while providing many specific operations for the convenience of different tasks(e.g. forecasting, anomaly detection).
 
@@ -127,8 +126,6 @@ Since a scaler should not fit, a typical call for scaling operations is is:
 
     .. tab:: XSardsDataset
 
-        Scaling all features to one distribution is important, especially when we want to train a machine learning/deep learning system. 
-
         .. code-block:: python
             :emphasize-lines: 3,5
 
@@ -184,9 +181,13 @@ A time series dataset needs to be sampling and exporting as numpy ndarray/datalo
     You don't need to call any sampling or exporting methods introduced in this section when using `AutoTSEstimator`.
 ```
 ### **6.1 Roll sampling**
-Roll sampling (or sliding window sampling) is useful when you want to train a RR type supervised deep learning forecasting model. It works as the [diagram](#RR-forecast-image) shows. Please refer to the API doc [`roll`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.roll) for detailed behavior. Users can simply export the sampling result as numpy ndarray by [`to_numpy`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.to_numpy) or pytorch dataloader [`to_torch_data_loader`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.to_torch_data_loader).
+Roll sampling (or sliding window sampling) is useful when you want to train a RR type supervised deep learning forecasting model. It works as the [diagram](#RR-forecast-image) shows. 
 
-Roll sampling (or sliding window sampling) is useful when you want to train a RR type supervised deep learning forecasting model. It works as the [diagram](#RR-forecast-image) shows. Please refer to the API doc [`roll`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.roll) for detailed behavior. Users can simply export the sampling result as xshards of numpy ndarray by [`to_xshards`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.to_xshards).
+`TSDataset`
+Please refer to the API doc [`roll`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.roll) for detailed behavior. Users can simply export the sampling result as numpy ndarray by [`to_numpy`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.to_numpy) or pytorch dataloader [`to_torch_data_loader`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.to_torch_data_loader).
+
+`XShardsDataset`
+Please refer to the API doc [`roll`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.roll) for detailed behavior. Users can simply export the sampling result as xshards of numpy ndarray by [`to_xshards`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.to_xshards).
 
 ```eval_rst
 .. note:: 
