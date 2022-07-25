@@ -325,6 +325,16 @@ class BasePytorchForecaster(Forecaster):
                                    num_processes=self.num_processes, use_ipex=self.use_ipex,
                                    flush_logs_every_n_steps=10, log_every_n_steps=10,
                                    distributed_backend=self.local_distributed_backend)
+
+            # This error is only triggered when the python interpreter starts additional processes.
+            # num_process=1 and subprocess will be safely started in the main process,
+            # so this error will not be triggered.
+            invalidInputError(is_main_process(),
+                              "Make sure new Python interpreters can "
+                              "safely import the main module. ",
+                              fixMsg="you should use if __name__ == '__main__':, "
+                              "otherwise performance will be degraded.")
+
             # fitting
             if not validation_data:
                 self.trainer.fit(self.internal, data)
@@ -338,19 +348,6 @@ class BasePytorchForecaster(Forecaster):
                 fit_out = read_csv('./forecaster_tmp_log/version_0/metrics.csv')
                 delete_folder("./forecaster_tmp_log")
                 return fit_out
-
-            # This error is only triggered when the python interpreter starts additional processes.
-            # num_process=1 and subprocess will be safely started in the main process,
-            # so this error will not be triggered.
-
-            invalidInputError(is_main_process(),
-                              "Make sure new Python interpreters can "
-                              "safely import the main module. ",
-                              fixMsg="you should use if __name__ == '__main__':, "
-                              "otherwise performance will be degraded.")
-
-            self.trainer.fit(self.internal, data)
-            self.fitted = True
 
     def predict(self, data, batch_size=32, quantize=False):
         """
