@@ -232,6 +232,9 @@ ADD ./bash.manifest.template /ppml/trusted-big-data-ml/bash.manifest.template
 ADD ./Makefile /ppml/trusted-big-data-ml/Makefile
 ADD ./init.sh /ppml/trusted-big-data-ml/init.sh
 ADD ./clean.sh /ppml/trusted-big-data-ml/clean.sh
+ADD ./examples /ppml/trusted-big-data-ml/work/examples
+ADD ./start-scripts /ppml/trusted-big-data-ml/work/start-scripts
+
 
 RUN wget -P /ppml/trusted-big-data-ml/work/lib https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/libhadoop.so && \
     cp /usr/lib/x86_64-linux-gnu/libpython3.8.so /usr/lib/libpython3.8.so && \
@@ -240,3 +243,5 @@ RUN wget -P /ppml/trusted-big-data-ml/work/lib https://sourceforge.net/projects/
     sed -i 's/spark-warehouse/\/ppml\/trusted-big-data-ml\/work\/spark-warehouse/' /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/hive.py && \
     chmod a+x /ppml/trusted-big-data-ml/init.sh && \
     chmod a+x /ppml/trusted-big-data-ml/clean.sh
+
+WORKDIR /ppml/trusted-big-data-ml
