@@ -37,20 +37,21 @@ class Metric(ABC):
                 "tf",
                 "mxnet"
             }
-            raise ValueError(f"backend should be one of {valid_backends}, but got {backend}")
+            invalidInputError(False,
+                              f"backend should be one of {valid_backends}, but got {backend}")
         return metric_impl
 
     def get_bigdl_metric(self):
-        raise NotImplementedError()
+        invalidInputError(False, "not implemented")
 
     def get_tf_metric(self):
-        raise NotImplementedError()
+        invalidInputError(False, "not implemented")
 
     def get_pytorch_metric(self):
-        raise NotImplementedError()
+        invalidInputError(False, "not implemented")
 
     def get_mxnet_metric(self):
-        raise NotImplementedError()
+        invalidInputError(False, "not implemented")
 
     @abstractmethod
     def get_name(self):
@@ -72,7 +73,7 @@ class Metric(ABC):
                 metric_impls.append(customized_metric.get_metric(backend))
             else:
                 invalidInputError(False, "Only orca metrics and customized function are supported, but get " +
-                              m.__class__.__name__)
+                                  m.__class__.__name__)
         return metric_impls
 
     @staticmethod
@@ -211,8 +212,9 @@ class Accuracy(Metric):
     def get_pytorch_metric(self):
         from bigdl.orca.learn.pytorch import pytorch_metrics
         if not self.zero_based_label:
-            raise ValueError("pytorch Accuracy does not support one based accuracy, "
-                             "please set zero_based_label to True")
+            invalidInputError(False,
+                              "pytorch Accuracy does not support one based accuracy, "
+                              "please set zero_based_label to True")
         return pytorch_metrics.Accuracy()
 
     def get_name(self):
