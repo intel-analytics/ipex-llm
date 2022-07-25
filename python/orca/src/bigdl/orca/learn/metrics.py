@@ -15,6 +15,7 @@
 #
 import types
 from abc import ABC, abstractmethod
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 
 class Metric(ABC):
@@ -70,8 +71,8 @@ class Metric(ABC):
                 customized_metric = CustomizedMetric(m)
                 metric_impls.append(customized_metric.get_metric(backend))
             else:
-                raise ValueError("Only orca metrics and customized function are supported, but get " +
-                                 m.__class__.__name__)
+                invalidInputError(False, "Only orca metrics and customized function are supported, but get " +
+                              m.__class__.__name__)
         return metric_impls
 
     @staticmethod
@@ -90,8 +91,8 @@ class Metric(ABC):
                 my_metric = CustomizedMetric(m)
                 metric_impls[my_metric.get_name()] = my_metric.get_metric(backend)
             else:
-                raise ValueError("Only orca metrics and customized function are supported, but get " +
-                                 metrics.__class__.__name__)
+                invalidInputError(False, "Only orca metrics and customized function are supported, but get " +
+                                  m.__class__.__name__)
         return metric_impls
 
 
