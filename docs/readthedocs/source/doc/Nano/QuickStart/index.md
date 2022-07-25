@@ -72,6 +72,16 @@
 
 ---------------------------
 
+- [**BigDL-Nano TensorFlow SparseEmbedding and SparseAdam**](./tensorflow_embedding.html)
+
+    > ![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][Nano_tensorflow_embedding]
+
+    In this guide we demonstrates how to use SparseEmbedding and SparseAdam to obtain stroger performance with sparse gradient.
+
+
+---------------------------
+
+
 - [**BigDL-Nano Hyperparameter Tuning (Tensorflow Sequential/Functional API) Quickstart**](../Tutorials/seq_and_func.html)
 
 
@@ -99,6 +109,7 @@
 [Nano_pytorch_quantization_inc_onnx]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/tutorial/pytorch_quantization_inc.ipynb>
 [Nano_pytorch_quantization_openvino]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/tutorial/pytorch_quantization_openvino.ipynb>
 [Nano_tensorflow_quantization_INC]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/tensorflow/tutorial/tensorflow_quantization.ipynb>
+[Nano_tensorflow_embedding]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/tensorflow/tutorial/tensorflow_embedding.ipynb>
 [Nano_hpo_tf_seq_func]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/hpo/seq_and_func.ipynb>
 [Nano_hpo_tf_seq_func_colab]: <https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/nano/notebooks/hpo/seq_and_func.ipynb>
 [Nano_hpo_tf_subclassing]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/hpo/custom.ipynb>

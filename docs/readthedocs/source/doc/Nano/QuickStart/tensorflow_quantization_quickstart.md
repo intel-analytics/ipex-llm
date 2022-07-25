@@ -1,5 +1,5 @@
 ## BigDL-Nano TensorFLow Quantization Quickstart
-**In this notebook we will demonstrates how to apply Post-training quantization on a keras model with BigDL-Nano in 4 simple steps.**
+**In this guide we will demonstrates how to apply Post-training quantization on a keras model with BigDL-Nano in 4 simple steps.**
 
 ### **Step 0: Prepare Environment**
 
@@ -27,12 +27,15 @@ from bigdl.nano.tf.keras import Model, Sequential
 
 ### Step 1: Loading Data
 
-Here we load data from tensorflow_datasets. The ImageNet-v2 is an ImageNet tests set collected by closely following the original labelling protocol.
+Here we load data from tensorflow_datasets. The Imagenette is a subset of 10 easily classified classes from the Imagenet dataset.
 
 ```python
 import tensorflow_datasets as tfds
-DATANAME = 'imagenet_v2'
-dataset, info = tfds.load(DATANAME, data_dir='../data/', split='test', with_info=True, as_supervised=True)
+DATANAME = 'imagenette/320px-v2'
+(train_ds, test_ds), info = tfds.load(DATANAME, data_dir='../data/',
+                                     split=['train', 'validation'],
+                                     with_info=True,
+                                     as_supervised=True)
 ```
 
 #### Prepare Inputs
@@ -42,24 +45,29 @@ Here we resize the input image to uniform `IMG_SIZE` and the labels are put into
 import tensorflow as tf
 img_size = 224
 num_classes = info.features['label'].num_classes
-dataset = dataset.map(lambda img, label: (tf.image.resize(img, (img_size, img_size)), tf.one_hot(label, num_classes))).batch(64)
+train_ds = train_ds.map(lambda img, label: (tf.image.resize(img, (img_size, img_size)), tf.one_hot(label, num_classes))).batch(32)
+test_ds = test_ds.map(lambda img, label: (tf.image.resize(img, (img_size, img_size)), tf.one_hot(label, num_classes))).batch(32)
 ```
 
 ### Step 2: Build or Load Your Model
 Here we initialize the ResNet50 from `tf.keras.applications` with pre-trained ImageNet weights.
 ```python
 from tensorflow.keras.applications import ResNet50
-inputs = tf.keras.layers.Input(shape=(img_size, img_size, 3))
+from tensorflow.keras import layers
+inputs = tf.keras.layers.Input(shape=(224, 224, 3))
 x = tf.cast(inputs, tf.float32)
 x = tf.keras.applications.resnet50.preprocess_input(x)
-backbone = ResNet50()
-outputs = backbone(x)
+backbone = ResNet50(weights='imagenet')
+backbone.trainable = False
+x = backbone(x)
+x = layers.Dense(512, activation='relu')(x)
+outputs = layers.Dense(num_classes, activation='softmax')(x)
 
 model = Model(inputs=inputs, outputs=outputs)
-# optional training
-# model.fit(dataset, epochs=5)
-
 model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=['accuracy'])
+
+# fit
+model.fit(train_ds, epochs=1)
 ```
 
 ### Step 3: Quantization using Intel Neural Compressor
