@@ -72,8 +72,8 @@ class Metric(ABC):
                 customized_metric = CustomizedMetric(m)
                 metric_impls.append(customized_metric.get_metric(backend))
             else:
-                invalidInputError(False, "Only orca metrics and customized function are supported, but get " +
-                                  m.__class__.__name__)
+                invalidInputError(False, "Only orca metrics and customized function "
+                                         "are supported, but get " + m.__class__.__name__)
         return metric_impls
 
     @staticmethod
@@ -92,8 +92,8 @@ class Metric(ABC):
                 my_metric = CustomizedMetric(m)
                 metric_impls[my_metric.get_name()] = my_metric.get_metric(backend)
             else:
-                invalidInputError(False, "Only orca metrics and customized function are supported, but get " +
-                                  m.__class__.__name__)
+                invalidInputError(False, "Only orca metrics and customized function "
+                                         "are supported, but get " + m.__class__.__name__)
         return metric_impls
 
 
