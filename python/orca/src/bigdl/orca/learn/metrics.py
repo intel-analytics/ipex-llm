@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import types
 from abc import ABC, abstractmethod
-from bigdl.dllib.utils.log4Error import invalidInputError
 
 
 class Metric(ABC):
@@ -36,21 +36,20 @@ class Metric(ABC):
                 "tf",
                 "mxnet"
             }
-            invalidInputError(False,
-                              f"backend should be one of {valid_backends}, but got {backend}")
+            raise ValueError(f"backend should be one of {valid_backends}, but got {backend}")
         return metric_impl
 
     def get_bigdl_metric(self):
-        invalidInputError(False, "not implemented")
+        raise NotImplementedError()
 
     def get_tf_metric(self):
-        invalidInputError(False, "not implemented")
+        raise NotImplementedError()
 
     def get_pytorch_metric(self):
-        invalidInputError(False, "not implemented")
+        raise NotImplementedError()
 
     def get_mxnet_metric(self):
-        invalidInputError(False, "not implemented")
+        raise NotImplementedError()
 
     @abstractmethod
     def get_name(self):
@@ -60,36 +59,65 @@ class Metric(ABC):
     def convert_metrics_list(metrics, backend="bigdl"):
         if metrics is None:
             return None
-        if isinstance(metrics, list):
-            metric_impls = []
-            for m in metrics:
-                if isinstance(m, Metric):
-                    metric_impls.append(m.get_metric(backend))
-                else:
-                    invalidInputError(False,
-                                      "Only orca metrics are supported, but get " +
-                                      m.__class__.__name__)
-            return metric_impls
-        else:
-            if isinstance(metrics, Metric):
-                return [metrics.get_metric(backend)]
+        if not isinstance(metrics, list):
+            metrics = [metrics]
+
+        metric_impls = []
+        for m in metrics:
+            if isinstance(m, Metric):
+                metric_impls.append(m.get_metric(backend))
+            elif isinstance(m, types.FunctionType):
+                customized_metric = CustomizedMetric(m)
+                metric_impls.append(customized_metric.get_metric(backend))
+            else:
+                raise ValueError("Only orca metrics and customized function are supported, but get " +
+                                 m.__class__.__name__)
+        return metric_impls
 
     @staticmethod
     def convert_metrics_dict(metrics, backend="bigdl"):
         if metrics is None:
             return {}
-        if isinstance(metrics, list):
-            metric_impls = {}
-            for m in metrics:
+        if not isinstance(metrics, list):
+            metrics = [metrics]
+
+        metric_impls = {}
+
+        for m in metrics:
+            if isinstance(m, Metric):
                 metric_impls[m.get_name()] = m.get_metric(backend)
-            return metric_impls
-        else:
-            if isinstance(metrics, Metric):
-                return {metrics.get_name(): metrics.get_metric(backend)}
+            elif isinstance(m, types.FunctionType):
+                my_metric = CustomizedMetric(m)
+                metric_impls[my_metric.get_name()] = my_metric.get_metric(backend)
             else:
-                invalidInputError(False,
-                                  "Only orca metrics are supported, but get " +
-                                  metrics.__class__.__name__)
+                raise ValueError("Only orca metrics and customized function are supported, but get " +
+                                 metrics.__class__.__name__)
+        return metric_impls
+
+
+class CustomizedMetric(Metric):
+    def __init__(self, compute_function):
+        self.compute = compute_function
+
+    def get_pytorch_metric(self):
+        from bigdl.orca.learn.pytorch.pytorch_metrics import PytorchMetric
+        class _Metirc(PytorchMetric):
+            def __init__(self, compute_function):
+                self.batch_metric_value = 0
+                self.compute_function = compute_function
+                self.step = 0
+
+            def __call__(self, preds, targets):
+                self.batch_metric_value += self.compute_function(preds, targets)
+                self.step += 1
+
+            def compute(self):
+                return self.batch_metric_value / self.step
+
+        return _Metirc(self.compute)
+
+    def get_name(self):
+        return self.compute.__name__
 
 
 class AUC(Metric):
@@ -102,6 +130,7 @@ class AUC(Metric):
 
     >>> meter = AUC(20)
     """
+
     def __init__(self, threshold_num=200):
         self.threshold_num = threshold_num
 
@@ -170,6 +199,7 @@ class Accuracy(Metric):
 
     >>> acc = Accuracy()
     """
+
     def __init__(self, zero_based_label=True):
         self.zero_based_label = zero_based_label
 
@@ -180,9 +210,8 @@ class Accuracy(Metric):
     def get_pytorch_metric(self):
         from bigdl.orca.learn.pytorch import pytorch_metrics
         if not self.zero_based_label:
-            invalidInputError(False,
-                              "pytorch Accuracy does not support one based accuracy, "
-                              "please set zero_based_label to True")
+            raise ValueError("pytorch Accuracy does not support one based accuracy, "
+                             "please set zero_based_label to True")
         return pytorch_metrics.Accuracy()
 
     def get_name(self):
