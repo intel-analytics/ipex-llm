@@ -148,7 +148,7 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
         if not self.lightning_module.trainer.training or not self.scale_lr:
 
             return
-        
+
         def _unpack_lightning_optimizer(opt):
             return opt._optimizer if isinstance(opt, LightningOptimizer) else opt
 
@@ -164,7 +164,6 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
             scheduler = scheduler["scheduler"]
             if isinstance(scheduler, _LRScheduler):
                 scheduler.base_lrs = [lr * self.world_size for lr in scheduler.base_lrs]
-
 
     def start_training(self, trainer):
         """Setup start_training hook for the plugin."""
