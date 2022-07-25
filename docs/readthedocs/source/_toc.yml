@@ -1,10 +1,9 @@
-format: jb-book
 root: index
-parts:
+subtrees:
   - caption: Nano
     hidden: True
-    maxdepth: 1
-    chapters:
+    maxdepth: 4
+    entries:
       - file: doc/Nano/Overview/nano
       - file: doc/Nano/Overview/windows_guide
       - file: doc/Nano/QuickStart/pytorch_train
@@ -17,8 +16,8 @@ parts:
 
   - caption: Orca
     hidden: True
-    maxdepth: 1
-    chapters:
+    maxdepth: 4
+    entries:
       - file: doc/Orca/Overview/orca
       - file: doc/Orca/Overview/orca-context
       - file: doc/Orca/Overview/data-parallel-processing
@@ -29,13 +28,13 @@ parts:
 
   - caption: DLlib
     maxdepth: 1
-    chapters:
+    entries:
       - file: doc/DLlib/Overview/dllib
       - file: doc/DLlib/Overview/keras-api
       - file: doc/DLlib/Overview/nnframes
 
   - caption: Chronos
-    chapters:
+    entries:
       - file: doc/Chronos/Overview/chronos
       - file: doc/Chronos/Overview/deep_dive
       - file: doc/Chronos/QuickStart/index.md
@@ -43,7 +42,7 @@ parts:
 
 
   - caption: PPML
-    chapters:
+    entries:
       - file: doc/PPML/Overview/ppml
       - file: doc/PPML/Overview/trusted_big_data_analytics_and_ml
       - file: doc/PPML/Overview/trusted_fl
