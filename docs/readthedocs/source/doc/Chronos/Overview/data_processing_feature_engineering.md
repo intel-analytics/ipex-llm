@@ -26,11 +26,9 @@ All the preprocessing operations will be done on each independent time series(i.
 
 Currently [`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) supports initializing from a pandas dataframe through [`TSDataset.from_pandas`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.from_pandas) or from a parquet file through [`TSDataset.from_parquet`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.from_parquet). A typical valid time series dataframe `df` is shown below.
 
-You can initialize a [`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) by simply:
+Currently [`XSardsDataset`](../../PythonAPI/Chronos/tsdataset.html#xshardstsdataset) supports initializing from a pandas dataframe through [`XSardsDataset.from_xshards`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.from_xshards) or from a Spark Dataframe through [`XSardsDataset.from_parquet`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.from_sparkdf). A typical valid time series dataframe `df` is shown below.
 
-Currently [`XSardsDataset`](../../PythonAPI/Chronos/tsdataset.html#xshardstsdataset) supports initializing from a pandas dataframe through [`XSardsDataset.from_xshards(`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.from_xshards() or from a Spark Dataframe through [`XSardsDataset.from_parquet`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.from_sparkdf). A typical valid time series dataframe `df` is shown below.
-
-You can initialize a [`XSardsDataset`](../../PythonAPI/Chronos/tsdataset.html#xshardstsdataset) by simply:
+You can initialize a [`XSardsDataset`](../../PythonAPI/Chronos/tsdataset.html#xshardstsdataset) or [`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) by simply:
 ```eval_rst
 
 .. tabs::
@@ -80,12 +78,15 @@ If you are building a prototype for your forecasting/anomaly detection task and 
 
 If you are building a prototype for your forecasting/anomaly detection task and you need to split you XShardsDataset to train/valid/test set, you can use `with_split` parameter. [`XShardstsDataset`](../../PythonAPI/Chronos/tsdataset.html#xshardstsdataset) supports split with ratio by `val_ratio` and `test_ratio`.
 ## **3. Time series dataset preprocessing**
+[`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) now supports [`impute`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.impute), [`deduplicate`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.deduplicate) and [`resample`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.resample). You may fill the missing point by [`impute`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.impute) in different modes. You may remove the records that are totally the same by [`deduplicate`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.deduplicate). You may change the sample frequency by [`resample`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.resample). 
+
+[`XSardsDataset`](../../PythonAPI/Chronos/tsdataset.html#xshardstsdataset) now supports [`impute`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.impute). You may fill the missing point by [`impute`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.impute) in different modes. 
+
+A typical cascade call for preprocessing is:
 ```eval_rst
 .. tabs::
 
     .. tab:: TSDataset
-
-        [`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) now supports [`impute`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.impute), [`deduplicate`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.deduplicate) and [`resample`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.resample). You may fill the missing point by [`impute`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.impute) in different modes. You may remove the records that are totally the same by [`deduplicate`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.deduplicate). You may change the sample frequency by [`resample`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.resample). A typical cascade call for preprocessing is:
 
         .. code-block:: python
             :emphasize-lines: 3,5
@@ -93,8 +94,6 @@ If you are building a prototype for your forecasting/anomaly detection task and 
             tsdata.deduplicate().resample(interval="2s").impute()
     
     .. tab:: XSardsDataset
-
-        [`XSardsDataset`](../../PythonAPI/Chronos/tsdataset.html#xshardstsdataset) now supports [`impute`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.impute). You may fill the missing point by [`impute`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.impute) in different modes. A typical cascade call for preprocessing is:
 
          .. code-block:: python
             :emphasize-lines: 3,5
@@ -185,17 +184,10 @@ A time series dataset needs to be sampling and exporting as numpy ndarray/datalo
     You don't need to call any sampling or exporting methods introduced in this section when using `AutoTSEstimator`.
 ```
 ### **6.1 Roll sampling**
-```eval_rst
-.. tabs::
+Roll sampling (or sliding window sampling) is useful when you want to train a RR type supervised deep learning forecasting model. It works as the [diagram](#RR-forecast-image) shows. Please refer to the API doc [`roll`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.roll) for detailed behavior. Users can simply export the sampling result as numpy ndarray by [`to_numpy`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.to_numpy) or pytorch dataloader [`to_torch_data_loader`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.to_torch_data_loader).
 
-    .. tab:: TSDataset
+Roll sampling (or sliding window sampling) is useful when you want to train a RR type supervised deep learning forecasting model. It works as the [diagram](#RR-forecast-image) shows. Please refer to the API doc [`roll`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.roll) for detailed behavior. Users can simply export the sampling result as xshards of numpy ndarray by [`to_xshards`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.to_xshards).
 
-        Roll sampling (or sliding window sampling) is useful when you want to train a RR type supervised deep learning forecasting model. It works as the [diagram](#RR-forecast-image) shows. Please refer to the API doc [`roll`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.roll) for detailed behavior. Users can simply export the sampling result as numpy ndarray by [`to_numpy`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.to_numpy) or pytorch dataloader [`to_torch_data_loader`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.to_torch_data_loader).
-    
-    .. tab:: XSardsDataset
-
-        Roll sampling (or sliding window sampling) is useful when you want to train a RR type supervised deep learning forecasting model. It works as the [diagram](#RR-forecast-image) shows. Please refer to the API doc [`roll`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.roll) for detailed behavior. Users can simply export the sampling result as xshards of numpy ndarray by [`to_xshards`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.to_xshards).
-```
 ```eval_rst
 .. note:: 
     **Difference between `roll` and `to_torch_data_loader`**:
