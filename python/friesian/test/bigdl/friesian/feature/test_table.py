@@ -196,26 +196,26 @@ class TestTable(TestCase):
         cross_hash_df = df.withColumn("A_B_C", concat("A", "B", "C"))
         tbl = FeatureTable(df)
         tbl.cross_hash_encode(["A", "B", "C"], 100)
-        with self.assertRaisesRegex(RuntimeError, r"column_pairs should be a list of column pairs"):
+        with self.assertRaisesRegex(RuntimeError, "cross_columns should be a nested list of "
+                                    "column names"):
             tbl.cross_hash_encode("A", [100])
-        with self.assertRaisesRegex(RuntimeError, r"bin_sizes should be a list of bin sizes"):
+        with self.assertRaisesRegex(RuntimeError, "bin_sizes should be a list of bin sizes"):
             tbl.cross_hash_encode([["A", "B", "C"]], 100)
         with self.assertRaisesRegex(RuntimeError,
-                                    r"column_pairs and bin_sizes should have the same length"):
+                                    "cross_columns and bin_sizes should have the same length"):
             tbl.cross_hash_encode([["A", "B", "C"], ["A", "D"]], [100])
         with self.assertRaisesRegex(RuntimeError,
-                                    r"crossed_col_names should be None or a list of crossed col "
-                                    r"names"):
-            tbl.cross_hash_encode([["A", "B", "C"]], [100], "crossed_ABC")
+                                    "cross_col_names should be None or a list of cross col names"):
+            tbl.cross_hash_encode([["A", "B", "C"]], [100], "cross_ABC")
         with self.assertRaisesRegex(RuntimeError,
-                                    r"column_pairs, bin_sizes and crossed_col_names should have "
-                                    r"the same length"):
-            tbl.cross_hash_encode([["A", "B", "C"]], [100], ["crossed_ABC", "crossed_C"])
+                                    "cross_columns, bin_sizes and cross_col_names should have the "
+                                    "same length"):
+            tbl.cross_hash_encode([["A", "B", "C"]], [100], ["cross_ABC", "cross_C"])
         with self.assertRaisesRegex(RuntimeError,
-                                    r"each element in column_pairs should have >= 2 columns"):
-            tbl.cross_hash_encode([["A"]], [100], ["crossed_ABC"])
+                                    "each element in cross_columns should have >= 2 columns"):
+            tbl.cross_hash_encode([["A"]], [100], ["cross_ABC"])
         with self.assertRaisesRegex(RuntimeError,
-                                    r"each element in crossed_col_names should be string"):
+                                    "each element in cross_col_names should be string"):
             tbl.cross_hash_encode([["A", "B", "C"]], [100], [0x14])
 
         cross_hash_str = lambda x: hashlib.md5(str(x).encode('utf-8', 'strict')).hexdigest()
@@ -227,7 +227,7 @@ class TestTable(TestCase):
         for record in tbl.cross_hash_encode([["A", "B", "C"]], [100]).to_spark_df().collect():
             tbl_cross_hash.append(int(record[4]))
         invalidInputError(operator.eq(cross_hash_value, tbl_cross_hash),
-                          "the crossed hash encoded value should be equal")
+                          "the cross hash encoded value should be equal")
 
     def test_gen_string_idx(self):
         file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
@@ -527,14 +527,14 @@ class TestTable(TestCase):
     def test_cross(self):
         file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path).fillna(0, ["col_2", "col_3"])
-        crossed_tbl = feature_tbl.cross_columns([["col_2", "col_3"]], [100])
-        invalidInputError("crossed_col_2_col_3" in crossed_tbl.df.columns,
-                          "crossed column is not created")
-        max_value = crossed_tbl.df.select("crossed_col_2_col_3") \
-            .agg(max(col("crossed_col_2_col_3")).alias("max")) \
+        cross_tbl = feature_tbl.cross_columns([["col_2", "col_3"]], [100])
+        invalidInputError("cross_col_2_col_3" in cross_tbl.df.columns,
+                          "cross column is not created")
+        max_value = cross_tbl.df.select("cross_col_2_col_3") \
+            .agg(max(col("cross_col_2_col_3")).alias("max")) \
             .rdd.map(lambda row: row['max']).collect()[0]
-        min_value = crossed_tbl.df.select("crossed_col_2_col_3") \
-            .agg(min(col("crossed_col_2_col_3")).alias("min")) \
+        min_value = cross_tbl.df.select("cross_col_2_col_3") \
+            .agg(min(col("cross_col_2_col_3")).alias("min")) \
             .rdd.map(lambda row: row['min']).collect()[0]
 
         invalidInputError(max_value <= 100,
