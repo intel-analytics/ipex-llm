@@ -34,16 +34,16 @@ bash build-docker-image.sh
 #driver.yaml
     env:
     - name: DRIVER_MEMORY
-      value: "500m"
+      value: "512m"
     - name: SGX_MEM_SIZE
-      value: "1GB"
+      value: "8GB"
 ```
 
 ```yaml
 #executor.yaml
     env:
     - name: SGX_MEM_SIZE
-      value: "1GB"
+      value: "8GB"
 ```
 
 ### Spark ML LogisticRegression example
