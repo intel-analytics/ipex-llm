@@ -2,7 +2,17 @@ format: jb-book
 root: index
 parts:
   - caption: Overview
+  - caption: Nano
+    hidden: True
     chapters:
       - file: doc/Nano/Overview/nano
-      - file: doc/Nano/Overview/known_issues
       - file: doc/Nano/Overview/windows_guide
+      - file: doc/Nano/QuickStart/pytorch_train
+      - file: doc/Nano/QuickStart/pytorch_inference
+      - file: doc/Nano/QuickStart/tensorflow_train
+      - file: doc/Nano/QuickStart/tensorflow_inference.md
+      - file: doc/Nano/QuickStart/hpo.rst
+      - file: doc/Nano/Overview/known_issues.md
+      - file: doc/Nano/QuickStart/index.md
+
+
