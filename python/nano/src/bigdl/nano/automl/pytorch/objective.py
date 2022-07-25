@@ -29,7 +29,6 @@ from bigdl.nano.pytorch.trainer import Trainer
 from bigdl.nano.automl.hpo.backend import create_pl_pruning_callback
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch.utils import LIGHTNING_VERSION_LESS_1_6
-from sklearn.metrics import SCORERS
 from ._helper import LatencyCallback
 import inspect
 import copy
@@ -182,7 +181,7 @@ class Objective(object):
             for metric in self.target_metric:
                 if metric != "latency":
                     if abs(getattr(optim_score, metric) - getattr(best_score, metric)) >= \
-                        0.01 * getattr(best_score, metric):
+                            0.01 * getattr(best_score, metric):
                         usable = False
                         break
                 else:
