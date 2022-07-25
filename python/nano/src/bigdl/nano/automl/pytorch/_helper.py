@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from typing import Any, Dict, Optional, Union
+from typing import Any
 import torch
 import time
 from bigdl.nano.pytorch.utils import LIGHTNING_VERSION_LESS_1_6
