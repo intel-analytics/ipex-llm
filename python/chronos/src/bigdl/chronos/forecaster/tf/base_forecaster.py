@@ -178,26 +178,58 @@ class BaseTF2Forecaster(Forecaster):
         """
         Build a Forecaster Model
 
-        :param tsdataset: A bigdl.chronos.data.tsdataset.TSDataset
+        :param tsdataset: A bigdl.chronos.data.tsdataset.TSDataset instance.
         :param past_seq_len:  Specify history time step (i.e. lookback)
                Do not specify the 'past_seq_len' if your tsdataset has called
-               the 'TSDataset.roll' method.
+               the 'TSDataset.roll' method or 'TSDataset.to_torch_data_loader'.
         :param future_seq_len: Specify output time step (i.e. horizon)
                Do not specify the 'future_seq_len' if your tsdataset has called
-               the 'TSDataset.roll' method.
+               the 'TSDataset.roll' method or 'TSDataset.to_torch_data_loader'.
+        :param kwargs: Specify parameters of Forecaster,
+               e.g. loss and optimizer, etc.
+               More info, please refer to Forecaster.__init__ methods.
 
         :return: A Forecaster Model
         """
         from bigdl.nano.utils.log4Error import invalidInputError
-        if tsdataset.numpy_x is not None:
-            past_seq_len = tsdataset.numpy_x.shape[1]
-            future_seq_len = tsdataset.numpy_y.shape[1]
-        if all([tsdataset.numpy_x is None, past_seq_len is None, future_seq_len is None]):
+
+        def check_time_steps(tsdataset, past_seq_len, future_seq_len):
+            if tsdataset.lookback is not None and past_seq_len is not None:
+                future_seq_len = future_seq_len if isinstance(future_seq_len, int)\
+                    else max(future_seq_len)
+                return tsdataset.lookback == past_seq_len and tsdataset.horizon == future_seq_len
+            return True
+
+        invalidInputError(not tsdataset._has_generate_agg_feature,
+                          "We will add support for 'gen_rolling_feature' method later.")
+
+        if tsdataset.lookback is not None:
+            past_seq_len = tsdataset.lookback
+            future_seq_len = tsdataset.horizon if isinstance(tsdataset.horizon, int) \
+                else max(tsdataset.horizon)
+            output_feature_num = len(tsdataset.roll_target)
+            input_feature_num = len(tsdataset.roll_feature) + output_feature_num
+        elif past_seq_len is not None and future_seq_len is not None:
+            past_seq_len = past_seq_len if isinstance(past_seq_len, int)\
+                else tsdataset.get_cycle_length()
+            future_seq_len = future_seq_len if isinstance(future_seq_len, int) \
+                else max(future_seq_len)
+            output_feature_num = len(tsdataset.target_col)
+            input_feature_num = len(tsdataset.feature_col) + output_feature_num
+        else:
             invalidInputError(False,
                               "Forecaster needs 'past_seq_len' to specify "
                               "the history time step of training.")
-        output_feature_num = len(tsdataset.target_col)
-        input_feature_num = len(tsdataset.feature_col) + output_feature_num
+
+        invalidInputError(check_time_steps(tsdataset, past_seq_len, future_seq_len),
+                          "tsdataset already has history time steps and "
+                          "differs from the given past_seq_len and future_seq_len "
+                          "Expected past_seq_len and future_seq_len to be "
+                          f"{tsdataset.lookback, tsdataset.horizon}, "
+                          f"but found {past_seq_len, future_seq_len}.",
+                          fixMsg="Do not specify past_seq_len and future seq_len "
+                          "or call tsdataset.roll method again and specify time step")
+
         return cls(past_seq_len=past_seq_len,
                    future_seq_len=future_seq_len,
                    input_feature_num=input_feature_num,
