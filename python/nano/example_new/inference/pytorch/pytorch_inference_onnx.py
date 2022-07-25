@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# # Apply ONNXRuntime Acceleration on Inference Pipeline
-
-# ### Environment Preparation
-
+# Required Dependecies
 # ```bash
 # pip install onnx onnxruntime
 # ```
