@@ -25,6 +25,7 @@
 from typing import Any, Callable, Tuple, Union
 import warnings
 import numpy as np
+from bigdl.nano.utils import log4Error
 import torch
 from torch.nn import functional as F
 import pytorch_lightning as pl
@@ -115,12 +116,12 @@ def select_using_loss(batch: Union[torch.Tensor, torch.Tensor],
     interp_mode = 'bilinear'
 
     if scale_factor > 1:
-        raise ValueError('scale_factor must be <= 1')
+        log4Error.invalidInputError(False, 'scale_factor must be <= 1')
 
     if scale_factor != 1:
         if input.dim() not in INTERPOLATE_MODES:
-            raise ValueError(
-                f'Input must be 3D, 4D, or 5D if scale_factor != 1, got {input.dim()}')
+            log4Error.invalidInputError(False, f'Input must be 3D, 4D, \
+                or 5D if scale_factor != 1, got {input.dim()}')
         interp_mode = INTERPOLATE_MODES[input.dim()]
 
     with torch.no_grad():
@@ -138,15 +139,16 @@ def select_using_loss(batch: Union[torch.Tensor, torch.Tensor],
 
         # Get per-examples losses
         if loss_fn is None:
-            raise ValueError('loss_fn must be passed explicitly to the class.')
+            log4Error.invalidInputError(False, 'loss_fn must be passed explicitly to the class.')
         else:
             losses = loss_fn(trainer.model(input), target)
 
         # Check losses' dimension
-        assert len(losses) == len(target), \
-            "Losses have wrong dimension, maybe they are reduced. \
+        if not len(losses) == len(target):
+            log4Error.invalidInputError(False, "Losses have wrong dimension, \
+            maybe they are reduced. \
             Please offer unreduced losses which have the same dimension with batch_size. \
-            It can be passed by ``loss_fn=`` when you initialize the class."
+            It can be passed by ``loss_fn=`` when you initialize the class.")
 
         # Sort losses
         sorted_idx = torch.argsort(torch.Tensor(losses))
@@ -157,7 +159,7 @@ def select_using_loss(batch: Union[torch.Tensor, torch.Tensor],
         probs = percs**((1.0 / keep) - 1.0)
         probs = probs / np.sum(probs)
         select_percs_idx = np.random.choice(N, n_select, replace=False, p=probs)
-        select_idx = sorted_idx[torch.Tensor(select_percs_idx)]
+        select_idx = sorted_idx[list(select_percs_idx)]
 
     return input[select_idx], target[select_idx]
 
@@ -282,8 +284,9 @@ class SelectiveBackprop(Callback):
         """Add PyTorch Lightning callback."""
         if self.__match(trainer, batch_idx):
             input, target = batch[0], batch[1]
-            assert isinstance(input, torch.Tensor) and isinstance(target, torch.Tensor), \
-                'Multiple tensors not supported for this method yet.'
+            if not isinstance(input, torch.Tensor) and isinstance(target, torch.Tensor):
+                log4Error.invalidInputError(False, 'Multiple tensors \
+                    not supported for this method yet.')
 
             input, target = select_using_loss(batch, batch_idx, trainer, pl_module, self.keep,
                                               self.scale_factor, self._loss_fn)
