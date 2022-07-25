@@ -50,11 +50,10 @@ class Resnet_2_2(pl.LightningModule):
         world_size = self.trainer.strategy.world_size
         for opt, lr_sch, lr in zip(self.trainer.optimizers, self.trainer.lr_schedulers, self.hparams):
             lr_sch = lr_sch['scheduler']
-            assert lr_sch.base_lrs[0] == self.hparams[lr] * world_size
-            if hasattr(lr_sch, 'factor'):
-                assert opt.param_groups[0]['lr'] == lr_sch.base_lrs[0] * lr_sch.factor
-            else:
+            if hasattr(lr_sch, 'start_factor'):
                 assert opt.param_groups[0]['lr'] == lr_sch.base_lrs[0] * lr_sch.start_factor
+                return
+            assert lr_sch.base_lrs[0] == self.hparams[lr] * world_size / 25
 
     def forward(self, x):
         x = self.backbone(x)
@@ -89,20 +88,23 @@ class Resnet_2_2(pl.LightningModule):
             self.head.parameters(),
             lr=self.hparams.learning_rate2
         )
-        if not TORCH_VERSION_LESS_1_10:
-            lr_scheduler1 = torch.optim.lr_scheduler.LinearLR(
-                optimizer1,
-                start_factor=0.25
+        if TORCH_VERSION_LESS_1_10:
+            return [optimizer1, optimizer2]
+        # lr_scheduler1 = torch.optim.lr_scheduler.LinearLR(
+        #     optimizer1,
+        #     start_factor=0.25
+        # )
+        lr_scheduler1 = torch.optim.lr_scheduler.OneCycleLR(
+            optimizer1, max_lr=0.01, steps_per_epoch=7, epochs=2
+        )
+        if TORCH_VERSION_LESS_1_10:
+            lr_scheduler2 = torch.optim.lr_scheduler.StepLR(
+                optimizer2, step_size=1, gamma=0.1, last_epoch=0
             )
         else:
-            lr_scheduler1 = torch.optim.lr_scheduler.ConstantLR(
-                optimizer1,
-                factor=0.25
+            lr_scheduler2 = torch.optim.lr_scheduler.LinearLR(
+                optimizer=optimizer2, start_factor=0.5
             )
-        lr_scheduler2 = torch.optim.lr_scheduler.ConstantLR(
-            optimizer2,
-            factor=0.5
-        )
         return (
             {"optimizer": optimizer1, "lr_scheduler": lr_scheduler1},
             {"optimizer": optimizer2, "lr_scheduler": lr_scheduler2}
