@@ -9,9 +9,45 @@ parts:
       - file: doc/Nano/QuickStart/pytorch_train
       - file: doc/Nano/QuickStart/pytorch_inference
       - file: doc/Nano/QuickStart/tensorflow_train
-      - file: doc/Nano/QuickStart/tensorflow_inference.md
-      - file: doc/Nano/QuickStart/hpo.rst
-      - file: doc/Nano/Overview/known_issues.md
-      - file: doc/Nano/QuickStart/index.md
+      - file: doc/Nano/QuickStart/tensorflow_inference
+      - file: doc/Nano/QuickStart/hpo
+      - file: doc/Nano/Overview/known_issues
+      - file: doc/Nano/QuickStart/index
+
+  - caption: Orca
+    hidden: True
+    chapters:
+      - file: doc/Orca/Overview/orca
+      - file: doc/Orca/Overview/orca-context
+      - file: doc/Orca/Overview/data-parallel-processing
+      - file: doc/Orca/Overview/distributed-training-inference
+      - file: doc/Orca/Overview/distributed-tuning
+      - file: doc/Ray/Overview/ray
+      - file: doc/Orca/Overview/known_issues
+
+  - caption: DLlib
+    chapters:
+      - file: doc/DLlib/Overview/dllib
+      - file: doc/DLlib/Overview/keras-api
+      - file: doc/DLlib/Overview/nnframes
+
+  - caption: Chronos
+    chapters:
+      - file: doc/Chronos/Overview/chronos
+      - file: doc/Chronos/Overview/deep_dive
+      - file: doc/Chronos/QuickStart/index.md
+      - file: doc/Chronos/Overview/chronos_known_issue.md
 
 
+  - caption: PPML
+    chapters:
+      - file: doc/PPML/Overview/ppml
+      - file: doc/PPML/Overview/trusted_big_data_analytics_and_ml
+      - file: doc/PPML/Overview/trusted_fl
+      - file: doc/PPML/QuickStart/secure_your_services
+      - file: doc/PPML/QuickStart/build_kernel_with_sgx
+      - file: doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes
+      - file: doc/PPML/QuickStart/trusted-serving-on-k8s-guide
+      - file: doc/PPML/QuickStart/tpc-h_with_sparksql_on_k8s
+      - file: doc/PPML/QuickStart/tpc-ds_with_sparksql_on_k8s
+      - file: doc/PPML/Overview/azure_ppml
