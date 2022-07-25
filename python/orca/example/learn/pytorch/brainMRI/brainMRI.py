@@ -192,8 +192,8 @@ config = {
     'val': val_df
 }
 train_loader = train_loader_creator(config=config, batch_size=batch_size)
-val_loader = val_loader_creator(config=config, batch_size=batch_size)
-test_loader = test_loader_creator(config=config, batch_size=batch_size)
+
+
 # plot some random training images.
 # You should use jupyter notebook to show the images.
 show_batch(train_loader)
