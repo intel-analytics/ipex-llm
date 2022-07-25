@@ -82,7 +82,8 @@ user_stats.show(3, False)
 ```
 
 #### 2.3.3. Process categorical features
-Converting categorical string data into numeric is essential. One can use `feature_tbl.category_encode("column_name")` to transform categorical data into integers.
+Categorical variables are usually represented as strings and are finite in number, converting these categorical string data into numeric is essential. 
+One can use `feature_tbl.category_encode("column_names")` to transform the categorical strings into unique integers for each column in column_names, a list of `StringIndex` of mapping from strings to integers is also returned, and should be applied on new feature table when making prediction.
 ```python
 user_tbl, inx_list = user_tbl.category_encode(["gender", "age", "zip", "occupation"])
 user_tbl.show(3, False)
@@ -95,7 +96,9 @@ user_tbl.show(3, False)
 # |3   |2     |2  |1971 |19        |
 # +----+------+---+-------+--------+
 ```
-Generate more categorical features by crossing `["gender", "age"]` into `"gender_age"`, `["age", "zipcode"]` into `"age_zipcode"`.
+A feature cross is a synthetic feature formed by crossing two or more features. Crossing combinations of features can provide predictive abilities beyond what those features can provide individually.
+In Friesian, it concatenates the strings from two or more features, then hash and bucketize into integers. 
+Here, it shows how to generate more categorical features by crossing `["gender", "age"]` into `"gender_age"`, `["age", "zipcode"]` into `"age_zipcode"`.
 ```python
 user_tbl = user_tbl.cross_columns([["gender", "age"], ["age", "zip"]], [50, 200])
 user_tbl.show(3, False)
@@ -111,7 +114,7 @@ user_tbl.show(3, False)
 One can cross multiple categorical columns and hash into a number of buckets by calling `feature_tbl.cross_hash_encode(columns, bins)`
 
 #### 2.3.4. Negative sampling
-Friesian FeatureTable randomly choose one item as negative sample for each positive record when `neg_num=1`, `neg_num` should be larger than 1 if more negative records are needed.
+Friesian FeatureTable randomly sample a small proportion among all the items and mark them as negative evidence. One item is randomly chosen within the `item_size` as negative sample for each positive record when `neg_num=1`, `neg_num` should be larger than 1 if more negative records are needed for training purpose.
 ```python
 item_size = item_stats.select("item").distinct().size()
 ratings_tbl = ratings_tbl.add_negative_samples(item_size=item_size, item_col="item", label_col="label", neg_num=1)
