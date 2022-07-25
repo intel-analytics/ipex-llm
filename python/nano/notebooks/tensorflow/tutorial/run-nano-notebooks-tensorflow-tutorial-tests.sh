@@ -3,9 +3,8 @@
 export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
 export NANO_HOME=${ANALYTICS_ZOO_ROOT}/python/nano/src
 export NANO_TUTORIAL_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/notebooks/tensorflow/tutorial
-export freezed_epochs=1
-export unfreeze_epochs=1
-export NUM_SHARDS=50
+export epochs=1
+export NUM_SHARDS=100
 
 set -e
 
