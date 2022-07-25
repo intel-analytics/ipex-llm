@@ -173,13 +173,14 @@ class Objective(object):
             for metric in self.target_metric:
                 score = self.searcher.trainer.callback_metrics[metric].item()
                 optim_score.append(score)
-            # compare optim_scores with original scores to find a similar
-            # loss value with less latency
             optim_score = Score(*optim_score)
+            # Here, we use usable to represent whether the optimized model can get smaller latency
+            # with other performance indicators basically unchanged
             usable = True
             for metric in self.target_metric:
                 if metric != "latency":
-                    if abs(getattr(optim_score, metric) - getattr(best_score, metric)) >= 0.005:
+                    if abs(getattr(optim_score, metric) - getattr(best_score, metric)) >= \
+                        0.01 * getattr(best_score, metric):
                         usable = False
                         break
                 else:

@@ -45,7 +45,6 @@ class LatencyAggregate(Metric):
 
     def compute(self):
         # achieve the core logic of how to average latency
-        # todo : is there should any diff in single and multi process?
         self.times.sort()
         count = len(self.times)
         if count >= 3:
