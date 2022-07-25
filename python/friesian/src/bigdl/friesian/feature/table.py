@@ -1005,7 +1005,7 @@ class FeatureTable(Table):
         """
         Cross columns and hashed to specified bin size.
 
-        :param cross_columns: nested list of str, nested list of categorical column names to be 
+        :param cross_columns: nested list of str, nested list of categorical column names to be
                encoded as cross features. i.e. [['a', 'b'], ['c', 'd']].
                For dense features, you need to cut them into discrete intervals beforehand.
         :param bin_sizes: list of int, defined the numbers of equal-width bins in the range
