@@ -145,20 +145,23 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
         }
 
     def pre_dispatch(self):
+        """Hook to config optimizers before training starts"""
         if not self.lightning_module.trainer.training or not self.scale_lr:
-
             return
 
         def _unpack_lightning_optimizer(opt):
+            # unpack the class used to warp user optimizers
             return opt._optimizer if isinstance(opt, LightningOptimizer) else opt
 
         optimizers = self.lightning_module.trainer.optimizers
         optimizers = [_unpack_lightning_optimizer(opt) for opt in optimizers]
 
+        # scale the lr of optimizers by the number of processes
         for optimizer in optimizers:
             for param_group in optimizer.param_groups:
                 param_group["lr"] *= self.world_size
 
+        # adjust base LR used by schedulers to match scaled optimizer initial LR
         lr_schedulers = self.lightning_module.trainer.lr_schedulers
         for scheduler in lr_schedulers:
             scheduler = scheduler["scheduler"]
