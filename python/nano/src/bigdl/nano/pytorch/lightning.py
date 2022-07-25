@@ -60,7 +60,7 @@ class LightningModule(pl.LightningModule):
         from bigdl.nano.deps.ipex.ipex_inference_model import PytorchIPEXJITModel
         from bigdl.nano.deps.onnxruntime.pytorch.pytorch_onnxruntime_model \
             import PytorchONNXRuntimeModel
-        if isinstance(self.model, (PytorchOpenVINOModel, PytorchIPEXJITModel, 
+        if isinstance(self.model, (PytorchOpenVINOModel, PytorchIPEXJITModel,
                                    PytorchONNXRuntimeModel)):
             return self.model.forward_args
         return inspect.getfullargspec(self.model.forward).args[1:]
