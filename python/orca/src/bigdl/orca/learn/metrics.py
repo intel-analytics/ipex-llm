@@ -103,6 +103,7 @@ class CustomizedMetric(Metric):
 
     def get_pytorch_metric(self):
         from bigdl.orca.learn.pytorch.pytorch_metrics import PytorchMetric
+
         class _Metirc(PytorchMetric):
             def __init__(self, compute_function):
                 self.batch_metric_value = 0
