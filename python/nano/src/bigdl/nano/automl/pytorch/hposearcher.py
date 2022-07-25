@@ -47,13 +47,30 @@ class HPOSearcher:
     TUNE_RUN_KEYS = {'n_trials', 'timeout', 'n_jobs', 'catch', 'tune_callbacks',
                      'gc_after_trial', 'show_progress_bar'}
 
-    def __init__(self, trainer: "pl.Trainer") -> None:
+    def __init__(self, trainer: "pl.Trainer", num_processes: int = 1) -> None:
         """
         Init a HPO Searcher.
 
         :param trainer: The pl.Trainer object.
         """
         self.trainer = trainer
+        self.num_process = num_processes
+        if num_processes == 1:
+            # reset current epoch = 0 after each run
+            from pytorch_lightning.callbacks import Callback
+
+            class ResetCallback(Callback):
+                def on_train_end(self, trainer, pl_module) -> None:
+                    super().on_train_end(trainer, pl_module)
+                    if LIGHTNING_VERSION_LESS_1_6:
+                        trainer.fit_loop.current_epoch = 0
+                    else:
+                        trainer.fit_loop.epoch_progress.current.processed = 0
+
+            callbacks = self.trainer.callbacks or []
+            callbacks.append(ResetCallback())
+            self.trainer.callbacks = callbacks
+
         self.model_class = pl.LightningModule
         self.study = None
         self.objective = None
@@ -159,11 +176,15 @@ class HPOSearcher:
             self._run_search()
 
         # it is not possible to know the best trial before runing search,
-        # so just apply the best trial at end of each search
-        self._lazymodel = _end_search(study=self.study,
-                                      model_builder=model._model_build,
-                                      use_trial_id=-1)
-        return self._lazymodel
+        # so just apply the best trial at end of each search.
+        # a single best trial cannot be retrieved from a multi-objective study.
+        if not self.objective.mo_hpo:
+            self._lazymodel = _end_search(study=self.study,
+                                          model_builder=model._model_build,
+                                          use_trial_id=-1)
+            return self._lazymodel
+        else:
+            return self.study.best_trials
 
     def search_summary(self):
         """
@@ -197,11 +218,9 @@ class HPOSearcher:
         # last `_run` call might have set it to `FINISHED`
         self.trainer.state.status = TrainerStatus.RUNNING
         self.trainer.training = True
-        self.trainer._run(*args, **kwargs)
-        if not LIGHTNING_VERSION_LESS_1_6:
-            training_epoch_loop = TrainingEpochLoop(self.trainer.min_steps,  # type: ignore
-                                                    self.trainer.max_steps)  # type: ignore
-            fit_loop = FitLoop(self.trainer.min_epochs, self.trainer.max_epochs)
-            fit_loop.connect(training_epoch_loop)
-            self.trainer.fit_loop = fit_loop
+        if self.num_process > 1 and not LIGHTNING_VERSION_LESS_1_6:
+            self.trainer.state.fn = TrainerFn.FITTING  # add in lightning 1.6
+            self.trainer.fit(*args, **kwargs)
+        else:
+            self.trainer._run(*args, **kwargs)
         self.trainer.tuning = True

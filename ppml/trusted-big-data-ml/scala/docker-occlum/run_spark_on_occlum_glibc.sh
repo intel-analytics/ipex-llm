@@ -39,7 +39,6 @@ init_instance() {
     # check if occlum_spark exists
     [[ -d occlum_spark ]] || mkdir occlum_spark
     cd occlum_spark
-    /opt/occlum/start_aesm.sh
     occlum init
     new_json="$(jq '.resource_limits.user_space_size = "SGX_MEM_SIZE" |
         .resource_limits.max_num_of_threads = "SGX_THREAD" |
@@ -334,7 +333,7 @@ run_spark_xgboost() {
                 --executor-memory 9G \
                 --driver-memory 2G \
                 /bin/jars/bigdl-dllib-spark_3.1.2-2.1.0-SNAPSHOT.jar \
-                /host/data /host/data/model 2 100 2
+                -i /host/data -s /host/data/model -t 2 -r 100 -d 2 -w 1
 }
 
 

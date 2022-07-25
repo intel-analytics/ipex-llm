@@ -24,7 +24,9 @@ def roll_timeseries_dataframe(df,
                               horizon,
                               feature_col,
                               target_col,
-                              label_len=0):
+                              id_col=None,
+                              label_len=0,
+                              contain_id=False):
     """
     roll dataframe into numpy ndarray sequence samples.
 
@@ -39,6 +41,9 @@ def roll_timeseries_dataframe(df,
            to the input list. 1 means the timestamp just after the observed data.
     :param feature_col: list, indicate the feature col name.
     :param target_col: list, indicate the target col name.
+    :param id_col: str, indicate the id col name, only needed when contain_id is True.
+    :param label_len: This parameter is only for transformer-based model.
+    :param contain_id: This parameter is only for XShardsTSDataset
     :return: x, y
         x: 3-d numpy array in format (no. of samples, lookback, feature_col length)
         y: 3-d numpy array in format (no. of samples, horizon, target_col length)
@@ -66,13 +71,17 @@ def roll_timeseries_dataframe(df,
                                                 horizon,
                                                 feature_col,
                                                 target_col,
-                                                label_len)
+                                                id_col=id_col,
+                                                label_len=label_len,
+                                                contain_id=contain_id)
     else:
         return _roll_timeseries_dataframe_test(df,
                                                roll_feature_df,
                                                lookback,
                                                feature_col,
-                                               target_col)
+                                               target_col,
+                                               id_col=id_col,
+                                               contain_id=contain_id)
 
 
 def _append_rolling_feature_df(rolling_result,
@@ -93,7 +102,9 @@ def _roll_timeseries_dataframe_test(df,
                                     roll_feature_df,
                                     lookback,
                                     feature_col,
-                                    target_col):
+                                    target_col,
+                                    id_col,
+                                    contain_id):
     x = df.loc[:, target_col+feature_col].values.astype(np.float32)
 
     output_x, mask_x = _roll_timeseries_ndarray(x, lookback)
@@ -101,7 +112,10 @@ def _roll_timeseries_dataframe_test(df,
 
     x = _append_rolling_feature_df(output_x[mask], roll_feature_df)
 
-    return x, None
+    if contain_id:
+        return x, None, df.loc[:, [id_col]].values.astype(np.float32)
+    else:
+        return x, None
 
 
 def _roll_timeseries_dataframe_train(df,
@@ -110,7 +124,9 @@ def _roll_timeseries_dataframe_train(df,
                                      horizon,
                                      feature_col,
                                      target_col,
-                                     label_len):
+                                     id_col,
+                                     label_len,
+                                     contain_id):
     from bigdl.nano.utils.log4Error import invalidInputError
     if label_len != 0 and isinstance(horizon, list):
         invalidInputError(False,
@@ -131,7 +147,10 @@ def _roll_timeseries_dataframe_train(df,
 
     x = _append_rolling_feature_df(output_x[mask], roll_feature_df)
 
-    return x, output_y[mask]
+    if contain_id:
+        return x, output_y[mask], df.loc[:, [id_col]].values.astype(np.float32)
+    else:
+        return x, output_y[mask]
 
 
 def _shift(arr, num, fill_value=np.nan):

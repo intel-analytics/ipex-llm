@@ -19,6 +19,7 @@ import pytest
 from unittest import TestCase
 import tensorflow as tf
 from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
+from keras.utils.np_utils import to_categorical
 import numpy as np
 from bigdl.nano.tf.keras import Model
 
@@ -32,6 +33,7 @@ class TestModelQuantize(TestCase):
                       metrics=[tf.keras.metrics.CategoricalAccuracy()],)
         train_examples = np.random.random((100, 40, 40, 3))
         train_labels = np.random.randint(0, 10, size=(100,))
+        train_labels = to_categorical(train_labels, num_classes=10)
         train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels))
         # Case 1: Default
         q_model = model.quantize(calib_dataset=train_dataset)

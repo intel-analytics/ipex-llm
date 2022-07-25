@@ -41,14 +41,11 @@
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from .layers.Embed import DataEmbedding, DataEmbedding_wo_pos
+from .layers.Embed import DataEmbedding_wo_pos
 from .layers.AutoCorrelation import AutoCorrelation, AutoCorrelationLayer
 from .layers.Autoformer_EncDec import Encoder, Decoder, EncoderLayer,\
     DecoderLayer, my_Layernorm, series_decomp
 import torch.optim as optim
-import math
-import numpy as np
 import pytorch_lightning as pl
 
 from collections import namedtuple
@@ -62,6 +59,7 @@ class AutoFormer(pl.LightningModule):
     """
     def __init__(self, configs):
         super().__init__()
+        pl.seed_everything(configs.seed, workers=True)
         self.seq_len = configs.seq_len
         self.label_len = configs.label_len
         self.pred_len = configs.pred_len
@@ -69,7 +67,7 @@ class AutoFormer(pl.LightningModule):
         self.optim = configs.optim
         self.lr = configs.lr
         self.lr_scheduler_milestones = configs.lr_scheduler_milestones
-        self.loss = _loss_creator(configs.loss)
+        self.loss = loss_creator(configs.loss)
 
         # Decomp
         kernel_size = configs.moving_avg
@@ -151,9 +149,7 @@ class AutoFormer(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         batch_x, batch_y, batch_x_mark, batch_y_mark = map(lambda x: x.float(), batch)
-        dec_inp = torch.zeros_like(batch_y[:, -self.pred_len:, :]).float()
-        dec_inp = torch.cat([batch_y[:, :self.label_len, :], dec_inp], dim=1).float()
-        outputs = self(batch_x, batch_x_mark, dec_inp, batch_y_mark)
+        outputs = self(batch_x, batch_x_mark, batch_y, batch_y_mark)
 
         outputs = outputs[:, -self.pred_len:, :]
         batch_y = batch_y[:, -self.pred_len:, :]
@@ -161,10 +157,7 @@ class AutoFormer(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         batch_x, batch_y, batch_x_mark, batch_y_mark = map(lambda x: x.float(), batch)
-        dec_inp = torch.zeros_like(batch_y[:, -self.pred_len:, :]).float()
-        dec_inp = torch.cat([batch_y[:, :self.label_len, :], dec_inp], dim=1).float()
-        outputs = self(batch_x.float(), batch_x_mark.float(), dec_inp,
-                       batch_y_mark.float())
+        outputs = self(batch_x, batch_x_mark, batch_y, batch_y_mark)
 
         outputs = outputs[:, -self.pred_len:, :]
         batch_y = batch_y[:, -self.pred_len:, :]
@@ -172,10 +165,8 @@ class AutoFormer(pl.LightningModule):
 
     def predict_step(self, batch, batch_idx):
         batch_x, batch_y, batch_x_mark, batch_y_mark = map(lambda x: x.float(), batch)
-        dec_inp = torch.zeros(batch_y.size(0), self.pred_len, batch_y.size(2)).float()
-        dec_inp = torch.cat([batch_y[:, :self.label_len, :], dec_inp], dim=1).float()
-        outputs = self(batch_x.float(), batch_x_mark.float(), dec_inp,
-                       batch_y_mark.float())
+        outputs = self(batch_x, batch_x_mark, batch_y, batch_y_mark)
+
         outputs = outputs[:, -self.pred_len:, :]
         return outputs
 
@@ -195,7 +186,7 @@ def model_creator(config):
     return AutoFormer(args)
 
 
-def _loss_creator(loss_name):
+def loss_creator(loss_name):
     if loss_name in PYTORCH_REGRESSION_LOSS_MAP:
         loss_name = PYTORCH_REGRESSION_LOSS_MAP[loss_name]
     else:
@@ -240,5 +231,6 @@ def _transform_config_to_namedtuple(config):
     args.optim = config.get("optim", "Adam")
     args.lr = config.get("lr", 0.0001)
     args.lr_scheduler_milestones = config.get("lr_scheduler_milestones", None)
+    args.seed = config.get("seed", None)
 
     return args

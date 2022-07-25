@@ -1,25 +1,30 @@
 ## Description
 
 <!-- For small changes (<=3 files and <=50 lines of codes in the source folder), -->
-<!-- you may remove Sections 1-3 below and just provide a simple description here -->
+<!-- you may remove Sections 1-4 below and just provide a simple description here -->
 
 ### 1. Why the change?
 
 <!-- Provide the related github issue link if available -->
 
-### 2. Summary of the change
+### 2. User API changes
 
-<!-- Provide the design for both API changes and the implementation; -->
-<!-- alternatively, provide a link to the github issue link for the design -->
+<!-- Describe API changes (i.e., how users will use the feature) if any; -->
+<!-- alternatively, provide a link to the github issue for the design -->
 
-### 3. How to test?
+### 3. Summary of the change 
+
+<!-- Provide the design for the implementation; -->
+<!-- alternatively, provide a link to the github issue for the design -->
+
+### 4. How to test?
 - [ ] N/A
 - [ ] Unit test
 - [ ] Application test
 - [ ] Document test
 - [ ] ...
 
-### 4. New dependencies
+### 5. New dependencies
 
 <!-- If no new dependency is introduced, remove this section -->
 

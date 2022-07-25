@@ -36,7 +36,6 @@ import os
 import multiprocessing
 import subprocess
 import sys
-import copy
 import uuid
 from typing import Any, Optional, Callable
 from tempfile import TemporaryDirectory
@@ -63,8 +62,11 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
     def launch(self, function: Callable, *args: Any,
                trainer: Optional["pl.Trainer"] = None, **kwargs: Any) -> Any:
         # pytorch_lightning 1.6 uses this method to create child processes
-        invalidInputError(trainer is not None and self._strategy.cluster_environment is not None,
-                          'strategy.cluster_environment and trainer cannot be None')
+
+        # the `self._strategy.cluster_environment` should not be None in normal circumstances,
+        # if you see this error message, please report an issue in BigDL.
+        invalidInputError(self._strategy.cluster_environment is not None,
+                          'strategy.cluster_environment cannot be None')
 
         os.environ["MASTER_PORT"] = str(self._strategy.cluster_environment.main_port)
 
@@ -80,7 +82,7 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
             } for i in range(self._strategy.num_processes)]
 
         # fix bug, see ddp_spawn strategy for details
-        if self._strategy.use_ipex and TORCH_VERSION_LESS_1_10:
+        if self._strategy.use_ipex and TORCH_VERSION_LESS_1_10 and trainer is not None:
             if isinstance(args[1], LightningDataModule):
                 args[1].trainer = None
             elif isinstance(args[3], LightningDataModule):
@@ -101,8 +103,22 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
             return_queue = mp.Queue()
             error_queue = mp.Queue()
             args = (trainer, function, args, kwargs, return_queue)
+
+            # when using trainer, if we dump `trainer` and `self._wrapping_function` at the
+            # same time, then after we load them in the subprocess, the loaded `trainer` may
+            # be different from the one we dumped sometimes. so now, when using trianer, we
+            # don't dump the `self._wrapping_function` and access it through `trainer` in
+            # subprocess, when using LightningLite, the `trainer` is None, so we must dump
+            # `self._wrapping_function`.
             with open(os.path.join(temp_dir, "args.pkl"), "wb") as f:
-                cloudpickle.dump((self._wrapping_function, args, error_queue), f)
+                if trainer is not None:
+                    cloudpickle.dump((None, args, error_queue), f)
+                else:
+                    cloudpickle.dump((self._wrapping_function, args, error_queue), f)
+
+            # we also need to pass sys.path to subprocess
+            with open(os.path.join(temp_dir, "sys_path.pkl"), "wb") as f:
+                cloudpickle.dump(sys.path, f)
 
             processes = []
             cwd_path = os.path.split(os.path.realpath(__file__))[0]
@@ -117,12 +133,17 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
 
             for _, process in enumerate(processes):
                 process.wait()
-
             for _, process in enumerate(processes):
-                assert process.returncode == 0, "Subprocess incorrectly exit, \
-                                                check the trainer configure or usage"
+                invalidInputError(process.returncode == 0, "subprocess exits incorrectly")
+
             # restore the state of child process
             spawn_output = return_queue.get()
+
+            # when using pytorch lightning's trainer, the `trainer` cannot be None,
+            # when using pytorch lightning's LightningLite, the `trainer` should be None
+            if trainer is None:
+                return spawn_output
+
             self._recover_results_in_main_process(spawn_output, trainer)
             return spawn_output.trainer_results
 
