@@ -15,6 +15,7 @@
 #
 
 from collections import namedtuple
+from pickletools import optimize
 from typing import Optional, Union
 
 import pytorch_lightning as pl
@@ -150,6 +151,7 @@ class Objective(object):
     def _auto_optimize(self, model, scores):
         Score = namedtuple("Score", self.target_metric)
         best_score = Score(*scores)
+        optim_model_type = "original"
         model.eval()
 
         # here we suppose nn.model is attached to plmodel by attribute "model"
@@ -189,8 +191,9 @@ class Objective(object):
                         break
             if usable:
                 best_score = optim_score
+                optim_model_type = optimization
         scores = tuple(best_score)
-        return scores
+        return scores, optim_model_type
 
     def __call__(self, trial):
         """
@@ -216,6 +219,9 @@ class Objective(object):
         else:
             scores = self.searcher.trainer.callback_metrics[self.target_metric].item()
         if self.auto_optimize:
-            scores = self._auto_optimize(model, scores)
+            scores, optimization = self._auto_optimize(model, scores)
+            # via user_attr returns the choosed optimization corresponding 
+            # to the minimum latency
+            trial.set_user_attr("optimization", optimization)
         self._post_train(model)
         return scores
