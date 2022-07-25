@@ -51,6 +51,10 @@ class TestOpenVINO(TestCase):
         y_hat = optimized_model(x)
         assert y_hat.shape == (10, 10)
 
+        trainer.validate(optimized_model, dataloader)
+        trainer.test(optimized_model, dataloader)
+        trainer.predict(optimized_model, dataloader)
+
     def test_trainer_quantize_openvino_with_tuning(self):
         trainer = Trainer()
         model = mobilenet_v3_small(num_classes=10)
@@ -69,3 +73,7 @@ class TestOpenVINO(TestCase):
         assert y_hat.shape == (3, 10)
         y_hat = optimized_model(x)
         assert y_hat.shape == (10, 10)
+
+        trainer.validate(optimized_model, dataloader)
+        trainer.test(optimized_model, dataloader)
+        trainer.predict(optimized_model, dataloader)

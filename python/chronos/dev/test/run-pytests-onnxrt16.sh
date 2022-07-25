@@ -44,19 +44,23 @@ python -m pytest -v test/bigdl/chronos/autots/test_autotsestimator.py::TestAutoT
                     test/bigdl/chronos/forecaster/test_lstm_forecaster.py::TestChronosModelLSTMForecaster::test_lstm_forecaster_quantization_onnx_tuning \
                     test/bigdl/chronos/forecaster/test_lstm_forecaster.py::TestChronosModelLSTMForecaster::test_lstm_forecaster_distributed \
                     test/bigdl/chronos/forecaster/test_lstm_forecaster.py::TestChronosModelLSTMForecaster::test_lstm_forecaster_fit_loader \
+                    test/bigdl/chronos/forecaster/test_lstm_forecaster.py::TestChronosModelLSTMForecaster::test_forecaster_from_tsdataset_data_loader_onnx \
                     test/bigdl/chronos/forecaster/test_seq2seq_forecaster.py::TestChronosModelSeq2SeqForecaster::test_s2s_forecaster_onnx_methods \
                     test/bigdl/chronos/forecaster/test_seq2seq_forecaster.py::TestChronosModelSeq2SeqForecaster::test_s2s_forecaster_distributed \
                     test/bigdl/chronos/forecaster/test_seq2seq_forecaster.py::TestChronosModelSeq2SeqForecaster::test_s2s_forecaster_fit_loader \
+                    test/bigdl/chronos/forecaster/test_seq2seq_forecaster.py::TestChronosModelSeq2SeqForecaster::test_forecaster_from_tsdataset_data_loader_onnx \
                     test/bigdl/chronos/forecaster/test_tcn_forecaster.py::TestChronosModelTCNForecaster::test_tcn_forecaster_onnx_methods \
                     test/bigdl/chronos/forecaster/test_tcn_forecaster.py::TestChronosModelTCNForecaster::test_tcn_forecaster_quantization_onnx \
                     test/bigdl/chronos/forecaster/test_tcn_forecaster.py::TestChronosModelTCNForecaster::test_tcn_forecaster_quantization_onnx_tuning \
                     test/bigdl/chronos/forecaster/test_tcn_forecaster.py::TestChronosModelTCNForecaster::test_tcn_forecaster_distributed \
                     test/bigdl/chronos/forecaster/test_tcn_forecaster.py::TestChronosModelTCNForecaster::test_tcn_forecaster_fit_loader \
+                    test/bigdl/chronos/forecaster/test_tcn_forecaster.py::TestChronosModelTCNForecaster::test_forecaster_from_tsdataset_data_loader_onnx \
                     test/bigdl/chronos/forecaster/test_nbeats_forecaster.py::TestChronosNBeatsForecaster::test_nbeats_forecaster_onnx_methods \
                     test/bigdl/chronos/forecaster/test_nbeats_forecaster.py::TestChronosNBeatsForecaster::test_nbeats_forecaster_quantization_onnx \
                     test/bigdl/chronos/forecaster/test_nbeats_forecaster.py::TestChronosNBeatsForecaster::test_nbeats_forecaster_quantization_onnx_tuning \
                     test/bigdl/chronos/forecaster/test_nbeats_forecaster.py::TestChronosNBeatsForecaster::test_nbeats_forecaster_fit_loader \
-                    test/bigdl/chronos/forecaster/test_nbeats_forecaster.py::TestChronosNBeatsForecaster::test_nbeats_forecaster_distributed
+                    test/bigdl/chronos/forecaster/test_nbeats_forecaster.py::TestChronosNBeatsForecaster::test_nbeats_forecaster_distributed \
+                    test/bigdl/chronos/forecaster/test_nbeats_forecaster.py::TestChronosNBeatsForecaster::test_forecaster_from_tsdataset_data_loader_onnx
 
 exit_status_0=$?
 if [ $exit_status_0 -ne 0 ];

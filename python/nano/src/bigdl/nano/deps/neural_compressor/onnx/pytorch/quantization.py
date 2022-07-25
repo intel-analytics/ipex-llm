@@ -29,6 +29,7 @@ class PytorchONNXRuntimeQuantization(BaseONNXRuntimeQuantization, PytorchQuantiz
         Create a Intel Neural Compressor Quantization object for ONNXRuntime in Pytorch.
         """
         kwargs['framework'] = framework
+        self.session_options = kwargs.pop('onnxruntime_session_options', None)
         super().__init__(**kwargs)
         self._inc_metric_cls = PytorchONNXRuntimeINCMetic
 
@@ -61,4 +62,5 @@ class PytorchONNXRuntimeQuantization(BaseONNXRuntimeQuantization, PytorchQuantiz
         with TemporaryDirectory() as dir:
             saved_onnx = Path(dir) / 'tmp.onnx'
             q_model.save(saved_onnx)
-            return PytorchONNXRuntimeModel(str(saved_onnx))
+            return PytorchONNXRuntimeModel(str(saved_onnx),
+                                           onnxruntime_session_options=self.session_options)

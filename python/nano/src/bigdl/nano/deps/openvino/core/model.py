@@ -18,10 +18,6 @@ from tempfile import TemporaryDirectory
 from openvino.runtime import Core
 from bigdl.nano.utils.log4Error import invalidInputError
 from openvino.runtime import Model
-from openvino.tools.pot.graph import load_model, save_model
-from openvino.tools.pot.engines.ie_engine import IEEngine
-from openvino.tools.pot.pipeline.initializer import create_pipeline
-from openvino.tools.pot.graph.model_utils import compress_model_weights
 from .utils import save
 
 
@@ -33,6 +29,10 @@ class OpenVINOModel:
 
     def forward_step(self, *inputs):
         return self._infer_request.infer(list(inputs))
+
+    @property
+    def forward_args(self):
+        return self._forward_args
 
     @property
     def ie_network(self):
@@ -47,6 +47,8 @@ class OpenVINOModel:
         self._compiled_model = self._ie.compile_model(model=self.ie_network,
                                                       device_name=self._device)
         self._infer_request = self._compiled_model.create_infer_request()
+        input_names = [t.any_name for t in self._ie_network.inputs]
+        self._forward_args = input_names
 
     def _save_model(self, path):
         """
@@ -69,7 +71,10 @@ class OpenVINOModel:
             max_iter_num=1,
             n_requests=None,
             sample_size=300) -> Model:
-
+        from openvino.tools.pot.graph import load_model, save_model
+        from openvino.tools.pot.engines.ie_engine import IEEngine
+        from openvino.tools.pot.pipeline.initializer import create_pipeline
+        from openvino.tools.pot.graph.model_utils import compress_model_weights
         # set batch as 1 if it's dynaminc or larger than 1
         orig_shape = dict()
         static_shape = dict()
