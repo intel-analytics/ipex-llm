@@ -331,8 +331,8 @@ class BasePytorchForecaster(Forecaster):
             early_stopping = EarlyStopping('val/loss', patience=earlystop_patience)
             callbacks = [early_stopping] if validation_mode == 'earlystop' else None
             # Trainer init
-            self.trainer = Trainer(logger=logger, max_epochs=epochs,
-                                   checkpoint_callback=self.checkpoint_callback, callbacks=callbacks,
+            self.trainer = Trainer(logger=logger, max_epochs=epochs, callbacks=callbacks,
+                                   checkpoint_callback=self.checkpoint_callback,
                                    num_processes=self.num_processes, use_ipex=self.use_ipex,
                                    flush_logs_every_n_steps=10, log_every_n_steps=10,
                                    distributed_backend="spawn")
