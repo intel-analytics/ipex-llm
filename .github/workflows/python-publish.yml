@@ -9,6 +9,8 @@
 name: Nightly Build Upload Python Package
 
 on:
+  pull_request:
+    branches: [ main ]
   #release:
    # types: [published]
   schedule:
