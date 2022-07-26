@@ -49,13 +49,3 @@ This error is because that `num_ray_nodes` and `ray_node_cpu_cores` is not speci
 ```bash
 init_orca_context(num_ray_nodes=2, ray_node_cpu_cores=4)
 ```
-
-### AttributeError: 'dict' object has no attribute 'getAll’
-
-This error maybe because you specify `conf` in `init_orca_context` when using spark-submit command line to submit the task. `conf` will not be convert to `SparkConf` when using spark-submit, so there will not be `getAll` for `dict` object. You can set `SparkConf` in command line parameters as follows:
-
-```bash
-spark-submit --conf spark.dynamicAllocation.enabled=true \
-             --conf spark.dynamicAllocation.minExecutors 2 \
-             --conf spark.dynamicAllocation.maxExecutors 2
-```
