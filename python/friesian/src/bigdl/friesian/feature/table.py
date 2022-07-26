@@ -255,14 +255,14 @@ class Table:
 
     def random_split(self, weights, seed=None):
         """
-        Randomly split table into multiple tables with the provided weights for train, validation
+        Randomly split Table into multiple Tables with the provided weights for train, validation
         and test.
 
-        :param weights: list of doubles as weights with which to split the table.
+        :param weights: list of doubles as weights with which to split the Table.
                Weights will be normalized if they don't sum up to 1.0.
         :param seed: The seed for sampling.
 
-        :return: A list of tables split by the provided weights.
+        :return: A list of Tables split by the provided weights.
         """
         df_array = self.df.randomSplit(weights, seed)
         return [self._clone(df) for df in df_array]
