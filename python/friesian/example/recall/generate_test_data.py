@@ -142,16 +142,16 @@ def generate_data(args):
 
         print(f"loading {args.dict_path}")
 
-        emb_vecs_loaded = emb_vecs
-        print(emb_vecs_loaded.shape)
-        print(emb_vecs_loaded[0, :10])
+        emb_vecs = emb_vecs
+        print(emb_vecs.shape)
+        print(emb_vecs[0, :10])
 
         with open(args.dict_path, "rb") as f:
             item_dict_loaded = pickle.load(f)
         print(item_dict_loaded.shape)
         print(item_dict_loaded[:10])
 
-        q_vec = emb_vecs_loaded[[0, ]]
+        q_vec = emb_vecs[[0, ]]
         print(q_vec.shape)
 
         with open(args.index_save_path, "rb") as f:

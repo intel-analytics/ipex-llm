@@ -19,8 +19,8 @@ pip install --pre --upgrade bigdl-friesian
 ## Generate data
 You can generate some test data to run the example, which contains:
 - item_dict: unique string names of items.
-- index data: the faiss index data built from item embeddings.
 - parquet data: items saved in parquet format to do the search, where each row contains item id and its embedding.
+- index data: the faiss index data built from item embeddings.
 
 Example command:
 ```bash
@@ -43,13 +43,13 @@ __Options for generate_test_data:__
 * `index_type`: The faiss index_type: FlatL2 or IVFFlatL2. Default to be FlatL2.
 * `dict_path`: The path to save item_dict. Default to be ./item_dict.pkl.
 * `index_save_path`: The path to save faiss index data. Default to be ./index_FlatL2.pkl.
-* `parquet_path`: The path to save vector embeddings with spark. Default to be ./data.parquet/.
+* `parquet_path`: The path to save vector embeddings. Default to be ./data.parquet/.
 
 __NOTE:__ 
 The file paths ('dict_path','faiss_index_path' and 'parquet_path') will be used directly as the corresponding input parameters for *search.py* below.
 
 ## Search items
-Search *top_k* items for each query and get a total of *len(query items)* * *top_k* rows,
+Search *top_k* items for each query item and get a total of *len(query items)* * *top_k* rows,
 where each row contains the name of the query item, the name of the searched item, the ranking and the score.
 
 * Spark local, example command:
