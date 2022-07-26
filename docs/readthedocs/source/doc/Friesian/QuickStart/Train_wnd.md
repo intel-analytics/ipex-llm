@@ -64,8 +64,7 @@ For missing values, one can replace them with a specified value or just simply d
 user_tbl = user_tbl.fillna('0', "zipcode")
 ```
 #### 2.3.2. Scale numerical features
-Generate continuous features like user stats and rescale these features within a range of min and max, one can also use `feature_tbl.transform_min_max_scale(min_max_dict)` to apply the scale of `min_max_dict` to data while preparing new feature table to make predictions.
-```python
+Generate continuous features like user stats including item counts and mean rate, then rescale these features within a range of min and max by calling `feature_tbl.min_max_scale("column_names")`.
 user_stats = ratings_tbl.group_by("user", agg={"item": "count", "rate": "mean"}) \
         .rename({"count(item)": "user_visits", "avg(rate)": "user_mean_rate"})
 user_stats, min_max_dict = user_stats.min_max_scale(["user_visits", "user_mean_rate"])
