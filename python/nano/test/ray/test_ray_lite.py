@@ -51,7 +51,7 @@ class MyNano(TorchNano):
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
         train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
 
-        model, optimizer, loss, train_loader = self.setup(model, optimizer, loss, train_loader)
+        model, optimizer, train_loader = self.setup(model, optimizer, train_loader)
 
         model.train()
 
@@ -61,7 +61,7 @@ class MyNano(TorchNano):
             for X, y in train_loader:
                 optimizer.zero_grad()
                 l = loss(model(X), y)
-                l.backward()
+                self.backward(l)
                 optimizer.step()
                 
                 total_loss += l.sum()
@@ -90,9 +90,7 @@ class MyNanoCorrectness(TorchNano):
         loss = nn.MSELoss()
         optimizer = torch.optim.SGD(origin_model.parameters(), lr=lr)
 
-        model, optimizer, loss, train_loader = self.setup(
-            origin_model, optimizer, loss, train_loader
-        )
+        model, optimizer, train_loader = self.setup(origin_model, optimizer, train_loader)
 
         model.train()
 
@@ -116,10 +114,10 @@ class TestLite(TestCase):
         )
         os.environ['PYTHONPATH'] = project_test_dir
 
-    def test_lite_subprocess(self):
+    def test_lite_ray(self):
         MyNano(num_processes=2, strategy="ray").train()
 
-    def test_lite_subprocess_correctness(self):
+    def test_lite_ray_correctness(self):
         MyNanoCorrectness(num_processes=2, strategy="ray").train(0.5)
 
 

@@ -35,8 +35,6 @@ from bigdl.nano.pytorch.strategies.ipex.ipex_api import ipex_optimize
 from bigdl.nano.pytorch.strategies import create_IPEXStrategy, DDPSpawnStrategy, \
     DDPSubprocessStrategy, create_RayStrategy
 
-from .wrapper import _wrap_loss_func
-
 
 class TorchNano(LightningLite):
     """
@@ -146,13 +144,12 @@ class TorchNano(LightningLite):
         return model
 
     def setup(self, model: nn.Module, optimizer: Optimizer,     # type: ignore[override]
-              loss_func: _Loss, *dataloaders: DataLoader, move_to_device: bool = True):
+              *dataloaders: DataLoader, move_to_device: bool = True):
         """
         Setup model, optimizer, loss function and dataloaders for accelerated training.
 
         :param model: A model to setup
         :param optimizer: The optimizer to setup
-        :param loss_func: The loss function to setup
         :param *dataloaders: The dataloader(s) to setup
         :param move_to_device: If set ``True`` (default), moves the model to the correct device.
             Set this to ``False`` and alternatively use :meth:`to_device` manually.
@@ -162,8 +159,7 @@ class TorchNano(LightningLite):
         model, optimizer = self._setup(model, optimizer, move_to_device=move_to_device)
         dataloaders = self.setup_dataloaders(*dataloaders,  # type: ignore
                                              move_to_device=move_to_device)
-        loss_func = _wrap_loss_func(self, loss_func)
-        return model, optimizer, loss_func, dataloaders
+        return model, optimizer, dataloaders
 
     @abstractmethod
     def train(self, *args: Any, **kwargs: Any) -> Any:
