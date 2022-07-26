@@ -12,6 +12,7 @@
 [![commits](https://img.shields.io/github/commit-activity/m/intel-analytics/BigDL)](https://github.com/intel-analytics/BigDL/pulse)
 [![contributors](https://img.shields.io/github/contributors/intel-analytics/BigDL)](https://github.com/intel-analytics/BigDL/graphs/contributors)
 [![codesize](https://img.shields.io/github/languages/code-size/intel-analytics/BigDL)](https://github.com/intel-analytics/BigDL)
+
 BigDL makes it easy for data scientists and data engineers to build end-to-end, distributed AI applications. The **BigDL 2.0** release combines the [original BigDL](https://github.com/intel-analytics/BigDL/tree/branch-0.14) and [Analytics Zoo](https://github.com/intel-analytics/analytics-zoo) projects, providing the following features:
  
   * [DLlib](#getting-started-with-dllib): distributed deep learning library for Apache Spark *(i.e., the original BigDL framework with Keras-style API and Spark ML pipeline support)*
