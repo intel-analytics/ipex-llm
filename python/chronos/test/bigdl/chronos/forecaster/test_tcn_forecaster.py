@@ -148,6 +148,42 @@ class TestChronosModelTCNForecaster(TestCase):
         train_loss = forecaster.trainer.callback_metrics['train/loss']
         assert train_loss > 10
 
+    def test_tcn_forecaster_multi_objective_tune(self):
+        import bigdl.nano.automl.hpo.space as space
+        train_data, val_data, _ = create_data(loader=False)
+        forecaster = TCNForecaster(past_seq_len=24,
+                                future_seq_len=5,
+                                input_feature_num=1,
+                                output_feature_num=1,
+                                kernel_size=4,
+                                num_channels=[16, 16],
+                                loss="mae",
+                                metrics=['mae', 'mse', 'mape'],
+                                lr=space.Real(0.001, 0.01, log=True))
+        forecaster.tune(train_data, validation_data=val_data,
+                        n_trials=2, target_metric=['mse', 'latency'],
+                        direction=None,
+                        directions=["minimize", "minimize"])
+
+    def test_tcn_forecaster_multi_objective_tune_acceleration(self):
+        import bigdl.nano.automl.hpo.space as space
+        train_data, val_data, _ = create_data(loader=False)
+        forecaster = TCNForecaster(past_seq_len=24,
+                                future_seq_len=5,
+                                input_feature_num=1,
+                                output_feature_num=1,
+                                kernel_size=4,
+                                num_channels=[16, 16],
+                                loss="mae",
+                                metrics=['mae', 'mse', 'mape'],
+                                lr=space.Real(0.001, 0.01, log=True))
+        forecaster.num_processes = 1
+        forecaster.tune(train_data, validation_data=val_data,
+                        n_trials=2, target_metric=['mse', 'latency'], 
+                        directions=["minimize", "minimize"],
+                        acceleration=True, direction=None,
+                        input_sample=torch.from_numpy(train_data[0][:1,:,:]))
+
     @skip_onnxrt
     def test_tcn_forecaster_onnx_methods(self):
         train_data, val_data, test_data = create_data()
