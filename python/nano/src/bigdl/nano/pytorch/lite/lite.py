@@ -35,7 +35,7 @@ from bigdl.nano.pytorch.strategies.ipex.ipex_api import ipex_optimize
 from bigdl.nano.pytorch.strategies import create_IPEXStrategy, DDPSpawnStrategy, \
     DDPSubprocessStrategy, create_RayStrategy
 
-from .wrapper import _LossFuncWrapper
+from .wrapper import _wrap_loss_func
 
 
 class TorchNano(LightningLite):
@@ -110,12 +110,12 @@ class TorchNano(LightningLite):
         # LightningLite won't call `Strategy.setup()` method,
         # in which we add IPEX's optimization when using `trainer`.
 
-        # When we call `LightningLite().run()`, it will call
-        # `Strategy.setup_environment()` -> `Lanucher.launch()` -> user defined `run()` method.
+        # When we call `TorchNano().train()`, it will call
+        # `Strategy.setup_environment()` -> `Lanucher.launch()` -> user defined `train()` method.
 
         # However the model and optimizers haven't been specified when calling these three methods,
         # so we have to add optimizations in this method, which will be called in
-        # user defined `run()` method.
+        # user defined `train()` method.
 
         # add IPEX 1.11's optimization
         if self.use_ipex and not TORCH_VERSION_LESS_1_10:
@@ -162,7 +162,7 @@ class TorchNano(LightningLite):
         model, optimizer = self._setup(model, optimizer, move_to_device=move_to_device)
         dataloaders = self.setup_dataloaders(*dataloaders,  # type: ignore
                                              move_to_device=move_to_device)
-        loss_func = _LossFuncWrapper(self, loss_func)
+        loss_func = _wrap_loss_func(self, loss_func)
         return model, optimizer, loss_func, dataloaders
 
     @abstractmethod

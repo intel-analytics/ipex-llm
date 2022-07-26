@@ -29,22 +29,25 @@ def _backward(lite: LightningLite, loss: Tensor,
     # backup our backward method
     backward_backup = loss.backward
     # restore the backward method of loss to avoid infinite recursion
-    loss.backward = loss._backward      # type: ignore
+    setattr(loss, "backward", loss._backward)   # type: ignore
     lite.backward(loss, gradient=gradient, retain_graph=retain_graph,
                   create_graph=create_graph, inputs=inputs)
     # replace the backward method of loss with our backward method again
-    loss.backward = backward_backup     # type: ignore
+    setattr(loss, "backward", backward_backup)
 
 
-class _LossFuncWrapper(_Loss):
-    def __init__(self, lite: LightningLite, loss_func: _Loss):
-        super().__init__()
-        self._lite = lite
-        self._loss_func = loss_func
+def _forward(lite: LightningLite, loss_func: _Loss, input: Tensor, target: Tensor) -> Tensor:
+    """Used to replace _Loss's forward method."""
+    loss = loss_func._forward(input, target)
+    # replace and save the backward method of loss
+    setattr(loss, "_backward", loss.backward)
+    setattr(loss, "backward", partial(_backward, lite, loss))
+    return loss
 
-    def forward(self, input: Tensor, target: Tensor) -> Tensor:
-        loss = self._loss_func(input, target)
-        # replace and save the backward method of loss
-        loss._backward = loss.backward
-        loss.backward = partial(_backward, self._lite, loss)
-        return loss
+
+def _wrap_loss_func(lite: LightningLite, loss_func: _Loss) -> _Loss:
+    # replace and save the forward method of loss_func
+    setattr(loss_func, "_forward", loss_func.forward)
+    setattr(loss_func, "forward", partial(_forward, lite, loss_func))
+    return loss_func
+
