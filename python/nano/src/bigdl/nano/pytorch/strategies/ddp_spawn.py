@@ -40,13 +40,16 @@ from typing import Any, List, Optional, Callable, Union, Dict
 import torch
 from torch import nn
 from torch import Tensor
+from torch.optim.lr_scheduler import LinearLR
 from torch.multiprocessing.spawn import _wrap, ProcessContext
 from torch.nn.parallel.distributed import DistributedDataParallel
-from torch.optim.lr_scheduler import _LRScheduler
 
 import pytorch_lightning as pl
 from pytorch_lightning.trainer.states import TrainerFn
 from pytorch_lightning.core.optimizer import LightningOptimizer
+from pytorch_lightning.core.optimizer import _configure_schedulers_automatic_opt
+from pytorch_lightning.core.optimizer import _configure_schedulers_manual_opt
+from pytorch_lightning.core.optimizer import _set_scheduler_opt_idx, _validate_scheduler_api
 from pytorch_lightning.core.datamodule import LightningDataModule
 from pytorch_lightning.strategies.launchers import _SpawnLauncher
 from pytorch_lightning.strategies import DDPSpawnStrategy as _DDPSpawnStrategy
@@ -166,7 +169,7 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
         cpu_for_each_process: Optional[List[List[int]]] = None,
         use_ipex=False,
         enable_bf16=False,
-        scale_lr=False,
+        auto_lr=False,
         **kwargs: Any
     ):
         """Create a DDPSpawnStrategy, adding a cpu_for_each_process parameter."""
@@ -185,7 +188,7 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
         self.is_distributed = True
         self.use_ipex = use_ipex
         self.enable_bf16 = enable_bf16
-        self.scale_lr = scale_lr
+        self.auto_lr = auto_lr
 
     def _configure_launcher(self):
         self._launcher = _DDPSpawnLauncher(self)
@@ -225,7 +228,7 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
             # so we need to set it to `False` manuallay
             self.model.eval()
 
-        if trainer.training and self.scale_lr:
+        if trainer.training and self.auto_lr:
 
             def _unpack_lightning_optimizer(opt):
                 return opt._optimizer if isinstance(opt, LightningOptimizer) else opt
@@ -241,6 +244,34 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
             for config in lr_scheduler_configs:
                 scheduler = config.scheduler
                 scheduler.base_lrs = [lr * self.world_size for lr in scheduler.base_lrs]
+
+            if self.lr_scheduler_configs:
+                warnings.warn(f"Nano warmup currently only support none optimizers, "
+                              f"but got {len(self.lr_scheduler_configs)}. Skip warmup")
+            else:
+                lr_schedulers = []
+                for opt_idx, opt in enumerate(self.optimizers):
+                    if type(self.auto_lr) is bool:
+                        self.auto_lr = trainer.max_epochs // 5 + 1
+                    scheduler = LinearLR(optimizer=opt,
+                                            # set initial lr as user lr
+                                            start_factor= 1.0 / self.world_size,
+                                            end_factor=1.0,
+                                            total_iters=self.auto_lr)
+                    lr_scheduler = {
+                        'scheduler': scheduler,
+                        'opt_idx': opt_idx
+                    }
+                    lr_schedulers.append(lr_scheduler)
+                lr_scheduler_configs = (
+                    _configure_schedulers_automatic_opt(lr_schedulers, None)
+                        if self.lightning_module.automatic_optimization
+                        else _configure_schedulers_manual_opt(lr_schedulers)
+                )
+                _set_scheduler_opt_idx(self.optimizers, lr_scheduler_configs)
+                _validate_scheduler_api(lr_scheduler_configs, self.model)
+                self.lr_scheduler_configs = lr_scheduler_configs
+                
 
         if self.use_ipex and not TORCH_VERSION_LESS_1_10:
             dtype = torch.bfloat16 if self.enable_bf16 else None

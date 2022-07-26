@@ -119,8 +119,7 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
         num_processes: int = 1,
         cpu_for_each_process: Optional[List[List[int]]] = None,
         use_ipex=False,
-        enable_bf16=False,
-        scale_lr=False
+        enable_bf16=False
     ):
         """Create a DDPSpawnPlugin, adding a cpu_for_each_process parameter."""
         device = ipex_device() if use_ipex and TORCH_VERSION_LESS_1_10 else 'cpu'
@@ -133,7 +132,7 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
         self.is_distributed = True
         self.use_ipex = use_ipex
         self.enable_bf16 = enable_bf16
-        self.scale_lr = scale_lr
+
 
     @property
     def mp_spawn_kwargs(self):
@@ -143,30 +142,6 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
             "nprocs": self.num_processes,
             "cpu_procs": self.cpu_for_each_process
         }
-
-    def pre_dispatch(self):
-        """Hook to config optimizers before training starts."""
-        if not self.lightning_module.trainer.training or not self.scale_lr:
-            return
-
-        def _unpack_lightning_optimizer(opt):
-            # unpack the class used to warp user optimizers
-            return opt._optimizer if isinstance(opt, LightningOptimizer) else opt
-
-        optimizers = self.lightning_module.trainer.optimizers
-        optimizers = [_unpack_lightning_optimizer(opt) for opt in optimizers]
-
-        # scale the lr of optimizers by the number of processes
-        for optimizer in optimizers:
-            for param_group in optimizer.param_groups:
-                param_group["lr"] *= self.world_size
-
-        # adjust base LR used by schedulers to match scaled optimizer initial LR
-        lr_schedulers = self.lightning_module.trainer.lr_schedulers
-        for scheduler in lr_schedulers:
-            scheduler = scheduler["scheduler"]
-            if isinstance(scheduler, _LRScheduler):
-                scheduler.base_lrs = [lr * self.world_size for lr in scheduler.base_lrs]
 
     def start_training(self, trainer):
         """Setup start_training hook for the plugin."""

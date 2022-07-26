@@ -62,7 +62,7 @@ class Trainer(pl.Trainer):
                  cpu_for_each_process: Optional[List[List[int]]] = None,
                  use_hpo=False,
                  channels_last: bool = False,
-                 scale_lr=False,
+                 auto_lr=False,
                  *args: Any, **kwargs: Any) -> None:
         """
         A pytorch lightning trainer that uses bigdl-nano optimization.
@@ -138,8 +138,7 @@ class Trainer(pl.Trainer):
                 strategy = DDPSubprocessStrategy(num_processes=num_processes,
                                                  cpu_for_each_process=cpu_for_each_process,
                                                  use_ipex=self.use_ipex,
-                                                 enable_bf16=enable_bf16,
-                                                 scale_lr=scale_lr)
+                                                 enable_bf16=enable_bf16)
                 elif distributed_backend == "ray":
                     # Import RayPlugins may entangle with openmp even if it has not been used,
                     # which leads to an unacceptably low performance.
@@ -159,14 +158,14 @@ class Trainer(pl.Trainer):
                                                 cpu_for_each_process=cpu_for_each_process,
                                                 use_ipex=self.use_ipex,
                                                 enable_bf16=enable_bf16,
-                                                scale_lr=scale_lr)
+                                                auto_lr=auto_lr)
                 elif distributed_backend == "subprocess":
                     from bigdl.nano.pytorch.strategies import DDPSubprocessStrategy
                     strategy = DDPSubprocessStrategy(num_processes=num_processes,
                                                      cpu_for_each_process=cpu_for_each_process,
                                                      use_ipex=self.use_ipex,
                                                      enable_bf16=enable_bf16,
-                                                     scale_lr=scale_lr)
+                                                     auto_lr=auto_lr)
                 elif distributed_backend == "ray":
                     from bigdl.nano.pytorch.strategies import create_RayStrategy
                     strategy = create_RayStrategy(num_workers=num_processes,
