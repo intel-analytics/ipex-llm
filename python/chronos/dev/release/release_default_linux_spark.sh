@@ -17,7 +17,7 @@
 #
 
 # This is the default script with maven parameters to release bigdl-chronos with
-# pyspark==3.1.2 as dependency for linux.
+# pyspark==2.4.6 as dependency for linux.
 # Note that if the maven parameters to build bigdl-chronos need to be changed,
 # make sure to change this file accordingly.
 # If you want to customize the release, please use release.sh and specify maven parameters instead.
@@ -31,19 +31,29 @@ DEV_DIR="$(cd ${CHRONOS_DIR}/../dev/; pwd)"
 echo $DEV_DIR
 
 if (( $# < 3)); then
-  echo "Usage: release_default_linux_spark312.sh version upload suffix"
-  echo "Usage example: bash release_default_linux_spark312.sh default true true"
-  echo "Usage example: bash release_default_linux_spark312.sh 0.14.0.dev1 true false"
+  echo "Usage: release_default_linux_spark.sh version upload spark_version suffix"
+  echo "Usage example: bash release_default_linux_spark.sh default true 3.1.2 true"
+  echo "Usage example: bash release_default_linux_spark.sh 0.14.0.dev1 true 2.4.6 false"
   exit -1
 fi
 
 version=$1
 upload=$2
-suffix=$3
+spark_version=$3
+suffix=$4
+
+version_array=(${spark_version//./ })
+spark_first_version=${version_array[0]}
+
+re='^[2-3]+$'
+if ! [[ $spark_first_version =~ $re ]] ; then
+   echo "error: Spark version is not a number like 3.1.2"
+   exit 1
+fi
 
 if [ ${suffix} == true ]; then
-    bash ${DEV_DIR}/add_suffix_spark3.sh $CHRONOS_DIR/src/setup.py
-    bash ${DEV_DIR}/add_suffix_spark3.sh ${RUN_SCRIPT_DIR}/release.sh
+    bash ${DEV_DIR}/add_suffix_spark${spark_first_version}.sh $CHRONOS_DIR/src/setup.py
+    bash ${DEV_DIR}/add_suffix_spark${spark_first_version}.sh ${RUN_SCRIPT_DIR}/release.sh
 else
     bash ${DEV_DIR}/remove_spark_suffix.sh $CHRONOS_DIR/src/setup.py
     bash ${DEV_DIR}/remove_spark_suffix.sh ${RUN_SCRIPT_DIR}/release.sh
