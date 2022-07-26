@@ -4,8 +4,6 @@
 name: Maven Nightly Build Publish Scala
 
 on:
-  pull_request:
-    branches: [ "main" ]
   #release:
   #  types: [created]
   schedule:
@@ -60,8 +58,8 @@ jobs:
               }
           },{
             "id": "ossrh",
-            "username": "${OSSRH_USERNAME}",
-            "password": "${OSSRH_PASSWORD}",
+            "username": "${{ secrets.OSSRH_USERNAME }}",
+            "password": "${{ secrets.OSSRH_PASSWORD }}",
             "configuration": {
               "timeout": "3600000"
             }
