@@ -87,7 +87,6 @@ def search(args):
     if args.cluster_mode == "yarn":
         sc = init_orca_context("yarn", cores=args.num_threads,
                                num_nodes=args.num_tasks, memory=args.memory,
-                               driver_cores=args.num_threads, driver_memory='16g',
                                extra_python_lib="utils.py")
 
         print('add files to spark >>>>>>')
@@ -99,9 +98,9 @@ def search(args):
     elif args.cluster_mode == "spark-submit":
         sc = init_orca_context("spark-submit")
     elif args.cluster_mode == "local":
-        sc = init_orca_context("local")
+        sc = init_orca_context("local", cores=args.num_threads*args.num_tasks)
     else:
-        invalidInputError(False, "cluster_mode should be one of 'local', "
+        invalidInputError(False, "cluster_mode should be one of 'local', 'spark-submit' and "
                                  "'yarn', but got " + args.cluster_mode)
         sys.exit()
 
@@ -133,9 +132,9 @@ if __name__ == '__main__':
     parser.add_argument('--cluster_mode', type=str, default='local',
                         help='The cluster mode, such as local, yarn or spark-submit')
     parser.add_argument('--num_tasks', type=int, default=4,
-                        help='The number of nodes to use in the cluster')
-    parser.add_argument('--memory', type=str, default="50g",
-                        help='The memory limit for each task')
+                        help='The number of faiss tasks to run in the cluster')
+    parser.add_argument('--memory', type=str, default="12g",
+                        help='The memory allocated for each faiss task')
 
     parser.add_argument('--dict_path', type=str, default='./item_dict.pkl',
                         help='Path to item_dict.pkl')

@@ -1,11 +1,12 @@
 # Offline Recall with Faiss on Spark
-This example demonstrates how to use the retrieval algorithms provided by faiss 
+This example demonstrates how to use the retrieval algorithms provided by [faiss](https://github.com/facebookresearch/faiss) 
 to perform the offline recall task efficiently on Spark. 
 
 
 ## Prepare the environment
 We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux) to prepare the environments, especially if you want to run on a yarn cluster (yarn-client mode only).
-Faiss needs to be installed via conda to get promising performance on CPU. 
+
+Note that faiss needs to be installed via conda to get promising performance on CPU. 
 Please refer to [faiss install](https://github.com/facebookresearch/faiss/blob/main/INSTALL.md) for more installation guidance. 
 
 ```
@@ -16,16 +17,18 @@ pip install --pre --upgrade bigdl-friesian
 ```
 
 ## Generate data
-You can generate some test data for testing. 
-The generated data will have a total of **row_nums** items, where each item is a **vec_dim** dimensional vector. 
-All the vectors will be saved as embeddings and used to 
-generate the index file for faiss. 
+You can generate some test data to run the example, which contains:
+- embeddings: item embeddings of the shape [row_nums, vec_dim].
+- item_dict: unique string names of items with the shape [row_nums, ].
+- index data: the faiss index data generated from item embeddings.
+- parquet data: items saved in parquet format, each row contains two values, the id and the embedding.
+
 Example command:
 ```bash
 python generate_test_data.py \
     --row_nums 200000 \
     --vec_dim 256 \
-    --use_spark \
+    --header_len 8 \
     --verbose \
     --index_type FlatL2 \
     --emb_path /path/to/save/vector/embeddings \
@@ -37,7 +40,7 @@ python generate_test_data.py \
 __Options for generate_test_data:__
 * `row_nums`: The number of vectors to be generated. Default to be 200000.
 * `vec_dim`: The dimension of vector. Default to be 256.
-* `use_spark`: Use spark to generate vector embeddings, saving to parquet file. Default to be False.
+* `header_len`: The header length of the unique item name. 
 * `verbose`: Print more detail information. Default to be False.
 * `index_type`: The faiss index_type: FlatL2 or IVFFlatL2. Default to be FlatL2.
 * `emb_path`: The path to save vector embeddings. Default to be ./emb_vecs.pkl.
@@ -48,12 +51,13 @@ __Options for generate_test_data:__
 __NOTE:__ 
 The file paths (like '*emb_path*') can be used directly as the corresponding input parameters for the next *search.py*.
 
-## Retrieving items
+## Search items
 * Spark local, example command:
 ```bash
 python search.py \
-    --num_threads 32 \
+    --num_threads 8 \
     --cluster_mode local \
+    --num_tasks 4 \
     --top_k 100 \
     --batch_size 50000 \
     --dict_path /path/to/the/folder/of/item_dict \
@@ -65,8 +69,9 @@ python search.py \
 * Spark spark-submit, example command:
 ```bash
 python search.py \
-    --num_threads 32 \
+    --num_threads 8 \
     --cluster_mode spark-submit \
+    --num_tasks 4 \
     --top_k 100 \
     --batch_size 50000 \
     --dict_path /path/to/the/folder/of/item_dict \
@@ -81,7 +86,7 @@ python search.py \
     --num_threads 8 \
     --cluster_mode yarn \
     --num_tasks 4 \
-    --memory 50g \
+    --memory 12g \
     --top_k 100 \
     --batch_size 50000 \
     --dict_path /path/to/the/folder/of/item_dict \
@@ -94,7 +99,7 @@ __Options for search:__
 * `num_threads`: Set the environment variable OMP_NUM_THREADS for each faiss task. Default to be 8.
 * `cluster_mode`: The cluster mode, one of local, spark-submit or yarn. Default to be local.
 * `num_tasks`: The number of nodes to use in the cluster. Default to be 4.
-* `memory`: The amount of memory to allocate on each node. Default to be 50g.
+* `memory`: The amount of memory to allocate on each task. Default to be 12g.
 * `top_k`: The number of items to be searched for each query item. Default to be 100.
 * `batch_size`: The batch size for each faiss task. Default to be 50000.
 * `dict_path`: The path to item_dict.pkl. Default to be ./item_dict.pkl.
