@@ -22,8 +22,6 @@ import numpy as np
 
 class TestOpenVINO(TestCase):
     def test_openvino_model(self):
-        os.system("omz_downloader --name resnet18-xnor-binary-onnx-0001")
-
         openvino_model = OpenVINOModel("./intel/resnet18-xnor-binary-onnx-0001/FP16-INT1/resnet18-xnor-binary-onnx-0001.xml")
         x = np.random.randn(1, 3, 224, 224)
         y_hat = openvino_model.forward_step(x)
