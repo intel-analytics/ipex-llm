@@ -120,7 +120,7 @@ class CustomizedMetric(Metric):
         return Metric(self.compute_function)
 
     def get_name(self):
-        return self.compute.__name__
+        return self.compute_function.__name__
 
 
 class AUC(Metric):
