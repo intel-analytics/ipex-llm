@@ -168,7 +168,7 @@ Parameters:
 * -d means max_depth: Int.
 * -w means num_workers: Int.
 
-**Note: make sure num_threads is larger than spark.task.cpus.**
+**Note: make sure num_threads is no larger than spark.task.cpus.**
 
 #### Source code
 You can find source code [here](https://github.com/intel-analytics/BigDL/tree/main/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/nnframes/xgboost).

@@ -83,6 +83,11 @@ class PPMLContextPython[T]() {
     encryptedDataFrameReader.parquet(path)
   }
 
+  def json(encryptedDataFrameReader: EncryptedDataFrameReader, path: String): DataFrame = {
+    logger.debug("read json file from path: " + path)
+    encryptedDataFrameReader.json(path)
+  }
+
   /**
    * EncryptedDataFrameWriter method
    */
@@ -108,6 +113,10 @@ class PPMLContextPython[T]() {
 
   def parquet(encryptedDataFrameWriter: EncryptedDataFrameWriter, path: String): Unit = {
     encryptedDataFrameWriter.parquet(path)
+  }
+
+  def json(encryptedDataFrameWriter: EncryptedDataFrameWriter, path: String): Unit = {
+    encryptedDataFrameWriter.json(path)
   }
 
   /**
