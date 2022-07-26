@@ -141,8 +141,6 @@ def generate_data(args):
         print(item_dict[:10])
 
         print(f"loading {args.dict_path}")
-
-        emb_vecs = emb_vecs
         print(emb_vecs.shape)
         print(emb_vecs[0, :10])
 
