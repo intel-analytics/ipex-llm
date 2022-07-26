@@ -91,7 +91,7 @@ def partition_refs_to_creator(partition_refs):
     return data_creator
 
 
-def get_node_ip():
+def get_driver_node_ip():
     """Returns the IP address of the current node."""
     return ray._private.services.get_node_ip_address()
 
@@ -172,7 +172,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 for i, worker in enumerate(self.remote_workers)
             ])
 
-            driver_ip = get_node_ip()
+            driver_ip = get_driver_node_ip()
             driver_tcp_store_port = find_free_port()
 
             _ = dist.TCPStore(driver_ip, driver_tcp_store_port, -1, True,
