@@ -1,5 +1,26 @@
 root: index
 subtrees:
+
+  - caption: Quick Start
+    entries:
+      - file: doc/Orca/QuickStart/orca-tf-quickstart
+      - file: doc/Orca/QuickStart/orca-keras-quickstart
+      - file: doc/Orca/QuickStart/orca-tf2keras-quickstart
+      - file: doc/Orca/QuickStart/orca-pytorch-quickstart
+      - file: doc/Ray/QuickStart/ray-quickstart
+
+
+  - caption: User Guide
+    entries:
+      - file: doc/UserGuide/python
+      - file: doc/UserGuide/scala
+      - file: doc/UserGuide/colab
+      - file: doc/UserGuide/docker
+      - file: doc/UserGuide/hadoop
+      - file: doc/UserGuide/k8s
+      - file: doc/UserGuide/databricks
+      - file: doc/UserGuide/develop
+
   - caption: Nano
     entries:
       - file: doc/Nano/Overview/nano
@@ -12,6 +33,12 @@ subtrees:
       - file: doc/Nano/Overview/known_issues
       - file: doc/Nano/QuickStart/index
 
+  - caption: DLlib
+    entries:
+      - file: doc/DLlib/Overview/dllib
+      - file: doc/DLlib/Overview/keras-api
+      - file: doc/DLlib/Overview/nnframes
+
   - caption: Orca
     entries:
       - file: doc/Orca/Overview/orca
@@ -22,20 +49,6 @@ subtrees:
       - file: doc/Orca/Overview/distributed-tuning
       - file: doc/Ray/Overview/ray
       - file: doc/Orca/Overview/known_issues
-        subtrees:
-        - caption: Orca Common Use Cases
-          entries:
-            - file: doc/Orca/QuickStart/orca-pytorch-distributed-quickstart
-            - file: doc/UseCase/spark-dataframe
-            - file: doc/UseCase/xshards-pandas
-            - file: doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart
-            - file: doc/Orca/QuickStart/orca-autoxgboost-quickstart
-
-  - caption: DLlib
-    entries:
-      - file: doc/DLlib/Overview/dllib
-      - file: doc/DLlib/Overview/keras-api
-      - file: doc/DLlib/Overview/nnframes
 
   - caption: Chronos
     entries:
@@ -57,3 +70,37 @@ subtrees:
       - file: doc/PPML/QuickStart/tpc-h_with_sparksql_on_k8s
       - file: doc/PPML/QuickStart/tpc-ds_with_sparksql_on_k8s
       - file: doc/PPML/Overview/azure_ppml
+
+  - caption: Serving
+    entries:
+      - file: doc/Serving/Overview/serving.md
+      - file: doc/Serving/QuickStart/serving-quickstart
+      - file: doc/Serving/ProgrammingGuide/serving-installation
+      - file: doc/Serving/ProgrammingGuide/serving-start
+      - file: doc/Serving/ProgrammingGuide/serving-inference
+      - file: doc/Serving/Example/example
+      - file: doc/Serving/FAQ/faq
+      - file: doc/Serving/FAQ/contribute-guide
+
+  - caption: Common Use Case
+    entries:
+      - file: doc/Orca/QuickStart/orca-pytorch-distributed-quickstart
+      - file: doc/UseCase/spark-dataframe
+      - file: doc/UseCase/xshards-pandas
+      - file: doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart
+      - file: doc/Orca/QuickStart/orca-autoxgboost-quickstart
+
+
+ - caption: Python API
+   entries:
+      - file: doc/PythonAPI/Orca/orca
+      - file: doc/PythonAPI/Friesian/feature
+      - file: doc/PythonAPI/Chronos/index
+      - file: doc/PythonAPI/Nano/index
+
+
+ - caption: Real-World Application
+   entries:
+      - file: doc/Application/presentations
+      - file: doc/Application/blogs
+      - file: doc/Application/powered-by
