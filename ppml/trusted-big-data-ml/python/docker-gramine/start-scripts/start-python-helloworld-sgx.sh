@@ -1,4 +1,6 @@
 #!/bin/bash
-cd /ppml/trusted-big-data-ml
-SGX=1 ./pal_loader bash -c "python ./work/examples/helloworld.py" | tee test-helloworld-sgx.log && \
-	cat test-helloworld-sgx.log | egrep -a "Hello"
+./clean.sh
+gramine-argv-serializer bash -c "python ./work/examples/helloworld.py" > secured_argvs
+./init.sh
+gramine-sgx bash 2>&1 | tee test-helloworld-sgx.log
+cat test-helloworld-sgx.log | egrep -a "Hello"
