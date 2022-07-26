@@ -63,7 +63,7 @@ For more information, refer to [Python user guide](https://bigdl.readthedocs.io/
 
 ### Nano
 
-Using *Nano*, you can acclerate your local PyTorch or Tensorflow program, with only miniumum change of code. 
+Using *BigDL-Nano*, you can acclerate your local PyTorch or Tensorflow program, with only miniumum change of code. 
 <details><summary>Click to see a Nano example</summary>
 <br/>
 First, import bigdl nano trainer.
@@ -100,7 +100,7 @@ with torch.no_grad():
 
 ### Orca
 
-Using **Orca**, you can scale out local _**TensorFlow**_ or _**PyTorch**_ applications end-to-end (i.e. training, inference, data processing) seamlessly across large clusters.
+Using *BigDL-Orca*, you can scale out local _**TensorFlow**_ or _**PyTorch**_ applications end-to-end (i.e. training, inference, data processing) seamlessly across large clusters.
 
 <details><summary>Click to see an Orca example</summary>
 <br/>
@@ -154,7 +154,7 @@ See [TensorFlow](https://bigdl.readthedocs.io/en/latest/doc/Orca/QuickStart/orca
 
 ### DLlib
 
-Using **DLlib**, you can write distributed deep learning applications as standard Spark programs (using either Scala or Python APIs).
+Using *BigDL-DLlib*, you can write distributed deep learning applications as standard Spark programs (using either Scala or Python APIs).
 
 <details><summary>Click to see a DLLib example</summary>
 <br/>
@@ -193,7 +193,7 @@ See the [NNframes](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/nnf
 
 ### Chronos 
 
-With **Chronos**, you can easily build fast, accurate, scalable time series forecasting and anomaly detection applications (e.g. using built-in advanced deep learning models, built-in inference acclerations, AutoML support, data processing and feature generaition tools, etc.).
+With *BigDL-Chronos*, you can easily build fast, accurate, scalable time series forecasting and anomaly detection applications (e.g. using built-in advanced deep learning models, built-in inference acclerations, AutoML support, data processing and feature generaition tools, etc.).
 
 <details><summary>Click to see a Chronos example</summary>
 <br/>
@@ -243,13 +243,13 @@ See the Chronos [user guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/
 </details>
 
 ### Friesian
-With Friesian, you can easily build large-scale recommender application optimized on Intel Xeon.
+With *BigDL-Friesian*, you can easily build large-scale recommender application optimized on Intel Xeon.
 
 See the [Friesian user guide]() for more details.
 
 ### PPML
 
-With PPML, you can run unmodified Big Data analysis and ML/DL programs (such as Apache Spark, Apache Flink, Tensorflow, PyTorch, etc.) in a secure fashion on (private or public) cloud.
+With *BigDL-PPML*, you can run unmodified Big Data analysis and ML/DL programs (such as Apache Spark, Apache Flink, Tensorflow, PyTorch, etc.) in a secure fashion on (private or public) cloud.
 
 See the [PPML user guide](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html) for more details. 
 
