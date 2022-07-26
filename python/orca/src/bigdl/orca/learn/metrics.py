@@ -104,7 +104,7 @@ class CustomizedMetric(Metric):
     def get_pytorch_metric(self):
         from bigdl.orca.learn.pytorch.pytorch_metrics import PytorchMetric
 
-        class Metirc(PytorchMetric):
+        class Metric(PytorchMetric):
             def __init__(self, compute_function):
                 self.batch_metric_value = 0
                 self.compute_function = compute_function
@@ -117,7 +117,7 @@ class CustomizedMetric(Metric):
             def compute(self):
                 return self.batch_metric_value / self.step
 
-        return Metirc(self.compute_function)
+        return Metric(self.compute_function)
 
     def get_name(self):
         return self.compute.__name__
