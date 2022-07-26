@@ -92,7 +92,11 @@ def partition_refs_to_creator(partition_refs):
 
 
 def get_driver_node_ip():
-    """Returns the IP address of the current node."""
+    """
+    Returns the IP address of the current node.
+
+    :return: the IP address of the current node.
+    """
     return ray._private.services.get_node_ip_address()
 
 
