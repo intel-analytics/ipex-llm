@@ -196,6 +196,7 @@ class TestTable(TestCase):
         cross_hash_df = df.withColumn("A_B_C", concat("A", "B", "C"))
         tbl = FeatureTable(df)
         tbl.cross_hash_encode(["A", "B", "C"], 100)
+        tbl.cross_hash_encode([["A", "B", "C"], ['A', 'B']], [100, 100])
         with self.assertRaisesRegex(RuntimeError, "cross_columns should be a nested list of "
                                     "column names"):
             tbl.cross_hash_encode("A", [100])
@@ -528,13 +529,13 @@ class TestTable(TestCase):
         file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path).fillna(0, ["col_2", "col_3"])
         cross_tbl = feature_tbl.cross_columns([["col_2", "col_3"]], [100])
-        invalidInputError("cross_col_2_col_3" in cross_tbl.df.columns,
+        invalidInputError("col_2_col_3" in cross_tbl.df.columns,
                           "cross column is not created")
-        max_value = cross_tbl.df.select("cross_col_2_col_3") \
-            .agg(max(col("cross_col_2_col_3")).alias("max")) \
+        max_value = cross_tbl.df.select("col_2_col_3") \
+            .agg(max(col("col_2_col_3")).alias("max")) \
             .rdd.map(lambda row: row['max']).collect()[0]
-        min_value = cross_tbl.df.select("cross_col_2_col_3") \
-            .agg(min(col("cross_col_2_col_3")).alias("min")) \
+        min_value = cross_tbl.df.select("col_2_col_3") \
+            .agg(min(col("col_2_col_3")).alias("min")) \
             .rdd.map(lambda row: row['min']).collect()[0]
 
         invalidInputError(max_value <= 100,

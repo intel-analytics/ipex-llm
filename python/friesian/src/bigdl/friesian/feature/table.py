@@ -1012,7 +1012,7 @@ class FeatureTable(Table):
                of columns values. i.e. [100, 200].
         :param cross_col_names: list of str, the column names for output cross columns.
                Default is None, and in this case the default cross column name will
-               be 'cross_col1_col2' for ['col1', 'col2'].
+               be 'col1_col2' for ['col1', 'col2'].
         :param method: hashlib supported method, like md5, sha256 etc.
 
         :return: A new FeatureTable with the target cross columns.
@@ -1045,10 +1045,7 @@ class FeatureTable(Table):
             invalidInputError(len(cross_columns[i]) >= 2,
                               "each element in cross_columns should have >= 2 columns")
             if cross_col_names is None or cross_col_names[i] is None:
-                cross_col_name = ''
-                for column_name in cross_columns[i]:
-                    cross_col_name = cross_col_name + '_' + column_name
-                cross_col_name = 'cross' + cross_col_name
+                cross_col_name = '_'.join(cross_columns[i])
             else:
                 invalidInputError(isinstance(cross_col_names[i], str),
                                   "each element in cross_col_names should be string")
@@ -1057,8 +1054,8 @@ class FeatureTable(Table):
                 cross_col_name, concat(*cross_columns[i]))
 
             cross_hash_df = FeatureTable(cross_hash_df).hash_encode(
-                [cross_col_name], bin_sizes[i], method)
-        return cross_hash_df
+                [cross_col_name], bin_sizes[i], method).df
+        return FeatureTable(cross_hash_df)
 
     cross_columns = cross_hash_encode
 
