@@ -44,24 +44,4 @@ else
   profiles=${*:5}
 fi
 
-# Nano and serving are released in release_default_linux.sh as they don't rely on spark versions.
-
-# Only dllib is not using quick build.
-# Since make_dist is invoked in dllib, all other packages can directly use quick build.
-DLLIB_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/dllib/dev/release; pwd)"
-echo $DLLIB_SCRIPT_DIR
-bash ${DLLIB_SCRIPT_DIR}/release_default_linux_spark246.sh ${version} ${quick} ${upload} ${suffix} ${profiles}
-
-ORCA_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/orca/dev/release; pwd)"
-echo $ORCA_SCRIPT_DIR
-bash ${ORCA_SCRIPT_DIR}/release_default_linux_spark246.sh ${version} true ${upload} ${suffix}
-
-FRIESIAN_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/friesian/dev/release; pwd)"
-echo $FRIESIAN_SCRIPT_DIR
-bash ${FRIESIAN_SCRIPT_DIR}/release_default_linux_spark246.sh ${version} true ${upload} ${suffix}
-
-CHRONOS_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/chronos/dev/release; pwd)"
-echo $CHRONOS_SCRIPT_DIR
-bash ${CHRONOS_SCRIPT_DIR}/release_default_linux_spark246.sh ${version} ${upload} ${suffix}
-
-bash ${RUN_SCRIPT_DIR}/release_bigdl_spark2.sh linux ${version} ${upload} ${suffix}
+bash ${RUN_SCRIPT_DIR}/release_default_linux_spark.sh linux ${version} ${upload} 2.4.6 ${suffix} ${profiles}
