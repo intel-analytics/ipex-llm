@@ -262,7 +262,7 @@ class Table:
                Weights will be normalized if they don't sum up to 1.0.
         :param seed: The seed for sampling.
 
-        :return: A list of splitted table instances of same class.
+        :return: A list of tables split by the provided weights.
         """
         df_array = self.df.randomSplit(weights, seed)
         return [self._clone(df) for df in df_array]
@@ -1006,13 +1006,13 @@ class FeatureTable(Table):
         Cross columns and hashed to specified bin size.
 
         :param cross_columns: nested list of str, nested list of categorical column names to be
-               encoded as cross features. i.e. [['a', 'b'], ['c', 'd']].
+               encoded as cross features. e.g. [['a', 'b'], ['c', 'd']].
                For dense features, you need to cut them into discrete intervals beforehand.
         :param bin_sizes: list of int, defined the numbers of equal-width bins in the range
-               of columns values. i.e. [100, 200].
+               of columns values. e.g. [100, 200].
         :param cross_col_names: list of str, the column names for output cross columns.
                Default is None, and in this case the default cross column name will
-               be 'col1_col2' for ['col1', 'col2'].
+               be 'col1_col2' for ['col1', 'col2']. e.g. ['cross_1', 'cross_2'].
         :param method: hashlib supported method, like md5, sha256 etc.
 
         :return: A new FeatureTable with the target cross columns.
@@ -1027,15 +1027,15 @@ class FeatureTable(Table):
         # check input params
         invalidInputError(
             isinstance(cross_columns, list) and all(isinstance(x, list) for x in cross_columns),
-            "cross_columns should be a nested list of column names")
+            "cross_columns should be a nested list of string")
         invalidInputError(
             isinstance(bin_sizes, list) and all(isinstance(x, int) for x in bin_sizes),
-            "bin_sizes should be a list of bin sizes")
+            "bin_sizes should be a list of int")
         invalidInputError(len(cross_columns) == len(bin_sizes),
                           "cross_columns and bin_sizes should have the same length")
         if cross_col_names is not None:
             invalidInputError(isinstance(cross_col_names, list),
-                              "cross_col_names should be None or a list of cross col names")
+                              "cross_col_names should be None or a list of string")
             invalidInputError(len(bin_sizes) == len(cross_col_names),
                               "cross_columns, bin_sizes and cross_col_names should have the same "
                               "length")
@@ -1048,13 +1048,13 @@ class FeatureTable(Table):
                 cross_col_name = '_'.join(cross_columns[i])
             else:
                 invalidInputError(isinstance(cross_col_names[i], str),
-                                  "each element in cross_col_names should be string")
+                                  "each element in cross_col_names should be None or string")
                 cross_col_name = cross_col_names[i]
             cross_hash_df = cross_hash_df.withColumn(
                 cross_col_name, concat(*cross_columns[i]))
 
             cross_hash_df = FeatureTable(cross_hash_df).hash_encode(
-                [cross_col_name], bin_sizes[i], method).df
+                cross_col_name, bin_sizes[i], method).df
         return FeatureTable(cross_hash_df)
 
     cross_columns = cross_hash_encode

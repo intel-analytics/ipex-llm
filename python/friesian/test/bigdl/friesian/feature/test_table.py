@@ -198,15 +198,15 @@ class TestTable(TestCase):
         tbl.cross_hash_encode(["A", "B", "C"], 100)
         tbl.cross_hash_encode([["A", "B", "C"], ['A', 'B']], [100, 100])
         with self.assertRaisesRegex(RuntimeError, "cross_columns should be a nested list of "
-                                    "column names"):
+                                    "string"):
             tbl.cross_hash_encode("A", [100])
-        with self.assertRaisesRegex(RuntimeError, "bin_sizes should be a list of bin sizes"):
+        with self.assertRaisesRegex(RuntimeError, "bin_sizes should be a list of int"):
             tbl.cross_hash_encode([["A", "B", "C"]], 100)
         with self.assertRaisesRegex(RuntimeError,
                                     "cross_columns and bin_sizes should have the same length"):
             tbl.cross_hash_encode([["A", "B", "C"], ["A", "D"]], [100])
         with self.assertRaisesRegex(RuntimeError,
-                                    "cross_col_names should be None or a list of cross col names"):
+                                    "cross_col_names should be None or a list of string"):
             tbl.cross_hash_encode([["A", "B", "C"]], [100], "cross_ABC")
         with self.assertRaisesRegex(RuntimeError,
                                     "cross_columns, bin_sizes and cross_col_names should have the "
@@ -216,7 +216,7 @@ class TestTable(TestCase):
                                     "each element in cross_columns should have >= 2 columns"):
             tbl.cross_hash_encode([["A"]], [100], ["cross_ABC"])
         with self.assertRaisesRegex(RuntimeError,
-                                    "each element in cross_col_names should be string"):
+                                    "each element in cross_col_names should be None or string"):
             tbl.cross_hash_encode([["A", "B", "C"]], [100], [0x14])
 
         cross_hash_str = lambda x: hashlib.md5(str(x).encode('utf-8', 'strict')).hexdigest()
