@@ -135,7 +135,7 @@ def test_loader_creator(config, batch_size):
     return test_loader
 
 
-def model_creator(config):
+def model_creator(config=None):
     net = UNet(3, 1)
     return net
 
@@ -198,20 +198,16 @@ train_loader = train_loader_creator(config=config, batch_size=batch_size)
 # You should use jupyter notebook to show the images.
 show_batch(train_loader)
 if args.backend == "bigdl":
-    net = model_creator(config={})
+    net = model_creator()
     optimizer = optim_creator(model=net, config={"lr": 0.001})
     orca_estimator = Estimator.from_torch(model=net,
                                           optimizer=optimizer,
                                           loss=bce_dice_loss,
-                                          metrics=[],
                                           config=config,
                                           backend=args.backend)
 
-    orca_estimator.fit(data=train_loader_creator, batch_size=batch_size, epochs=args.epochs,
-                       validation_data=val_loader_creator)
+    orca_estimator.fit(data=train_loader, epochs=args.epochs)
 
-    res = orca_estimator.evaluate(data=test_loader_creator, batch_size=batch_size)
-    print("The test result: ", res)
 
 elif args.backend in ["ray", "spark"]:
     orca_estimator = Estimator.from_torch(model=model_creator,

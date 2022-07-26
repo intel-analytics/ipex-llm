@@ -39,6 +39,10 @@ cd ../
 
 
 ## Run on local after pip install
+Note: You should add the current directory into the `PYTHONPATH` firstly.
+```
+export PYTHONPATH=./:$PYTHONPATH
+```
 
 ```commandline
 python brainMRI.py
@@ -50,10 +54,6 @@ python brainMRI.py --backend spark
 You can run with `bigdl` backend via:
 ```
 python brainMRI.py --backend bigdl
-```
-Note: You should add the current directory into the `PYTHONPATH` when using the `bigdl` backend.
-```
-export PYTHONPATH=/the/path/to/brainMRI:$PYTHONPATH
 ```
 
 ## Run on yarn cluster for yarn-client mode after pip install
