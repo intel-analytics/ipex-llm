@@ -39,7 +39,7 @@ cd ../
 
 
 ## Run on local after pip install
-Note: You should add the current directory into the `PYTHONPATH` firstly.
+Note: You should add the current directory into the `PYTHONPATH` first.
 ```
 export PYTHONPATH=./:$PYTHONPATH
 ```
@@ -80,7 +80,6 @@ Options
 - `--model_dir` The model save dir when use spark backend. Default is the current working directory.
 
 ## Results
-**For "ray" and "spark" backends**
 
 Final test results will be printed at the end:
 ```
