@@ -58,9 +58,5 @@ class PytorchONNXRuntimeQuantization(BaseONNXRuntimeQuantization, PytorchQuantiz
         return model, calib_dataloader, metric
 
     def _post_execution(self, q_model):
-        # TODO Don't save, directly use q_model to create runtime
-        with TemporaryDirectory() as dir:
-            saved_onnx = Path(dir) / 'tmp.onnx'
-            q_model.save(saved_onnx)
-            return PytorchONNXRuntimeModel(str(saved_onnx),
-                                           onnxruntime_session_options=self.session_options)
+        return PytorchONNXRuntimeModel(q_model.model,
+                                       onnxruntime_session_options=self.session_options)

@@ -1,6 +1,6 @@
 # PPMLContext For PySpark
 
-This is a tutorial about how to use `PPMLContext` in python to read/write files in multiple formats(csv, parquet etc.). `PPMLContext` provide the ability to save DataFrame as encrypted files and read encrypted files as a plain DataFrame or RDD.
+This is a tutorial about how to use `PPMLContext` in python to read/write files in multiple formats(csv, parquet, json etc.). `PPMLContext` provide the ability to save DataFrame as encrypted files and read encrypted files as a plain DataFrame or RDD.
 
 ### 1.Create a PPMLContext
 
@@ -8,26 +8,11 @@ This is a tutorial about how to use `PPMLContext` in python to read/write files 
 
 So before you read/write files, you need to create a PPMLConext first. 
 
-#### 1.1 create with app_name
-
-if you don't need to read/write encrypted file, you can create a `PPMLContext`with just a `app_name`
-
-Example
-
-```python
-# import
-from bigdl.ppml.ppml_context import *
-
-sc = PPMLContext("MyApp")
-```
-
-if you need to read/write encrypted file, you can use the following 2 ways to create a `PPMLContext`.
-
-#### 1.2 create with app_name & ppml_args
+#### 1.1 create with app_name & ppml_args
 
 `ppml_args` is a dict, you need to provide the following parameters
 
-- `kms_type`: the `KeyManagementService` you use, it can be `SimpleKeyManagementService` or `EHSMKeyManagementService`
+- `kms_type`: the `KeyManagementService` you use, it can be `SimpleKeyManagementService` or `EHSMKeyManagementService`, the default `kms_type` is `SimpleKeyManagementService` 
 
 if the `kms_type` is `SimpleKeyManagementService`, then need
 
@@ -61,29 +46,6 @@ args = {"kms_type": "SimpleKeyManagementService",
        }
 
 sc = PPMLContext("MyApp", args)
-```
-
-#### 1.3 create with app_name & ppml_args & SparkConf
-
-Example
-
-```python
-# import
-from bigdl.ppml.ppml_context import *
-from pyspark import SparkConf
-
-args = {"kms_type": "SimpleKeyManagementService",
-        "simple_app_id": "123456",
-        "simple_app_key": "123456",
-        "primary_key_path": "/your/primary/key/path/primaryKey",
-        "data_key_path": "/your/data/key/path/dataKey"
-       }
-
-# create a SparkConf
-spark_conf = SparkConf()
-spark_conf.setMaster("local[4]")
-
-sc = PPMLContext("MyApp", args, spark_conf)
 ```
 
 ### 2.Read & Write Files
@@ -136,8 +98,8 @@ Example
 df1 = sc.read("plain_text").option("header", "true").csv(plain_csv_path)
 sc.write(df1, "plain_text")
 
-df2 = sc.read("AES_CBC_PKCS5PADDING").option("header", "true").csv(encrypted_csv_path)
-sc.write(df2, "AES_CBC_PKCS5PADDING")
+df2 = sc.read("AES/CBC/PKCS5Padding").option("header", "true").csv(encrypted_csv_path)
+sc.write(df2, "AES/CBC/PKCS5Padding")
 ```
 
 you can use Enum Class `CryptoMode` or just a string interchangeably. 
@@ -181,7 +143,36 @@ sc.write(df2, CryptoMode.AES_GCM_CTR_V1)
 .parquet(encrypted_output_path)
 ```
 
-#### 2.3 textfile
+#### 2.3 json
+
+Example
+
+```python
+# import
+from bigdl.ppml.ppml_context import *
+
+# read a plain json file and return a DataFrame
+plain_json_path = "/plain/json/path"
+df1 = sc.read(CryptoMode.PLAIN_TEXT).json(plain_json_path)
+
+# write a DataFrame as a plain json file
+plain_output_path = "/plain/output/path"
+sc.write(df1, CryptoMode.PLAIN_TEXT)
+.mode('overwrite')
+.json(plain_output_path)
+
+# read a encrypted json file and return a DataFrame
+encrypted_json_path = "/encrypted/parquet/path"
+df2 = sc.read(CryptoMode.AES_CBC_PKCS5PADDING).json(encrypted_json_path)
+
+# write a DataFrame as a encrypted parquet file
+encrypted_output_path = "/encrypted/output/path"
+sc.write(df2, CryptoMode.AES_CBC_PKCS5PADDING)
+.mode('overwrite')
+.json(encrypted_output_path)
+```
+
+#### 2.4 textfile
 
 Example
 

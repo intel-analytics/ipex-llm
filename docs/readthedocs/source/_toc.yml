@@ -1,0 +1,102 @@
+root: index
+subtrees:
+  - caption: Quick Start
+    entries:
+      - file: doc/Orca/QuickStart/orca-tf-quickstart
+      - file: doc/Orca/QuickStart/orca-keras-quickstart
+      - file: doc/Orca/QuickStart/orca-tf2keras-quickstart
+      - file: doc/Orca/QuickStart/orca-pytorch-quickstart
+      - file: doc/Ray/QuickStart/ray-quickstart
+
+  - caption: User Guide
+    entries:
+      - file: doc/UserGuide/python
+      - file: doc/UserGuide/scala
+      - file: doc/UserGuide/colab
+      - file: doc/UserGuide/docker
+      - file: doc/UserGuide/hadoop
+      - file: doc/UserGuide/k8s
+      - file: doc/UserGuide/databricks
+      - file: doc/UserGuide/develop
+
+  - caption: Nano
+    entries:
+      - file: doc/Nano/Overview/nano
+      - file: doc/Nano/Overview/windows_guide
+      - file: doc/Nano/QuickStart/pytorch_train
+      - file: doc/Nano/QuickStart/pytorch_inference
+      - file: doc/Nano/QuickStart/tensorflow_train
+      - file: doc/Nano/QuickStart/tensorflow_inference
+      - file: doc/Nano/QuickStart/hpo
+      - file: doc/Nano/Overview/known_issues
+      - file: doc/Nano/QuickStart/index
+
+  - caption: DLlib
+    entries:
+      - file: doc/DLlib/Overview/dllib
+      - file: doc/DLlib/Overview/keras-api
+      - file: doc/DLlib/Overview/nnframes
+
+  - caption: Orca
+    entries:
+      - file: doc/Orca/Overview/orca
+        title: "Orca User Guide"
+      - file: doc/Orca/Overview/orca-context
+      - file: doc/Orca/Overview/data-parallel-processing
+      - file: doc/Orca/Overview/distributed-training-inference
+      - file: doc/Orca/Overview/distributed-tuning
+      - file: doc/Ray/Overview/ray
+      - file: doc/Orca/Overview/known_issues
+
+  - caption: Chronos
+    entries:
+      - file: doc/Chronos/Overview/chronos
+      - file: doc/Chronos/Overview/deep_dive
+      - file: doc/Chronos/QuickStart/index
+      - file: doc/Chronos/Overview/chronos_known_issue
+
+
+  - caption: PPML
+    entries:
+      - file: doc/PPML/Overview/ppml
+      - file: doc/PPML/Overview/trusted_big_data_analytics_and_ml
+      - file: doc/PPML/Overview/trusted_fl
+      - file: doc/PPML/QuickStart/secure_your_services
+      - file: doc/PPML/QuickStart/build_kernel_with_sgx
+      - file: doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes
+      - file: doc/PPML/QuickStart/trusted-serving-on-k8s-guide
+      - file: doc/PPML/QuickStart/tpc-h_with_sparksql_on_k8s
+      - file: doc/PPML/QuickStart/tpc-ds_with_sparksql_on_k8s
+      - file: doc/PPML/Overview/azure_ppml
+
+  - caption: Serving
+    entries:
+      - file: doc/Serving/Overview/serving.md
+      - file: doc/Serving/QuickStart/serving-quickstart
+      - file: doc/Serving/ProgrammingGuide/serving-installation
+      - file: doc/Serving/ProgrammingGuide/serving-start
+      - file: doc/Serving/ProgrammingGuide/serving-inference
+      - file: doc/Serving/Example/example
+      - file: doc/Serving/FAQ/faq
+      - file: doc/Serving/FAQ/contribute-guide
+
+  - caption: Common Use Case
+    entries:
+      - file: doc/Orca/QuickStart/orca-pytorch-distributed-quickstart
+      - file: doc/UseCase/spark-dataframe
+      - file: doc/UseCase/xshards-pandas
+      - file: doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart
+      - file: doc/Orca/QuickStart/orca-autoxgboost-quickstart
+
+  - caption: Python API
+    entries:
+      - file: doc/PythonAPI/Orca/orca
+      - file: doc/PythonAPI/Friesian/feature
+      - file: doc/PythonAPI/Chronos/index
+      - file: doc/PythonAPI/Nano/index
+
+  - caption: Real-World Application
+    entries:
+      - file: doc/Application/presentations
+      - file: doc/Application/blogs
+      - file: doc/Application/powered-by
