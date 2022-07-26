@@ -294,7 +294,7 @@ def _format_metric(prefix, metric, id=-1):
 
 def _format_metric_str(prefix, metric):
     """Format the string metric."""
-    if isinstance(metric, list) or isinstance(metric, tuple):
+    if isinstance(metric, (list, tuple)):
         metrics = []
         for target_metric in metric:
             if target_metric == "latency":

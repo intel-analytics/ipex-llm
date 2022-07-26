@@ -181,8 +181,7 @@ class TestChronosModelTCNForecaster(TestCase):
         forecaster.tune(train_data, validation_data=val_data,
                         n_trials=2, target_metric=['mse', 'latency'], 
                         directions=["minimize", "minimize"],
-                        acceleration=True, direction=None,
-                        input_sample=torch.from_numpy(train_data[0][:1,:,:]))
+                        acceleration=True, direction=None)
 
     @skip_onnxrt
     def test_tcn_forecaster_onnx_methods(self):

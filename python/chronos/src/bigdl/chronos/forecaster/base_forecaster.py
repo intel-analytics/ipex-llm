@@ -172,6 +172,9 @@ class BasePytorchForecaster(Forecaster):
         else:
             invalidInputError(False, "HPO only supports numpy train input data.")
 
+        if input_sample is None:
+            input_sample = torch.from_numpy(data[0][:1, :, :])
+
         # prepare target metric
         if validation_data is not None:
             formated_target_metric = _format_metric_str('val', target_metric)
