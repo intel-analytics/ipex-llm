@@ -34,8 +34,14 @@ bash build-docker-image.sh
 #driver.yaml
     env:
     - name: DRIVER_MEMORY
-      value: "500m"
+      value: "512m"
     - name: SGX_MEM_SIZE
+      value: "8GB"
+    - name: SGX_THREAD
+      value: "256"
+    - name: SGX_HEAP
+      value: "1GB"
+    - name: SGX_KERNEL_HEAP
       value: "1GB"
 ```
 
@@ -43,6 +49,12 @@ bash build-docker-image.sh
 #executor.yaml
     env:
     - name: SGX_MEM_SIZE
+      value: "8GB"
+    - name: SGX_THREAD
+      value: "256"
+    - name: SGX_HEAP
+      value: "1GB"
+    - name: SGX_KERNEL_HEAP
       value: "1GB"
 ```
 
