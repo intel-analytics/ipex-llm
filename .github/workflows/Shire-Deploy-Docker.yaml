@@ -27,7 +27,7 @@ jobs:
     steps:
     - name: docker deploy
       run: |
-      docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
+      docker login --username ${DOCKERHUB_USERNAME} --password ${DOCKERHUB_PASSWORD}
       export IMAGE=intelanalytics/bigdl-k8s
       cd docker/bigdl-k8s
       echo "########################################"
