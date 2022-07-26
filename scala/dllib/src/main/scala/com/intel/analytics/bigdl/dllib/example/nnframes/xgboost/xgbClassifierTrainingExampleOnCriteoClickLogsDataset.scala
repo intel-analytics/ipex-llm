@@ -60,7 +60,6 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
   val feature_nums = 39
 
   def main(args: Array[String]): Unit = {
-    val tStart = System.nanoTime()
     val log: Logger = LoggerFactory.getLogger(this.getClass)
 
 
@@ -78,6 +77,7 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
     val spark = SQLContext.getOrCreate(sc)
     val task = new Task()
 
+    val tStart = System.nanoTime()
     // read csv files to dataframe
     var df = spark.read.option("header", "false").
       option("inferSchema", "true").option("delimiter", "\t").csv(trainingDataPath)
@@ -147,12 +147,17 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
 
     // start training model
     val xgbClassificationModel = xgbClassifier.fit(train)
-    xgbClassificationModel.save(modelSavePath)
 
     val tAfterTraining = System.nanoTime()
     elapsed = (tAfterTraining - tBeforeTraining) / 1000000000.0f // second
     log.info("--training time is " + elapsed + "s")
 
+    xgbClassificationModel.save(modelSavePath)
+
+    val tAfterSave = System.nanoTime()
+    ealsped = (tAfterSave - tAfterTraining) / 1000000000.0f // second
+    log.info("--model save time is " + elapsed + "s")
+ 
     sc.stop()
   }
 
