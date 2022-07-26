@@ -16,8 +16,7 @@
 # limitations under the License.
 #
 
-# This is the default script with maven parameters to release bigdl-friesian built on top of
-# Spark 2.4.6 for linux.
+# This is the default script with maven parameters to release bigdl-friesian built on top of Spark for linux.
 # Note that if the maven parameters to build bigdl-friesian need to be changed,
 # make sure to change this file accordingly.
 # If you want to customize the release, please use release.sh and specify maven parameters instead.
@@ -31,23 +30,33 @@ DEV_DIR="$(cd ${FRIESIAN_DIR}/../dev/; pwd)"
 echo $DEV_DIR
 
 if (( $# < 4)); then
-  echo "Usage: release_default_linux_spark246.sh version quick_build upload suffix"
-  echo "Usage example: bash release_default_linux_spark246.sh default true true true"
-  echo "Usage example: bash release_default_linux_spark246.sh 0.14.0.dev1 false true false"
+  echo "Usage: release_default_linux_spark.sh version quick_build upload spark_version suffix"
+  echo "Usage example: bash release_default_linux_spark.sh default true true 3.1.2 true"
+  echo "Usage example: bash release_default_linux_spark.sh 0.14.0.dev1 false true 2.4.6 false"
   exit -1
 fi
 
 version=$1
 quick=$2
 upload=$3
-suffix=$4
+spark_version=$4
+suffix=$5
+
+version_array=(${spark_version//./ })
+spark_first_version=${version_array[0]}
+
+re='^[2-3]+$'
+if ! [[ $spark_first_version =~ $re ]] ; then
+   echo "error: Spark version is not a number like 3.1.2"
+   exit 1
+fi
 
 if [ ${suffix} == true ]; then
-    bash ${DEV_DIR}/add_suffix_spark2.sh $FRIESIAN_DIR/src/setup.py
-    bash ${DEV_DIR}/add_suffix_spark2.sh ${RUN_SCRIPT_DIR}/release.sh
+    bash ${DEV_DIR}/add_suffix_spark${spark_first_version}.sh $FRIESIAN_DIR/src/setup.py
+    bash ${DEV_DIR}/add_suffix_spark${spark_first_version}.sh ${RUN_SCRIPT_DIR}/release.sh
 else
     bash ${DEV_DIR}/remove_spark_suffix.sh $FRIESIAN_DIR/src/setup.py
     bash ${DEV_DIR}/remove_spark_suffix.sh ${RUN_SCRIPT_DIR}/release.sh
 fi
 
-bash ${RUN_SCRIPT_DIR}/release.sh linux ${version} ${quick} ${upload} -Dspark.version=2.4.6 -P spark_2.x
+bash ${RUN_SCRIPT_DIR}/release.sh linux ${version} ${quick} ${upload} -Dspark.version=${spark_version} -P spark_${spark_first_version}.x
