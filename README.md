@@ -41,7 +41,7 @@ As of **BigDL 2.0** release, we combine the [original BigDL](https://github.com/
 ![bigdl-arch2](https://user-images.githubusercontent.com/1995599/180955386-2a1625bd-1013-4579-a400-04451d8ded14.png)
 
 
-To learn more, you may [read the docs](https://bigdl.readthedocs.io/).
+To learn more, refer to our [Docs site](https://bigdl.readthedocs.io/).
 
 ---
 
@@ -55,48 +55,55 @@ or install the latest nightly build
 pip install --pre --upgrade bigdl
 ```
 
-Refer to more information about install for [Python](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/python.html) or [Scala](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/scala.html).
+For more information, refer to [Python user guide](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/python.html) or [Scala user guide](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/scala.html).
 
 ---
 
-## First experience with DLlib
-**DLlib** is a distributed deep learning library for Apache Spark; with DLlib, users can write distributed deep learning applications as standard Spark programs (using either Scala or Python APIs).
+## Usage 
 
-First, call `initNNContext` at the beginning of the code: 
+### Nano
 
-```scala
-import com.intel.analytics.bigdl.dllib.NNContext
-val sc = NNContext.initNNContext()
+Using *Nano*, you can acclerate your local PyTorch or Tensorflow program, with only miniumum change of code. 
+<details><summary>Click to see a Nano example</summary>
+<br/>
+First, import bigdl nano trainer.
+
+```python
+from bigdl.nano.pytorch.trainer import Trainer
 ```
 
-Then, define the BigDL model using Keras-style API:
+Then, load model and define data loader as in standard pytorch code.
+```python 
+# load model
+device = 'cpu'
+dtype = torch.float32
+model = torch.load("models/generator.pt")
+model.eval()
+model.to(device, dtype)
 
-```scala
-val input = Input[Float](inputShape = Shape(10))  
-val dense = Dense[Float](12).inputs(input)  
-val output = Activation[Float]("softmax").inputs(dense)  
-val model = Model(input, output)
+# define loader
+loader = torch.utils.data.DataLoader(...)
 ```
 
-After that, use `NNEstimator` to train/predict/evaluate the model using Spark Dataframes and ML pipelines:
+Before inference, use trace to get an accelerated model. 
+model = Trainer.trace(model, accelerator='openvino', input_sample=next(iter(loader)))
 
-```scala
-val trainingDF = spark.read.parquet("train_data")
-val validationDF = spark.read.parquet("val_data")
-val scaler = new MinMaxScaler().setInputCol("in").setOutputCol("value")
-val estimator = NNEstimator(model, CrossEntropyCriterion())  
-        .setBatchSize(size).setOptimMethod(new Adam()).setMaxEpoch(epoch)
-val pipeline = new Pipeline().setStages(Array(scaler, estimator))
-
-val pipelineModel = pipeline.fit(trainingDF)  
-val predictions = pipelineModel.transform(validationDF)
+Finally, do inference using the model the same way as in standard pytorch code. 
+```python
+with torch.no_grad():
+    for inputs in tqdm(loader):
+        inputs = inputs.to(device, dtype)
+        outputs = model(inputs)
 ```
-See the [NNframes](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/nnframes.html) and [Keras API](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/keras-api.html) user guides for more details.
 
-## Getting Started with Orca
+</details>
 
-Most AI projects start with a Python notebook running on a single laptop; however, one usually needs to go through a mountain of pains to scale it to handle larger data set in a distributed fashion. The  _**Orca**_ library seamlessly scales out your single node TensorFlow or PyTorch notebook across large clusters (so as to process distributed Big Data).
+### Orca
 
+Using **Orca**, you can scale out local _**TensorFlow**_ or _**PyTorch**_ applications end-to-end (i.e. training, inference, data processing) seamlessly across large clusters.
+
+<details><summary>Click to see an Orca example</summary>
+<br/>
 First, initialize [Orca Context](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/orca-context.html):
 
 ```python
@@ -142,10 +149,54 @@ est.fit(data=df,
 
 See [TensorFlow](https://bigdl.readthedocs.io/en/latest/doc/Orca/QuickStart/orca-tf-quickstart.html) and [PyTorch](https://bigdl.readthedocs.io/en/latest/doc/Orca/QuickStart/orca-pytorch-quickstart.html) quickstart, as well as the [document website](https://bigdl.readthedocs.io/), for more details.
 
-## Getting Started with Chronos
+</details>
 
-Time series prediction takes observations from previous time steps as input and predicts the values at future time steps. The _**Chronos**_ library makes it easy to build end-to-end time series analysis by applying AutoML to extremely large-scale time series prediction.
 
+### DLlib
+
+Using **DLlib**, you can write distributed deep learning applications as standard Spark programs (using either Scala or Python APIs).
+
+<details><summary>Click to see a DLLib example</summary>
+<br/>
+First, call `initNNContext` at the beginning of the code: 
+
+```scala
+import com.intel.analytics.bigdl.dllib.NNContext
+val sc = NNContext.initNNContext()
+```
+
+Then, define the BigDL model using Keras-style API:
+
+```scala
+val input = Input[Float](inputShape = Shape(10))  
+val dense = Dense[Float](12).inputs(input)  
+val output = Activation[Float]("softmax").inputs(dense)  
+val model = Model(input, output)
+```
+
+After that, use `NNEstimator` to train/predict/evaluate the model using Spark Dataframes and ML pipelines:
+
+```scala
+val trainingDF = spark.read.parquet("train_data")
+val validationDF = spark.read.parquet("val_data")
+val scaler = new MinMaxScaler().setInputCol("in").setOutputCol("value")
+val estimator = NNEstimator(model, CrossEntropyCriterion())  
+        .setBatchSize(size).setOptimMethod(new Adam()).setMaxEpoch(epoch)
+val pipeline = new Pipeline().setStages(Array(scaler, estimator))
+
+val pipelineModel = pipeline.fit(trainingDF)  
+val predictions = pipelineModel.transform(validationDF)
+```
+See the [NNframes](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/nnframes.html) and [Keras API](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/keras-api.html) user guides for more details.
+
+</details>
+
+### Chronos 
+
+With **Chronos**, you can easily build fast, accurate, scalable time series forecasting and anomaly detection applications (e.g. using built-in advanced deep learning models, built-in inference acclerations, AutoML support, data processing and feature generaition tools, etc.).
+
+<details><summary>Click to see a Chronos example</summary>
+<br/>
 To train a time series model with AutoML, first initialize [Orca Context](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/orca-context.html):
 
 ```python
@@ -189,21 +240,24 @@ ts_pipeline.predict(tsdata_test)
 
 See the Chronos [user guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html) and [example](https://bigdl.readthedocs.io/en/latest/doc/Chronos/QuickStart/chronos-autotsest-quickstart.html) for more details.
 
-## PPML (Privacy Preserving Machine Learning)
+</details>
 
-***BigDL PPML*** provides a *Trusted Cluster Environment* for protecting the end-to-end Big Data AI pipeline. It combines various low level hardware and software security technologies (e.g., Intel SGX, LibOS such as Graphene and Occlum, Federated Learning, etc.), and allows users to run unmodified Big Data analysis and ML/DL programs (such as Apache Spark, Apache Flink, Tensorflow, PyTorch, etc.) in a secure fashion on (private or public) cloud.
+### PPML (Privacy Preserving Machine Learning)
+
+With PPML, you can run unmodified Big Data analysis and ML/DL programs (such as Apache Spark, Apache Flink, Tensorflow, PyTorch, etc.) in a secure fashion on (private or public) cloud.
 
 See the [PPML user guide](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html) for more details. 
 
-## More information
+---
 
-- [Document Website](https://bigdl.readthedocs.io/)
+## Getting Support
+
 - [Mail List](mailto:bigdl-user-group+subscribe@googlegroups.com)
 - [User Group](https://groups.google.com/forum/#!forum/bigdl-user-group)
-- [Powered-By](https://bigdl.readthedocs.io/en/latest/doc/Application/powered-by.html)
-- [Presentations](https://bigdl.readthedocs.io/en/latest/doc/Application/presentations.html)
+- [Github Issues](https://bigdl.readthedocs.io/en/latest/doc/Application/powered-by.html)
 
 ## Citing BigDL
+
 If you've found BigDL useful for your project, you may cite the [paper](https://arxiv.org/abs/1804.05839) as follows:
 
 ```
