@@ -2,13 +2,14 @@
 
 ### **What can you do with Chronos?**
 ```eval_rst
-.. grid:: 3
+.. grid:: 1 1 3 3
 
     .. grid-item-card::
         :text-align: center
         :shadow: none
         :class-header: sd-bg-light
         :class-footer: sd-bg-light
+        :class-card: sd-mb-2
 
         **Chronos**
         ^^^
@@ -26,6 +27,7 @@
         :shadow: none
         :class-header: sd-bg-light
         :class-footer: sd-bg-light
+        :class-card: sd-mb-2
 
         **Chronos**
         ^^^
@@ -43,6 +45,7 @@
         :shadow: none
         :class-header: sd-bg-light
         :class-footer: sd-bg-light
+        :class-card: sd-mb-2
 
         **Chronos**
         ^^^
@@ -55,13 +58,14 @@
 
             Get Started
 
-.. grid:: 3
+.. grid:: 1 1 3 3
 
     .. grid-item-card::
         :text-align: center
         :shadow: none
         :class-header: sd-bg-light
         :class-footer: sd-bg-light
+        :class-card: sd-mb-2
 
         **Chronos**
         ^^^
@@ -79,6 +83,7 @@
         :shadow: none
         :class-header: sd-bg-light
         :class-footer: sd-bg-light
+        :class-card: sd-mb-2
 
         **Chronos**
         ^^^
@@ -96,6 +101,7 @@
         :shadow: none
         :class-header: sd-bg-light
         :class-footer: sd-bg-light
+        :class-card: sd-mb-2
 
         **Chronos**
         ^^^
