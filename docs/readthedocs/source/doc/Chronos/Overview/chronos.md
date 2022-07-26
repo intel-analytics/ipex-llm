@@ -1,7 +1,7 @@
 # Chronos User Guide
 
 ### **1. Overview**
-_Chronos_ is an application framework for building large-scale time series analysis applications.
+_BigDL-Chronos_ (_Chronos_ for short) is an application framework for building large-scale time series analysis applications.
 
 You can use _Chronos_ to do:
 
@@ -138,16 +138,12 @@ python script.py
 .. note:: 
     **Optimization on Intel® Hardware**:
     
-     Chronos integrated many optimized libraries and best known methods (BKMs), users can have best performance to add ``bigdl-nano-init`` before their scripts. 
-     
-     ``bigdl-nano-init python script.py``
+     Chronos integrated many optimized libraries and best known methods (BKMs) **automatically**.
 
-     Currently, this function is under active development and we encourage our users to add ``bigdl-nano-init`` for forecaster's training.
+     Currently, this function is under active development.
      
 ```
-
 ---
-### **4. Get Started**
 
 #### **4.1 Initialization**
 _Chronos_ uses [Orca](../../Orca/Overview/orca.md) to enable distributed training and AutoML capabilities. Initialize orca as below when you want to:
@@ -226,7 +222,9 @@ _Chronos_ provides flexible components for forecasting, detection, simulation an
 - [Speed up Chronos built-in/customized models](./speed_up.html)
 - [Chronos API Doc](../../PythonAPI/Chronos/index.html)
 
-### **6. Examples and Demos**
+---
+
+### **5. Examples and Demos**
 - Quickstarts
     - [Use AutoTSEstimator for Time-Series Forecasting](../QuickStart/chronos-autotsest-quickstart.html)
     - [Use TSDataset and Forecaster for Time-Series Forecasting](../QuickStart/chronos-tsdataset-forecaster-quickstart.html)
