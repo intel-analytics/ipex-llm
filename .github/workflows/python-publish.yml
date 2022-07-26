@@ -25,6 +25,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+      matrix:
+        python-version: ["3.7"]
 
     steps:
     - uses: actions/checkout@v3
@@ -72,10 +74,10 @@ jobs:
             }
           }]
         # mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${{ secrets.ARDA_NEXUS }}" }]'
-    - name: Set up Python
-      uses: actions/setup-python@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
       with:
-        python-version: '3.x'
+        python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
