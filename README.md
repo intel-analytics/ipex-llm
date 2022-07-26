@@ -266,17 +266,7 @@ See the [PPML user guide](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overvi
 If you've found BigDL useful for your project, you may cite the [paper](https://arxiv.org/abs/1804.05839) as follows:
 
 ```
-@inproceedings{SOCC2019_BIGDL,
-  title={BigDL: A Distributed Deep Learning Framework for Big Data},
-  author={Dai, Jason (Jinquan) and Wang, Yiheng and Qiu, Xin and Ding, Ding and Zhang, Yao and Wang, Yanzhang and Jia, Xianyan and Zhang, Li (Cherry) and Wan, Yan and Li, Zhichao and Wang, Jiao and Huang, Shengsheng and Wu, Zhongyuan and Wang, Yang and Yang, Yuhao and She, Bowen and Shi, Dongjie and Lu, Qi and Huang, Kai and Song, Guoqiong},
-  booktitle={Proceedings of the ACM Symposium on Cloud Computing},
-  publisher={Association for Computing Machinery},
-  pages={50--60},
-  year={2019},
-  series={SoCC'19},
-  doi={10.1145/3357223.3362707},
-  url={https://arxiv.org/pdf/1804.05839.pdf}
-}
+Jason (Jinquan) Dai, Ding Ding, Dongjie Shi, Shengsheng Huang, Jiao Wang, Xin Qiu, Kai Huang, Guoqiong Song, Yang Wang, Qiyuan Gong, Jiaming Song, Shan Yu, Le Zheng, Yina Chen, Junwei Deng, Ge Song; Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2022, pp. 21439-21446
 ```
 
 [release-badge]: https://img.shields.io/github/v/release/intel-analytics/BigDL?label=%20%F0%9F%93%A3%20Latest%20release&style=flat&logoColor=b0c0c0&labelColor=363D44
