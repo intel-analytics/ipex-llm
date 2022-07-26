@@ -20,8 +20,12 @@ from bigdl.chronos.metric.forecast_metrics import Evaluator
 
 import numpy as np
 import warnings
+# Filter out useless Userwarnings
+warnings.filterwarnings('ignore', category=UserWarning, module='pytorch_lightning')
+warnings.filterwarnings('ignore', category=UserWarning, module='torch')
 import torch
-import math
+import logging
+
 from functools import partial
 from torch.utils.data import TensorDataset, DataLoader
 from bigdl.nano.automl.hpo.space import Space
@@ -51,7 +55,7 @@ class BasePytorchForecaster(Forecaster):
                                                  loss=self.loss_creator,
                                                  metrics=[ORCA_METRICS[name]()
                                                           for name in self.metrics],
-                                                 backend=self.distributed_backend,
+                                                 backend=self.remote_distributed_backend,
                                                  use_tqdm=True,
                                                  config={"lr": self.lr},
                                                  workers_per_node=self.workers_per_node)
@@ -301,6 +305,7 @@ class BasePytorchForecaster(Forecaster):
                                      batch_size=batch_size)
         else:
             from bigdl.chronos.pytorch import TSTrainer as Trainer
+            from bigdl.nano.utils.log4Error import invalidInputError
 
             # numpy data shape checking
             if isinstance(data, tuple):
@@ -319,7 +324,17 @@ class BasePytorchForecaster(Forecaster):
                                    checkpoint_callback=self.checkpoint_callback,
                                    num_processes=self.num_processes, use_ipex=self.use_ipex,
                                    flush_logs_every_n_steps=10, log_every_n_steps=10,
-                                   distributed_backend="spawn")
+                                   distributed_backend=self.local_distributed_backend)
+
+            # This error is only triggered when the python interpreter starts additional processes.
+            # num_process=1 and subprocess will be safely started in the main process,
+            # so this error will not be triggered.
+            invalidInputError(is_main_process(),
+                              "Make sure new Python interpreters can "
+                              "safely import the main module. ",
+                              fixMsg="you should use if __name__ == '__main__':, "
+                              "otherwise performance will be degraded.")
+
             # fitting
             if not validation_data:
                 self.trainer.fit(self.internal, data)

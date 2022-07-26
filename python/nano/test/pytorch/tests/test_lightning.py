@@ -49,7 +49,7 @@ loss = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 
 
-class TestLightningModuleFromTorch(TestCase):
+class TestLightningModule(TestCase):
 
     def test_resnet18(self):
         pl_model = LightningModule(
