@@ -44,7 +44,7 @@ class ResNet18(nn.Module):
         return self.model(x)
 
 
-class MyNano(use_ipex=True, TorchNano):
+class MyNano(TorchNano):
     def train(self):
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
         loss = nn.CrossEntropyLoss()
@@ -79,7 +79,7 @@ class LinearModel(nn.Module):
         return self.fc1(input_)
 
 
-class MyNanoCorrectness(use_ipex=True, TorchNano):
+class MyNanoCorrectness(TorchNano):
     def train(self, lr):
         dataset=TensorDataset(
             torch.tensor([[0.0],[0.0],[1.0],[1.0]]),
