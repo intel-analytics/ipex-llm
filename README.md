@@ -242,7 +242,12 @@ See the Chronos [user guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/
 
 </details>
 
-### PPML (Privacy Preserving Machine Learning)
+### Friesian
+With Friesian, you can easily build large-scale recommender application optimized on Intel Xeon.
+
+See the [Friesian user guide]() for more details.
+
+### PPML
 
 With PPML, you can run unmodified Big Data analysis and ML/DL programs (such as Apache Spark, Apache Flink, Tensorflow, PyTorch, etc.) in a secure fashion on (private or public) cloud.
 
