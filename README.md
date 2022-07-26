@@ -7,10 +7,9 @@
 </div>
 
 ---
-<p align="center">
-  [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-  [![FOSSA Status](https://app.fossa.com/api/projects/custom%2B32229%2Fgithub.com%2Fintel-analytics%2FBigDL.svg?type=shield)](https://app.fossa.com/projects/custom%2B32229%2Fgithub.com%2Fintel-analytics%2FBigDL?ref=badge_shield)
-</p>
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![FOSSA Status](https://app.fossa.com/api/projects/custom%2B32229%2Fgithub.com%2Fintel-analytics%2FBigDL.svg?type=shield)](https://app.fossa.com/projects/custom%2B32229%2Fgithub.com%2Fintel-analytics%2FBigDL?ref=badge_shield)
+
 BigDL makes it easy for data scientists and data engineers to build end-to-end, distributed AI applications. The **BigDL 2.0** release combines the [original BigDL](https://github.com/intel-analytics/BigDL/tree/branch-0.14) and [Analytics Zoo](https://github.com/intel-analytics/analytics-zoo) projects, providing the following features:
  
   * [DLlib](#getting-started-with-dllib): distributed deep learning library for Apache Spark *(i.e., the original BigDL framework with Keras-style API and Spark ML pipeline support)*
