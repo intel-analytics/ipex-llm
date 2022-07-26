@@ -31,7 +31,7 @@ class FLSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger
   Configurator.setLevel("com.intel.analytics.bigdl.dllib", Level.ERROR)
   Configurator.setLevel("com.intel.analytics.bigdl.ppml", Level.INFO)
   before {
-    // try only next 3 ports, if failed, it may well be
+    // try only next 10 ports, if failed, it may well be
     // that server holds the port and fails to release
     port = PortUtils.findNextPortAvailable(port, port + 10)
     target = "localhost:" + port

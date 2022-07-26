@@ -69,7 +69,6 @@ class FGBoostRegressionSepc extends FLSpec {
     val flServer = new FLServer(Array("-c",
       getClass.getClassLoader.getResource("ppml-conf-save-model.yaml").getPath))
     try {
-
       flServer.setPort(port)
       val rowkeyName = "Id"
       val labelName = "SalePrice"

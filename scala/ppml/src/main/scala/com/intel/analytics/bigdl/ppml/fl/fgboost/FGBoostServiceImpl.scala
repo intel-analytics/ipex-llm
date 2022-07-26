@@ -32,7 +32,8 @@ import java.util.concurrent.ConcurrentHashMap
 import collection.JavaConverters._
 
 
-class FGBoostServiceImpl(clientNum: Int, config: FLConfig) extends FGBoostServiceGrpc.FGBoostServiceImplBase{
+class FGBoostServiceImpl(clientNum: Int, config: FLConfig)
+  extends FGBoostServiceGrpc.FGBoostServiceImplBase{
   val logger = LogManager.getLogger(getClass)
   val aggregator = new FGBoostAggregator(config)
   aggregator.setClientNum(clientNum)
