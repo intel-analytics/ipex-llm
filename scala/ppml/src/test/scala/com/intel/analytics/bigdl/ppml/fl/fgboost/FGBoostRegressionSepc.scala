@@ -87,6 +87,19 @@ class FGBoostRegressionSepc extends FLSpec {
       val fGBoostRegression = new FGBoostRegression(
         learningRate = 0.1f, maxDepth = 7, minChildSize = 5)
       fGBoostRegression.fit(trainFeatures, trainLabels, 5)
+      flServer.stop()
+      // start another FLServer to load the server model and continue training
+      val flServer2 = new FLServer(Array("-c",
+        getClass.getClassLoader.getResource("ppml-conf-save-model.yaml").getPath))
+      flServer2.setPort(port)
+      flServer2.build()
+      flServer2.start()
+      FLContext.initFLContext("1", target)
+      val fGBoostRegression2 = new FGBoostRegression(
+        learningRate = 0.1f, maxDepth = 7, minChildSize = 5)
+      fGBoostRegression2.fit(trainFeatures, trainLabels, 5)
+      flServer2.stop()
+
       new File("/tmp/fgboost-server-model").delete()
     } catch {
       case e: Exception => throw e
