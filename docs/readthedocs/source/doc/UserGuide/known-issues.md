@@ -17,7 +17,7 @@ Otherwise, if you can not set this configuration, you can set the `conf` as foll
 ```bash
 # the number of minExecutors should equals to the number of maxExecutors, and the certain number can be set by users as demands. Here for example, we set them to 2.
 spark-submit --conf spark.dynamicAllocation.minExecutors 2 \
-						 --conf spark.dynamicAllocation.maxExecutors 2
+             --conf spark.dynamicAllocation.maxExecutors 2
 ```
 
 ### Python API
@@ -37,7 +37,7 @@ This error is because of the inequality of `spark.dynamicAllocation.maxExecutors
 ```bash
 # Spark-submit
 spark-submit --conf spark.dynamicAllocation.minExecutors 2 \
-						 --conf spark.dynamicAllocation.maxExecutors 2
+             --conf spark.dynamicAllocation.maxExecutors 2
 # Python API
 init_orca_context(conf={"spark.dynamicAllocation.minExecutors": "2", "spark.dynamicAllocation.maxExecutors": "2"})
 ```
@@ -56,6 +56,6 @@ This error maybe because you specify `conf` in `init_orca_context` when using sp
 
 ```bash
 spark-submit --conf spark.dynamicAllocation.enabled=true \
-						 --conf spark.dynamicAllocation.minExecutors 2 \
-						 --conf spark.dynamicAllocation.maxExecutors 2
+             --conf spark.dynamicAllocation.minExecutors 2 \
+             --conf spark.dynamicAllocation.maxExecutors 2
 ```
