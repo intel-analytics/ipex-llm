@@ -22,11 +22,13 @@ jobs:
   build:
 
     runs-on: [self-hosted, Linux, Bree]
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.7"]
     permissions:
       contents: read
       packages: write
-      matrix:
-        python-version: ["3.7"]
 
     steps:
     - uses: actions/checkout@v3
