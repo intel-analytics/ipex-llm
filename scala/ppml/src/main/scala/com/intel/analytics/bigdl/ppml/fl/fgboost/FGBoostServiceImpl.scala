@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.ppml.fl.fgboost
 
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
+import com.intel.analytics.bigdl.ppml.fl.FLConfig
 import com.intel.analytics.bigdl.ppml.fl.base.DataHolder
 import com.intel.analytics.bigdl.ppml.fl.common.FLPhase
 import com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceGrpc
@@ -31,9 +32,9 @@ import java.util.concurrent.ConcurrentHashMap
 import collection.JavaConverters._
 
 
-class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServiceImplBase{
+class FGBoostServiceImpl(clientNum: Int, config: FLConfig) extends FGBoostServiceGrpc.FGBoostServiceImplBase{
   val logger = LogManager.getLogger(getClass)
-  val aggregator = new FGBoostAggregator()
+  val aggregator = new FGBoostAggregator(config)
   aggregator.setClientNum(clientNum)
 
   // store client id as key and client data as value
