@@ -45,8 +45,8 @@ jobs:
     - name: Set up Maven Settings
       uses: s4u/maven-settings-action@v2.6.0
       env:
-        OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-        OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+        OSSRH_USERNAME: yihengwa
+        OSSRH_PASSWORD: BigDL2017
       with:
         sonatypeSnapshots: true
         apacheSnapshots: true
