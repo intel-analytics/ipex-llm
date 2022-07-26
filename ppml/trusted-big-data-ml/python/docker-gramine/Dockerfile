@@ -237,6 +237,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     sed -i 's/examples/\/ppml\/trusted-big-data-ml\/work\/spark-3.1.2\/examples/' /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/hive.py && \
     sed -i 's/spark-warehouse/\/ppml\/trusted-big-data-ml\/work\/spark-warehouse/' /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/hive.py && \
     chmod a+x /ppml/trusted-big-data-ml/init.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/clean.sh
+    chmod a+x /ppml/trusted-big-data-ml/clean.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/*
 
 WORKDIR /ppml/trusted-big-data-ml
