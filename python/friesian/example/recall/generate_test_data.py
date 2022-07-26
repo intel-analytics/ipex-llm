@@ -141,8 +141,6 @@ def generate_data(args):
         print(item_dict[:10])
 
         print(f"loading {args.dict_path}")
-        print(emb_vecs.shape)
-        print(emb_vecs[0, :10])
 
         with open(args.dict_path, "rb") as f:
             item_dict_loaded = pickle.load(f)
