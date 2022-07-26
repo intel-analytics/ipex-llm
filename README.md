@@ -261,6 +261,8 @@ See the [PPML user guide](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overvi
 - [User Group](https://groups.google.com/forum/#!forum/bigdl-user-group)
 - [Github Issues](https://github.com/intel-analytics/BigDL/issues)
 
+---
+
 ## Citing BigDL
 
 If you've found BigDL useful for your project, you may cite the [paper](https://arxiv.org/ftp/arxiv/papers/2204/2204.01715.pdf) as follows:
