@@ -13,12 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 # Required Dependecies
 
 # ```bash
-# pip install openvino-dev
+# pip install neural-compressor==1.11.0
 # ```
+
 
 import torch
 from torchvision import transforms
@@ -87,10 +87,8 @@ if __name__ == "__main__":
     predictions = y_hat.argmax(dim=1)
     print(predictions)
 
-    # Static quantization with penVINO
-    q_model = Trainer.quantize(model_ft,
-                               accelerator='openvino',
-                               calib_dataloader=DataLoader(train_dataset, batch_size=32))
+    # Static quantization for PyTorch
+    q_model = Trainer.quantize(model_ft, calib_dataloader=DataLoader(train_dataset, batch_size=32))
 
     # Inference with quantizated model
     y_hat = q_model(x)

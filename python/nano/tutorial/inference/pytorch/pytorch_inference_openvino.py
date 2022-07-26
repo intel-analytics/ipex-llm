@@ -15,6 +15,7 @@
 
 
 # Required Dependecies
+
 # ```bash
 # pip install openvino-dev
 # ```

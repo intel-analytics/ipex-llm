@@ -13,11 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# ```shell
-# pip install neural-compressor==1.11.0
-# ```
-
-
 import torch
 from torchvision import transforms
 from torchvision.datasets import OxfordIIITPet
@@ -26,10 +21,43 @@ import torch
 from torchvision.models import resnet18
 from bigdl.nano.pytorch import Trainer
 from torchmetrics import Accuracy
+import pytorch_lightning as pl
 
 
-def finetune_pet_dataset(model_ft):
+class MyLightningModule(pl.LightningModule):
 
+    def __init__(self):
+        self.model = resnet18(pretrained=True)
+        num_ftrs = self.model.fc.in_features
+        # Here the size of each output sample is set to 37.
+        self.model.fc = torch.nn.Linear(num_ftrs, 37)
+        self.criterion = torch.nn.CrossEntropyLoss()
+        super().__init__()
+
+    def forward(self, x):
+        return self.model(x)
+
+    def training_step(self, batch, batch_idx):
+        x, y = batch
+        output = self.model(x)
+        loss = self.criterion(output, y)
+        self.log('train_loss', loss)
+        return loss
+
+    def validation_step(self, batch, batch_idx):
+        x, y = batch
+        output = self.forward(x)
+        loss = self.criterion(output, y)
+        pred = torch.argmax(output, dim=1)
+        acc = torch.sum(y == pred).item() / (len(y) * 1.0)
+        metrics = {'test_acc': acc, 'test_loss': loss}
+        self.log_dict(metrics)
+
+    def configure_optimizers(self):
+        return torch.optim.SGD(self.parameters(), lr=0.01, momentum=0.9, weight_decay=5e-4)
+
+
+def create_dataloaders():
     train_transform = transforms.Compose([transforms.Resize(256),
                                           transforms.RandomCrop(224),
                                           transforms.RandomHorizontalFlip(),
@@ -54,41 +82,16 @@ def finetune_pet_dataset(model_ft):
 
     # prepare data loaders
     train_dataloader = DataLoader(train_dataset, batch_size=32)
+    val_dataloader = DataLoader(val_dataset, batch_size=32)
 
-    num_ftrs = model_ft.fc.in_features
-
-    # Here the size of each output sample is set to 37.
-    model_ft.fc = torch.nn.Linear(num_ftrs, 37)
-    loss_ft = torch.nn.CrossEntropyLoss()
-    optimizer_ft = torch.optim.SGD(model_ft.parameters(), lr=0.01, momentum=0.9, weight_decay=5e-4)
-
-    # Compile our model with loss function, optimizer.
-    model = Trainer.compile(model_ft, loss_ft, optimizer_ft, metrics=[Accuracy])
-    trainer = Trainer(max_epochs=5)
-    trainer.fit(model, train_dataloaders=train_dataloader)
-
-    return model, train_dataset, val_dataset
+    return train_dataloader, val_dataloader
 
 
 if __name__ == "__main__":
 
-    model_ft = resnet18(pretrained=True)
+    model = MyLightningModule()
+    train_loader, val_loader = create_dataloaders()
 
-    model_ft, train_dataset, val_dataset = finetune_pet_dataset(model_ft)
-
-    # Sample inference data
-    x = torch.stack([val_dataset[0][0], val_dataset[1][0]])
-
-    # Normal inference
-    model_ft.eval()
-    y_hat = model_ft(x)
-    predictions = y_hat.argmax(dim=1)
-    print(predictions)
-
-    # Static quantization with INC
-    q_model = Trainer.quantize(model_ft, calib_dataloader=DataLoader(train_dataset, batch_size=32))
-
-    # Inference with quantizated model
-    y_hat = q_model(x)
-    predictions = y_hat.argmax(dim=1)
-    print(predictions)
+    # IPEX accelerated training by setting use_ipex=True
+    trainer = Trainer(max_epochs=5, use_ipex=True)
+    trainer.fit(model, train_dataloaders=train_loader, val_dataloaders=val_loader)
