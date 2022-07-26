@@ -60,7 +60,7 @@ class LightningModule(pl.LightningModule):
         if self._forward_args_ is None:
             self._forward_args_ = inspect.getfullargspec(self.model.forward).args[1:]
         return self._forward_args_
-    
+
     @forward_args.setter
     def forward_args(self, forward_args):
         self._forward_args_ = forward_args

@@ -356,7 +356,7 @@ class TestMOHPO(TestCase):
             directions=['minimize', 'minimize'],
             n_trials=4,
             max_epochs=3,
-            auto_optimize=True,
+            acceleration=True,
             input_sample=torch.randn(1, 32),
         )
 
