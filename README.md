@@ -254,7 +254,7 @@ See the [PPML user guide](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overvi
 
 - [Mail List](mailto:bigdl-user-group+subscribe@googlegroups.com)
 - [User Group](https://groups.google.com/forum/#!forum/bigdl-user-group)
-- [Github Issues](https://bigdl.readthedocs.io/en/latest/doc/Application/powered-by.html)
+- [Github Issues](https://github.com/intel-analytics/BigDL/issues)
 
 ## Citing BigDL
 
