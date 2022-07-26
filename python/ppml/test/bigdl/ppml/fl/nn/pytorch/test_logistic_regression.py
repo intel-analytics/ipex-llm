@@ -25,11 +25,14 @@ import torch
 from bigdl.ppml.fl.nn.fl_client import FLClient
 from bigdl.ppml.fl.nn.pytorch.utils import set_one_like_parameter
 from bigdl.ppml.fl.nn.fl_server import FLServer
-from torch import nn
+from torch import Tensor, nn
 import logging
 
 from bigdl.ppml.fl.estimator import Estimator
 from bigdl.ppml.fl.utils import FLTest
+from typing import List
+from torch.testing._internal.jit_utils import clear_class_registry
+
 
 resource_path = os.path.join(os.path.dirname(__file__), "../../resources")
 
@@ -57,6 +60,7 @@ def mock_process(data_train, target, client_id):
                                target=target,
                                server_model=server_model)
     response = ppl.fit(x, y)
+    result = ppl.predict(x)
     logging.info(response)
     return ppl
 
@@ -69,6 +73,7 @@ class TestLogisticRegression(FLTest):
         self.fl_server.set_port(self.port)
         self.fl_server.build() 
         self.fl_server.start()
+        clear_class_registry()
 
     def tearDown(self) -> None:
         self.fl_server.stop()
@@ -133,7 +138,7 @@ class LogisticRegressionNetwork2(nn.Module):
         super().__init__()
         self.sigmoid = nn.Sigmoid()
 
-    def forward(self, x):
+    def forward(self, x: List[Tensor]):
         x = torch.stack(x)
         x = torch.sum(x, dim=0) # above two act as interactive layer, CAddTable
         x = self.sigmoid(x)

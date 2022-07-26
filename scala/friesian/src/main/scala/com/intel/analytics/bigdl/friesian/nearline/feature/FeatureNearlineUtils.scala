@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.friesian.nearline.feature
 
 import com.intel.analytics.bigdl.friesian.nearline.utils.NearlineUtils
-import com.intel.analytics.bigdl.friesian.serving.feature.utils.{LettuceUtils, RedisUtils}
+import com.intel.analytics.bigdl.friesian.serving.feature.utils.LettuceUtils
 import com.intel.analytics.bigdl.friesian.serving.utils.EncodeUtils.objToBytes
 import org.apache.logging.log4j.{LogManager, Logger}
 
@@ -31,7 +31,7 @@ import com.intel.analytics.bigdl.dllib.utils.Log4Error
 object FeatureNearlineUtils {
   val logger: Logger = LogManager.getLogger(getClass)
 
-  def loadUserItemFeaturesRDD(spark: SparkSession, redis: RedisUtils): Unit = {
+  def loadUserItemFeaturesRDD(spark: SparkSession, redis: LettuceUtils): Unit = {
     Log4Error.invalidOperationError(NearlineUtils.helper.initialUserDataPath != null ||
       NearlineUtils.helper.initialItemDataPath != null, "initialUserDataPath or " +
       "initialItemDataPath should be provided if loadInitialData is true")
@@ -81,10 +81,11 @@ object FeatureNearlineUtils {
       })
       featureRDD.foreachPartition { partition =>
         if (partition.nonEmpty) {
-          val redis = RedisUtils.getInstance(256,
-            NearlineUtils.helper.redisHostPort,
-            NearlineUtils.helper.redisKeyPrefix, NearlineUtils.helper.itemSlotType)
-          redis.Mset(keyPrefix, partition.toArray)
+          val redis = LettuceUtils.getInstance(NearlineUtils.helper.redisTypeEnum,
+            NearlineUtils.helper.redisHostPort, NearlineUtils.helper.redisKeyPrefix,
+            NearlineUtils.helper.redisSentinelMasterURL,
+            NearlineUtils.helper.redisSentinelMasterName, NearlineUtils.helper.itemSlotType)
+          redis.MSet(keyPrefix, partition.toArray)
         }
       }
     }
@@ -92,11 +93,11 @@ object FeatureNearlineUtils {
     logger.info(s"Insert ${totalCnt} features into redis, takes: ${(end - start) / 1000}s")
   }
 
-  def encodeRow(row: Row): JList[String] = {
+  def encodeRow(row: Row): Array[String] = {
     val id = row.get(0).toString
     val rowArr = row.toSeq.drop(1).toArray
-    val encodedValue = java.util.Base64.getEncoder.encodeToString(objToBytes(rowArr))
-    List(id, encodedValue).asJava
+    val encodedValue = Base64.getEncoder.encodeToString(objToBytes(rowArr))
+    Array(id, encodedValue)
   }
 
   @deprecated
@@ -104,7 +105,7 @@ object FeatureNearlineUtils {
     val rowSeq = row.toSeq
     val id = rowSeq.head.toString
     val colValueMap = (cols zip rowSeq).toMap
-    val encodedValue = java.util.Base64.getEncoder.encodeToString(
+    val encodedValue = Base64.getEncoder.encodeToString(
       objToBytes(colValueMap))
     List(id, encodedValue).asJava
   }

@@ -19,6 +19,8 @@ import grpc
 from bigdl.ppml.fl import *
 from bigdl.ppml.fl.nn.generated.nn_service_pb2_grpc import *
 from bigdl.ppml.fl.nn.nn_service import NNServiceImpl
+import yaml
+
 
 
 class FLServer(object):
@@ -26,6 +28,8 @@ class FLServer(object):
         self.server = grpc.server(futures.ThreadPoolExecutor(max_workers=5))
         self.port = 8980 # TODO: set from config file
         self.client_num = client_num
+        self.secure = False
+        self.load_config()
 
     def set_port(self, port):
         self.port = port
@@ -34,7 +38,10 @@ class FLServer(object):
         add_NNServiceServicer_to_server(
             NNServiceImpl(client_num=self.client_num),            
             self.server)
-        self.server.add_insecure_port(f'[::]:{self.port}')
+        if self.secure:
+            self.server.add_secure_port(f'[::]:{self.port}', self.server_credentials)
+        else:
+            self.server.add_insecure_port(f'[::]:{self.port}')
         logging.info(f'gRPC server starts listening port: {self.port}')
 
     def start(self):
@@ -44,9 +51,32 @@ class FLServer(object):
     def stop(self):
         self.server.stop(None)
 
+    def load_config(self):        
+        try:
+            with open('ppml-conf.yaml', 'r') as stream:
+                conf = yaml.safe_load(stream)
+                if 'privateKeyFilePath' in conf:
+                    self.secure = True
+                    with open(conf['privateKeyFilePath'], 'rb') as f:
+                        private_key = f.read()
+                    with open(conf['certChainFilePath'], 'rb') as f:
+                        certificate_chain = f.read()
+                    self.server_credentials = grpc.ssl_server_credentials(
+                         ( (private_key, certificate_chain), ) )
+                if 'serverPort' in conf:
+                    self.port = conf['serverPort']
+
+        except yaml.YAMLError as e:
+            logging.warn('Loading config failed, using default config ')
+        except Exception as e:
+            logging.warn('Failed to find config file "ppml-conf.yaml", using default config')
+
+    def wait_for_termination(self):
+        self.server.wait_for_termination()
+
     
 if __name__ == '__main__':
-    fl_server = FLServer()
+    fl_server = FLServer(2)
     fl_server.build()
     fl_server.start()
-    fl_server.block_until_shutdown()
+    fl_server.wait_for_termination()

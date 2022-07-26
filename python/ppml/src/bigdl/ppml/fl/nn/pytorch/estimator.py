@@ -21,7 +21,11 @@ from torch import nn
 from bigdl.ppml.fl.nn.fl_client import FLClient
 from torch.utils.data import DataLoader
 from bigdl.dllib.utils.log4Error import invalidInputError
-from bigdl.ppml.fl.nn.utils import tensor_map_to_ndarray_map
+from bigdl.ppml.fl.nn.utils import file_chunk_generate, tensor_map_to_ndarray_map
+import os
+import tempfile
+
+
 
 class PytorchEstimator:
     def __init__(self, 
@@ -45,6 +49,17 @@ class PytorchEstimator:
         if server_model is not None:
             self.__add_server_model(server_model, loss_fn, optimizer_cls, optimizer_args)
     
+    @staticmethod
+    def load_model_as_bytes(model):
+        model_path = os.path.join(tempfile.mkdtemp(), "vfl_server_model")
+        m = torch.jit.script(model)
+        torch.jit.save(m, model_path)
+        # torch.save(model, model_path)
+        logging.info(f"Client packed model file, length: {os.path.getsize(model_path)}")
+        file_chunk_generator = file_chunk_generate(model_path)
+        return file_chunk_generator
+
+
     def __add_server_model(self, 
                          model: nn.Module,
                          loss_fn=None,
@@ -59,8 +74,11 @@ class PytorchEstimator:
             logging.info(f'optimizer on FLServer not specified, \
                 using same as client: {self.optimizer} (with no args)')
             optimizer_cls = self.optimizer.__class__
-
-        msg = self.fl_client.upload_model(model, loss_fn, optimizer_cls, optimizer_args).message
+        msg_model = self.fl_client.nn_stub.upload_file(
+            PytorchEstimator.load_model_as_bytes(model))
+        logging.info(msg_model)
+        
+        msg = self.fl_client.upload_meta(loss_fn, optimizer_cls, optimizer_args).message
         logging.info(msg)
 
     def train_step(self, x, y):
@@ -113,7 +131,14 @@ class PytorchEstimator:
             
 
     def predict(self, x):
+        if isinstance(x, DataLoader):
+            pass
+        elif isinstance(x, ndarray):
+            x = torch.from_numpy(x)
+        else:
+            invalidInputError(False,
+                                  f'got unsupported data input type: {type(x)}')
         y_pred_local = self.model(x)
         data_map = {'input': y_pred_local.detach().numpy()}
         response = self.fl_client.predict(data_map)
-        return response.data.tensorMap['result']
+        return tensor_map_to_ndarray_map(response.data.tensorMap)['pred']
