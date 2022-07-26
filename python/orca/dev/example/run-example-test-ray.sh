@@ -175,6 +175,8 @@ fi
 
 start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/brainMRI/brainMRI.py
+export PYTHONPATH=${BIGDL_ROOT}/python/orca/example/learn/pytorch/brainMRI:$PYTHONPATH
+python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/brainMRI/brainMRI.py --backend=spark
 now=$(date "+%s")
 time14=$((now-start))
 
