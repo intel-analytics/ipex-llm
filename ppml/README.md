@@ -1,3 +1,5 @@
+**BigDL PPML** provides a Trusted Cluster Environment for secure Big Data & AI applications (TensorFlow, PyTorch, OpenVINO, XGBoost, Apache Spark/Flink, Ray, etc.), even on untrusted cloud environment.
+
 #### Table of Contents  
 [1. What is BigDL PPML?](#1-what-is-bigdl-ppml)  
 [2. Why BigDL PPML?](#2-why-bigdl-ppml)  
