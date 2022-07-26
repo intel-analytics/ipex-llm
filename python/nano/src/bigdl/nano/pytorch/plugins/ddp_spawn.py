@@ -40,11 +40,9 @@ from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 import torch
 from torch.nn.parallel.distributed import DistributedDataParallel
 from torch.multiprocessing.spawn import _wrap, ProcessContext
-from torch.optim.lr_scheduler import _LRScheduler
 
 import pytorch_lightning as pl
 from pytorch_lightning.overrides import LightningDistributedModule
-from pytorch_lightning.core.optimizer import LightningOptimizer
 from pytorch_lightning.plugins.environments.cluster_environment import ClusterEnvironment
 from pytorch_lightning.plugins.environments import LightningEnvironment
 from pytorch_lightning.utilities.distributed import rank_zero_only
@@ -119,7 +117,7 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
         num_processes: int = 1,
         cpu_for_each_process: Optional[List[List[int]]] = None,
         use_ipex=False,
-        enable_bf16=False
+        enable_bf16=False,
     ):
         """Create a DDPSpawnPlugin, adding a cpu_for_each_process parameter."""
         device = ipex_device() if use_ipex and TORCH_VERSION_LESS_1_10 else 'cpu'
@@ -132,7 +130,6 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
         self.is_distributed = True
         self.use_ipex = use_ipex
         self.enable_bf16 = enable_bf16
-
 
     @property
     def mp_spawn_kwargs(self):

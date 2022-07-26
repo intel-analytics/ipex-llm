@@ -40,7 +40,6 @@ from typing import Any, List, Optional, Callable, Union, Dict
 import torch
 from torch import nn
 from torch import Tensor
-from torch.optim.lr_scheduler import LinearLR
 from torch.multiprocessing.spawn import _wrap, ProcessContext
 from torch.nn.parallel.distributed import DistributedDataParallel
 
@@ -253,11 +252,29 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
                 for opt_idx, opt in enumerate(self.optimizers):
                     if type(self.auto_lr) is bool:
                         self.auto_lr = trainer.max_epochs // 5 + 1
-                    scheduler = LinearLR(optimizer=opt,
-                                            # set initial lr as user lr
-                                            start_factor= 1.0 / self.world_size,
-                                            end_factor=1.0,
-                                            total_iters=self.auto_lr)
+                    if not TORCH_VERSION_LESS_1_10:
+                        from torch.optim.lr_scheduler import LinearLR
+                        scheduler = LinearLR(optimizer=opt,
+                                             # set initial lr as user lr
+                                             start_factor=1.0 / self.world_size,
+                                             end_factor=1.0,
+                                             total_iters=self.auto_lr)
+                    else:
+                        from torch.optim.lr_scheduler import LambdaLR
+
+                        def lr_func(epoch):
+                            start_factor = 1.0 / self.world_size
+                            end_factor = 1.0
+                            total_iters = self.auto_lr
+                            if epoch == 0:
+                                return start_factor
+                            if epoch < total_iters:
+                                return ((end_factor - start_factor) * epoch / total_iters +
+                                        start_factor)
+                            else:
+                                return 1.0
+                        scheduler = LambdaLR(optimizer=opt, lr_lambda=[lr_func] *
+                                             len(optimizer.param_groups))
                     lr_scheduler = {
                         'scheduler': scheduler,
                         'opt_idx': opt_idx
@@ -265,13 +282,12 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
                     lr_schedulers.append(lr_scheduler)
                 lr_scheduler_configs = (
                     _configure_schedulers_automatic_opt(lr_schedulers, None)
-                        if self.lightning_module.automatic_optimization
-                        else _configure_schedulers_manual_opt(lr_schedulers)
+                    if self.lightning_module.automatic_optimization
+                    else _configure_schedulers_manual_opt(lr_schedulers)
                 )
                 _set_scheduler_opt_idx(self.optimizers, lr_scheduler_configs)
                 _validate_scheduler_api(lr_scheduler_configs, self.model)
                 self.lr_scheduler_configs = lr_scheduler_configs
-                
 
         if self.use_ipex and not TORCH_VERSION_LESS_1_10:
             dtype = torch.bfloat16 if self.enable_bf16 else None

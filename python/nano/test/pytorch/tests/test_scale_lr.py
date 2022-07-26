@@ -38,6 +38,7 @@ dataset_size = 256
 num_workers = 0
 data_dir = os.path.join(os.path.dirname(__file__), "../data")
 
+
 class Resnet_2_0(pl.LightningModule):
     def __init__(self, learning_rate1=0.01, learning_rate2=0.02) -> None:
         super().__init__()
@@ -54,12 +55,14 @@ class Resnet_2_0(pl.LightningModule):
                 assert math.isclose(lr_scheduler.get_last_lr()[0], 
                                     lr_scheduler.base_lrs[0])
             else:
-                diff = lr_scheduler.base_lrs[0] * (lr_scheduler.end_factor - lr_scheduler.start_factor) / (lr_scheduler.total_iters)
+                diff = lr_scheduler.base_lrs[0] * \
+                    (lr_scheduler.end_factor - lr_scheduler.start_factor) / \
+                    (lr_scheduler.total_iters)
                 assert lr_scheduler.base_lrs[0] == self.hparams[lr] * world_size
-                assert math.isclose(lr_scheduler.get_last_lr()[0], 
-                                    lr_scheduler.base_lrs[0] * lr_scheduler.start_factor + lr_scheduler.last_epoch * diff,
+                assert math.isclose(lr_scheduler.get_last_lr()[0],
+                                    lr_scheduler.base_lrs[0] * lr_scheduler.start_factor +
+                                    lr_scheduler.last_epoch * diff,
                                     abs_tol=1e-7)
-        
 
     def forward(self, x):
         x = self.backbone(x)
@@ -96,6 +99,7 @@ class Resnet_2_0(pl.LightningModule):
         )
         return [optimizer1, optimizer2]
 
+
 class Resnet_2_2(pl.LightningModule):
     def __init__(self, learning_rate1=0.01, learning_rate2=0.02):
         super().__init__()
@@ -108,7 +112,6 @@ class Resnet_2_2(pl.LightningModule):
     def on_train_start(self):
         world_size = self.trainer.strategy.world_size
         for opt, lr_sch, lr in zip(self.optimizers(), self.lr_schedulers(), self.hparams):
-            lr_sch = lr_sch['scheduler']
             if hasattr(lr_sch, 'start_factor'):
                 assert opt.param_groups[0]['lr'] == lr_sch.base_lrs[0] * lr_sch.start_factor
                 return
@@ -163,11 +166,12 @@ class Resnet_2_2(pl.LightningModule):
             {"optimizer": optimizer2, "lr_scheduler": lr_scheduler2}
         )
 
+
 class TestScaleLr(TestCase):
     data_loader = create_data_loader(data_dir, batch_size, num_workers,
-                                        data_transform, subset=dataset_size)
+                                     data_transform, subset=dataset_size)
     test_data_loader = create_test_data_loader(data_dir, batch_size, num_workers,
-                                                data_transform, subset=dataset_size)
+                                               data_transform, subset=dataset_size)
 
     def setUp(self):
         test_dir = os.path.dirname(__file__)
@@ -216,6 +220,6 @@ class TestScaleLr(TestCase):
         trainer.fit(model, train_dataloaders=self.data_loader,
                     val_dataloaders=self.test_data_loader)
 
+
 if __name__ == '__main__':
     pytest.main([__file__])
-
