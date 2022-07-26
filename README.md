@@ -2,43 +2,64 @@
 
 <p align="center"> <img src="docs/readthedocs/image/bigdl_logo.jpg" height="140px"><br></p>
 
-**Building Large-Scale AI Applications for Distributed Big Data**
+</div>
+
+<h3 align="center" style="display: block; font-size: 2.5em; font-weight: bold; margin-block-start: 1em; margin-block-end: 1em;">
+Seamless Scaling of AI Pipelines from Laptops to Distributed Cluster
+</h3>
+
+<div align="center">
+
+[![Latest release][release-badge]][release-link] [![Latest release date][release-date-badge]][release-link] [![PyPI][pypi-badge]][pypi-link] ![GitHub last commit](https://img.shields.io/github/last-commit/intel-analytics/BigDL)
 
 </div>
 
----
-BigDL makes it easy for data scientists and data engineers to build end-to-end, distributed AI applications. The **BigDL 2.0** release combines the [original BigDL](https://github.com/intel-analytics/BigDL/tree/branch-0.14) and [Analytics Zoo](https://github.com/intel-analytics/analytics-zoo) projects, providing the following features:
- 
-  * [DLlib](#getting-started-with-dllib): distributed deep learning library for Apache Spark *(i.e., the original BigDL framework with Keras-style API and Spark ML pipeline support)*
+<p align="center">
+	<strong>
+		<a href="https://www.intel.com/content/www/us/en/developer/tools/bigdl/overview.html">Website</a>
+		•
+		<a href="https://bigdl.readthedocs.io/">Docs</a>
+		•
+		<a href="https://huggingface.co/spaces/BigDL/bigdl_nano_demo">Demo</a>
+    •
+		<a href="https://bigdl.readthedocs.io/en/latest/doc/UserGuide/docker.html">Docker</a>
+	</strong>
+</p>
 
- * [Orca](#getting-started-with-orca): seamlessly scale out TensorFlow and PyTorch pipelines for distributed Big Data 
- 
- * [RayOnSpark](#getting-started-with-rayonspark): run Ray programs directly on Big Data clusters
- 
- * [Chronos](#getting-started-with-chronos): scalable time series analysis using AutoML
- 
- * [PPML](#ppml-privacy-preserving-machine-learning): privacy preserving big data analysis and machine learning (*experimental*)
- 
- * [Nano](https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html): automatically accelerate TensorFlow and PyTorch pipelines by applying modern CPU optimizations
 
-For more information, you may [read the docs](https://bigdl.readthedocs.io/).
 
 ---
 
-## Installing
-You can use BigDL on [Google Colab](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/colab.html) without any installation. BigDL also includes a set of [notebooks](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/notebooks.html) that you can directly open and run in Colab.
+## About BigDL 
 
-To install BigDL, we recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/)  environments.
 
+BigDL is a suite of libraries which helps data scientists and engineers to easily build end-to-end, fast, and scalable AI applications. 
+
+As of **BigDL 2.0** release, we combine the [original BigDL](https://github.com/intel-analytics/BigDL/tree/branch-0.14) and [Analytics Zoo](https://github.com/intel-analytics/analytics-zoo) projects into a single project. BigDL became a suite of libraries, each of which can be used alone and serves various purposes, as shown below. 
+ 
+
+![bigdl-arch2](https://user-images.githubusercontent.com/1995599/180955386-2a1625bd-1013-4579-a400-04451d8ded14.png)
+
+
+To learn more, you may [read the docs](https://bigdl.readthedocs.io/).
+
+---
+
+## Installation
+Python users can use pip to install a stable release
 ```bash
-conda create -n my_env 
-conda activate my_env
-pip install bigdl 
+pip install bigdl
+```
+or install the latest nightly build
+```bash
+pip install --pre --upgrade bigdl
 ```
 
-To install latest nightly build, use ```pip install --pre --upgrade bigdl```; see [Python](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/python.html) and [Scala](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/scala.html) user guide for more details.
+Refer to more information about install for [Python](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/python.html) or [Scala](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/scala.html).
 
-## Getting Started with DLlib
+---
+
+## First experience with DLlib
 **DLlib** is a distributed deep learning library for Apache Spark; with DLlib, users can write distributed deep learning applications as standard Spark programs (using either Scala or Python APIs).
 
 First, call `initNNContext` at the beginning of the code: 
@@ -121,33 +142,6 @@ est.fit(data=df,
 
 See [TensorFlow](https://bigdl.readthedocs.io/en/latest/doc/Orca/QuickStart/orca-tf-quickstart.html) and [PyTorch](https://bigdl.readthedocs.io/en/latest/doc/Orca/QuickStart/orca-pytorch-quickstart.html) quickstart, as well as the [document website](https://bigdl.readthedocs.io/), for more details.
 
-## Getting Started with RayOnSpark
-
-Ray is an open source distributed framework for emerging AI applications. _**RayOnSpark**_ allows users to directly run Ray programs on existing Big Data clusters, and directly write Ray code inline with their Spark code (so as to process the in-memory Spark RDDs or DataFrames).
-
-```python
-from bigdl.orca import init_orca_context
-
-# cluster_mode can be "local", "k8s" or "yarn"
-sc = init_orca_context(cluster_mode="yarn", cores=4, memory="10g", num_nodes=2, init_ray_on_spark=True) 
-
-import ray
-
-@ray.remote
-class Counter(object):
-      def __init__(self):
-          self.n = 0
-
-      def increment(self):
-          self.n += 1
-          return self.n
-
-counters = [Counter.remote() for i in range(5)]
-print(ray.get([c.increment.remote() for c in counters]))
-```
-
-See the RayOnSpark [user guide](https://bigdl.readthedocs.io/en/latest/doc/Ray/Overview/ray.html) and [quickstart](https://bigdl.readthedocs.io/en/latest/doc/Ray/QuickStart/ray-quickstart.html) for more details.
-
 ## Getting Started with Chronos
 
 Time series prediction takes observations from previous time steps as input and predicts the values at future time steps. The _**Chronos**_ library makes it easy to build end-to-end time series analysis by applying AutoML to extremely large-scale time series prediction.
@@ -225,3 +219,9 @@ If you've found BigDL useful for your project, you may cite the [paper](https://
   url={https://arxiv.org/pdf/1804.05839.pdf}
 }
 ```
+
+[release-badge]: https://img.shields.io/github/v/release/intel-analytics/BigDL?label=%20%F0%9F%93%A3%20Latest%20release&style=flat&logoColor=b0c0c0&labelColor=363D44
+[release-link]: https://github.com/intel-analytics/BigDL/releases
+[release-date-badge]: https://img.shields.io/github/release-date/intel-analytics/BigDL?label=Latest%20release%20date
+[pypi-badge]: https://img.shields.io/pypi/v/bigdl.svg
+[pypi-link]: https://pypi.org/project/bigdl
