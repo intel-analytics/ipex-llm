@@ -50,4 +50,3 @@ def _wrap_loss_func(lite: LightningLite, loss_func: _Loss) -> _Loss:
     setattr(loss_func, "_forward", loss_func.forward)
     setattr(loss_func, "forward", partial(_forward, lite, loss_func))
     return loss_func
-
