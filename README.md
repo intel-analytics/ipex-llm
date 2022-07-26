@@ -9,6 +9,7 @@
 ---
 [![license](https://img.shields.io/github/license/intel-analytics/BigDL)](https://github.com/intel-analytics/BigDL/blob/main/LICENSE)
 [![FOSSA Status](https://app.fossa.com/api/projects/custom%2B32229%2Fgithub.com%2Fintel-analytics%2FBigDL.svg?type=shield)](https://app.fossa.com/projects/custom%2B32229%2Fgithub.com%2Fintel-analytics%2FBigDL?ref=badge_shield)
+[![license](https://img.shields.io/github/commit-activity/m/intel-analytics/BigDL)](https://github.com/intel-analytics/BigDL/pulse)
 
 BigDL makes it easy for data scientists and data engineers to build end-to-end, distributed AI applications. The **BigDL 2.0** release combines the [original BigDL](https://github.com/intel-analytics/BigDL/tree/branch-0.14) and [Analytics Zoo](https://github.com/intel-analytics/analytics-zoo) projects, providing the following features:
  
