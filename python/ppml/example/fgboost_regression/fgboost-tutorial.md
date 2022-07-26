@@ -22,51 +22,30 @@ We use [House Prices](https://www.kaggle.com/competitions/house-prices-advanced-
 The code is available in projects, including [Client 1 code](fgboost_regression_party_1.py) and [Client 2 code](fgboost_regression_party_2.py). You could directly start two different terminals are run them respectively to start a federated learning, and the order of start does not matter. Following is the detailed step-by-step tutorial to introduce how the code works.
 
 ### 2.1 FL Context
-First, import the package and initilize FL Context.
-```python
-from bigdl.ppml.fl import *
-from bigdl.ppml.fl.algorithms.fgboost_regression import FGBoostRegression
-import pandas as pd
+First, initilize FL Context.
 
-init_fl_context()
+```python
+# create a singleton context in this process, 
+# all FL algorithms will use this context with client_id later
+init_fl_context(id=client_id) 
 ```
 
 ### 2.2 Private Set Intersection
 Then, read the data,
 
-Party 1
 ```python
-df_train = pd.read_csv('house-prices-train-1.csv')
-```
-
-Party 2
-```python
-df_train = pd.read_csv('house-prices-train-2.csv')
+df_train = pd.read_csv(data_path)
 ```
 
 To get the data intersection which the 2 parties can do federated learning, we have to the Private Set Intersection (PSI) algorithm first.
 
-Party 1
 ```python
 from bigdl.ppml.fl.algorithms.psi import PSI
-df_train = pd.read_csv('./python/ppml/example/fgboost_regression/data/house-prices-train-1.csv')
+df_train = pd.read_csv(data_path_train)
 df_train['Id'] = df_train['Id'].astype(str)
 
-df_test = pd.read_csv('./python/ppml/example/fgboost_regression/data/house-prices-test-1.csv')
+df_test = pd.read_csv(data_path_test)
 df_test['Id'] = df_test['Id'].astype(str)
-psi = PSI()
-intersection = psi.get_intersection(list(df_train['Id']))
-df_train = df_train[df_train['Id'].isin(intersection)]
-```
-Party 2
-```python
-from bigdl.ppml.fl.algorithms.psi import PSI
-df_train = pd.read_csv('./python/ppml/example/fgboost_regression/data/house-prices-train-2.csv')
-df_train['Id'] = df_train['Id'].astype(str)
-
-df_test = pd.read_csv('./python/ppml/example/fgboost_regression/data/house-prices-test-2.csv')
-df_test['Id'] = df_test['Id'].astype(str)
-
 psi = PSI()
 intersection = psi.get_intersection(list(df_train['Id']))
 df_train = df_train[df_train['Id'].isin(intersection)]
@@ -86,39 +65,23 @@ fgboost_regression = FGBoostRegression()
 ### 2.5 Training
 Then call `fit` method to train
 
-Party 1:
 ```python
 # party 1 does not own label, so directly pass all the features
-fgboost_regression.fit(df_train, feature_columns=df_train.columns, num_round=100)
-```
-Party 2:
-```python
+fgboost_regression.fit(df_train, feature_columns=df_train.columns, num_round=10)
+
 # party 2 owns label, so pass the features and the labels
-fgboost_regression.fit(df_x, df_y, feature_columns=df_x.columns, label_columns=['SalePrice'], num_round=100)
+fgboost_regression.fit(df_x, df_y, feature_columns=df_x.columns, label_columns=['SalePrice'], num_round=10)
 ```
 ### 2.6 Save & Load
 Save the model and load it back
 
-Party 1:
 ```python
-fgboost_regression.save_model('/tmp/fgboost_model_1.json')
-loaded = FGBoostRegression.load_model('/tmp/fgboost_model_1.json')
-```
-Party 2:
-```python
-fgboost_regression.save_model('/tmp/fgboost_model_2.json')
-loaded = FGBoostRegression.load_model('/tmp/fgboost_model_2.json')
+fgboost_regression.save_model(model_path)
+loaded = FGBoostRegression.load_model(model_path)
 ```
 ### 2.7 Prediction
-Party 1:
 ```python
-df_test = pd.read_csv('house-prices-test-1')
-result = loaded.predict(df_test, feature_columns=df_test.columns)
-```
-
-Party 2:
-```python
-df_test = pd.read_csv('house-prices-test-2')
+df_test = pd.read_csv(data_test)
 result = loaded.predict(df_test, feature_columns=df_test.columns)
 ```
 ## 3 Run FGBoost
@@ -127,7 +90,7 @@ FL Server is required before running any federated applications. Check [Start FL
 ### 3.1 Start FL Server in SGX
 // TODO: Add SGX section
 
-Copy the configuration file `ppml/scripts/ppml-conf.yaml` to the directory where the server starts, and modify the config
+Copy the configuration file `ppml/scripts/ppml-conf.yaml` to the current directory, and modify the config
 ```yaml
 # the port server gRPC uses
 serverPort: 8980
@@ -140,7 +103,7 @@ Then start the FL Server
 ./ppml/scripts/start-fl-server.sh 
 ```
 ### 3.2 Start FGBoost Clients
-Copy the configuration file `ppml/scripts/ppml-conf.yaml` to the directory where the client runs, and modify the config
+Copy the configuration file `ppml/scripts/ppml-conf.yaml` to the current directory, and modify the config
 ```yaml
 # the URL of server
 clientTarget: localhost:8980

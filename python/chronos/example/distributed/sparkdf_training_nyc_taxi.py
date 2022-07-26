@@ -68,7 +68,7 @@ if __name__ == '__main__':
                         "You can change it depending on your own cluster setting.")
     parser.add_argument('--cluster_mode', type=str, default='local',
                         help="The mode for the Spark cluster.")
-    parser.add_argument('--num_workers', type=int, default=1,
+    parser.add_argument('--num_nodes', type=int, default=1,
                         help="The number of nodes to be used in the cluster"
                         "You can change it depending on your own cluster setting.")
 
@@ -85,7 +85,7 @@ if __name__ == '__main__':
                         help="Download link of dataset.")
 
     args = parser.parse_args()
-    num_nodes = 1 if args.cluster_mode == 'local' else args.num_workers
+    num_nodes = 1 if args.cluster_mode == 'local' else args.num_nodes
     init_orca_context(cluster_mode=args.cluster_mode, cores=args.cores,
                       memory=args.memory, num_nodes=num_nodes)
     dataset_path = get_csv(args)

@@ -14,7 +14,7 @@ You can use _Chronos_ to do:
 ---
 ### **2. Install**
 
-Install `bigdl-chronos` from PyPI. We recommened to install with a conda virtual environment. To install Conda, please refer to https://docs.conda.io/en/latest/miniconda.html#.
+Install `bigdl-chronos` from PyPI. We recommend to install with a conda virtual environment. To install Conda, please refer to https://docs.conda.io/en/latest/miniconda.html#.
 ```bash
 conda create -n my_env python=3.7 setuptools=58.0.4
 conda activate my_env
@@ -36,7 +36,7 @@ pip install bigdl-nano[tensorflow]
 pip install pmdarima==1.8.2
 pip install prophet==1.0.1
 pip install neural-compressor==1.8.1
-pip install pyarrow=6.0.1
+pip install pyarrow==6.0.1
 ```
 ```eval_rst
 .. note:: 
@@ -52,7 +52,7 @@ pip install pyarrow=6.0.1
 ```
 ---
 ### **3. Run**
-Various python programming environments are supported to run a _Chronos_ application.
+Various Python programming environments are supported to run a _Chronos_ application.
 
 #### **3.1 Jupyter Notebook**
 
@@ -64,7 +64,7 @@ jupyter notebook --notebook-dir=./ --ip=* --no-browser
 
 #### **3.2 Python Script**
 
-You can directly write _Chronos_ application in a python file (e.g. script.py) and run in the command line as a normal Python program:
+You can directly write _Chronos_ application in a Python file (e.g. script.py) and run in the command line as a normal Python program:
 
 ```bash
 python script.py
@@ -74,7 +74,7 @@ python script.py
 .. note:: 
     **Optimization on Intel® Hardware**:
     
-     Chronos integrated many optimized library and best known methods(BKMs), users can have best performance to add ``bigdl-nano-init`` before their scripts. 
+     Chronos integrated many optimized libraries and best known methods (BKMs), users can have best performance to add ``bigdl-nano-init`` before their scripts. 
      
      ``bigdl-nano-init python script.py``
 

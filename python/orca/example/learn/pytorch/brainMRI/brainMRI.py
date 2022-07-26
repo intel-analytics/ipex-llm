@@ -27,13 +27,13 @@ import argparse
 import glob
 import os
 
+import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data as data
 from torchvision.utils import make_grid
 
 from bigdl.orca import init_orca_context, stop_orca_context
-from bigdl.orca.learn.metrics import Accuracy
 from bigdl.orca.learn.pytorch import Estimator
 from bigdl.dllib.utils.log4Error import invalidInputError
 
@@ -47,14 +47,21 @@ def dataset(root_path):
     files_df = pd.DataFrame({"image_path": image_files,
                              "mask_path": mask_files,
                              "diagnosis": [diagnosis(x) for x in mask_files]})
-    train_df, test_df = train_test_split(files_df, stratify=files_df['diagnosis'], test_size=0.15, random_state=0)
+    train_df, val_df = train_test_split(files_df, stratify=files_df['diagnosis'], test_size=0.1, random_state=0)
+    train_df = train_df.reset_index(drop=True)
+    val_df = val_df.reset_index(drop=True)
+
+    train_df, test_df = train_test_split(train_df, stratify=train_df['diagnosis'], test_size=0.15, random_state=0)
     train_df = train_df.reset_index(drop=True)
     test_df = test_df.reset_index(drop=True)
+    print("Train: {}\nVal: {}\nTest: {}".format(train_df.shape, val_df.shape, test_df.shape))
 
-    return train_df, test_df
+    return train_df, val_df, test_df
 
 
 def dice_coef_metric(pred, label):
+    pred[pred >= 0.5] = 1.0
+    pred[pred < 0.5] = 0.0
     intersection = 2.0 * (pred * label).sum()
     union = pred.sum() + label.sum()
     if pred.sum() == 0 and label.sum() == 0:
@@ -103,9 +110,19 @@ def train_loader_creator(config, batch_size):
     ])
 
     train_ds = BrainDataset(config['train'], train_transform)
-    trainloader = torch.utils.data.DataLoader(train_ds, batch_size=batch_size,
-                                              shuffle=True, num_workers=0)
-    return trainloader
+    train_loader = torch.utils.data.DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=0)
+    return train_loader
+
+
+def val_loader_creator(config, batch_size):
+    val_transform = A.Compose([
+        A.Resize(width=128, height=128, p=1.0),
+        A.HorizontalFlip(p=0.5),
+    ])
+
+    val_ds = BrainDataset(config['val'], val_transform)
+    val_loader = torch.utils.data.DataLoader(val_ds, batch_size=batch_size, shuffle=False, num_workers=0)
+    return val_loader
 
 
 def test_loader_creator(config, batch_size):
@@ -114,9 +131,8 @@ def test_loader_creator(config, batch_size):
     ])
 
     test_ds = BrainDataset(config['test'], test_transform)
-    testloader = torch.utils.data.DataLoader(test_ds, batch_size=batch_size,
-                                             shuffle=False, num_workers=0)
-    return testloader
+    test_loader = torch.utils.data.DataLoader(test_ds, batch_size=batch_size, shuffle=False, num_workers=0)
+    return test_loader
 
 
 def model_creator(config):
@@ -125,10 +141,13 @@ def model_creator(config):
 
 
 def optim_creator(model, config):
-    optimizer = optim.SGD(model.parameters(),
-                          lr=config.get("lr", 0.001),
-                          momentum=config.get("momentum", 0.9))
+    optimizer = optim.Adam(model.parameters(), lr=config.get("lr", 0.001))
     return optimizer
+
+
+def scheduler_creator(optimizer, config):
+    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=30)
+    return scheduler
 
 
 def denormalize(images):
@@ -140,8 +159,8 @@ def denormalize(images):
 parser = argparse.ArgumentParser(description='PyTorch brainMRI Example')
 parser.add_argument('--cluster_mode', type=str, default="local",
                     help='The cluster mode, such as local, yarn-client, or spark-submit.')
-parser.add_argument('--backend', type=str, default="torch_distributed",
-                    help='The backend of PyTorch Estimator; torch_distributed and spark are supported')
+parser.add_argument('--backend', type=str, default="ray",
+                    help='The backend of PyTorch Estimator; ray and spark are supported')
 parser.add_argument('--batch_size', type=int, default=64, help='The training batch size')
 parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
 parser.add_argument('--data_dir', type=str, default='./kaggle_3m', help='The path to the dataset')
@@ -163,13 +182,14 @@ else:
                       "cluster_mode should be one of 'local', 'yarn', 'standalone' and"
                       " 'spark-submit', but got " + args.cluster_mode)
 
-train_df, test_df = dataset(args.data_dir)
+train_df, val_df, test_df = dataset(args.data_dir)
 batch_size = args.batch_size
 epochs = args.epochs
 config = {
     'lr': 1e-3,
     'train': train_df,
-    'test': test_df
+    'test': test_df,
+    'val': val_df
 }
 train_loader = train_loader_creator(config=config, batch_size=batch_size)
 
@@ -177,18 +197,24 @@ train_loader = train_loader_creator(config=config, batch_size=batch_size)
 # You should use jupyter notebook to show the images.
 show_batch(train_loader)
 
-if args.backend in ["torch_distributed", "spark"]:
+if args.backend in ["ray", "spark"]:
     orca_estimator = Estimator.from_torch(model=model_creator,
                                           optimizer=optim_creator,
                                           loss=loss_creator,
                                           model_dir=args.model_dir,
                                           backend=args.backend,
                                           config=config,
-                                          use_tqdm=True)
+                                          use_tqdm=True,
+                                          scheduler_creator=scheduler_creator,
+                                          scheduler_step_freq='epoch')
 
-    orca_estimator.fit(data=train_loader_creator, epochs=args.epochs, batch_size=batch_size)
+    orca_estimator.fit(data=train_loader_creator, epochs=args.epochs, batch_size=batch_size,
+                       validation_data=val_loader_creator)
+    res = orca_estimator.evaluate(data=test_loader_creator, batch_size=batch_size)
+    for r, value in res.items():
+        print(r, ":", value)
 else:
-    raise NotImplementedError("Only torch_distributed and spark are supported as the backend,"
+    raise NotImplementedError("Only ray and spark are supported as the backend,"
                               " but got {}".format(args.backend))
 
 stop_orca_context()

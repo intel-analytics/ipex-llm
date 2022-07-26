@@ -16,9 +16,7 @@
 
 from multiprocessing import Process
 import unittest
-from cv2 import log
 import numpy as np
-import pandas as pd
 import os
 
 from bigdl.ppml.fl import *
@@ -204,8 +202,7 @@ class NeuralNetworkPart2(Model):
         super().__init__()
         self.d1 = Dense(128, activation='relu')
         self.d2 = Dense(10)
-
-    @tf.function(input_signature=[tf.TensorSpec(shape=[], dtype=tf.float32)])
+    
     def call(self, x):
         x = x[0]
         x = self.d1(x)

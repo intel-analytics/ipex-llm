@@ -25,5 +25,8 @@ def add_row(df, name, const_num):
 
 def transform_to_dict(data):
     if data[1] is None:
-        return {"x": data[0].astype(np.float32)}
-    return {"x": data[0].astype(np.float32), "y": data[1].astype(np.float32)}
+        return {"x": data[0].astype(np.float32),
+                "id": data[2].astype(np.float32)}
+    return {"x": data[0].astype(np.float32),
+            "y": data[1].astype(np.float32),
+            "id": data[2].astype(np.float32)}
