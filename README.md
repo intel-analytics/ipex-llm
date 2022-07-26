@@ -263,7 +263,7 @@ See the [PPML user guide](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overvi
 
 ## Citing BigDL
 
-If you've found BigDL useful for your project, you may cite the [paper](https://arxiv.org/abs/1804.05839) as follows:
+If you've found BigDL useful for your project, you may cite the [paper](https://arxiv.org/ftp/arxiv/papers/2204/2204.01715.pdf) as follows:
 
 ```
 Jason (Jinquan) Dai, Ding Ding, Dongjie Shi, Shengsheng Huang, Jiao Wang, Xin Qiu, Kai Huang, Guoqiong Song, Yang Wang, Qiyuan Gong, Jiaming Song, Shan Yu, Le Zheng, Yina Chen, Junwei Deng, Ge Song; Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2022, pp. 21439-21446
