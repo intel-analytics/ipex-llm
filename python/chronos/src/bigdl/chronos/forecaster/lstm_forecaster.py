@@ -23,11 +23,15 @@ class LSTMForecaster(BasePytorchForecaster):
     """
     Example:
         >>> #The dataset is split into x_train, x_val, x_test, y_train, y_val, y_test
+        >>> # 1. Initialize Forecaster directly
         >>> forecaster = LSTMForecaster(past_seq_len=24,
                                         input_feature_num=2,
                                         output_feature_num=2,
                                         ...)
-        >>> forecaster.fit((x_train, y_train))
+        >>>
+        >>> # 2. Initialize Forecaster from from_tsdataset
+        >>> forecaster = LSTMForecaster.from_tsdataset(tsdata, **kwargs)
+        >>> forecaster.fit(tsdata, epochs=2, ...)
         >>> forecaster.to_local()  # if you set distributed=True
         >>> test_pred = forecaster.predict(x_test)
         >>> test_eval = forecaster.evaluate((x_test, y_test))
@@ -119,7 +123,8 @@ class LSTMForecaster(BasePytorchForecaster):
 
         # distributed settings
         self.distributed = distributed
-        self.distributed_backend = distributed_backend
+        self.remote_distributed_backend = distributed_backend
+        self.local_distributed_backend = "subprocess"
         self.workers_per_node = workers_per_node
 
         # other settings
@@ -140,3 +145,59 @@ class LSTMForecaster(BasePytorchForecaster):
         self.use_hpo = False
 
         super().__init__()
+
+    @classmethod
+    def from_tsdataset(cls, tsdataset, past_seq_len=None, **kwargs):
+        '''
+        Build a LSTM Forecaster Model.
+
+        :param tsdataset: A bigdl.chronos.data.tsdataset.TSDataset instance.
+        :param past_seq_len: Specify the history time steps (i.e. lookback).
+               Do not specify the 'past_seq_len' if your tsdataset has called
+               the 'TSDataset.roll' method or 'TSDataset.to_torch_data_loader'.
+        :param kwargs: Specify parameters of Forecaster,
+               e.g. loss and optimizer, etc. More info, please refer to
+               LSTMForecaster.__init__ methods.
+
+        :return: A LSTM Forecaster Model.
+        '''
+        from bigdl.chronos.data.tsdataset import TSDataset
+        from bigdl.nano.utils.log4Error import invalidInputError
+
+        invalidInputError(isinstance(tsdataset, TSDataset),
+                          f"We only supports input a TSDataset, but get{type(tsdataset)}.")
+
+        def check_time_steps(tsdataset, past_seq_len):
+            if tsdataset.lookback is not None and past_seq_len is not None:
+                return tsdataset.lookback == past_seq_len
+            return True
+
+        invalidInputError(not tsdataset._has_generate_agg_feature,
+                          "We will add su`pport for 'gen_rolling_feature' method later.")
+
+        if tsdataset.lookback is not None:  # calling roll or to_torch_data_loader
+            past_seq_len = tsdataset.lookback
+            output_feature_num = len(tsdataset.roll_target)
+            input_feature_num = len(tsdataset.roll_feature) + output_feature_num
+        elif past_seq_len is not None:  # initialize only
+            past_seq_len = past_seq_len if isinstance(past_seq_len, int)\
+                else tsdataset.get_cycle_length()
+            output_feature_num = len(tsdataset.target_col)
+            input_feature_num = len(tsdataset.feature_col) + output_feature_num
+        else:
+            invalidInputError(False,
+                              "Forecaster needs 'past_seq_len' to specify "
+                              "the history time step of training.")
+
+        invalidInputError(check_time_steps(tsdataset, past_seq_len),
+                          "tsdataset already has history time steps and "
+                          "differs from the given past_seq_len "
+                          f"Expected past_seq_len to be {tsdataset.lookback}, "
+                          f"but found {past_seq_len}.",
+                          fixMsg="Do not specify past_seq_len "
+                          "or call tsdataset.roll method again and specify time step.")
+
+        return cls(past_seq_len=past_seq_len,
+                   input_feature_num=input_feature_num,
+                   output_feature_num=output_feature_num,
+                   **kwargs)

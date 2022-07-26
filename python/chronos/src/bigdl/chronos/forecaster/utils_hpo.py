@@ -14,14 +14,12 @@
 # limitations under the License.
 #
 
-from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
+from bigdl.nano.pytorch.lightning import LightningModule
 from bigdl.nano.utils.log4Error import invalidInputError
 from typing import List
 import pytorch_lightning as pl
 from torchmetrics.metric import Metric
 from torch.optim.lr_scheduler import _LRScheduler
-from torch import nn
-from pytorch_lightning import LightningModule
 import bigdl.nano.automl.hpo as hpo
 import warnings
 import torch
@@ -32,7 +30,7 @@ from bigdl.nano.automl.hpo.space import Space
 
 
 @hpo.plmodel()
-class GenericLightningModule(LightningModuleFromTorch):
+class GenericLightningModule(LightningModule):
     """A generic LightningMoudle for light-weight HPO."""
 
     def __init__(self,
@@ -88,7 +86,7 @@ class GenericLightningModule(LightningModuleFromTorch):
         optimizer = optim_creator(model, optim_config)
 
         invalidInputError(isinstance(model, nn.Module) and not
-                          isinstance(model, LightningModule),
+                          isinstance(model, pl.LightningModule),
                           "The created model must be instance of nn.Module but got {}"
                           .format(model.__class__))
 
@@ -142,7 +140,7 @@ class GenericLightningModule(LightningModuleFromTorch):
 
 
 @hpo.plmodel()
-class GenericTSTransformerLightningModule(LightningModule):
+class GenericTSTransformerLightningModule(pl.LightningModule):
     """A generic TS Transformer LightningMoudle for light-weight HPO."""
 
     def __init__(self,
@@ -196,7 +194,7 @@ class GenericTSTransformerLightningModule(LightningModule):
         self.model = model_creator({**model_config, **optim_config, **loss_config})
         self.loss = loss_creator(loss_config['loss'])
 
-        invalidInputError(isinstance(self.model, LightningModule),
+        invalidInputError(isinstance(self.model, pl.LightningModule),
                           "The created model must be instance of LightningModule but got {}"
                           .format(self.model.__class__))
 

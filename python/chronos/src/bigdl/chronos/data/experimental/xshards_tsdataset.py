@@ -22,6 +22,7 @@ from bigdl.chronos.data.utils.roll import roll_timeseries_dataframe
 from bigdl.chronos.data.utils.impute import impute_timeseries_dataframe
 from bigdl.chronos.data.utils.split import split_timeseries_dataframe
 from bigdl.chronos.data.experimental.utils import add_row, transform_to_dict
+from bigdl.chronos.data.utils.scale import unscale_timeseries_numpy
 
 
 _DEFAULT_ID_COL_NAME = "id"
@@ -41,6 +42,7 @@ class XShardsTSDataset:
         self.dt_col = schema["dt_col"]
         self.feature_col = schema["feature_col"].copy()
         self.target_col = schema["target_col"].copy()
+        self.scaler_index = [i for i in range(len(self.target_col))]
 
         self.numpy_shards = None
 
@@ -270,6 +272,9 @@ class XShardsTSDataset:
                                                         None, lookback, horizon,
                                                         feature_col, target_col,
                                                         self.id_col, 0, True)
+        self.scaler_index = [self.target_col.index(target_col[i])
+                             for i in range(len(target_col))]
+
         return self
 
     def scale(self, scaler, fit=True):
@@ -303,7 +308,7 @@ class XShardsTSDataset:
             Note: this function will not transform the shard.
             '''
             scaler_for_this_id = scaler[df[id_col][0]]
-            df[feature_col + target_col] = scaler_for_this_id.fit(df[feature_col + target_col])
+            df[target_col + feature_col] = scaler_for_this_id.fit(df[target_col + feature_col])
 
             return {id_col: df[id_col][0], "scaler": scaler_for_this_id}
 
@@ -320,8 +325,8 @@ class XShardsTSDataset:
             invalidInputError(not check_is_fitted(scaler_for_this_id),
                               "scaler is not fitted. When calling scale for the first time, "
                               "you need to set fit=True.")
-            df[feature_col + target_col] =\
-                scaler_for_this_id.transform(df[feature_col + target_col])
+            df[target_col + feature_col] =\
+                scaler_for_this_id.transform(df[target_col + feature_col])
 
             return df
 
@@ -355,14 +360,46 @@ class XShardsTSDataset:
                               "scaler is not fitted. When calling scale for the first time, "
                               "you need to set fit=True.")
 
-            df[feature_col + target_col] =\
-                scaler_for_this_id.inverse_transform(df[feature_col + target_col])
+            df[target_col + feature_col] =\
+                scaler_for_this_id.inverse_transform(df[target_col + feature_col])
             return df
 
         self.shards = self.shards.transform_shard(_inverse_transform, self.id_col,
                                                   self.scaler_dict, self.feature_col,
                                                   self.target_col)
         return self
+
+    def unscale_xshards(self, data, key=None):
+        '''
+        Unscale the time series forecaster's numpy prediction result/ground truth.
+
+        :param data: xshards same with self.numpy_xshards.
+        :param key: str, 'y' or 'prediction', default to 'y'. if no "prediction"
+        or "y" return an error and require our users to input a key. if key is
+        None, key will be set 'prediction'.
+
+        :return: the unscaled xshardtsdataset instance.
+        '''
+        from bigdl.nano.utils.log4Error import invalidInputError
+
+        def _inverse_transform(data, scaler, scaler_index, key):
+            from sklearn.utils.validation import check_is_fitted
+            from bigdl.nano.utils.log4Error import invalidInputError
+
+            id = data['id'][0, 0]
+            scaler_for_this_id = scaler[id]
+            invalidInputError(not check_is_fitted(scaler_for_this_id),
+                              "scaler is not fitted. When calling scale for the first time, "
+                              "you need to set fit=True.")
+
+            return unscale_timeseries_numpy(data[key], scaler_for_this_id, scaler_index)
+
+        if key is None:
+            key = 'prediction'
+        invalidInputError(key in {'y', 'prediction'}, "key is not in {'y', 'prediction'}, "
+                          "please input the correct key.")
+
+        return data.transform_shard(_inverse_transform, self.scaler_dict, self.scaler_index, key)
 
     def impute(self,
                mode="last",

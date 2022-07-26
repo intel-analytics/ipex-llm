@@ -26,6 +26,10 @@ class PytorchQuantizedModel(AcceleratedLightningModule):
         super().__init__(model.model)
         self.quantized = model
 
+    @property
+    def _nargs(self):
+        return -1
+
     @staticmethod
     def _load(path, model):
         qmodel = PyTorchModel(load(path, model))

@@ -21,7 +21,6 @@ import torchmetrics
 from unittest import TestCase
 from bigdl.nano.pytorch import Trainer
 from torchvision.models.resnet import ResNet, BasicBlock
-from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_12
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
 from test.pytorch.utils._train_torch_lightning import create_test_data_loader
@@ -87,7 +86,7 @@ class TestChannelsLast(TestCase):
         os.environ['PYTHONPATH'] = project_test_dir
 
     def test_trainer_channels_last(self):
-        pl_model = LightningModuleFromTorch(
+        pl_model = Trainer.compile(
             self.model, self.loss, self.optimizer,
             metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
         )
@@ -161,7 +160,7 @@ class TestChannelsLast(TestCase):
         assert pl_module.model.conv1.weight.equal(result)
 
     def test_trainer_channels_last_subprocess(self):
-        pl_model = LightningModuleFromTorch(
+        pl_model = Trainer.compile(
             self.model, self.loss, self.optimizer,
             metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
         )
@@ -183,7 +182,7 @@ class TestChannelsLastSpawn(TestCase):
                                                 data_transform, subset=dataset_size)
 
     def test_trainer_channels_last_spawn(self):
-        pl_model = LightningModuleFromTorch(
+        pl_model = Trainer.compile(
             self.model, self.loss, self.optimizer,
             metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
         )

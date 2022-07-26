@@ -52,7 +52,9 @@ class PytorchEstimator:
     @staticmethod
     def load_model_as_bytes(model):
         model_path = os.path.join(tempfile.mkdtemp(), "vfl_server_model")
-        torch.save(model, model_path)
+        m = torch.jit.script(model)
+        torch.jit.save(m, model_path)
+        # torch.save(model, model_path)
         logging.info(f"Client packed model file, length: {os.path.getsize(model_path)}")
         file_chunk_generator = file_chunk_generate(model_path)
         return file_chunk_generator
@@ -129,7 +131,14 @@ class PytorchEstimator:
             
 
     def predict(self, x):
+        if isinstance(x, DataLoader):
+            pass
+        elif isinstance(x, ndarray):
+            x = torch.from_numpy(x)
+        else:
+            invalidInputError(False,
+                                  f'got unsupported data input type: {type(x)}')
         y_pred_local = self.model(x)
         data_map = {'input': y_pred_local.detach().numpy()}
         response = self.fl_client.predict(data_map)
-        return response.data.tensorMap['result']
+        return tensor_map_to_ndarray_map(response.data.tensorMap)['pred']

@@ -22,7 +22,7 @@ import torchmetrics
 from torch import nn
 
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
-from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
+from bigdl.nano.pytorch.lightning import LightningModule
 from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch.vision.models import vision
 
@@ -49,26 +49,28 @@ loss = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 
 
-class TestLightningModuleFromTorch(TestCase):
+class TestLightningModule(TestCase):
 
     def test_resnet18(self):
-        pl_model = LightningModuleFromTorch(
+        pl_model = LightningModule(
             model, loss, optimizer,
             metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
         )
         data_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
         trainer = Trainer(max_epochs=4, log_every_n_steps=1)
         trainer.fit(pl_model, data_loader, data_loader)
+        trainer.validate(pl_model, data_loader)
         trainer.test(pl_model, data_loader)
+        trainer.predict(pl_model, data_loader)
 
     def test_load_state_dict_from_torch(self):
         torch.save(model.state_dict(), "resnet18_test.pth")
-        pl_model = LightningModuleFromTorch(model, loss, optimizer)
+        pl_model = LightningModule(model, loss, optimizer)
         state_dict = torch.load("resnet18_test.pth")
         pl_model.load_state_dict(state_dict)
 
     def test_load_state_dict_from_lightning(self):
-        pl_model = LightningModuleFromTorch(model, loss, optimizer)
+        pl_model = LightningModule(model, loss, optimizer)
         torch.save(pl_model.state_dict(), "lightning_resnet18_test.pth")
         state_dict = torch.load("lightning_resnet18_test.pth")
         pl_model.load_state_dict(state_dict)

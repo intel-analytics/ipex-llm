@@ -28,8 +28,8 @@ class Aggregator(object):
     def __init__(self,
                  client_num=1) -> None:
         self.model = None
-        self.client_data = {}
-        self.server_data = {}
+        self.client_data = {'train':{}, 'eval':{}, 'pred':{}}
+        self.server_data = {'train':{}, 'eval':{}, 'pred':{}}
         self.client_num = client_num
         self.condition = Condition()
         self._lock = threading.Lock()
@@ -53,17 +53,17 @@ class Aggregator(object):
             return
         self.optimizer = optimizer_cls(self.model.parameters(), **optimizer_args)
 
-    def put_client_data(self, client_id, data):
+    def put_client_data(self, client_id, data, phase):
         self.condition.acquire()
-        self.client_data[client_id] = data
+        self.client_data[phase][client_id] = data
         logging.debug(f'server receive data [{client_id}], \
-got {len(self.client_data)}/{self.client_num}')
+got {len(self.client_data[phase])}/{self.client_num}')
         
-        if len(self.client_data) == self.client_num:            
+        if len(self.client_data[phase]) == self.client_num:            
             logging.debug('server received all client data, start aggregate')
-            self.aggregate()
+            self.aggregate(phase)
             logging.debug('clearing client data')
-            self.client_data = {}
+            self.client_data[phase] = {}
             self.condition.notify_all()            
         else:
             logging.debug(f'[{client_id}] waiting')
@@ -71,10 +71,10 @@ got {len(self.client_data)}/{self.client_num}')
         self.condition.release()
 
 
-    def aggregate(self):
+    def aggregate(self, phase):
         input, target = [], None
         # to record the order of tensors with client ID
-        for cid, ndarray_map in self.client_data.items():
+        for cid, ndarray_map in self.client_data[phase].items():
             for k, v in ndarray_map.items():
                 if k == 'input':
                     input.append((cid, torch.from_numpy(v)))
@@ -101,17 +101,25 @@ got {len(self.client_data)}/{self.client_num}')
             input_tensor.requires_grad = True
             tensor_list.append(input_tensor)
 
-        pred = self.model(tensor_list)
-        loss = self.loss_fn(pred, target)
-        if self.optimizer is not None:
-            self.optimizer.zero_grad()
-        loss.backward()
-        if self.optimizer is not None:
-            self.optimizer.step()
+        if phase == 'train':
+            pred = self.model(tensor_list)
+            loss = self.loss_fn(pred, target)
+            if self.optimizer is not None:
+                self.optimizer.zero_grad()
+            loss.backward()
+            if self.optimizer is not None:
+                self.optimizer.step()
 
-        for cid, input_tensor in input:
-            grad_map = {'grad': input_tensor.grad.numpy(), 'loss': loss.detach().numpy()}            
-            self.server_data[cid] = ndarray_map_to_tensor_map(grad_map)
-
-    
-
+            for cid, input_tensor in input:
+                grad_map = {'grad': input_tensor.grad.numpy(), 'loss': loss.detach().numpy()}
+                self.server_data['train'][cid] = ndarray_map_to_tensor_map(grad_map)
+        elif phase == 'eval':
+            pass
+        elif phase == 'pred':
+            pred = self.model(tensor_list)
+            for cid, input_tensor in input:
+                pred_map = {'pred': pred.detach().numpy()}
+                self.server_data['pred'][cid] = ndarray_map_to_tensor_map(pred_map)
+        else:
+            invalidInputError(False,
+                              f'Invalid phase: {phase}, should be train/eval/pred')
