@@ -6,22 +6,70 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: Upload Python Package
+name: Nightly Build Upload Python Package
 
 on:
-  release:
-    types: [published]
-
-permissions:
-  contents: read
+  #release:
+   # types: [published]
+  schedule:
+    - cron: '0 15 * * *'
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 
 jobs:
-  deploy:
+  build:
 
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, Bree]
+    permissions:
+      contents: read
+      packages: write
 
     steps:
     - uses: actions/checkout@v3
+    - name: Set up JDK 8
+      uses: actions/setup-java@v3
+      with:
+        java-version: '8'
+        distribution: 'temurin'
+        #server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
+        settings-path: ${{ github.workspace }} # location for the settings.xml file
+    
+    - uses: actions/cache@v2
+      with:
+        path: ~/.m2/repository
+        key: maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: maven-
+    
+    - name: Set up Maven
+      uses: stCarolas/setup-maven@v4.4
+      with:
+        maven-version: 3.8.2
+
+    - name: Set up Maven Settings
+      uses: s4u/maven-settings-action@v2.6.0
+      with:
+        sonatypeSnapshots: true
+        apacheSnapshots: true
+        servers: |
+          [{
+            "id": "central",
+            "configuration": {
+              "httpConfiguration": {
+                "all": {
+                  "connectionTimeout": "3600000",
+                  "readTimeout": "3600000"
+                  }    
+                }
+              }
+          },{
+            "id": "ossrh",
+            "username": "${{ secrets.OSSRH_USERNAME }}",
+            "password": "${{ secrets.OSSRH_PASSWORD }}",
+            "configuration": {
+              "timeout": "3600000"
+            }
+          }]
+        # mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${{ secrets.ARDA_NEXUS }}" }]'
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
@@ -31,9 +79,25 @@ jobs:
         python -m pip install --upgrade pip
         pip install build
     - name: Build package
-      run: python -m build
-    - name: Publish package
-      uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
-      with:
-        user: __token__
-        password: ${{ secrets.PYPI_API_TOKEN }}
+      #run: python -m build
+      run: |
+        export TIMESTAMP=`date '+%Y%m%d'`
+        export PYPI_VERSION=2.1.0
+        nb_version=${PYPI_VERSION}b${TIMESTAMP}
+        echo ${nb_version}
+
+        ## windows ##
+        bash python/dev/release_default_windows.sh ${nb_version} false true
+
+        ## linux ##
+        bash python/dev/release_default_linux.sh ${nb_version} true
+
+        ## mac ##
+        bash python/dev/release_default_mac.sh ${nb_version} true
+
+
+#    - name: Publish package
+ #     uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
+  #    with:
+   #     user: __token__
+    #    password: ${{ secrets.PYPI_API_TOKEN }}
