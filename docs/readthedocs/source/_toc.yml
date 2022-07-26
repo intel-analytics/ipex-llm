@@ -1,7 +1,6 @@
 root: index
 subtrees:
   - caption: Nano
-    hidden: True
     entries:
       - file: doc/Nano/Overview/nano
       - file: doc/Nano/Overview/windows_guide
@@ -14,7 +13,6 @@ subtrees:
       - file: doc/Nano/QuickStart/index
 
   - caption: Orca
-    hidden: True
     entries:
       - file: doc/Orca/Overview/orca
         title: "Orca User Guide"
@@ -24,12 +22,14 @@ subtrees:
       - file: doc/Orca/Overview/distributed-tuning
       - file: doc/Ray/Overview/ray
       - file: doc/Orca/Overview/known_issues
-      entries:
-        - file: doc/Orca/QuickStart/orca-pytorch-distributed-quickstart
-        - file: doc/UseCase/spark-dataframe
-        - file: doc/UseCase/xshards-pandas
-        - file: doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart
-        - file: doc/Orca/QuickStart/orca-autoxgboost-quickstart
+        subtrees:
+        - caption: Orca Common Use Cases
+          entries:
+            - file: doc/Orca/QuickStart/orca-pytorch-distributed-quickstart
+            - file: doc/UseCase/spark-dataframe
+            - file: doc/UseCase/xshards-pandas
+            - file: doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart
+            - file: doc/Orca/QuickStart/orca-autoxgboost-quickstart
 
   - caption: DLlib
     entries:
