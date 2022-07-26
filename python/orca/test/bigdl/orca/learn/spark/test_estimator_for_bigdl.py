@@ -296,7 +296,7 @@ class TestEstimatorForKeras(TestCase):
                                      model_dir=temp_dir_name,
                                      feature_preprocessing=SeqToTensor([2]),
                                      label_preprocessing=SeqToTensor([1]))
-            self.assertTrue('Only orca metrics are supported, but get str' in
+            self.assertTrue('Only orca metrics and customized function are supported, but get str' in
                             str(context.exception))
             eval_result = estimator.evaluate(data=data_shard,
                                              batch_size=8)
