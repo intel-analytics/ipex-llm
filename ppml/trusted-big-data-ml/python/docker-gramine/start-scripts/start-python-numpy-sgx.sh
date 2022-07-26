@@ -1,4 +1,5 @@
 #!/bin/bash
+cd /ppml/trusted-big-data-ml
 ./clean.sh
 gramine-argv-serializer bash -c "python ./work/examples/test-numpy.py" > secured_argvs
 ./init.sh
