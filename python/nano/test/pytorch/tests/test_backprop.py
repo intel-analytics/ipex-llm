@@ -28,7 +28,7 @@ from pytorch_lightning.utilities.types import STEP_OUTPUT
 from typing import Any
 
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
-from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
+from bigdl.nano.pytorch.lightning import LightningModule
 from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch.vision.models import vision
 from bigdl.nano.pytorch.algorithms.selective_backprop import SelectiveBackprop
@@ -100,7 +100,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 class TestLightningModuleFromTorch(TestCase):
 
     def test_selective_backprop(self):
-        pl_model = LightningModuleFromTorch(
+        pl_model = LightningModule(
             model,
             loss,
             optimizer,
@@ -127,4 +127,6 @@ class TestLightningModuleFromTorch(TestCase):
 
 
 if __name__ == '__main__':
+    test = TestLightningModuleFromTorch()
+    test.test_selective_backprop()
     pytest.main([__file__])

@@ -28,7 +28,7 @@ from pytorch_lightning.callbacks import Callback
 from pytorch_lightning.utilities.types import STEP_OUTPUT
 from typing import Any
 
-from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
+from bigdl.nano.pytorch.lightning import LightningModule
 from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch.vision.models import vision
 from bigdl.nano.pytorch.algorithms.selective_backprop import SelectiveBackprop
@@ -142,7 +142,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 
 
 def main():
-    pl_model = LightningModuleFromTorch(
+    pl_model = LightningModule(
         model,
         loss,
         optimizer,
