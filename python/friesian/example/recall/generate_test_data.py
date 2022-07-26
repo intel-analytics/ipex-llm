@@ -119,7 +119,7 @@ def generate_data(args):
     search_sample(index_faiss, q_vec)
 
     print("saving created data and index >>>>>>")
-    for file, obj in [(args.emb_path, emb_vecs), (args.dict_path, item_dict)]:
+    for file, obj in [(args.dict_path, item_dict)]:
         with open(file, "wb") as f:
             print('saving to: {}'.format(file))
             pickle.dump(obj, f)
@@ -140,10 +140,9 @@ def generate_data(args):
         print(item_dict.shape)
         print(item_dict[:10])
 
-        print(f"loading {args.emb_path}, {args.dict_path}")
+        print(f"loading {args.dict_path}")
 
-        with open(args.emb_path, "rb") as f:
-            emb_vecs_loaded = pickle.load(f)
+        emb_vecs_loaded = emb_vecs
         print(emb_vecs_loaded.shape)
         print(emb_vecs_loaded[0, :10])
 
@@ -173,8 +172,6 @@ if __name__ == '__main__':
     parser.add_argument('--verbose', action='store_true',
                         help='Print more detailed information')
 
-    parser.add_argument('--emb_path', type=str, default='./emb_vecs.pkl',
-                        help='the path to save vector embeddings')
     parser.add_argument('--dict_path', type=str, default='./item_dict.pkl',
                         help='the path to save item_dict')
     parser.add_argument('--index_save_path', type=str, default='./index_FlatL2.pkl',

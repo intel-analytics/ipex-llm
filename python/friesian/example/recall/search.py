@@ -74,10 +74,10 @@ def faiss_search(faiss_index_pkl, item_dict_pkl, cluster_mode, batch_size=65536,
                 seed_idx = int(seed_ids[i])
                 seed_item = str(item_dict[seed_idx])
                 for n, (score, rec_id) in enumerate(
-                        zip(similarity_array[i][1:], idx_array[i][1:])
+                        zip(similarity_array[i], idx_array[i])
                 ):
                     rec_id = int(rec_id)
-                    yield (seed_item, str(item_dict[rec_id]), int(n + 1), float(score))
+                    yield (seed_item, str(item_dict[rec_id]), int(n), float(score))
 
     return do_search
 
@@ -145,7 +145,7 @@ if __name__ == '__main__':
                         help='Path to input parquet data (query items)')
     parser.add_argument('--parquet_output_path', type=str,
                         default='./similarity_search_L2.parquet',
-                        help='Path to save output parquet date (search results)')
+                        help='Path to save output parquet data (search results)')
 
     parser.add_argument('--top_k', type=int, default=100,
                         help='Number of items to be searched for each query item')

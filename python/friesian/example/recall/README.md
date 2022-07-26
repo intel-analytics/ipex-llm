@@ -18,10 +18,9 @@ pip install --pre --upgrade bigdl-friesian
 
 ## Generate data
 You can generate some test data to run the example, which contains:
-- embeddings: item embeddings of the shape [row_nums, vec_dim].
-- item_dict: unique string names of items with the shape [row_nums, ].
-- index data: the faiss index data generated from item embeddings.
-- parquet data: items saved in parquet format, each row contains two values, the id and the embedding.
+- item_dict: unique string names of items.
+- index data: the faiss index data built from item embeddings.
+- parquet data: items saved in parquet format to do the search, where each row contains item id and its embedding.
 
 Example command:
 ```bash
@@ -31,7 +30,6 @@ python generate_test_data.py \
     --header_len 8 \
     --verbose \
     --index_type FlatL2 \
-    --emb_path /path/to/save/vector/embeddings \
     --dict_path /path/to/save/item_dict \
     --index_save_path /path/to/save/faiss/index/data \
     --parquet_path /path/to/save/vector/embeddings/in/parquet/
@@ -43,21 +41,23 @@ __Options for generate_test_data:__
 * `header_len`: The header length of the unique item name. 
 * `verbose`: Print more detail information. Default to be False.
 * `index_type`: The faiss index_type: FlatL2 or IVFFlatL2. Default to be FlatL2.
-* `emb_path`: The path to save vector embeddings. Default to be ./emb_vecs.pkl.
 * `dict_path`: The path to save item_dict. Default to be ./item_dict.pkl.
 * `index_save_path`: The path to save faiss index data. Default to be ./index_FlatL2.pkl.
-* `parquet_path`: The path to save vector embeddings with spark, only work when use_spark is True. Default to be ./data.parquet/.
+* `parquet_path`: The path to save vector embeddings with spark. Default to be ./data.parquet/.
 
 __NOTE:__ 
-The file paths (like '*emb_path*') can be used directly as the corresponding input parameters for the next *search.py*.
+The file paths ('dict_path','faiss_index_path' and 'parquet_path') will be used directly as the corresponding input parameters for *search.py* below.
 
 ## Search items
+Search *top_k* items for each query and get a total of *len(query items)* * *top_k* rows,
+where each row contains the name of the query item, the name of the searched item, the ranking and the score.
+
 * Spark local, example command:
 ```bash
 python search.py \
-    --num_threads 8 \
+    --num_threads 2 \
     --cluster_mode local \
-    --num_tasks 4 \
+    --num_tasks 2 \
     --top_k 100 \
     --batch_size 50000 \
     --dict_path /path/to/the/folder/of/item_dict \
@@ -98,14 +98,14 @@ python search.py \
 __Options for search:__
 * `num_threads`: Set the environment variable OMP_NUM_THREADS for each faiss task. Default to be 8.
 * `cluster_mode`: The cluster mode, one of local, spark-submit or yarn. Default to be local.
-* `num_tasks`: The number of nodes to use in the cluster. Default to be 4.
+* `num_tasks`: The number of faiss tasks to run in the cluster. Default to be 4.
 * `memory`: The amount of memory to allocate on each task. Default to be 12g.
 * `top_k`: The number of items to be searched for each query item. Default to be 100.
 * `batch_size`: The batch size for each faiss task. Default to be 50000.
 * `dict_path`: The path to item_dict.pkl. Default to be ./item_dict.pkl.
 * `faiss_index_path`: The path to faiss index data. Default to be ./index_FlatL2.pkl.
-* `parquet_path`: The Path to input parquet data (query items). Default to be ./data.parquet. 
-* `parquet_output_path`: The path to save output parquet date (search results). Default to be ./similarity_search_L2.parquet.
+* `parquet_path`: The path to input parquet data (query items). Default to be ./data.parquet. 
+* `parquet_output_path`: The path to save output parquet data (search results). Default to be ./similarity_search_L2.parquet.
 
 __NOTE:__
 When the *cluster_mode* is yarn, *dict_path*, *faiss_index_path*,
