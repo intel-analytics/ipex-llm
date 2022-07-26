@@ -29,7 +29,6 @@
 # limitations under the License.
 
 import ray
-from bigdl.orca.learn.pytorch.utils import find_free_port
 from bigdl.orca.learn.pytorch.torch_runner import TorchRunner
 import torch.nn as nn
 from torch.utils.data import IterableDataset
@@ -75,15 +74,6 @@ class PytorchRayWorker(TorchRunner):
         self.size = hvd.size()
         self.setup_components_horovod()
         self.setup_operator(self.models)
-
-    def get_node_ip_port(self):
-        ip = self.get_node_ip()
-        port = find_free_port()
-        return ip, port
-
-    def get_node_ip(self):
-        """Returns the IP address of the current node."""
-        return ray._private.services.get_node_ip_address()
 
     def setup_components_horovod(self):
         import horovod.torch as hvd
