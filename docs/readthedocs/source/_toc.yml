@@ -1,6 +1,5 @@
 root: index
 subtrees:
-
   - caption: Quick Start
     entries:
       - file: doc/Orca/QuickStart/orca-tf-quickstart
@@ -8,7 +7,6 @@ subtrees:
       - file: doc/Orca/QuickStart/orca-tf2keras-quickstart
       - file: doc/Orca/QuickStart/orca-pytorch-quickstart
       - file: doc/Ray/QuickStart/ray-quickstart
-
 
   - caption: User Guide
     entries:
@@ -90,17 +88,15 @@ subtrees:
       - file: doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart
       - file: doc/Orca/QuickStart/orca-autoxgboost-quickstart
 
-
- - caption: Python API
-   entries:
+  - caption: Python API
+    entries:
       - file: doc/PythonAPI/Orca/orca
       - file: doc/PythonAPI/Friesian/feature
       - file: doc/PythonAPI/Chronos/index
       - file: doc/PythonAPI/Nano/index
 
-
- - caption: Real-World Application
-   entries:
+  - caption: Real-World Application
+    entries:
       - file: doc/Application/presentations
       - file: doc/Application/blogs
       - file: doc/Application/powered-by
