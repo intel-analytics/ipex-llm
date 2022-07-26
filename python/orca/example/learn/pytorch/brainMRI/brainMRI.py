@@ -215,6 +215,7 @@ elif args.backend in ["ray", "spark"]:
                                           loss=loss_creator,
                                           model_dir=args.model_dir,
                                           backend=args.backend,
+                                          metrics=dice_coef_metric,
                                           config=config,
                                           use_tqdm=True,
                                           scheduler_creator=scheduler_creator,
