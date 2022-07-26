@@ -44,7 +44,7 @@ class ResNet18(nn.Module):
         return self.model(x)
 
 
-class MyNano(TorchNano):
+class MyNano(use_ipex=True, TorchNano):
     def train(self):
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
         loss = nn.CrossEntropyLoss()
@@ -79,7 +79,7 @@ class LinearModel(nn.Module):
         return self.fc1(input_)
 
 
-class MyNanoCorrectness(TorchNano):
+class MyNanoCorrectness(use_ipex=True, TorchNano):
     def train(self, lr):
         dataset=TensorDataset(
             torch.tensor([[0.0],[0.0],[1.0],[1.0]]),
@@ -114,23 +114,23 @@ class TestLite(TestCase):
         )
         os.environ['PYTHONPATH'] = project_test_dir
 
-    def test_lite(self):
-        MyNano().train()
+    def test_torch_nano(self):
+        MyNano(use_ipex=True).train()
 
-    def test_lite_spawn(self):
-        MyNano(num_processes=2, strategy="spawn").train()
+    def test_torch_nano_spawn(self):
+        MyNano(use_ipex=True, num_processes=2, strategy="spawn").train()
 
-    def test_lite_subprocess(self):
-        MyNano(num_processes=2, strategy="subprocess").train()
+    def test_torch_nano_subprocess(self):
+        MyNano(use_ipex=True, num_processes=2, strategy="subprocess").train()
 
-    def test_lite_correctness(self):
-        MyNanoCorrectness().train(0.25)
+    def test_torch_nano_correctness(self):
+        MyNanoCorrectness(use_ipex=True).train(0.25)
 
-    def test_lite_spawn_correctness(self):
-        MyNanoCorrectness(num_processes=2, strategy="spawn").train(0.5)
+    def test_torch_nano_spawn_correctness(self):
+        MyNanoCorrectness(use_ipex=True, num_processes=2, strategy="spawn").train(0.5)
 
-    def test_lite_subprocess_correctness(self):
-        MyNanoCorrectness(num_processes=2, strategy="subprocess").train(0.5)
+    def test_torch_nano_subprocess_correctness(self):
+        MyNanoCorrectness(use_ipex=True, num_processes=2, strategy="subprocess").train(0.5)
 
 
 if __name__ == '__main__':

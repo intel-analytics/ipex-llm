@@ -21,7 +21,6 @@ from abc import abstractmethod
 
 import torch
 from torch import nn
-from torch.nn.modules.loss import _Loss
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 from pytorch_lightning.lite import LightningLite
@@ -46,7 +45,7 @@ class TorchNano(LightningLite):
     def __init__(self, num_processes: int = 1,
                  use_ipex: bool = False,
                  enable_bf16: bool = False,
-                 strategy: Union[str, Strategy] = "subprocess",
+                 strategy: str = "subprocess",
                  *args, **kwargs) -> None:
         """
         Create a TorchNano with nano acceleration.
@@ -56,11 +55,6 @@ class TorchNano(LightningLite):
         :param enable_bf16: whether use bf16 acceleration, defaults to False
         :param strategy: use which backend in distributed mode, defaults to "subprocess"
         """
-        # Check arguments
-        invalidInputError(isinstance(strategy, str),
-                          "strategy object will be created by bigdl-nano, "
-                          "you should pass the name of strategy.")
-
         self.num_processes = num_processes
         self.use_ipex = use_ipex
         self.enable_bf16 = enable_bf16
@@ -77,11 +71,11 @@ class TorchNano(LightningLite):
             else:
                 strategy = None     # type: ignore
         elif strategy == "spawn":
-            strategy = DDPSpawnStrategy(num_processes=self.num_processes,
+            strategy = DDPSpawnStrategy(num_processes=self.num_processes,   # type: ignore
                                         use_ipex=self.use_ipex,
                                         enable_bf16=self.enable_bf16)
         elif strategy == "subprocess":
-            strategy = DDPSubprocessStrategy(num_processes=self.num_processes,
+            strategy = DDPSubprocessStrategy(num_processes=self.num_processes,  # type: ignore
                                              use_ipex=self.use_ipex,
                                              enable_bf16=self.enable_bf16)
         elif strategy == "ray":

@@ -29,7 +29,7 @@ from bigdl.nano.pytorch.vision.models import vision
 
 batch_size = 256
 num_workers = 0
-data_dir = os.path.join(os.path.dirname(__file__), "../data")
+data_dir = os.path.join(os.path.dirname(__file__), "/root/cifar10")
 
 
 class ResNet18(nn.Module):
@@ -114,22 +114,22 @@ class TestLite(TestCase):
         )
         os.environ['PYTHONPATH'] = project_test_dir
 
-    def test_lite(self):
+    def test_torch_nano(self):
         MyNano().train()
 
-    def test_lite_spawn(self):
+    def test_torch_nano_spawn(self):
         MyNano(num_processes=2, strategy="spawn").train()
 
-    def test_lite_subprocess(self):
+    def test_torch_nano_subprocess(self):
         MyNano(num_processes=2, strategy="subprocess").train()
 
-    def test_lite_correctness(self):
+    def test_torch_nano_correctness(self):
         MyNanoCorrectness().train(0.25)
 
-    def test_lite_spawn_correctness(self):
+    def test_torch_nano_spawn_correctness(self):
         MyNanoCorrectness(num_processes=2, strategy="spawn").train(0.5)
 
-    def test_lite_subprocess_correctness(self):
+    def test_torch_nano_subprocess_correctness(self):
         MyNanoCorrectness(num_processes=2, strategy="subprocess").train(0.5)
 
 
