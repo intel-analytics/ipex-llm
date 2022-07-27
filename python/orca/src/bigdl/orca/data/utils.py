@@ -465,3 +465,15 @@ def check_col_exists(df, columns):
     if len(col_not_exist) > 0:
         invalidInputError(False,
                           str(col_not_exist) + " do not exist in this Table")
+
+
+def transform_to_shard_dict(data, featureCols, labelCol):
+    def to_shard_dict(df):
+        featureLists = [df[feature_col].to_numpy() for feature_col in featureCols]
+        result = {
+            "x": np.stack(featureLists, axis=1),
+            "y": df[labelCol].to_numpy()}
+        return result
+
+    data = data.transform_shard(to_shard_dict)
+    return data
