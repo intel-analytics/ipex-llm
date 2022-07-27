@@ -28,7 +28,7 @@ if __name__ == "__main__":
     model_ft = resnet18(pretrained=True)
 
     # Normal Inference
-    x = torch.stack(torch.rand(1, 3, 224, 224))
+    x = torch.rand(2, 3, 224, 224)
     model_ft.eval()
     y_hat = model_ft(x)
     predictions = y_hat.argmax(dim=1)
@@ -42,3 +42,10 @@ if __name__ == "__main__":
     y_hat = ov_model(x)
     predictions = y_hat.argmax(dim=1)
     print(predictions)
+
+    # Save Optimized Model
+    Trainer.save(ov_model, "./optimized_model")
+
+    # Load the Optimized Model
+    loaded_model = Trainer.load("./optimized_model")
+    print(loaded_model(x).argmax(dim=1))

@@ -17,7 +17,7 @@
 # Required Dependecies
 
 # ```bash
-# pip install neural-compressor==1.11.0 onnx onnxruntime
+# pip install neural-compressor==1.11.0 onnx onnxruntime onnxruntime_extensions
 # ```
 
 
@@ -46,8 +46,16 @@ def finetune_pet_dataset(model_ft):
                                                              [0.229, 0.224, 0.225])])
 
     # Apply data augmentation to the tarin_dataset
-    train_dataset = OxfordIIITPet(root=".", transform=train_transform, download=True)
-    val_dataset = OxfordIIITPet(root=".", transform=val_transform)
+    train_dataset = OxfordIIITPet(root="/tmp/data",
+                                  transform=train_transform,
+                                  target_transform=transforms.Lambda(
+                                      lambda label: torch.tensor(label, dtype=torch.long)),
+                                  download=True)
+    val_dataset = OxfordIIITPet(root="/tmp/data",
+                                transform=val_transform,
+                                target_transform=transforms.Lambda(
+                                    lambda label: torch.tensor(label, dtype=torch.long)),
+                                )
 
     # obtain training indices that will be used for validation
     indices = torch.randperm(len(train_dataset))
@@ -57,6 +65,7 @@ def finetune_pet_dataset(model_ft):
 
     # prepare data loaders
     train_dataloader = DataLoader(train_dataset, batch_size=32)
+    val_dataloader = DataLoader(val_dataset, batch_size=32)
 
     num_ftrs = model_ft.fc.in_features
 
@@ -66,34 +75,41 @@ def finetune_pet_dataset(model_ft):
     optimizer_ft = torch.optim.SGD(model_ft.parameters(), lr=0.01, momentum=0.9, weight_decay=5e-4)
 
     # Compile our model with loss function, optimizer.
-    model = Trainer.compile(model_ft, loss_ft, optimizer_ft, metrics=[Accuracy])
-    trainer = Trainer(max_epochs=5)
-    trainer.fit(model, train_dataloaders=train_dataloader)
+    model = Trainer.compile(model_ft, loss_ft, optimizer_ft, metrics=[Accuracy()])
+    trainer = Trainer(max_epochs=1)
+    trainer.fit(model, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader)
 
     return model, train_dataset, val_dataset
 
 
 if __name__ == "__main__":
 
-    model_ft = resnet18(pretrained=True)
+    model = resnet18(pretrained=True)
 
-    model_ft, train_dataset, val_dataset = finetune_pet_dataset(model_ft)
+    _, train_dataset, val_dataset = finetune_pet_dataset(model)
 
-    # Sample inference data
+    # Sample Inference Data
     x = torch.stack([val_dataset[0][0], val_dataset[1][0]])
 
-    # Normal inference
-    model_ft.eval()
-    y_hat = model_ft(x)
+    # Normal Inference
+    model.eval()
+    y_hat = model(x)
     predictions = y_hat.argmax(dim=1)
     print(predictions)
 
-    # Static quantization with ONNX
-    q_model = Trainer.quantize(model_ft,
+    # Static Quantization for ONNX
+    q_model = Trainer.quantize(model,
                                accelerator='onnxruntime',
                                calib_dataloader=DataLoader(train_dataset, batch_size=32))
 
-    # Inference with quantizated model
+    # Inference with Quantized Model
     y_hat = q_model(x)
     predictions = y_hat.argmax(dim=1)
     print(predictions)
+
+    # Save Quantized Model
+    Trainer.save(q_model, "./quantized_model")
+
+    # Load the Quantized Model
+    # loaded_model = Trainer.load("./quantized_model")
+    # print(loaded_model(x).argmax(dim=1))
