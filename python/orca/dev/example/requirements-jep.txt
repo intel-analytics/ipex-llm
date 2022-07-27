@@ -10,4 +10,5 @@ pandas
 jep==3.9.0
 cloudpickle
 tensorboard
+qtconsole
 jupyter
