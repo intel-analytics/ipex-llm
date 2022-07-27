@@ -27,7 +27,6 @@ jobs:
     - name: docker deploy
       run: |
         export IMAGE=intelanalytics/bigdl-k8s
-        cd docker/bigdl-k8s
         echo "########################################"
         echo "################# bigdl-k8s 3.1.2 #######"
         echo "########################################"
