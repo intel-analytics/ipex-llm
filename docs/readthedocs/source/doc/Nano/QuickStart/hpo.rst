@@ -11,7 +11,7 @@ Under the hood, the objects (layers, activations, model, etc.) are implicitly tu
 Install
 =======
 
-If you have not installed BigDL-Nano, follow :doc:`Nano Install Guide <../Overview/nano.md#2-install>` to install it according to your system and framework (i.e. tensorflow or pytorch).
+If you have not installed BigDL-Nano, follow :doc:`Nano Install Guide <../Overview/nano.html#install>` to install it according to your system and framework (i.e. tensorflow or pytorch).
 
 Next, install a few dependencies required for Nano HPO using below commands.
 
@@ -25,7 +25,7 @@ Next, install a few dependencies required for Nano HPO using below commands.
 Search Spaces
 =============
 
-Search spaces are value range specifications that the search engine uses for sampling hyperparameters. The available search spaces in Nano HPO is defined in ``bigdl.nano.automl.hpo.space``. Refer to [Search Space API doc]() for more details.
+Search spaces are value range specifications that the search engine uses for sampling hyperparameters. The available search spaces in Nano HPO is defined in ``bigdl.nano.automl.hpo.space``. Refer to [Search Space API doc](https://testbigdldocshane.readthedocs.io/en/latest/doc/Nano/QuickStart/hpo.html#search-spaces) for more details.
 
 
 
@@ -176,11 +176,11 @@ To search the batch size, specify search space in ``batch_size`` argument in ``m
 Launch Hyperparameter Search and Review the Results
 ----------------------------------------------------
 
-To launch hyperparameter search, call ``model.search`` after compile, as shown below. ``model.search`` runs the ``n_trials`` number of trials (meaning ``n_trials`` set of hyperparameter combinations are searched), and optimizes the ``target_metric`` in the specified ``direction``. Besides search arguments, you also need to specify fit arguments in ``model.search`` which will be used in the fitting process in each trial. Refer to [API docs]() for details.
+To launch hyperparameter search, call ``model.search`` after compile, as shown below. ``model.search`` runs the ``n_trials`` number of trials (meaning ``n_trials`` set of hyperparameter combinations are searched), and optimizes the ``target_metric`` in the specified ``direction``. Besides search arguments, you also need to specify fit arguments in ``model.search`` which will be used in the fitting process in each trial. Refer to [API docs](https://testbigdldocshane.readthedocs.io/en/latest/doc/Nano/QuickStart/hpo.html#tensorflow-hpo) for details.
 
 Call ``model.search_summary`` to retrieve the search results, which you can use to get all trial statistics in pandas dataframe format, pick the best trial, or do visualizations.  Examples of search results analysis and visualization can be found [here](#analysis-and-visualization).
 
-Finally, ``model.fit`` will automatically fit the model using the best set of hyper parameters found in the search. You can also use the hyperparameters from a particular trial other than the best one. Refer to [API docs]() for details.
+Finally, ``model.fit`` will automatically fit the model using the best set of hyper parameters found in the search. You can also use the hyperparameters from a particular trial other than the best one. Refer to [API docs](https://testbigdldocshane.readthedocs.io/en/latest/doc/Nano/QuickStart/hpo.html#tensorflow-hpo) for details.
 
 .. code-block:: python
     :linenos:
@@ -199,7 +199,7 @@ For PyTorch Users
 ==================
 
 
-Nano-HPO now only supports hyperparameter search for [pytorch-lightning]() modules.
+Nano-HPO now only supports hyperparameter search for [pytorch-lightning](https://pytorch-lightning.readthedocs.io/en/latest/) modules.
 
 
 Search the Model Architecture
@@ -293,7 +293,7 @@ To launch hyperparameter search, call ``Trainer.search`` after model is defined.
 
 Call ``Trainer.search_summary`` to retrieve the search results, which you can use to get all trial statistics in pandas dataframe format, pick the best trial, or do visualizations.  Examples of search results analysis and visualization can be found [here](#analysis-and-visualization).
 
-Finally you can use ``Trainer.fit()`` to fit the best model. You can also get a model constructed with hyperparameters from a particular trial other than the best one. Refer to [Trainer.search API doc]() for more details.
+Finally you can use ``Trainer.fit()`` to fit the best model. You can also get a model constructed with hyperparameters from a particular trial other than the best one. Refer to [Trainer.search API doc](https://testbigdldocshane.readthedocs.io/en/latest/doc/Nano/QuickStart/pytorch_train.html#bigdl-nano-pytorch-trainer) for more details.
 
 .. code-block:: python
     :linenos:
