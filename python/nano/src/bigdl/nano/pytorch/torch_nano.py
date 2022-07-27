@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from typing import Any, Union
+from typing import Any
 from logging import warning
 from functools import partial
 from abc import abstractmethod
@@ -24,7 +24,6 @@ from torch import nn
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 from pytorch_lightning.lite import LightningLite
-from pytorch_lightning.strategies import Strategy
 from pytorch_lightning.lite.wrappers import _LiteModule, _LiteOptimizer
 
 from bigdl.nano.common import check_avx512
@@ -53,7 +52,8 @@ class TorchNano(LightningLite):
         :param num_processes: number of processes in distributed training, defaults to 1
         :param use_ipex: whether use ipex acceleration, defaults to False
         :param enable_bf16: whether use bf16 acceleration, defaults to False
-        :param strategy: use which backend in distributed mode, defaults to "subprocess"
+        :param strategy: use which backend in distributed mode, defaults to "subprocess", \
+            now avaiable strategies are 'spawn', 'subprocess' and 'ray'
         """
         self.num_processes = num_processes
         self.use_ipex = use_ipex
@@ -145,9 +145,9 @@ class TorchNano(LightningLite):
         :param model: A model to setup
         :param optimizer: The optimizer to setup
         :param *dataloaders: The dataloader(s) to setup
-        :param move_to_device: If set ``True`` (default), moves the model to the correct device.
+        :param move_to_device: If set ``True`` (default), moves the model to the correct device. \
             Set this to ``False`` and alternatively use :meth:`to_device` manually.
-        :return: The tuple of the wrapped model, optimizer, loss_func and dataloaders,
+        :return: The tuple of the wrapped model, optimizer, loss_func and dataloaders, \
             in the same order they were passed in.
         """
         model, optimizer = self._setup(model, optimizer, move_to_device=move_to_device)

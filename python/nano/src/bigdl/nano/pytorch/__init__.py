@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["Trainer"]
+__all__ = ["Trainer", "TorchNano"]
 
 
 # unset the KMP_INIT_AT_FORK

@@ -47,7 +47,7 @@ class ResNet18(nn.Module):
 class MyNano(TorchNano):
     def train(self):
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
-        loss = nn.CrossEntropyLoss()
+        loss_func = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
         train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
 
@@ -60,11 +60,11 @@ class MyNano(TorchNano):
             total_loss, num = 0, 0
             for X, y in train_loader:
                 optimizer.zero_grad()
-                l = loss(model(X), y)
-                self.backward(l)
+                loss = loss_func(model(X), y)
+                self.backward(loss)
                 optimizer.step()
                 
-                total_loss += l.sum()
+                total_loss += loss.sum()
                 num += 1
             print(f'avg_loss: {total_loss / num}')
 
@@ -87,7 +87,7 @@ class MyNanoCorrectness(TorchNano):
         )
         train_loader = DataLoader(dataset=dataset, batch_size=2, shuffle=False)
         origin_model = LinearModel()
-        loss = nn.MSELoss()
+        loss_func = nn.MSELoss()
         optimizer = torch.optim.SGD(origin_model.parameters(), lr=lr)
 
         model, optimizer, train_loader = self.setup(origin_model, optimizer, train_loader)
@@ -98,8 +98,8 @@ class MyNanoCorrectness(TorchNano):
         for _i in range(num_epochs):
             for X, y in train_loader:
                 optimizer.zero_grad()
-                l = loss(model(X), y)
-                self.backward(l)
+                loss = loss_func(model(X), y)
+                self.backward(loss)
                 optimizer.step()
 
         assert origin_model.fc1.weight.data == 0.25, \
