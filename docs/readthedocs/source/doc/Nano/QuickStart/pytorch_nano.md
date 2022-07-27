@@ -81,7 +81,7 @@ max_epochs = 10
 lr = 0.01
 
 model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
-loss = nn.CrossEntropyLoss()
+loss_func = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 train_loader = create_dataloader(data_path, batch_size)
 
@@ -91,32 +91,31 @@ for _i in range(max_epochs):
     total_loss, num = 0, 0
     for X, y in train_loader:
         optimizer.zero_grad()
-        l = loss(model(X), y)
-        l.backward()
+        loss = loss_func(model(X), y)
+        loss.backward()
         optimizer.step()
         
-        total_loss += l.sum()
+        total_loss += loss.sum()
         num += 1
     print(f'avg_loss: {total_loss / num}')
 ```
 
-The `LightningLite` (`bigdl.nano.pytorch.lite.LightningLite`) class is the place where we integrate most optimizations. It extends PyTorch Lightning's `LightningLite` class and has a few more parameters and methods specific to BigDL-Nano.
+The `TorchNano` (`bigdl.nano.pytorch.TorchNano`) class is the place where we integrate most optimizations. It extends PyTorch Lightning's `LightningLite` class and has a few more parameters and methods specific to BigDL-Nano.
 
 We can accelerate the train loop above by the following steps:
 
-- define a class `Lite` derived from our `LightningLite`
-- copy all codes into the `run` method of `Lite`
-- add two extra lines to setup model, optimizer and dataloader
-- change the backward call
+- define a class `MyNano` derived from our `TorchNano`
+- copy all codes into the `train` method of `MyNano`
+- add one line to setup model, optimizer and dataloader
 
 ```python
 import os
 import torch
 
-from bigdl.nano.pytorch.lite import LightningLite
+from bigdl.nano.pytorch import TorchNano
 
-class Lite(LightningLite):
-    def run(self):
+class MyNano(TorchNano):
+    def train(self):
         # copy all codes into this method
         data_path = os.environ.get("DATA_PATH", ".")
         batch_size = 256
@@ -124,31 +123,32 @@ class Lite(LightningLite):
         lr = 0.01
 
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
-        loss = nn.CrossEntropyLoss()
+        loss_func = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=lr)
         train_loader = create_dataloader(data_path, batch_size)
 
-        model, optimizer = self.setup(model, optimizer)      # add this line to setup model and optimizer
-        train_loader = self.setup_dataloaders(train_loader)  # add this line to setup dataloader
+        # add this line to setup model, optimizer and dataloaders
+        model, optimizer, train_loader = self.setup(model, optimizer, train_loader)
+
         model.train()
 
         for _i in range(max_epochs):
             total_loss, num = 0, 0
             for X, y in train_loader:
                 optimizer.zero_grad()
-                l = loss(model(X), y)
-                self.backward(l)  # change the backward call
+                loss = loss_func(model(X), y)
+                loss.backward()
                 optimizer.step()
                 
-                total_loss += l.sum()
+                total_loss += loss.sum()
                 num += 1
             print(f'avg_loss: {total_loss / num}')
 ```
 
-### Step 5: **Run with Nano PyTorch LightningLite**
+### Step 5: **Run with Nano TorchNano**
 
 ```python
-Lite().run()
+MyNano().train()
 ```
 
 At this stage, you may already experience some speedup due to the optimized environment variables set by source bigdl-nano-init. Besides, you can also enable optimizations delivered by BigDL-Nano by setting a paramter or calling a method to accelerate PyTorch or PyTorch Lightning application on training workloads.
@@ -156,7 +156,7 @@ At this stage, you may already experience some speedup due to the optimized envi
 #### Increase the number of processes in distributed training to accelerate training.
 
 ```python
-Lite(num_processes=2, strategy="subprocess").run()
+MyNano(num_processes=2, strategy="subprocess").train()
 ```
 
 - Note: BigDL-Nano now support 'spawn', 'subprocess' and 'ray' strategies for distributed training, but only the 'subprocess' strategy can be used in interactive environment.
@@ -166,5 +166,5 @@ Lite(num_processes=2, strategy="subprocess").run()
 IPEX extends Pytorch with optimizations on intel hardware. BigDL-Nano also integrates IPEX into the `LightningLite`, you can turn on IPEX optimization by setting `use_ipex=True`.
 
 ```python
-Lite(use_ipex=True, num_processes=2, strategy="subprocess").run()
+MyNano(use_ipex=True, num_processes=2, strategy="subprocess").train()
 ```
