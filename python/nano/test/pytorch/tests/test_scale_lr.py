@@ -39,7 +39,7 @@ num_workers = 0
 data_dir = os.path.join(os.path.dirname(__file__), "../data")
 
 
-class Resnet_2_0(pl.LightningModule):
+class ResNetWith2Optimzers(pl.LightningModule):
     def __init__(self, learning_rate1=0.01, learning_rate2=0.05) -> None:
         super().__init__()
 
@@ -100,7 +100,7 @@ class Resnet_2_0(pl.LightningModule):
         return [optimizer1, optimizer2]
 
 
-class Resnet_2_2(pl.LightningModule):
+class ResNetWithScheduler(pl.LightningModule):
     def __init__(self, learning_rate1=0.01, learning_rate2=0.02):
         super().__init__()
 
@@ -181,7 +181,7 @@ class TestScaleLr(TestCase):
         os.environ['PYTHONPATH'] = project_test_dir
 
     def test_scale_lr_subprocess(self):
-        model = Resnet_2_2()
+        model = ResNetWithScheduler()
         trainer = Trainer(num_processes=2,
                           distributed_backend="subprocess",
                           auto_lr=True,
@@ -191,7 +191,7 @@ class TestScaleLr(TestCase):
                     val_dataloaders=self.test_data_loader)
 
     def test_scale_lr_spawn(self):
-        model = Resnet_2_2()
+        model = ResNetWithScheduler()
         trainer = Trainer(num_processes=2,
                           distributed_backend='spawn',
                           auto_lr=True,
@@ -202,7 +202,7 @@ class TestScaleLr(TestCase):
                     val_dataloaders=self.test_data_loader)
 
     def test_warmup_subprocess(self):
-        model = Resnet_2_0()
+        model = ResNetWith2Optimzers()
         trainer = Trainer(num_processes=2,
                           distributed_backend='subprocess',
                           auto_lr=3,
@@ -212,7 +212,7 @@ class TestScaleLr(TestCase):
                     val_dataloaders=self.test_data_loader)
 
     def test_warmup_spawn(self):
-        model = Resnet_2_0()
+        model = ResNetWith2Optimzers()
         trainer = Trainer(num_processes=4,
                           distributed_backend='spawn',
                           auto_lr=True,

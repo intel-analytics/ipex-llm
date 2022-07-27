@@ -245,7 +245,7 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
                 scheduler.base_lrs = [lr * self.world_size for lr in scheduler.base_lrs]
 
             if self.lr_scheduler_configs:
-                warnings.warn(f"Nano warmup currently only support none optimizers, "
+                warnings.warn(f"Nano warmup currently only support no scheduler, "
                               f"but got {len(self.lr_scheduler_configs)}. Skip warmup")
             else:
                 lr_schedulers = []
@@ -280,6 +280,9 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
                         'opt_idx': opt_idx
                     }
                     lr_schedulers.append(lr_scheduler)
+
+                # validates the lr_scheduler_configs, adapted from lightning
+                # https://github.com/Lightning-AI/lightning/blob/1.6.4/pytorch_lightning/core/optimizer.py#L175
                 lr_scheduler_configs = (
                     _configure_schedulers_automatic_opt(lr_schedulers, None)
                     if self.lightning_module.automatic_optimization
