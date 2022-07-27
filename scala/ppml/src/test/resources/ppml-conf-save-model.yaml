@@ -1,2 +1,3 @@
 fgBoostServerModelPath: /tmp/fgboost-server-model
-taskID: test
+serverPort: 8991
+clientTarget: localhost:8981

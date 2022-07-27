@@ -69,7 +69,6 @@ class FGBoostRegressionSepc extends FLSpec {
     val flServer = new FLServer(Array("-c",
       getClass.getClassLoader.getResource("ppml-conf-save-model.yaml").getPath))
     try {
-      flServer.setPort(port)
       val rowkeyName = "Id"
       val labelName = "SalePrice"
       val dataPath = getClass.getClassLoader.getResource("house-prices-train.csv").getPath
@@ -82,7 +81,7 @@ class FGBoostRegressionSepc extends FLSpec {
       XGBoostFormatValidator.addHeaders(flattenHeaders)
       flServer.build()
       flServer.start()
-      FLContext.initFLContext("1", target)
+      FLContext.initFLContext("1", "localhost:8991")
       val fGBoostRegression = new FGBoostRegression(
         learningRate = 0.1f, maxDepth = 7, minChildSize = 5)
       fGBoostRegression.fit(trainFeatures, trainLabels, 5)
@@ -90,10 +89,9 @@ class FGBoostRegressionSepc extends FLSpec {
       // start another FLServer to load the server model and continue training
       val flServer2 = new FLServer(Array("-c",
         getClass.getClassLoader.getResource("ppml-conf-save-model.yaml").getPath))
-      flServer2.setPort(port)
       flServer2.build()
       flServer2.start()
-      FLContext.initFLContext("1", target)
+      FLContext.initFLContext("1", "localhost:8991")
       val fGBoostRegression2 = new FGBoostRegression(
         learningRate = 0.1f, maxDepth = 7, minChildSize = 5)
       fGBoostRegression2.fit(trainFeatures, trainLabels, 5)
