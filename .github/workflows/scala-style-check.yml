@@ -65,6 +65,7 @@ jobs:
           }]
         # mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${{ secrets.ARDA_NEXUS }}" }]'
 
+
     - name: Run tests
       run: |
           cd scala
