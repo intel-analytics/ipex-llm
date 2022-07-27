@@ -269,12 +269,12 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
                             if epoch == 0:
                                 return start_factor
                             if epoch < total_iters:
-                                return ((end_factor - start_factor) * epoch / total_iters +
-                                        start_factor)
+                                return ((end_factor - start_factor) * epoch / total_iters
+                                        + start_factor)
                             else:
                                 return 1.0
-                        scheduler = LambdaLR(optimizer=opt, lr_lambda=[lr_func] *
-                                             len(optimizer.param_groups))
+                        scheduler = LambdaLR(optimizer=opt, lr_lambda=[lr_func]
+                                             * len(optimizer.param_groups))
                     lr_scheduler = {
                         'scheduler': scheduler,
                         'opt_idx': opt_idx

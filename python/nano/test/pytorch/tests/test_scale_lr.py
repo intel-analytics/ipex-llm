@@ -51,16 +51,16 @@ class Resnet_2_0(pl.LightningModule):
     def on_train_epoch_start(self) -> None:
         world_size = self.trainer.strategy.world_size
         for lr_scheduler, lr in zip(self.lr_schedulers(), self.hparams):
-            if lr_scheduler.last_epoch > lr_scheduler.total_iters:
+            if lr_scheduler.last_epoch > self.trainer.strategy.auto_lr:
                 assert math.isclose(lr_scheduler.get_last_lr()[0], 
                                     lr_scheduler.base_lrs[0])
             else:
                 diff = lr_scheduler.base_lrs[0] * \
-                    (lr_scheduler.end_factor - lr_scheduler.start_factor) / \
-                    (lr_scheduler.total_iters)
+                    (1.0 - 1.0 / world_size) / \
+                    (self.trainer.strategy.auto_lr)
                 assert lr_scheduler.base_lrs[0] == self.hparams[lr] * world_size
                 assert math.isclose(lr_scheduler.get_last_lr()[0],
-                                    lr_scheduler.base_lrs[0] * lr_scheduler.start_factor +
+                                    lr_scheduler.base_lrs[0] * 1.0 / world_size +
                                     lr_scheduler.last_epoch * diff,
                                     abs_tol=1e-7)
 
