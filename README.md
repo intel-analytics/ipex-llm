@@ -10,6 +10,7 @@
 [![license](https://img.shields.io/github/license/intel-analytics/BigDL)](https://github.com/intel-analytics/BigDL/blob/main/LICENSE)
 [![FOSSA Status](https://app.fossa.com/api/projects/custom%2B32229%2Fgithub.com%2Fintel-analytics%2FBigDL.svg?type=shield)](https://app.fossa.com/projects/custom%2B32229%2Fgithub.com%2Fintel-analytics%2FBigDL?ref=badge_shield)
 [![commits](https://img.shields.io/github/commit-activity/m/intel-analytics/BigDL)](https://github.com/intel-analytics/BigDL/pulse)
+[![last commit](https://img.shields.io/github/last-commit/intel-analytics/BigDL)](https://github.com/intel-analytics/BigDL/commit/main)
 [![contributors](https://img.shields.io/github/contributors/intel-analytics/BigDL)](https://github.com/intel-analytics/BigDL/graphs/contributors)
 [![code size](https://img.shields.io/github/languages/code-size/intel-analytics/BigDL)](https://github.com/intel-analytics/BigDL)
 [![docker pull](https://img.shields.io/docker/pulls/intelanalytics/analytics-zoo)](https://hub.docker.com/u/intelanalytics)
