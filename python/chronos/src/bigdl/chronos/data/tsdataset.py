@@ -781,8 +781,9 @@ class TSDataset:
                 need_dflen = self.lookback + max(self.horizon)
             if len(self.df) < need_dflen:
                 invalidInputError(False,
-                                  "The length of the dataset must be larger than "
-                                  "'lookback' plus 'horizon'! ")
+                                  "The length of the dataset must be larger than the sum "
+                                  "of lookback and horizon, while get lookback+horizon="
+                                  f"{need_dflen} and the length of dataset is {len(self.df)}.")
 
             torch_dataset = RollDataset(self.df,
                                         dt_col=self.dt_col,
