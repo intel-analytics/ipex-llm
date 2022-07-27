@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 
-# This is the default script with maven parameters to release bigdl-dllib built on top of Spark for linux.
+# This is the default script with maven parameters to release bigdl-dllib built on top of Spark for linux or mac.
 # Note that if the maven parameters to build bigdl-dllib need to be changed,
 # make sure to change this file accordingly.
 # If you want to customize the release, please use release.sh and specify maven parameters instead.

@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 
-# This is the default script with maven parameters to release bigdl-chronos with pyspark as dependency for linux.
+# This is the default script with maven parameters to release bigdl-chronos with pyspark as dependency for linux or mac.
 # Note that if the maven parameters to build bigdl-chronos need to be changed,
 # make sure to change this file accordingly.
 # If you want to customize the release, please use release.sh and specify maven parameters instead.
@@ -59,4 +59,4 @@ else
     bash ${DEV_DIR}/remove_spark_suffix.sh ${RUN_SCRIPT_DIR}/release.sh
 fi
 
-bash ${RUN_SCRIPT_DIR}/release.sh linux ${version} ${upload}
+bash ${RUN_SCRIPT_DIR}/release.sh ${platform} ${version} ${upload}
