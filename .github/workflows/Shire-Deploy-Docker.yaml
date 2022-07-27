@@ -19,10 +19,10 @@ jobs:
       packages: write
 
     steps:
+    - name: debug
+      run: echo $DOCKERHUB_USERNAME && echo $DOCKERHUB_PASSWORD
     - name: docker login
       run: |
-        echo $DOCKERHUB_USERNAME
-        echo $DOCKERHUB_PASSWORD
         docker login --username ${DOCKERHUB_USERNAME} --password ${DOCKERHUB_PASSWORD}
     - name: docker deploy
       run: |
