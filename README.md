@@ -14,7 +14,7 @@
 [![code size](https://img.shields.io/github/languages/code-size/intel-analytics/BigDL)](https://github.com/intel-analytics/BigDL)
 [![docker pull](https://img.shields.io/docker/pulls/intelanalytics/analytics-zoo)](https://hub.docker.com/u/intelanalytics)
 [![pypi downloads](https://img.shields.io/pypi/dm/BigDL?label=pypi%20downloads)](https://pypi.org/project/bigdl/)
-[![pypi python](https://img.shields.io/pypi/pyversions/BigDL](https://pypi.org/project/bigdl/)
+[![pypi python](https://img.shields.io/pypi/pyversions/BigDL)](https://pypi.org/project/bigdl/)
 [![nightly build](https://img.shields.io/github/workflow/status/intel-analytics/BigDL/Nightly%20Build%20Maven%20Publish%20Scala?label=nightly%20build)](https://github.com/intel-analytics/BigDL/actions/workflows/maven-publish-scala.yml)
 [![nexus release](https://img.shields.io/nexus/r/com.intel.analytics.bigdl/bigdl-parent-spark_3.1.2?label=release&server=https%3A%2F%2Foss.sonatype.org%2F)](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.2/)
 [![nexus snapshot](https://img.shields.io/nexus/s/com.intel.analytics.bigdl/bigdl-parent-spark_3.1.2?label=snapshot&server=https%3A%2F%2Foss.sonatype.org%2F)](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.2/)
