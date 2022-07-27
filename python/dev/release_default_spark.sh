@@ -26,17 +26,18 @@ BIGDL_DIR="$(cd ${RUN_SCRIPT_DIR}/../..; pwd)"
 echo $BIGDL_DIR
 
 if (( $# < 4)); then
-  echo "Usage: release_default_linux_spark.sh version quick_build upload spark_version suffix mvn_parameters"
-  echo "Usage example: bash release_default_linux_spark.sh default false true 3.1.2 true"
-  echo "Usage example: bash release_default_linux_spark.sh 0.14.0.dev1 false false 2.4.6 true"
-  echo "Usage example: bash release_default_linux_spark.sh 0.14.0.dev1 false false 2.4.6 false -Ddata-store-url=.."
+  echo "Usage: release_default_spark.sh platform version quick_build upload spark_version suffix mvn_parameters"
+  echo "Usage example: bash release_default_spark.sh linux default false true 3.1.2 true"
+  echo "Usage example: bash release_default_spark.sh linux 0.14.0.dev1 false false 2.4.6 true"
+  echo "Usage example: bash release_default_spark.sh mac 0.14.0.dev1 false false 2.4.6 false -Ddata-store-url=.."
   exit -1
 fi
 
-version=$1
-quick=$2
-upload=$3
-spark_version=$4
+platform=$1
+version=$2
+quick=$3
+upload=$4
+spark_version=$5
 
 array=(${spark_version//./ })
 spark_first_version=${array[0]}
@@ -47,12 +48,12 @@ if ! [[ $spark_first_version =~ $re ]] ; then
    exit 1
 fi
 
-if (( $# < 5)); then
+if (( $# < 6)); then
   suffix=false
-  profiles=${*:5}
-else
-  suffix=$5
   profiles=${*:6}
+else
+  suffix=$6
+  profiles=${*:7}
 fi
 
 # Nano and serving are released in release_default_linux.sh as they don't rely on spark versions.
@@ -61,7 +62,7 @@ fi
 # Since make_dist is invoked in dllib, all other packages can directly use quick build.
 DLLIB_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/dllib/dev/release; pwd)"
 echo $DLLIB_SCRIPT_DIR
-bash ${DLLIB_SCRIPT_DIR}/release_default_linux_spark.sh ${version} ${quick} ${upload} ${spark_version} ${suffix} ${profiles}
+bash ${DLLIB_SCRIPT_DIR}/release_default_spark.sh ${platform} ${version} ${quick} ${upload} ${spark_version} ${suffix} ${profiles}
 
 ORCA_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/orca/dev/release; pwd)"
 echo $ORCA_SCRIPT_DIR

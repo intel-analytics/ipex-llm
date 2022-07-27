@@ -44,4 +44,4 @@ else
   profiles=${*:5}
 fi
 
-bash ${RUN_SCRIPT_DIR}/release_default_linux_spark.sh linux ${version} ${upload} 3.1.2 ${suffix} ${profiles}
+bash ${RUN_SCRIPT_DIR}/release_default_spark.sh linux ${version} ${upload} 3.1.2 ${suffix} ${profiles}
