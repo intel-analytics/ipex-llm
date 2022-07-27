@@ -411,13 +411,15 @@ class BasePytorchForecaster(Forecaster):
 
         if self.distributed:
             yhat = self.internal.predict(data, batch_size=batch_size)
+            expand_dim = []
+            if self.data_config["future_seq_len"] == 1:
+                expand_dim.append(1)
+            if self.data_config["output_feature_num"] == 1:
+                expand_dim.append(2)
             if is_local_data:
-                expand_dim = []
-                if self.data_config["future_seq_len"] == 1:
-                    expand_dim.append(1)
-                if self.data_config["output_feature_num"] == 1:
-                    expand_dim.append(2)
                 yhat = xshard_to_np(yhat, mode="yhat", expand_dim=expand_dim)
+            else:
+                yhat = yhat.transform_shard(xshard_expand_dim, expand_dim)
             return yhat
         else:
             if not self.fitted:
