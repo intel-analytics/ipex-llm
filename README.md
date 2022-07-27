@@ -14,6 +14,7 @@
 [![codesize](https://img.shields.io/github/languages/code-size/intel-analytics/BigDL)](https://github.com/intel-analytics/BigDL)
 [![dockerpull](https://img.shields.io/docker/pulls/intelanalytics/analytics-zoo)](https://hub.docker.com/repositories)
 [![pypi](https://img.shields.io/pypi/dm/BigDL?label=pypi%20downloads)](https://pypi.org/project/bigdl/)
+[![nightlybuild](https://img.shields.io/github/workflow/status/intel-analytics/BigDL/Nightly%20Build%20Maven%20Publish%20Scala?label=nightly%20build)](https://github.com/intel-analytics/BigDL/actions/workflows/maven-publish-scala.yml)
 
 BigDL makes it easy for data scientists and data engineers to build end-to-end, distributed AI applications. The **BigDL 2.0** release combines the [original BigDL](https://github.com/intel-analytics/BigDL/tree/branch-0.14) and [Analytics Zoo](https://github.com/intel-analytics/analytics-zoo) projects, providing the following features:
  
