@@ -22,10 +22,6 @@ jobs:
   build:
 
     runs-on: [self-hosted, Linux, Bree]
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: 3.11
     permissions:
       contents: read
       packages: write
@@ -76,10 +72,10 @@ jobs:
             }
           }]
         # mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${{ secrets.ARDA_NEXUS }}" }]'
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Python 
       uses: actions/setup-python@v2
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: 3.7
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
