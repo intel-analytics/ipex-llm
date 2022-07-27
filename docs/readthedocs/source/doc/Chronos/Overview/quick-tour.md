@@ -1,17 +1,15 @@
-# Quick Tour
-Welcome to Chronos for building a fast, accuracy and scalable time series analysis application🎉!
-
-Start with our quick tour to understand some critical concepts and how to use them to tackle your tasks.
+# Chronos Quick Tour
+Welcome to Chronos for building a fast, accuracy and scalable time series analysis application🎉! Start with our quick tour to understand some critical concepts and how to use them to tackle your tasks.
 
 Chronos supports 3 common tasks in time series analysis area.
 
-**Forecasting**: use history data to predict future.
-
-**Anomaly Detection**: find the anomaly point in time series.
-
-**Simulation (experimental)**: generate synthetic time series data.
+- **Forecasting**: use history data to predict future.
+- **Anomaly Detection**: find the anomaly point in time series.
+- **Simulation (experimental)**: generate synthetic time series data.
 
 For each task, we have many built-in algorithms being wrapped to easy-to-use abstractions called `Forecaster`, `Detector`, and `Simulator`.
+
+Chronos also support 
 
 ```eval_rst
 .. note:: 

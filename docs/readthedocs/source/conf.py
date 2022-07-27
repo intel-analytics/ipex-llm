@@ -92,6 +92,7 @@ extensions = [
     'sphinx_tabs.tabs',
     'sphinx_design',
     'sphinx_external_toc',
+    'sphinx_design',
     'nbsphinx'
 ]
 
