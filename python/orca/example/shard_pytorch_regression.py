@@ -29,7 +29,8 @@ import bigdl.orca.data.pandas
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.metrics import Accuracy
-from bigdl.orca.learn.trigger import EveryEpoch
+from bigdl.orca.data.transformer import StringIndexer
+from bigdl.orca.data.utils import *
 
 class MLP(Module):
     # define model elements
@@ -71,8 +72,8 @@ def getSchema(iter):
         return [pdf.columns.values]
 
 column = data_shard.rdd.mapPartitions(getSchema).first()
-from bigdl.orca.data.transform import LabelEncode
-label_encoder = LabelEncode(inputCol=column[-1], outputCol="indexedLabel")
+
+label_encoder = StringIndexer(inputCol=column[-1])
 data_shard = label_encoder.fit_transform(data_shard)
 
 model = MLP(34)
@@ -85,5 +86,8 @@ orca_estimator = Estimator.from_torch(model=model,
                                       metrics=[Accuracy()],
                                       backend="bigdl")
 
-orca_estimator.fit(data=data_shard, epochs=8,
-                   feature_cols=list(column[:-1]), label_cols=["indexedLabel"], batch_size=4)
+data_shard = transform_to_shard_dict(data_shard,
+                                     featureCols=list(column[:-1]),
+                                     labelCol=column[-1])
+
+orca_estimator.fit(data=data_shard, epochs=8, batch_size=4)
