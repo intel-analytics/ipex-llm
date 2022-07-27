@@ -16,31 +16,33 @@
 # limitations under the License.
 #
 
-# This is the default script with maven parameters to release bigdl-orca built on top of Spark for linux.
-# Note that if the maven parameters to build bigdl-orca need to be changed,
+# This is the default script with maven parameters to release bigdl-friesian built on top of Spark for linux.
+# Note that if the maven parameters to build bigdl-friesian need to be changed,
 # make sure to change this file accordingly.
 # If you want to customize the release, please use release.sh and specify maven parameters instead.
 
 set -e
 RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
 echo $RUN_SCRIPT_DIR
-ORCA_DIR="$(cd ${RUN_SCRIPT_DIR}/../../; pwd)"
-echo $ORCA_DIR
-DEV_DIR="$(cd ${ORCA_DIR}/../dev/; pwd)"
+FRIESIAN_DIR="$(cd ${RUN_SCRIPT_DIR}/../../; pwd)"
+echo $FRIESIAN_DIR
+DEV_DIR="$(cd ${FRIESIAN_DIR}/../dev/; pwd)"
 echo $DEV_DIR
 
 if (( $# < 4)); then
-  echo "Usage: release_default_linux_spark.sh version quick_build upload suffix"
-  echo "Usage example: bash release_default_linux_spark.sh default true true true"
-  echo "Usage example: bash release_default_linux_spark.sh 0.14.0.dev1 false true false"
+  echo "Usage: release_default_spark.sh platform version quick_build upload spark_version suffix"
+  echo "Usage example: bash release_default_spark.sh linux default true true 3.1.2 true"
+  echo "Usage example: bash release_default_spark.sh mac 0.14.0.dev1 false true 2.4.6 false"
   exit -1
 fi
 
-version=$1
-quick=$2
-upload=$3
-spark_version=$4
-suffix=$5
+platform=$1
+version=$2
+quick=$3
+upload=$4
+spark_version=$5
+suffix=$6
+profiles=${*:7}
 
 version_array=(${spark_version//./ })
 spark_first_version=${version_array[0]}
@@ -52,11 +54,11 @@ if ! [[ $spark_first_version =~ $re ]] ; then
 fi
 
 if [ ${suffix} == true ]; then
-    bash ${DEV_DIR}/add_suffix_spark${spark_first_version}.sh $ORCA_DIR/src/setup.py
+    bash ${DEV_DIR}/add_suffix_spark${spark_first_version}.sh $FRIESIAN_DIR/src/setup.py
     bash ${DEV_DIR}/add_suffix_spark${spark_first_version}.sh ${RUN_SCRIPT_DIR}/release.sh
 else
-    bash ${DEV_DIR}/remove_spark_suffix.sh $ORCA_DIR/src/setup.py
+    bash ${DEV_DIR}/remove_spark_suffix.sh $FRIESIAN_DIR/src/setup.py
     bash ${DEV_DIR}/remove_spark_suffix.sh ${RUN_SCRIPT_DIR}/release.sh
 fi
 
-bash ${RUN_SCRIPT_DIR}/release.sh linux ${version} ${quick} ${upload} -Dspark.version=${spark_version} -P spark_${spark_first_version}.x
+bash ${RUN_SCRIPT_DIR}/release.sh ${platform} ${version} ${quick} ${upload} -Dspark.version=${spark_version} -P spark_${spark_first_version}.x

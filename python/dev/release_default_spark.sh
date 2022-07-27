@@ -66,14 +66,14 @@ bash ${DLLIB_SCRIPT_DIR}/release_default_spark.sh ${platform} ${version} ${quick
 
 ORCA_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/orca/dev/release; pwd)"
 echo $ORCA_SCRIPT_DIR
-bash ${ORCA_SCRIPT_DIR}/release_default_linux_spark.sh ${version} true ${upload} ${spark_version} ${suffix}
+bash ${ORCA_SCRIPT_DIR}/release_default_spark.sh ${platform} ${version} true ${upload} ${spark_version} ${suffix}
 
 FRIESIAN_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/friesian/dev/release; pwd)"
 echo $FRIESIAN_SCRIPT_DIR
-bash ${FRIESIAN_SCRIPT_DIR}/release_default_linux_spark.sh ${version} true ${upload} ${spark_version} ${suffix}
+bash ${FRIESIAN_SCRIPT_DIR}/release_default_spark.sh ${platform} ${version} true ${upload} ${spark_version} ${suffix}
 
 CHRONOS_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/chronos/dev/release; pwd)"
 echo $CHRONOS_SCRIPT_DIR
-bash ${CHRONOS_SCRIPT_DIR}/release_default_linux_spark.sh ${version} ${upload} ${spark_version} ${suffix}
+bash ${CHRONOS_SCRIPT_DIR}/release_default_spark.sh ${platform} ${version} ${upload} ${spark_version} ${suffix}
 
 bash ${RUN_SCRIPT_DIR}/release_bigdl_spark${spark_first_version}.sh linux ${version} ${upload} ${suffix}
