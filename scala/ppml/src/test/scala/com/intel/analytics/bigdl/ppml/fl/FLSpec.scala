@@ -33,6 +33,7 @@ class FLSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger
   before {
     // try only next 10 ports, if failed, it may well be
     // that server holds the port and fails to release
+    FLContext.resetFLContext()
     port = PortUtils.findNextPortAvailable(port, port + 10)
     target = "localhost:" + port
     logger.info(s"Running test on port: $port, target: $target")
