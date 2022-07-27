@@ -15,10 +15,12 @@
 #
 
 import torch
+import warnings
 import random
 import numpy
 from torch.utils.data import TensorDataset, DataLoader
 import numpy as np
+import multiprocessing as mp
 
 __all__ = ['loader_to_creator',
            'np_to_creator',
@@ -28,7 +30,9 @@ __all__ = ['loader_to_creator',
            'check_data',
            'np_to_dataloader',
            'read_csv',
-           'delete_folder']
+           'delete_folder',
+           'is_main_process',
+           'xshard_expand_dim']
 
 
 def loader_to_creator(loader):
@@ -71,6 +75,12 @@ def xshard_to_np(shard, mode="fit", expand_dim=None):
         if len(expand_dim) >= 1:
             yhat = np.expand_dims(yhat, axis=expand_dim)
         return yhat
+
+
+def xshard_expand_dim(yhat, expand_dim=None):
+    if len(expand_dim) >= 1:
+        yhat["prediction"] = np.expand_dims(yhat["prediction"], axis=expand_dim)
+    return yhat
 
 
 def np_to_xshard(x, prefix="x"):
@@ -159,3 +169,7 @@ def read_csv(filename):
 def delete_folder(path):
     import shutil
     shutil.rmtree(path)
+
+
+def is_main_process():
+    return mp.current_process().name == "MainProcess"

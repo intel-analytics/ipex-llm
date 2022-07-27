@@ -14,19 +14,8 @@
 # limitations under the License.
 #
 
+from bigdl.nano.pytorch.algorithms.selective_backprop import SelectiveBackprop
 
-import numpy as np
-
-
-def add_row(df, name, const_num):
-    df[name] = const_num
-    return df
-
-
-def transform_to_dict(data):
-    if data[1] is None:
-        return {"x": data[0].astype(np.float32),
-                "id": data[2]}
-    return {"x": data[0].astype(np.float32),
-            "y": data[1].astype(np.float32),
-            "id": data[2]}
+__all__ = [
+    'SelectiveBackprop',
+]

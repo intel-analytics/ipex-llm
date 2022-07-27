@@ -91,8 +91,8 @@ def preprocess_and_save(data_tbl, models, save_path):
         .fillna(0, INT_COLS + CAT_COLS)
     data_tbl, min_max = data_tbl.min_max_scale(INT_COLS)
 
-    data_tbl = data_tbl.cross_columns(crossed_columns=[CAT_COLS[0:2], CAT_COLS[2:4]],
-                                      bucket_sizes=cross_sizes)
+    data_tbl = data_tbl.cross_columns([CAT_COLS[0:2], CAT_COLS[2:4]],
+                                      cross_sizes)
 
     data_tbl = data_tbl.ordinal_shuffle_partition()
 

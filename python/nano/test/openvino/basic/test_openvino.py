@@ -13,20 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
+from tempfile import TemporaryDirectory
+from unittest import TestCase
+import os
+from bigdl.nano.openvino import OpenVINOModel
 import numpy as np
 
 
-def add_row(df, name, const_num):
-    df[name] = const_num
-    return df
-
-
-def transform_to_dict(data):
-    if data[1] is None:
-        return {"x": data[0].astype(np.float32),
-                "id": data[2]}
-    return {"x": data[0].astype(np.float32),
-            "y": data[1].astype(np.float32),
-            "id": data[2]}
+class TestOpenVINO(TestCase):
+    def test_openvino_model(self):
+        openvino_model = OpenVINOModel("./intel/resnet18-xnor-binary-onnx-0001/FP16-INT1/resnet18-xnor-binary-onnx-0001.xml")
+        x = np.random.randn(1, 3, 224, 224)
+        y_hat = openvino_model.forward_step(x)
+        assert tuple(next(iter(y_hat)).shape) == (1, 1000)
