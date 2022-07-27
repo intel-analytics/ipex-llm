@@ -31,8 +31,8 @@ echo $DEV_DIR
 
 if (( $# < 3)); then
   echo "Usage: release_default_spark.sh platform version upload spark_version suffix"
-  echo "Usage example: bash release_default_spark.sh linux default true true 3.1.2 true"
-  echo "Usage example: bash release_default_spark.sh mac 0.14.0.dev1 false true 2.4.6 false"
+  echo "Usage example: bash release_default_spark.sh linux default true 3.1.2 true"
+  echo "Usage example: bash release_default_spark.sh mac 0.14.0.dev1 false 2.4.6 false"
   exit -1
 fi
 
