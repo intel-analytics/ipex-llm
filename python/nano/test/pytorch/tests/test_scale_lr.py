@@ -40,7 +40,7 @@ data_dir = os.path.join(os.path.dirname(__file__), "../data")
 
 
 class Resnet_2_0(pl.LightningModule):
-    def __init__(self, learning_rate1=0.01, learning_rate2=0.02) -> None:
+    def __init__(self, learning_rate1=0.01, learning_rate2=0.05) -> None:
         super().__init__()
 
         self.save_hyperparameters()
