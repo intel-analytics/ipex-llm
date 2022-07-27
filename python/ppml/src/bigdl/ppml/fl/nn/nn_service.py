@@ -15,6 +15,8 @@
 #
 
 
+from threading import Condition
+import threading
 import torch
 import bigdl.ppml.fl.nn.pytorch.aggregator as pt_agg
 import bigdl.ppml.fl.nn.tensorflow.aggregator as tf_agg
@@ -40,6 +42,9 @@ class NNServiceImpl(NNServiceServicer):
             'pt': pt_agg.Aggregator(client_num, **kargs)}
         self.model_dir = tempfile.mkdtemp() # store tmp file dir
         self.model_path = os.path.join(self.model_dir, "vfl_server_model")
+
+        self.condition = Condition()
+        self._lock = threading.Lock()
 
     def train(self, request: TrainRequest, context):
         tensor_map = request.data.tensorMap
@@ -80,9 +85,7 @@ class NNServiceImpl(NNServiceServicer):
         try:
             loss_fn = pickle.loads(request.loss_fn)
 
-            aggregator = self.aggregator_map[request.aggregator]
-            if aggregator.model is not None:
-                logging.warn(f'Model already exists, replacing...')
+            aggregator = self.aggregator_map[request.aggregator]            
             if request.aggregator == 'pt':
                 os.rename(self.model_path, f'{self.model_path}.pt')                
                 aggregator.model = torch.jit.load(f'{self.model_path}.pt')
@@ -101,11 +104,18 @@ class NNServiceImpl(NNServiceServicer):
 
     def upload_file(self, request_iterator, context):
         try:
-            with open(self.model_path, 'wb') as f:
-                for byte_chunk in request_iterator:
-                    f.write(byte_chunk.buffer)
-            logging.info(f"Server received model file, length: {os.path.getsize(self.model_path)}")
-            
+            logging.debug("Trying to acquire lock of server model")
+            self.condition.acquire()
+            logging.debug("Acquired lock of server model")
+            if os.path.exists(self.model_path):
+                logging.warn("Model file exists, will not upload.")
+            else:
+                logging.debug("Unpacking file chunk from FLClient")
+                with open(self.model_path, 'wb') as f:
+                    for byte_chunk in request_iterator:
+                        f.write(byte_chunk.buffer)
+                logging.info(f"Server received model file, length: {os.path.getsize(self.model_path)}")
+            self.condition.release()
             msg = "Upload model file sucess"
         except Exception as e:
             traceback.print_exc()

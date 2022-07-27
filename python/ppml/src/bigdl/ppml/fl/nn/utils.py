@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import logging
 import pickle
 import numpy as np
 
@@ -57,6 +58,7 @@ def tensor_map_to_ndarray_map(tensor_map: TensorMap):
 
 def file_chunk_generate(file_path):
     CHUNK_SIZE = 1 * 1024 * 1024
+    logging.debug("Splitting model to file chunks")
     with open(file_path, 'rb') as f:
         while True:
             piece = f.read(CHUNK_SIZE);
