@@ -1,4 +1,4 @@
-# BigDL-Nano Pytorch LightningLite Quickstart
+# BigDL-Nano Pytorch TorchNano Quickstart
 
 **In this guide we'll demonstrate how to use BigDL-Nano to accelerate custom train loop easily with very few changes.**
 
@@ -22,7 +22,7 @@ Import Cifar10 dataset from torch_vision and modify the train transform. You cou
 Leveraging OpenCV and libjpeg-turbo, BigDL-Nano can accelerate computer vision data pipelines by providing a drop-in replacement of torch_vision's `datasets` and `transforms`.
 
 ```python
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Subset
 
 from bigdl.nano.pytorch.vision import transforms
 from bigdl.nano.pytorch.vision.datasets import CIFAR10
@@ -37,8 +37,11 @@ def create_dataloader(data_path, batch_size):
         transforms.ToTensor()
     ])
 
-    train_dataset = CIFAR10(root=data_path, train=True,
-                            download=True, transform=train_transform)
+    full_dataset = CIFAR10(root=data_path, train=True,
+                           download=True, transform=train_transform)
+
+    # use a subset of full dataset to shorten the training time
+    train_dataset = Subset(dataset=full_dataset, indices=list(range(len(full_dataset) // 40)))
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size,
                               shuffle=True, num_workers=0)
@@ -67,7 +70,7 @@ class ResNet18(nn.Module):
         return self.model(x)
 ```
 
-### Step 3: **Define Train Loop**
+### **Step 3: Define Train Loop**
 
 Suppose the custom train loop is as follows:
 
@@ -100,13 +103,14 @@ for _i in range(max_epochs):
     print(f'avg_loss: {total_loss / num}')
 ```
 
-The `TorchNano` (`bigdl.nano.pytorch.TorchNano`) class is the place where we integrate most optimizations. It extends PyTorch Lightning's `LightningLite` class and has a few more parameters and methods specific to BigDL-Nano.
+The `TorchNano` (`bigdl.nano.pytorch.TorchNano`) class is what we use to accelerate raw pytorch code. By using it, we only need to make very few changes to accelerate custom training loop.
 
-We can accelerate the train loop above by the following steps:
+We only need the following steps:
 
 - define a class `MyNano` derived from our `TorchNano`
 - copy all codes into the `train` method of `MyNano`
 - add one line to setup model, optimizer and dataloader
+- replace the `loss.backward()` with `self.backward(loss)`
 
 ```python
 import os
@@ -137,7 +141,7 @@ class MyNano(TorchNano):
             for X, y in train_loader:
                 optimizer.zero_grad()
                 loss = loss_func(model(X), y)
-                loss.backward()
+                self.backward(loss)     # modify this line
                 optimizer.step()
                 
                 total_loss += loss.sum()
@@ -145,13 +149,13 @@ class MyNano(TorchNano):
             print(f'avg_loss: {total_loss / num}')
 ```
 
-### Step 5: **Run with Nano TorchNano**
+### **Step 4: Run with Nano TorchNano**
 
 ```python
 MyNano().train()
 ```
 
-At this stage, you may already experience some speedup due to the optimized environment variables set by source bigdl-nano-init. Besides, you can also enable optimizations delivered by BigDL-Nano by setting a paramter or calling a method to accelerate PyTorch or PyTorch Lightning application on training workloads.
+At this stage, you may already experience some speedup due to the optimized environment variables set by source bigdl-nano-init. Besides, you can also enable optimizations delivered by BigDL-Nano by setting a paramter or calling a method to accelerate PyTorch application on training workloads.
 
 #### Increase the number of processes in distributed training to accelerate training.
 
@@ -163,7 +167,7 @@ MyNano(num_processes=2, strategy="subprocess").train()
 
 #### Intel Extension for Pytorch (a.k.a. [IPEX](https://github.com/intel/intel-extension-for-pytorch))
 
-IPEX extends Pytorch with optimizations on intel hardware. BigDL-Nano also integrates IPEX into the `LightningLite`, you can turn on IPEX optimization by setting `use_ipex=True`.
+IPEX extends Pytorch with optimizations on intel hardware. BigDL-Nano also integrates IPEX into the `TorchNano`, you can turn on IPEX optimization by setting `use_ipex=True`.
 
 ```python
 MyNano(use_ipex=True, num_processes=2, strategy="subprocess").train()

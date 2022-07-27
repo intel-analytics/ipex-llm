@@ -60,38 +60,36 @@ trainer = Trainer(max_epoch=10, num_processes=4)
 
 Note that the effective batch size multi-instance training is the `batch_size` in your `dataloader` times `num_processes` so the number of iterations of each epoch will be reduced `num_processes` fold. A common practice to compensate for that is to gradually increase the learning rate to `num_processes` times. You can find more details of this trick in the [Facebook paper](https://arxiv.org/abs/1706.02677).
 
-### BigDL-Nano PyTorch LightningLite
+### BigDL-Nano PyTorch TorchNano
 
-The `LightningLite` (`bigdl.nano.pytorch.lite.LightningLite`) class is the place where we integrate most optimizations. It extends PyTorch Lightning's `LightningLite` class and has a few more parameters and methods specific to BigDL-Nano.
-
-By using it, we only need to make very few changes to accelerate custom train loop. For example,
+The `TorchNano` (`bigdl.nano.pytorch.TorchNano`) class is what we use to accelerate raw pytorch code. By using it, we only need to make very few changes to accelerate custom training loop. For example,
 
 ```python
-from bigdl.nano.pytorch.lite import LightningLite
+from bigdl.nano.pytorch import TorchNano
 
-class Lite(LightningLite) :
-    def run(self, ...):
+class MyNano(TorchNano) :
+    def train(self, ...):
         # copy your train loop here and make a few changes
 
-Lite().run(...)
+MyNano().train(...)
 ```
 
-- note: see [this tutorial](./pytorch_lightninglite.html) for details about our `LightningLite`.
+- note: see [this tutorial](./pytorch_nano.html) for details about our `TorchNano`.
 
-Our `LightningLite` also integrates IPEX and distributed training optimizations. For example,
+Our `TorchNano` also integrates IPEX and distributed training optimizations. For example,
 
 ```python
-from bigdl.nano.pytorch.lite import LightningLite
+from bigdl.nano.pytorch import TorchNano
 
-class Lite(LightningLite):
-    def run(self, ...):
+class MyNano(TorchNano):
+    def train(self, ...):
         # define train loop
 
 # enable IPEX optimizaiton
-Lite(use_ipex=True).run(...)
+MyNano(use_ipex=True).train(...)
 
-# enable IPEX and distributed training, using spawn strategy
-Lite(use_ipex=True, num_processes=2, strategy="spawn")
+# enable IPEX and distributed training, using subprocess strategy
+MyNano(use_ipex=True, num_processes=2, strategy="subprocess").train(...)
 ```
 
 ### Optimized Data pipeline

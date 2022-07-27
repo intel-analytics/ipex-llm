@@ -47,7 +47,7 @@ In a pure pip environment, you need to run `source bigdl-nano-init` every time y
 
 BigDL-Nano supports both PyTorch and PyTorch Lightning models and most optimizations requires only changing a few "import" lines in your code and adding a few flags.
 
-BigDL-Nano uses a extended version of PyTorch Lightning trainer and LightningLite for integrating our optimizations.
+BigDL-Nano uses a extended version of PyTorch Lightning trainer for integrating our optimizations.
 
 For example, if you are using a LightingModule, you can use the following code to enable intel-extension-for-pytorch and multi-instance training.
 
@@ -62,14 +62,14 @@ trainer.fit(net, train_loader)
 If you are using custom train loop, you can use the following code to enable intel-extension-for-pytorch, multi-instance training and other nano's optimizations.
 
 ```python
-from bigdl.nano.pytorch.lite import LightningLite
+from bigdl.nano.pytorch import TorchNano
 
-class Lite(LightningLite):
-    def run(...):
+class MyNano(TorchNano):
+    def train(...):
       # copy your train loop here and make a few changes
       ...
 
-Lite(use_ipex=True, num_processes=2).run()
+MyNano(use_ipex=True, num_processes=2).train()
 ```
 
 For more details on the BigDL-Nano's PyTorch usage, please refer to the [PyTorch Training](../QuickStart/pytorch_train.md) and [PyTorch Inference](../QuickStart/pytorch_inference.md) page.

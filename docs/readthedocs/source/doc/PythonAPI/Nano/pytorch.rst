@@ -9,9 +9,9 @@ bigdl.nano.pytorch.Trainer
     :undoc-members:
     :exclude-members: accelerator_connector, checkpoint_connector, reload_dataloaders_every_n_epochs, limit_val_batches, logger, logger_connector, state
 
-bigdl.nano.pytorch.lite.LightningLite
+bigdl.nano.pytorch.TorchNano
 ---------------------------
 
-.. autoclass:: bigdl.nano.pytorch.lite.LightningLite
+.. autoclass:: bigdl.nano.pytorch.TorchNano
     :members:
-    :undoc-members:
+    :undoc-members: run
