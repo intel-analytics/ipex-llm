@@ -157,7 +157,6 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
     val tAfterSave = System.nanoTime()
     elapsed = (tAfterSave - tAfterTraining) / 1000000000.0f // second
     log.info("--model save time is " + elapsed + "s")
- 
     sc.stop()
   }
 
