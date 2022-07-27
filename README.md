@@ -12,7 +12,7 @@
 [![commits](https://img.shields.io/github/commit-activity/m/intel-analytics/BigDL)](https://github.com/intel-analytics/BigDL/pulse)
 [![contributors](https://img.shields.io/github/contributors/intel-analytics/BigDL)](https://github.com/intel-analytics/BigDL/graphs/contributors)
 [![code size](https://img.shields.io/github/languages/code-size/intel-analytics/BigDL)](https://github.com/intel-analytics/BigDL)
-[![docker pull](https://img.shields.io/docker/pulls/intelanalytics/analytics-zoo)](https://hub.docker.com/repositories)
+[![docker pull](https://img.shields.io/docker/pulls/intelanalytics/analytics-zoo)](https://hub.docker.com/u/intelanalytics)
 [![pypi downloads](https://img.shields.io/pypi/dm/BigDL?label=pypi%20downloads)](https://pypi.org/project/bigdl/)
 [![pypi python](https://img.shields.io/pypi/pyversions/BigDL](https://pypi.org/project/bigdl/)
 [![nightly build](https://img.shields.io/github/workflow/status/intel-analytics/BigDL/Nightly%20Build%20Maven%20Publish%20Scala?label=nightly%20build)](https://github.com/intel-analytics/BigDL/actions/workflows/maven-publish-scala.yml)
