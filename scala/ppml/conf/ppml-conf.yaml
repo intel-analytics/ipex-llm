@@ -2,6 +2,8 @@
 # clientNum:
 # serverPort:
 
+# fgBoostModelPath:
+
 ##### Client property
 # clientTarget:
 # taskID:
