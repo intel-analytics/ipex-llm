@@ -252,7 +252,7 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
                 from bigdl.dllib.nncontext import init_nncontext
                 if "conf" in spark_args and spark_args["conf"] is not None:
                     warnings.warn("For spark-submit cluster_mode, all conf should be "
-                                  + "specified in the spark-submit command , but got "
+                                  + "specified in the spark-submit command, but got "
                                   + repr(spark_args["conf"]) + ", ignored", Warning)
                     spark_args["conf"] = None
                 sc = init_nncontext(**spark_args)
