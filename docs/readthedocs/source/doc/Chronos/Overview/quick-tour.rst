@@ -4,6 +4,27 @@ Welcome to Chronos for building a fast, accuracy and scalable time series analys
 
 Chronos supports 4 common tasks in time series analysis area.
 
+.. grid:: 1 1 1 1
+
+    .. grid-item-card::
+        :text-align: center
+        :shadow: none
+        :class-header: sd-bg-light
+        :class-footer: sd-bg-light
+        :class-card: sd-mb-2
+
+        **Data processing**
+        ^^^
+        Time series data processing includes imputing, deduplicating, resampling, scale/unscale, roll sampling, etc to process raw time series data(typically in a table) to a format that is understandable to the models. ``TSDataset`` is provided for an abstraction.
+        +++
+        .. button-ref:: :ref:`TSDataset_quick_tour`
+            :ref-type: ref
+            :color: primary
+            :expand:
+            :outline:
+
+            Get Started
+
 .. grid:: 1 1 3 3
 
     .. grid-item-card::
@@ -53,35 +74,13 @@ Chronos supports 4 common tasks in time series analysis area.
         ^^^
         Time series simulation generates synthetic time series data. ``Simulator`` is provided for many built-in algorithms.
         +++
-        .. button-ref:: Simulator_quick_tour
+        .. button-ref:: _Simulator_quick_tour
             :ref-type: ref
             :color: primary
             :expand:
             :outline:
 
             Get Started
-
-.. grid:: 1 1 1 1
-
-    .. grid-item-card::
-        :text-align: center
-        :shadow: none
-        :class-header: sd-bg-light
-        :class-footer: sd-bg-light
-        :class-card: sd-mb-2
-
-        **Data processing**
-        ^^^
-        Time series data processing includes imputing, deduplicating, resampling, scale/unscale, roll sampling, etc to process raw time series data(typically in a table) to a format that is understandable to the models. ``TSDataset`` is provided for an abstraction.
-        +++
-        .. button-ref:: :ref:`TSDataset_quick_tour`
-            :ref-type: ref
-            :color: primary
-            :expand:
-            :outline:
-
-            Get Started
-
 
 .. note:: 
     You may understand the basic usage of Chronos' components and learn to write the first runnable application in this quick tour page. If you are looking for some specific or advanced topic, you may refer to our tutorial and how-to guide.
