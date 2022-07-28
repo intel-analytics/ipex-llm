@@ -32,9 +32,7 @@ Seamless Scaling of AI Pipelines from Laptops to Distributed Cluster
 
 ## What is BigDL 
 
-As of **BigDL 2.0** release, we combine the [original BigDL](https://github.com/intel-analytics/BigDL/tree/branch-0.14) and [Analytics Zoo](https://github.com/intel-analytics/analytics-zoo) projects into a single project.
-
-The new BigDL is a suite of libraries which helps data scientists and engineers to easily build end-to-end, fast, and scalable AI applications. Each library in BigDL can be installed and used alone, or in combinition. They are:
+As of **BigDL 2.0** release, we combine the [original BigDL](https://github.com/intel-analytics/BigDL/tree/branch-0.14) and [Analytics Zoo](https://github.com/intel-analytics/analytics-zoo) projects into a single project. **The new BigDL became a suite of libraries which helps data scientists and engineers to easily build end-to-end, fast, and scalable AI applications.** Each library in BigDL can be installed and used alone, or in combinition:
 
 * [_BigDL-Nano_]() - a python library for transparent acceleration of Tensorflow and PyTorch programs on single node.
 * [_BigDL-Orca_]() - a python library to scale local Tensorflow or PyTorch programs to a large cluster.
@@ -47,39 +45,44 @@ The new BigDL is a suite of libraries which helps data scientists and engineers 
 
 ## What can you do with BigDL
 
-You may use BigDL to make your AI applications faster 
 
-You can make you program more secure
-Once you have a PyTorch or Tensorflow program, you can use BigDL-Nano. 
-Using *BigDL-Nano*, you can acclerate your local PyTorch or Tensorflow program, with only miniumum change of code. 
+- make your single-node Tensorflow/PyTroch programs **faster** - Refer to [_Nano_](https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html) 
+- turn your single-node AI applications to **distributed** and **run on a cluster** - Refer to [_Orca: Distributed Training and Inference_](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-training-inference.html#)
+- use automatic hyperparameter tuning in parallel or in a distributed cluster - Refer to [_Orca: Distributed Hyperparam Tuning_](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-tuning.html)
+- develop deep learning applications in Scala or Python from scratch to run on Spark cluster - Refer to [_DLLib_](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/dllib.html) 
+- run Ray applications on Spark cluster - Refer to [_Orca: RayOnSpark_](https://bigdl.readthedocs.io/en/latest/doc/Ray/Overview/ray.html)
+- build fast and scalable domain-specific applications optimized on Xeon platforms (e.g. Time series, Recommendation Systems) - Refer to [_Chronos_](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html) and [_Friesian_]()
+- run machine learning and deep learning in securied and privacy preserved environment [_PPML_](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html)
 
-
-Using *BigDL-Orca*, you can scale out local _**TensorFlow**_ or _**PyTorch**_ applications end-to-end (i.e. training, inference, data processing) seamlessly across large clusters.
-
-To learn more, refer to our [Docs site](https://bigdl.readthedocs.io/).
+BigDL can make the above tasks easy. For more guidence, tutorials and demos, refer to our [Docs site](https://bigdl.readthedocs.io/).
 
 ---
 
 ## Installation
-Python users can use pip to install a stable release
-```bash
-pip install bigdl
-```
-or install the latest nightly build
-```bash
-pip install --pre --upgrade bigdl
-```
+- Python users can use pip to install a stable release of BigDL 
+	```bash
+	pip install bigdl
+	```
+  or install the latest nightly build
+	```bash
+	pip install --pre --upgrade bigdl
+	```
+  The above commands will install all the libraries in BigDL. For more information, refer to [Python user guide](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/python.html) or [Scala user guide](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/scala.html).
 
-For more information, refer to [Python user guide](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/python.html) or [Scala user guide](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/scala.html).
+- You may want to install only one library. For example, install chronos only 
+	```
+	pip install bigdl-chronos
+	```
+  The installtion steps may differ for each library. Please refer to the installation guide for more specifics. 
 
 ---
 
-## Usage 
+## Quick Usage Demo 
 
 ### Nano
 
 Using *BigDL-Nano*, you can acclerate your local PyTorch or Tensorflow program, with only miniumum change of code. 
-<details><summary>Click to see a Nano example</summary>
+<details><summary>Show Nano example</summary>
 <br/>
 First, import bigdl nano trainer.
 
@@ -117,7 +120,7 @@ with torch.no_grad():
 
 Using *BigDL-Orca*, you can scale out local _**TensorFlow**_ or _**PyTorch**_ applications end-to-end (i.e. training, inference, data processing) seamlessly across large clusters.
 
-<details><summary>Click to see an Orca example</summary>
+<details><summary>Show Orca example</summary>
 <br/>
 First, initialize [Orca Context](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/orca-context.html):
 
@@ -171,7 +174,7 @@ See [TensorFlow](https://bigdl.readthedocs.io/en/latest/doc/Orca/QuickStart/orca
 
 Using *BigDL-DLlib*, you can write distributed deep learning applications as standard Spark programs (using either Scala or Python APIs).
 
-<details><summary>Click to see a DLLib example</summary>
+<details><summary>Show DLLib example</summary>
 <br/>
 First, call `initNNContext` at the beginning of the code: 
 
@@ -210,7 +213,7 @@ See the [NNframes](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/nnf
 
 With *BigDL-Chronos*, you can easily build fast, accurate, scalable time series forecasting and anomaly detection applications (e.g. using built-in advanced deep learning models, built-in inference acclerations, AutoML support, data processing and feature generaition tools, etc.).
 
-<details><summary>Click to see a Chronos example</summary>
+<details><summary>Show Chronos example</summary>
 <br/>
 To train a time series model with AutoML, first initialize [Orca Context](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/orca-context.html):
 
