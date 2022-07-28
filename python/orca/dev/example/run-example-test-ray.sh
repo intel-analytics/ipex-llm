@@ -174,9 +174,9 @@ else
 fi
 
 start=$(date "+%s")
-python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/brainMRI/brainMRI.py
+python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/brainMRI/brainMRI.py --epochs=1
 export PYTHONPATH=${BIGDL_ROOT}/python/orca/example/learn/pytorch/brainMRI:$PYTHONPATH
-python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/brainMRI/brainMRI.py --backend=spark
+python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/brainMRI/brainMRI.py --backend=spark --epochs=1
 now=$(date "+%s")
 time14=$((now-start))
 

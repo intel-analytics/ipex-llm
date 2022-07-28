@@ -74,10 +74,10 @@ def faiss_search(faiss_index_pkl, item_dict_pkl, cluster_mode, batch_size=65536,
                 seed_idx = int(seed_ids[i])
                 seed_item = str(item_dict[seed_idx])
                 for n, (score, rec_id) in enumerate(
-                        zip(similarity_array[i][1:], idx_array[i][1:])
+                        zip(similarity_array[i], idx_array[i])
                 ):
                     rec_id = int(rec_id)
-                    yield (seed_item, str(item_dict[rec_id]), int(n + 1), float(score))
+                    yield (seed_item, str(item_dict[rec_id]), int(n), float(score))
 
     return do_search
 
@@ -85,14 +85,8 @@ def faiss_search(faiss_index_pkl, item_dict_pkl, cluster_mode, batch_size=65536,
 def search(args):
     set_env(args.num_threads)
     if args.cluster_mode == "yarn":
-        num_executors = 12
-        executor_cores = args.num_threads
-        executor_memory = "12g"
-        driver_cores = 4
-        driver_memory = "4g"
-        sc = init_orca_context("yarn", cores=executor_cores,
-                               num_nodes=num_executors, memory=executor_memory,
-                               driver_cores=driver_cores, driver_memory=driver_memory,
+        sc = init_orca_context("yarn", cores=args.num_threads,
+                               num_nodes=args.num_tasks, memory=args.memory,
                                extra_python_lib="utils.py")
 
         print('add files to spark >>>>>>')
@@ -101,12 +95,12 @@ def search(args):
 
         args.faiss_index_path = args.faiss_index_path.split('/')[-1]
         args.dict_path = args.dict_path.split('/')[-1]
-
+    elif args.cluster_mode == "spark-submit":
+        sc = init_orca_context("spark-submit")
     elif args.cluster_mode == "local":
-        sc = init_orca_context("local", cores=8)
-        num_executors = 4
+        sc = init_orca_context("local", cores=args.num_threads*args.num_tasks)
     else:
-        invalidInputError(False, "cluster_mode should be one of 'local', "
+        invalidInputError(False, "cluster_mode should be one of 'local', 'spark-submit' and "
                                  "'yarn', but got " + args.cluster_mode)
         sys.exit()
 
@@ -114,7 +108,7 @@ def search(args):
     with StopWatch("do_search spark >>>>>>") as sw:
         df = spark.read.parquet(args.parquet_path)
         print('Total number of items: ', df.count())
-        rdd = df.rdd.repartition(num_executors)  # Each node runs one faiss task
+        rdd = df.rdd.repartition(args.num_tasks)  # Each node runs one faiss task
         res_rdd = rdd.mapPartitions(
             faiss_search(args.faiss_index_path, args.dict_path,
                          args.cluster_mode, batch_size=args.batch_size,
@@ -135,19 +129,23 @@ if __name__ == '__main__':
 
     parser.add_argument('--num_threads', type=int, default=8,
                         help='Set the environment variable OMP_NUM_THREADS for each faiss task')
-    parser.add_argument('--cluster_mode', type=str, default='yarn',
-                        help='The cluster mode, such as local, yarn')
+    parser.add_argument('--cluster_mode', type=str, default='local',
+                        help='The cluster mode, such as local, yarn or spark-submit')
+    parser.add_argument('--num_tasks', type=int, default=4,
+                        help='The number of faiss tasks to run in the cluster')
+    parser.add_argument('--memory', type=str, default="12g",
+                        help='The memory allocated for each faiss task')
 
     parser.add_argument('--dict_path', type=str, default='./item_dict.pkl',
                         help='Path to item_dict.pkl')
     parser.add_argument('--faiss_index_path', type=str,
                         default='./index_FlatL2.pkl',
-                        help='Path to faiss index data path')
+                        help='Path to faiss index data')
     parser.add_argument('--parquet_path', type=str, default='./data.parquet',
                         help='Path to input parquet data (query items)')
     parser.add_argument('--parquet_output_path', type=str,
                         default='./similarity_search_L2.parquet',
-                        help='Path to save output parquet date (search results)')
+                        help='Path to save output parquet data (search results)')
 
     parser.add_argument('--top_k', type=int, default=100,
                         help='Number of items to be searched for each query item')

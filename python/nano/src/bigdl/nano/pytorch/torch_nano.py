@@ -14,14 +14,16 @@
 # limitations under the License.
 #
 
-from typing import Any, Union
+from typing import Any
 from logging import warning
+from functools import partial
+from abc import abstractmethod
 
 import torch
 from torch import nn
 from torch.optim import Optimizer
-import pytorch_lightning.lite as lite
-from pytorch_lightning.strategies import Strategy
+from torch.utils.data import DataLoader
+from pytorch_lightning.lite import LightningLite
 from pytorch_lightning.lite.wrappers import _LiteModule, _LiteOptimizer
 
 from bigdl.nano.common import check_avx512
@@ -32,32 +34,27 @@ from bigdl.nano.pytorch.strategies import create_IPEXStrategy, DDPSpawnStrategy,
     DDPSubprocessStrategy, create_RayStrategy
 
 
-class LightningLite(lite.LightningLite):
+class TorchNano(LightningLite):
     """
-    LightningLite for BigDL-Nano pytorch.
+    TorchNano for BigDL-Nano pytorch.
 
-    This LightningLite extends PyTorch Lightning's LightningLite by adding
-    various options to accelerate pytorch training.
+    It can be used to accelerate custom pytorch training loops with very few code changes.
     """
 
     def __init__(self, num_processes: int = 1,
                  use_ipex: bool = False,
                  enable_bf16: bool = False,
-                 strategy: Union[str, Strategy] = "subprocess",
+                 strategy: str = "subprocess",
                  *args, **kwargs) -> None:
         """
-        Create a LightningLite with nano acceleration.
+        Create a TorchNano with nano acceleration.
 
         :param num_processes: number of processes in distributed training, defaults to 1
         :param use_ipex: whether use ipex acceleration, defaults to False
         :param enable_bf16: whether use bf16 acceleration, defaults to False
-        :param strategy: use which backend in distributed mode, defaults to "subprocess"
+        :param strategy: use which backend in distributed mode, defaults to "subprocess", \
+            now avaiable strategies are 'spawn', 'subprocess' and 'ray'
         """
-        # Check arguments
-        invalidInputError(isinstance(strategy, str),
-                          "strategy object will be created by bigdl-nano, "
-                          "you should pass the name of strategy.")
-
         self.num_processes = num_processes
         self.use_ipex = use_ipex
         self.enable_bf16 = enable_bf16
@@ -74,11 +71,11 @@ class LightningLite(lite.LightningLite):
             else:
                 strategy = None     # type: ignore
         elif strategy == "spawn":
-            strategy = DDPSpawnStrategy(num_processes=self.num_processes,
+            strategy = DDPSpawnStrategy(num_processes=self.num_processes,   # type: ignore
                                         use_ipex=self.use_ipex,
                                         enable_bf16=self.enable_bf16)
         elif strategy == "subprocess":
-            strategy = DDPSubprocessStrategy(num_processes=self.num_processes,
+            strategy = DDPSubprocessStrategy(num_processes=self.num_processes,  # type: ignore
                                              use_ipex=self.use_ipex,
                                              enable_bf16=self.enable_bf16)
         elif strategy == "ray":
@@ -93,32 +90,25 @@ class LightningLite(lite.LightningLite):
         kwargs["strategy"] = strategy
         super().__init__(*args, **kwargs)
 
-    def setup(
+        setattr(self, "train", partial(self._run_impl, self.train))
+
+    def _setup(
         self,
         model: nn.Module,
         *optimizers: Optimizer,
         move_to_device: bool = True,
     ) -> Any:
-        """
-        Setup a model and its optimizers for accelerated training.
+        """Used to replace LightningLite's setup method."""
+        # LightningLite won't call `Strategy.setup()` method,
+        # in which we add IPEX's optimization when using `trainer`.
 
-        LightningLite won't call `Strategy.setup()` method,
-        in which we add IPEX's optimization when using `trainer`.
+        # When we call `TorchNano().train()`, it will call
+        # `Strategy.setup_environment()` -> `Lanucher.launch()` -> user defined `train()` method.
 
-        When we call `LightningLite().run()`, it will call
-        `Strategy.setup_environment()` -> `Lanucher.launch()` -> user defined `run()` method.
+        # However the model and optimizers haven't been specified when calling these three methods,
+        # so we have to add optimizations in this method, which will be called in
+        # user defined `train()` method.
 
-        However the model and optimizers haven't been specified when calling these three methods,
-        so we have to add optimizations in this method, which will be called in
-        user defined `run()` method.
-
-        :param model: A model to setup
-        :param *optimizers: The optimizer(s) to setup (no optimizers is also possible)
-        :param move_to_device: If set ``True`` (default), moves the model to the correct device.
-            Set this to ``False`` and alternatively use :meth:`to_device` manually.
-        :return: The tuple of the wrapped model and list of optimizers,
-            in the same order they were passed in.
-        """
         # add IPEX 1.11's optimization
         if self.use_ipex and not TORCH_VERSION_LESS_1_10:
             dtype = torch.bfloat16 if self.enable_bf16 else None
@@ -146,3 +136,34 @@ class LightningLite(lite.LightningLite):
             # join both types in a list for API convenience
             return [model] + optimizers  # type: ignore
         return model
+
+    def setup(self, model: nn.Module, optimizer: Optimizer,     # type: ignore[override]
+              *dataloaders: DataLoader, move_to_device: bool = True):
+        """
+        Setup model, optimizer, loss function and dataloaders for accelerated training.
+
+        :param model: A model to setup
+        :param optimizer: The optimizer to setup
+        :param *dataloaders: The dataloader(s) to setup
+        :param move_to_device: If set ``True`` (default), moves the model to the correct device. \
+            Set this to ``False`` and alternatively use :meth:`to_device` manually.
+        :return: The tuple of the wrapped model, optimizer, loss_func and dataloaders, \
+            in the same order they were passed in.
+        """
+        model, optimizer = self._setup(model, optimizer, move_to_device=move_to_device)
+        dataloaders = self.setup_dataloaders(*dataloaders,  # type: ignore
+                                             move_to_device=move_to_device)
+        return model, optimizer, dataloaders
+
+    @abstractmethod
+    def train(self, *args: Any, **kwargs: Any) -> Any:
+        """
+        All the code inside this train method gets accelerated by TorchNano.
+
+        You can pass arbitrary arguments to this function when overriding it.
+        """
+
+    def run(self, *args: Any, **kwargs: Any) -> Any:
+        """Only for compatibility, don't use it."""
+        # this is a abstract method, so we must implement it
+        pass

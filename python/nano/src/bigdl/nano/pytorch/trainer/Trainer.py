@@ -28,6 +28,7 @@ import yaml
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11, \
     LIGHTNING_VERSION_LESS_1_6
 from bigdl.nano.pytorch.utils import ChannelsLastCallback
+from bigdl.nano.pytorch.algorithms import SelectiveBackprop
 from bigdl.nano.pytorch.amp import BF16Model
 from bigdl.nano.pytorch.lightning import LightningModule
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
@@ -91,6 +92,9 @@ class Trainer(pl.Trainer):
                                   f" processes {num_processes}.")
 
         accelerator = None
+
+        if "algorithms" in kwargs:
+            kwargs = self._add_algorithms(kwargs)
 
         if channels_last:
             callbacks = kwargs.get("callbacks")
@@ -179,6 +183,18 @@ class Trainer(pl.Trainer):
             self.hposearcher = create_hpo_searcher(trainer=self, num_processes=num_processes)
         else:
             self.hposearcher = None
+
+    def _add_algorithms(self, kwargs):
+        callbacks = kwargs.get("callbacks")
+        for algorithm in kwargs['algorithms']:
+            if isinstance(algorithm, SelectiveBackprop):
+                if callbacks:
+                    callbacks.append(algorithm)
+                else:
+                    kwargs["callbacks"] = [algorithm]
+        del kwargs['algorithms']
+
+        return kwargs
 
     @staticmethod
     def compile(model: nn.Module,

@@ -14,4 +14,8 @@
 # limitations under the License.
 #
 
-from .lite import LightningLite
+from bigdl.nano.pytorch.algorithms.selective_backprop import SelectiveBackprop
+
+__all__ = [
+    'SelectiveBackprop',
+]

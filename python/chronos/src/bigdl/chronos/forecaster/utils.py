@@ -31,7 +31,8 @@ __all__ = ['loader_to_creator',
            'np_to_dataloader',
            'read_csv',
            'delete_folder',
-           'is_main_process']
+           'is_main_process',
+           'xshard_expand_dim']
 
 
 def loader_to_creator(loader):
@@ -74,6 +75,12 @@ def xshard_to_np(shard, mode="fit", expand_dim=None):
         if len(expand_dim) >= 1:
             yhat = np.expand_dims(yhat, axis=expand_dim)
         return yhat
+
+
+def xshard_expand_dim(yhat, expand_dim=None):
+    if len(expand_dim) >= 1:
+        yhat["prediction"] = np.expand_dims(yhat["prediction"], axis=expand_dim)
+    return yhat
 
 
 def np_to_xshard(x, prefix="x"):

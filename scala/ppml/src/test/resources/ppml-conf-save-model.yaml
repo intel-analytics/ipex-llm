@@ -1,0 +1,2 @@
+fgBoostServerModelPath: /tmp/fgboost-server-model
+serverPort: 8991
