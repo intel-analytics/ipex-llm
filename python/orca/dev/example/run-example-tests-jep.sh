@@ -97,10 +97,26 @@ if [ $exit_status -ne 0 ]; then
   exit $exit_status
 fi
 now=$(date "+%s")
-time3=$((now - start))
+time5=$((now - start))
+
+echo "#6 start example for orca brainMRI"
+if [ -f ${BIGDL_ROOT}/python/orca/example/learn/pytorch/brainMRI/kaggle_3m ]
+then
+    echo "kaggle_3m already exists"
+else
+    wget -nv $FTP_URI/analytics-zoo-data/kaggle_3m.zip -P ${BIGDL_ROOT}/python/orca/example/learn/pytorch/brainMRI
+    unzip ${BIGDL_ROOT}/python/orca/example/learn/pytorch/brainMRI/kaggle_3m.zip
+fi
+
+start=$(date "+%s")
+export PYTHONPATH=${BIGDL_ROOT}/python/orca/example/learn/pytorch/brainMRI:$PYTHONPATH
+python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/brainMRI/brainMRI.py --backend=bigdl --epochs=1
+now=$(date "+%s")
+time6=$((now-start))
 
 echo "#1 MNIST example time used:$time1 seconds"
 echo "#2 orca Cifar10 example time used:$time2 seconds"
 echo "#3 orca Fashion-MNIST example time used:$time3 seconds"
 echo "#4 orca Super Resolution example time used:$time4 seconds"
-echo "#5 torchmodel resnet-finetune time used:$time3 seconds"
+echo "#5 torchmodel resnet-finetune time used:$time5 seconds"
+echo "#6 orca brainMRI example time used:$time6 seconds"
