@@ -1,7 +1,8 @@
 # Trusted Big Data ML with Occlum
 
 ## Resource Configuration Guide
-These configuration values must be tuned on a per-application basis
+These configuration values must be tuned on a per-application basis.
+You can refer to [here](https://github.com/occlum/occlum/blob/master/docs/resource_config_guide.md?plain=1) for more information.
 ``` bash
 #start-spark-local.sh
 -e SGX_MEM_SIZE=24GB  // means the whole image memory you can use, the same as resource_limits.user_space_size
@@ -12,7 +13,6 @@ These configuration values must be tuned on a per-application basis
 the log of Occlum can be turned on by setting the `OCCLUM_LOG_LEVEL` environment variable (e.g.,
 `OCCLUM_LOG_LEVEL=error`, `OCCLUM_LOG_LEVEL=info`, `OCCLUM_LOG_LEVEL=trace`).
 You can add 'OCCLUM_LOG_LEVEL=trace' in [run_spark_on_occlum_glibc.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/run_spark_on_occlum_glibc.sh#L3) and change set this [config](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/run_spark_on_occlum_glibc.sh#L46) true without " ".
-You can refer to [here](https://github.com/occlum/occlum/blob/master/docs/resource_config_guide.md?plain=1) for more information
 
 ## Prerequisites
 
