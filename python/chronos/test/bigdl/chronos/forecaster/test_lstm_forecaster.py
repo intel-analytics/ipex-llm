@@ -475,6 +475,27 @@ class TestChronosModelLSTMForecaster(TestCase):
         onnx_res = lstm.evaluate_with_onnx(test_loader)
         q_onnx_res = lstm.evaluate_with_onnx(test_loader, quantize=True)
 
+    def test_lstm_forecaster_fit_earlystop(self):
+        train_data, val_data, _ = create_data()
+        forecaster = LSTMForecaster(past_seq_len=24,
+                                    input_feature_num=2,
+                                    output_feature_num=2,
+                                    hidden_dim=[32, 16],
+                                    layer_num=2,
+                                    dropout=[0.1, 0.2],
+                                    loss="mae",
+                                    lr=0.01)
+        val_loss = forecaster.fit(train_data, val_data, validation_mode='earlystop', epochs=50)
 
-if __name__ == '__main__':
-    pytest.main([__file__])
+    def test_lstm_forecaster_fit_earlystop_patience(self):
+        train_data, val_data, _ = create_data()
+        forecaster = LSTMForecaster(past_seq_len=24,
+                                    input_feature_num=2,
+                                    output_feature_num=2,
+                                    hidden_dim=[32, 16],
+                                    layer_num=2,
+                                    dropout=[0.1, 0.2],
+                                    loss="mae",
+                                    lr=0.01)
+        val_loss = forecaster.fit(train_data, val_data, validation_mode='earlystop',
+                                  earlystop_patience=6, epochs=50)

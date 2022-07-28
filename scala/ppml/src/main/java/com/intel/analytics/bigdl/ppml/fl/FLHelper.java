@@ -27,6 +27,8 @@ public class FLHelper {
     String certChainFilePath = null;
     String privateKeyFilePath = null;
 
+    String fgBoostServerModelPath = null;
+
     public void setClientNum(int clientNum) {
         this.clientNum = clientNum;
     }
@@ -50,5 +52,8 @@ public class FLHelper {
     public void setPrivateKeyFilePath(String privateKeyFilePath) {
        this.privateKeyFilePath = privateKeyFilePath;
     }
-        
+
+    public void setFgBoostServerModelPath(String fgBoostServerModelPath) {
+        this.fgBoostServerModelPath = fgBoostServerModelPath;
+    }
 }

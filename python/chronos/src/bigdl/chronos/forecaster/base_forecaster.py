@@ -200,7 +200,8 @@ class BasePytorchForecaster(Forecaster):
         # reset train and validation datasets
         self.tune_trainer.reset_train_val_dataloaders(self.internal)
 
-    def fit(self, data, validation_data=None, epochs=1, batch_size=32, validation_mode='output'):
+    def fit(self, data, validation_data=None, epochs=1, batch_size=32, validation_mode='output',
+            earlystop_patience=1):
         # TODO: give an option to close validation during fit to save time.
         """
         Fit(Train) the forecaster.
@@ -253,8 +254,20 @@ class BasePytorchForecaster(Forecaster):
                If you input a pytorch dataloader for `data`, the batch_size will follow the
                batch_size setted in `data`.if the forecaster is distributed, the batch_size will be
                evenly distributed to all workers.
-        :param validation_mode: Operation mode while having 'validation_data'. Defaults to 'output'.
-        :return: A dict that records the average validation loss of each epoch.
+        :param validation_mode:  A str represent the operation mode while having 'validation_data'.
+               Defaults to 'output'. The validation_mode includes the following types:
+
+               | 1. output:
+               | If you choose 'output' for validation_mode, it will return a dict that records the
+               | average validation loss of each epoch.
+               |
+               | 2. earlystop:
+               | Monitor the val_loss and stop training when it stops improving.
+
+        :param earlystop_patience: Number of checks with no improvement after which training will
+               be stopped. It takes effect when 'validation_mode' is 'earlystop'. Under the default
+               configuration, one check happens after every training epoch.
+        :return: Validation loss if 'validation_data' is not None.
         """
         # input transform
         if isinstance(data, TSDataset):
@@ -319,8 +332,11 @@ class BasePytorchForecaster(Forecaster):
             from pytorch_lightning.loggers import CSVLogger
             logger = False if validation_data is None else CSVLogger(".",
                                                                      name="forecaster_tmp_log")
+            from pytorch_lightning.callbacks import EarlyStopping
+            early_stopping = EarlyStopping('val/loss', patience=earlystop_patience)
+            callbacks = [early_stopping] if validation_mode == 'earlystop' else None
             # Trainer init
-            self.trainer = Trainer(logger=logger, max_epochs=epochs,
+            self.trainer = Trainer(logger=logger, max_epochs=epochs, callbacks=callbacks,
                                    checkpoint_callback=self.checkpoint_callback,
                                    num_processes=self.num_processes, use_ipex=self.use_ipex,
                                    flush_logs_every_n_steps=10, log_every_n_steps=10,
@@ -411,13 +427,15 @@ class BasePytorchForecaster(Forecaster):
 
         if self.distributed:
             yhat = self.internal.predict(data, batch_size=batch_size)
+            expand_dim = []
+            if self.data_config["future_seq_len"] == 1:
+                expand_dim.append(1)
+            if self.data_config["output_feature_num"] == 1:
+                expand_dim.append(2)
             if is_local_data:
-                expand_dim = []
-                if self.data_config["future_seq_len"] == 1:
-                    expand_dim.append(1)
-                if self.data_config["output_feature_num"] == 1:
-                    expand_dim.append(2)
                 yhat = xshard_to_np(yhat, mode="yhat", expand_dim=expand_dim)
+            else:
+                yhat = yhat.transform_shard(xshard_expand_dim, expand_dim)
             return yhat
         else:
             if not self.fitted:

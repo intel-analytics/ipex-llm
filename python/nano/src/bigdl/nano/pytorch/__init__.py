@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["Trainer"]
+__all__ = ["Trainer", "TorchNano"]
 
 
 # unset the KMP_INIT_AT_FORK
@@ -21,3 +21,4 @@ __all__ = ["Trainer"]
 import os
 os.unsetenv('KMP_INIT_AT_FORK')
 from bigdl.nano.pytorch.trainer import Trainer
+from bigdl.nano.pytorch.torch_nano import TorchNano
