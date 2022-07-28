@@ -66,3 +66,4 @@ jobs:
       run: |
           cd scala
           mvn clean verify -DskipTests -U
+
