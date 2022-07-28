@@ -18,6 +18,7 @@ subtrees:
       - file: doc/UserGuide/k8s
       - file: doc/UserGuide/databricks
       - file: doc/UserGuide/develop
+      - file: doc/UserGuide/known_issues
 
   - caption: Nano
     entries:
