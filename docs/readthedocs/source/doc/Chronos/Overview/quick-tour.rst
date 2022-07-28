@@ -17,7 +17,7 @@ Chronos supports 4 common tasks in time series analysis area.
         ^^^
         Time series forecasting uses history data to predict future data. ``Forecaster`` and ``AutoTSEstimator`` are provided for built-in algorithms and distributed hyperparameter tunning.
         +++
-        .. button-ref:: Forecaster quick tour
+        .. button-ref:: forecaster-quick-tour
             :color: primary
             :expand:
             :outline:
@@ -35,7 +35,7 @@ Chronos supports 4 common tasks in time series analysis area.
         ^^^
         Time series anomaly detection finds the anomaly point in time series. ``Detector`` is provided for many built-in algorithms.
         +++
-        .. button-ref:: Detector quick tour
+        .. button-ref:: detector-quick-tour
             :color: primary
             :expand:
             :outline:
@@ -53,7 +53,7 @@ Chronos supports 4 common tasks in time series analysis area.
         ^^^
         Time series simulation generates synthetic time series data. ``Simulator`` is provided for many built-in algorithms.
         +++
-        .. button-ref:: Simulator quick tour
+        .. button-ref:: simulator-quick-tour
             :color: primary
             :expand:
             :outline:
@@ -73,7 +73,7 @@ Chronos supports 4 common tasks in time series analysis area.
         ^^^
         Time series data processing includes imputing, deduplicating, resampling, scale/unscale, roll sampling, etc to process raw time series data(typically in a table) to a format that is understandable to the models. ``TSDataset`` is provided for an abstraction.
         +++
-        .. button-ref:: TSDataset quick tour
+        .. button-ref:: tsdataset-quick-tour
             :color: primary
             :expand:
             :outline:
