@@ -76,4 +76,4 @@ CHRONOS_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/chronos/dev/release; pwd)"
 echo $CHRONOS_SCRIPT_DIR
 bash ${CHRONOS_SCRIPT_DIR}/release_default_spark.sh ${platform} ${version} ${upload} ${spark_version} ${suffix}
 
-bash ${RUN_SCRIPT_DIR}/release_bigdl_spark${spark_first_version}.sh linux ${version} ${upload} ${suffix}
+bash ${RUN_SCRIPT_DIR}/release_bigdl_spark${spark_first_version}.sh ${platform} ${version} ${upload} ${suffix}
