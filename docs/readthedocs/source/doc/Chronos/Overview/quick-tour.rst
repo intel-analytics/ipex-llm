@@ -18,6 +18,7 @@ Chronos supports 4 common tasks in time series analysis area.
         Time series forecasting uses history data to predict future data. ``Forecaster`` and ``AutoTSEstimator`` are provided for built-in algorithms and distributed hyperparameter tunning.
         +++
         .. button-ref:: Forecaster
+            :ref-type: ref
             :color: primary
             :expand:
             :outline:
@@ -53,7 +54,8 @@ Chronos supports 4 common tasks in time series analysis area.
         ^^^
         Time series simulation generates synthetic time series data. ``Simulator`` is provided for many built-in algorithms.
         +++
-        .. button-ref:: :ref:`Simulator_quick_tour`
+        .. button-ref:: Simulator_quick_tour
+            :ref-type: ref
             :color: primary
             :expand:
             :outline:
