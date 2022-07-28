@@ -6,8 +6,8 @@ These configuration values must be tuned on a per-application basis
 #start-spark-local.sh
 -e SGX_MEM_SIZE=24GB  // means the whole image memory you can use, the same as resource_limits.user_space_size
 -e SGX_THREAD=512  // means the whole thread you can use, the same as resource_limits.max_num_of_threads
--e SGX_HEAP=512MB  // the same as process.default_heap_size
--e SGX_KERNEL_HEAP=1GB // the same as resource_limits.kernel_space_heap_size
+-e SGX_HEAP=512MB  // means each process init malloc memory, the same as process.default_heap_size
+-e SGX_KERNEL_HEAP=1GB // means occlum in kernel state using memory, the same as resource_limits.kernel_space_heap_size
 ```
 the log of Occlum can be turned on by setting the `OCCLUM_LOG_LEVEL` environment variable (e.g.,
 `OCCLUM_LOG_LEVEL=error`, `OCCLUM_LOG_LEVEL=info`, `OCCLUM_LOG_LEVEL=trace`).
