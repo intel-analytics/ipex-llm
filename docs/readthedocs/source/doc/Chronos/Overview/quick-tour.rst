@@ -53,7 +53,7 @@ Chronos supports 4 common tasks in time series analysis area.
         ^^^
         Time series simulation generates synthetic time series data. ``Simulator`` is provided for many built-in algorithms.
         +++
-        .. button-ref:: id2
+        .. button-ref:: :ref:`Simulator_quick_tour`
             :color: primary
             :expand:
             :outline:
@@ -73,7 +73,7 @@ Chronos supports 4 common tasks in time series analysis area.
         ^^^
         Time series data processing includes imputing, deduplicating, resampling, scale/unscale, roll sampling, etc to process raw time series data(typically in a table) to a format that is understandable to the models. ``TSDataset`` is provided for an abstraction.
         +++
-        .. button-ref:: id1
+        .. button-ref:: :ref:`TSDataset_quick_tour`
             :color: primary
             :expand:
             :outline:
