@@ -18,11 +18,11 @@ import math
 import argparse
 import pandas as pd
 
+from bigdl.dllib.utils.log4Error import *
 from bigdl.dllib.feature.dataset import movielens
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf2.estimator import Estimator
 from bigdl.friesian.feature import FeatureTable
-from bigdl.dllib.utils.log4Error import *
 
 
 def build_model(num_users, num_items, class_num, layers=[20, 10], include_mf=True, mf_embed=20):
@@ -75,13 +75,13 @@ if __name__ == '__main__':
                         help='The master url, only used when cluster mode is standalone.')
     parser.add_argument('--executor_cores', type=int, default=8,
                         help='The executor core number.')
-    parser.add_argument('--executor_memory', type=str, default="160g",
+    parser.add_argument('--executor_memory', type=str, default="4g",
                         help='The executor memory.')
-    parser.add_argument('--num_executor', type=int, default=8,
+    parser.add_argument('--num_executors', type=int, default=2,
                         help='The number of executor.')
     parser.add_argument('--driver_cores', type=int, default=4,
                         help='The driver core number.')
-    parser.add_argument('--driver_memory', type=str, default="36g",
+    parser.add_argument('--driver_memory', type=str, default="4g",
                         help='The driver memory.')
     parser.add_argument('--lr', default=0.001, type=float, help='learning rate')
     parser.add_argument('--epochs', default=5, type=int, help='train epoch')
@@ -93,19 +93,17 @@ if __name__ == '__main__':
 
     if args.cluster_mode == "local":
         sc = init_orca_context("local", cores=args.executor_cores,
-                               memory=args.executor_memory, init_ray_on_spark=True)
+                               memory=args.executor_memory)
     elif args.cluster_mode == "standalone":
         sc = init_orca_context("standalone", master=args.master,
-                               cores=args.executor_cores, num_nodes=args.num_executor,
+                               cores=args.executor_cores, num_nodes=args.num_executors,
                                memory=args.executor_memory,
-                               driver_cores=args.driver_cores, driver_memory=args.driver_memory,
-                               init_ray_on_spark=True)
+                               driver_cores=args.driver_cores, driver_memory=args.driver_memory)
     elif args.cluster_mode == "yarn":
         sc = init_orca_context("yarn-client", cores=args.executor_cores,
-                               num_nodes=args.num_executor, memory=args.executor_memory,
+                               num_nodes=args.num_executors, memory=args.executor_memory,
                                driver_cores=args.driver_cores, driver_memory=args.driver_memory,
-                               object_store_memory="10g",
-                               init_ray_on_spark=True)
+                               object_store_memory="10g")
     elif args.cluster_mode == "spark-submit":
         sc = init_orca_context("spark-submit")
     else:
@@ -121,7 +119,7 @@ if __name__ == '__main__':
         .apply("label", "label", lambda x: x - 1, 'int')
     train, test = full.random_split([0.8, 0.2], seed=1)
 
-    config = {"lr": 1e-3, "inter_op_parallelism": 4, "intra_op_parallelism": args.executor_cores}
+    config = {"lr": args.lr, "inter_op_parallelism": 4, "intra_op_parallelism": args.executor_cores}
 
     def model_creator(config):
         import tensorflow as tf
