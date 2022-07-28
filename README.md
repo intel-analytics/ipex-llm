@@ -46,13 +46,13 @@ As of **BigDL 2.0** release, we combine the [original BigDL](https://github.com/
 ## What can you do with BigDL
 
 
-- 💨make your single-node Tensorflow/PyTroch programs faster - Refer to [_Nano_](https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html) 
-- turn your single-node AI applications to distributed and run on a large cluster - Refer to [_Orca: Distributed Training and Inference_](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-training-inference.html#)
-- use automatic hyperparameter tuning in parallel or in a distributed cluster - Refer to [_Orca: Distributed Hyperparam Tuning_](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-tuning.html)
-- develop deep learning applications in Scala or Python from scratch to run on Spark cluster - Refer to [_DLLib_](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/dllib.html) 
-- run Ray applications on Spark cluster - Refer to [_Orca: RayOnSpark_](https://bigdl.readthedocs.io/en/latest/doc/Ray/Overview/ray.html)
-- 🛠️build fast and scalable domain-specific applications optimized on Xeon platforms (e.g. Time series, Recommendation Systems) - Refer to [_Chronos_](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html) and [_Friesian_]()
-- 🔐run machine learning and deep learning in securied and privacy preserved environment [_PPML_](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html)
+- ✅ make your single-node Tensorflow/PyTroch programs faster - Refer to [_Nano_](https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html) 
+- ✅ turn your single-node AI applications to distributed and run on a large cluster - Refer to [_Orca: Distributed Training and Inference_](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-training-inference.html#)
+- ✅ use automatic hyperparameter tuning in parallel or in a distributed cluster - Refer to [_Orca: Distributed Hyperparam Tuning_](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-tuning.html)
+- ✅ develop deep learning applications in Scala or Python from scratch to run on Spark cluster - Refer to [_DLLib_](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/dllib.html) 
+- ✅ run Ray applications on Spark cluster - Refer to [_Orca: RayOnSpark_](https://bigdl.readthedocs.io/en/latest/doc/Ray/Overview/ray.html)
+- ✅ build fast and scalable domain-specific applications optimized on Xeon platforms (e.g. Time series, Recommendation Systems) - Refer to [_Chronos_](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html) and [_Friesian_]()
+- ✅ run machine learning and deep learning in securied and privacy preserved environment [_PPML_](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html)
 
 BigDL can make all above tasks easy. For more guidence, tutorials and demos, refer to our [Docs site](https://bigdl.readthedocs.io/).
 
