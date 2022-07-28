@@ -86,8 +86,8 @@ if __name__ == '__main__':
     parser.add_argument('--lr', default=0.001, type=float, help='learning rate')
     parser.add_argument('--epochs', default=5, type=int, help='train epoch')
     parser.add_argument('--batch_size', default=8000, type=int, help='batch size')
-    parser.add_argument('--model_dir', default='snapshot', type=str,
-                        help='snapshot directory name (default: snapshot)')
+    parser.add_argument('--save_path', default='./ncf.ckpt', type=str,
+                        help='checkpoint path to save the trained model')
     parser.add_argument('--data_dir', type=str, default="./movielens", help='data directory')
     args = parser.parse_args()
 
@@ -147,7 +147,15 @@ if __name__ == '__main__':
                   validation_data=test.df,
                   validation_steps=val_steps)
 
-    import tensorflow as tf
-    tf.saved_model.save(estimator.get_model(), args.model_dir)
+    predictions = estimator.predict(test.df,
+                                    batch_size=args.batch_size,
+                                    feature_cols=['user', 'item'],
+                                    steps=val_steps)
+    print("Predictions on validation dataset:")
+    predictions.show(5)
+
+    estimator.save(args.save_path)
+
+    # load with estimator.load(args.save_path)
 
     stop_orca_context()
