@@ -32,7 +32,7 @@ Seamless Scaling of AI Pipelines from Laptops to Distributed Cluster
 
 ## What is BigDL 
 
-As of **BigDL 2.0** release, we combine the [original BigDL](https://github.com/intel-analytics/BigDL/tree/branch-0.14) and [Analytics Zoo](https://github.com/intel-analytics/analytics-zoo) projects into a single project. **Now BigDL is a suite of libraries which can help data scientists and engineers to easily build end-to-end, fast, and scalable AI applications in various aspects.** Each library in BigDL can be installed and used alone, or in combinition:
+As of **BigDL 2.0** release, we combine the [original BigDL](https://github.com/intel-analytics/BigDL/tree/branch-0.14) and [Analytics Zoo](https://github.com/intel-analytics/analytics-zoo) projects into a single project. **Now BigDL is a suite of libraries which can help data scientists and engineers to easily build end-to-end, fast, and scalable AI applications in various aspects.** Each library in BigDL can be installed and used alone:
 
 * [_BigDL-Nano_]() - a python library for transparent acceleration of Tensorflow and PyTorch programs on single node.
 * [_BigDL-Orca_]() - a python library to scale local Tensorflow or PyTorch programs to a large cluster.
