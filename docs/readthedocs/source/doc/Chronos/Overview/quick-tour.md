@@ -7,125 +7,87 @@ Chronos supports 3 common tasks in time series analysis area.
 - **Anomaly Detection**: find the anomaly point in time series.
 - **Simulation (experimental)**: generate synthetic time series data.
 
-For each task, we have many built-in algorithms being wrapped to easy-to-use abstractions called `Forecaster`, `Detector`, and `Simulator`.
-
-```eval_rst
-.. grid:: 1 1 3 3
-
-    .. grid-item-card::
-        :text-align: center
-        :shadow: none
-        :class-header: sd-bg-light
-        :class-footer: sd-bg-light
-        :class-card: sd-mb-2
-
-        **Chronos**
-        ^^^
-        Chronos is an application framework for building large-scale time series analysis applications. (`TSDataset <data_processing_feature_engineering.html>`_)
-        +++
-        .. button-ref:: ../../PPML/Overview/ppml
-            :color: primary
-            :expand:
-            :outline:
-
-            Get Started
-
-    .. grid-item-card:: 
-        :text-align: center
-        :shadow: none
-        :class-header: sd-bg-light
-        :class-footer: sd-bg-light
-        :class-card: sd-mb-2
-
-        **Chronos**
-        ^^^
-        Chronos is an application framework for building large-scale time series analysis applications.
-        +++
-        .. button-ref:: ../../PPML/Overview/ppml
-            :color: primary
-            :expand:
-            :outline:
-
-            Get Started
-
-    .. grid-item-card:: 
-        :text-align: center
-        :shadow: none
-        :class-header: sd-bg-light
-        :class-footer: sd-bg-light
-        :class-card: sd-mb-2
-
-        **Chronos**
-        ^^^
-        Chronos is an application framework for building large-scale time series analysis applications.
-        +++
-        .. button-ref:: ../../PPML/Overview/ppml
-            :color: primary
-            :expand:
-            :outline:
-
-            Get Started
-
-.. grid:: 1 1 3 3
-
-    .. grid-item-card::
-        :text-align: center
-        :shadow: none
-        :class-header: sd-bg-light
-        :class-footer: sd-bg-light
-        :class-card: sd-mb-2
-
-        **Chronos**
-        ^^^
-        Chronos is an application framework for building large-scale time series analysis applications.
-        +++
-        .. button-ref:: ../../PPML/Overview/ppml
-            :color: primary
-            :expand:
-            :outline:
-
-            Get Started
-
-    .. grid-item-card:: 
-        :text-align: center
-        :shadow: none
-        :class-header: sd-bg-light
-        :class-footer: sd-bg-light
-        :class-card: sd-mb-2
-
-        **Chronos**
-        ^^^
-        Chronos is an application framework for building large-scale time series analysis applications.
-        +++
-        .. button-ref:: ../../PPML/Overview/ppml
-            :color: primary
-            :expand:
-            :outline:
-
-            Get Started
-
-    .. grid-item-card:: 
-        :text-align: center
-        :shadow: none
-        :class-header: sd-bg-light
-        :class-footer: sd-bg-light
-        :class-card: sd-mb-2
-
-        **Chronos**
-        ^^^
-        Chronos is an application framework for building large-scale time series analysis applications.
-        +++
-        .. button-ref:: ../../PPML/Overview/ppml
-            :color: primary
-            :expand:
-            :outline:
-
-            Get Started
-```
-
 ```eval_rst
 .. note:: 
     You may understand the basic usage of Chronos' components and learn to write the first runnable application in this quick tour page. If you are looking for some specific or advanced topic, you may refer to our tutorial and how-to guide.
+```
+
+```eval_rst
+.. grid:: 1 1 3 3
+
+    .. grid-item-card::
+        :text-align: center
+        :shadow: none
+        :class-header: sd-bg-light
+        :class-footer: sd-bg-light
+        :class-card: sd-mb-2
+
+        **Forecasting**
+        ^^^
+        Time series forecasting uses history data to predict future data. In Chronos we have many built-in algorithms being wrapped to easy-to-use abstraction called `Forecaster`. we also provide `AutoTSEstimator` for distributed hyperparameter tunning.
+        +++
+        .. button-ref:: #forecaster
+            :color: primary
+            :expand:
+            :outline:
+
+            Get Started
+
+    .. grid-item-card:: 
+        :text-align: center
+        :shadow: none
+        :class-header: sd-bg-light
+        :class-footer: sd-bg-light
+        :class-card: sd-mb-2
+
+        **Chronos**
+        ^^^
+        Chronos is an application framework for building large-scale time series analysis applications.
+        +++
+        .. button-ref:: ../../PPML/Overview/ppml
+            :color: primary
+            :expand:
+            :outline:
+
+            Get Started
+
+    .. grid-item-card:: 
+        :text-align: center
+        :shadow: none
+        :class-header: sd-bg-light
+        :class-footer: sd-bg-light
+        :class-card: sd-mb-2
+
+        **Chronos**
+        ^^^
+        Chronos is an application framework for building large-scale time series analysis applications.
+        +++
+        .. button-ref:: ../../PPML/Overview/ppml
+            :color: primary
+            :expand:
+            :outline:
+
+            Get Started
+
+.. grid:: 1 1 1 1
+
+    .. grid-item-card::
+        :text-align: center
+        :shadow: none
+        :class-header: sd-bg-light
+        :class-footer: sd-bg-light
+        :class-card: sd-mb-2
+
+        **Chronos**
+        ^^^
+        Chronos is an application framework for building large-scale time series analysis applications.
+        +++
+        .. button-ref:: ../../PPML/Overview/ppml
+            :color: primary
+            :expand:
+            :outline:
+
+            Get Started
 ```
 
 ## Forecaster
