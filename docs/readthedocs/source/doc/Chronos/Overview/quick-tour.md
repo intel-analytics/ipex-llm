@@ -24,9 +24,9 @@ Chronos supports 3 common tasks in time series analysis area.
 
         **Forecasting**
         ^^^
-        Time series forecasting uses history data to predict future data. In Chronos we have many built-in algorithms being wrapped to easy-to-use abstraction called `Forecaster`. we also provide `AutoTSEstimator` for distributed hyperparameter tunning.
+        Time series forecasting uses history data to predict future data. In Chronos ``Forecaster`` is provided for many built-in algorithms. we also provide ``AutoTSEstimator`` for distributed hyperparameter tunning.
         +++
-        .. button-ref:: #forecaster
+        .. button-ref:: ./quick-tour.html#forecaster
             :color: primary
             :expand:
             :outline:
@@ -40,11 +40,11 @@ Chronos supports 3 common tasks in time series analysis area.
         :class-footer: sd-bg-light
         :class-card: sd-mb-2
 
-        **Chronos**
+        **Anomaly Detection**
         ^^^
-        Chronos is an application framework for building large-scale time series analysis applications.
+        Time series anomaly detection finds the anomaly point in time series. In Chronos ``Detector`` is provided for many built-in algorithms.
         +++
-        .. button-ref:: ../../PPML/Overview/ppml
+        .. button-ref:: ./quick-tour.html#detector
             :color: primary
             :expand:
             :outline:
@@ -58,11 +58,11 @@ Chronos supports 3 common tasks in time series analysis area.
         :class-footer: sd-bg-light
         :class-card: sd-mb-2
 
-        **Chronos**
+        **Simulation (experimental)**
         ^^^
-        Chronos is an application framework for building large-scale time series analysis applications.
+        Time series simulation generates synthetic time series data.
         +++
-        .. button-ref:: ../../PPML/Overview/ppml
+        .. button-ref:: ./quick-tour.html#simulator
             :color: primary
             :expand:
             :outline:
@@ -78,16 +78,37 @@ Chronos supports 3 common tasks in time series analysis area.
         :class-footer: sd-bg-light
         :class-card: sd-mb-2
 
-        **Chronos**
+        **Data processing**
         ^^^
-        Chronos is an application framework for building large-scale time series analysis applications.
+        Time series data processing includes imputing, deduplicating, resampling, scale/unscale, roll sampling, etc to process raw time series data(typically in a table) to a format that is understandable to the models.
         +++
-        .. button-ref:: ../../PPML/Overview/ppml
+        .. button-ref:: ./quick-tour.html#tsdataset
             :color: primary
             :expand:
             :outline:
 
             Get Started
+```
+
+## TSDataset
+In Chronos, we provide a `TSDataset` (and a `XShardsTSDataset` to handle large data input in distributed fashion) abstraction to represent a time series dataset. It is responsible for preprocessing raw time series data(typically in a table) to a format that is understandable to the models. Many typical transformation, preprocessing and feature engineering method can be called cascadely on `TSDataset` or `XShardsTSDataset`.
+
+```python
+# !wget https://raw.githubusercontent.com/numenta/NAB/v1.0/data/realKnownCause/nyc_taxi.csv
+import pandas as pd
+from sklearn.preprocessing import StandardScaler
+from bigdl.chronos.data import TSDataset
+
+df = pd.read_csv("nyc_taxi.csv", parse_dates=["timestamp"])
+tsdata = TSDataset.from_pandas(df,
+                               dt_col="timestamp",
+                               target_col="value")
+scaler = StandardScaler()
+tsdata.deduplicate()\
+      .impute()\
+      .gen_dt_feature()\
+      .scale(scaler)\
+      .roll(lookback=100, horizon=1)
 ```
 
 ## Forecaster
@@ -114,54 +135,6 @@ if __name__ == "__main__":
 
     # predict with the trained forecaster
     pred = forecaster.predict(test_data)
-```
-
-## Detector
-We have implemented quite a few algorithms among traditional statistics to deep learning for time series anomaly detection in `bigdl.chronos.detector.anomaly` package.
-
-To import a specific detector, you may use {algorithm name} + "Detector", and call `fit` to train the detector and `anomaly_indexes` to get anomaly data points' indexs.
-
-```python
-from bigdl.chronos.detector.anomaly import DBScanDetector  # DBScan is algorithm name
-from bigdl.chronos.data.repo_dataset import get_public_dataset
-
-if __name__ == "__main__":
-    # use nyc_taxi public dataset
-    train_data = get_public_dataset("nyc_taxi", with_split=False)
-
-    # create a detector
-    detector = DBScanDetector()
-
-    # fit a detector
-    detector.fit(train_data.to_pandas()['value'].to_numpy())
-
-    # find the anomaly points
-    anomaly_indexes = detector.anomaly_indexes()
-```
-
-## Simulator
-Simulator is still under activate development with unstable API.
-
-
-## TSDataset
-In Chronos, we provide a `TSDataset` (and a `XShardsTSDataset` to handle large data input in distributed fashion) abstraction to represent a time series dataset. It is responsible for preprocessing raw time series data(typically in a table) to a format that is understandable to the models. Many typical transformation, preprocessing and feature engineering method can be called cascadely on `TSDataset` or `XShardsTSDataset`.
-
-```python
-# !wget https://raw.githubusercontent.com/numenta/NAB/v1.0/data/realKnownCause/nyc_taxi.csv
-import pandas as pd
-from sklearn.preprocessing import StandardScaler
-from bigdl.chronos.data import TSDataset
-
-df = pd.read_csv("nyc_taxi.csv", parse_dates=["timestamp"])
-tsdata = TSDataset.from_pandas(df,
-                               dt_col="timestamp",
-                               target_col="value")
-scaler = StandardScaler()
-tsdata.deduplicate()\
-      .impute()\
-      .gen_dt_feature()\
-      .scale(scaler)\
-      .roll(lookback=100, horizon=1)
 ```
 
 ## AutoTSEstimator
@@ -200,3 +173,29 @@ if __name__ == "__main__":
     # stop orca context
     stop_orca_context()
 ```
+
+## Detector
+We have implemented quite a few algorithms among traditional statistics to deep learning for time series anomaly detection in `bigdl.chronos.detector.anomaly` package.
+
+To import a specific detector, you may use {algorithm name} + "Detector", and call `fit` to train the detector and `anomaly_indexes` to get anomaly data points' indexs.
+
+```python
+from bigdl.chronos.detector.anomaly import DBScanDetector  # DBScan is algorithm name
+from bigdl.chronos.data.repo_dataset import get_public_dataset
+
+if __name__ == "__main__":
+    # use nyc_taxi public dataset
+    train_data = get_public_dataset("nyc_taxi", with_split=False)
+
+    # create a detector
+    detector = DBScanDetector()
+
+    # fit a detector
+    detector.fit(train_data.to_pandas()['value'].to_numpy())
+
+    # find the anomaly points
+    anomaly_indexes = detector.anomaly_indexes()
+```
+
+## Simulator
+Simulator is still under activate development with unstable API.
