@@ -51,7 +51,7 @@ As of **BigDL 2.0** release, we combine the [original BigDL](https://github.com/
 - use automatic hyperparameter tuning in parallel or in a distributed cluster - Refer to [_Orca: Distributed Hyperparam Tuning_](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-tuning.html)
 - develop deep learning applications in Scala or Python from scratch to run on Spark cluster - Refer to [_DLLib_](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/dllib.html) 
 - run Ray applications on Spark cluster - Refer to [_Orca: RayOnSpark_](https://bigdl.readthedocs.io/en/latest/doc/Ray/Overview/ray.html)
-- build fast and scalable domain-specific applications optimized on Xeon platforms (e.g. Time series, Recommendation Systems) - Refer to [_Chronos_](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html) and [_Friesian_]()
+- 🛠️build fast and scalable domain-specific applications optimized on Xeon platforms (e.g. Time series, Recommendation Systems) - Refer to [_Chronos_](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html) and [_Friesian_]()
 - 🔐run machine learning and deep learning in securied and privacy preserved environment [_PPML_](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html)
 
 BigDL can make all above tasks easy. For more guidence, tutorials and demos, refer to our [Docs site](https://bigdl.readthedocs.io/).
