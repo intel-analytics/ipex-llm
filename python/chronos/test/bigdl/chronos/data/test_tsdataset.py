@@ -503,6 +503,16 @@ class TestTSDataset(ZooTestCase):
             assert tuple(y_batch.size()) == (batch_size, horizon, 1)
             break
 
+    def test_tsdataset_to_torch_loader_lessthansample(self):
+        lookback = 96
+        horizon = 48
+        df = pd.DataFrame(np.random.randint(1, 10, size=(100, 1)), columns=["target"])
+        df.insert(0, "datetime", pd.date_range(start="2022-7-22", periods=100, freq="H"))
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="target")
+        with pytest.raises(RuntimeError):
+            tsdata.to_torch_data_loader(roll=True, lookback=lookback, horizon=horizon)
+
+
     def test_tsdata_multi_unscale_numpy_torch_load(self):
         lookback = random.randint(1, 10)
         horizon = random.randint(1, 20)
