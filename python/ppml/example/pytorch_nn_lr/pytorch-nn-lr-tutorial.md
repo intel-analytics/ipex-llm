@@ -20,33 +20,10 @@ We use [Diabetes](https://www.kaggle.com/competitions/house-prices-advanced-regr
 
 The code is available in projects, including [Client 1 code](fgboost_regression_party_1.py) and [Client 2 code](fgboost_regression_party_2.py). You could directly start two different terminals are run them respectively to start a federated learning, and the order of start does not matter. Following is the detailed step-by-step tutorial to introduce how the code works.
 
-### 2.1 Package Import
-First, import the package.
-```python
-import numpy as np
-import pandas as pd
-import torch
-from torch import nn
-from bigdl.ppml.fl.estimator import Estimator
-```
+### 2.1 Private Set Intersection
+// TODO: add this section after Python version of PSI is done
 
-### 2.2 Private Set Intersection
-Then, read the data,
-
-```python
-df_train = pd.read_csv(data_path)
-```
-
-
-To get the data intersection which the 2 parties can do federated learning, we have to the Private Set Intersection (PSI) algorithm first.
-```python
-from bigdl.ppml.fl.algorithms.psi import PSI
-df_train['ID'] = df_train['ID'].astype(str)
-psi = PSI()
-intersection = psi.get_intersection(list(df_train['ID']))
-df_train = df_train[df_train['ID'].isin(intersection)] # select the intersection part of training data
-```
-### 2.3 Data Preprocessing
+### 2.2 Data Preprocessing
 Since one party owns label data while another not, different operations should be done before training.
 
 For example, in party 1:
@@ -59,7 +36,7 @@ y = np.expand_dims(df_y.to_numpy(dtype="float32"), axis=1)
 ```
 
 
-### 2.4 Create Model
+### 2.3 Create Model
 We create the following model for both clients, but with different number of inputs 
 ```python
 class LocalModel(nn.Module):
@@ -89,7 +66,7 @@ class ServerModel(nn.Module):
 
 server_model = ServerModel()
 ```
-### 2.5 Create Estimator
+### 2.4 Create Estimator
 Then, create Estimator and pass the arguments
 
 ```python
@@ -105,7 +82,7 @@ ppl = Estimator.from_torch(client_model=model,
 
 ```
 
-### 2.6 Training
+### 2.5 Training
 Then call `fit` method to train
 
 ```python
@@ -119,15 +96,7 @@ result = ppl.predict(x)
 ## 3 Run FGBoost
 FL Server is required before running any federated applications. Check [Start FL Server]() section for details.
 ### 3.1 Start FL Server in SGX
-To run server in SGX, pull image from dockerhub
-```
-docker pull intelanalytics/bigdl-ppml-trusted-fl-graphene:2.1.0-SNAPSHOT
-```
-prepare the enclave key
-```
-openssl genrsa -3 -out enclave-key.pem 3072
-```
-// TODO: CHECK
+// TODO: add this section after running FL Server in SGX succesfully in this example.
 
 Modify the config file `ppml-conf.yaml`
 ```yaml
@@ -138,8 +107,8 @@ serverPort: 8980
 clientNum: 2
 ```
 Then start the FL Server
-```
-./ppml/scripts/start-fl-server.sh 
+```bash
+python BigDL/python/ppml/src/bigdl/ppml/fl/nn/fl_server.py
 ```
 ### 3.2 Start FGBoost Clients
 Modify the config file `ppml-conf.yaml`
