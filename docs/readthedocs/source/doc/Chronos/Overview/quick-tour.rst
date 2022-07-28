@@ -17,7 +17,7 @@ Chronos supports 4 common tasks in time series analysis area.
         ^^^
         Time series forecasting uses history data to predict future data. ``Forecaster`` and ``AutoTSEstimator`` are provided for built-in algorithms and distributed hyperparameter tunning.
         +++
-        .. button-ref:: Forecaster
+        .. button-ref:: Forecaster_quick_tour
             :color: primary
             :expand:
             :outline:
@@ -35,7 +35,7 @@ Chronos supports 4 common tasks in time series analysis area.
         ^^^
         Time series anomaly detection finds the anomaly point in time series. ``Detector`` is provided for many built-in algorithms.
         +++
-        .. button-ref:: Detector
+        .. button-ref:: Detector_quick_tour
             :color: primary
             :expand:
             :outline:
@@ -85,7 +85,7 @@ Chronos supports 4 common tasks in time series analysis area.
     You may understand the basic usage of Chronos' components and learn to write the first runnable application in this quick tour page. If you are looking for some specific or advanced topic, you may refer to our tutorial and how-to guide.
 
 .. _TSDataset_quick_tour:
-TSDataset
+TSDataset quick tour
 ---------------------
 
 In Chronos, we provide a ``TSDataset`` (and a ``XShardsTSDataset`` to handle large data input in distributed fashion) abstraction to represent a time series dataset. It is responsible for preprocessing raw time series data(typically in a table) to a format that is understandable to the models. Many typical transformation, preprocessing and feature engineering method can be called cascadely on ``TSDataset`` or ``XShardsTSDataset``.
@@ -109,7 +109,7 @@ In Chronos, we provide a ``TSDataset`` (and a ``XShardsTSDataset`` to handle lar
         .roll(lookback=100, horizon=1)
 
 
-Forecaster
+Forecaster quick tour
 -----------------------
 We have implemented quite a few algorithms among traditional statistics to deep learning for time series forecasting in ``bigdl.chronos.forecaster`` package. Users may train these forecasters on history time series and use them to predict future time series.
 
@@ -137,7 +137,7 @@ To import a specific forecaster, you may use {algorithm name} + "Forecaster", an
         pred = forecaster.predict(test_data)
 
 
-AutoTSEstimator
+AutoTSEstimator quick tour
 ---------------------------
 For time series forecasting, we also provide an ``AutoTSEstimator`` for distributed hyperparameter tunning as an extention to ``Forecaster``. Users only need to create a ``AutoTSEstimator`` and call ``fit`` to train the estimator. A ``TSPipeline`` will be returned for users to predict future data.
 
@@ -177,7 +177,7 @@ For time series forecasting, we also provide an ``AutoTSEstimator`` for distribu
         stop_orca_context()
 
 
-Detector
+Detector quick tour
 --------------------
 We have implemented quite a few algorithms among traditional statistics to deep learning for time series anomaly detection in ``bigdl.chronos.detector.anomaly`` package.
 
@@ -202,6 +202,6 @@ To import a specific detector, you may use {algorithm name} + "Detector", and ca
         anomaly_indexes = detector.anomaly_indexes()
 
 .. _Simulator_quick_tour:
-Simulator
+Simulator quick tour
 ---------------------
 Simulator is still under activate development with unstable API.
