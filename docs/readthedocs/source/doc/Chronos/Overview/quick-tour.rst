@@ -15,7 +15,7 @@ Welcome to Chronos for building a fast, accuracy and scalable time series analys
         ^^^
         Time series data processing includes imputing, deduplicating, resampling, scale/unscale, roll sampling, etc to process raw time series data(typically in a table) to a format that is understandable to the models. ``TSDataset`` is provided for an abstraction.
         +++
-        .. button-ref:: TSDataset
+        .. button-ref:: TSDataset/XShardsTSDataset
             :color: primary
             :expand:
             :outline:
@@ -71,7 +71,7 @@ Welcome to Chronos for building a fast, accuracy and scalable time series analys
         ^^^
         Time series simulation generates synthetic time series data. ``Simulator`` is provided for many built-in algorithms.
         +++
-        .. button-ref:: quick-tour:Simulator
+        .. button-ref:: Simulator(experimental)
             :color: primary
             :expand:
             :outline:
@@ -81,7 +81,7 @@ Welcome to Chronos for building a fast, accuracy and scalable time series analys
 .. note:: 
     You may understand the basic usage of Chronos' components and learn to write the first runnable application in this quick tour page. If you are looking for some specific or advanced topic, you may refer to our tutorial and how-to guide.
 
-TSDataset
+TSDataset/XShardsTSDataset
 ---------------------
 
 In Chronos, we provide a ``TSDataset`` (and a ``XShardsTSDataset`` to handle large data input in distributed fashion) abstraction to represent a time series dataset. It is responsible for preprocessing raw time series data(typically in a table) to a format that is understandable to the models. Many typical transformation, preprocessing and feature engineering method can be called cascadely on ``TSDataset`` or ``XShardsTSDataset``.
@@ -197,6 +197,6 @@ To import a specific detector, you may use {algorithm name} + "Detector", and ca
         # find the anomaly points
         anomaly_indexes = detector.anomaly_indexes()
 
-Simulator
+Simulator(experimental)
 ---------------------
 Simulator is still under activate development with unstable API.
