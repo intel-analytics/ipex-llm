@@ -7,6 +7,19 @@
 </div>
 
 ---
+[![license](https://img.shields.io/github/license/intel-analytics/BigDL)](https://github.com/intel-analytics/BigDL/blob/main/LICENSE)
+[![FOSSA Status](https://app.fossa.com/api/projects/custom%2B32229%2Fgithub.com%2Fintel-analytics%2FBigDL.svg?type=shield)](https://app.fossa.com/projects/custom%2B32229%2Fgithub.com%2Fintel-analytics%2FBigDL?ref=badge_shield)
+[![commits](https://img.shields.io/github/commit-activity/m/intel-analytics/BigDL)](https://github.com/intel-analytics/BigDL/pulse)
+[![last commit](https://img.shields.io/github/last-commit/intel-analytics/BigDL)](https://github.com/intel-analytics/BigDL/commit/main)
+[![contributors](https://img.shields.io/github/contributors/intel-analytics/BigDL)](https://github.com/intel-analytics/BigDL/graphs/contributors)
+[![code size](https://img.shields.io/github/languages/code-size/intel-analytics/BigDL)](https://github.com/intel-analytics/BigDL)
+[![docker pull](https://img.shields.io/docker/pulls/intelanalytics/analytics-zoo)](https://hub.docker.com/u/intelanalytics)
+[![pypi downloads](https://img.shields.io/pypi/dm/BigDL?label=pypi%20downloads)](https://pypi.org/project/bigdl/)
+[![pypi python](https://img.shields.io/pypi/pyversions/BigDL)](https://pypi.org/project/bigdl/)
+[![nightly build](https://img.shields.io/github/workflow/status/intel-analytics/BigDL/Nightly%20Build%20Maven%20Publish%20Scala?label=nightly%20build)](https://github.com/intel-analytics/BigDL/actions/workflows/maven-publish-scala.yml)
+[![nexus release](https://img.shields.io/nexus/r/com.intel.analytics.bigdl/bigdl-parent-spark_3.1.2?label=release&server=https%3A%2F%2Foss.sonatype.org%2F)](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.2/)
+[![nexus snapshot](https://img.shields.io/nexus/s/com.intel.analytics.bigdl/bigdl-parent-spark_3.1.2?label=snapshot&server=https%3A%2F%2Foss.sonatype.org%2F)](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.2/)
+
 BigDL makes it easy for data scientists and data engineers to build end-to-end, distributed AI applications. The **BigDL 2.0** release combines the [original BigDL](https://github.com/intel-analytics/BigDL/tree/branch-0.14) and [Analytics Zoo](https://github.com/intel-analytics/analytics-zoo) projects, providing the following features:
  
   * [DLlib](#getting-started-with-dllib): distributed deep learning library for Apache Spark *(i.e., the original BigDL framework with Keras-style API and Spark ML pipeline support)*
