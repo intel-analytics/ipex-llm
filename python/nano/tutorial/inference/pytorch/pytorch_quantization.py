@@ -108,5 +108,7 @@ if __name__ == "__main__":
     Trainer.save(q_model, "./quantized_model")
 
     # Load the Quantized Model
-    # loaded_model = Trainer.load("./quantized_model")
+    # a original fp32 model is required, as the saved format only contains weights
+
+    # loaded_model = Trainer.load("./quantized_model", resnet18())
     # print(loaded_model(x).argmax(dim=1))
