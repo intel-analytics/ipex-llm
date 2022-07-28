@@ -15,9 +15,9 @@ Chronos supports 4 common tasks in time series analysis area.`Forecaster`_
 
         **Forecasting**
         ^^^
-        Time series forecasting uses history data to predict future data. ``Forecaster`` is provided for many built-in algorithms. ``AutoTSEstimator`` is provided for distributed hyperparameter tunning.
+        Time series forecasting uses history data to predict future data. ``Forecaster`` and ``AutoTSEstimator`` are provided for built-in algorithms and distributed hyperparameter tunning.
         +++
-        .. button-ref:: `Forecaster`_
+        .. button-ref:: Forecaster
             :color: primary
             :expand:
             :outline:
@@ -53,7 +53,7 @@ Chronos supports 4 common tasks in time series analysis area.`Forecaster`_
         ^^^
         Time series simulation generates synthetic time series data. ``Simulator`` is provided for many built-in algorithms.
         +++
-        .. button-ref:: <simulator>
+        .. button-ref:: Simulator
             :color: primary
             :expand:
             :outline:
@@ -73,7 +73,7 @@ Chronos supports 4 common tasks in time series analysis area.`Forecaster`_
         ^^^
         Time series data processing includes imputing, deduplicating, resampling, scale/unscale, roll sampling, etc to process raw time series data(typically in a table) to a format that is understandable to the models.
         +++
-        .. button-ref:: tsdataset
+        .. button-ref:: TSDataset
             :color: primary
             :expand:
             :outline:
@@ -88,9 +88,10 @@ Chronos supports 4 common tasks in time series analysis area.`Forecaster`_
 TSDataset
 -----------
 
-In Chronos, we provide a ``TSDataset`` (and a ``XShardsTSDataset`` to handle large data input in distributed fashion) abstraction to represent a time series dataset. It is responsible for preprocessing raw time series data(typically in a table) to a format that is understandable to the models. Many typical transformation, preprocessing and feature engineering method can be called cascadely on `TSDataset` or `XShardsTSDataset`.
+In Chronos, we provide a ``TSDataset`` (and a ``XShardsTSDataset`` to handle large data input in distributed fashion) abstraction to represent a time series dataset. It is responsible for preprocessing raw time series data(typically in a table) to a format that is understandable to the models. Many typical transformation, preprocessing and feature engineering method can be called cascadely on ``TSDataset`` or ``XShardsTSDataset``.
 
 .. code-block:: python
+
     # !wget https://raw.githubusercontent.com/numenta/NAB/v1.0/data/realKnownCause/nyc_taxi.csv
     import pandas as pd
     from sklearn.preprocessing import StandardScaler
@@ -110,11 +111,13 @@ In Chronos, we provide a ``TSDataset`` (and a ``XShardsTSDataset`` to handle lar
 
 Forecaster
 -------------
-We have implemented quite a few algorithms among traditional statistics to deep learning for time series forecasting in `bigdl.chronos.forecaster` package. Users may train these forecasters on history time series and use them to predict future time series.
+We have implemented quite a few algorithms among traditional statistics to deep learning for time series forecasting in ``bigdl.chronos.forecaster`` package. Users may train these forecasters on history time series and use them to predict future time series.
 
-To import a specific forecaster, you may use {algorithm name} + "Forecaster", and call `fit` to train the forecaster and `predict` to predict future data.
+To import a specific forecaster, you may use {algorithm name} + "Forecaster", and call ``fit`` to train the forecaster and ``predict`` to predict future data.
 
 .. code-block:: python
+    :emphasize-lines:
+
     from bigdl.chronos.forecaster import TCNForecaster  # TCN is algorithm name
     from bigdl.chronos.data.repo_dataset import get_public_dataset
 
@@ -137,9 +140,10 @@ To import a specific forecaster, you may use {algorithm name} + "Forecaster", an
 
 AutoTSEstimator
 ----------------
-For time series forecasting, we also provide an `AutoTSEstimator` for distributed hyperparameter tunning as an extention to `Forecaster`. Users only need to create a `AutoTSEstimator` and call `fit` to train the estimator. A `TSPipeline` will be returned for users to predict future data.
+For time series forecasting, we also provide an ``AutoTSEstimator`` for distributed hyperparameter tunning as an extention to ``Forecaster``. Users only need to create a ``AutoTSEstimator`` and call ``fit`` to train the estimator. A ``TSPipeline`` will be returned for users to predict future data.
 
 .. code-block:: python
+
     from bigdl.orca.automl import hp
     from bigdl.chronos.data.repo_dataset import get_public_dataset
     from bigdl.chronos.autots import AutoTSEstimator
@@ -176,11 +180,12 @@ For time series forecasting, we also provide an `AutoTSEstimator` for distribute
 
 Detector
 ----------------
-We have implemented quite a few algorithms among traditional statistics to deep learning for time series anomaly detection in `bigdl.chronos.detector.anomaly` package.
+We have implemented quite a few algorithms among traditional statistics to deep learning for time series anomaly detection in ``bigdl.chronos.detector.anomaly`` package.
 
-To import a specific detector, you may use {algorithm name} + "Detector", and call `fit` to train the detector and `anomaly_indexes` to get anomaly data points' indexs.
+To import a specific detector, you may use {algorithm name} + "Detector", and call ``fit`` to train the detector and ``anomaly_indexes`` to get anomaly data points' indexs.
 
 .. code-block:: python
+
     from bigdl.chronos.detector.anomaly import DBScanDetector  # DBScan is algorithm name
     from bigdl.chronos.data.repo_dataset import get_public_dataset
 
