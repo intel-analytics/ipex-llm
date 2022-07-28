@@ -24,7 +24,7 @@ from torch.utils.data import DataLoader, TensorDataset
 
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
 
-from bigdl.nano.pytorch.lite import LightningLite
+from bigdl.nano.pytorch import TorchNano
 from bigdl.nano.pytorch.vision.models import vision
 
 batch_size = 256
@@ -44,15 +44,15 @@ class ResNet18(nn.Module):
         return self.model(x)
 
 
-class Lite(LightningLite):
-    def run(self):
+class MyNano(TorchNano):
+    def train(self):
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
-        loss = nn.CrossEntropyLoss()
+        loss_func = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
         train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
 
-        model, optimizer = self.setup(model, optimizer)
-        train_loader = self.setup_dataloaders(train_loader)
+        model, optimizer, train_loader = self.setup(model, optimizer, train_loader)
+
         model.train()
 
         num_epochs = 1
@@ -60,11 +60,11 @@ class Lite(LightningLite):
             total_loss, num = 0, 0
             for X, y in train_loader:
                 optimizer.zero_grad()
-                l = loss(model(X), y)
-                self.backward(l)
+                loss = loss_func(model(X), y)
+                self.backward(loss)
                 optimizer.step()
                 
-                total_loss += l.sum()
+                total_loss += loss.sum()
                 num += 1
             print(f'avg_loss: {total_loss / num}')
 
@@ -79,27 +79,27 @@ class LinearModel(nn.Module):
         return self.fc1(input_)
 
 
-class LiteCorrectness(LightningLite):
-    def run(self, lr):
+class MyNanoCorrectness(TorchNano):
+    def train(self, lr):
         dataset=TensorDataset(
             torch.tensor([[0.0],[0.0],[1.0],[1.0]]),
             torch.tensor([[0.0],[0.0],[0.0],[0.0]]),
         )
         train_loader = DataLoader(dataset=dataset, batch_size=2, shuffle=False)
         origin_model = LinearModel()
-        loss = nn.MSELoss()
+        loss_func = nn.MSELoss()
         optimizer = torch.optim.SGD(origin_model.parameters(), lr=lr)
 
-        model, optimizer = self.setup(origin_model, optimizer)
-        train_loader = self.setup_dataloaders(train_loader)
+        model, optimizer, train_loader = self.setup(origin_model, optimizer, train_loader)
+
         model.train()
 
         num_epochs = 2
         for _i in range(num_epochs):
             for X, y in train_loader:
                 optimizer.zero_grad()
-                l = loss(model(X), y)
-                self.backward(l)
+                loss = loss_func(model(X), y)
+                self.backward(loss)
                 optimizer.step()
 
         assert origin_model.fc1.weight.data == 0.25, \
@@ -114,23 +114,23 @@ class TestLite(TestCase):
         )
         os.environ['PYTHONPATH'] = project_test_dir
 
-    def test_lite(self):
-        Lite(use_ipex=True).run()
+    def test_torch_nano(self):
+        MyNano(use_ipex=True).train()
 
-    def test_lite_spawn(self):
-        Lite(use_ipex=True, num_processes=2, strategy="spawn").run()
+    def test_torch_nano_spawn(self):
+        MyNano(use_ipex=True, num_processes=2, strategy="spawn").train()
 
-    def test_lite_subprocess(self):
-        Lite(use_ipex=True, num_processes=2, strategy="subprocess").run()
+    def test_torch_nano_subprocess(self):
+        MyNano(use_ipex=True, num_processes=2, strategy="subprocess").train()
 
-    def test_lite_correctness(self):
-        LiteCorrectness(use_ipex=True).run(0.25)
+    def test_torch_nano_correctness(self):
+        MyNanoCorrectness(use_ipex=True).train(0.25)
 
-    def test_lite_spawn_correctness(self):
-        LiteCorrectness(use_ipex=True, num_processes=2, strategy="spawn").run(0.5)
+    def test_torch_nano_spawn_correctness(self):
+        MyNanoCorrectness(use_ipex=True, num_processes=2, strategy="spawn").train(0.5)
 
-    def test_lite_subprocess_correctness(self):
-        LiteCorrectness(use_ipex=True, num_processes=2, strategy="subprocess").run(0.5)
+    def test_torch_nano_subprocess_correctness(self):
+        MyNanoCorrectness(use_ipex=True, num_processes=2, strategy="subprocess").train(0.5)
 
 
 if __name__ == '__main__':
