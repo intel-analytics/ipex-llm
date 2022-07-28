@@ -152,7 +152,7 @@ if __name__ == '__main__':
                                     feature_cols=['user', 'item'],
                                     steps=val_steps)
     print("Predictions on validation dataset:")
-    predictions.show(5)
+    predictions.show(5, truncate=False)
 
     estimator.save(args.save_path)
 
