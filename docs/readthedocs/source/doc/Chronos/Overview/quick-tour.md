@@ -1,16 +1,7 @@
 # Chronos Quick Tour
 Welcome to Chronos for building a fast, accuracy and scalable time series analysis application🎉! Start with our quick tour to understand some critical concepts and how to use them to tackle your tasks.
 
-Chronos supports 3 common tasks in time series analysis area.
-
-- **Forecasting**: use history data to predict future.
-- **Anomaly Detection**: find the anomaly point in time series.
-- **Simulation (experimental)**: generate synthetic time series data.
-
-```eval_rst
-.. note:: 
-    You may understand the basic usage of Chronos' components and learn to write the first runnable application in this quick tour page. If you are looking for some specific or advanced topic, you may refer to our tutorial and how-to guide.
-```
+Chronos supports 4 common tasks in time series analysis area.
 
 ```eval_rst
 .. grid:: 1 1 3 3
@@ -24,9 +15,9 @@ Chronos supports 3 common tasks in time series analysis area.
 
         **Forecasting**
         ^^^
-        Time series forecasting uses history data to predict future data. In Chronos ``Forecaster`` is provided for many built-in algorithms. we also provide ``AutoTSEstimator`` for distributed hyperparameter tunning.
+        Time series forecasting uses history data to predict future data. ``Forecaster`` is provided for many built-in algorithms. ``AutoTSEstimator`` is provided for distributed hyperparameter tunning.
         +++
-        .. button-ref:: ./quick-tour.html#forecaster
+        .. button-ref:: ./quick-tour#forecaster
             :color: primary
             :expand:
             :outline:
@@ -42,9 +33,9 @@ Chronos supports 3 common tasks in time series analysis area.
 
         **Anomaly Detection**
         ^^^
-        Time series anomaly detection finds the anomaly point in time series. In Chronos ``Detector`` is provided for many built-in algorithms.
+        Time series anomaly detection finds the anomaly point in time series. ``Detector`` is provided for many built-in algorithms.
         +++
-        .. button-ref:: ./quick-tour.html#detector
+        .. button-ref:: quick-tour#forecaster
             :color: primary
             :expand:
             :outline:
@@ -58,11 +49,11 @@ Chronos supports 3 common tasks in time series analysis area.
         :class-footer: sd-bg-light
         :class-card: sd-mb-2
 
-        **Simulation (experimental)**
+        **Simulation**
         ^^^
-        Time series simulation generates synthetic time series data.
+        Time series simulation generates synthetic time series data. ``Simulator`` is provided for many built-in algorithms.
         +++
-        .. button-ref:: ./quick-tour.html#simulator
+        .. button-ref:: ./#simulator
             :color: primary
             :expand:
             :outline:
@@ -82,12 +73,17 @@ Chronos supports 3 common tasks in time series analysis area.
         ^^^
         Time series data processing includes imputing, deduplicating, resampling, scale/unscale, roll sampling, etc to process raw time series data(typically in a table) to a format that is understandable to the models.
         +++
-        .. button-ref:: ./quick-tour.html#tsdataset
+        .. button-ref:: quick-tour.html#tsdataset
             :color: primary
             :expand:
             :outline:
 
             Get Started
+```
+
+```eval_rst
+.. note:: 
+    You may understand the basic usage of Chronos' components and learn to write the first runnable application in this quick tour page. If you are looking for some specific or advanced topic, you may refer to our tutorial and how-to guide.
 ```
 
 ## TSDataset
