@@ -47,7 +47,7 @@ As of **BigDL 2.0** release, we combine the [original BigDL](https://github.com/
 
 
 - ✅ make your single-node Tensorflow/PyTroch programs faster - Refer to [_Nano_](https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html) <br/>
-- ✅ turn your single-node AI applications to distributed and run on a large cluster - Refer to [_Orca: Distributed Training and Inference_]- (https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-training-inference.html#) <br/>
+- ✅ turn your single-node AI applications to distributed and run on a large cluster - Refer to [_Orca: Distributed Training and Inference_](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-training-inference.html#) <br/>
 - ✅ use automatic hyperparameter tuning in parallel or in a distributed cluster - Refer to [_Orca: Distributed Hyperparam Tuning_](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-tuning.html) <br/>
 - ✅ develop deep learning applications in Scala or Python from scratch to run on Spark cluster - Refer to [_DLLib_](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/dllib.html)  <br/>
 - ✅ run Ray applications on Spark cluster - Refer to [_Orca: RayOnSpark_](https://bigdl.readthedocs.io/en/latest/doc/Ray/Overview/ray.html)  <br/>
