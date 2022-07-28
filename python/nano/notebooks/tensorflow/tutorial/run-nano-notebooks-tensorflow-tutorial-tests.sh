@@ -4,7 +4,7 @@ export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
 export NANO_HOME=${ANALYTICS_ZOO_ROOT}/python/nano/src
 export NANO_TUTORIAL_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/notebooks/tensorflow/tutorial
 export epochs=1
-export NUM_SHARDS=100
+export STEPS=4
 
 set -e
 
