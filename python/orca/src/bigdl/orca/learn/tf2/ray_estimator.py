@@ -480,6 +480,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
         return model
 
+    @enable_multi_fs_save
     def save_weights(self, filepath, overwrite=True, save_format=None, options=None):
         """
         Save the model weights at the provided filepath.
@@ -500,6 +501,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         model = self.get_model()
         model.save_weights(filepath, overwrite, save_format, options)
 
+    @enable_multi_fs_load
     def load_weights(self, filepath, by_name=False, skip_mismatch=False, option=None):
         """
         Load the model weights at the provided filepath.
