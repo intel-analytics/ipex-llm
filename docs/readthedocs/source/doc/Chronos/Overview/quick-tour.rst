@@ -15,8 +15,7 @@ Welcome to Chronos for building a fast, accuracy and scalable time series analys
         ^^^
         Time series data processing includes imputing, deduplicating, resampling, scale/unscale, roll sampling, etc to process raw time series data(typically in a table) to a format that is understandable to the models. ``TSDataset`` is provided for an abstraction.
         +++
-        .. button-ref:: TSDataset_quick_tour_
-            :ref-type: any
+        .. button-ref:: TSDataset
             :color: primary
             :expand:
             :outline:
@@ -72,8 +71,7 @@ Welcome to Chronos for building a fast, accuracy and scalable time series analys
         ^^^
         Time series simulation generates synthetic time series data. ``Simulator`` is provided for many built-in algorithms.
         +++
-        .. button-ref:: Simulator_quick_tour_
-            :ref-type: any
+        .. button-ref:: quick-tour:Simulator
             :color: primary
             :expand:
             :outline:
@@ -82,8 +80,6 @@ Welcome to Chronos for building a fast, accuracy and scalable time series analys
 
 .. note:: 
     You may understand the basic usage of Chronos' components and learn to write the first runnable application in this quick tour page. If you are looking for some specific or advanced topic, you may refer to our tutorial and how-to guide.
-
-.. _TSDataset_quick_tour:
 
 TSDataset
 ---------------------
@@ -200,8 +196,6 @@ To import a specific detector, you may use {algorithm name} + "Detector", and ca
 
         # find the anomaly points
         anomaly_indexes = detector.anomaly_indexes()
-
-.. _Simulator_quick_tour:
 
 Simulator
 ---------------------
