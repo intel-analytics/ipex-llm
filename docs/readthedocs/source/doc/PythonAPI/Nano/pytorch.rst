@@ -14,4 +14,5 @@ bigdl.nano.pytorch.TorchNano
 
 .. autoclass:: bigdl.nano.pytorch.TorchNano
     :members:
-    :undoc-members: run
+    :undoc-members:
+    :exclude-members: run
