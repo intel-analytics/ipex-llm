@@ -87,10 +87,6 @@ if __name__ == "__main__":
 
     _, train_dataset, val_dataset = finetune_pet_dataset(model)
 
-    for data in val_dataset:
-        print(data)
-        break
-
     # Sample Inference Data
     x = torch.stack([val_dataset[0][0], val_dataset[1][0]])
 
