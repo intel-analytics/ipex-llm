@@ -9,7 +9,7 @@ By design, BigDL does not support Spark Dynamic Allocation mode, and needs to al
 
 Here we provide a workaround for running BigDL under Spark Dynamic Allocation mode.
 
-For `spark-submit` cluster mode, the first solution is to disable the Spark Dynamic Allocation mode in `SparkConf` as you submit your application as follows:
+For `spark-submit` cluster mode, the first solution is to disable the Spark Dynamic Allocation mode in `SparkConf` when you submit your application as follows:
 
 ```bash
 spark-submit --conf spark.dynamicAllocation.enabled=false
