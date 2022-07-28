@@ -30,16 +30,31 @@ Seamless Scaling of AI Pipelines from Laptops to Distributed Cluster
 
 ---
 
-## About BigDL 
+## What is BigDL 
 
+As of **BigDL 2.0** release, we combine the [original BigDL](https://github.com/intel-analytics/BigDL/tree/branch-0.14) and [Analytics Zoo](https://github.com/intel-analytics/analytics-zoo) projects into a single project.
 
-BigDL is a suite of libraries which helps data scientists and engineers to easily build end-to-end, fast, and scalable AI applications. 
+The new BigDL is a suite of libraries which helps data scientists and engineers to easily build end-to-end, fast, and scalable AI applications. Each library in BigDL can be installed and used alone, or in combinition. They are:
 
-As of **BigDL 2.0** release, we combine the [original BigDL](https://github.com/intel-analytics/BigDL/tree/branch-0.14) and [Analytics Zoo](https://github.com/intel-analytics/analytics-zoo) projects into a single project. BigDL became a suite of libraries, each of which can be used alone and serves various purposes, as shown below. 
+* [_BigDL-Nano_]() - a python library for transparent acceleration of Tensorflow and PyTorch programs on single node.
+* [_BigDL-Orca_]() - a python library to scale local Tensorflow or PyTorch programs to a large cluster.
+* [_BigDL-DLLib_]() - a deep learning library for Apache Spark in both **Scala** and **Python** 
+* [_BigDL-Chronos_]() - a python application framework for developing accurate, fast and scalable time series analysis applications.
+* [_BigDL-Friesian_]() - a python application framwork for developing large-scale recommendation systems.
+* [_BigDL-PPML_]() - a _trusted cluster environment_ for securely running large scale AI applications without modification.
  
 
-![bigdl-arch2](https://user-images.githubusercontent.com/1995599/180955386-2a1625bd-1013-4579-a400-04451d8ded14.png)
 
+## What can you do with BigDL
+
+You may use BigDL to make your AI applications faster 
+
+You can make you program more secure
+Once you have a PyTorch or Tensorflow program, you can use BigDL-Nano. 
+Using *BigDL-Nano*, you can acclerate your local PyTorch or Tensorflow program, with only miniumum change of code. 
+
+
+Using *BigDL-Orca*, you can scale out local _**TensorFlow**_ or _**PyTorch**_ applications end-to-end (i.e. training, inference, data processing) seamlessly across large clusters.
 
 To learn more, refer to our [Docs site](https://bigdl.readthedocs.io/).
 
@@ -263,7 +278,7 @@ See the [PPML user guide](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overvi
 
 ---
 
-## Citing BigDL
+## Citation
 
 If you've found BigDL useful for your project, you may cite the [paper](https://arxiv.org/ftp/arxiv/papers/2204/2204.01715.pdf) as follows:
 
