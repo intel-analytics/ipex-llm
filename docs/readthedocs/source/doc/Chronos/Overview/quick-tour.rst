@@ -18,7 +18,6 @@ Chronos supports 4 common tasks in time series analysis area.
         Time series forecasting uses history data to predict future data. ``Forecaster`` and ``AutoTSEstimator`` are provided for built-in algorithms and distributed hyperparameter tunning.
         +++
         .. button-ref:: Forecaster
-            :ref-type: ref
             :color: primary
             :expand:
             :outline:
@@ -76,6 +75,7 @@ Chronos supports 4 common tasks in time series analysis area.
         Time series data processing includes imputing, deduplicating, resampling, scale/unscale, roll sampling, etc to process raw time series data(typically in a table) to a format that is understandable to the models. ``TSDataset`` is provided for an abstraction.
         +++
         .. button-ref:: :ref:`TSDataset_quick_tour`
+            :ref-type: ref
             :color: primary
             :expand:
             :outline:
