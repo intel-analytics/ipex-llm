@@ -22,7 +22,6 @@ from pytorch_lightning.trainer.states import TrainerFn, TrainerStatus
 from pytorch_lightning.loops.epoch import TrainingEpochLoop
 from pytorch_lightning.loops.fit_loop import FitLoop
 from bigdl.nano.utils.log4Error import invalidInputError
-from bigdl.nano.pytorch.utils import LIGHTNING_VERSION_LESS_1_6
 from bigdl.nano.automl.hpo.backend import create_hpo_backend, SamplerType
 from .objective import Objective
 from bigdl.nano.automl.utils.parallel import run_parallel
@@ -54,6 +53,7 @@ class HPOSearcher:
         :param trainer: The pl.Trainer object.
         """
         self.trainer = trainer
+        self.num_process = num_processes
         if num_processes == 1:
             # reset current epoch = 0 after each run
             from pytorch_lightning.callbacks import Callback
@@ -61,10 +61,7 @@ class HPOSearcher:
             class ResetCallback(Callback):
                 def on_train_end(self, trainer, pl_module) -> None:
                     super().on_train_end(trainer, pl_module)
-                    if LIGHTNING_VERSION_LESS_1_6:
-                        trainer.fit_loop.current_epoch = 0
-                    else:
-                        trainer.fit_loop.epoch_progress.current.processed = 0
+                    trainer.fit_loop.epoch_progress.current.processed = 0
 
             callbacks = self.trainer.callbacks or []
             callbacks.append(ResetCallback())
@@ -216,8 +213,10 @@ class HPOSearcher:
         as this can be called multiple times."""
         # last `_run` call might have set it to `FINISHED`
         self.trainer.state.status = TrainerStatus.RUNNING
-        # Pytorch Lightning 1.6
-        self.trainer.state.fn = TrainerFn.FITTING
         self.trainer.training = True
-        self.trainer._run(*args, **kwargs)
+        if self.num_process > 1:
+            self.trainer.state.fn = TrainerFn.FITTING  # add in lightning 1.6
+            self.trainer.fit(*args, **kwargs)
+        else:
+            self.trainer._run(*args, **kwargs)
         self.trainer.tuning = True

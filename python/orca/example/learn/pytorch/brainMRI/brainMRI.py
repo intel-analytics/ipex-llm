@@ -135,7 +135,7 @@ def test_loader_creator(config, batch_size):
     return test_loader
 
 
-def model_creator(config):
+def model_creator(config=None):
     net = UNet(3, 1)
     return net
 
@@ -160,7 +160,7 @@ parser = argparse.ArgumentParser(description='PyTorch brainMRI Example')
 parser.add_argument('--cluster_mode', type=str, default="local",
                     help='The cluster mode, such as local, yarn-client, or spark-submit.')
 parser.add_argument('--backend', type=str, default="ray",
-                    help='The backend of PyTorch Estimator; ray and spark are supported')
+                    help='The backend of PyTorch Estimator; bigdl, ray, and spark are supported')
 parser.add_argument('--batch_size', type=int, default=64, help='The training batch size')
 parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
 parser.add_argument('--data_dir', type=str, default='./kaggle_3m', help='The path to the dataset')
@@ -193,16 +193,29 @@ config = {
 }
 train_loader = train_loader_creator(config=config, batch_size=batch_size)
 
+
 # plot some random training images.
 # You should use jupyter notebook to show the images.
 show_batch(train_loader)
+if args.backend == "bigdl":
+    net = model_creator()
+    optimizer = optim_creator(model=net, config={"lr": 0.001})
+    orca_estimator = Estimator.from_torch(model=net,
+                                          optimizer=optimizer,
+                                          loss=bce_dice_loss,
+                                          config=config,
+                                          backend=args.backend)
 
-if args.backend in ["ray", "spark"]:
+    orca_estimator.fit(data=train_loader, epochs=args.epochs)
+
+
+elif args.backend in ["ray", "spark"]:
     orca_estimator = Estimator.from_torch(model=model_creator,
                                           optimizer=optim_creator,
                                           loss=loss_creator,
                                           model_dir=args.model_dir,
                                           backend=args.backend,
+                                          metrics=dice_coef_metric,
                                           config=config,
                                           use_tqdm=True,
                                           scheduler_creator=scheduler_creator,
@@ -214,7 +227,7 @@ if args.backend in ["ray", "spark"]:
     for r, value in res.items():
         print(r, ":", value)
 else:
-    raise NotImplementedError("Only ray and spark are supported as the backend,"
+    raise NotImplementedError("Only bigdl, ray, and spark are supported as the backend,"
                               " but got {}".format(args.backend))
 
 stop_orca_context()

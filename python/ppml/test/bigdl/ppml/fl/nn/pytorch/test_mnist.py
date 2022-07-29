@@ -15,6 +15,7 @@
 #
 
 from multiprocessing import Process
+from typing import List
 import unittest
 import numpy as np
 import pandas as pd
@@ -27,7 +28,7 @@ from bigdl.ppml.fl.nn.pytorch.utils import set_one_like_parameter
 from bigdl.ppml.fl.utils import init_fl_context
 from bigdl.ppml.fl.estimator import Estimator
 
-from torch import nn
+from torch import Tensor, nn
 import torch
 from torch.utils.data import DataLoader
 from torchvision import datasets
@@ -166,7 +167,7 @@ class NeuralNetworkPart2(nn.Module):
             nn.Linear(512, 10)
         )
 
-    def forward(self, x):
+    def forward(self, x: List[Tensor]):
         x = x[0] # this act as interactive layer, take the first tensor
         x = self.sequential_2(x)
         return x

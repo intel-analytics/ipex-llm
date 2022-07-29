@@ -97,6 +97,9 @@ class EncryptedDataFrameReader:
     def parquet(self, path):
         return callBigDlFunc(self.bigdl_type, "parquet", self.df_reader, path)
 
+    def json(self, path):
+        return callBigDlFunc(self.bigdl_type, "json", self.df_reader, path)
+
 
 class EncryptedDataFrameWriter:
     support_mode = {"overwrite", "append", "ignore", "error", "errorifexists"}
@@ -121,6 +124,9 @@ class EncryptedDataFrameWriter:
 
     def parquet(self, path):
         return callBigDlFunc(self.bigdl_type, "parquet", self.df_writer, path)
+
+    def json(self, path):
+        return callBigDlFunc(self.bigdl_type, "json", self.df_writer, path)
 
 
 class CryptoMode(Enum):

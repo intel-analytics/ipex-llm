@@ -84,7 +84,7 @@ class TestPlugin(TestCase):
         from test_lightning import ResNet18
 
         model = ResNet18(pretrained=False, include_top=False, freeze=True)
-        pl_model = LightningModuleFromTorch(
+        pl_model = LightningModule(
             model, self.loss, self.optimizer,
             metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
         )

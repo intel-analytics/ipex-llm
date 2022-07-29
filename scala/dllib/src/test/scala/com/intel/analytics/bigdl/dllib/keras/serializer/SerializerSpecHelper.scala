@@ -33,22 +33,15 @@ import scala.collection.mutable
 abstract class SerializerSpecHelper extends FlatSpec with Matchers with BeforeAndAfterAll{
 
   private val excluded = Set[String](
-    "com.intel.analytics.zoo.pipeline.api.autograd.LambdaTorch",
-    "com.intel.analytics.zoo.pipeline.api.net.TFNet",
-    "com.intel.analytics.zoo.pipeline.api.net.TorchModel",
-    "com.intel.analytics.zoo.pipeline.api.keras.layers.internal.Recurrent",
-    "com.intel.analytics.zoo.pipeline.api.keras.layers.internal.InternalRecurrent",
-    "com.intel.analytics.zoo.pipeline.api.keras.layers.internal.InternalCAddTable",
-    "com.intel.analytics.zoo.pipeline.api.autograd.InternalParameter",
-    "com.intel.analytics.zoo.pipeline.api.autograd.KerasParameter",
-    "com.intel.analytics.zoo.pipeline.api.autograd.KerasConstant",
-    "com.intel.analytics.zoo.pipeline.api.autograd.InternalConstant",
-    "com.intel.analytics.zoo.pipeline.api.keras.layers.internal.InternalRecurrent",
-    "com.intel.analytics.zoo.pipeline.api.keras.layers.InternalGetShape",
-    "com.intel.analytics.zoo.tfpark.TFTrainingHelper",
-    "com.intel.analytics.zoo.tfpark.TFTrainingHelperV2",
-    "com.intel.analytics.zoo.pipeline.api.net.TFNetForInference",
-    "com.intel.analytics.zoo.tfpark.TFSubGraph")
+    "com.intel.analytics.bigdl.dllib.keras.autograd.LambdaTorch",
+    "com.intel.analytics.bigdl.dllib.keras.layers.Recurrent",
+    "com.intel.analytics.bigdl.dllib.keras.layers.InternalRecurrent",
+    "com.intel.analytics.bigdl.dllib.keras.layers.InternalCAddTable",
+    "com.intel.analytics.bigdl.dllib.keras.InternalParameter",
+    "com.intel.analytics.bigdl.dllib.keras.KerasParameter",
+    "com.intel.analytics.bigdl.dllib.keras.KerasConstant",
+    "com.intel.analytics.bigdl.dllib.keras.InternalConstant",
+    "com.intel.analytics.bigdl.dllib.keras.layers.InternalGetShape")
 
   private val unRegularNameMapping = Map[String, String]()
 
@@ -67,7 +60,7 @@ abstract class SerializerSpecHelper extends FlatSpec with Matchers with BeforeAn
           val testClass = ins.getConstructors()(0).newInstance()
           TestUtils.conditionFailTest(testClass.isInstanceOf[ModuleSerializationTest],
             s"$clsWholeName should be a " +
-            s"subclass of com.intel.analytics.zoo.pipeline.api.keras.layers.serializer." +
+            s"subclass of com.intel.analytics.bigdl.dllib.keras.layers.serializer." +
             s"ModuleSerializationTest")
           testClass.asInstanceOf[ModuleSerializationTest].test()
         } catch {

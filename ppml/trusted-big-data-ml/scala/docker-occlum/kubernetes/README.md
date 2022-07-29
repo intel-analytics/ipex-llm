@@ -1,5 +1,8 @@
 # Spark 3.1.2 on K8S with Occlum
 
+## Resource Configuration Guide
+some configuration in *.yaml is introduced in [here](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/README.md), you can refer to it for more information.
+
 ## Prerequisite
 
 * Check Kubernetes env or Install Kubernetes from [wiki](https://kubernetes.io/zh/docs/setup/production-environment)
@@ -34,8 +37,14 @@ bash build-docker-image.sh
 #driver.yaml
     env:
     - name: DRIVER_MEMORY
-      value: "500m"
+      value: "512m"
     - name: SGX_MEM_SIZE
+      value: "8GB"
+    - name: SGX_THREAD
+      value: "256"
+    - name: SGX_HEAP
+      value: "1GB"
+    - name: SGX_KERNEL_HEAP
       value: "1GB"
 ```
 
@@ -43,6 +52,12 @@ bash build-docker-image.sh
 #executor.yaml
     env:
     - name: SGX_MEM_SIZE
+      value: "8GB"
+    - name: SGX_THREAD
+      value: "256"
+    - name: SGX_HEAP
+      value: "1GB"
+    - name: SGX_KERNEL_HEAP
       value: "1GB"
 ```
 
@@ -156,7 +171,7 @@ Parameters:
 * -d means max_depth: Int.
 * -w means num_workers: Int.
 
-**Note: make sure num_threads is larger than spark.task.cpus.**
+**Note: make sure num_threads is no larger than spark.task.cpus.**
 
 #### Source code
 You can find source code [here](https://github.com/intel-analytics/BigDL/tree/main/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/nnframes/xgboost).

@@ -18,7 +18,7 @@
 set -e
 
 $CONDA/bin/conda create -n benchmark-resnet-50 -y python==3.7.10 setuptools==58.0.4
-$CONDA/bin/activate benchmark-resnet-50
+source $CONDA/bin/activate benchmark-resnet-50
 
 bash $ANALYTICS_ZOO_ROOT/python/nano/dev/build_and_install.sh linux default false pytorch
 
