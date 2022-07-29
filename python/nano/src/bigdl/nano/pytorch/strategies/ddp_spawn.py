@@ -269,6 +269,9 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
         """Setup warmup lr_schedulers after resetting the train dataloaders."""
         # LightnigModule.train_dataloader() generate the training dataloaders after setup,
         # so config the warmup lr_schedulers in on_train_start hook to infer warmup_steps.
+        invalidInputError(isinstance(self.auto_lr, dict) or isinstance(self.auto_lr, bool),
+                          errMsg=f"auto_lr is {type(self.auto_lr)}",
+                          fixMsg="expect auto_lr is a bool or dict")
         if not self.auto_lr:
             return
         if self.lr_scheduler_configs:
@@ -284,9 +287,6 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
                 'interval': 'epoch'
             }
             supported_keys = {'warmup_epochs'}
-            if not isinstance(self.auto_lr, dict) and not isinstance(self.auto_lr, bool):
-                raise TypeError("Except auto_lr to be a boolean or dict"
-                                f" but got a {type(self.auto_lr)}")
             if isinstance(self.auto_lr, dict):
                 extra_keys = self.auto_lr.keys() - supported_keys
                 if extra_keys:
@@ -295,10 +295,10 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
                     self.auto_lr = True
                     warnings.warn("Not found \"warmup_epochs\" in the auto_lr dict"
                                   " warmup_epochs will be set by default")
-                elif type(self.auto_lr['warmup_epochs']) is not int:
-                    raise TypeError("Expect \"warmup_epochs\" to be an integer"
-                                    f" but got a {type(self.auto_lr['warmup_epochs'])}")
                 else:
+                    invalidInputError(type(self.auto_lr['warmup_epochs']) is int,
+                                      f"\"warmup_epochs\" is {type(self.auto_lr['warmup_epochs'])}",
+                                      "expect \"warmup_epochs\" is a integer")
                     warmup_params['warmup_epochs'] = self.auto_lr['warmup_epochs']
             if type(self.auto_lr) is bool:
                 # Call scheduler.step() after each minibatch rather than epoch if max_epochs < 10
