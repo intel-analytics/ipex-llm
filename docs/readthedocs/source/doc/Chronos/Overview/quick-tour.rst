@@ -13,7 +13,7 @@ Welcome to Chronos for building a fast, accuracy and scalable time series analys
 
         **Data processing**
         ^^^
-        Time series data processing includes imputing, deduplicating, resampling, scale/unscale, roll sampling, etc to process raw time series data(typically in a table) to a format that is understandable to the models. ``TSDataset`` is provided for an abstraction.
+        Time series data processing includes imputing, deduplicating, resampling, scale/unscale, roll sampling, etc to process raw time series data(typically in a table) to a format that is understandable to the models. ``TSDataset`` and ``XShardsTSDataset`` are provided for an abstraction.
         +++
         .. button-ref:: TSDataset/XShardsTSDataset
             :color: primary
@@ -104,6 +104,17 @@ In Chronos, we provide a ``TSDataset`` (and a ``XShardsTSDataset`` to handle lar
         .scale(scaler)\
         .roll(lookback=100, horizon=1)
 
+
+.. button-ref:: ./data_processing_feature_engineering
+    :color: primary
+    :shadow:
+
+    Tutorial
+.. button-ref:: ../../PythonAPI/Chronos/tsdataset
+    :color: primary
+    :shadow:
+
+    API Document
 
 Forecaster
 -----------------------
