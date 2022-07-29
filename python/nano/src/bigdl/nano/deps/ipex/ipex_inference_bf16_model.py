@@ -49,30 +49,6 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
     @property
     def status(self):
         status = super().status
-        status.update({"use_ipex": self.use_ipex,
-                       "use_jit": self.use_jit,
-                       "channels_last": self.channels_last,
-                       "checkpoint": "ckpt.pth"})
+        status.update({"precision": "bfloat16"})
         return status
 
-    @staticmethod
-    def _load(path, model):
-        status = PytorchIPEXJITModel._load_status(path)
-        checkpoint_path = path / status['checkpoint']
-        if status["use_jit"]:
-            model = torch.jit.load(checkpoint_path)
-            model.eval()
-            model = torch.jit.freeze(model)
-            from_load = True
-        else:
-            state_dict = torch.load(checkpoint_path)
-            model.eval()
-            model.load_state_dict(state_dict)
-            from_load = False
-        return PytorchIPEXJITModel(model, use_ipex=status['use_ipex'],
-                                   use_jit=status['use_jit'],
-                                   channels_last=status['channels_last'],
-                                   from_load=from_load)
-
-    def _save_model(self, path):
-        super()._save_model(path)
