@@ -16,7 +16,7 @@ on:
 jobs:
   build:
 
-    runs-on: [self-hosted, Gondolin]
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
     permissions:
       contents: read
       packages: write
