@@ -54,11 +54,12 @@ jobs:
                 "all": {
                   "connectionTimeout": "3600000",
                   "readTimeout": "3600000"
-                  }    
+                  }
                 }
               }
           }]
-         mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${{ secrets.ARDA_NEXUS }}" }]'
+        mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${NEXUS_URL}" }]'
+
     - name: Set up Python 
       uses: actions/setup-python@v2
       with:
