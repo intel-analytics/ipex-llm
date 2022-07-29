@@ -113,6 +113,13 @@
           <include>/**</include>
       </includes>
     </fileSet>
+    <fileSet>
+      <outputDirectory>/</outputDirectory>
+      <directory>${project.parent.basedir}/tpp</directory>
+      <includes>
+          <include>/**</include>
+      </includes>
+    </fileSet>
   </fileSets>
   <dependencySets>
     <dependencySet>

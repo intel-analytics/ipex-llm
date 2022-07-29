@@ -1,0 +1,1412 @@
+BigDL
+Copyright 2016 The BigDL Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+ 
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+
+error-prone annotations
+# This is the list of Error Prone authors for copyright purposes.
+#
+# This does not necessarily list everyone who has contributed code, since in
+# some cases, their employer may be the copyright holder. To see the full list
+# of contributors, see the revision history in source control.
+Google Inc.
+Two Sigma Open Source
+
+=====================================================================================
+
+io.grpc:grpc-api
+Copyright 2014 The gRPC Authors
+
+=====================================================================================
+
+Lettuce
+Copyright 2014 The gRPC Authors
+
+=====================================================================================
+
+io.grpc:grpc-core
+Copyright 2014 The gRPC Authors
+
+=====================================================================================
+
+io.grpc:grpc-netty-shaded
+Copyright 2014 The gRPC Authors
+
+=====================================================================================
+
+io.grpc:grpc-stub
+Copyright 2014 The gRPC Authors
+
+=====================================================================================
+
+io.grpc:grpc-context
+Copyright 2014 The gRPC Authors
+
+=====================================================================================
+
+io.grpc:grpc-services
+Copyright 2014 The gRPC Authors
+
+=====================================================================================
+
+io.grpc:grpc-protobuf-lite
+Copyright 2014 The gRPC Authors
+
+=====================================================================================
+
+io.grpc:grpc-protobuf
+Copyright 2014 The gRPC Authors
+
+=====================================================================================
+
+Netty/Transport/Native/KQueue
+Netty/Codec/HTTP
+Netty/Resolver/DNS/Classes/MacOS
+Netty/Transport/Classes/Epoll
+Netty/Buffer
+Netty/Transport/Native/Epoll
+Netty/Codec
+Netty/TomcatNative [BoringSSL - Static]
+Netty/Resolver/DNS
+Netty/Transport/Classes/KQueue
+Netty/Common
+Netty/Resolver/DNS/Native/MacOS
+Netty/Codec/HTTP2
+Netty/Resolver
+Netty/Transport/Native/Unix/Common
+Netty/Transport
+Netty/Codec/Socks
+Netty/Codec/DNS
+Netty/Handler/Proxy
+Netty/TomcatNative [OpenSSL - Classes]
+Netty/All-in-One
+Netty/Handler
+
+              The Netty Project
+              =================
+
+Please visit the Netty web site for more information:
+
+ * http://netty.io/
+
+Copyright 2011 The Netty Project
+
+The Netty Project licenses this file to you under the Apache License,
+version 2.0 (the "License"); you may not use this file except in compliance
+with the License. You may obtain a copy of the License at:
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations
+under the License.
+
+Also, please refer to each LICENSE..txt file, which is located in
+the 'license' directory of the distribution file, for the license terms of the
+components that this product depends on.
+
+-------------------------------------------------------------------------------
+This product contains the extensions to Java Collections Framework which has
+been derived from the works by JSR-166 EG, Doug Lea, and Jason T. Greene:
+
+ * LICENSE:
+  * license/LICENSE.jsr166y.txt (Public Domain)
+ * HOMEPAGE:
+  * http://gee.cs.oswego.edu/cgi-bin/viewcvs.cgi/jsr166/
+  * http://viewvc.jboss.org/cgi-bin/viewvc.cgi/jbosscache/experimental/jsr166/
+
+This product contains a modified version of Robert Harder's Public Domain
+Base64 Encoder and Decoder, which can be obtained at:
+
+ * LICENSE:
+  * license/LICENSE.base64.txt (Public Domain)
+ * HOMEPAGE:
+  * http://iharder.sourceforge.net/current/java/base64/
+
+This product contains a modified portion of 'Webbit', an event based 
+WebSocket and HTTP server, which can be obtained at:
+
+ * LICENSE:
+  * license/LICENSE.webbit.txt (BSD License)
+ * HOMEPAGE:
+  * https://github.com/joewalnes/webbit
+
+This product contains a modified portion of 'SLF4J', a simple logging
+facade for Java, which can be obtained at:
+
+ * LICENSE:
+  * license/LICENSE.slf4j.txt (MIT License)
+ * HOMEPAGE:
+  * http://www.slf4j.org/
+
+
+This product contains a modified version of Roland Kuhn's ASL2
+AbstractNodeQueue, which is based on Dmitriy Vyukov's non-intrusive MPSC queue.
+It can be obtained at:
+
+ * LICENSE:
+  * license/LICENSE.abstractnodequeue.txt (Public Domain)
+ * HOMEPAGE:
+  * https://github.com/akka/akka/blob/wip-2.2.3-for-scala-2.11/akka-actor/src/main/java/akka/dispatch/AbstractNodeQueue.java
+
+This product contains a modified portion of Nitsan Wakart's 'JCTools', Java Concurrency Tools for the JVM,
+ which can be obtained at:
+
+ * LICENSE:
+  * license/LICENSE.jctools.txt (ASL2 License)
+ * HOMEPAGE:
+  * https://github.com/JCTools/JCTools
+
+
+This product optionally depends on 'JZlib', a re-implementation of zlib in
+pure Java, which can be obtained at:
+
+ * LICENSE:
+  * license/LICENSE.jzlib.txt (BSD style License)
+ * HOMEPAGE:
+  * http://www.jcraft.com/jzlib/
+
+This product optionally depends on 'Protocol Buffers', Google's data
+interchange format, which can be obtained at:
+
+ * LICENSE:
+  * license/LICENSE.protobuf.txt (New BSD License)
+ * HOMEPAGE:
+  * http://code.google.com/p/protobuf/
+
+This product optionally depends on 'Bouncy Castle Crypto APIs' to generate
+a temporary self-signed X.509 certificate when the JVM does not provide the
+equivalent functionality. It can be obtained at:
+
+ * LICENSE:
+  * license/LICENSE.bouncycastle.txt (MIT License)
+ * HOMEPAGE:
+  * http://www.bouncycastle.org/
+
+This product optionally depends on 'Snappy', a compression library produced
+by Google Inc, which can be obtained at:
+
+ * LICENSE:
+  * license/LICENSE.snappy.txt (New BSD License)
+ * HOMEPAGE:
+  * http://code.google.com/p/snappy/
+
+This product optionally depends on 'JBoss Marshalling', an alternative Java
+serialization API, which can be obtained at:
+
+ * LICENSE:
+  * license/LICENSE.jboss-marshalling.txt (GNU LGPL 2.1)
+ * HOMEPAGE:
+  * http://www.jboss.org/jbossmarshalling
+
+This product optionally depends on 'Caliper', Google's micro-
+benchmarking framework, which can be obtained at:
+
+ * LICENSE:
+  * license/LICENSE.caliper.txt (Apache License 2.0)
+ * HOMEPAGE:
+  * http://code.google.com/p/caliper/
+
+This product optionally depends on 'Apache Commons Logging', a logging
+framework, which can be obtained at:
+
+ * LICENSE:
+  * license/LICENSE.commons-logging.txt (Apache License 2.0)
+ * HOMEPAGE:
+  * http://commons.apache.org/logging/
+
+This product optionally depends on 'Apache Log4J', a logging framework, which
+can be obtained at:
+
+ * LICENSE:
+  * license/LICENSE.log4j.txt (Apache License 2.0)
+ * HOMEPAGE:
+  * http://logging.apache.org/log4j/
+
+
+=====================================================================================
+
+Jetty SSLEngine
+Jiri Pinkas 2015 - 2022. All rights reserved!
+
+=====================================================================================
+
+Jetty Utilities
+Copyright Eclipse Foundation. All Rights Reserved
+
+=====================================================================================
+
+commons-beanutils
+Copyright 2000-2019 The Apache Software Foundation. All Rights Reserved
+
+=====================================================================================
+
+Default Plexus Container
+Plexus Common Utilities
+Plexus Interpolation API
+
+ == Apache Plexus' Proposal ==
+
+Apache Plexus is an embeddable Inversion of Control (IoC) container for general components (Java initially). Its characterizing elements are that it is small, favors Dependency Injection (over other IoC variants) and tries to remain agnostic when it comes to the need for its components to honor abstractions. 
+
+Plexus was started in 2002 and the project has committers who are experienced in open source software development, as well as existing Apache committers and Apache members on board. 
+ 
+== Rationale ==
+The project is interested in moving to Apache for the following reasons: 
+
+ * Apache technologies like Maven depend on Plexus and bringing this core technology to Apache is a homecoming of sorts.
+ * Plexus is a descendent of Avalon and there are still some Avalon-based projects and technologies within Apache and Plexus might be of interest as Plexus can run Avalon-based components. 
+ * There is much industry focus on Inversion of Control per se, and Dependency Injection in particular these days.
+ 
+== Meritocracy ==
+Plexus projects have fostered a development community based around meritocracy backed by a very benevolent dictator. Many of the committers already work on other Apache projects and understand the Apache way. The committers understand that they will collectively be responsible for the code and community, and that going forward the decision making will be based on merit only (as defined by the Apache way). 
+
+== Community ==
+The 'Apache Plexus' Community an as until now fairly quiet community
+
+== Core Developers ==
+The 'Apache Plexus' projects initial committers include a diverse set of individuals. All are active in the software industry. 
+
+== Alignment ==
+'Apache Plexus' currently uses and integrates with a few of Apache's projects but has no hard dependencies on them: 
+ * Maven 2: The build system for Plexus
+ * XBean Reflect
+ * Commons CLI
+ 
+== Avoiding the Warning Signs ==
+
+=== Orphaned products ===
+
+=== Inexperience with open source ===
+The authors of the existing code already have extensive open source experience. The initial list of committers includes 14 Apache Committers. 
+
+=== Homogeneous developers ===
+The project's initial committers include individuals that are employed by a diverse set of companies, including Sonatype, Webtide, eBay, E*Trade, and Exist. 
+
+=== Reliance on Salaried Developers ===
+
+=== No ties to other Apache products ===
+Plexus currently uses many Apache projects. These have been outlined in the alignment section.
+ 
+=== A fascination with the Apache brand ===
+While we expect the Apache brand may help attract more contributors, our interests in starting this project is based on the factors mentioned in the Rationale section. However, we will be sensitive to inadvertent abuse of the Apache brand and will work with the Incubator PMC to ensure the brand policies are respected. 
+
+=== Scope of Subprojects ===
+No subprojects proposed.
+
+== Initial Source ==
+The copyright for Plexus is assigned to Codehaus. PicoContainer by its committers. 
+
+The applicable code will be relicensed under the Apache Software License 2.0. The dependencies all have Apache compatible licenses. These include BSD, ..... licensed dependencies.
+
+== ASF Resources to be Created ==
+ * Mailing lists 
+  * plexus-dev
+  * plexus-user
+  * plexus-commits
+ * SVN Repository https://svn.apache.org/repos/asf/incubator/plexus
+ * JIRA Plexus (Plexus) 
+
+== Initial Committers ==
+
+From the Plexus project -
+* Jason van Zyl (Sonatype, Apache Committer - 'jvanzyl' )
+* John Casey (Sonatype, Apache Committer - 'jdcasey' )
+* Trygve Laugstol (Apache Committer - 'trygvis' )
+* Brett Porter (Exist, Apache Committer - 'brett' )
+* Carlos Sanchez (Exist, Apache Committer - 'carlos' )
+* Emmanuel Venisse (Apache Committer - 'evenisse' )
+* Jesse McConnell (Webtide, Apache Committer - 'jmcconnell' )
+* Joakim Erdfelt (Apache Committer - 'joakime' )
+* Kenney Westerhof (Neonics, Apache Committer - 'kenney' )
+* Jason Dillon (IBM, Apache Committer)
+* Andrew Williams (Rectang, Apache Committer - 'handyande')
+* Jochen Wiedmann (Apache Committer)
+* Herve Boutemy (Apache Committer - 'hboutemy')
+* Olivier Lamy (Apache Committer - 'olamy' )
+* Vincent Siveton (Apache Committer - 'vsiveton' )
+* Oleg Gusakov (Sonatype, Apache Committer - 'oleg')
+* Frankie Wu (eBay)
+* Durai Arasan (E*Trade)
+* Piotr Tabor
+* Rahul Thakur
+* Eirik Bjorsnos
+
+== Sponsor ==
+We kindly request the Incubator PMC to accept sponsorship for this proposal. 
+
+== Champion ==
+
+ *
+ 
+== Mentors == 
+
+ * 
+
+
+
+=====================================================================================
+
+Woodstox
+Jackson-core
+Jackson module: JAXB Annotations
+Jackson-dataformat-XML
+Jackson module: Paranamer
+jackson-databind
+Jackson-annotations
+Jackson-dataformat-YAML
+jackson-module-scala
+Jackson datatype: JSR310
+
+# Jackson JSON processor
+
+Jackson is a high-performance, Free/Open Source JSON processing library.
+It was originally written by Tatu Saloranta (tatu.saloranta@iki.fi), and has
+been in development since 2007.
+It is currently developed by a community of developers, as well as supported
+commercially by FasterXML.com.
+
+## Licensing
+
+Jackson core and extension components may licensed under different licenses.
+To find the details that apply to this artifact see the accompanying LICENSE file.
+For more information, including possible other licensing options, contact
+FasterXML.com (http://fasterxml.com).
+
+## Credits
+
+A list of contributors may be found from CREDITS file, which is included
+in some artifacts (usually source distributions); but is always available
+from the source code management (SCM) system project uses
+
+
+=====================================================================================
+
+FindBugs-jsr305
+Copyright (C) 1991, 1999 Free Software Foundation, Inc.
+ 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ Everyone is permitted to copy and distribute verbatim copies
+ of this license document, but changing it is not allowed
+
+=====================================================================================
+
+Gson
+Copyright 2008-2011 Google Inc
+
+=====================================================================================
+
+chill
+Copyright 2012 Twitter, Inc
+
+=====================================================================================
+
+chill-java
+Copyright 2012 Twitter, Inc
+
+=====================================================================================
+
+config
+This project is maintained mostly by @havocp and @akka-team
+
+=====================================================================================
+
+ssl-config-core
+Lightbend 2015-2020, Apache 2.0
+
+=====================================================================================
+
+akka-protobuf
+2011-2022 Lightbend, Inc
+
+=====================================================================================
+
+akka-http-core
+2011-2022 Lightbend, Inc
+
+=====================================================================================
+
+akka-http
+2011-2022 Lightbend, Inc
+
+=====================================================================================
+
+akka-actor
+2011-2022 Lightbend, Inc
+
+=====================================================================================
+
+akka-stream
+2011-2022 Lightbend, Inc
+
+=====================================================================================
+
+akka-parsing
+2011-2022 Lightbend, Inc
+
+=====================================================================================
+
+akka-slf4j
+2011-2022 Lightbend, Inc
+
+=====================================================================================
+
+Commons CLI
+Copyright 2002-2021 The Apache Software Foundation. All Rights Reserved
+
+=====================================================================================
+
+Apache Commons Lang
+Copyright 2002-2021 The Apache Software Foundation. All Rights Reserved
+
+=====================================================================================
+
+Commons IO
+Copyright 2002-2021 The Apache Software Foundation. All Rights Reserved
+
+=====================================================================================
+
+Apache Commons Compress
+Copyright 2002-2021 The Apache Software Foundation. All Rights Reserved
+
+=====================================================================================
+
+Apache Commons CLI
+Copyright 2002-2021 The Apache Software Foundation. All Rights Reserved
+
+=====================================================================================
+
+Apache Commons Math
+Copyright 2002-2021 The Apache Software Foundation. All Rights Reserved
+
+=====================================================================================
+
+Apache Commons Codec
+Copyright 2002-2020 The Apache Software Foundation. All Rights Reserved
+
+=====================================================================================
+
+Apache Commons Collections
+Copyright 2001-2019 The Apache Software Foundation. All Rights Reserved
+
+=====================================================================================
+
+Commons Configuration
+Copyright 2001-2022 The Apache Software Foundation. All Rights Reserved
+
+=====================================================================================
+
+Digester
+Copyright 2001-2013 The Apache Software Foundation. All Rights Reserved
+
+=====================================================================================
+
+HttpClient
+The Apache Source License provides maximum flexibility for source and binary reuse
+
+=====================================================================================
+
+Commons Lang
+Copyright 2001-2021 The Apache Software Foundation. All Rights Reserved
+
+=====================================================================================
+
+Commons Net
+Copyright 2001-2021 The Apache Software Foundation. All Rights Reserved
+
+=====================================================================================
+
+Apache Commons Logging
+Copyright 2001-2014 The Apache Software Foundation. All Rights Reserved
+
+=====================================================================================
+
+Metrics Core
+Copyright 2010-2013 Coda Hale and Yammer, Inc., 2014-2020 Dropwizard Team
+
+=====================================================================================
+
+HTTP functionality for the Reactor Netty library
+Powered by Reactive Streams Commons
+Licensed under Apache Software License 2.0
+Sponsored by Vmware
+
+=====================================================================================
+
+Core functionality for the Reactor Netty library
+Powered by Reactive Streams Commons
+Licensed under Apache Software License 2.0
+Sponsored by Vmware
+
+=====================================================================================
+
+Non-Blocking Reactive Foundation for the JVM
+Powered by Reactive Streams Commons
+Licensed under Apache Software License 2.0
+Sponsored by Vmware
+
+=====================================================================================
+
+Prometheus Java Span Context Supplier - OpenTelemetry
+Prometheus Java Span Context Supplier - OpenTelemetry Agent
+Prometheus Java Simpleclient
+Prometheus Java Simpleclient Common
+Prometheus Java Span Context Supplier - Common
+Prometheus Java Simpleclient Httpserver
+Prometheus Java Simpleclient Hotspot
+
+Prometheus instrumentation library for JVM applications
+Copyright 2012-2015 The Prometheus Authors
+
+This product includes software developed at
+Boxever Ltd. (http://www.boxever.com/).
+
+This product includes software developed at
+SoundCloud Ltd. (http://soundcloud.com/).
+
+This product includes software developed as part of the
+Ocelli project by Netflix Inc. (https://github.com/Netflix/ocelli/)
+
+
+=====================================================================================
+
+xgboost4j-spark_2.12
+Copyright 2019 by Contributors
+
+=====================================================================================
+
+xgboost4j_2.12
+Copyright 2019 by Contributors
+
+=====================================================================================
+
+Arrow Vectors
+2016-2022 The Apache Software Foundation
+
+=====================================================================================
+
+Arrow Memory - Core
+2016-2022 The Apache Software Foundation
+
+=====================================================================================
+
+Arrow Memory - Netty
+2016-2022 The Apache Software Foundation
+
+=====================================================================================
+
+Arrow Format
+2016-2022 The Apache Software Foundation
+
+=====================================================================================
+
+Apache Avro
+Copyright 2012 The Apache Software Foundation
+
+=====================================================================================
+
+Apache Commons Pool
+Copyright 2001-2021 The Apache Software Foundation.
+
+=====================================================================================
+
+flink-shaded-zookeeper-3.4
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+flink-core
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+Apache Directory LDAP API Utilities
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+ApacheDS Protocol Kerberos Codec
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+Apache Directory API ASN.1 API
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+flink-optimizer
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+ApacheDS I18n
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+flink-shaded-asm-7
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+flink-hadoop-fs
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+flink-shaded-jackson-2
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+flink-shaded-netty-4
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+flink-runtime
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+flink-metrics-core
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+flink-streaming-java
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+force-shading
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+flink-clients
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+flink-streaming-scala
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+flink-scala
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+flink-java
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+flink-annotations
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+flink-queryable-state-client-java
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+flink-shaded-guava-18
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+hadoop-mapreduce-client-core
+Copyright 2006 and onwards The Apache Software Foundation.
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/)
+
+=====================================================================================
+
+Apache Hadoop Annotations
+Copyright 2006 and onwards The Apache Software Foundation.
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/)
+
+=====================================================================================
+
+hadoop-mapreduce-client-common
+Copyright 2006 and onwards The Apache Software Foundation.
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/)
+
+=====================================================================================
+
+Apache Hadoop HDFS
+Copyright 2006 and onwards The Apache Software Foundation.
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/)
+
+=====================================================================================
+
+hadoop-yarn-client
+Copyright 2006 and onwards The Apache Software Foundation.
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/)
+
+=====================================================================================
+
+hadoop-yarn-common
+Copyright 2006 and onwards The Apache Software Foundation.
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/)
+
+=====================================================================================
+
+hadoop-mapreduce-client-jobclient
+Copyright 2006 and onwards The Apache Software Foundation.
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/)
+
+=====================================================================================
+
+Apache Hadoop Auth
+Copyright 2006 and onwards The Apache Software Foundation.
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/)
+
+=====================================================================================
+
+hadoop-yarn-api
+Copyright 2006 and onwards The Apache Software Foundation.
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/)
+
+=====================================================================================
+
+hadoop-mapreduce-client-shuffle
+Copyright 2006 and onwards The Apache Software Foundation.
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/)
+
+=====================================================================================
+
+hadoop-mapreduce-client-app
+Copyright 2006 and onwards The Apache Software Foundation.
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/)
+
+=====================================================================================
+
+Apache Hadoop Client
+Copyright 2006 and onwards The Apache Software Foundation.
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/)
+
+=====================================================================================
+
+hadoop-yarn-server-common
+Copyright 2006 and onwards The Apache Software Foundation.
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/)
+
+=====================================================================================
+
+Apache Hadoop Common
+Copyright 2006 and onwards The Apache Software Foundation.
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/)
+
+=====================================================================================
+
+Apache HttpClient
+Copyright 2009-2022 The Apache Software Foundation
+
+=====================================================================================
+
+Apache HttpCore
+Copyright 2009-2022 The Apache Software Foundation
+
+=====================================================================================
+
+htrace-core
+Copyright 2009-2022 The Apache Software Foundation
+
+=====================================================================================
+
+HttpCore
+Copyright 2009-2022 The Apache Software Foundation
+
+=====================================================================================
+
+HttpClient
+Copyright 2009-2022 The Apache Software Foundation
+
+=====================================================================================
+
+Apache Log4j 1.x Compatibility API
+Copyright 1999-2022 The Apache Software Foundation. All Rights Reserved
+
+=====================================================================================
+
+Apache Log4j API
+Copyright 1999-2022 The Apache Software Foundation. All Rights Reserved
+
+=====================================================================================
+
+Apache Log4j SLF4J Binding
+Copyright 1999-2022 The Apache Software Foundation. All Rights Reserved
+
+=====================================================================================
+
+Apache Log4j Core
+Copyright 1999-2022 The Apache Software Foundation. All Rights Reserved
+
+=====================================================================================
+
+Maven Artifact Manager
+2001-2009 The Apache Software Foundation - Privacy Policy
+
+=====================================================================================
+
+Maven Profile Model
+2001-2009 The Apache Software Foundation - Privacy Policy
+
+=====================================================================================
+
+Maven Wagon API
+2001-2009 The Apache Software Foundation - Privacy Policy
+
+=====================================================================================
+
+Maven Plugin Registry Model
+2001-2009 The Apache Software Foundation - Privacy Policy
+
+=====================================================================================
+
+Maven Project Builder
+2001-2009 The Apache Software Foundation - Privacy Policy
+
+=====================================================================================
+
+Maven Artifact
+2001-2009 The Apache Software Foundation - Privacy Policy
+
+=====================================================================================
+
+Maven Local Settings Model
+2001-2009 The Apache Software Foundation - Privacy Policy
+
+=====================================================================================
+
+Maven Model
+2001-2009 The Apache Software Foundation - Privacy Policy
+
+=====================================================================================
+
+Maven Plugin API
+2001-2009 The Apache Software Foundation - Privacy Policy
+
+=====================================================================================
+
+Maven Repository Metadata Model
+2001-2009 The Apache Software Foundation - Privacy Policy
+
+=====================================================================================
+
+Apache OpenNLP Tools
+Copyright 2017 The Apache Software Foundation. All rights reserved
+
+=====================================================================================
+
+Apache Yetus - Audience Annotations
+Copyright 2008-2022 Apache Software Foundation. Licensed under the Apache License v2.0. Apache Yetus and the Apache feather logo are trademarks of The Apache Software Foundation
+
+=====================================================================================
+
+zookeeper
+Apache ZooKeeper
+Copyright 2009-2022 The Apache Software Foundation
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/).
+
+This product includes software components originally
+developed for Airlift (https://github.com/airlift/airlift),
+licensed under the Apache 2.0 license. The licensing terms
+for Airlift code can be found at:
+https://github.com/airlift/airlift/blob/master/LICENSE
+
+This project also includes some files with the following licenses.
+
+These BSD licensed files:
+ ./zookeeper-client/zookeeper-client-c/src/hashtable/hashtable.c
+ ./zookeeper-client/zookeeper-client-c/src/hashtable/hashtable.h
+ ./zookeeper-client/zookeeper-client-c/src/hashtable/hashtable_itr.c
+ ./zookeeper-client/zookeeper-client-c/src/hashtable/hashtable_itr.h
+ ./zookeeper-client/zookeeper-client-c/src/hashtable/hashtable_private.h
+ ./zookeeper-contrib/zookeeper-contrib-loggraph/src/main/resources/webapp/org/apache/zookeeper/graph/resources/yui-min.js
+ ./zookeeper-docs/src/main/resources/markdown/skin/prototype.js
+
+These MIT licensed files:
+ ./zookeeper-contrib/zookeeper-contrib-loggraph/src/main/resources/webapp/org/apache/zookeeper/graph/resources/date.format.js
+ ./zookeeper-contrib/zookeeper-contrib-loggraph/src/main/resources/webapp/org/apache/zookeeper/graph/resources/g.bar.js
+ ./zookeeper-contrib/zookeeper-contrib-loggraph/src/main/resources/webapp/org/apache/zookeeper/graph/resources/g.dot.js
+ ./zookeeper-contrib/zookeeper-contrib-loggraph/src/main/resources/webapp/org/apache/zookeeper/graph/resources/g.line.js
+ ./zookeeper-contrib/zookeeper-contrib-loggraph/src/main/resources/webapp/org/apache/zookeeper/graph/resources/g.pie.js
+ ./zookeeper-contrib/zookeeper-contrib-loggraph/src/main/resources/webapp/org/apache/zookeeper/graph/resources/g.raphael.js
+ ./zookeeper-contrib/zookeeper-contrib-loggraph/src/main/resources/webapp/org/apache/zookeeper/graph/resources/raphael.js
+
+This Apache 2.0 licensed file:
+./zookeeper-contrib/zookeeper-contrib-zooinspector/src/main/java/com/nitido/utils/toaster/Toaster.java
+
+=====================================================================================
+
+Xml Compatibility extensions for Jackson
+Jackson
+JAX-RS provider for JSON content type
+
+ == Jackson Json-processor ==
+
+This is the Jackson Json-processor package. Project home page can be found
+from:
+
+http://jackson.codehaus.org/
+
+which also has links to support forums such as mailing lists, as well
+as links to obtain source code and binary artifacts.
+
+=== Functionality ===
+
+Jackson implements functionality for:
+
+* Reading (parsing) and writing (generation) of Json content
+* Data-binding (data-mapping, [de-]serialization) support to
+ allow for converting between Json and Java objects
+* Support for converting to/from other data formats and access APIs,
+ to improve interoperability.
+
+=== Requirements ===
+
+Jackson can be used on standard J2SE 1.5 platform. Some effort is made
+to support other non-standard platforms as well.
+
+=== Licensing ===
+
+Jackson can be used for any purpose, but to (re)distribute it, distributors
+(such as libraries and frameworks that use Jackson) will need to
+choose which License they want to apply to distribution, and to use appropriate
+jars that enclose license documentation.
+No work needed beyond choosing the appropriate jar(s).
+
+Currently two Open Source licenses are available for use:
+
+* Apache License 2.0 (AL 2.0)
+* Lesser/Library General Public License (LGPL 2.1)
+
+These licenses have proven adequate to cover all current use cases.
+
+Contributing ===
+
+All code contributions are to be made according the
+Contributor Agreement document found from under DEV/ directory within source
+repository and downloadable source archives.
+
+CA is needed to allow Jackson project to publish under different Licenses,
+and to indicate good faith effort to comply with copyright rules governing
+use and distribution of the source code (and its equivalents as outlined
+in the agreement) involved. This is also useful for (re)distributors to
+reduce their need to independently verify origin of source code.F190
+
+
+=====================================================================================
+
+Objenesis
+Copyright 2003-2013, Objenesis Team and all contributors
+
+=====================================================================================
+
+Scalap
+Copyright 2002-2022 EPFL
+Copyright 2011-2022 Lightbend, Inc
+
+=====================================================================================
+
+Scala Library
+Copyright 2002-2022 EPFL
+Copyright 2011-2022 Lightbend, Inc
+
+=====================================================================================
+
+Scala Compiler
+Copyright 2002-2022 EPFL
+Copyright 2011-2022 Lightbend, Inc
+
+=====================================================================================
+
+scala-collection-compat
+Copyright 2002-2022 EPFL
+Copyright 2011-2022 Lightbend, Inc
+
+=====================================================================================
+
+scala-parser-combinators
+Copyright 2002-2022 EPFL
+Copyright 2011-2022 Lightbend, Inc
+
+=====================================================================================
+
+breeze
+Breeze is the merger of the ScalaNLP and Scalala projects, because one of the original maintainers is unable to continue development. The Scalala parts are largely rewritten.
+
+ David Hall, 2009 -
+
+Portions Daniel Ramage, 2009 - 2011
+
+=====================================================================================
+
+breeze-macros
+Breeze is the merger of the ScalaNLP and Scalala projects, because one of the original maintainers is unable to continue development. The Scalala parts are largely rewritten.
+
+ David Hall, 2009 -
+
+Portions Daniel Ramage, 2009 - 2011
+
+=====================================================================================
+
+proto
+Except as otherwise noted, the content of this page is licensed under the Creative Commons Attribution 4.0 License, and code samples are licensed under the Apache 2.0 License. For details, see the Google Developers Site Policies. Java is a registered trademark of Oracle and/or its affiliates
+
+=====================================================================================
+
+tensorflow-hadoop
+Except as otherwise noted, the content of this page is licensed under the Creative Commons Attribution 4.0 License, and code samples are licensed under the Apache 2.0 License. For details, see the Google Developers Site Policies. Java is a registered trademark of Oracle and/or its affiliates
+
+=====================================================================================
+
+libtensorflow
+Except as otherwise noted, the content of this page is licensed under the Creative Commons Attribution 4.0 License, and code samples are licensed under the Apache 2.0 License. For details, see the Google Developers Site Policies. Java is a registered trademark of Oracle and/or its affiliates
+
+=====================================================================================
+
+snappy-java
+Snappy-java is developed by Taro L. Saito. Twitter @taroleo
+
+=====================================================================================
+
+Java Native Access Platform
+This library is licensed under the LGPL, version 2.1 or later, or (from version 4.0 onward) the Apache License, version 2.0. Commercial support may be available, please e-mail twall[at]users[dot]sf[dot]net. See LICENSE for more information.
+
+NOTE: Oracle is not sponsoring this project, even though the package name (com.sun.jna) might imply otherwise
+
+=====================================================================================
+
+Java Native Access
+This library is licensed under the LGPL, version 2.1 or later, or (from version 4.0 onward) the Apache License, version 2.0. Commercial support may be available, please e-mail twall[at]users[dot]sf[dot]net. See LICENSE for more information.
+
+NOTE: Oracle is not sponsoring this project, even though the package name (com.sun.jna) might imply otherwise
+
+=====================================================================================
+
+Javassist
+Copyright (C) 1999-2022 by Shigeru Chiba, All rights reserved
+
+=====================================================================================
+
+Apache XBean :: ASM shaded (repackaged)
+Copyright 2000-2011 INRIA, France Telecom
+
+=====================================================================================
+
+JTransforms
+Copyright 2007 onward, Piotr Wendykier
+All rights reserved
+
+=====================================================================================
+
+JLargeArrays
+Copyright (C) 2006-2019 University of Warsaw, ICM
+Copyright (C) 2020 onward visnow.org
+All rights reserved
+
+=====================================================================================
+
+MinLog
+Copyright 2008-2022, Nathan Sweet All rights reserved
+
+=====================================================================================
+
+Kryo
+Copyright 2008-2022, Nathan Sweet All rights reserved
+
+=====================================================================================
+
+Kryo Shaded
+Copyright 2008-2022, Nathan Sweet All rights reserved
+
+=====================================================================================
+
+core
+Copyright 2013 Samuel Halliday
+Copyright 1992-2011 The University of Tennessee and The University
+            of Tennessee Research Foundation. All rights
+            reserved.
+Copyright 2000-2011 The University of California Berkeley. All
+            rights reserved.
+Copyright 2006-2011 The University of Colorado Denver. All rights
+            reserved
+
+=====================================================================================
+
+Protocol Buffers [Util]
+Copyright 2008 Google Inc. All rights reserved
+
+=====================================================================================
+
+Protocol Buffers [Core]
+Copyright 2008 Google Inc. All rights reserved
+
+=====================================================================================
+
+Hamcrest Core
+Copyright 2000-2015 www.hamcrest.org
+All rights reserved
+
+=====================================================================================
+
+asm
+Copyright 2000-2011 INRIA, France Telecom
+All rights reserved
+
+=====================================================================================
+
+scala-java8-compat
+Copyright 2002-2022 EPFL
+Copyright 2011-2022 Lightbend, Inc
+
+=====================================================================================
+
+scala-xml
+Copyright 2002-2022 EPFL
+Copyright 2011-2022 Lightbend, Inc
+
+=====================================================================================
+
+ParaNamer Core
+Portions copyright 2006-2018 Paul Hammant & ThoughtWorks Inc
+ Portions copyright 2000-2007 INRIA, France Telecom
+ All rights reserved
+
+=====================================================================================
+
+TwelveMonkeys :: Common :: IO
+Copyright 2008-2020, Harald Kuhr
+All rights reserved
+
+=====================================================================================
+
+TwelveMonkeys :: Common :: Language support
+Copyright 2008-2020, Harald Kuhr
+All rights reserved
+
+=====================================================================================
+
+TwelveMonkeys :: Common :: Image
+Copyright 2008-2020, Harald Kuhr
+All rights reserved
+
+=====================================================================================
+
+TwelveMonkeys :: ImageIO :: Core
+Copyright 2009, Harald Kuhr
+All rights reserved
+
+=====================================================================================
+
+TwelveMonkeys :: ImageIO :: Metadata
+Copyright 2012, Harald Kuhr
+All rights reserved
+
+=====================================================================================
+
+Fortran to Java ARPACK
+Copyright 2022 The University of Tennessee. All rights reserved
+
+=====================================================================================
+
+grizzled-slf4j
+Copyright 2010-2012 Brian M. Clapper. All rights reserved
+
+=====================================================================================
+
+Stax2 API
+Copyright 2008 FasterXML LLC info@fasterxml.com
+
+=====================================================================================
+
+xmlenc Library
+2022 Slashdot Media. All Rights Reserved
+
+=====================================================================================
+
+reactive-streams
+Copyright 2014 Reactive Streams
+
+=====================================================================================
+
+JUnit
+Copyright 2022 The JUnit Team
+
+=====================================================================================
+
+JavaBeans Activation Framework API jar
+Copyright 2018 Oracle and/or its affiliates. All rights reserved
+
+=====================================================================================
+
+jakarta.xml.bind-api
+Copyright 2017, 2018 Oracle and/or its affiliates. All rights reserved
+
+=====================================================================================
+
+JSON in Java
+Copyright 2002 JSON.org
+
+=====================================================================================
+
+Microsoft Azure Java Core Library
+Copyright 2015 Microsoft
+
+=====================================================================================
+
+Microsoft Azure client library for Identity
+Copyright 2015 Microsoft
+
+=====================================================================================
+
+Microsoft Azure Netty HTTP Client Library
+Copyright 2015 Microsoft
+
+=====================================================================================
+
+Microsoft Azure client library for KeyVault Keys
+Copyright 2015 Microsoft
+
+=====================================================================================
+
+scopt
+Copyright scopt contributors
+
+=====================================================================================
+
+msal4j-persistence-extension
+Copyright Microsoft Corporation. All rights reserved
+
+=====================================================================================
+
+msal4j
+Copyright Microsoft Corporation. All rights reserved
+
+=====================================================================================
+
+Checker Qual
+Copyright 2004-present by the Checker Framework developers
+
+=====================================================================================
+
+SLF4J API Module
+Copyright 2004-2017 QOS.ch
+ All rights reserved
+
+=====================================================================================
+
+core
+Copyright the maintainers, 2015-2016
+
+=====================================================================================
+
+Cats kernel
+Cats Copyright 2015 Cats Contributors
+
+=====================================================================================
+
+machinist
+Copyright 2011-2014 Erik Osheim, Tom Switzer
+
+=====================================================================================
+
+macros
+Copyright 2011-2012 Erik Osheim, Tom Switzer
+
+=====================================================================================
+
+core
+Copyright 2011-2012 Erik Osheim, Tom Switzer
+
+=====================================================================================
+
+platform
+Copyright 2011-2012 Erik Osheim, Tom Switzer
+
+=====================================================================================
+
+util
+Copyright 2011-2012 Erik Osheim, Tom Switzer
+
+=====================================================================================
+
+Jedis
+Copyright 2010 Jonathan Leibiusky
+
+=====================================================================================
+
+Backport of JSR 166
+Copyright 2004-2007 Distributed Computing Laboratory, Emory University
+
+=====================================================================================
+
+HdrHistogram
+HdrHistogram was originally authored by Gil Tene (@giltene) and placed in the public domain, as explained at http://creativecommons.org/publicdomain/zero/1.0/, with ports by Mike Barker (@mikeb01) (C), Matt Warren (@mattwarren) (C#), Darach Ennis (@darach) (Erlang), Alec Hothan (@ahothan) (Python), Coda Hale (@codahale) (Go), Jon Gjengset (@jonhoo) (Rust), and Alexandre Victoor (@alexvictoor) (JavaScript)
+
+=====================================================================================
+
+LatencyUtils
+LatencyUtils was authored by Gil Tene (@giltene)
+
+=====================================================================================
+
+XZ for Java
+This Java implementation of XZ has been put into the public domain, thus you can do whatever you want with it. All the files in the package have been written by Lasse Collin, Igor Pavlov, and/or Brett Okken
+
+=====================================================================================
+
+Java Embedded Python
+Copyright 2004 - 2020 JEP AUTHORS
+
+=====================================================================================
+
