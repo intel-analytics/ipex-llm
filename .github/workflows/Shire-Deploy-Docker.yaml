@@ -25,7 +25,7 @@ jobs:
         ls
     - name: docker login
       run: |
-        docker login --username ${DOCKERHUB_USERNAME} --password ${DOCKERHUB_PASSWORD}
+        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
     - name: docker deploy
       run: |
         export IMAGE=intelanalytics/bigdl-k8s
