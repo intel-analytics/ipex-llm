@@ -17,6 +17,7 @@ from collections import OrderedDict
 import inspect
 from typing import List
 
+import torch
 from torchmetrics.metric import Metric
 import pytorch_lightning as pl
 from torch import nn, Tensor, fx
@@ -37,7 +38,9 @@ class LightningModule(pl.LightningModule):
 
     def __init__(self, model: nn.Module, loss: _Loss = None, optimizer: Optimizer = None,
                  scheduler: _LRScheduler = None,
-                 metrics: List[Metric] = None):
+                 metrics: List[Metric] = None,
+                 jit=None,
+                 example_input_array=None):
         """
         Create a LightningMoudle that integrates pytorch modules, loss, optimizer.
 
@@ -46,6 +49,9 @@ class LightningModule(pl.LightningModule):
         :param optimizer:   A torch optimizer.
         :param scheduler:   A torch scheduler.
         :param metrics:     A list of metrics to calculate accuracy of the model.
+        :param jit:     Specify JIT mode, defaults to None which means JIT disabled. Other options
+                        can be `trace` or `script`
+        :param example_input_array:     A tuple of example inputs for forward, trace, script, etc.
         """
         super().__init__()
         self.model = model
@@ -53,6 +59,9 @@ class LightningModule(pl.LightningModule):
         self.optimizer = optimizer
         self.scheduler = scheduler
         self.metrics = metrics
+        self.example_input_array = example_input_array
+        self._jit = None
+        self.jit(jit, example_input_array)
         self._forward_args_ = None
 
     @property
@@ -149,3 +158,21 @@ class LightningModule(pl.LightningModule):
             super().load_state_dict(state_dict)
         except RuntimeError:
             self.model.load_state_dict(state_dict)
+
+    def jit(self, mode='trace', input_sample=None):
+        if mode is None:
+            return
+        if input_sample is None:
+            input_sample = self.example_input_array
+        else:
+            self.example_input_array = input_sample
+        if mode == 'trace':
+            self.model = torch.jit.trace(self.model, input_sample)
+            self.model = torch.jit.freeze(self.model)
+        else:
+            invalidInputError(
+                not mode == 'script',
+                errMsg="JIT supports 'trace' and 'script' only, {} is not valid".format(mode)
+            )
+            self.model = torch.jit.script(self.model, input_sample)
+        self._jit = mode
