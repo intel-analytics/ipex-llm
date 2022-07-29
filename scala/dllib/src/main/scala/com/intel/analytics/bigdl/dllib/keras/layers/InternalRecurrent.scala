@@ -135,7 +135,7 @@ class InternalRecurrent[T: ClassTag](
 object InternalRecurrent extends ContainerSerializable {
 
   ModuleSerializer.registerModule(
-    "com.intel.analytics.zoo.pipeline.api.keras.layers.internal.InternalRecurrent",
+    "com.intel.analytics.bigdl.dllib.keras.layers.internal.InternalRecurrent",
     InternalRecurrent)
 
   override def doLoadModule[T: ClassTag](context : DeserializeContext)

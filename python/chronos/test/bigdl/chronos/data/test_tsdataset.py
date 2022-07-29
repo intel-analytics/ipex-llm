@@ -21,7 +21,7 @@ import tempfile
 import os
 import shutil
 
-from bigdl.orca.test_zoo_utils import ZooTestCase
+from unittest import TestCase
 from bigdl.chronos.data import TSDataset
 
 from pandas.testing import assert_frame_equal
@@ -97,7 +97,7 @@ def get_not_aligned_df():
     return df
 
 
-class TestTSDataset(ZooTestCase):
+class TestTSDataset(TestCase):
     def setup_method(self, method):
         pass
 

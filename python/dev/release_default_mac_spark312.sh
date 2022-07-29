@@ -44,22 +44,4 @@ else
   profiles=${*:5}
 fi
 
-# Only dllib is not using quick build.
-# Since make_dist is invoked in dllib, all other packages can directly use quick build.
-DLLIB_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/dllib/dev/release; pwd)"
-echo $DLLIB_SCRIPT_DIR
-bash ${DLLIB_SCRIPT_DIR}/release_default_mac_spark312.sh ${version} ${quick} ${upload} ${suffix} ${profiles}
-
-ORCA_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/orca/dev/release; pwd)"
-echo $ORCA_SCRIPT_DIR
-bash ${ORCA_SCRIPT_DIR}/release_default_mac_spark312.sh ${version} true ${upload} ${suffix}
-
-FRIESIAN_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/friesian/dev/release; pwd)"
-echo $FRIESIAN_SCRIPT_DIR
-bash ${FRIESIAN_SCRIPT_DIR}/release_default_mac_spark312.sh ${version} true ${upload} ${suffix}
-
-CHRONOS_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/chronos/dev/release; pwd)"
-echo $CHRONOS_SCRIPT_DIR
-bash ${CHRONOS_SCRIPT_DIR}/release_default_mac_spark312.sh ${version} ${upload} ${suffix}
-
-bash ${RUN_SCRIPT_DIR}/release_bigdl_spark3.sh mac ${version} ${upload} ${suffix}
+bash ${RUN_SCRIPT_DIR}/release_default_spark.sh mac ${version} ${quick} ${upload} 3.1.2 ${suffix} ${profiles}

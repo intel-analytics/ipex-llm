@@ -27,7 +27,6 @@ from pytorch_lightning.callbacks import Callback
 
 from bigdl.nano.automl.hpo.backend import create_pl_pruning_callback
 from bigdl.nano.utils.log4Error import invalidInputError
-from bigdl.nano.pytorch.utils import LIGHTNING_VERSION_LESS_1_6
 import inspect
 import copy
 import time
@@ -135,20 +134,12 @@ class Objective(object):
             self.searcher.trainer.callbacks = callbacks
 
         # links data to the trainer
-        if LIGHTNING_VERSION_LESS_1_6:
-            self.searcher.trainer.data_connector.attach_data(
-                model,
-                train_dataloaders=self.train_dataloaders,
-                val_dataloaders=self.val_dataloaders,
-                datamodule=self.datamodule
-            )
-        else:
-            self.searcher.trainer._data_connector.attach_data(  # type: ignore
-                model,
-                train_dataloaders=self.train_dataloaders,
-                val_dataloaders=self.val_dataloaders,
-                datamodule=self.datamodule
-            )
+        self.searcher.trainer._data_connector.attach_data(  # type: ignore
+            model,
+            train_dataloaders=self.train_dataloaders,
+            val_dataloaders=self.val_dataloaders,
+            datamodule=self.datamodule
+        )
 
     def _post_train(self, model):
         pass

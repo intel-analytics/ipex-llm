@@ -472,7 +472,7 @@ def transform_to_shard_dict(data, featureCols, labelCol):
         featureLists = [df[feature_col].to_numpy() for feature_col in featureCols]
         result = {
             "x": np.stack(featureLists, axis=1),
-            "y": df[labelCol].to_numpy()}
+            "y": df[labelCol].to_numpy().reshape((-1, 1))}
         return result
 
     data = data.transform_shard(to_shard_dict)

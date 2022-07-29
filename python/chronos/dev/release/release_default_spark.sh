@@ -16,8 +16,7 @@
 # limitations under the License.
 #
 
-# This is the default script with maven parameters to release bigdl-chronos with
-# pyspark==2.4.6 as dependency for mac.
+# This is the default script with maven parameters to release bigdl-chronos with pyspark as dependency for linux or mac.
 # Note that if the maven parameters to build bigdl-chronos need to be changed,
 # make sure to change this file accordingly.
 # If you want to customize the release, please use release.sh and specify maven parameters instead.
@@ -31,22 +30,33 @@ DEV_DIR="$(cd ${CHRONOS_DIR}/../dev/; pwd)"
 echo $DEV_DIR
 
 if (( $# < 3)); then
-  echo "Usage: release_default_mac_spark246.sh version upload suffix"
-  echo "Usage example: bash release_default_mac_spark246.sh default true true"
-  echo "Usage example: bash release_default_mac_spark246.sh 0.14.0.dev1 true false"
+  echo "Usage: release_default_spark.sh platform version upload spark_version suffix"
+  echo "Usage example: bash release_default_spark.sh linux default true 3.1.2 true"
+  echo "Usage example: bash release_default_spark.sh mac 0.14.0.dev1 false 2.4.6 false"
   exit -1
 fi
 
-version=$1
-upload=$2
-suffix=$3
+platform=$1
+version=$2
+upload=$3
+spark_version=$4
+suffix=$5
+
+version_array=(${spark_version//./ })
+spark_first_version=${version_array[0]}
+
+re='^[2-3]+$'
+if ! [[ $spark_first_version =~ $re ]] ; then
+   echo "error: Spark version is not a number like 3.1.2"
+   exit 1
+fi
 
 if [ ${suffix} == true ]; then
-    bash ${DEV_DIR}/add_suffix_spark2.sh $CHRONOS_DIR/src/setup.py
-    bash ${DEV_DIR}/add_suffix_spark2.sh ${RUN_SCRIPT_DIR}/release.sh
+    bash ${DEV_DIR}/add_suffix_spark${spark_first_version}.sh $CHRONOS_DIR/src/setup.py
+    bash ${DEV_DIR}/add_suffix_spark${spark_first_version}.sh ${RUN_SCRIPT_DIR}/release.sh
 else
     bash ${DEV_DIR}/remove_spark_suffix.sh $CHRONOS_DIR/src/setup.py
     bash ${DEV_DIR}/remove_spark_suffix.sh ${RUN_SCRIPT_DIR}/release.sh
 fi
 
-bash ${RUN_SCRIPT_DIR}/release.sh mac ${version} ${upload}
+bash ${RUN_SCRIPT_DIR}/release.sh ${platform} ${version} ${upload}
