@@ -105,16 +105,24 @@ In Chronos, we provide a ``TSDataset`` (and a ``XShardsTSDataset`` to handle lar
         .roll(lookback=100, horizon=1)
 
 
-.. button-ref:: ./data_processing_feature_engineering
-    :color: primary
-    :shadow:
+.. grid:: 2
+    :gutter: 1
 
-    Tutorial
-.. button-ref:: ../../PythonAPI/Chronos/tsdataset
-    :color: primary
-    :shadow:
+    .. grid-item-card::
 
-    API Document
+        .. button-ref:: ./data_processing_feature_engineering
+            :color: primary
+            :outline:
+
+            Tutorial
+
+    .. grid-item-card::
+
+        .. button-ref:: ../../PythonAPI/Chronos/tsdataset
+            :color: primary
+            :outline:
+
+            API Document
 
 Forecaster
 -----------------------
