@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.ppml.kms
 
 import com.intel.analytics.bigdl.ppml.utils.Supportive
+import org.apache.hadoop.conf.Configuration
 
 object KMS_CONVENTION {
   val MODE_SIMPLE_KMS = "SimpleKeyManagementService"
@@ -25,7 +26,8 @@ object KMS_CONVENTION {
 }
 
 trait KeyManagementService extends Supportive {
-  def retrievePrimaryKey(primaryKeySavePath: String)
-  def retrieveDataKey(primaryKeyPath: String, dataKeySavePath: String)
-  def retrieveDataKeyPlainText(primaryKeyPath: String, dataKeyPath: String): String
+  def retrievePrimaryKey(primaryKeySavePath: String, config: Configuration = null)
+  def retrieveDataKey(primaryKeyPath: String, dataKeySavePath: String, config: Configuration = null)
+  def retrieveDataKeyPlainText(primaryKeyPath: String, dataKeyPath: String,
+                               config: Configuration = null): String
 }
