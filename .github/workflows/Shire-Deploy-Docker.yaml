@@ -20,7 +20,9 @@ jobs:
 
     steps:
     - name: debug
-      run: echo $DOCKERHUB_USERNAME && echo $DOCKERHUB_PASSWORD
+      run: |
+        echo $DOCKERHUB_USERNAME && echo $DOCKERHUB_PASSWORD
+        ls
     - name: docker login
       run: |
         docker login --username ${DOCKERHUB_USERNAME} --password ${DOCKERHUB_PASSWORD}
