@@ -152,6 +152,11 @@ class CheckLinearLRScaleCallback(pl.Callback):
         self.lrs = lrs
 
     def on_train_start(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule"):
+        # for lr, opt, sch in zip(self.lrs, pl_module.optimizers(), pl_module.lr_schedulers()):
+        #     assert sch.base_lrs[0] == lr * self.world_size
+        pass
+
+    def on_train_epoch_start(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule") -> None:
         for lr, opt, sch in zip(self.lrs, pl_module.optimizers(), pl_module.lr_schedulers()):
             assert sch.base_lrs[0] == lr * self.world_size
 
@@ -230,7 +235,7 @@ class TestScaleLr(TestCase):
                           auto_lr=True,
                           max_epochs=4,
                           callbacks=[LearningRateMonitor(logging_interval='step'),
-                                     CheckWarmupCallback(2, [0.01, 0.05], 4, 5)])
+                                     CheckWarmupCallback(2, [0.01, 0.05], 4, 4)])
         trainer.fit(model, train_dataloaders=self.data_loader,
                     val_dataloaders=self.test_data_loader)
 
@@ -240,7 +245,7 @@ class TestScaleLr(TestCase):
                           distributed_backend='spawn',
                           auto_lr={'warmup_epochs': 4},
                           max_epochs=10,
-                          callbacks=[CheckWarmupCallback(4, [0.01, 0.05], 10, 5, 4)])
+                          callbacks=[CheckWarmupCallback(4, [0.01, 0.05], 10, 4, 4)])
         trainer.fit(model, train_dataloaders=self.data_loader,
                     val_dataloaders=self.test_data_loader)
 
