@@ -70,6 +70,7 @@ RUN /opt/work/download-friesian-serving.sh
 
 ADD lib/* /opt/work/lib/
 ADD start_service.sh /opt/work/
+ADD jersey/* /opt/work/jersey/
 RUN chmod a+x /opt/work/start_service.sh
 
 ENTRYPOINT ["/opt/work/start_service.sh"]

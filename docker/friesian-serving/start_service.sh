@@ -22,6 +22,7 @@ set -e
 echo "SERVING_JAR_PATH=$SERVING_JAR_PATH"
 SPARK_JAR_PATH=$SPARK_HOME/jars/*
 echo "SPARK_JAR_PATH=$SPARK_JAR_PATH"
+JERSEY_JAR_PATH=/opt/work/jersey/*
 
 if (( $# < 1)); then
   echo "Usage: service_type other_parameters"
@@ -52,7 +53,7 @@ elif [ "$service" == "recommender" ]; then
     java -cp $SPARK_JAR_PATH:$SERVING_JAR_PATH com.intel.analytics.bigdl.friesian.serving.recommender.RecommenderServer $params
 elif [ "$service" == "recommender-http" ]; then
     echo "Starting recommender http server......"
-    java -cp $SPARK_JAR_PATH:$SERVING_JAR_PATH com.intel.analytics.bigdl.friesian.serving.recommender.HTTP.RecommenderHTTP $params
+    java -cp $JERSEY_JAR_PATH:$SPARK_JAR_PATH:$SERVING_JAR_PATH com.intel.analytics.bigdl.friesian.serving.recommender.HTTP.RecommenderHTTP $params
 elif [ "$service" == "recall-init" ]; then
     echo "Starting initializing recall index......"
     java -Dspark.master=local[*] -cp $SPARK_JAR_PATH:$SERVING_JAR_PATH com.intel.analytics.bigdl.friesian.nearline.recall.RecallInitializer $params
