@@ -1,4 +1,4 @@
-name: Scala Style check
+name: Scala Style Check
 
 on:
   push:
@@ -59,7 +59,7 @@ jobs:
                 }
               }
           }]
-        # mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${{ secrets.ARDA_NEXUS }}" }]'
+        mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${{ secrets.ARDA_NEXUS }}" }]'
 
 
     - name: Run tests

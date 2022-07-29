@@ -1,4 +1,4 @@
-name: python style check
+name: Python Style Check
 
 # Controls when the action will run.
 on:
