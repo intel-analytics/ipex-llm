@@ -89,12 +89,12 @@ fi
 
 python ../../example/ncf/ncf_train.py\
     --data_dir ./data/movielens \
-    --model_dir ./result \
+    --model_dir ./result/ \
     --epochs 1
 
 python ../../example/ncf/ncf_train.py\
     --data_dir ./data/movielens \
-    --model_dir ./result \
+    --model_dir ./result/ \
     --epochs 1 \
     --backend spark
 
