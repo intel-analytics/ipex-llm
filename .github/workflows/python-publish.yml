@@ -6,7 +6,7 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: Nightly Build Upload Python Package
+name: Nightly Build PyPI Publish Python
 
 on:
   pull_request:
@@ -21,7 +21,7 @@ on:
 jobs:
   build:
 
-    runs-on: [self-hosted, Linux, Bree]
+    runs-on: [self-hosted, ubuntu-20.04-lts, Bree]
     permissions:
       contents: read
       packages: write
