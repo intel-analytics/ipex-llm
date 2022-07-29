@@ -51,4 +51,3 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
         status = super().status
         status.update({"precision": "bfloat16"})
         return status
-
