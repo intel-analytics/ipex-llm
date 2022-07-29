@@ -83,11 +83,13 @@ if __name__ == '__main__':
                         help='The driver core number.')
     parser.add_argument('--driver_memory', type=str, default="4g",
                         help='The driver memory.')
+    parser.add_argument('--backend', type=str, default="ray",
+                        help='The backend of TF2 Estimator, either ray or spark')
     parser.add_argument('--lr', default=0.001, type=float, help='learning rate')
     parser.add_argument('--epochs', default=5, type=int, help='train epoch')
     parser.add_argument('--batch_size', default=8000, type=int, help='batch size')
-    parser.add_argument('--save_path', default='./ncf.ckpt', type=str,
-                        help='checkpoint path to save the trained model')
+    parser.add_argument('--model_dir', default='./', type=str,
+                        help='The directory to save the trained model')
     parser.add_argument('--data_dir', type=str, default="./movielens", help='data directory')
     args = parser.parse_args()
 
@@ -110,6 +112,14 @@ if __name__ == '__main__':
         invalidInputError(False,
                           "cluster_mode should be one of 'local', 'yarn', 'standalone' and"
                           " 'spark-submit', but got " + args.cluster_mode)
+
+    if args.backend == "ray":
+        save_path = args.model_dir + "ncf.ckpt"
+    elif args.backend == "spark":
+        save_path = args.model_dir + "ncf.h5"
+    else:
+        invalidInputError(False,
+                          "backend should be either 'ray' or 'spark', but got " + args.backend)
 
     movielens_data = movielens.get_id_ratings(args.data_dir)
     pddf = pd.DataFrame(movielens_data, columns=["user", "item", "label"])
@@ -137,7 +147,9 @@ if __name__ == '__main__':
 
     estimator = Estimator.from_keras(model_creator=model_creator,
                                      verbose=False,
-                                     config=config)
+                                     config=config,
+                                     backend=args.backend,
+                                     model_dir=args.model_dir)
     estimator.fit(train.df,
                   batch_size=args.batch_size,
                   epochs=args.epochs,
@@ -154,7 +166,7 @@ if __name__ == '__main__':
     print("Predictions on validation dataset:")
     predictions.show(5, truncate=False)
 
-    estimator.save(args.save_path)
+    estimator.save(save_path)
 
     # load with estimator.load(args.save_path)
 
