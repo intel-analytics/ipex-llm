@@ -166,6 +166,7 @@ if __name__ == '__main__':
     print("Predictions on validation dataset:")
     predictions.show(5, truncate=False)
 
+    print("Saving model to: ", save_path)
     estimator.save(save_path)
 
     # load with estimator.load(args.save_path)
