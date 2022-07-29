@@ -38,7 +38,6 @@ jobs:
 
       - name: test
         run: |
-          which conda
           echo $CONDA
   
       - uses: conda-incubator/setup-miniconda@v2
