@@ -135,7 +135,7 @@ class LSTMForecaster(BaseTF2Forecaster):
         :param tsdataset: A bigdl.chronos.data.tsdataset.TSDataset instance.
         :param past_seq_len: past_seq_len: Specify the history time steps (i.e. lookback).
                Do not specify the 'past_seq_len' if your tsdataset has called
-               the 'TSDataset.roll' method or 'TSDataset.to_torch_data_loader'.
+               the 'TSDataset.roll' method or 'TSDataset.to_tf_dataset'.
         :param kwargs: Specify parameters of Forecaster,
                e.g. loss and optimizer, etc. More info, please refer to
                LSTMForecaster.__init__ methods.
@@ -145,18 +145,18 @@ class LSTMForecaster(BaseTF2Forecaster):
         from bigdl.nano.utils.log4Error import invalidInputError
 
         def check_time_steps(tsdataset, past_seq_len):
-            if tsdataset.lookback is not None and past_seq_len is not None:
+            if tsdataset.lookback and past_seq_len:
                 return tsdataset.lookback == past_seq_len
             return True
 
         invalidInputError(not tsdataset._has_generate_agg_feature,
                           "We will add support for 'gen_rolling_feature' method later.")
 
-        if tsdataset.lookback is not None:
+        if tsdataset.lookback:
             past_seq_len = tsdataset.lookback
             output_feature_num = len(tsdataset.roll_target)
             input_feature_num = len(tsdataset.roll_feature) + output_feature_num
-        elif past_seq_len is not None:
+        elif past_seq_len:
             past_seq_len = past_seq_len if isinstance(past_seq_len, int)\
                 else tsdataset.get_cycle_length()
             output_feature_num = len(tsdataset.target_col)

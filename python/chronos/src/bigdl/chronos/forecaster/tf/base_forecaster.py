@@ -49,16 +49,20 @@ class BaseTF2Forecaster(Forecaster):
                | y's shape is (num_samples, horizon, target_dim).
                |
                | 3. A bigdl.chronos.data.tsdataset.TSDataset instance.
-               | pass
+               | Forecaster will automatically process the TSDataset.
+               | By default, TSDataset will be transformed to a tfdataset,
+               | Users may call `roll` on the TSDataset before calling `fit`
+               | Then the training speed will be faster but will consume more memory.
 
         :params epochs: Number of epochs you want to train. The value defaults to 1.
         :params batch_size: Number of batch size you want to train. The value defaults to 32.
                 Do not specify the batch_size, if your data in the form of tf.data datasets.
         """
         if isinstance(data, TSDataset):
-            data = data.roll(lookback=self.model_config['past_seq_len'],
-                             horizon=self.model_config['future_seq_len'])\
-                       .to_tf_dataset(shuffle=True)
+            if data.lookback is None:
+                data.roll(lookback=self.model_config['past_seq_len'],
+                          horizon=self.model_config['future_seq_len'])
+            data = data.to_tf_dataset(shuffle=True, batch_size=batch_size)
         if isinstance(data, tuple):
             self.internal.fit(x=data[0], y=data[1], epochs=epochs, batch_size=batch_size)
         else:
@@ -73,9 +77,17 @@ class BaseTF2Forecaster(Forecaster):
                 | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                 | should be the same as past_seq_len and input_feature_num.
                 | 2. a tfdataset
-                | pass
+                | A TFDataset instance which contains x and y with same shape as the tuple.
+                | the tfdataset needs to return at least x in each iteration
+                | with the shape as following:
+                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+                | should be the same as past_seq_len and input_feature_num.
+                | If returns x and y only get x.
                 | 3. A bigdl.chronos.data.tsdataset.TSDataset instance
-                | pass
+                | Forecaster will automatically process the TSDataset.
+                | By default, TSDataset will be transformed to a tfdataset,
+                | Users may call `roll` on the TSDataset before calling `fit`
+                | Then the training speed will be faster but will consume more memory.
 
         :params batch_size: predict batch size. The value will not affect evaluate
                 result but will affect resources cost(e.g. memory and time).
@@ -89,9 +101,10 @@ class BaseTF2Forecaster(Forecaster):
             invalidInputError(False,
                               "You must call fit or restore first before calling predict!")
         if isinstance(data, TSDataset):
-            data = data.roll(lookback=self.model_config['past_seq_len'],
-                             horizon=self.model_config['future_seq_len'])\
-                       .to_tf_dataset(shuffle=False)
+            if data.lookback is None:
+                data.roll(lookback=self.model_config['past_seq_len'],
+                          horizon=self.model_config['future_seq_len'])
+            data = data.to_tf_dataset(shuffle=False, batch_size=batch_size)
 
         if batch_size or isinstance(data, tf.data.Dataset):
             yhat = self.internal.predict(data, batch_size=batch_size)
@@ -119,9 +132,14 @@ class BaseTF2Forecaster(Forecaster):
                 | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                 | should be the same as future_seq_len and output_feature_num.
                 | 2. a tfdataset
-                | pass
+                | A TFDataset instance which contains x and y with same shape as the tuple.
+                | x's shape is (num_samples, lookback, feature_dim),
+                | y's shape is (num_samples, horizon, target_dim).
                 | 3. A bigdl.chronos.data.tsdataset.TSDataset instance
-                | pass
+                | Forecaster will automatically process the TSDataset.
+                | By default, TSDataset will be transformed to a tfdataset,
+                | Users may call `roll` on the TSDataset before calling `fit`
+                | Then the training speed will be faster but will consume more memory.
 
         :params batch_size: evaluate batch size. The value will not affect evaluate
                 result but will affect resources cost(e.g. memory and time).
@@ -137,9 +155,10 @@ class BaseTF2Forecaster(Forecaster):
             invalidInputError(False,
                               "You must call fit or restore first before calling evaluate!")
         if isinstance(data, TSDataset):
-            data = data.roll(lookback=self.model_config['past_seq_len'],
-                             horizon=self.model_config['future_seq_len'])\
-                       .to_tf_dataset(shuffle=False)
+            if data.lookback is None:
+                data.roll(lookback=self.model_config['past_seq_len'],
+                          horizon=self.model_config['future_seq_len'])
+            data = data.to_tf_dataset(shuffle=False, batch_size=batch_size)
 
         if isinstance(data, tuple):
             input_data, target = data
@@ -181,10 +200,10 @@ class BaseTF2Forecaster(Forecaster):
         :param tsdataset: A bigdl.chronos.data.tsdataset.TSDataset instance.
         :param past_seq_len:  Specify history time step (i.e. lookback)
                Do not specify the 'past_seq_len' if your tsdataset has called
-               the 'TSDataset.roll' method or 'TSDataset.to_torch_data_loader'.
+               the 'TSDataset.roll' method or 'TSDataset.to_tf_dataset'.
         :param future_seq_len: Specify output time step (i.e. horizon)
                Do not specify the 'future_seq_len' if your tsdataset has called
-               the 'TSDataset.roll' method or 'TSDataset.to_torch_data_loader'.
+               the 'TSDataset.roll' method or 'TSDataset.to_tf_dataset'.
         :param kwargs: Specify parameters of Forecaster,
                e.g. loss and optimizer, etc.
                More info, please refer to Forecaster.__init__ methods.
@@ -194,7 +213,7 @@ class BaseTF2Forecaster(Forecaster):
         from bigdl.nano.utils.log4Error import invalidInputError
 
         def check_time_steps(tsdataset, past_seq_len, future_seq_len):
-            if tsdataset.lookback is not None and past_seq_len is not None:
+            if tsdataset.lookback and past_seq_len:
                 future_seq_len = future_seq_len if isinstance(future_seq_len, int)\
                     else max(future_seq_len)
                 return tsdataset.lookback == past_seq_len and tsdataset.horizon == future_seq_len
@@ -203,13 +222,13 @@ class BaseTF2Forecaster(Forecaster):
         invalidInputError(not tsdataset._has_generate_agg_feature,
                           "We will add support for 'gen_rolling_feature' method later.")
 
-        if tsdataset.lookback is not None:
+        if tsdataset.lookback:
             past_seq_len = tsdataset.lookback
             future_seq_len = tsdataset.horizon if isinstance(tsdataset.horizon, int) \
                 else max(tsdataset.horizon)
             output_feature_num = len(tsdataset.roll_target)
             input_feature_num = len(tsdataset.roll_feature) + output_feature_num
-        elif past_seq_len is not None and future_seq_len is not None:
+        elif past_seq_len and future_seq_len:
             past_seq_len = past_seq_len if isinstance(past_seq_len, int)\
                 else tsdataset.get_cycle_length()
             future_seq_len = future_seq_len if isinstance(future_seq_len, int) \
@@ -218,8 +237,8 @@ class BaseTF2Forecaster(Forecaster):
             input_feature_num = len(tsdataset.feature_col) + output_feature_num
         else:
             invalidInputError(False,
-                              "Forecaster needs 'past_seq_len' to specify "
-                              "the history time step of training.")
+                              "Forecaster needs 'past_seq_len' and 'future_seq_len' "
+                              "to specify the history time step of training.")
 
         invalidInputError(check_time_steps(tsdataset, past_seq_len, future_seq_len),
                           "tsdataset already has history time steps and "
