@@ -249,35 +249,70 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
                               f"but got {len(self.lr_scheduler_configs)}. Skip warmup")
             else:
                 lr_schedulers = []
-                for opt_idx, opt in enumerate(self.optimizers):
-                    if type(self.auto_lr) is bool:
-                        self.auto_lr = trainer.max_epochs // 5 + 1
-                    if not TORCH_VERSION_LESS_1_10:
-                        from torch.optim.lr_scheduler import LinearLR
-                        scheduler = LinearLR(optimizer=opt,
-                                             # set initial lr as user lr
-                                             start_factor=1.0 / self.world_size,
-                                             end_factor=1.0,
-                                             total_iters=self.auto_lr)
+                warmup_params = {
+                    'start_factor': 1.0 / self.world_size,
+                    'end_factor': 1.0,
+                    'warmup_epochs': trainer.max_epochs // 10,
+                    'interval': 'epoch'
+                }
+                supported_keys = {'warmup_epochs'}
+                if not isinstance(self.auto_lr, dict) and not isinstance(self.auto_lr, bool):
+                    raise TypeError("Except auto_lr to be a boolean or dict"
+                                    f" but got a {type(self.auto_lr)}")
+                if isinstance(self.auto_lr, dict):
+                    extra_keys = self.auto_lr.keys() - supported_keys
+                    if extra_keys:
+                        warnings.warn(f"Found unsupported keys in the auto_lr dict: {extra_keys}")
+                    if 'warmup_epochs' not in self.auto_lr:
+                        self.auto_lr = True
+                        warnings.warn("Not found \"warmup_epochs\" in the auto_lr dict"
+                                      " warmup_epochs will be set by default")
+                    elif type(self.auto_lr['warmup_epochs']) is not int:
+                        raise TypeError("Expect \"warmup_epochs\" to be an integer"
+                                        f" but got a {type(self.auto_lr['warmup_epochs'])}")
                     else:
-                        from torch.optim.lr_scheduler import LambdaLR
+                        warmup_params['warmup_epochs'] = self.auto_lr['warmup_epochs']
+                if type(self.auto_lr) is bool:
+                    if trainer.max_epochs < 10:
+                        train_dataset = (
+                            trainer._data_connector._train_dataloader_source.instance.dataset)
+                        batch_size = (
+                            trainer._data_connector._train_dataloader_source.instance.batch_size
+                        )
+                        max_steps = len(train_dataset) * trainer.max_epochs // batch_size
+                        warmup_params['warmup_epochs'] = max_steps // 10
+                        warmup_params['interval'] = 'step'
+                # if type(self.auto_lr) is bool:
+                #     self.auto_lr = trainer.max_epochs // 5 + 1
+                for opt_idx, opt in enumerate(self.optimizers):
+                    # if not TORCH_VERSION_LESS_1_10:
+                    #     from torch.optim.lr_scheduler import LinearLR
+                    #     scheduler = LinearLR(optimizer=opt,
+                    #                          # set initial lr as user lr
+                    #                          start_factor=warmup_params['start_factor'],
+                    #                          end_factor=warmup_params['end_factor'],
+                    #                          total_iters=warmup_params['warmup_epochs'])
+                    # else:
+                    from torch.optim.lr_scheduler import LambdaLR
 
-                        def lr_func(epoch):
-                            start_factor = 1.0 / self.world_size
-                            end_factor = 1.0
-                            total_iters = self.auto_lr
-                            if epoch == 0:
-                                return start_factor
-                            if epoch < total_iters:
-                                return (end_factor - start_factor) * epoch / total_iters \
-                                    + start_factor
-                            else:
-                                return 1.0
-                        scheduler = LambdaLR(optimizer=opt,
-                                             lr_lambda=[lr_func] * len(optimizer.param_groups))
+                    def lr_func(epoch):
+                        current_epoch = self.lightning_module.current_epoch
+                        start_factor = warmup_params['start_factor']
+                        end_factor = warmup_params['end_factor']
+                        total_iters = warmup_params['warmup_epochs']
+                        if current_epoch > 0 and warmup_params['interval'] == 'step' \
+                           or epoch > total_iters:
+                            return 1.0
+                        if epoch == 0:
+                            return start_factor
+                        return (end_factor - start_factor) * epoch / total_iters \
+                            + start_factor
+                    scheduler = LambdaLR(optimizer=opt,
+                                         lr_lambda=[lr_func] * len(optimizer.param_groups))
                     lr_scheduler = {
                         'scheduler': scheduler,
-                        'opt_idx': opt_idx
+                        'opt_idx': opt_idx,
+                        'interval': warmup_params['interval']
                     }
                     lr_schedulers.append(lr_scheduler)
 

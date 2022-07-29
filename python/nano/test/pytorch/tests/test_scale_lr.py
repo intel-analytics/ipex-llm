@@ -15,6 +15,7 @@
 #
 
 
+from gc import callbacks
 import os
 
 import pytest
@@ -47,22 +48,6 @@ class ResNetWith2Optimzers(pl.LightningModule):
         self.backbone = vision.resnet18(pretrained=False, include_top=False, freeze=False)
         output_size = self.backbone.get_output_size()
         self.head = nn.Linear(output_size, num_classes)
-
-    def on_train_epoch_start(self) -> None:
-        world_size = self.trainer.strategy.world_size
-        for lr_scheduler, lr in zip(self.lr_schedulers(), self.hparams):
-            if lr_scheduler.last_epoch > self.trainer.strategy.auto_lr:
-                assert math.isclose(lr_scheduler.get_last_lr()[0], 
-                                    lr_scheduler.base_lrs[0])
-            else:
-                diff = lr_scheduler.base_lrs[0] * \
-                    (1.0 - 1.0 / world_size) / \
-                    (self.trainer.strategy.auto_lr)
-                assert lr_scheduler.base_lrs[0] == self.hparams[lr] * world_size
-                assert math.isclose(lr_scheduler.get_last_lr()[0],
-                                    lr_scheduler.base_lrs[0] * 1.0 / world_size +
-                                    lr_scheduler.last_epoch * diff,
-                                    abs_tol=1e-7)
 
     def forward(self, x):
         x = self.backbone(x)
@@ -109,14 +94,6 @@ class ResNetWithScheduler(pl.LightningModule):
         output_size = self.backbone.get_output_size()
         self.head = nn.Linear(output_size, num_classes)
 
-    def on_train_start(self):
-        world_size = self.trainer.strategy.world_size
-        for opt, lr_sch, lr in zip(self.optimizers(), self.lr_schedulers(), self.hparams):
-            if hasattr(lr_sch, 'start_factor'):
-                assert opt.param_groups[0]['lr'] == lr_sch.base_lrs[0] * lr_sch.start_factor
-                return
-            assert lr_sch.base_lrs[0] == self.hparams[lr] * world_size
-
     def forward(self, x):
         x = self.backbone(x)
         x = self.head(x)
@@ -162,9 +139,54 @@ class ResNetWithScheduler(pl.LightningModule):
                 optimizer=optimizer2, start_factor=0.5
             )
         return (
-            {"optimizer": optimizer1, "lr_scheduler": lr_scheduler1},
+            {"optimizer": optimizer1, "lr_scheduler": {
+                "scheduler": lr_scheduler1,
+            }},
             {"optimizer": optimizer2, "lr_scheduler": lr_scheduler2}
         )
+
+
+class CheckLinearLRScaleCallback(pl.Callback):
+    def __init__(self, num_processes, lrs) -> None:
+        self.world_size = num_processes
+        self.lrs = lrs
+
+    def on_train_start(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule"):
+        for lr, opt, sch in zip(self.lrs, pl_module.optimizers(), pl_module.lr_schedulers()):
+            assert sch.base_lrs[0] == lr * self.world_size
+
+
+class CheckWarmupCallback(CheckLinearLRScaleCallback):
+    def __init__(self, num_processes, lrs, max_epochs, steps_per_epoch, warmup_epochs=None):
+        super().__init__(num_processes, lrs)
+        if warmup_epochs:
+            self.warmup_epochs = warmup_epochs
+            self.warmup_on_epoch = True
+        else:
+            self.warmup_epochs = steps_per_epoch * max_epochs // 10
+            self.warmup_on_epoch = False
+
+    def on_train_batch_start(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule", batch, batch_idx, unused: int = 0) -> None:
+        if self.warmup_on_epoch:
+            return
+        if batch_idx > self.warmup_epochs or pl_module.current_epoch > 0:
+            for lr, opt in zip(self.lrs, pl_module.optimizers()):
+                assert opt.param_groups[0]['lr'] == lr * self.world_size
+        else:
+            for lr, opt in zip(self.lrs, pl_module.optimizers()):
+                diff = (1.0 - 1.0 / self.world_size) * batch_idx / self.warmup_epochs + 1.0 / self.world_size
+                assert opt.param_groups[0]['lr'] == lr * self.world_size * diff
+
+    def on_train_epoch_start(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule"):
+        if not self.warmup_on_epoch:
+            return
+        if pl_module.current_epoch > self.warmup_epochs:
+            for lr, opt in zip(self.lrs, pl_module.optimizers()):
+                assert opt.param_groups[0]['lr'] == lr * self.world_size
+        else:
+            for lr, opt in zip(self.lrs, pl_module.optimizers()):
+                diff = (1.0 - 1.0 / self.world_size) * pl_module.current_epoch / self.warmup_epochs + 1.0 / self.world_size
+                assert opt.param_groups[0]['lr'] == lr * self.world_size * diff
 
 
 class TestScaleLr(TestCase):
@@ -186,17 +208,17 @@ class TestScaleLr(TestCase):
                           distributed_backend="subprocess",
                           auto_lr=True,
                           max_epochs=2,
-                          callbacks=[LearningRateMonitor(logging_interval='epoch')])
+                          callbacks=[CheckLinearLRScaleCallback(2, [0.01, 0.02])])
         trainer.fit(model, train_dataloaders=self.data_loader,
                     val_dataloaders=self.test_data_loader)
 
     def test_scale_lr_spawn(self):
         model = ResNetWithScheduler()
-        trainer = Trainer(num_processes=2,
+        trainer = Trainer(num_processes=4,
                           distributed_backend='spawn',
                           auto_lr=True,
                           max_epochs=2,
-                          callbacks=[LearningRateMonitor(logging_interval='epoch')]
+                          callbacks=[CheckLinearLRScaleCallback(2, [0.01, 0.02])]
                           )
         trainer.fit(model, train_dataloaders=self.data_loader,
                     val_dataloaders=self.test_data_loader)
@@ -205,9 +227,10 @@ class TestScaleLr(TestCase):
         model = ResNetWith2Optimzers()
         trainer = Trainer(num_processes=2,
                           distributed_backend='subprocess',
-                          auto_lr=3,
+                          auto_lr=True,
                           max_epochs=4,
-                          callbacks=[LearningRateMonitor(logging_interval='epoch')])
+                          callbacks=[LearningRateMonitor(logging_interval='step'),
+                                     CheckWarmupCallback(2, [0.01, 0.05], 4, 5)])
         trainer.fit(model, train_dataloaders=self.data_loader,
                     val_dataloaders=self.test_data_loader)
 
@@ -215,8 +238,9 @@ class TestScaleLr(TestCase):
         model = ResNetWith2Optimzers()
         trainer = Trainer(num_processes=4,
                           distributed_backend='spawn',
-                          auto_lr=True,
-                          max_epochs=5)
+                          auto_lr={'warmup_epochs': 4},
+                          max_epochs=10,
+                          callbacks=[CheckWarmupCallback(4, [0.01, 0.05], 10, 5, 4)])
         trainer.fit(model, train_dataloaders=self.data_loader,
                     val_dataloaders=self.test_data_loader)
 
