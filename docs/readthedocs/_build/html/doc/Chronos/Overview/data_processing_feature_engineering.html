@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Time Series Processing and Feature Engineering Overview &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/design-tabs.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Time Series Forecasting Overview" href="forecasting.html" />
+    <link rel="prev" title="Chronos Deep Dive" href="deep_dive.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="deep_dive.html">Chronos Deep Dive</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Time Series Processing and Feature Engineering Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#basic-concepts"><strong>1. Basic concepts</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#create-a-tsdataset"><strong>2. Create a TSDataset</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#time-series-dataset-preprocessing"><strong>3. Time series dataset preprocessing</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#feature-scaling"><strong>4. Feature scaling</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#feature-generation"><strong>5. Feature generation</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sampling-and-exporting"><strong>6. Sampling and exporting</strong></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#roll-sampling"><strong>6.1 Roll sampling</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pandas-exporting"><strong>6.2 Pandas Exporting</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#built-in-dataset"><strong>7. Built-in Dataset</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="forecasting.html">Time Series Forecasting Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="anomaly_detection.html">Time Series Anomaly Detection Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="simulation.html">Generate Synthetic Sequential Data Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="speed_up.html">Speed up Chronos built-in models/customized time-series models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="useful_functionalities.html">Useful Functionalities Overview</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="deep_dive.html">Chronos Deep Dive</a> &raquo;</li>
+      <li>Time Series Processing and Feature Engineering Overview</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/doc/Chronos/Overview/data_processing_feature_engineering.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="time-series-processing-and-feature-engineering-overview">
+<h1>Time Series Processing and Feature Engineering Overview<a class="headerlink" href="#time-series-processing-and-feature-engineering-overview" title="Permalink to this headline">¶</a></h1>
+<p>Time series data is a special data formulation with its specific operations. <em>Chronos</em> provides <a class="reference external" href="../../PythonAPI/Chronos/tsdataset.html"><code class="docutils literal notranslate"><span class="pre">TSDataset</span></code></a> as a time series dataset abstract for data processing (e.g. impute, deduplicate, resample, scale/unscale, roll sampling) and auto feature engineering (e.g. datetime feature, aggregation feature). Cascade call is supported for most of the methods. <a class="reference external" href="../../PythonAPI/Chronos/tsdataset.html"><code class="docutils literal notranslate"><span class="pre">TSDataset</span></code></a> can be initialized from a pandas dataframe and be directly used in <a class="reference external" href="../../PythonAPI/Chronos/autotsestimator.html#autotsestimator"><code class="docutils literal notranslate"><span class="pre">AutoTSEstimator</span></code></a>. It can also be converted to a pandas dataframe or numpy ndarray for Forecasters and Anomaly Detectors.</p>
+<p><a class="reference external" href="../../PythonAPI/Chronos/tsdataset.html"><code class="docutils literal notranslate"><span class="pre">TSDataset</span></code></a> is designed for general time series processing while providing many specific operations for the convenience of different tasks(e.g. forecasting, anomaly detection).</p>
+<section id="basic-concepts">
+<h2><strong>1. Basic concepts</strong><a class="headerlink" href="#basic-concepts" title="Permalink to this headline">¶</a></h2>
+<p>A time series can be interpreted as a sequence of real value whose order is timestamp. While a time series dataset can be a combination of one or a huge amount of time series. It may contain multiple time series since users may collect different time series in the same/different period of time (e.g. An AIops dataset may have CPU usage ratio and memory usage ratio data for two servers at a period of time. This dataset contains four time series).</p>
+<p>In <a class="reference external" href="../../PythonAPI/Chronos/tsdataset.html"><code class="docutils literal notranslate"><span class="pre">TSDataset</span></code></a>, we provide <strong>2</strong> possible dimensions to construct a high dimension time series dataset (i.e. <strong>feature dimension</strong> and <strong>id dimension</strong>).</p>
+<ul class="simple">
+<li><p>feature dimension: Time series along this dimension might be independent or related. Though they may be related, they are assumed to have <strong>different patterns and distributions</strong> and collected on the <strong>same period of time</strong>. For example, the CPU usage ratio and Memory usage ratio for the same server at a period of time.</p></li>
+<li><p>id dimension: Time series along this dimension are assumed to have the <strong>same patterns and distributions</strong> and might by collected on the <strong>same or different period of time</strong>. For example, the CPU usage ratio for two servers at a period of time.</p></li>
+</ul>
+<p>All the preprocessing operations will be done on each independent time series(i.e on both feature dimension and id dimension), while feature scaling will be only carried out on the feature dimension.</p>
+</section>
+<section id="create-a-tsdataset">
+<h2><strong>2. Create a TSDataset</strong><a class="headerlink" href="#create-a-tsdataset" title="Permalink to this headline">¶</a></h2>
+<p>Currently <a class="reference external" href="../../PythonAPI/Chronos/tsdataset.html"><code class="docutils literal notranslate"><span class="pre">TSDataset</span></code></a> supports initializing from a pandas dataframe through <a class="reference external" href="../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.from_pandas"><code class="docutils literal notranslate"><span class="pre">TSDataset.from_pandas</span></code></a> or from a parquet file through <a class="reference external" href="../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.from_parquet"><code class="docutils literal notranslate"><span class="pre">TSDataset.from_parquet</span></code></a>. A typical valid time series dataframe <code class="docutils literal notranslate"><span class="pre">df</span></code> is shown below.</p>
+<p>You can initialize a <a class="reference external" href="../../PythonAPI/Chronos/tsdataset.html"><code class="docutils literal notranslate"><span class="pre">TSDataset</span></code></a> by simply:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Server id  Datetime         CPU usage   Mem usage</span>
+<span class="c1"># 0          08:39 2021/7/9   93          24            </span>
+<span class="c1"># 0          08:40 2021/7/9   91          24              </span>
+<span class="c1"># 0          08:41 2021/7/9   93          25              </span>
+<span class="c1"># 0          ...              ...         ...</span>
+<span class="c1"># 1          08:39 2021/7/9   73          79            </span>
+<span class="c1"># 1          08:40 2021/7/9   72          80              </span>
+<span class="c1"># 1          08:41 2021/7/9   79          80              </span>
+<span class="c1"># 1          ...              ...         ...</span>
+<span class="n">tsdata</span> <span class="o">=</span> <span class="n">TSDataset</span><span class="o">.</span><span class="n">from_pandas</span><span class="p">(</span><span class="n">df</span><span class="p">,</span>
+                               <span class="n">dt_col</span><span class="o">=</span><span class="s2">&quot;Datetime&quot;</span><span class="p">,</span>
+                               <span class="n">id_col</span><span class="o">=</span><span class="s2">&quot;Server id&quot;</span><span class="p">,</span>
+                               <span class="n">target_col</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;CPU usage&quot;</span><span class="p">,</span>
+                                           <span class="s2">&quot;Mem usage&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">target_col</span></code> is a list of all elements along feature dimension, while <code class="docutils literal notranslate"><span class="pre">id_col</span></code> is the identifier that distinguishes the id dimension. <code class="docutils literal notranslate"><span class="pre">dt_col</span></code> is the datetime column. For <code class="docutils literal notranslate"><span class="pre">extra_feature_col</span></code>(not shown in this case), you should list those features that you are not interested for your task (e.g. you will <strong>not</strong> perform forecasting or anomaly detection task on this col).</p>
+<p>If you are building a prototype for your forecasting/anomaly detection task and you need to split you dataset to train/valid/test set, you can use <code class="docutils literal notranslate"><span class="pre">with_split</span></code> parameter.<a class="reference external" href="../../PythonAPI/Chronos/tsdataset.html"><code class="docutils literal notranslate"><span class="pre">TSDataset</span></code></a> supports split with ratio by <code class="docutils literal notranslate"><span class="pre">val_ratio</span></code> and <code class="docutils literal notranslate"><span class="pre">test_ratio</span></code>.</p>
+</section>
+<section id="time-series-dataset-preprocessing">
+<h2><strong>3. Time series dataset preprocessing</strong><a class="headerlink" href="#time-series-dataset-preprocessing" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="../../PythonAPI/Chronos/tsdataset.html"><code class="docutils literal notranslate"><span class="pre">TSDataset</span></code></a> now supports <a class="reference external" href="../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.impute"><code class="docutils literal notranslate"><span class="pre">impute</span></code></a>, <a class="reference external" href="../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.deduplicate"><code class="docutils literal notranslate"><span class="pre">deduplicate</span></code></a> and <a class="reference external" href="../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.resample"><code class="docutils literal notranslate"><span class="pre">resample</span></code></a>. You may fill the missing point by <a class="reference external" href="../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.impute"><code class="docutils literal notranslate"><span class="pre">impute</span></code></a> in different modes. You may remove the records that are totally the same by <a class="reference external" href="../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.deduplicate"><code class="docutils literal notranslate"><span class="pre">deduplicate</span></code></a>. You may change the sample frequency by <a class="reference external" href="../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.resample"><code class="docutils literal notranslate"><span class="pre">resample</span></code></a>. A typical cascade call for preprocessing is:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tsdata</span><span class="o">.</span><span class="n">deduplicate</span><span class="p">()</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">interval</span><span class="o">=</span><span class="s2">&quot;2s&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">impute</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="feature-scaling">
+<h2><strong>4. Feature scaling</strong><a class="headerlink" href="#feature-scaling" title="Permalink to this headline">¶</a></h2>
+<p>Scaling all features to one distribution is important, especially when we want to train a machine learning/deep learning system. <a class="reference external" href="../../PythonAPI/Chronos/tsdataset.html"><code class="docutils literal notranslate"><span class="pre">TSDataset</span></code></a> supports all the scalers in sklearn through <a class="reference external" href="../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.scale"><code class="docutils literal notranslate"><span class="pre">scale</span></code></a> and <a class="reference external" href="../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.unscale"><code class="docutils literal notranslate"><span class="pre">unscale</span></code></a> method. Since a scaler should not fit on the validation and test set, a typical call for scaling operations is:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">StandardScaler</span>
+<span class="n">scale</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span>
+<span class="c1"># scale</span>
+<span class="k">for</span> <span class="n">tsdata</span> <span class="ow">in</span> <span class="p">[</span><span class="n">tsdata_train</span><span class="p">,</span> <span class="n">tsdata_valid</span><span class="p">,</span> <span class="n">tsdata_test</span><span class="p">]:</span>
+    <span class="n">tsdata</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">scaler</span><span class="p">,</span> <span class="n">fit</span><span class="o">=</span><span class="n">tsdata</span> <span class="ow">is</span> <span class="n">tsdata_train</span><span class="p">)</span>
+<span class="c1"># unscale</span>
+<span class="k">for</span> <span class="n">tsdata</span> <span class="ow">in</span> <span class="p">[</span><span class="n">tsdata_train</span><span class="p">,</span> <span class="n">tsdata_valid</span><span class="p">,</span> <span class="n">tsdata_test</span><span class="p">]:</span>
+    <span class="n">tsdata</span><span class="o">.</span><span class="n">unscale</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><a class="reference external" href="../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.unscale_numpy"><code class="docutils literal notranslate"><span class="pre">unscale_numpy</span></code></a> is specially designed for forecasters. Users may unscale the output of a forecaster by this operation. A typical call is:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">tsdata_test</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">scaler</span><span class="p">)</span>\
+                  <span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">lookback</span><span class="o">=...</span><span class="p">,</span> <span class="n">horizon</span><span class="o">=...</span><span class="p">)</span>\
+                  <span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+<span class="n">yhat</span> <span class="o">=</span> <span class="n">forecaster</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">unscaled_yhat</span> <span class="o">=</span> <span class="n">tsdata_test</span><span class="o">.</span><span class="n">unscale_numpy</span><span class="p">(</span><span class="n">yhat</span><span class="p">)</span>
+<span class="n">unscaled_y</span> <span class="o">=</span> <span class="n">tsdata_test</span><span class="o">.</span><span class="n">unscale_numpy</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+<span class="c1"># calculate metric by unscaled_yhat and unscaled_y</span>
+</pre></div>
+</div>
+</section>
+<section id="feature-generation">
+<h2><strong>5. Feature generation</strong><a class="headerlink" href="#feature-generation" title="Permalink to this headline">¶</a></h2>
+<p>Other than historical target data and other extra feature provided by users, some additional features can be generated automatically by <a class="reference external" href="../../PythonAPI/Chronos/tsdataset.html"><code class="docutils literal notranslate"><span class="pre">TSDataset</span></code></a>. <a class="reference external" href="../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.gen_dt_feature"><code class="docutils literal notranslate"><span class="pre">gen_dt_feature</span></code></a> helps users to generate 10 datetime related features(e.g. MONTH, WEEKDAY, …). <a class="reference external" href="../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.gen_global_feature"><code class="docutils literal notranslate"><span class="pre">gen_global_feature</span></code></a> and <a class="reference external" href="../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.gen_rolling_feature"><code class="docutils literal notranslate"><span class="pre">gen_rolling_feature</span></code></a> are powered by tsfresh to generate aggregated features (e.g. min, max, …) for each time series or rolling windows respectively.</p>
+</section>
+<section id="sampling-and-exporting">
+<h2><strong>6. Sampling and exporting</strong><a class="headerlink" href="#sampling-and-exporting" title="Permalink to this headline">¶</a></h2>
+<p>A time series dataset needs to be sampling and exporting as numpy ndarray/dataloader to be used in machine learning and deep learning models(e.g. forecasters, anomaly detectors, auto models, etc.).</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>You don’t need to call any sampling or exporting methods introduced in this section when using <cite>AutoTSEstimator</cite>.</p>
+</div>
+<section id="roll-sampling">
+<h3><strong>6.1 Roll sampling</strong><a class="headerlink" href="#roll-sampling" title="Permalink to this headline">¶</a></h3>
+<p>Roll sampling (or sliding window sampling) is useful when you want to train a RR type supervised deep learning forecasting model. It works as the <a class="reference external" href="#RR-forecast-image">diagram</a> shows. Please refer to the API doc <a class="reference external" href="../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.roll"><code class="docutils literal notranslate"><span class="pre">roll</span></code></a> for detailed behavior. Users can simply export the sampling result as numpy ndarray by <a class="reference external" href="../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.to_numpy"><code class="docutils literal notranslate"><span class="pre">to_numpy</span></code></a> or pytorch dataloader <a class="reference external" href="../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.to_torch_data_loader"><code class="docutils literal notranslate"><span class="pre">to_torch_data_loader</span></code></a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Difference between `roll` and `to_torch_data_loader`</strong>:</p>
+<p><cite>.roll(…)</cite> performs the rolling before RR forecasters/auto models training while <cite>.to_torch_data_loader(roll=True, …)</cite> performs rolling during the training.</p>
+<p>It is fine to use either of them when you have a relatively small dataset (less than 1G). <cite>.to_torch_data_loader(roll=True, …)</cite> is recommended when you have a large dataset (larger than 1G) to save memory usage.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Roll sampling format</strong>:</p>
+<p>As decribed in RR style forecasting concept, the sampling result will have the following shape requirement.</p>
+<div class="line-block">
+<div class="line">x: (sample_num, lookback, input_feature_num)</div>
+<div class="line">y: (sample_num, horizon, output_feature_num)</div>
+</div>
+<p>Please follow the same shape if you use customized data creator.</p>
+</div>
+<p>A typical call of <a class="reference external" href="../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.roll"><code class="docutils literal notranslate"><span class="pre">roll</span></code></a> is as following:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># forecaster</span>
+<span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">tsdata</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">lookback</span><span class="o">=...</span><span class="p">,</span> <span class="n">horizon</span><span class="o">=...</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+<span class="n">forecaster</span><span class="o">.</span><span class="n">fit</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+</pre></div>
+</div>
+</section>
+<section id="pandas-exporting">
+<h3><strong>6.2 Pandas Exporting</strong><a class="headerlink" href="#pandas-exporting" title="Permalink to this headline">¶</a></h3>
+<p>Now we support pandas dataframe exporting through <code class="docutils literal notranslate"><span class="pre">to_pandas()</span></code> for users to carry out their own transformation. Here is an example of using only one time series for anomaly detection.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># anomaly detector on &quot;target&quot; col</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">tsdata</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">()[</span><span class="s2">&quot;target&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+<span class="n">anomaly_detector</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>View <a class="reference external" href="../../PythonAPI/Chronos/tsdataset.html#">TSDataset API Doc</a> for more details.</p>
+</section>
+</section>
+<section id="built-in-dataset">
+<h2><strong>7. Built-in Dataset</strong><a class="headerlink" href="#built-in-dataset" title="Permalink to this headline">¶</a></h2>
+<p>Built-in Dataset supports the function of data downloading, preprocessing, and returning to the <code class="docutils literal notranslate"><span class="pre">TSDataset</span></code> object of the public data set.</p>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Dataset name</th>
+<th>Task</th>
+<th>Time Series Length</th>
+<th>Number of Instances</th>
+<th>Feature Number</th>
+<th>Information Page</th>
+<th>Download Link</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>network_traffic</td>
+<td>forecasting</td>
+<td>8760</td>
+<td>1</td>
+<td>2</td>
+<td><a href="http://mawi.wide.ad.jp/~agurim/about.html">network_traffic</a></td>
+<td><a href="http://mawi.wide.ad.jp/~agurim/dataset/">network_traffic</a></td>
+</tr>
+<tr>
+<td>nyc_taxi</td>
+<td>forecasting</td>
+<td>10320</td>
+<td>1</td>
+<td>1</td>
+<td><a href="https://github.com/numenta/NAB/blob/master/data/README.md">nyc_taxi</a></td>
+<td><a href="https://raw.githubusercontent.com/numenta/NAB/v1.0/data/realKnownCause/nyc_taxi.csv">nyc_taxi</a></td>
+</tr>
+<tr>
+<td>fsi</td>
+<td>forecasting</td>
+<td>1259</td>
+<td>1</td>
+<td>1</td>
+<td><a href="https://github.com/CNuge/kaggle-code/tree/master/stock_data">fsi</a></td>
+<td><a href="https://github.com/CNuge/kaggle-code/raw/master/stock_data/individual_stocks_5yr.zip">fsi</a></td>
+</tr>
+<tr>
+<td>AIOps</td>
+<td>anomaly_detect</td>
+<td>61570</td>
+<td>1</td>
+<td>1</td>
+<td><a href="https://github.com/alibaba/clusterdata">AIOps</a></td>
+<td><a href="http://clusterdata2018pubcn.oss-cn-beijing.aliyuncs.com/machine_usage.tar.gz">AIOps</a></td>
+</tr>
+<tr>
+<td>uci_electricity</td>
+<td>forecasting</td>
+<td>140256</td>
+<td>370</td>
+<td>1</td>
+<td><a href="https://archive.ics.uci.edu/ml/datasets/ElectricityLoadDiagrams20112014">uci_electricity</a></td>
+<td><a href="https://archive.ics.uci.edu/ml/machine-learning-databases/00321/LD2011_2014.txt.zip">uci_electricity</a></td>
+</tr>
+</tbody>
+</table><p>Specify the <code class="docutils literal notranslate"><span class="pre">name</span></code>, the raw data file will be saved in the specified <code class="docutils literal notranslate"><span class="pre">path</span></code> (defaults to ~/.chronos/dataset). <code class="docutils literal notranslate"><span class="pre">redownload</span></code> can help you re-download the files you need.</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">with_split</span></code> is set to True, the length of the data set will be divided according to the specified <code class="docutils literal notranslate"><span class="pre">val_ratio</span></code> and <code class="docutils literal notranslate"><span class="pre">test_ratio</span></code>, and three <code class="docutils literal notranslate"><span class="pre">TSDataset</span></code> will be returned. <code class="docutils literal notranslate"><span class="pre">with_split</span></code> defaults to False, that is, only one <code class="docutils literal notranslate"><span class="pre">TSDataset</span></code> is returned.
+About <code class="docutils literal notranslate"><span class="pre">TSDataset</span></code>, more details, please refer to <a class="reference external" href="../../PythonAPI/Chronos/tsdataset.html">here</a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># load built-in dataset</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.data.repo_dataset</span> <span class="kn">import</span> <span class="n">get_public_dataset</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">StandardScaler</span>
+<span class="n">tsdata_train</span><span class="p">,</span> <span class="n">tsdata_val</span><span class="p">,</span> \
+    <span class="n">tsdata_test</span> <span class="o">=</span> <span class="n">get_public_dataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;nyc_taxi&#39;</span><span class="p">,</span>
+                                     <span class="n">with_split</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                                     <span class="n">val_ratio</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                                     <span class="n">test_ratio</span><span class="o">=</span><span class="mf">0.1</span>
+                                     <span class="p">)</span>
+<span class="c1"># carry out additional customized preprocessing on the dataset.</span>
+<span class="n">stand</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">tsdata</span> <span class="ow">in</span> <span class="p">[</span><span class="n">tsdata_train</span><span class="p">,</span> <span class="n">tsdata_val</span><span class="p">,</span> <span class="n">tsdata_test</span><span class="p">]:</span>
+    <span class="n">tsdata</span><span class="o">.</span><span class="n">gen_dt_feature</span><span class="p">(</span><span class="n">one_hot_features</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;HOUR&#39;</span><span class="p">])</span>\
+          <span class="o">.</span><span class="n">impute</span><span class="p">()</span>\
+          <span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">stand</span><span class="p">,</span> <span class="n">fit</span><span class="o">=</span><span class="n">tsdata</span> <span class="ow">is</span> <span class="n">tsdata_train</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="deep_dive.html" class="btn btn-neutral float-left" title="Chronos Deep Dive" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="forecasting.html" class="btn btn-neutral float-right" title="Time Series Forecasting Overview" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

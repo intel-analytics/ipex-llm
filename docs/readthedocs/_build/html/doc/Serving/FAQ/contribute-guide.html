@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contribute to Cluster Serving &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/design-tabs.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Use torch.distributed in Orca" href="../../Orca/QuickStart/orca-pytorch-distributed-quickstart.html" />
+    <link rel="prev" title="Cluster Serving FAQ" href="faq.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Contribute to Cluster Serving</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dev-environment">Dev Environment</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#get-code-and-prepare-branch">Get Code and Prepare Branch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#environment-set-up">Environment Set up</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#debug-in-ide">Debug in IDE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#test-package">Test Package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#add-features">Add Features</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#data-connector">Data Connector</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#scala-code-the-server">Scala code (The Server)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#python-code-the-client">Python Code (The Client)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#benchmark-test">Benchmark Test</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Contribute to Cluster Serving</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/doc/Serving/FAQ/contribute-guide.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="contribute-to-cluster-serving">
+<h1>Contribute to Cluster Serving<a class="headerlink" href="#contribute-to-cluster-serving" title="Permalink to this headline">¶</a></h1>
+<p>This is the guide to contribute your code to Cluster Serving.</p>
+<p>Cluster Serving takes advantage of BigDL core with integration of Deep Learning Frameworks, e.g. Tensorflow, OpenVINO, PyTorch, and implements the inference logic on top of it, and parallelize the computation with Flink and Redis by default. To contribute more features to Cluster Serving, you could refer to following sections accordingly.</p>
+<section id="dev-environment">
+<h2>Dev Environment<a class="headerlink" href="#dev-environment" title="Permalink to this headline">¶</a></h2>
+<section id="get-code-and-prepare-branch">
+<h3>Get Code and Prepare Branch<a class="headerlink" href="#get-code-and-prepare-branch" title="Permalink to this headline">¶</a></h3>
+<p>Go to BigDL main repo https://github.com/intel-analytics/bigdl, press Fork to your github repo, and git clone the forked repo to local. Use <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">checkout</span> <span class="pre">-b</span> <span class="pre">your_branch_name</span></code> to create a new branch, and you could start to write code and pull request to BigDL from this branch.</p>
+</section>
+<section id="environment-set-up">
+<h3>Environment Set up<a class="headerlink" href="#environment-set-up" title="Permalink to this headline">¶</a></h3>
+<p>You could refer to <a class="reference external" href="https://bigdl.readthedocs.io/en/latest/doc/UserGuide/develop.html#scala">BigDL Scala Developer Guide</a> to set up develop environment. Cluster Serving is an BigDL Scala module.</p>
+</section>
+<section id="debug-in-ide">
+<h3>Debug in IDE<a class="headerlink" href="#debug-in-ide" title="Permalink to this headline">¶</a></h3>
+<p>Cluster Serving depends on Flink and Redis. To install Redis and start Redis server,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ export REDIS_VERSION=5.0.5
+$ wget http://download.redis.io/releases/redis-${REDIS_VERSION}.tar.gz &amp;&amp; \
+    tar xzf redis-${REDIS_VERSION}.tar.gz &amp;&amp; \
+    rm redis-${REDIS_VERSION}.tar.gz &amp;&amp; \
+    cd redis-${REDIS_VERSION} &amp;&amp; \
+    make
+$ ./src/redis-server
+</pre></div>
+</div>
+<p>in IDE, embedded Flink would be used so that no dependency is needed.</p>
+<p>Once set up, you could copy the <code class="docutils literal notranslate"><span class="pre">/path/to/bigdl/scripts/cluster-serving/config.yaml</span></code> to <code class="docutils literal notranslate"><span class="pre">/path/to/bigdl/config.yaml</span></code>, and run <code class="docutils literal notranslate"><span class="pre">scala/serving/src/main/com/intel/analytics/bigdl/serving/ClusterServing.scala</span></code> in IDE. Since IDE consider <code class="docutils literal notranslate"><span class="pre">/path/to/bigdl/</span></code> as the current directory, it would read the config file in it.</p>
+<p>Run <code class="docutils literal notranslate"><span class="pre">scala/serving/src/main/com/intel/analytics/bigdl/serving/http/Frontend2.scala</span></code> if you use HTTP frontend.</p>
+<p>Once started, you could run python client code to finish an end-to-end test just as you run Cluster Serving in <a class="reference external" href="https://github.com/intel-analytics/bigdl/blob/master/docs/docs/ClusterServingGuide/ProgrammingGuide.md#4-model-inference">Programming Guide</a>.</p>
+</section>
+<section id="test-package">
+<h3>Test Package<a class="headerlink" href="#test-package" title="Permalink to this headline">¶</a></h3>
+<p>Once you write the code and complete the test in IDE, you can package the jar and test.</p>
+<p>To package,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">bigdl</span><span class="o">/</span><span class="n">scala</span>
+<span class="o">./</span><span class="n">make</span><span class="o">-</span><span class="n">dist</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+<p>Then, in <code class="docutils literal notranslate"><span class="pre">target</span></code> folder, copy <code class="docutils literal notranslate"><span class="pre">bigdl-xxx-flink-udf.jar</span></code> to your test directory, and rename it as <code class="docutils literal notranslate"><span class="pre">bigdl.jar</span></code>, and also copy the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> to your test directory.</p>
+<p>You could copy <code class="docutils literal notranslate"><span class="pre">/path/to/bigdl/scripts/cluster-serving/cluster-serving-start</span></code> to start Cluster Serving, this scripts will start Redis server for you and submit Flink job. If you prefer not to control Redis, you could use the command in it <code class="docutils literal notranslate"><span class="pre">${FLINK_HOME}/bin/flink</span> <span class="pre">run</span> <span class="pre">-c</span> <span class="pre">com.intel.analytics.bigdl.serving.ClusterServing</span> <span class="pre">bigdl.jar</span></code> to start Cluster Serving.</p>
+<p>To run frontend, call <code class="docutils literal notranslate"><span class="pre">java</span> <span class="pre">-cp</span> <span class="pre">bigdl.jar</span> <span class="pre">com.intel.analytics.bigdl.serving.http.Frontend2</span></code>.</p>
+<p>The rest are the same with test in IDE.</p>
+</section>
+</section>
+<section id="add-features">
+<h2>Add Features<a class="headerlink" href="#add-features" title="Permalink to this headline">¶</a></h2>
+<section id="data-connector">
+<h3>Data Connector<a class="headerlink" href="#data-connector" title="Permalink to this headline">¶</a></h3>
+<p>Data connector is the producer of Cluster Serving. The remote clients put data into data pipeline</p>
+<section id="scala-code-the-server">
+<h4>Scala code (The Server)<a class="headerlink" href="#scala-code-the-server" title="Permalink to this headline">¶</a></h4>
+<p>To define a new data connector to, e.g. Kafka, Redis, or other database, you have to define a Flink Source first.</p>
+<p>You could refer to <code class="docutils literal notranslate"><span class="pre">com/intel/analytics/bigdl/serving/engine/FlinkRedisSource.scala</span></code> as an example.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">FlinkRedisSource</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">ClusterServingHelper</span><span class="p">)</span>
+  <span class="n">extends</span> <span class="n">RichParallelSourceFunction</span><span class="p">[</span><span class="n">List</span><span class="p">[(</span><span class="n">String</span><span class="p">,</span> <span class="n">String</span><span class="p">)]]</span> <span class="p">{</span>
+  <span class="nd">@volatile</span> <span class="n">var</span> <span class="n">isRunning</span> <span class="o">=</span> <span class="n">true</span>
+
+  <span class="n">override</span> <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="n">parameters</span><span class="p">:</span> <span class="n">Configuration</span><span class="p">):</span> <span class="n">Unit</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="o">//</span> <span class="n">initlalize</span> <span class="n">the</span> <span class="n">connector</span>
+  <span class="p">}</span>
+
+  <span class="n">override</span> <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">sourceContext</span><span class="p">:</span> <span class="n">SourceFunction</span>
+    <span class="o">.</span><span class="n">SourceContext</span><span class="p">[</span><span class="n">List</span><span class="p">[(</span><span class="n">String</span><span class="p">,</span> <span class="n">String</span><span class="p">)]]):</span> <span class="n">Unit</span> <span class="o">=</span> <span class="k">while</span> <span class="p">(</span><span class="n">isRunning</span><span class="p">)</span> <span class="p">{</span>
+    <span class="o">//</span> <span class="n">get</span> <span class="n">data</span> <span class="kn">from</span> <span class="nn">data</span> <span class="n">pipeline</span>
+  <span class="p">}</span>
+
+  <span class="n">override</span> <span class="k">def</span> <span class="nf">cancel</span><span class="p">():</span> <span class="n">Unit</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="o">//</span> <span class="n">close</span> <span class="n">the</span> <span class="n">connector</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Then you could refer to <code class="docutils literal notranslate"><span class="pre">com/intel/analytics/bigdl/serving/engine/FlinkInference.scala</span></code> as the inference method to your new connector. Usually it could be directly used without new implementation. However, you could still define your new method if you need.</p>
+<p>Finally, you have to define a Flink Sink, to write data back to data pipeline.</p>
+<p>You could refer to <code class="docutils literal notranslate"><span class="pre">com/intel/analytics/bigdl/serving/engine/FlinkRedisSink.scala</span></code> as an example.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">FlinkRedisSink</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">ClusterServingHelper</span><span class="p">)</span>
+  <span class="n">extends</span> <span class="n">RichSinkFunction</span><span class="p">[</span><span class="n">List</span><span class="p">[(</span><span class="n">String</span><span class="p">,</span> <span class="n">String</span><span class="p">)]]</span> <span class="p">{</span>
+  
+  <span class="n">override</span> <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="n">parameters</span><span class="p">:</span> <span class="n">Configuration</span><span class="p">):</span> <span class="n">Unit</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="o">//</span> <span class="n">initialize</span> <span class="n">the</span> <span class="n">connector</span>
+  <span class="p">}</span>
+
+  <span class="n">override</span> <span class="k">def</span> <span class="nf">close</span><span class="p">():</span> <span class="n">Unit</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="o">//</span> <span class="n">close</span> <span class="n">the</span> <span class="n">connector</span>
+  <span class="p">}</span>
+
+  <span class="n">override</span> <span class="k">def</span> <span class="nf">invoke</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">List</span><span class="p">[(</span><span class="n">String</span><span class="p">,</span> <span class="n">String</span><span class="p">)],</span> <span class="n">context</span><span class="p">:</span> <span class="n">SinkFunction</span><span class="o">.</span><span class="n">Context</span><span class="p">[</span><span class="n">_</span><span class="p">]):</span> <span class="n">Unit</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="o">//</span> <span class="n">write</span> <span class="n">data</span> <span class="n">to</span> <span class="n">data</span> <span class="n">pipeline</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Please note that normally you should do the space (memory or disk) control of your data pipeline in your code.</p>
+<p>Please locate Flink Source and Flink Sink code to <code class="docutils literal notranslate"><span class="pre">com/intel/analytics/bigdl/serving/engine/</span></code></p>
+<p>If you have some method which need to be wrapped as a class, you could locate them in <code class="docutils literal notranslate"><span class="pre">com/intel/analytics/bigdl/serving/pipeline/</span></code></p>
+</section>
+<section id="python-code-the-client">
+<h4>Python Code (The Client)<a class="headerlink" href="#python-code-the-client" title="Permalink to this headline">¶</a></h4>
+<p>You could refer to <code class="docutils literal notranslate"><span class="pre">python/serving/src/bigdl/serving/client.py</span></code> to define your client code according to your data connector.</p>
+<p>Please locate this part of code in <code class="docutils literal notranslate"><span class="pre">python/serving/src/bigdl/serving/data_pipeline_name/</span></code>, e.g. <code class="docutils literal notranslate"><span class="pre">python/serving/src/bigdl/serving/kafka/</span></code> if you create a Kafka connector.</p>
+<section id="put-to-data-pipeline">
+<h5>put to data pipeline<a class="headerlink" href="#put-to-data-pipeline" title="Permalink to this headline">¶</a></h5>
+<p>It is recommended to refer to <code class="docutils literal notranslate"><span class="pre">InputQueue.enqueue()</span></code> and <code class="docutils literal notranslate"><span class="pre">InputQueue.predict()</span></code> method. This method calls <code class="docutils literal notranslate"><span class="pre">self.data_to_b64</span></code> method first and add data to data pipeline. You could define a similar enqueue method to work with your data connector.</p>
+</section>
+<section id="get-from-data-pipeline">
+<h5>get from data pipeline<a class="headerlink" href="#get-from-data-pipeline" title="Permalink to this headline">¶</a></h5>
+<p>It is recommended to refer to <code class="docutils literal notranslate"><span class="pre">OutputQueue.query()</span></code> and <code class="docutils literal notranslate"><span class="pre">OutputQueue.dequeue()</span></code> method. This method gets result from data pipeline and calls <code class="docutils literal notranslate"><span class="pre">self.get_ndarray_from_b64</span></code> method to decode. You could define a similar dequeue method to work with your data connector.</p>
+</section>
+</section>
+</section>
+</section>
+<section id="benchmark-test">
+<h2>Benchmark Test<a class="headerlink" href="#benchmark-test" title="Permalink to this headline">¶</a></h2>
+<p>You could use <code class="docutils literal notranslate"><span class="pre">scala/serving/src/main/com/intel/analytics/BIGDL/serving/engine/Operations.scala</span></code> to test the inference time of your model.</p>
+<p>The script takes two arguments, run it with <code class="docutils literal notranslate"><span class="pre">-m</span> <span class="pre">modelPath</span></code> and <code class="docutils literal notranslate"><span class="pre">-j</span> <span class="pre">jsonPath</span></code> to indicate the path to the model and the path to the prepared json format operation template of the model.</p>
+<p>The model will output the inference time stats of preprocessing, prediction and postprocessing processes, which varies with the different preprocessing/postprocessing time and thread numbers.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="faq.html" class="btn btn-neutral float-left" title="Cluster Serving FAQ" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../Orca/QuickStart/orca-pytorch-distributed-quickstart.html" class="btn btn-neutral float-right" title="Use torch.distributed in Orca" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

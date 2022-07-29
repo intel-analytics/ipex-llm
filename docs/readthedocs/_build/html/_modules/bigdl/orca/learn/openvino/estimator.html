@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bigdl.orca.learn.openvino.estimator &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+        <script src="../../../../../_static/clipboard.min.js"></script>
+        <script src="../../../../../_static/copybutton.js"></script>
+        <script src="../../../../../_static/tabs.js"></script>
+        <script src="../../../../../_static/design-tabs.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../index.html">Module code</a> &raquo;</li>
+      <li>bigdl.orca.learn.openvino.estimator</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bigdl.orca.learn.openvino.estimator</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright 2016 The BigDL Authors.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">os.path</span>
+
+<span class="kn">from</span> <span class="nn">pyspark.sql</span> <span class="k">import</span> <span class="n">DataFrame</span>
+
+<span class="kn">from</span> <span class="nn">bigdl.orca.data</span> <span class="k">import</span> <span class="n">SparkXShards</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca.learn.spark_estimator</span> <span class="k">import</span> <span class="n">Estimator</span> <span class="k">as</span> <span class="n">SparkEstimator</span>
+<span class="kn">from</span> <span class="nn">bigdl.dllib.utils.common</span> <span class="k">import</span> <span class="n">get_node_and_core_number</span>
+<span class="kn">from</span> <span class="nn">bigdl.dllib.utils</span> <span class="k">import</span> <span class="n">nest</span>
+<span class="kn">from</span> <span class="nn">bigdl.dllib.nncontext</span> <span class="k">import</span> <span class="n">init_nncontext</span>
+
+<span class="kn">from</span> <span class="nn">openvino.inference_engine</span> <span class="k">import</span> <span class="n">IECore</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">bigdl.dllib.utils.log4Error</span> <span class="k">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="Estimator"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.openvino.estimator.Estimator">[docs]</a><span class="k">class</span> <span class="nc">Estimator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Estimator.from_openvino"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.openvino.estimator.Estimator.from_openvino">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">from_openvino</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">model_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load an openVINO Estimator.</span>
+
+<span class="sd">        :param model_path: String. The file path to the OpenVINO IR xml file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">OpenvinoEstimator</span><span class="p">(</span><span class="n">model_path</span><span class="o">=</span><span class="n">model_path</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="OpenvinoEstimator"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.openvino.estimator.OpenvinoEstimator">[docs]</a><span class="k">class</span> <span class="nc">OpenvinoEstimator</span><span class="p">(</span><span class="n">SparkEstimator</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="o">*</span><span class="p">,</span>
+                 <span class="n">model_path</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OpenvinoEstimator.fit"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.openvino.estimator.OpenvinoEstimator.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">feature_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">validation_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">checkpoint_trigger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fit is not supported in OpenVINOEstimator</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OpenvinoEstimator.predict"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.openvino.estimator.OpenvinoEstimator.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">feature_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Predict input data</span>
+
+<span class="sd">        :param batch_size: Int. Set batch Size, default is 4.</span>
+<span class="sd">        :param data: data to be predicted. XShards, Spark DataFrame, numpy array and list of numpy</span>
+<span class="sd">               arrays are supported. If data is XShards, each partition is a dictionary of  {&#39;x&#39;:</span>
+<span class="sd">               feature}, where feature(label) is a numpy array or a list of numpy arrays.</span>
+<span class="sd">        :param feature_cols: Feature column name(s) of data. Only used when data is a Spark</span>
+<span class="sd">               DataFrame. Default: None.</span>
+<span class="sd">        :return: predicted result.</span>
+<span class="sd">                 If the input data is XShards, the predict result is a XShards, each partition</span>
+<span class="sd">                 of the XShards is a dictionary of {&#39;prediction&#39;: result}, where the result is a</span>
+<span class="sd">                 numpy array or a list of numpy arrays.</span>
+<span class="sd">                 If the input data is numpy arrays or list of numpy arrays, the predict result is</span>
+<span class="sd">                 a numpy array or a list of numpy arrays.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sc</span> <span class="o">=</span> <span class="n">init_nncontext</span><span class="p">()</span>
+        <span class="n">model_bytes_broadcast</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_bytes</span><span class="p">)</span>
+        <span class="n">weight_bytes_broadcast</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight_bytes</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">partition_inference</span><span class="p">(</span><span class="n">partition</span><span class="p">):</span>
+            <span class="n">model_bytes</span> <span class="o">=</span> <span class="n">model_bytes_broadcast</span><span class="o">.</span><span class="n">value</span>
+            <span class="n">weight_bytes</span> <span class="o">=</span> <span class="n">weight_bytes_broadcast</span><span class="o">.</span><span class="n">value</span>
+            <span class="n">partition</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">partition</span><span class="p">)</span>
+            <span class="n">data_num</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">partition</span><span class="p">)</span>
+            <span class="n">ie</span> <span class="o">=</span> <span class="n">IECore</span><span class="p">()</span>
+            <span class="n">config</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;CPU_THREADS_NUM&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">core_num</span><span class="p">)}</span>
+            <span class="n">ie</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="s1">&#39;CPU&#39;</span><span class="p">)</span>
+            <span class="n">net</span> <span class="o">=</span> <span class="n">ie</span><span class="o">.</span><span class="n">read_network</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model_bytes</span><span class="p">,</span>
+                                  <span class="n">weights</span><span class="o">=</span><span class="n">weight_bytes</span><span class="p">,</span> <span class="n">init_from_buffer</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">net</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span>
+            <span class="n">local_model</span> <span class="o">=</span> <span class="n">ie</span><span class="o">.</span><span class="n">load_network</span><span class="p">(</span><span class="n">network</span><span class="o">=</span><span class="n">net</span><span class="p">,</span> <span class="n">device_name</span><span class="o">=</span><span class="s2">&quot;CPU&quot;</span><span class="p">,</span>
+                                          <span class="n">num_requests</span><span class="o">=</span><span class="n">data_num</span><span class="p">)</span>
+            <span class="n">inputs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">local_model</span><span class="o">.</span><span class="n">requests</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">input_blobs</span><span class="p">))</span>
+            <span class="n">outputs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">local_model</span><span class="o">.</span><span class="n">requests</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">output_blobs</span><span class="p">))</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;The number of model outputs should not be 0.&quot;</span><span class="p">)</span>
+
+            <span class="k">def</span> <span class="nf">add_elem</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+                <span class="n">d_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">d_len</span> <span class="o">&lt;</span> <span class="n">batch_size</span><span class="p">:</span>
+                    <span class="n">rep_time</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">d_len</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="n">rep_time</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">batch_size</span> <span class="o">-</span> <span class="n">d_len</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">rep_time</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">d_len</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">d</span><span class="p">,</span> <span class="n">d_len</span>
+
+            <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">batch_data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">partition</span><span class="p">):</span>
+                <span class="n">infer_request</span> <span class="o">=</span> <span class="n">local_model</span><span class="o">.</span><span class="n">requests</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+                <span class="n">input_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+                <span class="n">elem_num</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">batch_data</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="nb">input</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">inputs</span><span class="p">):</span>
+                        <span class="n">input_dict</span><span class="p">[</span><span class="nb">input</span><span class="p">],</span> <span class="n">elem_num</span> <span class="o">=</span> <span class="n">add_elem</span><span class="p">(</span><span class="n">batch_data</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">input_dict</span><span class="p">[</span><span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">elem_num</span> <span class="o">=</span> <span class="n">add_elem</span><span class="p">(</span><span class="n">batch_data</span><span class="p">)</span>
+                <span class="n">infer_request</span><span class="o">.</span><span class="n">infer</span><span class="p">(</span><span class="n">input_dict</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">infer_request</span><span class="o">.</span><span class="n">output_blobs</span><span class="p">[</span><span class="n">outputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">buffer</span><span class="p">[:</span><span class="n">elem_num</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">output</span><span class="p">:</span>
+                                            <span class="n">infer_request</span><span class="o">.</span><span class="n">output_blobs</span><span class="p">[</span><span class="n">output</span><span class="p">]</span><span class="o">.</span><span class="n">buffer</span><span class="p">[:</span><span class="n">elem_num</span><span class="p">],</span>
+                                            <span class="n">outputs</span><span class="p">)))</span>
+
+            <span class="k">return</span> <span class="n">results</span>
+
+        <span class="k">def</span> <span class="nf">predict_transform</span><span class="p">(</span><span class="n">dict_data</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">):</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">dict_data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">),</span> <span class="s2">&quot;each shard should be an dict&quot;</span><span class="p">)</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="s2">&quot;x&quot;</span> <span class="ow">in</span> <span class="n">dict_data</span><span class="p">,</span> <span class="s2">&quot;key x should in each shard&quot;</span><span class="p">)</span>
+            <span class="n">feature_data</span> <span class="o">=</span> <span class="n">dict_data</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feature_data</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="n">feature_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">batch_size</span><span class="p">,</span>
+                                  <span class="s2">&quot;The batch size of input data (the second dim) should be less&quot;</span>
+                                  <span class="s2">&quot; than the model batch size, otherwise some inputs will&quot;</span>
+                                  <span class="s2">&quot; be ignored.&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feature_data</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">feature_data</span><span class="p">:</span>
+                    <span class="n">invalidInputError</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">),</span>
+                                      <span class="s2">&quot;Each element in the x list should be a ndarray,&quot;</span>
+                                      <span class="s2">&quot; but get &quot;</span> <span class="o">+</span> <span class="n">elem</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+                    <span class="n">invalidInputError</span><span class="p">(</span><span class="n">elem</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">batch_size</span><span class="p">,</span>
+                                      <span class="s2">&quot;The batch size of each input data (the second dim) should&quot;</span>
+                                      <span class="s2">&quot; be less than the model batch size, otherwise some inputs&quot;</span>
+                                      <span class="s2">&quot; will be ignored.&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                                  <span class="s2">&quot;x in each shard should be a ndarray or a list of ndarray.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">feature_data</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">):</span>
+            <span class="kn">from</span> <span class="nn">bigdl.orca.learn.utils</span> <span class="k">import</span> <span class="n">dataframe_to_xshards</span>
+            <span class="kn">from</span> <span class="nn">bigdl.orca.learn.utils</span> <span class="k">import</span> <span class="n">convert_predict_rdd_to_dataframe</span>
+            <span class="n">xshards</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">dataframe_to_xshards</span><span class="p">(</span><span class="n">data</span><span class="p">,</span>
+                                              <span class="n">validation_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                              <span class="n">feature_cols</span><span class="o">=</span><span class="n">feature_cols</span><span class="p">,</span>
+                                              <span class="n">label_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                              <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;predict&quot;</span><span class="p">)</span>
+            <span class="n">transformed_data</span> <span class="o">=</span> <span class="n">xshards</span><span class="o">.</span><span class="n">transform_shard</span><span class="p">(</span><span class="n">predict_transform</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+            <span class="n">result_rdd</span> <span class="o">=</span> <span class="n">transformed_data</span><span class="o">.</span><span class="n">rdd</span><span class="o">.</span><span class="n">mapPartitions</span><span class="p">(</span><span class="k">lambda</span> <span class="nb">iter</span><span class="p">:</span> <span class="n">partition_inference</span><span class="p">(</span><span class="nb">iter</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">convert_predict_rdd_to_dataframe</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">result_rdd</span><span class="o">.</span><span class="n">flatMap</span><span class="p">(</span><span class="k">lambda</span> <span class="n">data</span><span class="p">:</span> <span class="n">data</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">SparkXShards</span><span class="p">):</span>
+            <span class="n">transformed_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">transform_shard</span><span class="p">(</span><span class="n">predict_transform</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+            <span class="n">result_rdd</span> <span class="o">=</span> <span class="n">transformed_data</span><span class="o">.</span><span class="n">rdd</span><span class="o">.</span><span class="n">mapPartitions</span><span class="p">(</span><span class="k">lambda</span> <span class="nb">iter</span><span class="p">:</span> <span class="n">partition_inference</span><span class="p">(</span><span class="nb">iter</span><span class="p">))</span>
+
+            <span class="k">def</span> <span class="nf">update_result_shard</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+                <span class="n">shard</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">data</span>
+                <span class="n">shard</span><span class="p">[</span><span class="s2">&quot;prediction&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span>
+                <span class="k">return</span> <span class="n">shard</span>
+            <span class="k">return</span> <span class="n">SparkXShards</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">rdd</span><span class="o">.</span><span class="n">zip</span><span class="p">(</span><span class="n">result_rdd</span><span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">update_result_shard</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                <span class="n">split_num</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">/</span><span class="n">batch_size</span><span class="p">)</span>
+                <span class="n">arrays</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array_split</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">split_num</span><span class="p">)</span>
+                <span class="n">num_slices</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">split_num</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_num</span><span class="p">)</span>
+                <span class="n">data_rdd</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">parallelize</span><span class="p">(</span><span class="n">arrays</span><span class="p">,</span> <span class="n">numSlices</span><span class="o">=</span><span class="n">num_slices</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">flattened</span> <span class="o">=</span> <span class="n">nest</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+                <span class="n">data_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">flattened</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">data_to_be_rdd</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">split_num</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">flattened</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="n">batch_size</span><span class="p">)</span>
+                <span class="n">num_slices</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">split_num</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_num</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">split_num</span><span class="p">):</span>
+                    <span class="n">data_to_be_rdd</span><span class="o">.</span><span class="n">append</span><span class="p">([])</span>
+                <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">flattened</span><span class="p">:</span>
+                    <span class="n">invalidInputError</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">),</span>
+                                      <span class="s2">&quot;the data in the data list should be ndarrays,&quot;</span>
+                                      <span class="s2">&quot; but get &quot;</span> <span class="o">+</span> <span class="n">x</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+                    <span class="n">invalidInputError</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">==</span> <span class="n">data_length</span><span class="p">,</span>
+                                      <span class="s2">&quot;the ndarrays in data must all have the same&quot;</span>
+                                      <span class="s2">&quot; size in first dimension, got first ndarray&quot;</span>
+                                      <span class="s2">&quot; of size </span><span class="si">{}</span><span class="s2"> and another </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data_length</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+                    <span class="n">x_parts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array_split</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">split_num</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">x_part</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">x_parts</span><span class="p">):</span>
+                        <span class="n">data_to_be_rdd</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x_part</span><span class="p">)</span>
+
+                <span class="n">data_to_be_rdd</span> <span class="o">=</span> <span class="p">[</span><span class="n">nest</span><span class="o">.</span><span class="n">pack_sequence_as</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">shard</span><span class="p">)</span> <span class="k">for</span> <span class="n">shard</span> <span class="ow">in</span> <span class="n">data_to_be_rdd</span><span class="p">]</span>
+                <span class="n">data_rdd</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">parallelize</span><span class="p">(</span><span class="n">data_to_be_rdd</span><span class="p">,</span> <span class="n">numSlices</span><span class="o">=</span><span class="n">num_slices</span><span class="p">)</span>
+
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Partition number: &quot;</span><span class="p">,</span> <span class="n">data_rdd</span><span class="o">.</span><span class="n">getNumPartitions</span><span class="p">())</span>
+            <span class="n">result_rdd</span> <span class="o">=</span> <span class="n">data_rdd</span><span class="o">.</span><span class="n">mapPartitions</span><span class="p">(</span><span class="k">lambda</span> <span class="nb">iter</span><span class="p">:</span> <span class="n">partition_inference</span><span class="p">(</span><span class="nb">iter</span><span class="p">))</span>
+            <span class="n">result_arr_list</span> <span class="o">=</span> <span class="n">result_rdd</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+            <span class="n">result_arr</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result_arr_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">result_arr</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">r</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">result_arr_list</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                              <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">result_arr_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]))]</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result_arr_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                <span class="n">result_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">result_arr_list</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">result_arr</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;Only XShards, Spark DataFrame, a numpy array and a list of numpy&quot;</span>
+                              <span class="s2">&quot; arrays are supported as input data, but&quot;</span>
+                              <span class="s2">&quot; get &quot;</span> <span class="o">+</span> <span class="n">data</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OpenvinoEstimator.evaluate"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.openvino.estimator.OpenvinoEstimator.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">feature_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Evaluate is not supported in OpenVINOEstimator</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OpenvinoEstimator.get_model"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.openvino.estimator.OpenvinoEstimator.get_model">[docs]</a>    <span class="k">def</span> <span class="nf">get_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get_model is not supported in OpenVINOEstimator</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OpenvinoEstimator.save"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.openvino.estimator.OpenvinoEstimator.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save is not supported in OpenVINOEstimator</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OpenvinoEstimator.load"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.openvino.estimator.OpenvinoEstimator.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load an openVINO model.</span>
+
+<span class="sd">        :param model_path: String. The file path to the OpenVINO IR xml file.</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_num</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">core_num</span> <span class="o">=</span> <span class="n">get_node_and_core_number</span><span class="p">()</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">model_path</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="s2">&quot;The model_path should be string.&quot;</span><span class="p">)</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">model_path</span><span class="p">),</span> <span class="s2">&quot;The model_path should be exist.&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">model_path</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model_bytes</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">model_path</span><span class="p">[:</span><span class="n">model_path</span><span class="o">.</span><span class="n">rindex</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)]</span> <span class="o">+</span> <span class="s2">&quot;.bin&quot;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weight_bytes</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="OpenvinoEstimator.set_tensorboard"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.openvino.estimator.OpenvinoEstimator.set_tensorboard">[docs]</a>    <span class="k">def</span> <span class="nf">set_tensorboard</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_dir</span><span class="p">,</span> <span class="n">app_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set_tensorboard is not supported in OpenVINOEstimator</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OpenvinoEstimator.clear_gradient_clipping"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.openvino.estimator.OpenvinoEstimator.clear_gradient_clipping">[docs]</a>    <span class="k">def</span> <span class="nf">clear_gradient_clipping</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clear_gradient_clipping is not supported in OpenVINOEstimator</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OpenvinoEstimator.set_constant_gradient_clipping"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.openvino.estimator.OpenvinoEstimator.set_constant_gradient_clipping">[docs]</a>    <span class="k">def</span> <span class="nf">set_constant_gradient_clipping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">min</span><span class="p">,</span> <span class="nb">max</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set_constant_gradient_clipping is not supported in OpenVINOEstimator</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OpenvinoEstimator.set_l2_norm_gradient_clipping"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.openvino.estimator.OpenvinoEstimator.set_l2_norm_gradient_clipping">[docs]</a>    <span class="k">def</span> <span class="nf">set_l2_norm_gradient_clipping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clip_norm</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set_l2_norm_gradient_clipping is not supported in OpenVINOEstimator</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OpenvinoEstimator.get_train_summary"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.openvino.estimator.OpenvinoEstimator.get_train_summary">[docs]</a>    <span class="k">def</span> <span class="nf">get_train_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get_train_summary is not supported in OpenVINOEstimator</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OpenvinoEstimator.get_validation_summary"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.openvino.estimator.OpenvinoEstimator.get_validation_summary">[docs]</a>    <span class="k">def</span> <span class="nf">get_validation_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get_validation_summary is not supported in OpenVINOEstimator</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OpenvinoEstimator.load_orca_checkpoint"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.openvino.estimator.OpenvinoEstimator.load_orca_checkpoint">[docs]</a>    <span class="k">def</span> <span class="nf">load_orca_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">version</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load_orca_checkpoint is not supported in OpenVINOEstimator</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;not implemented&quot;</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

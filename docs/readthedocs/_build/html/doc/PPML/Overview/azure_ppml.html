@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Preserving Machine Learning (PPML) on Azure User Guide &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/design-tabs.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Cluster Serving User Guide" href="../../Serving/Overview/serving.html" />
+    <link rel="prev" title="TPC-DS with Trusted SparkSQL on Kubernetes" href="../QuickStart/tpc-ds_with_sparksql_on_k8s.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">1. Introduction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#overall-architecture">Overall Architecture</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#end-to-end-workflow">End-to-End Workflow</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#setup">2. Setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#install-azure-cli">2.1 Install Azure CLI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#create-azure-vm-for-hosting-bigdl-ppml-image">2.2 Create Azure VM for hosting BigDL PPML image</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#create-resource-group">2.2.1 Create Resource Group</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#create-linux-client-with-sgx-support">2.2.2 Create Linux client with SGX support</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pull-bigdl-ppml-image-and-run-on-linux-client">2.2.3 Pull BigDL PPML image and run on Linux client</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#create-aks-azure-kubernetes-services-or-use-existing-aks">2.3 Create AKS(Azure Kubernetes Services) or use existing AKS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#create-azure-data-lake-store-gen-2">2.4 Create Azure Data Lake Store Gen 2</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#create-data-lake-storage-account-or-use-existing-one">2.4.1 Create Data Lake Storage account or use existing one.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#access-data-in-hadoop-through-abfs-azure-blob-filesystem-driver">2.4.2  Access data in Hadoop through ABFS(Azure Blob Filesystem) driver</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#authentication">Authentication</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#create-azure-key-vault">2.5 Create Azure Key Vault</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#create-or-use-an-existing-azure-key-vault">2.5.1 Create or use an existing Azure Key Vault</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#set-access-policy-for-the-client-vm">2.5.2 Set access policy for the client VM</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#aks-access-key-vault">2.5.3 AKS access Key Vault</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#set-access-for-aks-vm-scaleset">2.5.3.1 Set access for AKS VM ScaleSet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#set-access-for-aks">2.5.3.2 Set access for AKS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#b-provide-an-identity-to-access-the-azure-key-vault">b. Provide an identity to access the Azure Key Vault</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#c-create-a-secretproviderclass-to-access-your-key-vault">c. Create a SecretProviderClass to access your Key Vault</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#run-spark-ppml-jobs">3. Run Spark PPML jobs</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#generate-enclave-key-to-azure-key-vault">3.1 Generate enclave key to Azure Key Vault</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#generate-keys">3.2 Generate keys</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#generate-password">3.3 Generate password</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#save-kube-config-to-secret">3.4 Save kube config to secret</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#create-the-rbac">3.5 Create the RBAC</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#run-ppml-spark-job">3.6 Run PPML spark job</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#run-tpc-h-example">4. Run TPC-H example</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#generating-tables">4.1 Generating tables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#generate-primary-key-and-data-key">4.2 Generate primary key and data key</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#encrypt-data">4.3 Encrypt Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#running">4.4 Running</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Privacy Preserving Machine Learning (PPML) on Azure User Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/doc/PPML/Overview/azure_ppml.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="privacy-preserving-machine-learning-ppml-on-azure-user-guide">
+<h1>Privacy Preserving Machine Learning (PPML) on Azure User Guide<a class="headerlink" href="#privacy-preserving-machine-learning-ppml-on-azure-user-guide" title="Permalink to this headline">¶</a></h1>
+<section id="introduction">
+<h2>1. Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>Protecting privacy and confidentiality is critical for large-scale data analysis and machine learning. BigDL <em><strong>PPML</strong></em> combines various low-level hardware and software security technologies (e.g., <a class="reference external" href="https://www.intel.com/content/www/us/en/architecture-and-technology/software-guard-extensions.html">Intel® Software Guard Extensions (Intel® SGX)</a>, <a class="reference external" href="https://events19.linuxfoundation.org/wp-content/uploads/2017/12/Library-OS-is-the-New-Container-Why-is-Library-OS-A-Better-Option-for-Compatibility-and-Sandboxing-Chia-Che-Tsai-UC-Berkeley.pdf">Library Operating System (LibOS)</a> such as <a class="reference external" href="https://github.com/gramineproject/graphene">Graphene</a> and <a class="reference external" href="https://github.com/occlum/occlum">Occlum</a>, <a class="reference external" href="https://en.wikipedia.org/wiki/Federated_learning">Federated Learning</a>, etc.), so that users can continue to apply standard Big Data and AI technologies (such as Apache Spark, Apache Flink, Tensorflow, PyTorch, etc.) without sacrificing privacy.</p>
+<p>BigDL PPML on Azure solution integrate BigDL <em><strong>PPML</strong></em> technology with Azure Services(Azure Kubernetes Service, Azure Storage Account, Azure Key Vault, etc.) to faciliate Azure customer to create Big Data and AI applications while getting high privacy and confidentiality protection.</p>
+<section id="overall-architecture">
+<h3>Overall Architecture<a class="headerlink" href="#overall-architecture" title="Permalink to this headline">¶</a></h3>
+<p><img alt="../../../_images/ppml_azure_latest.png" src="../../../_images/ppml_azure_latest.png" /></p>
+</section>
+<section id="end-to-end-workflow">
+<h3>End-to-End Workflow<a class="headerlink" href="#end-to-end-workflow" title="Permalink to this headline">¶</a></h3>
+<p><img alt="../../../_images/ppml_azure_workflow.png" src="../../../_images/ppml_azure_workflow.png" /></p>
+</section>
+</section>
+<section id="setup">
+<h2>2. Setup<a class="headerlink" href="#setup" title="Permalink to this headline">¶</a></h2>
+<section id="install-azure-cli">
+<h3>2.1 Install Azure CLI<a class="headerlink" href="#install-azure-cli" title="Permalink to this headline">¶</a></h3>
+<p>Before you setup your environment, please install Azure CLI on your machine according to <a class="reference external" href="https://docs.microsoft.com/en-us/cli/azure/install-azure-cli">Azure CLI guide</a>.</p>
+<p>Then run <code class="docutils literal notranslate"><span class="pre">az</span> <span class="pre">login</span></code> to login to Azure system before you run following Azure commands.</p>
+</section>
+<section id="create-azure-vm-for-hosting-bigdl-ppml-image">
+<h3>2.2 Create Azure VM for hosting BigDL PPML image<a class="headerlink" href="#create-azure-vm-for-hosting-bigdl-ppml-image" title="Permalink to this headline">¶</a></h3>
+<section id="create-resource-group">
+<h4>2.2.1 Create Resource Group<a class="headerlink" href="#create-resource-group" title="Permalink to this headline">¶</a></h4>
+<p>On your machine, create resource group or use your existing resource group. Example code to create resource group with Azure CLI:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">az</span> <span class="n">group</span> <span class="n">create</span> \
+    <span class="o">--</span><span class="n">name</span> <span class="n">myResourceGroup</span> \
+    <span class="o">--</span><span class="n">location</span> <span class="n">myLocation</span> \
+    <span class="o">--</span><span class="n">output</span> <span class="n">none</span>
+</pre></div>
+</div>
+</section>
+<section id="create-linux-client-with-sgx-support">
+<h4>2.2.2 Create Linux client with SGX support<a class="headerlink" href="#create-linux-client-with-sgx-support" title="Permalink to this headline">¶</a></h4>
+<p>Create Linux VM through Azure <a class="reference external" href="https://docs.microsoft.com/en-us/azure/developer/javascript/tutorial/nodejs-virtual-machine-vm/create-linux-virtual-machine-azure-cli">CLI</a>/<a class="reference external" href="https://docs.microsoft.com/en-us/azure/virtual-machines/linux/quick-create-portal">Portal</a>/Powershell.
+For size of the VM, please choose DC-V3 Series VM with more than 4 vCPU cores.</p>
+</section>
+<section id="pull-bigdl-ppml-image-and-run-on-linux-client">
+<h4>2.2.3 Pull BigDL PPML image and run on Linux client<a class="headerlink" href="#pull-bigdl-ppml-image-and-run-on-linux-client" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li><p>Go to Azure Marketplace, search “BigDL PPML” and find <code class="docutils literal notranslate"><span class="pre">BigDL</span> <span class="pre">PPML</span></code> product. Click “Create” button which will lead you to <code class="docutils literal notranslate"><span class="pre">Subscribe</span></code> page.
+On <code class="docutils literal notranslate"><span class="pre">Subscribe</span></code> page, input your subscription, your Azure container registry, your resource group, location. Then click <code class="docutils literal notranslate"><span class="pre">Subscribe</span></code> to subscribe BigDL PPML to your container registry.</p></li>
+<li><p>Login to the created VM. Then login to your Azure container registry, pull BigDL PPML image using such command:</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker pull myContainerRegistry/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Start container of this image</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+
+<span class="nb">export</span> <span class="nv">LOCAL_IP</span><span class="o">=</span>YOUR_LOCAL_IP
+<span class="nb">export</span> <span class="nv">DOCKER_IMAGE</span><span class="o">=</span>intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT
+
+sudo docker run -itd <span class="se">\</span>
+    --privileged <span class="se">\</span>
+    --net<span class="o">=</span>host <span class="se">\</span>
+    --cpuset-cpus<span class="o">=</span><span class="s2">&quot;0-5&quot;</span> <span class="se">\</span>
+    --oom-kill-disable <span class="se">\</span>
+    --device<span class="o">=</span>/dev/gsgx <span class="se">\</span>
+    --device<span class="o">=</span>/dev/sgx/enclave <span class="se">\</span>
+    --device<span class="o">=</span>/dev/sgx/provision <span class="se">\</span>
+    -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket <span class="se">\</span>
+    --name<span class="o">=</span>spark-local <span class="se">\</span>
+    -e <span class="nv">LOCAL_IP</span><span class="o">=</span><span class="nv">$LOCAL_IP</span> <span class="se">\</span>
+    -e <span class="nv">SGX_MEM_SIZE</span><span class="o">=</span>64G <span class="se">\</span>
+    <span class="nv">$DOCKER_IMAGE</span> bash
+</pre></div>
+</div>
+</section>
+</section>
+<section id="create-aks-azure-kubernetes-services-or-use-existing-aks">
+<h3>2.3 Create AKS(Azure Kubernetes Services) or use existing AKS<a class="headerlink" href="#create-aks-azure-kubernetes-services-or-use-existing-aks" title="Permalink to this headline">¶</a></h3>
+<p>Create AKS or use existing AKS with Intel SGX support.</p>
+<p>In your BigDL PPML container, you can run <code class="docutils literal notranslate"><span class="pre">/ppml/trusted-big-data-ml/azure/create-aks.sh</span></code> to create AKS with confidential computing support.</p>
+<p>Note: Please use same VNet information of your client to create AKS. And use DC-Series VM size(i.e.Standard_DC8ds_v3) to create AKS.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>/ppml/trusted-big-data-ml/azure/create-aks.sh <span class="se">\</span>
+--resource-group myResourceGroup <span class="se">\</span>
+--vnet-resource-group myVnetResourceGroup <span class="se">\</span>
+--vnet-name myVnetName <span class="se">\</span>
+--subnet-name mySubnetName <span class="se">\</span>
+--cluster-name myAKSName <span class="se">\</span>
+--vm-size myAKSNodeVMSize <span class="se">\</span>
+--node-count myAKSInitNodeCount
+</pre></div>
+</div>
+<p>You can check the information by run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>/ppml/trusted-big-data-ml/azure/create-aks.sh --help
+</pre></div>
+</div>
+</section>
+</section>
+<section id="create-azure-data-lake-store-gen-2">
+<h2>2.4 Create Azure Data Lake Store Gen 2<a class="headerlink" href="#create-azure-data-lake-store-gen-2" title="Permalink to this headline">¶</a></h2>
+<section id="create-data-lake-storage-account-or-use-existing-one">
+<h3>2.4.1 Create Data Lake Storage account or use existing one.<a class="headerlink" href="#create-data-lake-storage-account-or-use-existing-one" title="Permalink to this headline">¶</a></h3>
+<p>The example command to create Data Lake store is as below:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>az dls account create --account myDataLakeAccount --location myLocation --resource-group myResourceGroup
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Create Container to put user data
+Example command to create container</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>az storage fs create -n myFS --account-name myDataLakeAccount --auth-mode login
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Create folder, upload file/folder
+Example command to create folder:</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>az storage fs directory create -n myDirectory -f myFS --account-name myDataLakeAccount --auth-mode login
+</pre></div>
+</div>
+<p>Example command to upload file</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>az storage fs file upload -s <span class="s2">&quot;path/to/file&quot;</span> -p myDirectory/file  -f  myFS --account-name myDataLakeAccount --auth-mode login
+</pre></div>
+</div>
+<p>Example command to upload directory</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>az storage fs directory upload -f myFS --account-name myDataLakeAccount -s <span class="s2">&quot;path/to/directory&quot;</span> -d myDirectory --recursive
+</pre></div>
+</div>
+</section>
+<section id="access-data-in-hadoop-through-abfs-azure-blob-filesystem-driver">
+<h3>2.4.2  Access data in Hadoop through ABFS(Azure Blob Filesystem) driver<a class="headerlink" href="#access-data-in-hadoop-through-abfs-azure-blob-filesystem-driver" title="Permalink to this headline">¶</a></h3>
+<p>You can access Data Lake Storage in Hadoop filesytem by such URI:  <code class="docutils literal notranslate"><span class="pre">abfs[s]://file_system&#64;account_name.dfs.core.windows.net/&lt;path&gt;/&lt;path&gt;/&lt;file_name&gt;</span></code></p>
+<section id="authentication">
+<h4>Authentication<a class="headerlink" href="#authentication" title="Permalink to this headline">¶</a></h4>
+<p>The ABFS driver supports two forms of authentication so that the Hadoop application may securely access resources contained within a Data Lake Storage Gen2 capable account.</p>
+<ul class="simple">
+<li><p>Shared Key: This permits users access to ALL resources in the account. The key is encrypted and stored in Hadoop configuration.</p></li>
+<li><p>Azure Active Directory OAuth Bearer Token: Azure AD bearer tokens are acquired and refreshed by the driver using either the identity of the end user or a configured Service Principal. Using this authentication model, all access is authorized on a per-call basis using the identity associated with the supplied token and evaluated against the assigned POSIX Access Control List (ACL).</p></li>
+</ul>
+<p>By default, in our solution, we use shared key authentication.</p>
+<ul class="simple">
+<li><p>Get Access key list of storage account:</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>az storage account keys list -g MyResourceGroup -n myDataLakeAccount
+</pre></div>
+</div>
+<p>Use one of the keys in authentication.</p>
+</section>
+</section>
+</section>
+<section id="create-azure-key-vault">
+<h2>2.5 Create Azure Key Vault<a class="headerlink" href="#create-azure-key-vault" title="Permalink to this headline">¶</a></h2>
+<section id="create-or-use-an-existing-azure-key-vault">
+<h3>2.5.1 Create or use an existing Azure Key Vault<a class="headerlink" href="#create-or-use-an-existing-azure-key-vault" title="Permalink to this headline">¶</a></h3>
+<p>Example command to create key vault</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>az keyvault create -n myKeyVault -g myResourceGroup -l location
+</pre></div>
+</div>
+<p>Take note of the following properties for use in the next section:</p>
+<ul class="simple">
+<li><p>The name of the secret object in the key vault</p></li>
+<li><p>The object type (secret, key, or certificate)</p></li>
+<li><p>The name of your Azure key vault resource</p></li>
+<li><p>The Azure tenant ID that the subscription belongs to</p></li>
+</ul>
+</section>
+<section id="set-access-policy-for-the-client-vm">
+<h3>2.5.2 Set access policy for the client VM<a class="headerlink" href="#set-access-policy-for-the-client-vm" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Run such command to get the system identity:</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>az vm identity assign -g myResourceGroup -n myVM
+</pre></div>
+</div>
+<p>The output would be like this:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">{</span>
+  <span class="s2">&quot;systemAssignedIdentity&quot;</span>: <span class="s2">&quot;ff5505d6-8f72-4b99-af68-baff0fbd20f5&quot;</span>,
+  <span class="s2">&quot;userAssignedIdentities&quot;</span>: <span class="o">{}</span>
+<span class="o">}</span>
+</pre></div>
+</div>
+<p>Take note of the systemAssignedIdentity of the client VM.</p>
+<ul class="simple">
+<li><p>Set access policy for client VM
+Example command:</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>az keyvault set-policy --name myKeyVault --object-id &lt;mySystemAssignedIdentity&gt; --secret-permissions all --key-permissions all --certificate-permissions all
+</pre></div>
+</div>
+</section>
+<section id="aks-access-key-vault">
+<h3>2.5.3 AKS access Key Vault<a class="headerlink" href="#aks-access-key-vault" title="Permalink to this headline">¶</a></h3>
+<section id="set-access-for-aks-vm-scaleset">
+<h4>2.5.3.1 Set access for AKS VM ScaleSet<a class="headerlink" href="#set-access-for-aks-vm-scaleset" title="Permalink to this headline">¶</a></h4>
+<section id="a-find-your-vm-scaleset-in-your-aks-and-assign-system-managed-identity-to-vm-scaleset">
+<h5>a. Find your VM ScaleSet in your AKS, and assign system managed identity to VM ScaleSet.<a class="headerlink" href="#a-find-your-vm-scaleset-in-your-aks-and-assign-system-managed-identity-to-vm-scaleset" title="Permalink to this headline">¶</a></h5>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>az vm identity assign -g myResourceGroup -n myAKSVMSS
+</pre></div>
+</div>
+<p>The output would be like below:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>principalId: xxxxxxxxx
+tenantId: xxxxxxxxxxx
+type: SystemAssigned, UserAssigned
+userAssignedIdentities:
+  ? /subscriptions/xxxx/resourceGroups/xxxxx/providers/Microsoft.ManagedIdentity/userAssignedIdentities/bigdl-ks-agentpool
+  : clientId: xxxxxx
+    principalId: xxxxx
+</pre></div>
+</div>
+<p>Take note of principalId of the first line as System Managed Identity of your VMSS.</p>
+</section>
+<section id="b-set-access-policy-for-aks-vm-scaleset">
+<h5>b. Set access policy for AKS VM ScaleSet<a class="headerlink" href="#b-set-access-policy-for-aks-vm-scaleset" title="Permalink to this headline">¶</a></h5>
+<p>Example command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>az keyvault set-policy --name myKeyVault --object-id &lt;systemManagedIdentityOfVMSS&gt; --secret-permissions get --key-permissions all --certificate-permissions all
+</pre></div>
+</div>
+</section>
+</section>
+<section id="set-access-for-aks">
+<h4>2.5.3.2 Set access for AKS<a class="headerlink" href="#set-access-for-aks" title="Permalink to this headline">¶</a></h4>
+<section id="a-enable-azure-key-vault-provider-for-secrets-store-csi-driver-support">
+<h5>a. Enable Azure Key Vault Provider for Secrets Store CSI Driver support<a class="headerlink" href="#a-enable-azure-key-vault-provider-for-secrets-store-csi-driver-support" title="Permalink to this headline">¶</a></h5>
+<p>Example command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>az aks enable-addons --addons azure-keyvault-secrets-provider --name myAKSCluster --resource-group myResourceGroup
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Verify the Azure Key Vault Provider for Secrets Store CSI Driver installation
+Example command:</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl get pods -n kube-system -l <span class="s1">&#39;app in (secrets-store-csi-driver, secrets-store-provider-azure)&#39;</span>
+</pre></div>
+</div>
+<p>Be sure that a Secrets Store CSI Driver pod and an Azure Key Vault Provider pod are running on each node in your cluster’s node pools.</p>
+<ul class="simple">
+<li><p>Enable Azure Key Vault Provider for Secrets Store CSI Driver to track of secret update in key vault</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>az aks update -g myResourceGroup -n myAKSCluster --enable-secret-rotation
+</pre></div>
+</div>
+</section>
+</section>
+<section id="b-provide-an-identity-to-access-the-azure-key-vault">
+<h4>b. Provide an identity to access the Azure Key Vault<a class="headerlink" href="#b-provide-an-identity-to-access-the-azure-key-vault" title="Permalink to this headline">¶</a></h4>
+<p>There are several ways to provide identity for Azure Key Vault Provider for Secrets Store CSI Driver to access Azure Key Vault: <code class="docutils literal notranslate"><span class="pre">An</span> <span class="pre">Azure</span> <span class="pre">Active</span> <span class="pre">Directory</span> <span class="pre">pod</span> <span class="pre">identity</span></code>, <code class="docutils literal notranslate"><span class="pre">user-assigned</span> <span class="pre">identity</span></code> or <code class="docutils literal notranslate"><span class="pre">system-assigned</span> <span class="pre">managed</span> <span class="pre">identity</span></code>. In our solution, we use user-assigned managed identity.</p>
+<ul class="simple">
+<li><p>Enable managed identity in AKS</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>az aks update -g myResourceGroup -n myAKSCluster --enable-managed-identity
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Get user-assigned managed identity that you created when you enabled a managed identity on your AKS cluster
+Run:</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>az aks show -g myResourceGroup -n myAKSCluster --query addonProfiles.azureKeyvaultSecretsProvider.identity.clientId -o tsv
+</pre></div>
+</div>
+<p>The output would be like:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>f95519c1-3fe8-441b-a7b9-368d5e13b534
+</pre></div>
+</div>
+<p>Take note of this output as your user-assigned managed identity of Azure KeyVault Secrets Provider</p>
+<ul class="simple">
+<li><p>Grant your user-assigned managed identity permissions that enable it to read your key vault and view its contents
+Example command:</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>az keyvault set-policy -n myKeyVault --key-permissions get --spn f95519c1-3fe8-441b-a7b9-368d5e13b534
+az keyvault set-policy -n myKeyVault --secret-permissions get --spn f95519c1-3fe8-441b-a7b9-368d5e13b534
+</pre></div>
+</div>
+</section>
+<section id="c-create-a-secretproviderclass-to-access-your-key-vault">
+<h4>c. Create a SecretProviderClass to access your Key Vault<a class="headerlink" href="#c-create-a-secretproviderclass-to-access-your-key-vault" title="Permalink to this headline">¶</a></h4>
+<p>On your client docker container, edit <code class="docutils literal notranslate"><span class="pre">/ppml/trusted-big-data-ml/azure/secretProviderClass.yaml</span></code> file, modify <code class="docutils literal notranslate"><span class="pre">&lt;client-id&gt;</span></code> to your user-assigned managed identity of Azure KeyVault Secrets Provider, and modify <code class="docutils literal notranslate"><span class="pre">&lt;key-vault-name&gt;</span></code> and  <code class="docutils literal notranslate"><span class="pre">&lt;tenant-id&gt;</span></code> to your real key vault name and tenant id.</p>
+<p>Then run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl apply -f /ppml/trusted-big-data-ml/azure/secretProviderClass.yaml
+</pre></div>
+</div>
+<p>to create secretProviderClass in your AKS.</p>
+</section>
+</section>
+</section>
+<section id="run-spark-ppml-jobs">
+<h2>3. Run Spark PPML jobs<a class="headerlink" href="#run-spark-ppml-jobs" title="Permalink to this headline">¶</a></h2>
+<p>Login to your client VM and enter your BigDL PPML container:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker <span class="nb">exec</span> -it spark-local bash
+</pre></div>
+</div>
+<p>Then run <code class="docutils literal notranslate"><span class="pre">az</span> <span class="pre">login</span></code> to login to Azure system.</p>
+<section id="generate-enclave-key-to-azure-key-vault">
+<h3>3.1 Generate enclave key to Azure Key Vault<a class="headerlink" href="#generate-enclave-key-to-azure-key-vault" title="Permalink to this headline">¶</a></h3>
+<p>Run such script to generate enclave key</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">ppml</span><span class="o">/</span><span class="n">trusted</span><span class="o">-</span><span class="n">big</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">ml</span><span class="o">/</span><span class="n">azure</span><span class="o">/</span><span class="n">generate</span><span class="o">-</span><span class="n">enclave</span><span class="o">-</span><span class="n">key</span><span class="o">-</span><span class="n">az</span><span class="o">.</span><span class="n">sh</span> <span class="n">myKeyVault</span>
+</pre></div>
+</div>
+</section>
+<section id="generate-keys">
+<h3>3.2 Generate keys<a class="headerlink" href="#generate-keys" title="Permalink to this headline">¶</a></h3>
+<p>Run such scripts to generate keys:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>/ppml/trusted-big-data-ml/azure/generate-keys.sh
+</pre></div>
+</div>
+<p>When entering the passphrase or password, you could input the same password by yourself; and these passwords could also be used for the next step of generating other passwords. Password should be longer than 6 bits and contain numbers and letters, and one sample password is “3456abcd”. These passwords would be used for future remote attestations and to start SGX enclaves more securely.</p>
+</section>
+<section id="generate-password">
+<h3>3.3 Generate password<a class="headerlink" href="#generate-password" title="Permalink to this headline">¶</a></h3>
+<p>Run such script to save password to Azure Key Vault</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>/ppml/trusted-big-data-ml/azure/generate-password-az.sh myKeyVault used_password_when_generate_keys
+</pre></div>
+</div>
+</section>
+<section id="save-kube-config-to-secret">
+<h3>3.4 Save kube config to secret<a class="headerlink" href="#save-kube-config-to-secret" title="Permalink to this headline">¶</a></h3>
+<p>Login to AKS use such command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>az aks get-credentials --resource-group  myResourceGroup --name myAKSCluster
+</pre></div>
+</div>
+<p>Run such script to save kube config to secret</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>/ppml/trusted-big-data-ml/azure/kubeconfig-secret.sh
+</pre></div>
+</div>
+</section>
+<section id="create-the-rbac">
+<h3>3.5 Create the RBAC<a class="headerlink" href="#create-the-rbac" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl create serviceaccount spark
+kubectl create clusterrolebinding spark-role --clusterrole<span class="o">=</span>edit --serviceaccount<span class="o">=</span>default:spark --namespace<span class="o">=</span>default
+</pre></div>
+</div>
+</section>
+<section id="run-ppml-spark-job">
+<h3>3.6 Run PPML spark job<a class="headerlink" href="#run-ppml-spark-job" title="Permalink to this headline">¶</a></h3>
+<p>The example script to run PPML spark job on AKS is as below. You can also refer to <code class="docutils literal notranslate"><span class="pre">/ppml/trusted-big-data-ml/azure/submit-spark-sgx-az.sh</span></code></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">SPARK_EXTRA_JAR_PATH</span><span class="o">=</span>
+<span class="nv">SPARK_JOB_MAIN_CLASS</span><span class="o">=</span>
+<span class="nv">ARGS</span><span class="o">=</span>
+<span class="nv">DATA_LAKE_NAME</span><span class="o">=</span>
+<span class="nv">DATA_LAKE_ACCESS_KEY</span><span class="o">=</span>
+<span class="nv">KEY_VAULT_NAME</span><span class="o">=</span>
+<span class="nv">PRIMARY_KEY_PATH</span><span class="o">=</span>
+<span class="nv">DATA_KEY_PATH</span><span class="o">=</span>
+
+<span class="nv">LOCAL_IP</span><span class="o">=</span>
+<span class="nv">RUNTIME_SPARK_MASTER</span><span class="o">=</span>
+
+<span class="nv">secure_password</span><span class="o">=</span><span class="sb">`</span>az keyvault secret show --name <span class="s2">&quot;key-pass&quot;</span> --vault-name <span class="nv">$KEY_VAULT_NAME</span> --query <span class="s2">&quot;value&quot;</span> <span class="p">|</span> sed -e <span class="s1">&#39;s/^&quot;//&#39;</span> -e <span class="s1">&#39;s/&quot;$//&#39;</span><span class="sb">`</span>
+
+<span class="nb">export</span> <span class="nv">TF_MKL_ALLOC_MAX_BYTES</span><span class="o">=</span><span class="m">10737418240</span> <span class="o">&amp;&amp;</span> <span class="se">\</span>
+  /opt/jdk8/bin/java <span class="se">\</span>
+    -cp <span class="s1">&#39;/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*&#39;</span> <span class="se">\</span>
+    -Xmx12g <span class="se">\</span>
+    org.apache.spark.deploy.SparkSubmit <span class="se">\</span>
+    --master <span class="nv">$RUNTIME_SPARK_MASTER</span> <span class="se">\</span>
+    --deploy-mode client <span class="se">\</span>
+    --name spark-decrypt-sgx <span class="se">\</span>
+    --conf spark.driver.host<span class="o">=</span><span class="nv">$LOCAL_IP</span>
+    --conf spark.driver.memory<span class="o">=</span>18g <span class="se">\</span>
+    --conf spark.driver.cores<span class="o">=</span><span class="m">2</span> <span class="se">\</span>
+    --conf spark.executor.cores<span class="o">=</span><span class="m">2</span> <span class="se">\</span>
+    --conf spark.executor.memory<span class="o">=</span>24g <span class="se">\</span>
+    --conf spark.executor.instances<span class="o">=</span><span class="m">1</span> <span class="se">\</span>
+    --conf spark.driver.defaultJavaOptions<span class="o">=</span><span class="s2">&quot;-Dlog4j.configuration=/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/log4j2.xml&quot;</span> <span class="se">\</span>
+    --conf spark.executor.defaultJavaOptions<span class="o">=</span><span class="s2">&quot;-Dlog4j.configuration=/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/log4j2.xml&quot;</span> <span class="se">\</span>
+    --conf spark.kubernetes.authenticate.driver.serviceAccountName<span class="o">=</span>spark <span class="se">\</span>
+    --conf spark.kubernetes.container.image<span class="o">=</span>intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.1-SNAPSHOT <span class="se">\</span>
+    --conf spark.kubernetes.driver.podTemplateFile<span class="o">=</span>/ppml/trusted-big-data-ml/spark-driver-template-kv.yaml <span class="se">\</span>
+    --conf spark.kubernetes.executor.podTemplateFile<span class="o">=</span>/ppml/trusted-big-data-ml/spark-executor-template-kv.yaml <span class="se">\</span>
+    --conf spark.kubernetes.executor.deleteOnTermination<span class="o">=</span><span class="nb">false</span> <span class="se">\</span>
+    --conf spark.network.timeout<span class="o">=</span><span class="m">10000000</span> <span class="se">\</span>
+    --conf spark.executor.heartbeatInterval<span class="o">=</span><span class="m">10000000</span> <span class="se">\</span>
+    --conf spark.python.use.daemon<span class="o">=</span><span class="nb">false</span> <span class="se">\</span>
+    --conf spark.python.worker.reuse<span class="o">=</span><span class="nb">false</span> <span class="se">\</span>
+    --conf spark.sql.auto.repartition<span class="o">=</span><span class="nb">true</span> <span class="se">\</span>
+    --conf spark.default.parallelism<span class="o">=</span><span class="m">400</span> <span class="se">\</span>
+    --conf spark.sql.shuffle.partitions<span class="o">=</span><span class="m">400</span> <span class="se">\</span>
+    --jars local://<span class="nv">$SPARK_EXTRA_JAR_PATH</span> <span class="se">\</span>
+    --conf spark.kubernetes.sgx.enabled<span class="o">=</span><span class="nb">true</span> <span class="se">\</span>
+    --conf spark.kubernetes.sgx.driver.mem<span class="o">=</span>16g <span class="se">\</span>
+    --conf spark.kubernetes.sgx.driver.jvm.mem<span class="o">=</span>7g <span class="se">\</span>
+    --conf spark.kubernetes.sgx.executor.mem<span class="o">=</span>16g <span class="se">\</span>
+    --conf spark.kubernetes.sgx.executor.jvm.mem<span class="o">=</span>7g <span class="se">\</span>
+    --conf spark.kubernetes.sgx.log.level<span class="o">=</span>error <span class="se">\</span>
+    --conf spark.authenticate<span class="o">=</span><span class="nb">true</span> <span class="se">\</span>
+    --conf spark.authenticate.secret<span class="o">=</span><span class="nv">$secure_password</span> <span class="se">\</span>
+    --conf spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET<span class="o">=</span><span class="s2">&quot;spark-secret:secret&quot;</span> <span class="se">\</span>
+    --conf spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET<span class="o">=</span><span class="s2">&quot;spark-secret:secret&quot;</span> <span class="se">\</span>
+    --conf spark.authenticate.enableSaslEncryption<span class="o">=</span><span class="nb">true</span> <span class="se">\</span>
+    --conf spark.network.crypto.enabled<span class="o">=</span><span class="nb">true</span> <span class="se">\</span>
+    --conf spark.network.crypto.keyLength<span class="o">=</span><span class="m">128</span> <span class="se">\</span>
+    --conf spark.network.crypto.keyFactoryAlgorithm<span class="o">=</span>PBKDF2WithHmacSHA1 <span class="se">\</span>
+    --conf spark.io.encryption.enabled<span class="o">=</span><span class="nb">true</span> <span class="se">\</span>
+    --conf spark.io.encryption.keySizeBits<span class="o">=</span><span class="m">128</span> <span class="se">\</span>
+    --conf spark.io.encryption.keygen.algorithm<span class="o">=</span>HmacSHA1 <span class="se">\</span>
+    --conf spark.ssl.enabled<span class="o">=</span><span class="nb">true</span> <span class="se">\</span>
+    --conf spark.ssl.port<span class="o">=</span><span class="m">8043</span> <span class="se">\</span>
+    --conf spark.ssl.keyPassword<span class="o">=</span><span class="nv">$secure_password</span> <span class="se">\</span>
+    --conf spark.ssl.keyStore<span class="o">=</span>/ppml/trusted-big-data-ml/work/keys/keystore.jks <span class="se">\</span>
+    --conf spark.ssl.keyStorePassword<span class="o">=</span><span class="nv">$secure_password</span> <span class="se">\</span>
+    --conf spark.ssl.keyStoreType<span class="o">=</span>JKS <span class="se">\</span>
+    --conf spark.ssl.trustStore<span class="o">=</span>/ppml/trusted-big-data-ml/work/keys/keystore.jks <span class="se">\</span>
+    --conf spark.ssl.trustStorePassword<span class="o">=</span><span class="nv">$secure_password</span> <span class="se">\</span>
+    --conf spark.ssl.trustStoreType<span class="o">=</span>JKS <span class="se">\</span>
+    --conf spark.hadoop.fs.azure.account.auth.type.<span class="si">${</span><span class="nv">DATA_LAKE_NAME</span><span class="si">}</span>.dfs.core.windows.net<span class="o">=</span>SharedKey <span class="se">\</span>
+    --conf spark.hadoop.fs.azure.account.key.<span class="si">${</span><span class="nv">DATA_LAKE_NAME</span><span class="si">}</span>.dfs.core.windows.net<span class="o">=</span><span class="si">${</span><span class="nv">DATA_LAKE_ACCESS_KEY</span><span class="si">}</span> <span class="se">\</span>
+    --conf spark.hadoop.fs.azure.enable.append.support<span class="o">=</span><span class="nb">true</span> <span class="se">\</span>
+    --conf spark.bigdl.kms.type<span class="o">=</span>AzureKeyManagementService <span class="se">\</span>
+    --conf spark.bigdl.kms.azure.vault<span class="o">=</span><span class="nv">$KEY_VAULT_NAME</span> <span class="se">\</span>
+    --conf spark.bigdl.kms.key.primary<span class="o">=</span><span class="nv">$PRIMARY_KEY_PATH</span> <span class="se">\</span>
+    --conf spark.bigdl.kms.key.data<span class="o">=</span><span class="nv">$DATA_KEY_PATH</span> <span class="se">\</span>
+    --class <span class="nv">$SPARK_JOB_MAIN_CLASS</span> <span class="se">\</span>
+    --verbose <span class="se">\</span>
+    local://<span class="nv">$SPARK_EXTRA_JAR_PATH</span> <span class="se">\</span>
+    <span class="nv">$ARGS</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="run-tpc-h-example">
+<h2>4. Run TPC-H example<a class="headerlink" href="#run-tpc-h-example" title="Permalink to this headline">¶</a></h2>
+<p>TPC-H queries implemented in Spark using the DataFrames API running with BigDL PPML.</p>
+<section id="generating-tables">
+<h3>4.1 Generating tables<a class="headerlink" href="#generating-tables" title="Permalink to this headline">¶</a></h3>
+<p>Go to <a class="reference external" href="https://www.tpc.org/tpc_documents_current_versions/current_specifications5.asp">TPC Download</a> site, choose <code class="docutils literal notranslate"><span class="pre">TPC-H</span></code> source code, then download the TPC-H toolkits.
+After you download the tpc-h tools zip and uncompressed the zip file. Go to <code class="docutils literal notranslate"><span class="pre">dbgen</span></code> directory, and create a makefile based on <code class="docutils literal notranslate"><span class="pre">makefile.suite</span></code>, and run <code class="docutils literal notranslate"><span class="pre">make</span></code>.</p>
+<p>This should generate an executable called <code class="docutils literal notranslate"><span class="pre">dbgen</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">dbgen</span> <span class="o">-</span><span class="n">h</span>
+</pre></div>
+</div>
+<p>gives you the various options for generating the tables. The simplest case is running:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">dbgen</span>
+</pre></div>
+</div>
+<p>which generates tables with extension <code class="docutils literal notranslate"><span class="pre">.tbl</span></code> with scale 1 (default) for a total of rougly 1GB size across all tables. For different size tables you can use the <code class="docutils literal notranslate"><span class="pre">-s</span></code> option:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">dbgen</span> <span class="o">-</span><span class="n">s</span> <span class="mi">10</span>
+</pre></div>
+</div>
+<p>will generate roughly 10GB of input data.</p>
+</section>
+<section id="generate-primary-key-and-data-key">
+<h3>4.2 Generate primary key and data key<a class="headerlink" href="#generate-primary-key-and-data-key" title="Permalink to this headline">¶</a></h3>
+<p>Generate primary key and data key, then save to file system.</p>
+<p>The example code of generate primary key and data key is like below:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">java</span> <span class="o">-</span><span class="n">cp</span> <span class="s1">&#39;/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/lib/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/* </span><span class="se">\</span>
+<span class="s1">   -Xmx10g </span><span class="se">\</span>
+<span class="s1">   com.intel.analytics.bigdl.ppml.examples.GenerateKeys </span><span class="se">\</span>
+<span class="s1">   --kmsType AzureKeyManagementService </span><span class="se">\</span>
+<span class="s1">   --vaultName xxx </span><span class="se">\</span>
+<span class="s1">   --primaryKeyPath xxx/keys/primaryKey </span><span class="se">\</span>
+<span class="s1">   --dataKeyPath xxx/keys/dataKey</span>
+</pre></div>
+</div>
+</section>
+<section id="encrypt-data">
+<h3>4.3 Encrypt Data<a class="headerlink" href="#encrypt-data" title="Permalink to this headline">¶</a></h3>
+<p>Encrypt data with specified BigDL <code class="docutils literal notranslate"><span class="pre">AzureKeyManagementService</span></code></p>
+<p>The example code of encrypt data is like below:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">java</span> <span class="o">-</span><span class="n">cp</span> <span class="s1">&#39;/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/lib/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/* </span><span class="se">\</span>
+<span class="s1">   -Xmx10g </span><span class="se">\</span>
+<span class="s1">   com.intel.analytics.bigdl.ppml.examples.tpch.EncryptFiles </span><span class="se">\</span>
+<span class="s1">   --kmsType AzureKeyManagementService </span><span class="se">\</span>
+<span class="s1">   --vaultName xxx </span><span class="se">\</span>
+<span class="s1">   --primaryKeyPath xxx/keys/primaryKey </span><span class="se">\</span>
+<span class="s1">   --dataKeyPath xxx/keys/dataKey </span><span class="se">\</span>
+<span class="s1">   --inputPath xxx/dbgen </span><span class="se">\</span>
+<span class="s1">   --outputPath xxx/dbgen-encrypted</span>
+</pre></div>
+</div>
+<p>After encryption, you may upload encrypted data to Azure Data Lake store.</p>
+<p>The example script is like below:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>az storage fs directory upload -f myFS --account-name myDataLakeAccount -s xxx/dbgen-encrypted -d myDirectory --recursive
+</pre></div>
+</div>
+</section>
+<section id="running">
+<h3>4.4 Running<a class="headerlink" href="#running" title="Permalink to this headline">¶</a></h3>
+<p>Make sure you set the INPUT_DIR and OUTPUT_DIR in <code class="docutils literal notranslate"><span class="pre">TpchQuery</span></code> class before compiling to point to the
+location the of the input data and where the output should be saved.</p>
+<p>The example script to run a query is like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>secure_password=`az keyvault secret show --name &quot;key-pass&quot; --vault-name $KEY_VAULT_NAME --query &quot;value&quot; | sed -e &#39;s/^&quot;//&#39; -e &#39;s/&quot;$//&#39;`
+
+DATA_LAKE_NAME=
+DATA_LAKE_ACCESS_KEY=
+KEY_VAULT_NAME=
+PRIMARY_KEY_PATH=
+DATA_KEY_PATH=
+
+LOCAL_IP=
+RUNTIME_SPARK_MASTER=
+INPUT_DIR=xxx/dbgen-encrypted
+OUTPUT_DIR=xxx/output
+
+export TF_MKL_ALLOC_MAX_BYTES=10737418240 &amp;&amp; \
+  /opt/jdk8/bin/java \
+    -cp &#39;/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/lib/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*&#39; \
+    -Xmx10g \
+    -Dbigdl.mklNumThreads=1 \
+    org.apache.spark.deploy.SparkSubmit \
+    --master $RUNTIME_SPARK_MASTER \
+    --deploy-mode client \
+    --name spark-tpch-sgx \
+	--conf spark.driver.host=$LOCAL_IP
+    --conf spark.driver.memory=18g \
+    --conf spark.driver.cores=2 \
+    --conf spark.executor.cores=2 \
+    --conf spark.executor.memory=24g \
+    --conf spark.executor.instances=2 \
+    --conf spark.driver.defaultJavaOptions=&quot;-Dlog4j.configuration=/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/log4j2.xml&quot; \
+    --conf spark.executor.defaultJavaOptions=&quot;-Dlog4j.configuration=/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/log4j2.xml&quot; \
+    --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
+    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.1-SNAPSHOT \
+    --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/spark-driver-template-kv.yaml \
+    --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/spark-executor-template-kv.yaml \
+    --conf spark.kubernetes.executor.deleteOnTermination=false \
+    --conf spark.network.timeout=10000000 \
+    --conf spark.executor.heartbeatInterval=10000000 \
+    --conf spark.python.use.daemon=false \
+    --conf spark.python.worker.reuse=false \
+    --conf spark.sql.auto.repartition=true \
+    --conf spark.default.parallelism=400 \
+    --conf spark.sql.shuffle.partitions=400 \
+    --jars local://$SPARK_EXTRA_JAR_PATH \
+    --conf spark.kubernetes.sgx.enabled=true \
+    --conf spark.kubernetes.sgx.driver.mem=16g \
+    --conf spark.kubernetes.sgx.driver.jvm.mem=7g \
+    --conf spark.kubernetes.sgx.executor.mem=16g \
+    --conf spark.kubernetes.sgx.executor.jvm.mem=7g \
+    --conf spark.kubernetes.sgx.log.level=error \
+    --conf spark.authenticate=true \
+    --conf spark.authenticate.secret=$secure_password \
+    --conf spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET=&quot;spark-secret:secret&quot; \
+    --conf spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET=&quot;spark-secret:secret&quot; \
+    --conf spark.authenticate.enableSaslEncryption=true \
+    --conf spark.network.crypto.enabled=true \
+    --conf spark.network.crypto.keyLength=128 \
+    --conf spark.network.crypto.keyFactoryAlgorithm=PBKDF2WithHmacSHA1 \
+    --conf spark.io.encryption.enabled=true \
+    --conf spark.io.encryption.keySizeBits=128 \
+    --conf spark.io.encryption.keygen.algorithm=HmacSHA1 \
+    --conf spark.ssl.enabled=true \
+    --conf spark.ssl.port=8043 \
+    --conf spark.ssl.keyPassword=$secure_password \
+    --conf spark.ssl.keyStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
+    --conf spark.ssl.keyStorePassword=$secure_password \
+    --conf spark.ssl.keyStoreType=JKS \
+    --conf spark.ssl.trustStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
+    --conf spark.ssl.trustStorePassword=$secure_password \
+    --conf spark.ssl.trustStoreType=JKS \
+    --conf spark.hadoop.fs.azure.account.auth.type.${DATA_LAKE_NAME}.dfs.core.windows.net=SharedKey \
+    --conf spark.hadoop.fs.azure.account.key.${DATA_LAKE_NAME}.dfs.core.windows.net=${DATA_LAKE_ACCESS_KEY} \
+    --conf spark.hadoop.fs.azure.enable.append.support=true \
+    --conf spark.bigdl.kms.type=AzureKeyManagementService \
+    --conf spark.bigdl.kms.azure.vault=$KEY_VAULT_NAME \
+    --conf spark.bigdl.kms.key.primary=$PRIMARY_KEY_PATH \
+    --conf spark.bigdl.kms.key.data=$DATA_KEY_PATH \
+    --class $SPARK_JOB_MAIN_CLASS \
+    --verbose \
+    /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/lib/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar \
+    $INPUT_DIR $OUTPUT_DIR aes_cbc_pkcs5padding plain_text [QUERY]
+</pre></div>
+</div>
+<p>INPUT_DIR is the tpch’s data dir.
+OUTPUT_DIR is the dir to write the query result.
+The optional parameter [QUERY] is the number of the query to run e.g 1, 2, …, 22</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../QuickStart/tpc-ds_with_sparksql_on_k8s.html" class="btn btn-neutral float-left" title="TPC-DS with Trusted SparkSQL on Kubernetes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../Serving/Overview/serving.html" class="btn btn-neutral float-right" title="Cluster Serving User Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

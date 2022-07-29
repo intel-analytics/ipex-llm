@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>L1 Regularizer &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/design-tabs.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>L1 Regularizer</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/doc/DLlib/Overview/regularizers.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="l1-regularizer">
+<h1>L1 Regularizer<a class="headerlink" href="#l1-regularizer" title="Permalink to this headline">¶</a></h1>
+<p><strong>Scala:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">l1Regularizer</span> <span class="k">=</span> <span class="n">L1Regularizer</span><span class="o">(</span><span class="n">rate</span><span class="o">)</span>
+</pre></div>
+</div>
+<p><strong>Python:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">regularizerl1</span> <span class="o">=</span> <span class="n">L1Regularizer</span><span class="p">(</span><span class="n">rate</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>L1 regularizer is used to add penalty to the gradWeight to avoid overfitting.</p>
+<p>In our code implementation, gradWeight = gradWeight + alpha * abs(weight)</p>
+<p>For more details, please refer to <a class="reference external" href="https://en.wikipedia.org/wiki/Regularization_(mathematics)">wiki</a>.</p>
+<p><strong>Scala example:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span>
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
+import com.intel.analytics.bigdl.dllib.tensor._
+import com.intel.analytics.bigdl.dllib.optim._
+import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.dllib.nn._
+
+RNG.setSeed(100)
+
+val input = Tensor(3, 5).rand
+val gradOutput = Tensor(3, 5).rand
+val linear = Linear(5, 5, wRegularizer = L1Regularizer(0.2), bRegularizer = L1Regularizer(0.2))
+
+val output = linear.forward(input)
+val gradInput = linear.backward(input, gradOutput)
+
+scala&gt; input
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+0.54340494      0.67115563      0.2783694       0.4120464       0.4245176
+0.52638245      0.84477615      0.14860484      0.004718862     0.15671109
+0.12156912      0.18646719      0.67074907      0.21010774      0.82585275
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x5]
+
+scala&gt; gradOutput
+gradOutput: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+0.4527399       0.13670659      0.87014264      0.5750933       0.063681036
+0.89132196      0.62431186      0.20920213      0.52334774      0.18532822
+0.5622963       0.10837689      0.0058171963    0.21969749      0.3074232
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x5]
+
+scala&gt; linear.gradWeight
+res2: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+0.9835552       1.3616763       0.83564335      0.108898684     0.59625006
+0.21608911      0.8393639       0.0035243928    -0.11795368     0.4453743
+0.38366735      0.9618148       0.47721142      0.5607486       0.6069793
+0.81469804      0.6690552       0.18522228      0.08559488      0.7075894
+-0.030468717    0.056625083     0.051471338     0.2917061       0.109963015
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 5x5]
+</pre></div>
+</div>
+<p><strong>Python example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
+<span class="kn">from</span> <span class="nn">bigdl.dllib.nn.layer</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">bigdl.dllib.nn.criterion</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">bigdl.dllib.optim.optimizer</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">bigdl.dllib.util.common</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="nb">input</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+<span class="n">gradOutput</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+<span class="n">linear</span> <span class="o">=</span> <span class="n">Linear</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">wRegularizer</span> <span class="o">=</span> <span class="n">L1Regularizer</span><span class="p">(</span><span class="mf">0.2</span><span class="p">),</span> <span class="n">bRegularizer</span> <span class="o">=</span> <span class="n">L1Regularizer</span><span class="p">(</span><span class="mf">0.2</span><span class="p">))</span>
+<span class="n">output</span> <span class="o">=</span> <span class="n">linear</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+<span class="n">gradInput</span> <span class="o">=</span> <span class="n">linear</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">gradOutput</span><span class="p">)</span>
+
+<span class="o">&gt;</span> <span class="n">linear</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span>
+<span class="p">{</span><span class="sa">u</span><span class="s1">&#39;Linear@596d857b&#39;</span><span class="p">:</span> <span class="p">{</span><span class="sa">u</span><span class="s1">&#39;bias&#39;</span><span class="p">:</span> <span class="n">array</span><span class="p">([</span> <span class="mf">0.3185505</span> <span class="p">,</span> <span class="o">-</span><span class="mf">0.02004393</span><span class="p">,</span>  <span class="mf">0.34620118</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.09206461</span><span class="p">,</span>  <span class="mf">0.40776938</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float32</span><span class="p">),</span>
+  <span class="sa">u</span><span class="s1">&#39;gradBias&#39;</span><span class="p">:</span> <span class="n">array</span><span class="p">([</span> <span class="mf">2.14087653</span><span class="p">,</span>  <span class="mf">1.82181644</span><span class="p">,</span>  <span class="mf">1.90674937</span><span class="p">,</span>  <span class="mf">1.37307787</span><span class="p">,</span>  <span class="mf">0.81534696</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float32</span><span class="p">),</span>
+  <span class="sa">u</span><span class="s1">&#39;gradWeight&#39;</span><span class="p">:</span> <span class="n">array</span><span class="p">([[</span> <span class="mf">0.34909648</span><span class="p">,</span>  <span class="mf">0.85083449</span><span class="p">,</span>  <span class="mf">1.44904375</span><span class="p">,</span>  <span class="mf">0.90150446</span><span class="p">,</span>  <span class="mf">0.57136625</span><span class="p">],</span>
+         <span class="p">[</span> <span class="mf">0.3745544</span> <span class="p">,</span>  <span class="mf">0.42218602</span><span class="p">,</span>  <span class="mf">1.53656614</span><span class="p">,</span>  <span class="mf">1.1836741</span> <span class="p">,</span>  <span class="mf">1.00702667</span><span class="p">],</span>
+         <span class="p">[</span> <span class="mf">0.30529332</span><span class="p">,</span>  <span class="mf">0.26813674</span><span class="p">,</span>  <span class="mf">0.85559171</span><span class="p">,</span>  <span class="mf">0.61224306</span><span class="p">,</span>  <span class="mf">0.34721529</span><span class="p">],</span>
+         <span class="p">[</span> <span class="mf">0.22859855</span><span class="p">,</span>  <span class="mf">0.8535381</span> <span class="p">,</span>  <span class="mf">1.19809723</span><span class="p">,</span>  <span class="mf">1.37248564</span><span class="p">,</span>  <span class="mf">0.50041491</span><span class="p">],</span>
+         <span class="p">[</span> <span class="mf">0.36197871</span><span class="p">,</span>  <span class="mf">0.03069445</span><span class="p">,</span>  <span class="mf">0.64837945</span><span class="p">,</span>  <span class="mf">0.12765063</span><span class="p">,</span>  <span class="mf">0.12872688</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float32</span><span class="p">),</span>
+  <span class="sa">u</span><span class="s1">&#39;weight&#39;</span><span class="p">:</span> <span class="n">array</span><span class="p">([[</span><span class="o">-</span><span class="mf">0.12423037</span><span class="p">,</span>  <span class="mf">0.35694697</span><span class="p">,</span>  <span class="mf">0.39038274</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.34970999</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.08283543</span><span class="p">],</span>
+         <span class="p">[</span><span class="o">-</span><span class="mf">0.4186025</span> <span class="p">,</span> <span class="o">-</span><span class="mf">0.33235055</span><span class="p">,</span>  <span class="mf">0.34948507</span><span class="p">,</span>  <span class="mf">0.39953214</span><span class="p">,</span>  <span class="mf">0.16294235</span><span class="p">],</span>
+         <span class="p">[</span><span class="o">-</span><span class="mf">0.25171402</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.28955361</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.32243955</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.19771226</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.29320192</span><span class="p">],</span>
+         <span class="p">[</span><span class="o">-</span><span class="mf">0.39263198</span><span class="p">,</span>  <span class="mf">0.37766701</span><span class="p">,</span>  <span class="mf">0.14673658</span><span class="p">,</span>  <span class="mf">0.24882999</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0779015</span> <span class="p">],</span>
+         <span class="p">[</span> <span class="mf">0.0323218</span> <span class="p">,</span> <span class="o">-</span><span class="mf">0.31266898</span><span class="p">,</span>  <span class="mf">0.31543773</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0898933</span> <span class="p">,</span> <span class="o">-</span><span class="mf">0.33485892</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float32</span><span class="p">)}}</span>
+</pre></div>
+</div>
+</section>
+<section id="l2-regularizer">
+<h1>L2 Regularizer<a class="headerlink" href="#l2-regularizer" title="Permalink to this headline">¶</a></h1>
+<p><strong>Scala:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">l2Regularizer</span> <span class="k">=</span> <span class="n">L2Regularizer</span><span class="o">(</span><span class="n">rate</span><span class="o">)</span>
+</pre></div>
+</div>
+<p><strong>Python:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">regularizerl2</span> <span class="o">=</span> <span class="n">L2Regularizer</span><span class="p">(</span><span class="n">rate</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>L2 regularizer is used to add penalty to the gradWeight to avoid overfitting.</p>
+<p>In our code implementation, gradWeight = gradWeight + alpha * weight * weight</p>
+<p>For more details, please refer to <a class="reference external" href="https://en.wikipedia.org/wiki/Regularization_(mathematics)">wiki</a>.</p>
+<p><strong>Scala example:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span>
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
+import com.intel.analytics.bigdl.dllib.tensor._
+import com.intel.analytics.bigdl.dllib.optim._
+import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.dllib.nn._
+
+RNG.setSeed(100)
+
+val input = Tensor(3, 5).rand
+val gradOutput = Tensor(3, 5).rand
+val linear = Linear(5, 5, wRegularizer = L2Regularizer(0.2), bRegularizer = L2Regularizer(0.2))
+
+val output = linear.forward(input)
+val gradInput = linear.backward(input, gradOutput)
+
+scala&gt; input
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+0.54340494      0.67115563      0.2783694       0.4120464       0.4245176
+0.52638245      0.84477615      0.14860484      0.004718862     0.15671109
+0.12156912      0.18646719      0.67074907      0.21010774      0.82585275
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x5]
+
+scala&gt; gradOutput
+gradOutput: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+0.4527399       0.13670659      0.87014264      0.5750933       0.063681036
+0.89132196      0.62431186      0.20920213      0.52334774      0.18532822
+0.5622963       0.10837689      0.0058171963    0.21969749      0.3074232
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x5]
+
+scala&gt; linear.gradWeight
+res0: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+1.0329735       0.047239657     0.8979603       0.53614384      1.2781229
+0.5621818       0.29772854      0.69706535      0.30559152      0.8352279
+1.3044653       0.43065858      0.9896795       0.7435816       1.6003494
+0.94218314      0.6793372       0.97101355      0.62892824      1.3458569
+0.73134506      0.5975239       0.9109101       0.59374434      1.1656629
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 5x5]
+</pre></div>
+</div>
+<p><strong>Python example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bigdl.dllib.nn.layer</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">bigdl.dllib.nn.criterion</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">bigdl.dllib.optim.optimizer</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">bigdl.dllib.util.common</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="nb">input</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+<span class="n">gradOutput</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+<span class="n">linear</span> <span class="o">=</span> <span class="n">Linear</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">wRegularizer</span> <span class="o">=</span> <span class="n">L2Regularizer</span><span class="p">(</span><span class="mf">0.2</span><span class="p">),</span> <span class="n">bRegularizer</span> <span class="o">=</span> <span class="n">L2Regularizer</span><span class="p">(</span><span class="mf">0.2</span><span class="p">))</span>
+<span class="n">output</span> <span class="o">=</span> <span class="n">linear</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+<span class="n">gradInput</span> <span class="o">=</span> <span class="n">linear</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">gradOutput</span><span class="p">)</span>
+
+<span class="o">&gt;</span> <span class="n">linear</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span>
+<span class="p">{</span><span class="sa">u</span><span class="s1">&#39;Linear@787aab5e&#39;</span><span class="p">:</span> <span class="p">{</span><span class="sa">u</span><span class="s1">&#39;bias&#39;</span><span class="p">:</span> <span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">0.43960261</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.12444571</span><span class="p">,</span>  <span class="mf">0.22857292</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.43216187</span><span class="p">,</span>  <span class="mf">0.27770036</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float32</span><span class="p">),</span>
+  <span class="sa">u</span><span class="s1">&#39;gradBias&#39;</span><span class="p">:</span> <span class="n">array</span><span class="p">([</span> <span class="mf">0.51726723</span><span class="p">,</span>  <span class="mf">1.32883406</span><span class="p">,</span>  <span class="mf">0.57567948</span><span class="p">,</span>  <span class="mf">1.7791357</span> <span class="p">,</span>  <span class="mf">1.2887038</span> <span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float32</span><span class="p">),</span>
+  <span class="sa">u</span><span class="s1">&#39;gradWeight&#39;</span><span class="p">:</span> <span class="n">array</span><span class="p">([[</span> <span class="mf">0.45477036</span><span class="p">,</span>  <span class="mf">0.22262168</span><span class="p">,</span>  <span class="mf">0.21923628</span><span class="p">,</span>  <span class="mf">0.26152173</span><span class="p">,</span>  <span class="mf">0.19836383</span><span class="p">],</span>
+         <span class="p">[</span> <span class="mf">1.12261093</span><span class="p">,</span>  <span class="mf">0.72921795</span><span class="p">,</span>  <span class="mf">0.08405925</span><span class="p">,</span>  <span class="mf">0.78192139</span><span class="p">,</span>  <span class="mf">0.48798928</span><span class="p">],</span>
+         <span class="p">[</span> <span class="mf">0.34581488</span><span class="p">,</span>  <span class="mf">0.21195598</span><span class="p">,</span>  <span class="mf">0.26357424</span><span class="p">,</span>  <span class="mf">0.18987852</span><span class="p">,</span>  <span class="mf">0.2465664</span> <span class="p">],</span>
+         <span class="p">[</span> <span class="mf">1.18659711</span><span class="p">,</span>  <span class="mf">1.11271608</span><span class="p">,</span>  <span class="mf">0.72589797</span><span class="p">,</span>  <span class="mf">1.19098675</span><span class="p">,</span>  <span class="mf">0.33769298</span><span class="p">],</span>
+         <span class="p">[</span> <span class="mf">0.82314551</span><span class="p">,</span>  <span class="mf">0.71177536</span><span class="p">,</span>  <span class="mf">0.4428404</span> <span class="p">,</span>  <span class="mf">0.764337</span>  <span class="p">,</span>  <span class="mf">0.3500182</span> <span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float32</span><span class="p">),</span>
+  <span class="sa">u</span><span class="s1">&#39;weight&#39;</span><span class="p">:</span> <span class="n">array</span><span class="p">([[</span> <span class="mf">0.03727285</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.39697152</span><span class="p">,</span>  <span class="mf">0.42733836</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.34291714</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.13833708</span><span class="p">],</span>
+         <span class="p">[</span> <span class="mf">0.09232076</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.09720675</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.33625153</span><span class="p">,</span>  <span class="mf">0.06477787</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.34739712</span><span class="p">],</span>
+         <span class="p">[</span> <span class="mf">0.17145753</span><span class="p">,</span>  <span class="mf">0.10128133</span><span class="p">,</span>  <span class="mf">0.16679128</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.33541158</span><span class="p">,</span>  <span class="mf">0.40437087</span><span class="p">],</span>
+         <span class="p">[</span><span class="o">-</span><span class="mf">0.03005157</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.36412898</span><span class="p">,</span>  <span class="mf">0.0629965</span> <span class="p">,</span>  <span class="mf">0.13443278</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.38414535</span><span class="p">],</span>
+         <span class="p">[</span><span class="o">-</span><span class="mf">0.16630849</span><span class="p">,</span>  <span class="mf">0.06934392</span><span class="p">,</span>  <span class="mf">0.40328237</span><span class="p">,</span>  <span class="mf">0.22299488</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1178569</span> <span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float32</span><span class="p">)}}</span>
+</pre></div>
+</div>
+</section>
+<section id="l1l2-regularizer">
+<h1>L1L2 Regularizer<a class="headerlink" href="#l1l2-regularizer" title="Permalink to this headline">¶</a></h1>
+<p><strong>Scala:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">l1l2Regularizer</span> <span class="k">=</span> <span class="n">L1L2Regularizer</span><span class="o">(</span><span class="n">l1rate</span><span class="o">,</span> <span class="n">l2rate</span><span class="o">)</span>
+</pre></div>
+</div>
+<p><strong>Python:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">regularizerl1l2</span> <span class="o">=</span> <span class="n">L1L2Regularizer</span><span class="p">(</span><span class="n">l1rate</span><span class="p">,</span> <span class="n">l2rate</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>L1L2 regularizer is used to add penalty to the gradWeight to avoid overfitting.</p>
+<p>In our code implementation, we will apply L1regularizer and L2regularizer sequentially.</p>
+<p>For more details, please refer to <a class="reference external" href="https://en.wikipedia.org/wiki/Regularization_(mathematics)">wiki</a>.</p>
+<p><strong>Scala example:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span>
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
+import com.intel.analytics.bigdl.dllib.tensor._
+import com.intel.analytics.bigdl.dllib.optim._
+import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.dllib.nn._
+
+RNG.setSeed(100)
+
+val input = Tensor(3, 5).rand
+val gradOutput = Tensor(3, 5).rand
+val linear = Linear(5, 5, wRegularizer = L1L2Regularizer(0.2, 0.2), bRegularizer = L1L2Regularizer(0.2, 0.2))
+
+val output = linear.forward(input)
+val gradInput = linear.backward(input, gradOutput)
+
+scala&gt; input
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+0.54340494      0.67115563      0.2783694       0.4120464       0.4245176
+0.52638245      0.84477615      0.14860484      0.004718862     0.15671109
+0.12156912      0.18646719      0.67074907      0.21010774      0.82585275
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x5]
+
+scala&gt; gradOutput
+gradOutput: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+0.4527399       0.13670659      0.87014264      0.5750933       0.063681036
+0.89132196      0.62431186      0.20920213      0.52334774      0.18532822
+0.5622963       0.10837689      0.0058171963    0.21969749      0.3074232
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x5]
+
+scala&gt; linear.gradWeight
+res1: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+1.069174        1.4422078       0.8913989       0.042112567     0.53756505
+0.14077617      0.8959319       -0.030221784    -0.1583686      0.4690558
+0.37145022      0.99747723      0.5559263       0.58614403      0.66380215
+0.88983417      0.639738        0.14924419      0.027530536     0.71988696
+-0.053217214    -8.643427E-4    -0.036953792    0.29753304      0.06567569
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 5x5]
+</pre></div>
+</div>
+<p><strong>Python example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bigdl.dllib.nn.layer</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">bigdl.dllib.nn.criterion</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">bigdl.dllib.optim.optimizer</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">bigdl.dllib.util.common</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="nb">input</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+<span class="n">gradOutput</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+<span class="n">linear</span> <span class="o">=</span> <span class="n">Linear</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">wRegularizer</span> <span class="o">=</span> <span class="n">L1L2Regularizer</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">),</span> <span class="n">bRegularizer</span> <span class="o">=</span> <span class="n">L1L2Regularizer</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">))</span>
+<span class="n">output</span> <span class="o">=</span> <span class="n">linear</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+<span class="n">gradInput</span> <span class="o">=</span> <span class="n">linear</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">gradOutput</span><span class="p">)</span>
+
+<span class="o">&gt;</span> <span class="n">linear</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span>
+<span class="p">{</span><span class="sa">u</span><span class="s1">&#39;Linear@1356aa91&#39;</span><span class="p">:</span> <span class="p">{</span><span class="sa">u</span><span class="s1">&#39;bias&#39;</span><span class="p">:</span> <span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">0.05799473</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0548001</span> <span class="p">,</span>  <span class="mf">0.00408955</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.22004321</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.07143869</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float32</span><span class="p">),</span>
+  <span class="sa">u</span><span class="s1">&#39;gradBias&#39;</span><span class="p">:</span> <span class="n">array</span><span class="p">([</span> <span class="mf">0.89119786</span><span class="p">,</span>  <span class="mf">1.09953558</span><span class="p">,</span>  <span class="mf">1.03394508</span><span class="p">,</span>  <span class="mf">1.19511735</span><span class="p">,</span>  <span class="mf">2.02241182</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float32</span><span class="p">),</span>
+  <span class="sa">u</span><span class="s1">&#39;gradWeight&#39;</span><span class="p">:</span> <span class="n">array</span><span class="p">([[</span> <span class="mf">0.89061081</span><span class="p">,</span>  <span class="mf">0.58810186</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.10087357</span><span class="p">,</span>  <span class="mf">0.19108151</span><span class="p">,</span>  <span class="mf">0.60029608</span><span class="p">],</span>
+         <span class="p">[</span> <span class="mf">0.95275503</span><span class="p">,</span>  <span class="mf">0.2333075</span> <span class="p">,</span>  <span class="mf">0.46897018</span><span class="p">,</span>  <span class="mf">0.74429053</span><span class="p">,</span>  <span class="mf">1.16038764</span><span class="p">],</span>
+         <span class="p">[</span> <span class="mf">0.22894514</span><span class="p">,</span>  <span class="mf">0.60031962</span><span class="p">,</span>  <span class="mf">0.3836292</span> <span class="p">,</span>  <span class="mf">0.15895618</span><span class="p">,</span>  <span class="mf">0.83136207</span><span class="p">],</span>
+         <span class="p">[</span> <span class="mf">0.49079862</span><span class="p">,</span>  <span class="mf">0.80913013</span><span class="p">,</span>  <span class="mf">0.55491877</span><span class="p">,</span>  <span class="mf">0.69608945</span><span class="p">,</span>  <span class="mf">0.80458677</span><span class="p">],</span>
+         <span class="p">[</span> <span class="mf">0.98890561</span><span class="p">,</span>  <span class="mf">0.49226439</span><span class="p">,</span>  <span class="mf">0.14861123</span><span class="p">,</span>  <span class="mf">1.37666655</span><span class="p">,</span>  <span class="mf">1.47615671</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float32</span><span class="p">),</span>
+  <span class="sa">u</span><span class="s1">&#39;weight&#39;</span><span class="p">:</span> <span class="n">array</span><span class="p">([[</span> <span class="mf">0.44654208</span><span class="p">,</span>  <span class="mf">0.16320795</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.36029238</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.25365737</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.41974261</span><span class="p">],</span>
+         <span class="p">[</span> <span class="mf">0.18809238</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.28065765</span><span class="p">,</span>  <span class="mf">0.27677274</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.29904234</span><span class="p">,</span>  <span class="mf">0.41338971</span><span class="p">],</span>
+         <span class="p">[</span><span class="o">-</span><span class="mf">0.03731538</span><span class="p">,</span>  <span class="mf">0.22493915</span><span class="p">,</span>  <span class="mf">0.10021331</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.19495697</span><span class="p">,</span>  <span class="mf">0.25470355</span><span class="p">],</span>
+         <span class="p">[</span><span class="o">-</span><span class="mf">0.30836752</span><span class="p">,</span>  <span class="mf">0.12083009</span><span class="p">,</span>  <span class="mf">0.3773002</span> <span class="p">,</span>  <span class="mf">0.24059358</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.40325543</span><span class="p">],</span>
+         <span class="p">[</span><span class="o">-</span><span class="mf">0.13601269</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.39310011</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.05292636</span><span class="p">,</span>  <span class="mf">0.20001481</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.08444868</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float32</span><span class="p">)}}</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

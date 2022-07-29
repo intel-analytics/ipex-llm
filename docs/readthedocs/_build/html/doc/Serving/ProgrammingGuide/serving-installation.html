@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Install Cluster Serving &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/design-tabs.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Start Cluster Serving" href="serving-start.html" />
+    <link rel="prev" title="Cluster Serving Quick Start" href="../QuickStart/serving-quickstart.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Install Cluster Serving</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#docker">Docker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#manual-installation">Manual installation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#install-release-version">Install release version</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#install-nightly-version">Install nightly version</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#configuration">Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#set-up-cluster">Set up cluster</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#configuration-file">Configuration file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#preparing-model">Preparing Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#other-configuration">Other Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#high-performance-configuration-recommended">High Performance Configuration Recommended</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#tensorflow-pytorch">Tensorflow, Pytorch</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#openvino">OpenVINO</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Install Cluster Serving</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/doc/Serving/ProgrammingGuide/serving-installation.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="install-cluster-serving">
+<h1>Install Cluster Serving<a class="headerlink" href="#install-cluster-serving" title="Permalink to this headline">¶</a></h1>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>It is recommended to install Cluster Serving by pulling the pre-built Docker image to your local node, which have packaged all the required dependencies. Alternatively, you may also manually install Cluster Serving (through either pip or direct downloading), Redis on the local node.</p>
+<section id="docker">
+<h3>Docker<a class="headerlink" href="#docker" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">pull</span> <span class="n">intelanalytics</span><span class="o">/</span><span class="n">bigdl</span><span class="o">-</span><span class="n">cluster</span><span class="o">-</span><span class="n">serving</span>
+</pre></div>
+</div>
+<p>then, (or directly run <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">run</span></code>, it will pull the image if it does not exist)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">run</span> <span class="o">--</span><span class="n">name</span> <span class="n">cluster</span><span class="o">-</span><span class="n">serving</span> <span class="o">-</span><span class="n">itd</span> <span class="o">--</span><span class="n">net</span><span class="o">=</span><span class="n">host</span> <span class="n">intelanalytics</span><span class="o">/</span><span class="n">bigdl</span><span class="o">-</span><span class="n">cluster</span><span class="o">-</span><span class="n">serving</span><span class="p">:</span><span class="mf">0.9</span><span class="o">.</span><span class="mi">0</span>
+</pre></div>
+</div>
+<p>Log into the container</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">exec</span> <span class="o">-</span><span class="n">it</span> <span class="n">cluster</span><span class="o">-</span><span class="n">serving</span> <span class="n">bash</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">./cluster-serving</span></code>, you can see all the environments prepared.</p>
+</section>
+<section id="manual-installation">
+<h3>Manual installation<a class="headerlink" href="#manual-installation" title="Permalink to this headline">¶</a></h3>
+<section id="requirements">
+<h4>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h4>
+<p>Non-Docker users need to install <a class="reference external" href="https://archive.apache.org/dist/flink/flink-1.10.0/">Flink 1.10.0+</a>, 1.10.0 by default, <a class="reference external" href="https://redis.io/topics/quickstart">Redis 5.0.0+</a>, 5.0.5 by default.</p>
+<p>For users do not have above dependencies, we provide following command to quickly set up.</p>
+<p>Redis</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ export REDIS_VERSION=5.0.5
+$ wget http://download.redis.io/releases/redis-${REDIS_VERSION}.tar.gz &amp;&amp; \
+    tar xzf redis-${REDIS_VERSION}.tar.gz &amp;&amp; \
+    rm redis-${REDIS_VERSION}.tar.gz &amp;&amp; \
+    cd redis-${REDIS_VERSION} &amp;&amp; \
+    make
+</pre></div>
+</div>
+<p>Flink</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ export FLINK_VERSION=1.11.2
+$ wget https://archive.apache.org/dist/flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-scala_2.11.tgz &amp;&amp; \
+    tar xzf flink-${FLINK_VERSION}-bin-scala_2.11.tgz &amp;&amp; \
+    rm flink-${FLINK_VERSION}-bin-scala_2.11.tgz.tgz
+</pre></div>
+</div>
+<p>After preparing dependencies above, make sure the environment variable <code class="docutils literal notranslate"><span class="pre">$FLINK_HOME</span></code> (/path/to/flink-FLINK_VERSION-bin), <code class="docutils literal notranslate"><span class="pre">$REDIS_HOME</span></code>(/path/to/redis-REDIS_VERSION) is set before following steps.</p>
+</section>
+</section>
+<section id="install-release-version">
+<h3>Install release version<a class="headerlink" href="#install-release-version" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">bigdl</span><span class="o">-</span><span class="n">serving</span>
+</pre></div>
+</div>
+</section>
+<section id="install-nightly-version">
+<h3>Install nightly version<a class="headerlink" href="#install-nightly-version" title="Permalink to this headline">¶</a></h3>
+<p>Download package from <a class="reference external" href="https://sourceforge.net/projects/bigdl/files/cluster-serving-py/">here</a>, run following command to install Cluster Serving</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">bigdl_serving</span><span class="o">-*.</span><span class="n">whl</span>
+</pre></div>
+</div>
+<p>For users who need to deploy and start Cluster Serving, run <code class="docutils literal notranslate"><span class="pre">cluster-serving-init</span></code> to download and prepare dependencies.</p>
+<p>For users who need to do inference, aka. predict data only, the environment is ready.</p>
+</section>
+</section>
+<section id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<section id="set-up-cluster">
+<h3>Set up cluster<a class="headerlink" href="#set-up-cluster" title="Permalink to this headline">¶</a></h3>
+<p>Cluster Serving uses Flink cluster, make sure you have it according to <a class="reference external" href="#1-installation">Installation</a>.</p>
+<p>For docker user, the cluster should be already started. You could use <code class="docutils literal notranslate"><span class="pre">netstat</span> <span class="pre">-tnlp</span> <span class="pre">|</span> <span class="pre">grep</span> <span class="pre">8081</span></code> to check if Flink REST port is working, if not, call <code class="docutils literal notranslate"><span class="pre">$FLINK_HOME/bin/start-cluster.sh</span></code> to start Flink cluster.</p>
+<p>If you need to start Flink on yarn, refer to <a class="reference external" href="https://ci.apache.org/projects/flink/flink-docs-stable/deployment/resource-providers/yarn.html">Flink on Yarn</a>, or K8s, refer to <a class="reference external" href="https://ci.apache.org/projects/flink/flink-docs-stable/deployment/resource-providers/standalone/kubernetes.html">Flink on K8s</a> at Flink official documentation.</p>
+<p>If you use Flink standalone, call <code class="docutils literal notranslate"><span class="pre">$FLINK_HOME/bin/start-cluster.sh</span></code> to start Flink cluster.</p>
+</section>
+<section id="configuration-file">
+<h3>Configuration file<a class="headerlink" href="#configuration-file" title="Permalink to this headline">¶</a></h3>
+<p>After <a class="reference external" href="#1-installation">Installation</a>, you will see a config file <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> in your current working directory. This file contains all the configurations that you can customize for your Cluster Serving. See an example of <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> below.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## BigDL Cluster Serving Config Example</span>
+<span class="c1"># model path must be provided</span>
+<span class="n">modelPath</span><span class="p">:</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">model</span>
+</pre></div>
+</div>
+</section>
+<section id="preparing-model">
+<h3>Preparing Model<a class="headerlink" href="#preparing-model" title="Permalink to this headline">¶</a></h3>
+<p>Currently BigDL Cluster Serving supports TensorFlow, OpenVINO, PyTorch, BigDL, Caffe models. Supported types are listed below.</p>
+<p>You need to put your model file into a directory with layout like following according to model type, note that only one model is allowed in your directory. Then, set in <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file with <code class="docutils literal notranslate"><span class="pre">modelPath:/path/to/dir</span></code>.</p>
+<p><strong>Tensorflow</strong>
+<em><strong>Tensorflow SavedModel</strong></em></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">|--</span> <span class="n">model</span>
+   <span class="o">|--</span> <span class="n">saved_model</span><span class="o">.</span><span class="n">pb</span>
+   <span class="o">|--</span> <span class="n">variables</span>
+       <span class="o">|--</span> <span class="n">variables</span><span class="o">.</span><span class="n">data</span><span class="o">-</span><span class="mi">00000</span><span class="o">-</span><span class="n">of</span><span class="o">-</span><span class="mi">00001</span>
+       <span class="o">|--</span> <span class="n">variables</span><span class="o">.</span><span class="n">index</span>
+</pre></div>
+</div>
+<p><em><strong>Tensorflow Frozen Graph</strong></em></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">|--</span> <span class="n">model</span>
+   <span class="o">|--</span> <span class="n">frozen_inference_graph</span><span class="o">.</span><span class="n">pb</span>
+   <span class="o">|--</span> <span class="n">graph_meta</span><span class="o">.</span><span class="n">json</span>
+</pre></div>
+</div>
+<p><strong>note:</strong> <code class="docutils literal notranslate"><span class="pre">.pb</span></code> is the weight file which name must be <code class="docutils literal notranslate"><span class="pre">frozen_inference_graph.pb</span></code>, <code class="docutils literal notranslate"><span class="pre">.json</span></code> is the inputs and outputs definition file which name must be <code class="docutils literal notranslate"><span class="pre">graph_meta.json</span></code>, with contents like <code class="docutils literal notranslate"><span class="pre">{&quot;input_names&quot;:[&quot;input:0&quot;],&quot;output_names&quot;:[&quot;output:0&quot;]}</span></code></p>
+<p><em><strong>Tensorflow Checkpoint</strong></em>
+Please refer to <a class="reference external" href="https://github.com/intel-analytics/bigdl/tree/master/python/orca/example/freeze_checkpoint">freeze checkpoint example</a></p>
+<p><strong>Pytorch</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">|--</span> <span class="n">model</span>
+   <span class="o">|--</span> <span class="n">xx</span><span class="o">.</span><span class="n">pt</span>
+</pre></div>
+</div>
+<p>Running Pytorch model needs extra dependency and config. Refer to <a class="reference external" href="https://github.com/intel-analytics/bigdl/blob/master/python/orca/example/torchmodel/train/README">here</a> to install dependencies, and set environment variable <code class="docutils literal notranslate"><span class="pre">$PYTHONHOME</span></code> to your python, e.g. python could be run by <code class="docutils literal notranslate"><span class="pre">$PYTHONHOME/bin/python</span></code> and library is at <code class="docutils literal notranslate"><span class="pre">$PYTHONHOME/lib/</span></code>.</p>
+<p><strong>OpenVINO</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">|--</span> <span class="n">model</span>
+   <span class="o">|--</span> <span class="n">xx</span><span class="o">.</span><span class="n">xml</span>
+   <span class="o">|--</span> <span class="n">xx</span><span class="o">.</span><span class="n">bin</span>
+</pre></div>
+</div>
+<p><strong>BigDL</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">|--</span><span class="n">model</span>
+   <span class="o">|--</span> <span class="n">xx</span><span class="o">.</span><span class="n">model</span>
+</pre></div>
+</div>
+<p><strong>Caffe</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">|--</span> <span class="n">model</span>
+   <span class="o">|--</span> <span class="n">xx</span><span class="o">.</span><span class="n">prototxt</span>
+   <span class="o">|--</span> <span class="n">xx</span><span class="o">.</span><span class="n">caffemodel</span>
+</pre></div>
+</div>
+</section>
+<section id="other-configuration">
+<h3>Other Configuration<a class="headerlink" href="#other-configuration" title="Permalink to this headline">¶</a></h3>
+<p>The field <code class="docutils literal notranslate"><span class="pre">params</span></code> contains your inference parameter configuration.</p>
+<ul class="simple">
+<li><p>core_number: the <strong>batch size</strong> you use for model inference, usually the core number of your machine is recommended. Thus you could just provide your machine core number at this field. We recommend this value to be not smaller than 4 and not larger than 512. In general, using larger batch size means higher throughput, but also increase the latency between batches accordingly.</p></li>
+</ul>
+</section>
+<section id="high-performance-configuration-recommended">
+<h3>High Performance Configuration Recommended<a class="headerlink" href="#high-performance-configuration-recommended" title="Permalink to this headline">¶</a></h3>
+<section id="tensorflow-pytorch">
+<h4>Tensorflow, Pytorch<a class="headerlink" href="#tensorflow-pytorch" title="Permalink to this headline">¶</a></h4>
+<p>1 &lt;= thread_per_model &lt;= 8, in config</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># default: number of models used in serving</span>
+<span class="c1"># modelParallelism: core_number of your machine / thread_per_model</span>
+</pre></div>
+</div>
+<p>environment variable</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">OMP_NUM_THREADS</span><span class="o">=</span><span class="n">thread_per_model</span>
+</pre></div>
+</div>
+</section>
+<section id="openvino">
+<h4>OpenVINO<a class="headerlink" href="#openvino" title="Permalink to this headline">¶</a></h4>
+<p>environment variable</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">OMP_NUM_THREADS</span><span class="o">=</span><span class="n">core_number</span> <span class="n">of</span> <span class="n">your</span> <span class="n">machine</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../QuickStart/serving-quickstart.html" class="btn btn-neutral float-left" title="Cluster Serving Quick Start" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="serving-start.html" class="btn btn-neutral float-right" title="Start Cluster Serving" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bigdl.orca.automl.metrics &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/clipboard.min.js"></script>
+        <script src="../../../../_static/copybutton.js"></script>
+        <script src="../../../../_static/tabs.js"></script>
+        <script src="../../../../_static/design-tabs.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>bigdl.orca.automl.metrics</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bigdl.orca.automl.metrics</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright 2016 The BigDL Authors.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="k">import</span> <span class="n">mean_squared_error</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="k">import</span> <span class="n">r2_score</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="k">import</span> <span class="n">mean_absolute_error</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="k">import</span> <span class="n">mean_squared_log_error</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">bigdl.dllib.utils.log4Error</span> <span class="k">import</span> <span class="o">*</span>
+
+
+<span class="n">EPSILON</span> <span class="o">=</span> <span class="mf">1e-10</span>
+
+
+<span class="k">def</span> <span class="nf">_standardize_input</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">multioutput</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function check the validation of the input</span>
+<span class="sd">    input should be one of list/tuple/ndarray with same shape and not be None</span>
+<span class="sd">    input dtype will be cast to np.float64</span>
+<span class="sd">    input will be changed to corresponding 2-dim ndarray</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">y_true</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">y_pred</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                          <span class="s2">&quot;The input is None.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)):</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                          <span class="s2">&quot;Expected array-like input. &quot;</span>
+                          <span class="s2">&quot;Only list/tuple/ndarray/pd.DataFrame are supported&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+        <span class="n">y_true</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+        <span class="n">y_pred</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y_pred</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+        <span class="n">y_true</span> <span class="o">=</span> <span class="n">y_true</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+        <span class="n">y_pred</span> <span class="o">=</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+
+    <span class="n">y_true</span> <span class="o">=</span> <span class="n">y_true</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">y_pred</span> <span class="o">=</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+    <span class="n">original_shape</span> <span class="o">=</span> <span class="n">y_true</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+
+    <span class="k">if</span> <span class="n">y_true</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">y_true</span> <span class="o">=</span> <span class="n">y_true</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">y_true</span> <span class="o">=</span> <span class="n">y_true</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">y_true</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">y_pred</span> <span class="o">=</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">y_pred</span> <span class="o">=</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">y_pred</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">y_true</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                          <span class="s2">&quot;y_true and y_pred have different number of samples &quot;</span>
+                          <span class="s2">&quot;(</span><span class="si">{0}</span><span class="s2">!=</span><span class="si">{1}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">y_true</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="k">if</span> <span class="n">y_true</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                          <span class="s2">&quot;y_true and y_pred have different number of output &quot;</span>
+                          <span class="s2">&quot;(</span><span class="si">{0}</span><span class="s2">!=</span><span class="si">{1}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">y_true</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="n">allowed_multioutput_str</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;raw_values&#39;</span><span class="p">,</span> <span class="s1">&#39;uniform_average&#39;</span><span class="p">,</span>
+                               <span class="s1">&#39;variance_weighted&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">multioutput</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">multioutput</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">allowed_multioutput_str</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;Allowed &#39;multioutput&#39; string values are </span><span class="si">{}</span><span class="s2">. You provided&quot;</span>
+                              <span class="s2">&quot; multioutput=</span><span class="si">{!r}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">allowed_multioutput_str</span><span class="p">,</span> <span class="n">multioutput</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">original_shape</span>
+
+
+<div class="viewcode-block" id="sMAPE"><a class="viewcode-back" href="../../../../doc/PythonAPI/Orca/automl.html#bigdl.orca.automl.metrics.sMAPE">[docs]</a><span class="k">def</span> <span class="nf">sMAPE</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">multioutput</span><span class="o">=</span><span class="s1">&#39;raw_values&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate Symmetric mean absolute percentage error (sMAPE).</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\text{sMAPE} = \\frac{100\%}{n} \\sum_{t=1}^n \\frac{|y_t-\\hat{y_t}|}{|y_t|+|\\hat{y_t}|}</span>
+
+<span class="sd">    :param y_true: Array-like of shape = (n_samples, \*).</span>
+<span class="sd">           Ground truth (correct) target values.</span>
+<span class="sd">    :param y_pred: Array-like of shape = (n_samples, \*).</span>
+<span class="sd">           Estimated target values.</span>
+<span class="sd">    :param multioutput: String in [&#39;raw_values&#39;, &#39;uniform_average&#39;]</span>
+
+<span class="sd">    :return: Float or ndarray of floats.</span>
+<span class="sd">             A non-negative floating point value (the best value is 0.0), or an</span>
+<span class="sd">             array of floating point values, one for each individual target.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">original_shape</span> <span class="o">=</span> <span class="n">_standardize_input</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">multioutput</span><span class="p">)</span>
+    <span class="n">output_errors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_pred</span><span class="p">)</span> <span class="o">/</span>
+                            <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y_pred</span><span class="p">)</span> <span class="o">+</span> <span class="n">EPSILON</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,)</span>
+    <span class="k">if</span> <span class="n">multioutput</span> <span class="o">==</span> <span class="s1">&#39;raw_values&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">output_errors</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">original_shape</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">output_errors</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MPE"><a class="viewcode-back" href="../../../../doc/PythonAPI/Orca/automl.html#bigdl.orca.automl.metrics.MPE">[docs]</a><span class="k">def</span> <span class="nf">MPE</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">multioutput</span><span class="o">=</span><span class="s1">&#39;raw_values&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate mean percentage error (MPE).</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\text{MPE} = \\frac{100\%}{n}\\sum_{t=1}^n \\frac{y_t-\\hat{y_t}}{y_t}</span>
+
+<span class="sd">    :param y_true: Array-like of shape = (n_samples, \*).</span>
+<span class="sd">           Ground truth (correct) target values.</span>
+<span class="sd">    :param y_pred: Array-like of shape = (n_samples, \*).</span>
+<span class="sd">           Estimated target values.</span>
+<span class="sd">    :param multioutput: String in [&#39;raw_values&#39;, &#39;uniform_average&#39;]</span>
+
+<span class="sd">    :return: Float or ndarray of floats.</span>
+<span class="sd">             A non-negative floating point value (the best value is 0.0), or an</span>
+<span class="sd">             array of floating point values, one for each individual target.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">original_shape</span> <span class="o">=</span> <span class="n">_standardize_input</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">multioutput</span><span class="p">)</span>
+    <span class="n">output_errors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="p">(</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_pred</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">y_true</span> <span class="o">+</span> <span class="n">EPSILON</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,)</span>
+    <span class="k">if</span> <span class="n">multioutput</span> <span class="o">==</span> <span class="s1">&#39;raw_values&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">output_errors</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">original_shape</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">output_errors</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MAPE"><a class="viewcode-back" href="../../../../doc/PythonAPI/Orca/automl.html#bigdl.orca.automl.metrics.MAPE">[docs]</a><span class="k">def</span> <span class="nf">MAPE</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">multioutput</span><span class="o">=</span><span class="s1">&#39;raw_values&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate mean absolute percentage error (MAPE).</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\text{MAPE} = \\frac{100\%}{n}\\sum_{t=1}^n  |\\frac{y_t-\\hat{y_t}}{y_t}|</span>
+
+<span class="sd">    :param y_true: Array-like of shape = (n_samples, \*).</span>
+<span class="sd">           Ground truth (correct) target values.</span>
+<span class="sd">    :param y_pred: Array-like of shape = (n_samples, \*).</span>
+<span class="sd">           Estimated target values.</span>
+<span class="sd">    :param multioutput: String in [&#39;raw_values&#39;, &#39;uniform_average&#39;]</span>
+
+<span class="sd">    :return: Float or ndarray of floats.</span>
+<span class="sd">             A non-negative floating point value (the best value is 0.0), or an</span>
+<span class="sd">             array of floating point values, one for each individual target.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">original_shape</span> <span class="o">=</span> <span class="n">_standardize_input</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">multioutput</span><span class="p">)</span>
+    <span class="n">output_errors</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">((</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_pred</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">y_true</span> <span class="o">+</span> <span class="n">EPSILON</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,)</span>
+    <span class="k">if</span> <span class="n">multioutput</span> <span class="o">==</span> <span class="s1">&#39;raw_values&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">output_errors</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">original_shape</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">output_errors</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MDAPE"><a class="viewcode-back" href="../../../../doc/PythonAPI/Orca/automl.html#bigdl.orca.automl.metrics.MDAPE">[docs]</a><span class="k">def</span> <span class="nf">MDAPE</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">multioutput</span><span class="o">=</span><span class="s1">&#39;raw_values&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate Median Absolute Percentage Error (MDAPE).</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\text{MDAPE} = 100\%\ median(|\\frac{y_1-\\hat{y_1}}{y_1}|,</span>
+<span class="sd">        \\ldots, |\\frac{y_n-\\hat{y_n}}{y_n}|)</span>
+
+<span class="sd">    :param y_true: Array-like of shape = (n_samples, \*).</span>
+<span class="sd">           Ground truth (correct) target values.</span>
+<span class="sd">    :param y_pred: Array-like of shape = (n_samples, \*).</span>
+<span class="sd">           Estimated target values.</span>
+<span class="sd">    :param multioutput: String in [&#39;raw_values&#39;, &#39;uniform_average&#39;]</span>
+
+<span class="sd">    :return: Float or ndarray of floats.</span>
+<span class="sd">             A non-negative floating point value (the best value is 0.0), or an</span>
+<span class="sd">             array of floating point values, one for each individual target.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">original_shape</span> <span class="o">=</span> <span class="n">_standardize_input</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">multioutput</span><span class="p">)</span>
+    <span class="n">output_errors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">((</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_pred</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">y_true</span> <span class="o">+</span> <span class="n">EPSILON</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,)</span>
+    <span class="k">if</span> <span class="n">multioutput</span> <span class="o">==</span> <span class="s1">&#39;raw_values&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">output_errors</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">original_shape</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">output_errors</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="sMDAPE"><a class="viewcode-back" href="../../../../doc/PythonAPI/Orca/automl.html#bigdl.orca.automl.metrics.sMDAPE">[docs]</a><span class="k">def</span> <span class="nf">sMDAPE</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">multioutput</span><span class="o">=</span><span class="s1">&#39;raw_values&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate Symmetric Median Absolute Percentage Error (sMDAPE).</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\text{sMDAPE} = 100\%\ median(\\frac{|y_1-\\hat{y_1}|}{|y_1|+|\\hat{y_1}|},</span>
+<span class="sd">        \\ldots, \\frac{|y_n-\\hat{y_n}|}{|y_n|+|\\hat{y_n}|})</span>
+
+<span class="sd">    :param y_true: Array-like of shape = (n_samples, \*).</span>
+<span class="sd">        Ground truth (correct) target values.</span>
+<span class="sd">    :param y_pred: Array-like of shape = (n_samples, \*).</span>
+<span class="sd">        Estimated target values.</span>
+<span class="sd">    :param multioutput: String in [&#39;raw_values&#39;, &#39;uniform_average&#39;]</span>
+
+<span class="sd">    :return: Float or ndarray of floats.</span>
+<span class="sd">             A non-negative floating point value (the best value is 0.0), or an</span>
+<span class="sd">             array of floating point values, one for each individual target.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">original_shape</span> <span class="o">=</span> <span class="n">_standardize_input</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">multioutput</span><span class="p">)</span>
+    <span class="n">output_errors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_pred</span><span class="p">)</span> <span class="o">/</span>
+                              <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y_pred</span><span class="p">)</span> <span class="o">+</span> <span class="n">EPSILON</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="p">)</span>
+    <span class="k">if</span> <span class="n">multioutput</span> <span class="o">==</span> <span class="s1">&#39;raw_values&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">output_errors</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">original_shape</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">output_errors</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ME"><a class="viewcode-back" href="../../../../doc/PythonAPI/Orca/automl.html#bigdl.orca.automl.metrics.ME">[docs]</a><span class="k">def</span> <span class="nf">ME</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">multioutput</span><span class="o">=</span><span class="s1">&#39;raw_values&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate Mean Error (ME).</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\text{ME} = \\frac{1}{n}\\sum_{t=1}^n  y_t-\\hat{y_t}</span>
+
+<span class="sd">    :param y_true: Array-like of shape = (n_samples, \*).</span>
+<span class="sd">           Ground truth (correct) target values.</span>
+<span class="sd">    :param y_pred: Array-like of shape = (n_samples, \*).</span>
+<span class="sd">           Estimated target values.</span>
+<span class="sd">    :param multioutput: String in [&#39;raw_values&#39;, &#39;uniform_average&#39;]</span>
+
+<span class="sd">    :return: Float or ndarray of floats.</span>
+<span class="sd">             A floating point value (the best value is 0.0), or an</span>
+<span class="sd">             array of floating point values, one for each individual target.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">original_shape</span> <span class="o">=</span> <span class="n">_standardize_input</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">multioutput</span><span class="p">)</span>
+    <span class="n">output_errors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,)</span>
+    <span class="k">if</span> <span class="n">multioutput</span> <span class="o">==</span> <span class="s1">&#39;raw_values&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">output_errors</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">original_shape</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">output_errors</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MSPE"><a class="viewcode-back" href="../../../../doc/PythonAPI/Orca/automl.html#bigdl.orca.automl.metrics.MSPE">[docs]</a><span class="k">def</span> <span class="nf">MSPE</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">multioutput</span><span class="o">=</span><span class="s1">&#39;raw_values&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate mean squared percentage error (MSPE).</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\text{MSPE} = \\frac{100\%}{n}\\sum_{t=1}^n  (\\frac{y_n-\\hat{y_n}}{y_n})^2</span>
+
+<span class="sd">    :param y_true: Array-like of shape = (n_samples, \*).</span>
+<span class="sd">           Ground truth (correct) target values.</span>
+<span class="sd">    :param y_pred: Array-like of shape = (n_samples, \*).</span>
+<span class="sd">           Estimated target values.</span>
+<span class="sd">    :param multioutput: String in [&#39;raw_values&#39;, &#39;uniform_average&#39;]</span>
+
+<span class="sd">    :return: Float or ndarray of floats.</span>
+<span class="sd">             A non-negative floating point value (the best value is 0.0), or an</span>
+<span class="sd">             array of floating point values, one for each individual target.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">original_shape</span> <span class="o">=</span> <span class="n">_standardize_input</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">multioutput</span><span class="p">)</span>
+    <span class="n">output_errors</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">((</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_pred</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">y_true</span> <span class="o">+</span> <span class="n">EPSILON</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="p">)</span>
+    <span class="k">if</span> <span class="n">multioutput</span> <span class="o">==</span> <span class="s1">&#39;raw_values&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">output_errors</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">original_shape</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">output_errors</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MSLE"><a class="viewcode-back" href="../../../../doc/PythonAPI/Orca/automl.html#bigdl.orca.automl.metrics.MSLE">[docs]</a><span class="k">def</span> <span class="nf">MSLE</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">multioutput</span><span class="o">=</span><span class="s1">&#39;raw_values&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the mean squared log error(MSLE).</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\text{MSLE} = \\frac{1}{n}\\sum_{t=1}^n (log_e(1+y_t)-log_e(1+\\hat{y_t}))^2</span>
+
+<span class="sd">    :param y_true: Array-like of shape = (n_samples, \*).</span>
+<span class="sd">           Ground truth (correct) target values.</span>
+<span class="sd">    :param y_pred: Array-like of shape = (n_samples, \*).</span>
+<span class="sd">           Estimated target values.</span>
+<span class="sd">    :param multioutput: String in [&#39;raw_values&#39;, &#39;uniform_average&#39;]</span>
+
+<span class="sd">    :return: Float or ndarray of floats.</span>
+<span class="sd">             A non-negative floating point value (the best value is 0.0), or an</span>
+<span class="sd">             array of floating point values, one for each individual target.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">original_shape</span> <span class="o">=</span> <span class="n">_standardize_input</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">multioutput</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">mean_squared_log_error</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">multioutput</span><span class="o">=</span><span class="n">multioutput</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">multioutput</span> <span class="o">==</span> <span class="s1">&#39;raw_values&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">original_shape</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="R2"><a class="viewcode-back" href="../../../../doc/PythonAPI/Orca/automl.html#bigdl.orca.automl.metrics.R2">[docs]</a><span class="k">def</span> <span class="nf">R2</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">multioutput</span><span class="o">=</span><span class="s1">&#39;raw_values&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the r2 score.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        R^2 = 1-\\frac{\\sum_{t=1}^n (y_t-\\hat{y_t})^2}{\\sum_{t=1}^n (y_t-\\bar{y})^2}</span>
+
+<span class="sd">    :param y_true: Array-like of shape = (n_samples, \*).</span>
+<span class="sd">           Ground truth (correct) target values.</span>
+<span class="sd">    :param y_pred: Array-like of shape = (n_samples, \*).</span>
+<span class="sd">           Estimated target values.</span>
+<span class="sd">    :param multioutput: String in [&#39;raw_values&#39;, &#39;uniform_average&#39;]</span>
+
+<span class="sd">    :return: Float or ndarray of floats.</span>
+<span class="sd">             A non-negative floating point value (the best value is 1.0), or an</span>
+<span class="sd">             array of floating point values, one for each individual target.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">original_shape</span> <span class="o">=</span> <span class="n">_standardize_input</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">multioutput</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">multioutput</span><span class="o">=</span><span class="n">multioutput</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">multioutput</span> <span class="o">==</span> <span class="s1">&#39;raw_values&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">original_shape</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="MAE"><a class="viewcode-back" href="../../../../doc/PythonAPI/Orca/automl.html#bigdl.orca.automl.metrics.MAE">[docs]</a><span class="k">def</span> <span class="nf">MAE</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">multioutput</span><span class="o">=</span><span class="s1">&#39;raw_values&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the mean absolute error (MAE).</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\text{MAE} = \\frac{1}{n}\\sum_{t=1}^n |y_t-\\hat{y_t}|</span>
+
+<span class="sd">    :param y_true: Array-like of shape = (n_samples, \*).</span>
+<span class="sd">           Ground truth (correct) target values.</span>
+<span class="sd">    :param y_pred: Array-like of shape = (n_samples, \*).</span>
+<span class="sd">           Estimated target values.</span>
+<span class="sd">    :param multioutput: String in [&#39;raw_values&#39;, &#39;uniform_average&#39;]</span>
+
+<span class="sd">    :return: Float or ndarray of floats.</span>
+<span class="sd">             A non-negative floating point value (the best value is 0.0), or an</span>
+<span class="sd">             array of floating point values, one for each individual target.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">original_shape</span> <span class="o">=</span> <span class="n">_standardize_input</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">multioutput</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">mean_absolute_error</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">multioutput</span><span class="o">=</span><span class="n">multioutput</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">multioutput</span> <span class="o">==</span> <span class="s1">&#39;raw_values&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">original_shape</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="RMSE"><a class="viewcode-back" href="../../../../doc/PythonAPI/Orca/automl.html#bigdl.orca.automl.metrics.RMSE">[docs]</a><span class="k">def</span> <span class="nf">RMSE</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">multioutput</span><span class="o">=</span><span class="s1">&#39;raw_values&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate square root of the mean squared error (RMSE).</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\text{RMSE} = \\sqrt{(\\frac{1}{n}\\sum_{t=1}^n (y_t-\\hat{y_t})^2)}</span>
+
+<span class="sd">    :param y_true: Array-like of shape = (n_samples, \*).</span>
+<span class="sd">           Ground truth (correct) target values.</span>
+<span class="sd">    :param y_pred: Array-like of shape = (n_samples, \*).</span>
+<span class="sd">           Estimated target values.</span>
+<span class="sd">    :param multioutput: String in [&#39;raw_values&#39;, &#39;uniform_average&#39;]</span>
+
+<span class="sd">    :return: Float or ndarray of floats.</span>
+<span class="sd">             A non-negative floating point value (the best value is 0.0), or an</span>
+<span class="sd">             array of floating point values, one for each individual target.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">MSE</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">multioutput</span><span class="o">=</span><span class="n">multioutput</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="MSE"><a class="viewcode-back" href="../../../../doc/PythonAPI/Orca/automl.html#bigdl.orca.automl.metrics.MSE">[docs]</a><span class="k">def</span> <span class="nf">MSE</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">multioutput</span><span class="o">=</span><span class="s1">&#39;uniform_average&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the mean squared error (MSE).</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\text{MSE} = \\frac{1}{n}\\sum_{t=1}^n (y_t-\\hat{y_t})^2</span>
+
+<span class="sd">    :param y_true: Array-like of shape = (n_samples, \*).</span>
+<span class="sd">           Ground truth (correct) target values.</span>
+<span class="sd">    :param y_pred: Array-like of shape = (n_samples, \*).</span>
+<span class="sd">           Estimated target values.</span>
+<span class="sd">    :param multioutput: String in [&#39;raw_values&#39;, &#39;uniform_average&#39;]</span>
+
+<span class="sd">    :return: Float or ndarray of floats.</span>
+<span class="sd">             A non-negative floating point value (the best value is 0.0), or an</span>
+<span class="sd">             array of floating point values, one for each individual target.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">original_shape</span> <span class="o">=</span> <span class="n">_standardize_input</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">multioutput</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">multioutput</span><span class="o">=</span><span class="n">multioutput</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">multioutput</span> <span class="o">==</span> <span class="s1">&#39;raw_values&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">original_shape</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="Accuracy"><a class="viewcode-back" href="../../../../doc/PythonAPI/Orca/automl.html#bigdl.orca.automl.metrics.Accuracy">[docs]</a><span class="k">def</span> <span class="nf">Accuracy</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">multioutput</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the accuracy score (Accuracy).</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\text{Accuracy} = \\frac{1}{n}\\sum_{t=1}^n 1(y_t=\\hat{y_t})</span>
+
+<span class="sd">    :param y_true: Array-like of shape = (n_samples, \*).</span>
+<span class="sd">           Ground truth (correct) target values.</span>
+<span class="sd">    :param y_pred: Array-like of shape = (n_samples, \*).</span>
+<span class="sd">           Estimated target values.</span>
+
+<span class="sd">    :return: Float or ndarray of floats.</span>
+<span class="sd">             A non-negative floating point value (the best value is 1.0), or an</span>
+<span class="sd">             array of floating point values, one for each individual target.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">sklearn.metrics._classification</span> <span class="k">import</span> <span class="n">accuracy_score</span>
+    <span class="n">y_true</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span>
+    <span class="n">y_pred</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">y_pred</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">y_pred</span> <span class="o">!=</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)):</span>
+        <span class="c1"># y_pred is probability</span>
+        <span class="k">if</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">y_pred</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">y_pred</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">y_pred</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">accuracy_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Evaluator"><a class="viewcode-back" href="../../../../doc/PythonAPI/Orca/automl.html#bigdl.orca.automl.metrics.Evaluator">[docs]</a><span class="k">class</span> <span class="nc">Evaluator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Evaluate metrics for y_true and y_pred.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">metrics_func</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="c1"># Absolute</span>
+        <span class="s1">&#39;me&#39;</span><span class="p">:</span> <span class="n">ME</span><span class="p">,</span>
+        <span class="s1">&#39;mae&#39;</span><span class="p">:</span> <span class="n">MAE</span><span class="p">,</span>
+        <span class="s1">&#39;mse&#39;</span><span class="p">:</span> <span class="n">MSE</span><span class="p">,</span>
+        <span class="s1">&#39;rmse&#39;</span><span class="p">:</span> <span class="n">RMSE</span><span class="p">,</span>
+        <span class="s1">&#39;msle&#39;</span><span class="p">:</span> <span class="n">MSLE</span><span class="p">,</span>
+        <span class="s1">&#39;r2&#39;</span><span class="p">:</span> <span class="n">R2</span><span class="p">,</span>
+        <span class="c1"># Relative</span>
+        <span class="s1">&#39;mpe&#39;</span><span class="p">:</span> <span class="n">MPE</span><span class="p">,</span>
+        <span class="s1">&#39;mape&#39;</span><span class="p">:</span> <span class="n">MAPE</span><span class="p">,</span>
+        <span class="s1">&#39;mspe&#39;</span><span class="p">:</span> <span class="n">MSPE</span><span class="p">,</span>
+        <span class="s1">&#39;smape&#39;</span><span class="p">:</span> <span class="n">sMAPE</span><span class="p">,</span>
+        <span class="s1">&#39;mdape&#39;</span><span class="p">:</span> <span class="n">MDAPE</span><span class="p">,</span>
+        <span class="s1">&#39;smdape&#39;</span><span class="p">:</span> <span class="n">sMDAPE</span><span class="p">,</span>
+        <span class="s1">&#39;accuracy&#39;</span><span class="p">:</span> <span class="n">Accuracy</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="n">max_mode_metrics</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;r2&#39;</span><span class="p">,</span> <span class="s1">&#39;accuracy&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Evaluator.evaluate"><a class="viewcode-back" href="../../../../doc/PythonAPI/Orca/automl.html#bigdl.orca.automl.metrics.Evaluator.evaluate">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">metric</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">multioutput</span><span class="o">=</span><span class="s1">&#39;raw_values&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Evaluate a specific metric for y_true and y_pred.</span>
+
+<span class="sd">        :param metric: String in [&#39;me&#39;, &#39;mae&#39;, &#39;mse&#39;, &#39;rmse&#39;, &#39;msle&#39;, &#39;r2&#39;</span>
+<span class="sd">               , &#39;mpe&#39;, &#39;mape&#39;, &#39;mspe&#39;, &#39;smape&#39;, &#39;mdape&#39;, &#39;smdape&#39;, &#39;accuracy&#39;]</span>
+<span class="sd">        :param y_true: Array-like of shape = (n_samples, \*).</span>
+<span class="sd">               Ground truth (correct) target values.</span>
+<span class="sd">        :param y_pred: Array-like of shape = (n_samples, \*).</span>
+<span class="sd">               Estimated target values.</span>
+<span class="sd">        :param multioutput: String in [&#39;raw_values&#39;, &#39;uniform_average&#39;]</span>
+
+<span class="sd">        :return: Float or ndarray of floats.</span>
+<span class="sd">                 A floating point value, or an</span>
+<span class="sd">                 array of floating point values, one for each individual target.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Evaluator</span><span class="o">.</span><span class="n">check_metric</span><span class="p">(</span><span class="n">metric</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">Evaluator</span><span class="o">.</span><span class="n">metrics_func</span><span class="p">[</span><span class="n">metric</span><span class="p">](</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">multioutput</span><span class="o">=</span><span class="n">multioutput</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">1</span><span class="p">,):</span>
+            <span class="k">return</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">result</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">check_metric</span><span class="p">(</span><span class="n">metric</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">metric</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="n">f</span><span class="s2">&quot;Got invalid metric name of </span><span class="si">{metric}</span><span class="s2">!&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">metric</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">Evaluator</span><span class="o">.</span><span class="n">metrics_func</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;metric &quot;</span> <span class="o">+</span> <span class="n">metric</span> <span class="o">+</span> <span class="s2">&quot; is not supported&quot;</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_metric_mode</span><span class="p">(</span><span class="n">metric</span><span class="p">):</span>
+        <span class="n">Evaluator</span><span class="o">.</span><span class="n">check_metric</span><span class="p">(</span><span class="n">metric</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">metric</span> <span class="ow">in</span> <span class="n">Evaluator</span><span class="o">.</span><span class="n">max_mode_metrics</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;max&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;min&quot;</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

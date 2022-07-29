@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bigdl.orca.learn.bigdl.estimator &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+        <script src="../../../../../_static/clipboard.min.js"></script>
+        <script src="../../../../../_static/copybutton.js"></script>
+        <script src="../../../../../_static/tabs.js"></script>
+        <script src="../../../../../_static/design-tabs.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../index.html">Module code</a> &raquo;</li>
+      <li>bigdl.orca.learn.bigdl.estimator</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bigdl.orca.learn.bigdl.estimator</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright 2016 The BigDL Authors.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca.learn.metrics</span> <span class="k">import</span> <span class="n">Metric</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca.learn.utils</span> <span class="k">import</span> <span class="n">bigdl_metric_results_to_dict</span>
+<span class="kn">from</span> <span class="nn">bigdl.dllib.nnframes</span> <span class="k">import</span> <span class="n">NNEstimator</span><span class="p">,</span> <span class="n">NNModel</span>
+<span class="kn">from</span> <span class="nn">bigdl.dllib.estimator</span> <span class="k">import</span> <span class="n">Estimator</span> <span class="k">as</span> <span class="n">SparkEstimator</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca.learn.spark_estimator</span> <span class="k">import</span> <span class="n">Estimator</span> <span class="k">as</span> <span class="n">OrcaSparkEstimator</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca.data</span> <span class="k">import</span> <span class="n">SparkXShards</span>
+<span class="kn">from</span> <span class="nn">bigdl.dllib.optim.optimizer</span> <span class="k">import</span> <span class="n">MaxEpoch</span>
+<span class="kn">from</span> <span class="nn">bigdl.dllib.feature.common</span> <span class="k">import</span> <span class="n">FeatureSet</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca.learn.metrics</span> <span class="k">import</span> <span class="n">Accuracy</span>
+<span class="kn">from</span> <span class="nn">pyspark.sql.dataframe</span> <span class="k">import</span> <span class="n">DataFrame</span>
+<span class="kn">from</span> <span class="nn">bigdl.dllib.utils.log4Error</span> <span class="k">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="Estimator"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.bigdl.estimator.Estimator">[docs]</a><span class="k">class</span> <span class="nc">Estimator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Estimator.from_bigdl"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.bigdl.estimator.Estimator.from_bigdl">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">from_bigdl</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                   <span class="n">feature_preprocessing</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label_preprocessing</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                   <span class="n">model_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct an Estimator with BigDL model, loss function and Preprocessing for feature and</span>
+<span class="sd">        label data.</span>
+
+<span class="sd">        :param model: BigDL Model to be trained.</span>
+<span class="sd">        :param loss: BigDL criterion.</span>
+<span class="sd">        :param optimizer: BigDL optimizer.</span>
+<span class="sd">        :param metrics: A evaluation metric or a list of evaluation metrics</span>
+<span class="sd">        :param feature_preprocessing: Used when data in `fit` and `predict` is a Spark DataFrame.</span>
+<span class="sd">               The param converts the data in feature column to a Tensor or to a Sample directly.</span>
+<span class="sd">               It expects a List of Int as the size of the converted Tensor, or a Preprocessing[F,</span>
+<span class="sd">               Tensor[T]]</span>
+
+<span class="sd">               If a List of Int is set as feature_preprocessing, it can only handle the case that</span>
+<span class="sd">               feature column contains the following data types:</span>
+<span class="sd">               Float, Double, Int, Array[Float], Array[Double], Array[Int] and MLlib Vector. The</span>
+<span class="sd">               feature data are converted to Tensors with the specified sizes before</span>
+<span class="sd">               sending to the model. Internally, a SeqToTensor is generated according to the</span>
+<span class="sd">               size, and used as the feature_preprocessing.</span>
+
+<span class="sd">               Alternatively, user can set feature_preprocessing as Preprocessing[F, Tensor[T]]</span>
+<span class="sd">               that transforms the feature data to a Tensor[T]. Some pre-defined Preprocessing are</span>
+<span class="sd">               provided in package bigdl.dllib.feature. Multiple Preprocessing can be combined as a</span>
+<span class="sd">               ChainedPreprocessing.</span>
+
+<span class="sd">               The feature_preprocessing will also be copied to the generated NNModel and applied</span>
+<span class="sd">               to feature column during transform.</span>
+<span class="sd">        :param label_preprocessing: Used when data in `fit` and `predict` is a Spark DataFrame.</span>
+<span class="sd">               similar to feature_preprocessing, but applies to Label data.</span>
+<span class="sd">        :param model_dir: The path to save model. During the training, if checkpoint_trigger is</span>
+<span class="sd">               defined and triggered, the model will be saved to model_dir.</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">BigDLEstimator</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="n">loss</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
+                              <span class="n">metrics</span><span class="o">=</span><span class="n">metrics</span><span class="p">,</span>
+                              <span class="n">feature_preprocessing</span><span class="o">=</span><span class="n">feature_preprocessing</span><span class="p">,</span>
+                              <span class="n">label_preprocessing</span><span class="o">=</span><span class="n">label_preprocessing</span><span class="p">,</span> <span class="n">model_dir</span><span class="o">=</span><span class="n">model_dir</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="BigDLEstimator"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.bigdl.estimator.BigDLEstimator">[docs]</a><span class="k">class</span> <span class="nc">BigDLEstimator</span><span class="p">(</span><span class="n">OrcaSparkEstimator</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">feature_preprocessing</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label_preprocessing</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">model_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="o">=</span> <span class="n">Metric</span><span class="o">.</span><span class="n">convert_metrics_list</span><span class="p">(</span><span class="n">metrics</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">feature_preprocessing</span> <span class="o">=</span> <span class="n">feature_preprocessing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">label_preprocessing</span> <span class="o">=</span> <span class="n">label_preprocessing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_dir</span> <span class="o">=</span> <span class="n">model_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nn_model</span> <span class="o">=</span> <span class="n">NNModel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">feature_preprocessing</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">feature_preprocessing</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nn_estimator</span> <span class="o">=</span> <span class="n">NNEstimator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_preprocessing</span><span class="p">,</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">label_preprocessing</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">bigdl.dllib.optim.optimizer</span> <span class="k">import</span> <span class="n">SGD</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">SGD</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nn_estimator</span><span class="o">.</span><span class="n">setOptimMethod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span> <span class="o">=</span> <span class="n">SparkEstimator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_dir</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app_name</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_nnframe_fit</span> <span class="o">=</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="BigDLEstimator.fit"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.bigdl.estimator.BigDLEstimator.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">feature_cols</span><span class="o">=</span><span class="s2">&quot;features&quot;</span><span class="p">,</span> <span class="n">label_cols</span><span class="o">=</span><span class="s2">&quot;label&quot;</span><span class="p">,</span>
+            <span class="n">caching_sample</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">validation_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">validation_trigger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">checkpoint_trigger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Train this BigDL model with train data.</span>
+
+<span class="sd">        :param data: train data. It can be XShards or Spark DataFrame.</span>
+<span class="sd">               If data is XShards, each partition is a dictionary of  {&#39;x&#39;: feature,</span>
+<span class="sd">               &#39;y&#39;: label}, where feature(label) is a numpy array or a list of numpy arrays.</span>
+<span class="sd">        :param epochs: Number of epochs to train the model.</span>
+<span class="sd">        :param batch_size: Batch size used for training. Default: 32.</span>
+<span class="sd">        :param feature_cols: Feature column name(s) of data. Only used when data is a Spark</span>
+<span class="sd">               DataFrame. Default: &quot;features&quot;.</span>
+<span class="sd">        :param label_cols: Label column name(s) of data. Only used when data is a Spark DataFrame.</span>
+<span class="sd">               Default: &quot;label&quot;.</span>
+<span class="sd">        :param caching_sample: whether to cache the Samples after preprocessing. Default: True</span>
+<span class="sd">        :param validation_data: Validation data. XShards and Spark DataFrame are supported.</span>
+<span class="sd">               If data is XShards, each partition is a dictionary of  {&#39;x&#39;: feature,</span>
+<span class="sd">               &#39;y&#39;: label}, where feature(label) is a numpy array or a list of numpy arrays.</span>
+<span class="sd">        :param validation_trigger: Orca Trigger to trigger validation computation.</span>
+<span class="sd">        :param checkpoint_trigger: Orca Trigger to set a checkpoint.</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">bigdl.orca.learn.trigger</span> <span class="k">import</span> <span class="n">Trigger</span>
+
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="n">batch_size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;batch_size should be greater than 0&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">validation_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="s2">&quot;You should provide metrics when creating this estimator&quot;</span>
+                              <span class="s2">&quot; if you provide validation_data.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feature_cols</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">data</span><span class="p">,</span> <span class="n">validation_data</span><span class="p">,</span> <span class="n">feature_cols</span> <span class="o">=</span> \
+                    <span class="n">BigDLEstimator</span><span class="o">.</span><span class="n">_combine_cols</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">feature_cols</span><span class="p">,</span> <span class="n">col_name</span><span class="o">=</span><span class="s2">&quot;features&quot;</span><span class="p">,</span>
+                                                 <span class="n">val_data</span><span class="o">=</span><span class="n">validation_data</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">label_cols</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">data</span><span class="p">,</span> <span class="n">validation_data</span><span class="p">,</span> <span class="n">label_cols</span> <span class="o">=</span> \
+                    <span class="n">BigDLEstimator</span><span class="o">.</span><span class="n">_combine_cols</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">label_cols</span><span class="p">,</span> <span class="n">col_name</span><span class="o">=</span><span class="s2">&quot;label&quot;</span><span class="p">,</span>
+                                                 <span class="n">val_data</span><span class="o">=</span><span class="n">validation_data</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">nn_estimator</span><span class="o">.</span><span class="n">setBatchSize</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span><span class="o">.</span><span class="n">setMaxEpoch</span><span class="p">(</span><span class="n">epochs</span><span class="p">)</span> \
+                <span class="o">.</span><span class="n">setCachingSample</span><span class="p">(</span><span class="n">caching_sample</span><span class="p">)</span><span class="o">.</span><span class="n">setFeaturesCol</span><span class="p">(</span><span class="n">feature_cols</span><span class="p">)</span> \
+                <span class="o">.</span><span class="n">setLabelCol</span><span class="p">(</span><span class="n">label_cols</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">validation_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">validation_data</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">),</span>
+                                  <span class="s2">&quot;validation_data should be a spark DataFrame.&quot;</span><span class="p">)</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="n">validation_trigger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                                  <span class="s2">&quot;You should provide validation_trigger if you provide&quot;</span>
+                                  <span class="s2">&quot; validation_data.&quot;</span><span class="p">)</span>
+                <span class="n">validation_trigger</span> <span class="o">=</span> <span class="n">Trigger</span><span class="o">.</span><span class="n">convert_trigger</span><span class="p">(</span><span class="n">validation_trigger</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">nn_estimator</span><span class="o">.</span><span class="n">setValidation</span><span class="p">(</span><span class="n">validation_trigger</span><span class="p">,</span> <span class="n">validation_data</span><span class="p">,</span>
+                                                <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">app_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="kn">from</span> <span class="nn">bigdl.dllib.optim.optimizer</span> <span class="k">import</span> <span class="n">TrainSummary</span>
+                <span class="kn">from</span> <span class="nn">bigdl.dllib.optim.optimizer</span> <span class="k">import</span> <span class="n">ValidationSummary</span>
+                <span class="n">train_summary</span> <span class="o">=</span> <span class="n">TrainSummary</span><span class="p">(</span><span class="n">log_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log_dir</span><span class="p">,</span> <span class="n">app_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">app_name</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">nn_estimator</span><span class="o">.</span><span class="n">setTrainSummary</span><span class="p">(</span><span class="n">train_summary</span><span class="p">)</span>
+                <span class="n">val_summary</span> <span class="o">=</span> <span class="n">ValidationSummary</span><span class="p">(</span><span class="n">log_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log_dir</span><span class="p">,</span> <span class="n">app_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">app_name</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">nn_estimator</span><span class="o">.</span><span class="n">setValidationSummary</span><span class="p">(</span><span class="n">val_summary</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">checkpoint_trigger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">checkpoint_trigger</span> <span class="o">=</span> <span class="n">Trigger</span><span class="o">.</span><span class="n">convert_trigger</span><span class="p">(</span><span class="n">checkpoint_trigger</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">nn_estimator</span><span class="o">.</span><span class="n">setCheckpoint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_dir</span><span class="p">,</span> <span class="n">checkpoint_trigger</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">nn_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nn_estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">is_nnframe_fit</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">SparkXShards</span><span class="p">):</span>
+            <span class="kn">from</span> <span class="nn">bigdl.orca.data.utils</span> <span class="k">import</span> <span class="n">xshard_to_sample</span>
+
+            <span class="n">end_trigger</span> <span class="o">=</span> <span class="n">MaxEpoch</span><span class="p">(</span><span class="n">epochs</span><span class="p">)</span>
+            <span class="n">checkpoint_trigger</span> <span class="o">=</span> <span class="n">Trigger</span><span class="o">.</span><span class="n">convert_trigger</span><span class="p">(</span><span class="n">checkpoint_trigger</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">SparkXShards</span><span class="p">):</span>
+                <span class="n">train_rdd</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">rdd</span><span class="o">.</span><span class="n">flatMap</span><span class="p">(</span><span class="n">xshard_to_sample</span><span class="p">)</span>
+                <span class="n">train_feature_set</span> <span class="o">=</span> <span class="n">FeatureSet</span><span class="o">.</span><span class="n">sample_rdd</span><span class="p">(</span><span class="n">train_rdd</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">validation_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">val_feature_set</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">invalidInputError</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">validation_data</span><span class="p">,</span> <span class="n">SparkXShards</span><span class="p">),</span>
+                                      <span class="s2">&quot;validation_data should be a XShards&quot;</span><span class="p">)</span>
+                    <span class="n">val_feature_set</span> <span class="o">=</span> <span class="n">FeatureSet</span><span class="o">.</span><span class="n">sample_rdd</span><span class="p">(</span>
+                        <span class="n">validation_data</span><span class="o">.</span><span class="n">rdd</span><span class="o">.</span><span class="n">flatMap</span><span class="p">(</span><span class="n">xshard_to_sample</span><span class="p">))</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">app_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">set_tensorboard</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">app_name</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">train_feature_set</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">,</span> <span class="n">end_trigger</span><span class="p">,</span> <span class="n">checkpoint_trigger</span><span class="p">,</span>
+                                     <span class="n">val_feature_set</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">is_nnframe_fit</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                                  <span class="s2">&quot;Data and validation data should be XShards, but get &quot;</span> <span class="o">+</span>
+                                  <span class="n">data</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;Data should be XShards or Spark DataFrame, but get &quot;</span> <span class="o">+</span>
+                              <span class="n">data</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="BigDLEstimator.predict"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.bigdl.estimator.BigDLEstimator.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">feature_cols</span><span class="o">=</span><span class="s2">&quot;features&quot;</span><span class="p">,</span> <span class="n">sample_preprocessing</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Predict input data</span>
+
+<span class="sd">        :param data: predict input data. It can be XShards or Spark DataFrame.</span>
+<span class="sd">               If data is XShards, each partition is a dictionary of  {&#39;x&#39;: feature}, where feature</span>
+<span class="sd">               is a numpy array or a list of numpy arrays.</span>
+<span class="sd">        :param batch_size: Batch size used for inference. Default: 4.</span>
+<span class="sd">        :param feature_cols: Feature column name(s) of data. Only used when data is a Spark</span>
+<span class="sd">               DataFrame. Default: &quot;features&quot;.</span>
+<span class="sd">        :param sample_preprocessing: Used when data is a Spark DataFrame. If the user want change</span>
+<span class="sd">               the default feature_preprocessing specified in Estimator.from_bigdl, the user can</span>
+<span class="sd">               pass the new sample_preprocessing methods.</span>
+<span class="sd">        :return: predicted result.</span>
+<span class="sd">                 If input data is Spark DataFrame, the predict result is a DataFrame which includes</span>
+<span class="sd">                 original columns plus &#39;prediction&#39; column. The &#39;prediction&#39; column can be</span>
+<span class="sd">                 FloatType, VectorUDT or Array of VectorUDT depending on model outputs shape.</span>
+<span class="sd">                 If input data is an XShards, the predict result is a XShards, each partition</span>
+<span class="sd">                 of the XShards is a dictionary of {&#39;prediction&#39;: result}, where result is a numpy</span>
+<span class="sd">                 array or a list of numpy arrays.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feature_cols</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">data</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">feature_cols</span> <span class="o">=</span> \
+                    <span class="n">BigDLEstimator</span><span class="o">.</span><span class="n">_combine_cols</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">feature_cols</span><span class="p">,</span> <span class="n">col_name</span><span class="o">=</span><span class="s2">&quot;features&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nn_model</span><span class="o">.</span><span class="n">setBatchSize</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span><span class="o">.</span><span class="n">setFeaturesCol</span><span class="p">(</span><span class="n">feature_cols</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">sample_preprocessing</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">nn_model</span><span class="o">.</span><span class="n">setSamplePreprocessing</span><span class="p">(</span><span class="n">sample_preprocessing</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nn_model</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">SparkXShards</span><span class="p">):</span>
+            <span class="kn">from</span> <span class="nn">bigdl.orca.data.utils</span> <span class="k">import</span> <span class="n">xshard_to_sample</span>
+            <span class="kn">from</span> <span class="nn">bigdl.orca.learn.utils</span> <span class="k">import</span> <span class="n">convert_predict_rdd_to_xshard</span>
+            <span class="n">sample_rdd</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">rdd</span><span class="o">.</span><span class="n">flatMap</span><span class="p">(</span><span class="n">xshard_to_sample</span><span class="p">)</span>
+            <span class="n">result_rdd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">sample_rdd</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">convert_predict_rdd_to_xshard</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">result_rdd</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;Data should be XShards or Spark DataFrame, but get &quot;</span> <span class="o">+</span>
+                              <span class="n">data</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BigDLEstimator.evaluate"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.bigdl.estimator.BigDLEstimator.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">feature_cols</span><span class="o">=</span><span class="s2">&quot;features&quot;</span><span class="p">,</span> <span class="n">label_cols</span><span class="o">=</span><span class="s2">&quot;label&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Evaluate model.</span>
+
+<span class="sd">        :param data: validation data. It can be XShardsor or Spark DataFrame, each partition is</span>
+<span class="sd">               a dictionary of {&#39;x&#39;: feature, &#39;y&#39;: label}, where feature(label) is a numpy array</span>
+<span class="sd">               or a list of numpy arrays.</span>
+<span class="sd">        :param batch_size: Batch size used for validation. Default: 32.</span>
+<span class="sd">        :param feature_cols: (Not supported yet) Feature column name(s) of data. Only used when</span>
+<span class="sd">               data is a Spark  DataFrame. Default: None.</span>
+<span class="sd">        :param label_cols: (Not supported yet) Label column name(s) of data. Only used when data</span>
+<span class="sd">               is a Spark DataFrame. Default: None.</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;validation data shouldn&#39;t be None&quot;</span><span class="p">)</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="s2">&quot;metrics shouldn&#39;t be None, please specify the metrics&quot;</span>
+                          <span class="s2">&quot; argument when creating this estimator.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feature_cols</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">data</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">feature_cols</span> <span class="o">=</span> \
+                    <span class="n">BigDLEstimator</span><span class="o">.</span><span class="n">_combine_cols</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="p">[</span><span class="n">feature_cols</span><span class="p">],</span> <span class="n">col_name</span><span class="o">=</span><span class="s2">&quot;features&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">label_cols</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">data</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">label_cols</span> <span class="o">=</span> \
+                    <span class="n">BigDLEstimator</span><span class="o">.</span><span class="n">_combine_cols</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">label_cols</span><span class="p">,</span> <span class="n">col_name</span><span class="o">=</span><span class="s2">&quot;label&quot;</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">nn_estimator</span><span class="o">.</span><span class="n">_setNNBatchSize</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span><span class="o">.</span><span class="n">_setNNFeaturesCol</span><span class="p">(</span><span class="n">feature_cols</span><span class="p">)</span> \
+                <span class="o">.</span><span class="n">_setNNLabelCol</span><span class="p">(</span><span class="n">label_cols</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">nn_estimator</span><span class="o">.</span><span class="n">setValidation</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span>
+                                            <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">app_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="kn">from</span> <span class="nn">bigdl.dllib.optim.optimizer</span> <span class="k">import</span> <span class="n">TrainSummary</span>
+                <span class="kn">from</span> <span class="nn">bigdl.dllib.optim.optimizer</span> <span class="k">import</span> <span class="n">ValidationSummary</span>
+                <span class="n">val_summary</span> <span class="o">=</span> <span class="n">ValidationSummary</span><span class="p">(</span><span class="n">log_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log_dir</span><span class="p">,</span> <span class="n">app_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">app_name</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">nn_estimator</span><span class="o">.</span><span class="n">setValidationSummary</span><span class="p">(</span><span class="n">val_summary</span><span class="p">)</span>
+
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nn_estimator</span><span class="o">.</span><span class="n">_eval</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">SparkXShards</span><span class="p">):</span>
+            <span class="kn">from</span> <span class="nn">bigdl.orca.data.utils</span> <span class="k">import</span> <span class="n">xshard_to_sample</span>
+            <span class="n">val_feature_set</span> <span class="o">=</span> <span class="n">FeatureSet</span><span class="o">.</span><span class="n">sample_rdd</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">rdd</span><span class="o">.</span><span class="n">flatMap</span><span class="p">(</span><span class="n">xshard_to_sample</span><span class="p">))</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">val_feature_set</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;Data should be XShards or Spark DataFrame, but get &quot;</span> <span class="o">+</span>
+                              <span class="n">data</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">bigdl_metric_results_to_dict</span><span class="p">(</span><span class="n">result</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BigDLEstimator.get_model"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.bigdl.estimator.BigDLEstimator.get_model">[docs]</a>    <span class="k">def</span> <span class="nf">get_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the trained BigDL model</span>
+
+<span class="sd">        :return: The trained BigDL model</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span></div>
+
+<div class="viewcode-block" id="BigDLEstimator.save"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.bigdl.estimator.BigDLEstimator.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save the BigDL model to model_path</span>
+
+<span class="sd">        :param model_path: path to save the trained model.</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_model</span><span class="p">()</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">saveModel</span><span class="p">(</span><span class="n">model_path</span> <span class="o">+</span> <span class="s2">&quot;.bigdl&quot;</span><span class="p">,</span> <span class="n">model_path</span> <span class="o">+</span> <span class="s2">&quot;.bin&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;You should fit before calling save&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BigDLEstimator.load"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.bigdl.estimator.BigDLEstimator.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">feature_preprocessing</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">label_preprocessing</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">model_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">is_checkpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load existing BigDL model or checkpoint</span>
+
+<span class="sd">        :param checkpoint: Path to the existing model or checkpoint.</span>
+<span class="sd">        :param optimizer: BigDL optimizer.</span>
+<span class="sd">        :param loss: BigDL criterion.</span>
+<span class="sd">        :param feature_preprocessing: Used when data in `fit` and `predict` is a Spark DataFrame.</span>
+<span class="sd">               The param converts the data in feature column to a Tensor or to a Sample directly.</span>
+<span class="sd">               It expects a List of Int as the size of the converted Tensor, or a Preprocessing[F,</span>
+<span class="sd">               Tensor[T]]</span>
+
+<span class="sd">               If a List of Int is set as feature_preprocessing, it can only handle the case that</span>
+<span class="sd">               feature column contains the following data types:</span>
+<span class="sd">               Float, Double, Int, Array[Float], Array[Double], Array[Int] and MLlib Vector. The</span>
+<span class="sd">               feature data are converted to Tensors with the specified sizes before</span>
+<span class="sd">               sending to the model. Internally, a SeqToTensor is generated according to the</span>
+<span class="sd">               size, and used as the feature_preprocessing.</span>
+
+<span class="sd">               Alternatively, user can set feature_preprocessing as Preprocessing[F, Tensor[T]]</span>
+<span class="sd">               that transforms the feature data to a Tensor[T]. Some pre-defined Preprocessing are</span>
+<span class="sd">               provided in package bigdl.dllib.feature. Multiple Preprocessing can be combined as a</span>
+<span class="sd">               ChainedPreprocessing.</span>
+
+<span class="sd">               The feature_preprocessing will also be copied to the generated NNModel and applied</span>
+<span class="sd">               to feature column during transform.</span>
+<span class="sd">        :param label_preprocessing: Used when data in `fit` and `predict` is a Spark DataFrame.</span>
+<span class="sd">               similar to feature_preprocessing, but applies to Label data.</span>
+<span class="sd">        :param model_dir: The path to save model. During the training, if checkpoint_trigger is</span>
+<span class="sd">               defined and triggered, the model will be saved to model_dir.</span>
+<span class="sd">        :param is_checkpoint: Whether the path is a checkpoint or a saved BigDL model.</span>
+<span class="sd">               Default: False.</span>
+<span class="sd">        :return: The loaded estimator object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">loss</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span>
+        <span class="k">if</span> <span class="n">optimizer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span>
+        <span class="k">if</span> <span class="n">feature_preprocessing</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">feature_preprocessing</span> <span class="o">=</span> <span class="n">feature_preprocessing</span>
+        <span class="k">if</span> <span class="n">label_preprocessing</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">label_preprocessing</span> <span class="o">=</span> <span class="n">label_preprocessing</span>
+        <span class="k">if</span> <span class="n">model_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model_dir</span> <span class="o">=</span> <span class="n">model_dir</span>
+
+        <span class="k">if</span> <span class="n">is_checkpoint</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_orca_checkpoint</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">bigdl.dllib.net</span> <span class="k">import</span> <span class="n">Net</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">Net</span><span class="o">.</span><span class="n">load_bigdl</span><span class="p">(</span><span class="n">checkpoint</span> <span class="o">+</span> <span class="s2">&quot;.bigdl&quot;</span><span class="p">,</span> <span class="n">checkpoint</span> <span class="o">+</span> <span class="s2">&quot;.bin&quot;</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">nn_estimator</span> <span class="o">=</span> <span class="n">NNEstimator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_preprocessing</span><span class="p">,</span>
+                                            <span class="bp">self</span><span class="o">.</span><span class="n">label_preprocessing</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="kn">from</span> <span class="nn">bigdl.dllib.optim.optimizer</span> <span class="k">import</span> <span class="n">SGD</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">SGD</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nn_estimator</span><span class="o">.</span><span class="n">setOptimMethod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span> <span class="o">=</span> <span class="n">SparkEstimator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_dir</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nn_model</span> <span class="o">=</span> <span class="n">NNModel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">feature_preprocessing</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">feature_preprocessing</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+    <span class="k">def</span> <span class="nf">__load_bigdl_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">bigdl_type</span><span class="o">=</span><span class="s2">&quot;float&quot;</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">bigdl.dllib.utils.common</span> <span class="k">import</span> <span class="n">callBigDlFunc</span>
+        <span class="kn">from</span> <span class="nn">bigdl.dllib.nn.layer</span> <span class="k">import</span> <span class="n">Layer</span>
+        <span class="n">jmodel</span> <span class="o">=</span> <span class="n">callBigDlFunc</span><span class="p">(</span><span class="n">bigdl_type</span><span class="p">,</span> <span class="s2">&quot;loadBigDL&quot;</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Layer</span><span class="o">.</span><span class="n">of</span><span class="p">(</span><span class="n">jmodel</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BigDLEstimator.load_orca_checkpoint"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.bigdl.estimator.BigDLEstimator.load_orca_checkpoint">[docs]</a>    <span class="k">def</span> <span class="nf">load_orca_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load existing checkpoint. To load a specific checkpoint, please provide both `version`</span>
+<span class="sd">        and `perfix`. If `version` is None, then the latest checkpoint under the specified</span>
+<span class="sd">        directory will be loaded.</span>
+
+<span class="sd">        :param path: Path to the existing checkpoint (or directory containing Orca checkpoint</span>
+<span class="sd">               files).</span>
+<span class="sd">        :param version: checkpoint version, which is the suffix of model.* file, i.e., for</span>
+<span class="sd">               modle.4 file, the version is 4. If it is None, then load the latest checkpoint.</span>
+<span class="sd">        :param prefix: optimMethod prefix, for example &#39;optimMethod-Sequentialf53bddcc&#39;</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">bigdl.dllib.nn.layer</span> <span class="k">import</span> <span class="n">Model</span><span class="p">,</span> <span class="n">Container</span>
+        <span class="kn">from</span> <span class="nn">bigdl.dllib.optim.optimizer</span> <span class="k">import</span> <span class="n">OptimMethod</span>
+        <span class="kn">from</span> <span class="nn">bigdl.orca.learn.utils</span> <span class="k">import</span> <span class="n">find_latest_checkpoint</span>
+        <span class="kn">import</span> <span class="nn">os</span>
+
+        <span class="k">if</span> <span class="n">version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">path</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">version</span> <span class="o">=</span> <span class="n">find_latest_checkpoint</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">model_type</span><span class="o">=</span><span class="s2">&quot;bigdl&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                                  <span class="s2">&quot;Cannot find BigDL checkpoint, please check your checkpoint&quot;</span>
+                                  <span class="s2">&quot; path.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="n">prefix</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="s2">&quot;You should provide optimMethod prefix, &quot;</span>
+                              <span class="s2">&quot;for example &#39;optimMethod-TorchModelf53bddcc&#39;&quot;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__load_bigdl_model</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;model.</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">version</span><span class="p">)))</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">Container</span><span class="p">),</span>
+                              <span class="s2">&quot;The loaded model should be a Container, please check your&quot;</span>
+                              <span class="s2">&quot; checkpoint type.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">OptimMethod</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span>
+                                                           <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">.</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">version</span><span class="p">)))</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;Cannot load BigDL checkpoint, please check your checkpoint path &quot;</span>
+                              <span class="s2">&quot;and checkpoint type.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span> <span class="o">=</span> <span class="n">SparkEstimator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nn_estimator</span> <span class="o">=</span> <span class="n">NNEstimator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_preprocessing</span><span class="p">,</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">label_preprocessing</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nn_estimator</span><span class="o">.</span><span class="n">setOptimMethod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nn_model</span> <span class="o">=</span> <span class="n">NNModel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">feature_preprocessing</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">feature_preprocessing</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BigDLEstimator.clear_gradient_clipping"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.bigdl.estimator.BigDLEstimator.clear_gradient_clipping">[docs]</a>    <span class="k">def</span> <span class="nf">clear_gradient_clipping</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clear gradient clipping parameters. In this case, gradient clipping will not be applied.</span>
+<span class="sd">        In order to take effect, it needs to be called before fit.</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nn_estimator</span><span class="o">.</span><span class="n">clearGradientClipping</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">clear_gradient_clipping</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="BigDLEstimator.set_constant_gradient_clipping"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.bigdl.estimator.BigDLEstimator.set_constant_gradient_clipping">[docs]</a>    <span class="k">def</span> <span class="nf">set_constant_gradient_clipping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">min</span><span class="p">,</span> <span class="nb">max</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set constant gradient clipping during the training process.</span>
+<span class="sd">        In order to take effect, it needs to be called before fit.</span>
+
+<span class="sd">        :param min: The minimum value to clip by.</span>
+<span class="sd">        :param max: The maximum value to clip by.</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nn_estimator</span><span class="o">.</span><span class="n">setConstantGradientClipping</span><span class="p">(</span><span class="nb">min</span><span class="p">,</span> <span class="nb">max</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">set_constant_gradient_clipping</span><span class="p">(</span><span class="nb">min</span><span class="p">,</span> <span class="nb">max</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BigDLEstimator.set_l2_norm_gradient_clipping"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.bigdl.estimator.BigDLEstimator.set_l2_norm_gradient_clipping">[docs]</a>    <span class="k">def</span> <span class="nf">set_l2_norm_gradient_clipping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clip_norm</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clip gradient to a maximum L2-Norm during the training process.</span>
+<span class="sd">        In order to take effect, it needs to be called before fit.</span>
+
+<span class="sd">        :param clip_norm: Gradient L2-Norm threshold.</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nn_estimator</span><span class="o">.</span><span class="n">setGradientClippingByL2Norm</span><span class="p">(</span><span class="n">clip_norm</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">set_l2_norm_gradient_clipping</span><span class="p">(</span><span class="n">clip_norm</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BigDLEstimator.get_train_summary"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.bigdl.estimator.BigDLEstimator.get_train_summary">[docs]</a>    <span class="k">def</span> <span class="nf">get_train_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the scalar from model train summary.</span>
+
+<span class="sd">        This method will return a list of summary data of</span>
+<span class="sd">        [iteration_number, scalar_value, timestamp].</span>
+
+<span class="sd">        :param tag: The string variable represents the scalar wanted</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Exception handle</span>
+        <span class="k">if</span> <span class="n">tag</span> <span class="o">!=</span> <span class="s2">&quot;Loss&quot;</span> <span class="ow">and</span> <span class="n">tag</span> <span class="o">!=</span> <span class="s2">&quot;LearningRate&quot;</span> <span class="ow">and</span> <span class="n">tag</span> <span class="o">!=</span> <span class="s2">&quot;Throughput&quot;</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s1">&#39;Only &quot;Loss&quot;, &quot;LearningRate&quot;, &quot;Throughput&quot;&#39;</span>
+                              <span class="o">+</span> <span class="s1">&#39;are supported in train summary&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_nnframe_fit</span><span class="p">:</span>
+            <span class="n">train_summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nn_estimator</span><span class="o">.</span><span class="n">getTrainSummary</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">train_summary</span><span class="o">.</span><span class="n">read_scalar</span><span class="p">(</span><span class="n">tag</span><span class="o">=</span><span class="n">tag</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">get_train_summary</span><span class="p">(</span><span class="n">tag</span><span class="o">=</span><span class="n">tag</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BigDLEstimator.get_validation_summary"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.bigdl.estimator.BigDLEstimator.get_validation_summary">[docs]</a>    <span class="k">def</span> <span class="nf">get_validation_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the scalar from model validation summary.</span>
+
+<span class="sd">        This method will return a list of summary data of</span>
+<span class="sd">        [iteration_number, scalar_value, timestamp].</span>
+<span class="sd">        Note that the metric and tag may not be consistent.</span>
+<span class="sd">        Please look up following form to pass tag parameter.</span>
+<span class="sd">        Left side is your metric during compile.</span>
+<span class="sd">        Right side is the tag you should pass.</span>
+
+<span class="sd">        &gt;&gt;&gt; &#39;Accuracy&#39;                  |   &#39;Top1Accuracy&#39;</span>
+<span class="sd">        &gt;&gt;&gt; &#39;BinaryAccuracy&#39;            |   &#39;Top1Accuracy&#39;</span>
+<span class="sd">        &gt;&gt;&gt; &#39;CategoricalAccuracy&#39;       |   &#39;Top1Accuracy&#39;</span>
+<span class="sd">        &gt;&gt;&gt; &#39;SparseCategoricalAccuracy&#39; |   &#39;Top1Accuracy&#39;</span>
+<span class="sd">        &gt;&gt;&gt; &#39;AUC&#39;                       |   &#39;AucScore&#39;</span>
+<span class="sd">        &gt;&gt;&gt; &#39;HitRatio&#39;                  |   &#39;HitRate@k&#39; (k is Top-k)</span>
+<span class="sd">        &gt;&gt;&gt; &#39;Loss&#39;                      |   &#39;Loss&#39;</span>
+<span class="sd">        &gt;&gt;&gt; &#39;MAE&#39;                       |   &#39;MAE&#39;</span>
+<span class="sd">        &gt;&gt;&gt; &#39;NDCG&#39;                      |   &#39;NDCG&#39;</span>
+<span class="sd">        &gt;&gt;&gt; &#39;TFValidationMethod&#39;        |   &#39;${name + &quot; &quot; + valMethod.toString()}&#39;</span>
+<span class="sd">        &gt;&gt;&gt; &#39;Top5Accuracy&#39;              |   &#39;Top5Accuracy&#39;</span>
+<span class="sd">        &gt;&gt;&gt; &#39;TreeNNAccuracy&#39;            |   &#39;TreeNNAccuracy()&#39;</span>
+<span class="sd">        &gt;&gt;&gt; &#39;MeanAveragePrecision&#39;      |   &#39;MAP@k&#39; (k is Top-k) (BigDL)</span>
+<span class="sd">        &gt;&gt;&gt; &#39;MeanAveragePrecision&#39;      |   &#39;PascalMeanAveragePrecision&#39; (Zoo)</span>
+<span class="sd">        &gt;&gt;&gt; &#39;StatelessMetric&#39;           |   &#39;${name}&#39;</span>
+
+<span class="sd">        :param tag: The string variable represents the scalar wanted</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_nnframe_fit</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="n">tag</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="s2">&quot;You should provide tag which should match the name of &quot;</span>
+                              <span class="s2">&quot;the ValidationMethod set into the optimizer. &quot;</span>
+                              <span class="s2">&quot;e.g.&#39;MAE&#39;, &#39;Top1AccuracyLoss&#39;, &#39;Top1Accuracy&#39; or &quot;</span>
+                              <span class="s2">&quot;&#39;Top5Accuracy&#39;.&quot;</span><span class="p">)</span>
+            <span class="n">val_summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nn_estimator</span><span class="o">.</span><span class="n">getValidationSummary</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">val_summary</span><span class="o">.</span><span class="n">read_scalar</span><span class="p">(</span><span class="n">tag</span><span class="o">=</span><span class="n">tag</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">get_validation_summary</span><span class="p">(</span><span class="n">tag</span><span class="o">=</span><span class="n">tag</span><span class="p">)</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_combine_cols</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="n">col_name</span><span class="o">=</span><span class="s2">&quot;features&quot;</span><span class="p">,</span> <span class="n">val_data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cols</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">col_name</span> <span class="o">=</span> <span class="n">cols</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="kn">from</span> <span class="nn">pyspark.ml.feature</span> <span class="k">import</span> <span class="n">VectorAssembler</span>
+                <span class="n">assembler</span> <span class="o">=</span> <span class="n">VectorAssembler</span><span class="p">(</span>
+                    <span class="n">inputCols</span><span class="o">=</span><span class="n">cols</span><span class="p">,</span>
+                    <span class="n">outputCol</span><span class="o">=</span><span class="n">col_name</span><span class="p">)</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">assembler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">val_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">val_data</span> <span class="o">=</span> <span class="n">assembler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">val_data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">val_data</span><span class="p">,</span> <span class="n">col_name</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

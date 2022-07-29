@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Auto Models &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/tabs.js"></script>
+        <script src="../../../_static/design-tabs.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Forecasters" href="forecasters.html" />
+    <link rel="prev" title="AutoTS" href="autotsestimator.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Chronos API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="autotsestimator.html">AutoTS</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Auto Models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#autotcn">AutoTCN</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#autolstm">AutoLSTM</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#autoseq2seq">AutoSeq2Seq</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#autoarima">AutoARIMA</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#autoprophet">AutoProphet</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="forecasters.html">Forecasters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="anomaly_detectors.html">Anomaly Detectors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tsdataset.html">TSDataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="simulator.html">Simulator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="evaluator.html">Evaluator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="autots.html">AutoTS (deprecated)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Chronos API</a> &raquo;</li>
+      <li>Auto Models</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/doc/PythonAPI/Chronos/automodels.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="auto-models">
+<h1>Auto Models<a class="headerlink" href="#auto-models" title="Permalink to this headline">¶</a></h1>
+<section id="autotcn">
+<h2>AutoTCN<a class="headerlink" href="#autotcn" title="Permalink to this headline">¶</a></h2>
+<p>AutoTCN is a TCN forecasting model with Auto tuning.</p>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-0-0-0" aria-selected="true" class="sphinx-tabs-tab" id="tab-0-0-0" name="0-0" role="tab" tabindex="0">PyTorch/Tensorflow</button></div><div aria-labelledby="tab-0-0-0" class="sphinx-tabs-panel" id="panel-0-0-0" name="0-0" role="tabpanel" tabindex="0"><span class="target" id="module-bigdl.chronos.autots.model.auto_tcn"></span><dl class="py class">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_tcn.AutoTCN">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bigdl.chronos.autots.model.auto_tcn.</span></span><span class="sig-name descname"><span class="pre">AutoTCN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_feature_num</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_target_num</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">past_seq_len</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">future_seq_len</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">levels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'torch'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/tmp/auto_tcn'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cpus_per_trial</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto_tcn'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remote_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/model/auto_tcn.html#AutoTCN"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.model.auto_tcn.AutoTCN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">bigdl.chronos.autots.model.base_automodel.BaseAutomodel</span></code></p>
+<p>Create an AutoTCN.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_feature_num</strong> – Int. The number of features in the input</p></li>
+<li><p><strong>output_target_num</strong> – Int. The number of targets in the output</p></li>
+<li><p><strong>past_seq_len</strong> – Int. The number of historical steps used for forecasting.</p></li>
+<li><p><strong>future_seq_len</strong> – Int. The number of future steps to forecast.</p></li>
+<li><p><strong>optimizer</strong> – String or pyTorch optimizer creator function or
+tf.keras optimizer instance.</p></li>
+<li><p><strong>loss</strong> – String or pytorch/tf.keras loss instance or pytorch loss creator function.</p></li>
+<li><p><strong>metric</strong> – String or customized evaluation metric function.
+If string, metric is the evaluation metric name to optimize, e.g. “mse”.
+If callable function, it signature should be func(y_true, y_pred), where y_true and
+y_pred are numpy ndarray. The function should return a float value as evaluation result.</p></li>
+<li><p><strong>metric_mode</strong> – One of [“min”, “max”]. “max” means greater metric value is better.
+You have to specify metric_mode if you use a customized metric function.
+You don’t have to specify metric_mode if you use the built-in metric in
+bigdl.orca.automl.metrics.Evaluator.</p></li>
+<li><p><strong>hidden_units</strong> – Int or hp sampling function from an integer space. The number of hidden
+units or filters for each convolutional layer. It is similar to <cite>units</cite> for LSTM.
+It defaults to 30. We will omit the hidden_units value if num_channels is specified.
+For hp sampling, see bigdl.orca.automl.hp for more details.
+e.g. hp.grid_search([32, 64]).</p></li>
+<li><p><strong>levels</strong> – Int or hp sampling function from an integer space. The number of levels of
+TemporalBlocks to use. It defaults to 8. We will omit the levels value if
+num_channels is specified.</p></li>
+<li><p><strong>num_channels</strong> – List of integers. A list of hidden_units for each level. You could
+specify num_channels if you want different hidden_units for different levels.
+By default, num_channels equals to
+[hidden_units] * (levels - 1) + [output_target_num].</p></li>
+<li><p><strong>kernel_size</strong> – Int or hp sampling function from an integer space.
+The size of the kernel to use in each convolutional layer.</p></li>
+<li><p><strong>lr</strong> – float or hp sampling function from a float space. Learning rate.
+e.g. hp.choice([0.001, 0.003, 0.01])</p></li>
+<li><p><strong>dropout</strong> – float or hp sampling function from a float space. Learning rate. Dropout
+rate. e.g. hp.uniform(0.1, 0.3)</p></li>
+<li><p><strong>backend</strong> – The backend of the TCN model. support “keras” and “torch”.</p></li>
+<li><p><strong>logs_dir</strong> – Local directory to save logs and results. It defaults to “/tmp/auto_tcn”</p></li>
+<li><p><strong>cpus_per_trial</strong> – Int. Number of cpus for each trial. It defaults to 1.</p></li>
+<li><p><strong>name</strong> – name of the AutoTCN. It defaults to “auto_tcn”</p></li>
+<li><p><strong>remote_dir</strong> – String. Remote directory to sync training results and checkpoints. It
+defaults to None and doesn’t take effects while running in local. While running in
+cluster, it defaults to “hdfs:///tmp/{name}”.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_tcn.AutoTCN.build_onnx">
+<span class="sig-name descname"><span class="pre">build_onnx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">thread_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sess_options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_tcn.AutoTCN.build_onnx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build onnx model to speed up inference and reduce latency.
+The method is Not required to call before predict_with_onnx,
+evaluate_with_onnx or export_onnx_file.
+It is recommended to use when you want to:</p>
+<div class="line-block">
+<div class="line">1. Strictly control the thread to be used during inferencing.</div>
+<div class="line">2. Alleviate the cold start problem when you call predict_with_onnx
+for the first time.</div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>thread_num</strong> – int, the num of thread limit. The value is set to None by
+default where no limit is set.</p></li>
+<li><p><strong>sess_options</strong> – an onnxruntime.SessionOptions instance, if you set this
+other than None, a new onnxruntime session will be built on this setting
+and ignore other settings you assigned(e.g. thread_num…).</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># to pre build onnx sess</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">automodel</span><span class="o">.</span><span class="n">build_onnx</span><span class="p">(</span><span class="n">thread_num</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># build onnx runtime sess for single thread</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pred</span> <span class="o">=</span> <span class="n">automodel</span><span class="o">.</span><span class="n">predict_with_onnx</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># ------------------------------------------------------</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># directly call onnx related method is also supported</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pred</span> <span class="o">=</span> <span class="n">automodel</span><span class="o">.</span><span class="n">predict_with_onnx</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_tcn.AutoTCN.evaluate">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['mse']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multioutput</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raw_values'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_tcn.AutoTCN.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate using a the trained model after HPO(Hyper Parameter Optimization).</p>
+<p>Please note that evaluate result is calculated by scaled y and yhat. If you scaled
+your data (e.g. use .scale() on the TSDataset) please follow the following code
+snap to evaluate your result if you need to evaluate on unscaled data.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bigdl.orca.automl.metrics</span> <span class="k">import</span> <span class="n">Evaluator</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_hat</span> <span class="o">=</span> <span class="n">automodel</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_hat_unscaled</span> <span class="o">=</span> <span class="n">tsdata</span><span class="o">.</span><span class="n">unscale_numpy</span><span class="p">(</span><span class="n">y_hat</span><span class="p">)</span> <span class="c1"># or other customized unscale methods</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_unscaled</span> <span class="o">=</span> <span class="n">tsdata</span><span class="o">.</span><span class="n">unscale_numpy</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="c1"># or other customized unscale methods</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Evaluator</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">metric</span><span class="o">=...</span><span class="p">,</span> <span class="n">y_unscaled</span><span class="p">,</span> <span class="n">y_hat_unscaled</span><span class="p">,</span> <span class="n">multioutput</span><span class="o">=...</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – a numpy ndarray tuple (x, y) x’s shape is (num_samples, lookback,
+feature_dim) where lookback and feature_dim should be the same as
+past_seq_len and input_feature_num. y’s shape is (num_samples, horizon,
+target_dim), where horizon and target_dim should be the same as
+future_seq_len and output_target_num.</p></li>
+<li><p><strong>batch_size</strong> – evaluate batch size. The value will not affect evaluate
+result but will affect resources cost(e.g. memory and time).</p></li>
+<li><p><strong>metrics</strong> – list of string or callable. e.g. [‘mse’] or [customized_metrics]
+If callable function, it signature should be func(y_true, y_pred), where y_true and
+y_pred are numpy ndarray. The function should return a float value as evaluation
+result.</p></li>
+<li><p><strong>multioutput</strong> – Defines aggregating of multiple output values.
+String in [‘raw_values’, ‘uniform_average’]. The value defaults to
+‘raw_values’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of evaluation results. Each item represents a metric.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_tcn.AutoTCN.evaluate_with_onnx">
+<span class="sig-name descname"><span class="pre">evaluate_with_onnx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['mse']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dirname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multioutput</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raw_values'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_tcn.AutoTCN.evaluate_with_onnx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate using a the trained model after HPO(Hyper Parameter Optimization).</p>
+<p>Be sure to install onnx and onnxruntime to enable this function. The method
+will give exactly the same result as .evaluate() but with higher throughput
+and lower latency. keras will support onnx later.</p>
+<p>Please note that evaluate result is calculated by scaled y and yhat. If you scaled
+your data (e.g. use .scale() on the TSDataset) please follow the following code
+snap to evaluate your result if you need to evaluate on unscaled data.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bigdl.orca.automl.metrics</span> <span class="k">import</span> <span class="n">Evaluator</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_hat</span> <span class="o">=</span> <span class="n">automodel</span><span class="o">.</span><span class="n">predict_with_onnx</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_hat_unscaled</span> <span class="o">=</span> <span class="n">tsdata</span><span class="o">.</span><span class="n">unscale_numpy</span><span class="p">(</span><span class="n">y_hat</span><span class="p">)</span> <span class="c1"># or other customized unscale methods</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_unscaled</span> <span class="o">=</span> <span class="n">tsdata</span><span class="o">.</span><span class="n">unscale_numpy</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="c1"># or other customized unscale methods</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Evaluator</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">metric</span><span class="o">=...</span><span class="p">,</span> <span class="n">y_unscaled</span><span class="p">,</span> <span class="n">y_hat_unscaled</span><span class="p">,</span> <span class="n">multioutput</span><span class="o">=...</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – a numpy ndarray tuple (x, y) x’s shape is (num_samples, lookback,
+feature_dim) where lookback and feature_dim should be the same as
+past_seq_len and input_feature_num. y’s shape is (num_samples, horizon,
+target_dim), where horizon and target_dim should be the same as
+future_seq_len and output_target_num.</p></li>
+<li><p><strong>batch_size</strong> – evaluate batch size. The value will not affect evaluate
+result but will affect resources cost(e.g. memory and time).</p></li>
+<li><p><strong>metrics</strong> – list of string or callable. e.g. [‘mse’] or [customized_metrics]
+If callable function, it signature should be func(y_true, y_pred), where y_true and
+y_pred are numpy ndarray. The function should return a float value as evaluation
+result.</p></li>
+<li><p><strong>dirname</strong> – The directory to save onnx model file. This value defaults
+to None for no saving file.</p></li>
+<li><p><strong>multioutput</strong> – Defines aggregating of multiple output values.
+String in [‘raw_values’, ‘uniform_average’]. The value defaults to
+‘raw_values’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of evaluation results. Each item represents a metric.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_tcn.AutoTCN.export_onnx_file">
+<span class="sig-name descname"><span class="pre">export_onnx_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dirname</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_tcn.AutoTCN.export_onnx_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the onnx model file to the disk.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dirname</strong> – The dir location you want to save the onnx file.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_tcn.AutoTCN.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validation_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_sampling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_alg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_alg_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_tcn.AutoTCN.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Automatically fit the model and search for the best hyper parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – train data.
+data can be a tuple of ndarrays or a PyTorch DataLoader
+or a function that takes a config dictionary as parameter and returns a
+PyTorch DataLoader.</p></li>
+<li><p><strong>epochs</strong> – Max number of epochs to train in each trial. Defaults to 1.
+If you have also set metric_threshold, a trial will stop if either it has been
+optimized to the metric_threshold or it has been trained for {epochs} epochs.</p></li>
+<li><p><strong>batch_size</strong> – Int or hp sampling function from an integer space. Training batch size.
+It defaults to 32.</p></li>
+<li><p><strong>validation_data</strong> – Validation data. Validation data type should be the same as data.</p></li>
+<li><p><strong>metric_threshold</strong> – a trial will be terminated when metric threshold is met.</p></li>
+<li><p><strong>n_sampling</strong> – Number of trials to evaluate in total. Defaults to 1.
+If hp.grid_search is in search_space, the grid will be run n_sampling of trials
+and round up n_sampling according to hp.grid_search.
+If this is -1, (virtually) infinite samples are generated
+until a stopping condition is met.</p></li>
+<li><p><strong>search_alg</strong> – str, all supported searcher provided by ray tune
+(i.e.”variant_generator”, “random”, “ax”, “dragonfly”, “skopt”,
+“hyperopt”, “bayesopt”, “bohb”, “nevergrad”, “optuna”, “zoopt” and
+“sigopt”).</p></li>
+<li><p><strong>search_alg_params</strong> – extra parameters for searcher algorithm besides search_space,
+metric and searcher mode.</p></li>
+<li><p><strong>scheduler</strong> – str, all supported scheduler provided by ray tune.</p></li>
+<li><p><strong>scheduler_params</strong> – parameters for scheduler.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_tcn.AutoTCN.get_best_config">
+<span class="sig-name descname"><span class="pre">get_best_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_tcn.AutoTCN.get_best_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the best configuration</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A dictionary of best hyper parameters</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_tcn.AutoTCN.get_best_model">
+<span class="sig-name descname"><span class="pre">get_best_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_tcn.AutoTCN.get_best_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the best pytorch model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_tcn.AutoTCN.load">
+<span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_tcn.AutoTCN.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>restore the best model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>checkpoint_path</strong> – The checkpoint location you want to load the best model.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_tcn.AutoTCN.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_tcn.AutoTCN.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Predict using a the trained model after HPO(Hyper Parameter Optimization).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – a numpy ndarray x, where x’s shape is (num_samples, lookback, feature_dim)
+where lookback and feature_dim should be the same as past_seq_len and
+input_feature_num.</p></li>
+<li><p><strong>batch_size</strong> – predict batch size. The value will not affect predict
+result but will affect resources cost(e.g. memory and time). The value
+defaults to 32.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A numpy array with shape (num_samples, horizon, target_dim).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_tcn.AutoTCN.predict_with_onnx">
+<span class="sig-name descname"><span class="pre">predict_with_onnx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dirname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_tcn.AutoTCN.predict_with_onnx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Predict using a the trained model after HPO(Hyper Parameter Optimization).</p>
+<p>Be sure to install onnx and onnxruntime to enable this function. The method
+will give exactly the same result as .predict() but with higher throughput
+and lower latency. keras will support onnx later.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – a numpy ndarray x, where x’s shape is (num_samples, lookback, feature_dim)
+where lookback and feature_dim should be the same as past_seq_len and
+input_feature_num.</p></li>
+<li><p><strong>batch_size</strong> – predict batch size. The value will not affect predict
+result but will affect resources cost(e.g. memory and time). The value
+defaults to 32.</p></li>
+<li><p><strong>dirname</strong> – The directory to save onnx model file. This value defaults
+to None for no saving file.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A numpy array with shape (num_samples, horizon, target_dim).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_tcn.AutoTCN.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_tcn.AutoTCN.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the best model.</p>
+<p>Please note that if you only want the pytorch model or onnx model
+file, you can call .get_model() or .export_onnx_file(). The checkpoint
+file generated by .save() method can only be used by .load() in automodel.
+If you specify “keras” as backend, file name will be best_keras_config.json
+and best_keras_model.ckpt.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>checkpoint_path</strong> – The location you want to save the best model.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div></div>
+</section>
+<section id="autolstm">
+<h2>AutoLSTM<a class="headerlink" href="#autolstm" title="Permalink to this headline">¶</a></h2>
+<p>AutoLSTM is an LSTM forecasting model with Auto tuning.</p>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-1-1-0" aria-selected="true" class="sphinx-tabs-tab" id="tab-1-1-0" name="1-0" role="tab" tabindex="0">PyTorch/Tensorflow</button></div><div aria-labelledby="tab-1-1-0" class="sphinx-tabs-panel" id="panel-1-1-0" name="1-0" role="tabpanel" tabindex="0"><span class="target" id="module-bigdl.chronos.autots.model.auto_lstm"></span><dl class="py class">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_lstm.AutoLSTM">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bigdl.chronos.autots.model.auto_lstm.</span></span><span class="sig-name descname"><span class="pre">AutoLSTM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_feature_num</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_target_num</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">past_seq_len</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layer_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'torch'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/tmp/auto_lstm'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cpus_per_trial</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto_lstm'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remote_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/model/auto_lstm.html#AutoLSTM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.model.auto_lstm.AutoLSTM" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">bigdl.chronos.autots.model.base_automodel.BaseAutomodel</span></code></p>
+<p>Create an AutoLSTM.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_feature_num</strong> – Int. The number of features in the input</p></li>
+<li><p><strong>output_target_num</strong> – Int. The number of targets in the output</p></li>
+<li><p><strong>past_seq_len</strong> – Int or hp sampling function The number of historical
+steps used for forecasting.</p></li>
+<li><p><strong>optimizer</strong> – String or pyTorch optimizer creator function or
+tf.keras optimizer instance.</p></li>
+<li><p><strong>loss</strong> – String or pytorch/tf.keras loss instance or pytorch loss creator function.</p></li>
+<li><p><strong>metric</strong> – String or customized evaluation metric function.
+If string, metric is the evaluation metric name to optimize, e.g. “mse”.
+If callable function, it signature should be func(y_true, y_pred), where y_true and
+y_pred are numpy ndarray. The function should return a float value
+as evaluation result.</p></li>
+<li><p><strong>metric_mode</strong> – One of [“min”, “max”]. “max” means greater metric value is better.
+You have to specify metric_mode if you use a customized metric function.
+You don’t have to specify metric_mode if you use the built-in metric in
+bigdl.orca.automl.metrics.Evaluator.</p></li>
+<li><p><strong>hidden_dim</strong> – Int or hp sampling function from an integer space. The number of features
+in the hidden state <cite>h</cite>. For hp sampling, see bigdl.chronos.orca.automl.hp for more
+details. e.g. hp.grid_search([32, 64]).</p></li>
+<li><p><strong>layer_num</strong> – Int or hp sampling function from an integer space. Number of recurrent
+layers. e.g. hp.randint(1, 3)</p></li>
+<li><p><strong>lr</strong> – float or hp sampling function from a float space. Learning rate.
+e.g. hp.choice([0.001, 0.003, 0.01])</p></li>
+<li><p><strong>dropout</strong> – float or hp sampling function from a float space. Learning rate. Dropout
+rate. e.g. hp.uniform(0.1, 0.3)</p></li>
+<li><p><strong>backend</strong> – The backend of the lstm model. support “keras” and “torch”.</p></li>
+<li><p><strong>logs_dir</strong> – Local directory to save logs and results. It defaults to “/tmp/auto_lstm”</p></li>
+<li><p><strong>cpus_per_trial</strong> – Int. Number of cpus for each trial. It defaults to 1.</p></li>
+<li><p><strong>name</strong> – name of the AutoLSTM. It defaults to “auto_lstm”</p></li>
+<li><p><strong>remote_dir</strong> – String. Remote directory to sync training results and checkpoints. It
+defaults to None and doesn’t take effects while running in local. While running in
+cluster, it defaults to “hdfs:///tmp/{name}”.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_lstm.AutoLSTM.build_onnx">
+<span class="sig-name descname"><span class="pre">build_onnx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">thread_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sess_options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_lstm.AutoLSTM.build_onnx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build onnx model to speed up inference and reduce latency.
+The method is Not required to call before predict_with_onnx,
+evaluate_with_onnx or export_onnx_file.
+It is recommended to use when you want to:</p>
+<div class="line-block">
+<div class="line">1. Strictly control the thread to be used during inferencing.</div>
+<div class="line">2. Alleviate the cold start problem when you call predict_with_onnx
+for the first time.</div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>thread_num</strong> – int, the num of thread limit. The value is set to None by
+default where no limit is set.</p></li>
+<li><p><strong>sess_options</strong> – an onnxruntime.SessionOptions instance, if you set this
+other than None, a new onnxruntime session will be built on this setting
+and ignore other settings you assigned(e.g. thread_num…).</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># to pre build onnx sess</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">automodel</span><span class="o">.</span><span class="n">build_onnx</span><span class="p">(</span><span class="n">thread_num</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># build onnx runtime sess for single thread</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pred</span> <span class="o">=</span> <span class="n">automodel</span><span class="o">.</span><span class="n">predict_with_onnx</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># ------------------------------------------------------</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># directly call onnx related method is also supported</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pred</span> <span class="o">=</span> <span class="n">automodel</span><span class="o">.</span><span class="n">predict_with_onnx</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_lstm.AutoLSTM.evaluate">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['mse']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multioutput</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raw_values'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_lstm.AutoLSTM.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate using a the trained model after HPO(Hyper Parameter Optimization).</p>
+<p>Please note that evaluate result is calculated by scaled y and yhat. If you scaled
+your data (e.g. use .scale() on the TSDataset) please follow the following code
+snap to evaluate your result if you need to evaluate on unscaled data.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bigdl.orca.automl.metrics</span> <span class="k">import</span> <span class="n">Evaluator</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_hat</span> <span class="o">=</span> <span class="n">automodel</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_hat_unscaled</span> <span class="o">=</span> <span class="n">tsdata</span><span class="o">.</span><span class="n">unscale_numpy</span><span class="p">(</span><span class="n">y_hat</span><span class="p">)</span> <span class="c1"># or other customized unscale methods</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_unscaled</span> <span class="o">=</span> <span class="n">tsdata</span><span class="o">.</span><span class="n">unscale_numpy</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="c1"># or other customized unscale methods</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Evaluator</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">metric</span><span class="o">=...</span><span class="p">,</span> <span class="n">y_unscaled</span><span class="p">,</span> <span class="n">y_hat_unscaled</span><span class="p">,</span> <span class="n">multioutput</span><span class="o">=...</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – a numpy ndarray tuple (x, y) x’s shape is (num_samples, lookback,
+feature_dim) where lookback and feature_dim should be the same as
+past_seq_len and input_feature_num. y’s shape is (num_samples, horizon,
+target_dim), where horizon and target_dim should be the same as
+future_seq_len and output_target_num.</p></li>
+<li><p><strong>batch_size</strong> – evaluate batch size. The value will not affect evaluate
+result but will affect resources cost(e.g. memory and time).</p></li>
+<li><p><strong>metrics</strong> – list of string or callable. e.g. [‘mse’] or [customized_metrics]
+If callable function, it signature should be func(y_true, y_pred), where y_true and
+y_pred are numpy ndarray. The function should return a float value as evaluation
+result.</p></li>
+<li><p><strong>multioutput</strong> – Defines aggregating of multiple output values.
+String in [‘raw_values’, ‘uniform_average’]. The value defaults to
+‘raw_values’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of evaluation results. Each item represents a metric.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_lstm.AutoLSTM.evaluate_with_onnx">
+<span class="sig-name descname"><span class="pre">evaluate_with_onnx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['mse']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dirname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multioutput</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raw_values'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_lstm.AutoLSTM.evaluate_with_onnx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate using a the trained model after HPO(Hyper Parameter Optimization).</p>
+<p>Be sure to install onnx and onnxruntime to enable this function. The method
+will give exactly the same result as .evaluate() but with higher throughput
+and lower latency. keras will support onnx later.</p>
+<p>Please note that evaluate result is calculated by scaled y and yhat. If you scaled
+your data (e.g. use .scale() on the TSDataset) please follow the following code
+snap to evaluate your result if you need to evaluate on unscaled data.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bigdl.orca.automl.metrics</span> <span class="k">import</span> <span class="n">Evaluator</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_hat</span> <span class="o">=</span> <span class="n">automodel</span><span class="o">.</span><span class="n">predict_with_onnx</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_hat_unscaled</span> <span class="o">=</span> <span class="n">tsdata</span><span class="o">.</span><span class="n">unscale_numpy</span><span class="p">(</span><span class="n">y_hat</span><span class="p">)</span> <span class="c1"># or other customized unscale methods</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_unscaled</span> <span class="o">=</span> <span class="n">tsdata</span><span class="o">.</span><span class="n">unscale_numpy</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="c1"># or other customized unscale methods</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Evaluator</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">metric</span><span class="o">=...</span><span class="p">,</span> <span class="n">y_unscaled</span><span class="p">,</span> <span class="n">y_hat_unscaled</span><span class="p">,</span> <span class="n">multioutput</span><span class="o">=...</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – a numpy ndarray tuple (x, y) x’s shape is (num_samples, lookback,
+feature_dim) where lookback and feature_dim should be the same as
+past_seq_len and input_feature_num. y’s shape is (num_samples, horizon,
+target_dim), where horizon and target_dim should be the same as
+future_seq_len and output_target_num.</p></li>
+<li><p><strong>batch_size</strong> – evaluate batch size. The value will not affect evaluate
+result but will affect resources cost(e.g. memory and time).</p></li>
+<li><p><strong>metrics</strong> – list of string or callable. e.g. [‘mse’] or [customized_metrics]
+If callable function, it signature should be func(y_true, y_pred), where y_true and
+y_pred are numpy ndarray. The function should return a float value as evaluation
+result.</p></li>
+<li><p><strong>dirname</strong> – The directory to save onnx model file. This value defaults
+to None for no saving file.</p></li>
+<li><p><strong>multioutput</strong> – Defines aggregating of multiple output values.
+String in [‘raw_values’, ‘uniform_average’]. The value defaults to
+‘raw_values’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of evaluation results. Each item represents a metric.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_lstm.AutoLSTM.export_onnx_file">
+<span class="sig-name descname"><span class="pre">export_onnx_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dirname</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_lstm.AutoLSTM.export_onnx_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the onnx model file to the disk.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dirname</strong> – The dir location you want to save the onnx file.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_lstm.AutoLSTM.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validation_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_sampling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_alg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_alg_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_lstm.AutoLSTM.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Automatically fit the model and search for the best hyper parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – train data.
+data can be a tuple of ndarrays or a PyTorch DataLoader
+or a function that takes a config dictionary as parameter and returns a
+PyTorch DataLoader.</p></li>
+<li><p><strong>epochs</strong> – Max number of epochs to train in each trial. Defaults to 1.
+If you have also set metric_threshold, a trial will stop if either it has been
+optimized to the metric_threshold or it has been trained for {epochs} epochs.</p></li>
+<li><p><strong>batch_size</strong> – Int or hp sampling function from an integer space. Training batch size.
+It defaults to 32.</p></li>
+<li><p><strong>validation_data</strong> – Validation data. Validation data type should be the same as data.</p></li>
+<li><p><strong>metric_threshold</strong> – a trial will be terminated when metric threshold is met.</p></li>
+<li><p><strong>n_sampling</strong> – Number of trials to evaluate in total. Defaults to 1.
+If hp.grid_search is in search_space, the grid will be run n_sampling of trials
+and round up n_sampling according to hp.grid_search.
+If this is -1, (virtually) infinite samples are generated
+until a stopping condition is met.</p></li>
+<li><p><strong>search_alg</strong> – str, all supported searcher provided by ray tune
+(i.e.”variant_generator”, “random”, “ax”, “dragonfly”, “skopt”,
+“hyperopt”, “bayesopt”, “bohb”, “nevergrad”, “optuna”, “zoopt” and
+“sigopt”).</p></li>
+<li><p><strong>search_alg_params</strong> – extra parameters for searcher algorithm besides search_space,
+metric and searcher mode.</p></li>
+<li><p><strong>scheduler</strong> – str, all supported scheduler provided by ray tune.</p></li>
+<li><p><strong>scheduler_params</strong> – parameters for scheduler.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_lstm.AutoLSTM.get_best_config">
+<span class="sig-name descname"><span class="pre">get_best_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_lstm.AutoLSTM.get_best_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the best configuration</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A dictionary of best hyper parameters</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_lstm.AutoLSTM.get_best_model">
+<span class="sig-name descname"><span class="pre">get_best_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_lstm.AutoLSTM.get_best_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the best pytorch model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_lstm.AutoLSTM.load">
+<span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_lstm.AutoLSTM.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>restore the best model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>checkpoint_path</strong> – The checkpoint location you want to load the best model.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_lstm.AutoLSTM.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_lstm.AutoLSTM.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Predict using a the trained model after HPO(Hyper Parameter Optimization).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – a numpy ndarray x, where x’s shape is (num_samples, lookback, feature_dim)
+where lookback and feature_dim should be the same as past_seq_len and
+input_feature_num.</p></li>
+<li><p><strong>batch_size</strong> – predict batch size. The value will not affect predict
+result but will affect resources cost(e.g. memory and time). The value
+defaults to 32.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A numpy array with shape (num_samples, horizon, target_dim).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_lstm.AutoLSTM.predict_with_onnx">
+<span class="sig-name descname"><span class="pre">predict_with_onnx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dirname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_lstm.AutoLSTM.predict_with_onnx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Predict using a the trained model after HPO(Hyper Parameter Optimization).</p>
+<p>Be sure to install onnx and onnxruntime to enable this function. The method
+will give exactly the same result as .predict() but with higher throughput
+and lower latency. keras will support onnx later.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – a numpy ndarray x, where x’s shape is (num_samples, lookback, feature_dim)
+where lookback and feature_dim should be the same as past_seq_len and
+input_feature_num.</p></li>
+<li><p><strong>batch_size</strong> – predict batch size. The value will not affect predict
+result but will affect resources cost(e.g. memory and time). The value
+defaults to 32.</p></li>
+<li><p><strong>dirname</strong> – The directory to save onnx model file. This value defaults
+to None for no saving file.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A numpy array with shape (num_samples, horizon, target_dim).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_lstm.AutoLSTM.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_lstm.AutoLSTM.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the best model.</p>
+<p>Please note that if you only want the pytorch model or onnx model
+file, you can call .get_model() or .export_onnx_file(). The checkpoint
+file generated by .save() method can only be used by .load() in automodel.
+If you specify “keras” as backend, file name will be best_keras_config.json
+and best_keras_model.ckpt.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>checkpoint_path</strong> – The location you want to save the best model.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div></div>
+</section>
+<section id="autoseq2seq">
+<h2>AutoSeq2Seq<a class="headerlink" href="#autoseq2seq" title="Permalink to this headline">¶</a></h2>
+<p>AutoSeq2Seq is an Seq2Seq forecasting model with Auto tuning.</p>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-2-2-0" aria-selected="true" class="sphinx-tabs-tab" id="tab-2-2-0" name="2-0" role="tab" tabindex="0">PyTorch/Tensorflow</button></div><div aria-labelledby="tab-2-2-0" class="sphinx-tabs-panel" id="panel-2-2-0" name="2-0" role="tabpanel" tabindex="0"><span class="target" id="module-bigdl.chronos.autots.model.auto_seq2seq"></span><dl class="py class">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_seq2seq.AutoSeq2Seq">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bigdl.chronos.autots.model.auto_seq2seq.</span></span><span class="sig-name descname"><span class="pre">AutoSeq2Seq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_feature_num</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_target_num</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">past_seq_len</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">future_seq_len</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lstm_hidden_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">128</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lstm_layer_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">teacher_forcing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'torch'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/tmp/auto_seq2seq'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cpus_per_trial</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto_seq2seq'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remote_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/model/auto_seq2seq.html#AutoSeq2Seq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.model.auto_seq2seq.AutoSeq2Seq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">bigdl.chronos.autots.model.base_automodel.BaseAutomodel</span></code></p>
+<p>Create an AutoSeq2Seq.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_feature_num</strong> – Int. The number of features in the input</p></li>
+<li><p><strong>output_target_num</strong> – Int. The number of targets in the output</p></li>
+<li><p><strong>past_seq_len</strong> – Int. The number of historical steps used for forecasting.</p></li>
+<li><p><strong>future_seq_len</strong> – Int. The number of future steps to forecast.</p></li>
+<li><p><strong>optimizer</strong> – String or pyTorch optimizer creator function or
+tf.keras optimizer instance.</p></li>
+<li><p><strong>loss</strong> – String or pytorch/tf.keras loss instance or pytorch loss creator function.</p></li>
+<li><p><strong>metric</strong> – String or customized evaluation metric function.
+If string, metric is the evaluation metric name to optimize, e.g. “mse”.
+If callable function, it signature should be func(y_true, y_pred), where y_true and
+y_pred are numpy ndarray. The function should return a float value
+as evaluation result.</p></li>
+<li><p><strong>metric_mode</strong> – One of [“min”, “max”]. “max” means greater metric value is better.
+You have to specify metric_mode if you use a customized metric function.
+You don’t have to specify metric_mode if you use the built-in metric in
+bigdl.orca.automl.metrics.Evaluator.</p></li>
+<li><p><strong>lr</strong> – float or hp sampling function from a float space. Learning rate.
+e.g. hp.choice([0.001, 0.003, 0.01])</p></li>
+<li><p><strong>lstm_hidden_dim</strong> – LSTM hidden channel for decoder and encoder.
+hp.grid_search([32, 64, 128])</p></li>
+<li><p><strong>lstm_layer_num</strong> – LSTM layer number for decoder and encoder.
+e.g. hp.randint(1, 4)</p></li>
+<li><p><strong>dropout</strong> – float or hp sampling function from a float space. Learning rate. Dropout
+rate. e.g. hp.uniform(0.1, 0.3)</p></li>
+<li><p><strong>teacher_forcing</strong> – If use teacher forcing in training. e.g. hp.choice([True, False])</p></li>
+<li><p><strong>backend</strong> – The backend of the Seq2Seq model. support “keras” and “torch”.</p></li>
+<li><p><strong>logs_dir</strong> – Local directory to save logs and results. It defaults to
+“/tmp/auto_seq2seq”</p></li>
+<li><p><strong>cpus_per_trial</strong> – Int. Number of cpus for each trial. It defaults to 1.</p></li>
+<li><p><strong>name</strong> – name of the AutoSeq2Seq. It defaults to “auto_seq2seq”</p></li>
+<li><p><strong>remote_dir</strong> – String. Remote directory to sync training results and checkpoints. It
+defaults to None and doesn’t take effects while running in local. While running in
+cluster, it defaults to “hdfs:///tmp/{name}”.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_seq2seq.AutoSeq2Seq.build_onnx">
+<span class="sig-name descname"><span class="pre">build_onnx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">thread_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sess_options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_seq2seq.AutoSeq2Seq.build_onnx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build onnx model to speed up inference and reduce latency.
+The method is Not required to call before predict_with_onnx,
+evaluate_with_onnx or export_onnx_file.
+It is recommended to use when you want to:</p>
+<div class="line-block">
+<div class="line">1. Strictly control the thread to be used during inferencing.</div>
+<div class="line">2. Alleviate the cold start problem when you call predict_with_onnx
+for the first time.</div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>thread_num</strong> – int, the num of thread limit. The value is set to None by
+default where no limit is set.</p></li>
+<li><p><strong>sess_options</strong> – an onnxruntime.SessionOptions instance, if you set this
+other than None, a new onnxruntime session will be built on this setting
+and ignore other settings you assigned(e.g. thread_num…).</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># to pre build onnx sess</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">automodel</span><span class="o">.</span><span class="n">build_onnx</span><span class="p">(</span><span class="n">thread_num</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># build onnx runtime sess for single thread</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pred</span> <span class="o">=</span> <span class="n">automodel</span><span class="o">.</span><span class="n">predict_with_onnx</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># ------------------------------------------------------</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># directly call onnx related method is also supported</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pred</span> <span class="o">=</span> <span class="n">automodel</span><span class="o">.</span><span class="n">predict_with_onnx</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_seq2seq.AutoSeq2Seq.evaluate">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['mse']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multioutput</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raw_values'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_seq2seq.AutoSeq2Seq.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate using a the trained model after HPO(Hyper Parameter Optimization).</p>
+<p>Please note that evaluate result is calculated by scaled y and yhat. If you scaled
+your data (e.g. use .scale() on the TSDataset) please follow the following code
+snap to evaluate your result if you need to evaluate on unscaled data.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bigdl.orca.automl.metrics</span> <span class="k">import</span> <span class="n">Evaluator</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_hat</span> <span class="o">=</span> <span class="n">automodel</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_hat_unscaled</span> <span class="o">=</span> <span class="n">tsdata</span><span class="o">.</span><span class="n">unscale_numpy</span><span class="p">(</span><span class="n">y_hat</span><span class="p">)</span> <span class="c1"># or other customized unscale methods</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_unscaled</span> <span class="o">=</span> <span class="n">tsdata</span><span class="o">.</span><span class="n">unscale_numpy</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="c1"># or other customized unscale methods</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Evaluator</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">metric</span><span class="o">=...</span><span class="p">,</span> <span class="n">y_unscaled</span><span class="p">,</span> <span class="n">y_hat_unscaled</span><span class="p">,</span> <span class="n">multioutput</span><span class="o">=...</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – a numpy ndarray tuple (x, y) x’s shape is (num_samples, lookback,
+feature_dim) where lookback and feature_dim should be the same as
+past_seq_len and input_feature_num. y’s shape is (num_samples, horizon,
+target_dim), where horizon and target_dim should be the same as
+future_seq_len and output_target_num.</p></li>
+<li><p><strong>batch_size</strong> – evaluate batch size. The value will not affect evaluate
+result but will affect resources cost(e.g. memory and time).</p></li>
+<li><p><strong>metrics</strong> – list of string or callable. e.g. [‘mse’] or [customized_metrics]
+If callable function, it signature should be func(y_true, y_pred), where y_true and
+y_pred are numpy ndarray. The function should return a float value as evaluation
+result.</p></li>
+<li><p><strong>multioutput</strong> – Defines aggregating of multiple output values.
+String in [‘raw_values’, ‘uniform_average’]. The value defaults to
+‘raw_values’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of evaluation results. Each item represents a metric.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_seq2seq.AutoSeq2Seq.evaluate_with_onnx">
+<span class="sig-name descname"><span class="pre">evaluate_with_onnx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['mse']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dirname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multioutput</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raw_values'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_seq2seq.AutoSeq2Seq.evaluate_with_onnx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate using a the trained model after HPO(Hyper Parameter Optimization).</p>
+<p>Be sure to install onnx and onnxruntime to enable this function. The method
+will give exactly the same result as .evaluate() but with higher throughput
+and lower latency. keras will support onnx later.</p>
+<p>Please note that evaluate result is calculated by scaled y and yhat. If you scaled
+your data (e.g. use .scale() on the TSDataset) please follow the following code
+snap to evaluate your result if you need to evaluate on unscaled data.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bigdl.orca.automl.metrics</span> <span class="k">import</span> <span class="n">Evaluator</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_hat</span> <span class="o">=</span> <span class="n">automodel</span><span class="o">.</span><span class="n">predict_with_onnx</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_hat_unscaled</span> <span class="o">=</span> <span class="n">tsdata</span><span class="o">.</span><span class="n">unscale_numpy</span><span class="p">(</span><span class="n">y_hat</span><span class="p">)</span> <span class="c1"># or other customized unscale methods</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_unscaled</span> <span class="o">=</span> <span class="n">tsdata</span><span class="o">.</span><span class="n">unscale_numpy</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="c1"># or other customized unscale methods</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Evaluator</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">metric</span><span class="o">=...</span><span class="p">,</span> <span class="n">y_unscaled</span><span class="p">,</span> <span class="n">y_hat_unscaled</span><span class="p">,</span> <span class="n">multioutput</span><span class="o">=...</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – a numpy ndarray tuple (x, y) x’s shape is (num_samples, lookback,
+feature_dim) where lookback and feature_dim should be the same as
+past_seq_len and input_feature_num. y’s shape is (num_samples, horizon,
+target_dim), where horizon and target_dim should be the same as
+future_seq_len and output_target_num.</p></li>
+<li><p><strong>batch_size</strong> – evaluate batch size. The value will not affect evaluate
+result but will affect resources cost(e.g. memory and time).</p></li>
+<li><p><strong>metrics</strong> – list of string or callable. e.g. [‘mse’] or [customized_metrics]
+If callable function, it signature should be func(y_true, y_pred), where y_true and
+y_pred are numpy ndarray. The function should return a float value as evaluation
+result.</p></li>
+<li><p><strong>dirname</strong> – The directory to save onnx model file. This value defaults
+to None for no saving file.</p></li>
+<li><p><strong>multioutput</strong> – Defines aggregating of multiple output values.
+String in [‘raw_values’, ‘uniform_average’]. The value defaults to
+‘raw_values’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of evaluation results. Each item represents a metric.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_seq2seq.AutoSeq2Seq.export_onnx_file">
+<span class="sig-name descname"><span class="pre">export_onnx_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dirname</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_seq2seq.AutoSeq2Seq.export_onnx_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the onnx model file to the disk.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dirname</strong> – The dir location you want to save the onnx file.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_seq2seq.AutoSeq2Seq.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validation_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_sampling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_alg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_alg_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_seq2seq.AutoSeq2Seq.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Automatically fit the model and search for the best hyper parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – train data.
+data can be a tuple of ndarrays or a PyTorch DataLoader
+or a function that takes a config dictionary as parameter and returns a
+PyTorch DataLoader.</p></li>
+<li><p><strong>epochs</strong> – Max number of epochs to train in each trial. Defaults to 1.
+If you have also set metric_threshold, a trial will stop if either it has been
+optimized to the metric_threshold or it has been trained for {epochs} epochs.</p></li>
+<li><p><strong>batch_size</strong> – Int or hp sampling function from an integer space. Training batch size.
+It defaults to 32.</p></li>
+<li><p><strong>validation_data</strong> – Validation data. Validation data type should be the same as data.</p></li>
+<li><p><strong>metric_threshold</strong> – a trial will be terminated when metric threshold is met.</p></li>
+<li><p><strong>n_sampling</strong> – Number of trials to evaluate in total. Defaults to 1.
+If hp.grid_search is in search_space, the grid will be run n_sampling of trials
+and round up n_sampling according to hp.grid_search.
+If this is -1, (virtually) infinite samples are generated
+until a stopping condition is met.</p></li>
+<li><p><strong>search_alg</strong> – str, all supported searcher provided by ray tune
+(i.e.”variant_generator”, “random”, “ax”, “dragonfly”, “skopt”,
+“hyperopt”, “bayesopt”, “bohb”, “nevergrad”, “optuna”, “zoopt” and
+“sigopt”).</p></li>
+<li><p><strong>search_alg_params</strong> – extra parameters for searcher algorithm besides search_space,
+metric and searcher mode.</p></li>
+<li><p><strong>scheduler</strong> – str, all supported scheduler provided by ray tune.</p></li>
+<li><p><strong>scheduler_params</strong> – parameters for scheduler.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_seq2seq.AutoSeq2Seq.get_best_config">
+<span class="sig-name descname"><span class="pre">get_best_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_seq2seq.AutoSeq2Seq.get_best_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the best configuration</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A dictionary of best hyper parameters</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_seq2seq.AutoSeq2Seq.get_best_model">
+<span class="sig-name descname"><span class="pre">get_best_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_seq2seq.AutoSeq2Seq.get_best_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the best pytorch model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_seq2seq.AutoSeq2Seq.load">
+<span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_seq2seq.AutoSeq2Seq.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>restore the best model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>checkpoint_path</strong> – The checkpoint location you want to load the best model.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_seq2seq.AutoSeq2Seq.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_seq2seq.AutoSeq2Seq.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Predict using a the trained model after HPO(Hyper Parameter Optimization).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – a numpy ndarray x, where x’s shape is (num_samples, lookback, feature_dim)
+where lookback and feature_dim should be the same as past_seq_len and
+input_feature_num.</p></li>
+<li><p><strong>batch_size</strong> – predict batch size. The value will not affect predict
+result but will affect resources cost(e.g. memory and time). The value
+defaults to 32.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A numpy array with shape (num_samples, horizon, target_dim).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_seq2seq.AutoSeq2Seq.predict_with_onnx">
+<span class="sig-name descname"><span class="pre">predict_with_onnx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dirname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_seq2seq.AutoSeq2Seq.predict_with_onnx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Predict using a the trained model after HPO(Hyper Parameter Optimization).</p>
+<p>Be sure to install onnx and onnxruntime to enable this function. The method
+will give exactly the same result as .predict() but with higher throughput
+and lower latency. keras will support onnx later.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – a numpy ndarray x, where x’s shape is (num_samples, lookback, feature_dim)
+where lookback and feature_dim should be the same as past_seq_len and
+input_feature_num.</p></li>
+<li><p><strong>batch_size</strong> – predict batch size. The value will not affect predict
+result but will affect resources cost(e.g. memory and time). The value
+defaults to 32.</p></li>
+<li><p><strong>dirname</strong> – The directory to save onnx model file. This value defaults
+to None for no saving file.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A numpy array with shape (num_samples, horizon, target_dim).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.model.auto_seq2seq.AutoSeq2Seq.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.chronos.autots.model.auto_seq2seq.AutoSeq2Seq.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the best model.</p>
+<p>Please note that if you only want the pytorch model or onnx model
+file, you can call .get_model() or .export_onnx_file(). The checkpoint
+file generated by .save() method can only be used by .load() in automodel.
+If you specify “keras” as backend, file name will be best_keras_config.json
+and best_keras_model.ckpt.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>checkpoint_path</strong> – The location you want to save the best model.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div></div>
+</section>
+<section id="autoarima">
+<h2>AutoARIMA<a class="headerlink" href="#autoarima" title="Permalink to this headline">¶</a></h2>
+<p>AutoARIMA is an ARIMA forecasting model with Auto tuning.</p>
+</section>
+<section id="autoprophet">
+<h2>AutoProphet<a class="headerlink" href="#autoprophet" title="Permalink to this headline">¶</a></h2>
+<p>AutoProphet is a Prophet forecasting model with Auto tuning.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="autotsestimator.html" class="btn btn-neutral float-left" title="AutoTS" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="forecasters.html" class="btn btn-neutral float-right" title="Forecasters" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

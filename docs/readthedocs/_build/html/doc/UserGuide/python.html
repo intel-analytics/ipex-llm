@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Python User Guide &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/clipboard.min.js"></script>
+        <script src="../../_static/copybutton.js"></script>
+        <script src="../../_static/design-tabs.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Scala User Guide" href="scala.html" />
+    <link rel="prev" title="RayOnSpark Quickstart" href="../Ray/QuickStart/ray-quickstart.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Python User Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#install"><strong>1. Install</strong></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#official-release"><strong>1.1 Official Release</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nightly-build"><strong>1.2 Nightly Build</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bigdl-on-spark-3"><strong>1.3 BigDL on Spark 3</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#run"><strong>2. Run</strong></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#interactive-shell"><strong>2.1 Interactive Shell</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#jupyter-notebook"><strong>2.2 Jupyter Notebook</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#python-script"><strong>2.3 Python Script</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#python-dependencies"><strong>3. Python Dependencies</strong></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#compatibility"><strong>4. Compatibility</strong></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#known-issues"><strong>5. Known Issues</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Python User Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/doc/UserGuide/python.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="python-user-guide">
+<h1>Python User Guide<a class="headerlink" href="#python-user-guide" title="Permalink to this headline">¶</a></h1>
+<hr class="docutils" />
+<p>Supported Platforms: Linux and macOS.   <em><strong>Note:</strong> Windows is currently not supported.</em></p>
+<section id="install">
+<h2><strong>1. Install</strong><a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p>We recommend using <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/">conda</a> to prepare the Python environment as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda create -n bigdl <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.7  <span class="c1"># &quot;bigdl&quot; is conda environment name, you can use any name you like.</span>
+conda activate bigdl
+</pre></div>
+</div>
+</li>
+<li><p>You need to install JDK in the environment, and properly set the environment variable <code class="docutils literal notranslate"><span class="pre">JAVA_HOME</span></code>. <strong>JDK8</strong> is highly recommended.</p>
+<p>You may take the following commands as a reference for installing <a class="reference external" href="https://openjdk.java.net/install/">OpenJDK</a>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># For Ubuntu</span>
+sudo apt-get install openjdk-8-jre
+<span class="nb">export</span> <span class="nv">JAVA_HOME</span><span class="o">=</span>/usr/lib/jvm/java-8-openjdk-amd64/
+
+<span class="c1"># For CentOS</span>
+su -c <span class="s2">&quot;yum install java-1.8.0-openjdk&quot;</span>
+<span class="nb">export</span> <span class="nv">JAVA_HOME</span><span class="o">=</span>/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.282.b08-1.el7_9.x86_64/jre
+
+<span class="nb">export</span> <span class="nv">PATH</span><span class="o">=</span><span class="nv">$PATH</span>:<span class="nv">$JAVA_HOME</span>/bin
+java -version  <span class="c1"># Verify the version of JDK.</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<section id="official-release">
+<h3><strong>1.1 Official Release</strong><a class="headerlink" href="#official-release" title="Permalink to this headline">¶</a></h3>
+<p>You can install the latest release version of BigDL (built on top of Spark 2.4.6 by default) as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install bigdl
+</pre></div>
+</div>
+<p><em><strong>Note:</strong> Installing BigDL will automatically install all the BigDL packages including
+<code class="docutils literal notranslate"><span class="pre">bigdl-nano</span></code>, <code class="docutils literal notranslate"><span class="pre">bigdl-dllib</span></code>, <code class="docutils literal notranslate"><span class="pre">bigdl-orca</span></code>, <code class="docutils literal notranslate"><span class="pre">bigdl-chronos</span></code>, <code class="docutils literal notranslate"><span class="pre">bigdl-friesian</span></code>, <code class="docutils literal notranslate"><span class="pre">bigdl-serving</span></code> and their dependencies if they haven’t been detected in your conda environment.</em></p>
+</section>
+<section id="nightly-build">
+<h3><strong>1.2 Nightly Build</strong><a class="headerlink" href="#nightly-build" title="Permalink to this headline">¶</a></h3>
+<p>You can install the latest nightly build of BigDL as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install --pre --upgrade bigdl
+</pre></div>
+</div>
+<p>Alternatively, you can find the list of the nightly build versions <a class="reference external" href="https://pypi.org/project/BigDL/#history">here</a>, and install a specific version as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install <span class="nv">bigdl</span><span class="o">==</span>version
+</pre></div>
+</div>
+<p><em><strong>Note:</strong> If you are using a custom URL of Python Package Index, you may need to check whether the latest packages have been sync’ed with pypi.
+Or you can add the option <code class="docutils literal notranslate"><span class="pre">-i</span> <span class="pre">https://pypi.python.org/simple</span></code> when pip install to use pypi as the index-url.</em></p>
+<p>You could uninstall all the packages of BigDL as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip uninstall bigdl-dllib bigdl-tf bigdl-math bigdl-orca bigdl-chronos bigdl-friesian bigdl-nano bigdl-serving bigdl
+</pre></div>
+</div>
+</section>
+<section id="bigdl-on-spark-3">
+<h3><strong>1.3 BigDL on Spark 3</strong><a class="headerlink" href="#bigdl-on-spark-3" title="Permalink to this headline">¶</a></h3>
+<p>You can install BigDL built on top of Spark 3.1.2 as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install bigdl-spark3  <span class="c1"># Install the latest release version</span>
+pip install --pre --upgrade bigdl-spark3  <span class="c1"># Install the latest nightly build version</span>
+</pre></div>
+</div>
+<p>You can find the list of the nightly build versions built on top of Spark 3.1.2 <a class="reference external" href="https://pypi.org/project/bigdl-spark3/#history">here</a>.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="run">
+<h2><strong>2. Run</strong><a class="headerlink" href="#run" title="Permalink to this headline">¶</a></h2>
+<p><em><strong>Note:</strong> Installing BigDL from pip will automatically install <code class="docutils literal notranslate"><span class="pre">pyspark</span></code>. To avoid possible conflicts, you are highly recommended to  <strong>unset the environment variable <code class="docutils literal notranslate"><span class="pre">SPARK_HOME</span></code></strong>  if it exists in your environment.</em></p>
+<section id="interactive-shell">
+<h3><strong>2.1 Interactive Shell</strong><a class="headerlink" href="#interactive-shell" title="Permalink to this headline">¶</a></h3>
+<p>You may test if the installation is successful using the interactive Python shell as follows:</p>
+<ul>
+<li><p>Type <code class="docutils literal notranslate"><span class="pre">python</span></code> in the command line to start a REPL.</p></li>
+<li><p>Try to run the example code below to verify the installation:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bigdl.orca</span> <span class="kn">import</span> <span class="n">init_orca_context</span>
+
+<span class="n">sc</span> <span class="o">=</span> <span class="n">init_orca_context</span><span class="p">()</span>  <span class="c1"># Initiation of bigdl on the underlying cluster.</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+<section id="jupyter-notebook">
+<h3><strong>2.2 Jupyter Notebook</strong><a class="headerlink" href="#jupyter-notebook" title="Permalink to this headline">¶</a></h3>
+<p>You can start the Jupyter notebook as you normally do using the following command and run BigDL programs directly in a Jupyter notebook:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>jupyter notebook --notebook-dir<span class="o">=</span>./ --ip<span class="o">=</span>* --no-browser
+</pre></div>
+</div>
+</section>
+<section id="python-script">
+<h3><strong>2.3 Python Script</strong><a class="headerlink" href="#python-script" title="Permalink to this headline">¶</a></h3>
+<p>You can directly write BigDL programs in a Python file (e.g. script.py) and run in the command line as a normal Python program:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python script.py
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="python-dependencies">
+<h2><strong>3. Python Dependencies</strong><a class="headerlink" href="#python-dependencies" title="Permalink to this headline">¶</a></h2>
+<p>We recommend using <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/">conda</a> to manage your Python dependencies. Libraries installed in the current conda environment will be automatically distributed to the cluster when calling <code class="docutils literal notranslate"><span class="pre">init_orca_context</span></code>. You can also add extra dependencies as <code class="docutils literal notranslate"><span class="pre">.py</span></code>, <code class="docutils literal notranslate"><span class="pre">.zip</span></code> and <code class="docutils literal notranslate"><span class="pre">.egg</span></code> files by specifying <code class="docutils literal notranslate"><span class="pre">extra_python_lib</span></code> argument in <code class="docutils literal notranslate"><span class="pre">init_orca_context</span></code>.</p>
+<p>For more details, please refer to <a class="reference internal" href="../Orca/Overview/orca-context.html"><span class="doc">Orca Context</span></a>.</p>
+</section>
+<hr class="docutils" />
+<section id="compatibility">
+<h2><strong>4. Compatibility</strong><a class="headerlink" href="#compatibility" title="Permalink to this headline">¶</a></h2>
+<p>BigDL has been tested on <strong>Python 3.6 and 3.7</strong> with the following library versions:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">pyspark</span><span class="o">==</span><span class="m">2</span>.4.6 or <span class="m">3</span>.1.2
+<span class="nv">ray</span><span class="o">==</span><span class="m">1</span>.9.2
+<span class="nv">tensorflow</span><span class="o">==</span><span class="m">1</span>.15.0 or &gt;2.0
+pytorch&gt;<span class="o">=</span><span class="m">1</span>.5.0
+torchvision&gt;<span class="o">=</span><span class="m">0</span>.6.0
+<span class="nv">horovod</span><span class="o">==</span><span class="m">0</span>.19.2
+mxnet&gt;<span class="o">=</span><span class="m">1</span>.6.0
+bayesian-optimization<span class="o">==</span><span class="m">1</span>.1.0
+<span class="nv">dask</span><span class="o">==</span><span class="m">2</span>.14.0
+<span class="nv">h5py</span><span class="o">==</span><span class="m">2</span>.10.0
+<span class="nv">numpy</span><span class="o">==</span><span class="m">1</span>.18.1
+opencv-python<span class="o">==</span><span class="m">4</span>.2.0.34
+<span class="nv">pandas</span><span class="o">==</span><span class="m">1</span>.0.3
+<span class="nv">Pillow</span><span class="o">==</span><span class="m">7</span>.1.1
+<span class="nv">protobuf</span><span class="o">==</span><span class="m">3</span>.12.0
+<span class="nv">psutil</span><span class="o">==</span><span class="m">5</span>.7.0
+<span class="nv">py4j</span><span class="o">==</span><span class="m">0</span>.10.7
+<span class="nv">redis</span><span class="o">==</span><span class="m">3</span>.4.1
+scikit-learn<span class="o">==</span><span class="m">0</span>.22.2.post1
+<span class="nv">scipy</span><span class="o">==</span><span class="m">1</span>.4.1
+<span class="nv">tensorboard</span><span class="o">==</span><span class="m">1</span>.15.0
+tensorboardX&gt;<span class="o">=</span><span class="m">2</span>.1
+tensorflow-datasets<span class="o">==</span><span class="m">3</span>.2.0
+tensorflow-estimator<span class="o">==</span><span class="m">1</span>.15.1
+tensorflow-gan<span class="o">==</span><span class="m">2</span>.0.0
+tensorflow-hub<span class="o">==</span><span class="m">0</span>.8.0
+tensorflow-metadata<span class="o">==</span><span class="m">0</span>.21.1
+tensorflow-probability<span class="o">==</span><span class="m">0</span>.7.0
+<span class="nv">Theano</span><span class="o">==</span><span class="m">1</span>.0.4
+</pre></div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="known-issues">
+<h2><strong>5. Known Issues</strong><a class="headerlink" href="#known-issues" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>If you meet the following error when <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">bigdl</span></code>:</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ERROR</span><span class="p">:</span> <span class="n">Could</span> <span class="ow">not</span> <span class="n">find</span> <span class="n">a</span> <span class="n">version</span> <span class="n">that</span> <span class="n">satisfies</span> <span class="n">the</span> <span class="n">requirement</span> <span class="n">pypandoc</span> <span class="p">(</span><span class="kn">from</span> <span class="nn">versions</span><span class="p">:</span> <span class="n">none</span><span class="p">)</span>
+<span class="n">ERROR</span><span class="p">:</span> <span class="n">No</span> <span class="n">matching</span> <span class="n">distribution</span> <span class="n">found</span> <span class="k">for</span> <span class="n">pypandoc</span>
+<span class="n">Could</span> <span class="ow">not</span> <span class="kn">import</span> <span class="nn">pypandoc</span> <span class="o">-</span> <span class="n">required</span> <span class="n">to</span> <span class="n">package</span> <span class="n">PySpark</span>
+<span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
+  <span class="n">File</span> <span class="s2">&quot;/root/anaconda3/lib/python3.8/site-packages/setuptools/installer.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">126</span><span class="p">,</span> <span class="ow">in</span> <span class="n">fetch_build_egg</span>
+    <span class="n">subprocess</span><span class="o">.</span><span class="n">check_call</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+  <span class="n">File</span> <span class="s2">&quot;/root/anaconda3/lib/python3.8/subprocess.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">364</span><span class="p">,</span> <span class="ow">in</span> <span class="n">check_call</span>
+    <span class="k">raise</span> <span class="n">CalledProcessError</span><span class="p">(</span><span class="n">retcode</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span>
+<span class="n">subprocess</span><span class="o">.</span><span class="n">CalledProcessError</span><span class="p">:</span> <span class="n">Command</span> <span class="s1">&#39;[&#39;</span><span class="o">/</span><span class="n">root</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">python</span><span class="s1">&#39;, &#39;</span><span class="o">-</span><span class="n">m</span><span class="s1">&#39;, &#39;</span><span class="n">pip</span><span class="s1">&#39;, &#39;</span><span class="o">--</span><span class="n">disable</span><span class="o">-</span><span class="n">pip</span><span class="o">-</span><span class="n">version</span><span class="o">-</span><span class="n">check</span><span class="s1">&#39;, &#39;</span><span class="n">wheel</span><span class="s1">&#39;, &#39;</span><span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">deps</span><span class="s1">&#39;, &#39;</span><span class="o">-</span><span class="n">w</span><span class="s1">&#39;, &#39;</span><span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">tmprefr87ue</span><span class="s1">&#39;, &#39;</span><span class="o">--</span><span class="n">quiet</span><span class="s1">&#39;, &#39;</span><span class="n">pypandoc</span><span class="s1">&#39;]&#39;</span> <span class="n">returned</span> <span class="n">non</span><span class="o">-</span><span class="n">zero</span> <span class="n">exit</span> <span class="n">status</span> <span class="mf">1.</span>
+</pre></div>
+</div>
+<p>This is actually caused by <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">pyspark</span></code> in your Python environment. You can fix it by running <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">pypandoc</span></code> first and then <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">bigdl</span></code>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../Ray/QuickStart/ray-quickstart.html" class="btn btn-neutral float-left" title="RayOnSpark Quickstart" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="scala.html" class="btn btn-neutral float-right" title="Scala User Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

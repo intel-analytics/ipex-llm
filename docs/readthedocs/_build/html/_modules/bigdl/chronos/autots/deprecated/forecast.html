@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bigdl.chronos.autots.deprecated.forecast &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+        <script src="../../../../../_static/clipboard.min.js"></script>
+        <script src="../../../../../_static/copybutton.js"></script>
+        <script src="../../../../../_static/tabs.js"></script>
+        <script src="../../../../../_static/design-tabs.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../index.html">Module code</a> &raquo;</li>
+      <li>bigdl.chronos.autots.deprecated.forecast</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bigdl.chronos.autots.deprecated.forecast</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright 2016 The BigDL Authors.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+
+<span class="kn">from</span> <span class="nn">bigdl.chronos.autots.deprecated.regression.time_sequence_predictor</span> <span class="k">import</span> <span class="n">TimeSequencePredictor</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.autots.deprecated.config.recipe</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.autots.deprecated.pipeline.time_sequence</span> <span class="k">import</span> <span class="n">load_ts_pipeline</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.utils</span> <span class="k">import</span> <span class="n">deprecated</span>
+
+
+<div class="viewcode-block" id="AutoTSTrainer"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Chronos/autots.html#bigdl.chronos.autots.deprecated.forecast.AutoTSTrainer">[docs]</a><span class="nd">@deprecated</span><span class="p">(</span><span class="s1">&#39;Please use `bigdl.chronos.autots.AutoTSEstimator` instead.&#39;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">AutoTSTrainer</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The Automated Time Series Forecast Trainer</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">horizon</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">dt_col</span><span class="o">=</span><span class="s2">&quot;datetime&quot;</span><span class="p">,</span>
+                 <span class="n">target_col</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span>
+                 <span class="n">logs_dir</span><span class="o">=</span><span class="s2">&quot;~/bigdl_automl_logs&quot;</span><span class="p">,</span>
+                 <span class="n">extra_features_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">search_alg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">search_alg_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">scheduler</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">scheduler_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">name</span><span class="o">=</span><span class="s2">&quot;automl&quot;</span>
+                 <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        __init__()</span>
+<span class="sd">        Initialize the AutoTS Trainer.</span>
+
+<span class="sd">        :param horizon: steps to look forward</span>
+<span class="sd">        :param dt_col: the datetime column</span>
+<span class="sd">        :param target_col: the target column to forecast</span>
+<span class="sd">        :param extra_features_col: extra feature columns</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">target_col_list</span> <span class="o">=</span> <span class="n">target_col</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">target_col</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">target_col_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">target_col</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">internal</span> <span class="o">=</span> <span class="n">TimeSequencePredictor</span><span class="p">(</span>
+            <span class="n">dt_col</span><span class="o">=</span><span class="n">dt_col</span><span class="p">,</span>
+            <span class="n">target_col</span><span class="o">=</span><span class="n">target_col_list</span><span class="p">,</span>
+            <span class="n">logs_dir</span><span class="o">=</span><span class="n">logs_dir</span><span class="p">,</span>
+            <span class="n">future_seq_len</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span>
+            <span class="n">extra_features_col</span><span class="o">=</span><span class="n">extra_features_col</span><span class="p">,</span>
+            <span class="n">search_alg</span><span class="o">=</span><span class="n">search_alg</span><span class="p">,</span>
+            <span class="n">search_alg_params</span><span class="o">=</span><span class="n">search_alg_params</span><span class="p">,</span>
+            <span class="n">scheduler</span><span class="o">=</span><span class="n">scheduler</span><span class="p">,</span>
+            <span class="n">scheduler_params</span><span class="o">=</span><span class="n">scheduler_params</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="AutoTSTrainer.fit"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Chronos/autots.html#bigdl.chronos.autots.deprecated.forecast.AutoTSTrainer.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+            <span class="n">train_df</span><span class="p">,</span>
+            <span class="n">validation_df</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;mse&quot;</span><span class="p">,</span>
+            <span class="n">recipe</span><span class="p">:</span> <span class="n">Recipe</span> <span class="o">=</span> <span class="n">SmokeRecipe</span><span class="p">(),</span>
+            <span class="n">uncertainty</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="n">upload_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        fit()</span>
+<span class="sd">        Fit a time series forecasting pipeline w/ automl</span>
+
+<span class="sd">        :param train_df: the input dataframe (as pandas.dataframe)</span>
+<span class="sd">        :param validation_df: the validation dataframe (as pandas.dataframe)</span>
+<span class="sd">        :param recipe: the configuration of searching</span>
+<span class="sd">        :param metric: the evaluation metric to optimize</span>
+<span class="sd">        :param uncertainty: whether to enable uncertainty calculation</span>
+<span class="sd">                            (will output an uncertainty sigma)</span>
+<span class="sd">        :param upload_dir: Optional URI to sync training results and checkpoints. We only support</span>
+<span class="sd">            hdfs URI for now.</span>
+<span class="sd">        :return a TSPipeline</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">bigdl_pipeline</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">internal</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_df</span><span class="p">,</span>
+                                           <span class="n">validation_df</span><span class="p">,</span>
+                                           <span class="n">metric</span><span class="p">,</span>
+                                           <span class="n">recipe</span><span class="p">,</span>
+                                           <span class="n">mc</span><span class="o">=</span><span class="n">uncertainty</span><span class="p">,</span>
+                                           <span class="n">upload_dir</span><span class="o">=</span><span class="n">upload_dir</span><span class="p">)</span>
+        <span class="n">ppl</span> <span class="o">=</span> <span class="n">TSPipeline</span><span class="p">()</span>
+        <span class="n">ppl</span><span class="o">.</span><span class="n">internal</span> <span class="o">=</span> <span class="n">bigdl_pipeline</span>
+        <span class="k">return</span> <span class="n">ppl</span></div></div>
+
+
+<div class="viewcode-block" id="TSPipeline"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Chronos/autots.html#bigdl.chronos.autots.deprecated.forecast.TSPipeline">[docs]</a><span class="k">class</span> <span class="nc">TSPipeline</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A pipeline for time series forecasting.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize an emtpy TSPipeline.</span>
+<span class="sd">        Usually it is not called by user directly.</span>
+<span class="sd">        A TSPipeline is either obtained from AutoTrainer.fit or TSPipeline.load</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">internal</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uncertainty</span> <span class="o">=</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="TSPipeline.save"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Chronos/autots.html#bigdl.chronos.autots.deprecated.forecast.TSPipeline.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pipeline_file</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save the pipeline to a file</span>
+
+<span class="sd">        :param pipeline_file: the file path</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">internal</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">pipeline_file</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TSPipeline.load"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Chronos/autots.html#bigdl.chronos.autots.deprecated.forecast.TSPipeline.load">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="nd">@deprecated</span><span class="p">(</span><span class="s1">&#39;Please use `bigdl.chronos.autots.TSPipeline` instead.&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">pipeline_file</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        load(pipeline_file)</span>
+<span class="sd">        Load pipeline from a file</span>
+
+<span class="sd">        :param pipeline_file: the pipeline file</span>
+<span class="sd">        :return: a TSPipeline object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tsppl</span> <span class="o">=</span> <span class="n">TSPipeline</span><span class="p">()</span>
+        <span class="n">tsppl</span><span class="o">.</span><span class="n">internal</span> <span class="o">=</span> <span class="n">load_ts_pipeline</span><span class="p">(</span><span class="n">pipeline_file</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">tsppl</span></div>
+
+<div class="viewcode-block" id="TSPipeline.fit"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Chronos/autots.html#bigdl.chronos.autots.deprecated.forecast.TSPipeline.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+            <span class="n">input_df</span><span class="p">,</span>
+            <span class="n">validation_df</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">uncertainty</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">user_config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Incremental Fitting</span>
+
+<span class="sd">        :param input_df: the input dataframe</span>
+<span class="sd">        :param validation_df: the validation dataframe</span>
+<span class="sd">        :param uncertainty: whether to calculate uncertainty</span>
+<span class="sd">        :param epochs: number of epochs to train</span>
+<span class="sd">        :param user_config: user configurations</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO refactor automl.Pipeline fit methods to merge the two</span>
+        <span class="c1"># maybe use another method to apply configs.</span>
+        <span class="c1"># distinguish between incremental and fit from scratch</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uncertainty</span> <span class="o">=</span> <span class="n">uncertainty</span>
+        <span class="k">if</span> <span class="n">user_config</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">internal</span><span class="o">.</span><span class="n">fit_with_fixed_configs</span><span class="p">(</span><span class="n">input_df</span><span class="o">=</span><span class="n">input_df</span><span class="p">,</span>
+                                                 <span class="n">validation_df</span><span class="o">=</span><span class="n">validation_df</span><span class="p">,</span>
+                                                 <span class="n">mc</span><span class="o">=</span><span class="n">uncertainty</span><span class="p">,</span>
+                                                 <span class="n">epoch_num</span><span class="o">=</span><span class="n">epochs</span><span class="p">,</span>
+                                                 <span class="o">**</span><span class="n">user_config</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">internal</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">input_df</span><span class="o">=</span><span class="n">input_df</span><span class="p">,</span>
+                              <span class="n">validation_df</span><span class="o">=</span><span class="n">validation_df</span><span class="p">,</span>
+                              <span class="n">mc</span><span class="o">=</span><span class="n">uncertainty</span><span class="p">,</span>
+                              <span class="n">epoch_num</span><span class="o">=</span><span class="n">epochs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TSPipeline.predict"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Chronos/autots.html#bigdl.chronos.autots.deprecated.forecast.TSPipeline.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_df</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Prediction.</span>
+
+<span class="sd">        :param input_df: the input dataframe</span>
+<span class="sd">        :return: the forecast results</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">uncertainty</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">internal</span><span class="o">.</span><span class="n">predict_with_uncertainty</span><span class="p">(</span><span class="n">input_df</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">internal</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">input_df</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TSPipeline.evaluate"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Chronos/autots.html#bigdl.chronos.autots.deprecated.forecast.TSPipeline.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">input_df</span><span class="p">,</span>
+                 <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;mse&quot;</span><span class="p">],</span>
+                 <span class="n">multioutput</span><span class="o">=</span><span class="s1">&#39;raw_values&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Evaluation</span>
+
+<span class="sd">        :param input_df: the input dataframe</span>
+<span class="sd">        :param metrics: the evaluation metrics</span>
+<span class="sd">        :param multioutput: output mode of multiple output, whether to aggregate</span>
+<span class="sd">        :return: the evaluation results</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">internal</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">input_df</span><span class="p">,</span> <span class="n">metrics</span><span class="p">,</span> <span class="n">multioutput</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

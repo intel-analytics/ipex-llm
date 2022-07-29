@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bigdl.chronos.forecaster.tcmf_forecaster &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/clipboard.min.js"></script>
+        <script src="../../../../_static/copybutton.js"></script>
+        <script src="../../../../_static/tabs.js"></script>
+        <script src="../../../../_static/design-tabs.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>bigdl.chronos.forecaster.tcmf_forecaster</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bigdl.chronos.forecaster.tcmf_forecaster</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright 2016 The BigDL Authors.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+
+<span class="kn">from</span> <span class="nn">bigdl.chronos.model.tcmf_model</span> <span class="k">import</span> <span class="n">TCMFNdarrayModelWrapper</span><span class="p">,</span> <span class="n">TCMFXshardsModelWrapper</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca.data</span> <span class="k">import</span> <span class="n">SparkXShards</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.forecaster.abstract</span> <span class="k">import</span> <span class="n">Forecaster</span>
+
+
+<div class="viewcode-block" id="TCMFForecaster"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/forecasters.html#bigdl.chronos.forecaster.tcmf_forecaster.TCMFForecaster">[docs]</a><span class="k">class</span> <span class="nc">TCMFForecaster</span><span class="p">(</span><span class="n">Forecaster</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">            &gt;&gt;&gt; model = TCMFForecaster()</span>
+<span class="sd">            &gt;&gt;&gt; fit_params = dict(val_len=12,</span>
+<span class="sd">                               start_date=&quot;2020-1-1&quot;,</span>
+<span class="sd">                               freq=&quot;5min&quot;,</span>
+<span class="sd">                               y_iters=1,</span>
+<span class="sd">                               init_FX_epoch=1,</span>
+<span class="sd">                               max_FX_epoch=1,</span>
+<span class="sd">                               max_TCN_epoch=1,</span>
+<span class="sd">                               alt_iters=2)</span>
+<span class="sd">            &gt;&gt;&gt; ndarray_input = {&#39;id&#39;: np.arange(300), &#39;y&#39;: np.random.rand(300, 480)}</span>
+<span class="sd">            &gt;&gt;&gt; model.fit(ndarray_input, fit_params)</span>
+<span class="sd">            &gt;&gt;&gt; horizon = np.random.randint(1, 50)</span>
+<span class="sd">            &gt;&gt;&gt; yhat = model.predict(horizon=horizon)</span>
+<span class="sd">            &gt;&gt;&gt; model.save({tempdirname})</span>
+<span class="sd">            &gt;&gt;&gt; loaded_model = TCMFForecaster.load({tempdirname}, is_xshards_distributed=False)</span>
+<span class="sd">            &gt;&gt;&gt; data_new = np.random.rand(300, horizon)</span>
+<span class="sd">            &gt;&gt;&gt; model.evaluate(target_value=dict({&quot;y&quot;: data_new}), metric=[&#39;mse&#39;])</span>
+<span class="sd">            &gt;&gt;&gt; model.fit_incremental({&quot;y&quot;: data_new})</span>
+<span class="sd">            &gt;&gt;&gt; yhat_incr = model.predict(horizon=horizon)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">vbsize</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span>
+                 <span class="n">hbsize</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
+                 <span class="n">num_channels_X</span><span class="o">=</span><span class="p">[</span><span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                 <span class="n">num_channels_Y</span><span class="o">=</span><span class="p">[</span><span class="mi">16</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                 <span class="n">kernel_size</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span>
+                 <span class="n">dropout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                 <span class="n">rank</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+                 <span class="n">kernel_size_Y</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span>
+                 <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.0005</span><span class="p">,</span>
+                 <span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">use_time</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">svd</span><span class="o">=</span><span class="kc">True</span><span class="p">,):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Build a TCMF Forecast Model.</span>
+
+<span class="sd">        :param vbsize: int, default is 128.</span>
+<span class="sd">            Vertical batch size, which is the number of cells per batch.</span>
+<span class="sd">        :param hbsize: int, default is 256.</span>
+<span class="sd">            Horizontal batch size, which is the number of time series per batch.</span>
+<span class="sd">        :param num_channels_X: list, default=[32, 32, 32, 32, 32, 1].</span>
+<span class="sd">            List containing channel progression of temporal convolution network for local model</span>
+<span class="sd">        :param num_channels_Y: list, default=[16, 16, 16, 16, 16, 1]</span>
+<span class="sd">            List containing channel progression of temporal convolution network for hybrid model.</span>
+<span class="sd">        :param kernel_size: int, default is 7.</span>
+<span class="sd">            Kernel size for local models</span>
+<span class="sd">        :param dropout: float, default is 0.1.</span>
+<span class="sd">            Dropout rate during training</span>
+<span class="sd">        :param rank: int, default is 64.</span>
+<span class="sd">            The rank in matrix factorization of global model.</span>
+<span class="sd">        :param kernel_size_Y: int, default is 7.</span>
+<span class="sd">            Kernel size of hybrid model</span>
+<span class="sd">        :param learning_rate: float, default is 0.0005</span>
+<span class="sd">        :param normalize: boolean, false by default.</span>
+<span class="sd">            Whether to normalize input data for training.</span>
+<span class="sd">        :param use_time: boolean, default is True.</span>
+<span class="sd">            Whether to use time coveriates.</span>
+<span class="sd">        :param svd: boolean, default is False.</span>
+<span class="sd">            Whether factor matrices are initialized by NMF</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">internal</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;vbsize&quot;</span><span class="p">:</span> <span class="n">vbsize</span><span class="p">,</span>
+            <span class="s2">&quot;hbsize&quot;</span><span class="p">:</span> <span class="n">hbsize</span><span class="p">,</span>
+            <span class="s2">&quot;num_channels_X&quot;</span><span class="p">:</span> <span class="n">num_channels_X</span><span class="p">,</span>
+            <span class="s2">&quot;num_channels_Y&quot;</span><span class="p">:</span> <span class="n">num_channels_Y</span><span class="p">,</span>
+            <span class="s2">&quot;kernel_size&quot;</span><span class="p">:</span> <span class="n">kernel_size</span><span class="p">,</span>
+            <span class="s2">&quot;dropout&quot;</span><span class="p">:</span> <span class="n">dropout</span><span class="p">,</span>
+            <span class="s2">&quot;rank&quot;</span><span class="p">:</span> <span class="n">rank</span><span class="p">,</span>
+            <span class="s2">&quot;kernel_size_Y&quot;</span><span class="p">:</span> <span class="n">kernel_size_Y</span><span class="p">,</span>
+            <span class="s2">&quot;learning_rate&quot;</span><span class="p">:</span> <span class="n">learning_rate</span><span class="p">,</span>
+            <span class="s2">&quot;normalize&quot;</span><span class="p">:</span> <span class="n">normalize</span><span class="p">,</span>
+            <span class="s2">&quot;use_time&quot;</span><span class="p">:</span> <span class="n">use_time</span><span class="p">,</span>
+            <span class="s2">&quot;svd&quot;</span><span class="p">:</span> <span class="n">svd</span><span class="p">,</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="TCMFForecaster.fit"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/forecasters.html#bigdl.chronos.forecaster.tcmf_forecaster.TCMFForecaster.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+            <span class="n">x</span><span class="p">,</span>
+            <span class="n">val_len</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span>
+            <span class="n">start_date</span><span class="o">=</span><span class="s2">&quot;2020-4-1&quot;</span><span class="p">,</span>
+            <span class="n">freq</span><span class="o">=</span><span class="s2">&quot;1H&quot;</span><span class="p">,</span>
+            <span class="n">covariates</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">dti</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">period</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span>
+            <span class="n">y_iters</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+            <span class="n">init_FX_epoch</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+            <span class="n">max_FX_epoch</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span>
+            <span class="n">max_TCN_epoch</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span>
+            <span class="n">alt_iters</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+            <span class="n">num_workers</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fit the model on x from scratch</span>
+
+<span class="sd">        :param x: the input for fit. Only dict of ndarray and SparkXShards of dict of ndarray</span>
+<span class="sd">            are supported. Example: {&#39;id&#39;: id_arr, &#39;y&#39;: data_ndarray}, and data_ndarray</span>
+<span class="sd">            is of shape (n, T), where n is the number f target time series and T is the</span>
+<span class="sd">            number of time steps.</span>
+<span class="sd">        :param val_len: int, default is 24.</span>
+<span class="sd">            Validation length. We will use the last val_len time points as validation data.</span>
+<span class="sd">        :param start_date: str or datetime-like.</span>
+<span class="sd">            Start date time for the time-series. e.g. &quot;2020-01-01&quot;</span>
+<span class="sd">        :param freq: str or DateOffset, default is &#39;H&#39;</span>
+<span class="sd">            Frequency of data</span>
+<span class="sd">        :param covariates: 2-D ndarray or None. The shape of ndarray should be (r, T), where r is</span>
+<span class="sd">            the number of covariates and T is the number of time points.</span>
+<span class="sd">            Global covariates for all time series. If None, only default time coveriates will be</span>
+<span class="sd">            used while use_time is True. If not, the time coveriates used is the stack of input</span>
+<span class="sd">            covariates and default time coveriates.</span>
+<span class="sd">        :param dti: DatetimeIndex or None.</span>
+<span class="sd">            If None, use default fixed frequency DatetimeIndex generated with start_date and freq.</span>
+<span class="sd">        :param period: int, default is 24.</span>
+<span class="sd">            Periodicity of input time series, leave it out if not known</span>
+<span class="sd">        :param y_iters: int, default is 10.</span>
+<span class="sd">            Number of iterations while training the hybrid model.</span>
+<span class="sd">        :param init_FX_epoch: int, default is 100.</span>
+<span class="sd">            Number of iterations while initializing factors</span>
+<span class="sd">        :param max_FX_epoch: int, default is 300.</span>
+<span class="sd">            Max number of iterations while training factors.</span>
+<span class="sd">        :param max_TCN_epoch: int, default is 300.</span>
+<span class="sd">            Max number of iterations while training the local model.</span>
+<span class="sd">        :param alt_iters: int, default is 10.</span>
+<span class="sd">            Number of iterations while alternate training.</span>
+<span class="sd">        :param num_workers: the number of workers you want to use for fit. If None, it defaults to</span>
+<span class="sd">            num_ray_nodes in the created OrcaRayContext or 1 if there is no active OrcaRayContext.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">internal</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">SparkXShards</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">internal</span> <span class="o">=</span> <span class="n">TCMFXshardsModelWrapper</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">internal</span> <span class="o">=</span> <span class="n">TCMFNdarrayModelWrapper</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                                  <span class="s2">&quot;value of x should be a dict of ndarray or &quot;</span>
+                                  <span class="s2">&quot;an xShards of dict of ndarray&quot;</span><span class="p">)</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">internal</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span>
+                                  <span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span><span class="p">,</span>
+                                  <span class="n">val_len</span><span class="o">=</span><span class="n">val_len</span><span class="p">,</span>
+                                  <span class="n">start_date</span><span class="o">=</span><span class="n">start_date</span><span class="p">,</span>
+                                  <span class="n">freq</span><span class="o">=</span><span class="n">freq</span><span class="p">,</span>
+                                  <span class="n">covariates</span><span class="o">=</span><span class="n">covariates</span><span class="p">,</span>
+                                  <span class="n">dti</span><span class="o">=</span><span class="n">dti</span><span class="p">,</span>
+                                  <span class="n">period</span><span class="o">=</span><span class="n">period</span><span class="p">,</span>
+                                  <span class="n">y_iters</span><span class="o">=</span><span class="n">y_iters</span><span class="p">,</span>
+                                  <span class="n">init_FX_epoch</span><span class="o">=</span><span class="n">init_FX_epoch</span><span class="p">,</span>
+                                  <span class="n">max_FX_epoch</span><span class="o">=</span><span class="n">max_FX_epoch</span><span class="p">,</span>
+                                  <span class="n">max_TCN_epoch</span><span class="o">=</span><span class="n">max_TCN_epoch</span><span class="p">,</span>
+                                  <span class="n">alt_iters</span><span class="o">=</span><span class="n">alt_iters</span><span class="p">,</span>
+                                  <span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">inst</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">internal</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidOperationError</span>
+                <span class="n">invalidOperationError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">inst</span><span class="p">),</span> <span class="n">cause</span><span class="o">=</span><span class="n">inst</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;This model has already been fully trained, &quot;</span>
+                              <span class="s2">&quot;you can only run full training once.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TCMFForecaster.fit_incremental"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/forecasters.html#bigdl.chronos.forecaster.tcmf_forecaster.TCMFForecaster.fit_incremental">[docs]</a>    <span class="k">def</span> <span class="nf">fit_incremental</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_incr</span><span class="p">,</span> <span class="n">covariates_incr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dti_incr</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Incrementally fit the model. Note that we only incrementally fit X_seq (TCN in global model)</span>
+
+<span class="sd">        :param x_incr: incremental data to be fitted. It should be of the same format as input x in</span>
+<span class="sd">            fit, which is a dict of ndarray or SparkXShards of dict of ndarray.</span>
+<span class="sd">            Example: {&#39;id&#39;: id_arr, &#39;y&#39;: incr_ndarray}, and incr_ndarray is of shape (n, T_incr)</span>
+<span class="sd">            , where n is the number of target time series, T_incr is the number of time steps</span>
+<span class="sd">            incremented. You can choose not to input &#39;id&#39; in x_incr, but if you do, the elements</span>
+<span class="sd">            of id in x_incr should be the same as id in x of fit.</span>
+<span class="sd">        :param covariates_incr: covariates corresponding to x_incr. 2-D ndarray or None.</span>
+<span class="sd">            The shape of ndarray should be (r, T_incr), where r is the number of covariates.</span>
+<span class="sd">            Global covariates for all time series. If None, only default time coveriates will be</span>
+<span class="sd">            used while use_time is True. If not, the time coveriates used is the stack of input</span>
+<span class="sd">            covariates and default time coveriates.</span>
+<span class="sd">        :param dti_incr: dti corresponding to the x_incr. DatetimeIndex or None.</span>
+<span class="sd">            If None, use default fixed frequency DatetimeIndex generated with the last date of x in</span>
+<span class="sd">            fit and freq.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">internal</span><span class="o">.</span><span class="n">fit_incremental</span><span class="p">(</span><span class="n">x_incr</span><span class="p">,</span>
+                                      <span class="n">covariates_incr</span><span class="o">=</span><span class="n">covariates_incr</span><span class="p">,</span>
+                                      <span class="n">dti_incr</span><span class="o">=</span><span class="n">dti_incr</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TCMFForecaster.evaluate"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/forecasters.html#bigdl.chronos.forecaster.tcmf_forecaster.TCMFForecaster.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">target_value</span><span class="p">,</span>
+                 <span class="n">metric</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;mae&#39;</span><span class="p">],</span>
+                 <span class="n">target_covariates</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">target_dti</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">num_workers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Evaluate the model</span>
+
+<span class="sd">        :param target_value: target value for evaluation. We interpret its second dimension of</span>
+<span class="sd">               as the horizon length for evaluation.</span>
+<span class="sd">        :param metric: the metrics. A list of metric names.</span>
+<span class="sd">        :param target_covariates: covariates corresponding to target_value.</span>
+<span class="sd">            2-D ndarray or None.</span>
+<span class="sd">            The shape of ndarray should be (r, horizon), where r is the number of covariates.</span>
+<span class="sd">            Global covariates for all time series. If None, only default time coveriates will be</span>
+<span class="sd">            used while use_time is True. If not, the time coveriates used is the stack of input</span>
+<span class="sd">            covariates and default time coveriates.</span>
+<span class="sd">        :param target_dti: dti corresponding to target_value.</span>
+<span class="sd">            DatetimeIndex or None.</span>
+<span class="sd">            If None, use default fixed frequency DatetimeIndex generated with the last date of x in</span>
+<span class="sd">            fit and freq.</span>
+<span class="sd">        :param num_workers: the number of workers to use in evaluate. If None, it defaults to</span>
+<span class="sd">            num_ray_nodes in the created OrcaRayContext or 1 if there is no active OrcaRayContext.</span>
+
+<span class="sd">        :return: A list of evaluation results. Each item represents a metric.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">internal</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="n">target_value</span><span class="p">,</span>
+                                      <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">,</span>
+                                      <span class="n">target_covariates</span><span class="o">=</span><span class="n">target_covariates</span><span class="p">,</span>
+                                      <span class="n">target_dti</span><span class="o">=</span><span class="n">target_dti</span><span class="p">,</span>
+                                      <span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TCMFForecaster.predict"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/forecasters.html#bigdl.chronos.forecaster.tcmf_forecaster.TCMFForecaster.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                <span class="n">horizon</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span>
+                <span class="n">future_covariates</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">future_dti</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">num_workers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Predict using a trained forecaster.</span>
+
+<span class="sd">        :param horizon: horizon length to look forward.</span>
+<span class="sd">        :param future_covariates: covariates corresponding to future horizon steps data to predict.</span>
+<span class="sd">            2-D ndarray or None.</span>
+<span class="sd">            The shape of ndarray should be (r, horizon), where r is the number of covariates.</span>
+<span class="sd">            Global covariates for all time series. If None, only default time coveriates will be</span>
+<span class="sd">            used while use_time is True. If not, the time coveriates used is the stack of input</span>
+<span class="sd">            covariates and default time coveriates.</span>
+<span class="sd">        :param future_dti: dti corresponding to future horizon steps data to predict.</span>
+<span class="sd">            DatetimeIndex or None.</span>
+<span class="sd">            If None, use default fixed frequency DatetimeIndex generated with the last date of x in</span>
+<span class="sd">            fit and freq.</span>
+<span class="sd">        :param num_workers: the number of workers to use in predict. If None, it defaults to</span>
+<span class="sd">            num_ray_nodes in the created OrcaRayContext or 1 if there is no active OrcaRayContext.</span>
+
+<span class="sd">        :return: A numpy ndarray with shape of (nd, horizon), where nd is the same number</span>
+<span class="sd">            of time series as input x in fit_eval.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">internal</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;You should run fit before calling predict()&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">internal</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">horizon</span><span class="p">,</span>
+                                         <span class="n">future_covariates</span><span class="o">=</span><span class="n">future_covariates</span><span class="p">,</span>
+                                         <span class="n">future_dti</span><span class="o">=</span><span class="n">future_dti</span><span class="p">,</span>
+                                         <span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TCMFForecaster.save"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/forecasters.html#bigdl.chronos.forecaster.tcmf_forecaster.TCMFForecaster.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save the forecaster.</span>
+
+<span class="sd">        :param path: Path to target saved file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">internal</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;You should run fit before calling save()&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">internal</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TCMFForecaster.is_xshards_distributed"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/forecasters.html#bigdl.chronos.forecaster.tcmf_forecaster.TCMFForecaster.is_xshards_distributed">[docs]</a>    <span class="k">def</span> <span class="nf">is_xshards_distributed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check whether model is distributed by input xshards.</span>
+
+<span class="sd">        :return: True if the model is distributed by input xshards</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">internal</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;You should run fit before calling is_xshards_distributed()&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">internal</span><span class="o">.</span><span class="n">is_xshards_distributed</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="TCMFForecaster.load"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/forecasters.html#bigdl.chronos.forecaster.tcmf_forecaster.TCMFForecaster.load">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">is_xshards_distributed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">minPartitions</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load a saved model.</span>
+
+<span class="sd">        :param path: The location you want to save the forecaster.</span>
+<span class="sd">        :param is_xshards_distributed: Whether the model is distributed trained with</span>
+<span class="sd">            input of dict of SparkXshards.</span>
+<span class="sd">        :param minPartitions: The minimum partitions for the XShards.</span>
+
+<span class="sd">        :return: the model loaded</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">loaded_model</span> <span class="o">=</span> <span class="n">TCMFForecaster</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">is_xshards_distributed</span><span class="p">:</span>
+            <span class="n">loaded_model</span><span class="o">.</span><span class="n">internal</span> <span class="o">=</span> <span class="n">TCMFXshardsModelWrapper</span><span class="p">(</span>
+                <span class="n">loaded_model</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+            <span class="n">loaded_model</span><span class="o">.</span><span class="n">internal</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">minPartitions</span><span class="o">=</span><span class="n">minPartitions</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">loaded_model</span><span class="o">.</span><span class="n">internal</span> <span class="o">=</span> <span class="n">TCMFNdarrayModelWrapper</span><span class="p">(</span>
+                <span class="n">loaded_model</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+            <span class="n">loaded_model</span><span class="o">.</span><span class="n">internal</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">loaded_model</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

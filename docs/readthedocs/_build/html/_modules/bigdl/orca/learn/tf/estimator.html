@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bigdl.orca.learn.tf.estimator &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+        <script src="../../../../../_static/clipboard.min.js"></script>
+        <script src="../../../../../_static/copybutton.js"></script>
+        <script src="../../../../../_static/tabs.js"></script>
+        <script src="../../../../../_static/design-tabs.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../index.html">Module code</a> &raquo;</li>
+      <li>bigdl.orca.learn.tf.estimator</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bigdl.orca.learn.tf.estimator</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright 2016 The BigDL Authors.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+<span class="kn">from</span> <span class="nn">pyspark.sql</span> <span class="k">import</span> <span class="n">DataFrame</span>
+
+<span class="kn">from</span> <span class="nn">bigdl.dllib.optim.optimizer</span> <span class="k">import</span> <span class="n">MaxEpoch</span>
+
+<span class="kn">from</span> <span class="nn">bigdl.orca.tfpark.tf_dataset</span> <span class="k">import</span> <span class="n">_standardize_keras_target_data</span>
+<span class="kn">from</span> <span class="nn">bigdl.dllib.utils.file_utils</span> <span class="k">import</span> <span class="n">enable_multi_fs_load</span><span class="p">,</span> <span class="n">enable_multi_fs_load_static</span><span class="p">,</span> \
+    <span class="n">enable_multi_fs_save</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca</span> <span class="k">import</span> <span class="n">OrcaContext</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca.data.tf.data</span> <span class="k">import</span> <span class="n">Dataset</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca.data.tf.tf1_data</span> <span class="k">import</span> <span class="n">TF1Dataset</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca.data</span> <span class="k">import</span> <span class="n">SparkXShards</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca.learn.tf.utils</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca.learn.trigger</span> <span class="k">import</span> <span class="n">Trigger</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca.learn.utils</span> <span class="k">import</span> <span class="n">find_latest_checkpoint</span><span class="p">,</span> <span class="n">convert_predict_rdd_to_xshard</span><span class="p">,</span> \
+    <span class="n">convert_predict_rdd_to_dataframe</span><span class="p">,</span> <span class="n">process_xshards_of_pandas_dataframe</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca.tfpark</span> <span class="k">import</span> <span class="n">KerasModel</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca.tfpark</span> <span class="k">import</span> <span class="n">TFOptimizer</span><span class="p">,</span> <span class="n">TFNet</span><span class="p">,</span> <span class="n">ZooOptimizer</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca.tfpark.tf_optimizer</span> <span class="k">import</span> <span class="n">StatelessMetric</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca.tfpark.utils</span> <span class="k">import</span> <span class="n">evaluate_metrics</span>
+<span class="kn">from</span> <span class="nn">bigdl.dllib.utils</span> <span class="k">import</span> <span class="n">nest</span>
+<span class="kn">from</span> <span class="nn">bigdl.dllib.utils.tf</span> <span class="k">import</span> <span class="n">save_tf_checkpoint</span><span class="p">,</span> <span class="n">load_tf_checkpoint</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca.learn.spark_estimator</span> <span class="k">import</span> <span class="n">Estimator</span> <span class="k">as</span> <span class="n">SparkEstimator</span>
+<span class="kn">from</span> <span class="nn">bigdl.dllib.utils.log4Error</span> <span class="k">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="Estimator"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.Estimator">[docs]</a><span class="k">class</span> <span class="nc">Estimator</span><span class="p">(</span><span class="n">SparkEstimator</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Estimator.fit"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.Estimator.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">feature_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">validation_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">session_config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">checkpoint_trigger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">auto_shard_files</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Train the model with train data.</span>
+
+<span class="sd">        :param data: train data. It can be XShards, Spark DataFrame, tf.data.Dataset.</span>
+<span class="sd">               If data is XShards, each partition can be a Pandas DataFrame or a dictionary of</span>
+<span class="sd">               {&#39;x&#39;: feature, &#39;y&#39;: label}, where feature(label) is a numpy array or a tuple of</span>
+<span class="sd">               numpy arrays.</span>
+<span class="sd">        :param epochs: number of epochs to train.</span>
+<span class="sd">        :param batch_size: total batch size for each iteration. Default: 32.</span>
+<span class="sd">        :param feature_cols: feature column names if train data is Spark DataFrame or XShards</span>
+<span class="sd">               of Pandas DataFrame.</span>
+<span class="sd">        :param label_cols: label column names if train data is Spark DataFrame or XShards</span>
+<span class="sd">               of Pandas DataFrame.</span>
+<span class="sd">        :param validation_data: validation data. Validation data type should be the same</span>
+<span class="sd">               as train data.</span>
+<span class="sd">        :param session_config: tensorflow session configuration for training.</span>
+<span class="sd">               Should be object of tf.ConfigProto</span>
+<span class="sd">        :param checkpoint_trigger: when to trigger checkpoint during training.</span>
+<span class="sd">               Should be a bigdl.orca.learn.trigger, like EveryEpoch(), SeveralIteration(</span>
+<span class="sd">               num_iterations),etc.</span>
+<span class="sd">        :param auto_shard_files: whether to automatically detect if the dataset is file-based and</span>
+<span class="sd">               and apply sharding on files, otherwise sharding on records. Default is False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Estimator.predict"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.Estimator.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">feature_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">auto_shard_files</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Predict input data</span>
+
+<span class="sd">        :param data: data to be predicted. It can be XShards, Spark DataFrame.</span>
+<span class="sd">               If data is XShards, each partition can be a Pandas DataFrame or a dictionary of</span>
+<span class="sd">               {&#39;x&#39;: feature}, where feature is a numpy array or a tuple of numpy arrays.</span>
+<span class="sd">        :param batch_size: batch size per thread</span>
+<span class="sd">        :param feature_cols: list of feature column names if input data is Spark DataFrame or</span>
+<span class="sd">               XShards of Pandas DataFrame.</span>
+<span class="sd">        :param auto_shard_files: whether to automatically detect if the dataset is file-based and</span>
+<span class="sd">               and apply sharding on files, otherwise sharding on records. Default is False.</span>
+<span class="sd">        :return: predicted result.</span>
+<span class="sd">                 If input data is XShards or tf.data.Dataset, the predict result is a XShards, each</span>
+<span class="sd">                 partition of the XShards is a dictionary of {&#39;prediction&#39;: result}, where the</span>
+<span class="sd">                 result is a numpy array or a list of numpy arrays.</span>
+<span class="sd">                 If input data is Spark DataFrame, the predict result is a DataFrame which includes</span>
+<span class="sd">                 original columns plus &#39;prediction&#39; column. The &#39;prediction&#39; column can be</span>
+<span class="sd">                 FloatType, VectorUDT or Array of VectorUDT depending on model outputs shape.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Estimator.evaluate"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.Estimator.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">feature_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">auto_shard_files</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Evaluate model.</span>
+
+<span class="sd">        :param data: evaluation data. It can be XShards, Spark DataFrame, tf.data.Dataset.</span>
+<span class="sd">               If data is XShards, each partition can be a Pandas DataFrame or a dictionary of</span>
+<span class="sd">               {&#39;x&#39;: feature, &#39;y&#39;: label}, where feature(label) is a numpy array or a tuple of</span>
+<span class="sd">               numpy arrays.</span>
+<span class="sd">               If data is tf.data.Dataset, each element is a tuple of input tensors.</span>
+<span class="sd">        :param batch_size: batch size per thread.</span>
+<span class="sd">        :param feature_cols: feature_cols: feature column names if train data is Spark DataFrame or</span>
+<span class="sd">               XShards of Pandas DataFrame.</span>
+<span class="sd">        :param label_cols: label column names if train data is Spark DataFrame or XShards</span>
+<span class="sd">               of Pandas DataFrame.</span>
+<span class="sd">        :param auto_shard_files: whether to automatically detect if the dataset is file-based and</span>
+<span class="sd">               and apply sharding on files, otherwise sharding on records. Default is False.</span>
+<span class="sd">        :return: evaluation result as a dictionary of {&#39;metric name&#39;: metric value}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Estimator.get_model"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.Estimator.get_model">[docs]</a>    <span class="k">def</span> <span class="nf">get_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the trained Tensorflow model</span>
+
+<span class="sd">        :return: Trained model</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Estimator.save"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.Estimator.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save model to model_path</span>
+
+<span class="sd">        :param model_path: path to save the trained model.</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Estimator.load"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.Estimator.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load existing model</span>
+
+<span class="sd">        :param model_path: Path to the existing model.</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Estimator.clear_gradient_clipping"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.Estimator.clear_gradient_clipping">[docs]</a>    <span class="k">def</span> <span class="nf">clear_gradient_clipping</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clear gradient clipping parameters. In this case, gradient clipping will not be applied.</span>
+<span class="sd">        In order to take effect, it needs to be called before fit.</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Estimator.set_constant_gradient_clipping"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.Estimator.set_constant_gradient_clipping">[docs]</a>    <span class="k">def</span> <span class="nf">set_constant_gradient_clipping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">min</span><span class="p">,</span> <span class="nb">max</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set constant gradient clipping during the training process.</span>
+<span class="sd">        In order to take effect, it needs to be called before fit.</span>
+
+<span class="sd">        :param min: The minimum value to clip by.</span>
+<span class="sd">        :param max: The maximum value to clip by.</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Estimator.set_l2_norm_gradient_clipping"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.Estimator.set_l2_norm_gradient_clipping">[docs]</a>    <span class="k">def</span> <span class="nf">set_l2_norm_gradient_clipping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clip_norm</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clip gradient to a maximum L2-Norm during the training process.</span>
+<span class="sd">        In order to take effect, it needs to be called before fit.</span>
+
+<span class="sd">        :param clip_norm: Gradient L2-Norm threshold.</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Estimator.get_train_summary"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.Estimator.get_train_summary">[docs]</a>    <span class="k">def</span> <span class="nf">get_train_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the scalar from model train summary.</span>
+
+<span class="sd">        This method will return a list of summary data of</span>
+<span class="sd">        [iteration_number, scalar_value, timestamp].</span>
+
+<span class="sd">        :param tag: The string variable represents the scalar wanted</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_optimizer</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_optimizer</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">get_train_summary</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Estimator.get_validation_summary"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.Estimator.get_validation_summary">[docs]</a>    <span class="k">def</span> <span class="nf">get_validation_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the scalar from model validation summary.</span>
+
+<span class="sd">        This method will return a list of summary data of</span>
+<span class="sd">        [iteration_number, scalar_value, timestamp].</span>
+<span class="sd">        Note that the metric and tag may not be consistent.</span>
+<span class="sd">        Please look up following form to pass tag parameter.</span>
+<span class="sd">        Left side is your metric during compile.</span>
+<span class="sd">        Right side is the tag you should pass.</span>
+
+<span class="sd">        &gt;&gt;&gt; &#39;Accuracy&#39;                  |   &#39;Top1Accuracy&#39;</span>
+<span class="sd">        &gt;&gt;&gt; &#39;BinaryAccuracy&#39;            |   &#39;Top1Accuracy&#39;</span>
+<span class="sd">        &gt;&gt;&gt; &#39;CategoricalAccuracy&#39;       |   &#39;Top1Accuracy&#39;</span>
+<span class="sd">        &gt;&gt;&gt; &#39;SparseCategoricalAccuracy&#39; |   &#39;Top1Accuracy&#39;</span>
+<span class="sd">        &gt;&gt;&gt; &#39;AUC&#39;                       |   &#39;AucScore&#39;</span>
+<span class="sd">        &gt;&gt;&gt; &#39;HitRatio&#39;                  |   &#39;HitRate@k&#39; (k is Top-k)</span>
+<span class="sd">        &gt;&gt;&gt; &#39;Loss&#39;                      |   &#39;Loss&#39;</span>
+<span class="sd">        &gt;&gt;&gt; &#39;MAE&#39;                       |   &#39;MAE&#39;</span>
+<span class="sd">        &gt;&gt;&gt; &#39;NDCG&#39;                      |   &#39;NDCG&#39;</span>
+<span class="sd">        &gt;&gt;&gt; &#39;TFValidationMethod&#39;        |   &#39;${name + &quot; &quot; + valMethod.toString()}&#39;</span>
+<span class="sd">        &gt;&gt;&gt; &#39;Top5Accuracy&#39;              |   &#39;Top5Accuracy&#39;</span>
+<span class="sd">        &gt;&gt;&gt; &#39;TreeNNAccuracy&#39;            |   &#39;TreeNNAccuracy()&#39;</span>
+<span class="sd">        &gt;&gt;&gt; &#39;MeanAveragePrecision&#39;      |   &#39;MAP@k&#39; (k is Top-k) (BigDL)</span>
+<span class="sd">        &gt;&gt;&gt; &#39;MeanAveragePrecision&#39;      |   &#39;PascalMeanAveragePrecision&#39; (Zoo)</span>
+<span class="sd">        &gt;&gt;&gt; &#39;StatelessMetric&#39;           |   &#39;${name}&#39;</span>
+
+<span class="sd">        :param tag: The string variable represents the scalar wanted</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_optimizer</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">val_method</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_optimizer</span><span class="o">.</span><span class="n">tf_model</span><span class="o">.</span><span class="n">val_methods</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val_method</span><span class="p">,</span> <span class="n">StatelessMetric</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">tag</span> <span class="o">==</span> <span class="n">val_method</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_optimizer</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">get_validation_summary</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">tag</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">val_method</span><span class="o">.</span><span class="n">val_method</span><span class="p">):</span>
+                        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_optimizer</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span> \
+                            <span class="n">get_validation_summary</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">val_method</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">tag</span><span class="p">))</span>
+                <span class="k">continue</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Estimator.save_tf_checkpoint"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.Estimator.save_tf_checkpoint">[docs]</a>    <span class="k">def</span> <span class="nf">save_tf_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save tensorflow checkpoint in this estimator.</span>
+
+<span class="sd">        :param path: tensorflow checkpoint path.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Estimator.load_tf_checkpoint"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.Estimator.load_tf_checkpoint">[docs]</a>    <span class="k">def</span> <span class="nf">load_tf_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load tensorflow checkpoint to this estimator.</span>
+
+<span class="sd">        :param path: tensorflow checkpoint path.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Estimator.save_keras_model"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.Estimator.save_keras_model">[docs]</a>    <span class="k">def</span> <span class="nf">save_keras_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save tensorflow keras model in this estimator.</span>
+
+<span class="sd">        :param path: keras model save path.</span>
+<span class="sd">        :param overwrite: Whether to silently overwrite any existing file at the target location.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Estimator.save_keras_weights"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.Estimator.save_keras_weights">[docs]</a>    <span class="k">def</span> <span class="nf">save_keras_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">save_format</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save tensorflow keras model weights in this estimator.</span>
+
+<span class="sd">        :param filepath: keras model weights save path.</span>
+<span class="sd">        :param overwrite: Whether to silently overwrite any existing file at the target location.</span>
+<span class="sd">        :param save_format: Either &#39;tf&#39; or &#39;h5&#39;. A `filepath` ending in &#39;.h5&#39; or</span>
+<span class="sd">               &#39;.keras&#39; will default to HDF5 if `save_format` is `None`. Otherwise</span>
+<span class="sd">               `None` defaults to &#39;tf&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Estimator.load_keras_weights"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.Estimator.load_keras_weights">[docs]</a>    <span class="k">def</span> <span class="nf">load_keras_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">by_name</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save tensorflow keras model in this estimator.</span>
+
+<span class="sd">        :param filepath: keras model weights save path.</span>
+<span class="sd">        :param by_name: Boolean, whether to load weights by name or by topological</span>
+<span class="sd">               order. Only topological loading is supported for weight files in</span>
+<span class="sd">               TensorFlow format.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Estimator.load_orca_checkpoint"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.Estimator.load_orca_checkpoint">[docs]</a>    <span class="k">def</span> <span class="nf">load_orca_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load Orca checkpoint. To load a specific checkpoint, please provide a `version`.</span>
+<span class="sd">        If `version` is None, then the latest checkpoint will be loaded.</span>
+
+<span class="sd">        :param path: checkpoint directory which contains model.* and</span>
+<span class="sd">               optimMethod-TFParkTraining.* files.</span>
+<span class="sd">        :param version: checkpoint version, which is the suffix of model.* file,</span>
+<span class="sd">               i.e., for modle.4 file, the version is 4.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">path</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">version</span> <span class="o">=</span> <span class="n">find_latest_checkpoint</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">model_type</span><span class="o">=</span><span class="s2">&quot;tf&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                                  <span class="s2">&quot;Cannot find tf checkpoint, please check your checkpoint&quot;</span>
+                                  <span class="s2">&quot; path.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_checkpoint</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">checkpoint_path</span> <span class="o">=</span> <span class="n">path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">checkpoint_version</span> <span class="o">=</span> <span class="n">version</span></div>
+
+<div class="viewcode-block" id="Estimator.from_graph"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.Estimator.from_graph">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">from_graph</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                   <span class="n">labels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                   <span class="n">metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clip_norm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clip_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                   <span class="n">updates</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sess</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">model_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;bigdl&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create an Estimator for tesorflow graph.</span>
+
+<span class="sd">        :param inputs: input tensorflow tensors.</span>
+<span class="sd">        :param outputs: output tensorflow tensors.</span>
+<span class="sd">        :param labels: label tensorflow tensors.</span>
+<span class="sd">        :param loss: The loss tensor of the TensorFlow model, should be a scalar</span>
+<span class="sd">        :param optimizer: tensorflow optimization method.</span>
+<span class="sd">        :param clip_norm: float &gt;= 0. Gradients will be clipped when their L2 norm exceeds</span>
+<span class="sd">               this value.</span>
+<span class="sd">        :param clip_value:  a float &gt;= 0 or a tuple of two floats.</span>
+<span class="sd">               If clip_value is a float, gradients will be clipped when their absolute value</span>
+<span class="sd">               exceeds this value.</span>
+<span class="sd">               If clip_value is a tuple of two floats, gradients will be clipped when their value</span>
+<span class="sd">               less than clip_value[0] or larger than clip_value[1].</span>
+<span class="sd">        :param metrics: metric tensor.</span>
+<span class="sd">        :param updates: Collection for the update ops. For example, when performing batch</span>
+<span class="sd">               normalization, the moving_mean and moving_variance should be updated and the user</span>
+<span class="sd">               should add tf.GraphKeys.UPDATE_OPS to updates. Default is None.</span>
+<span class="sd">        :param sess: the current TensorFlow Session, if you want to used a pre-trained model,</span>
+<span class="sd">               you should use the Session to load the pre-trained variables and pass it to estimator</span>
+<span class="sd">        :param model_dir: location to save model checkpoint and summaries.</span>
+<span class="sd">        :param backend: backend for estimator. Now it only can be &quot;bigdl&quot;.</span>
+<span class="sd">        :return: an Estimator object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="n">backend</span> <span class="o">==</span> <span class="s2">&quot;bigdl&quot;</span><span class="p">,</span> <span class="s2">&quot;only bigdl backend is supported for now&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">TensorFlowEstimator</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span>
+                                   <span class="n">outputs</span><span class="o">=</span><span class="n">outputs</span><span class="p">,</span>
+                                   <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
+                                   <span class="n">loss</span><span class="o">=</span><span class="n">loss</span><span class="p">,</span>
+                                   <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
+                                   <span class="n">metrics</span><span class="o">=</span><span class="n">metrics</span><span class="p">,</span>
+                                   <span class="n">clip_norm</span><span class="o">=</span><span class="n">clip_norm</span><span class="p">,</span>
+                                   <span class="n">clip_value</span><span class="o">=</span><span class="n">clip_value</span><span class="p">,</span>
+                                   <span class="n">updates</span><span class="o">=</span><span class="n">updates</span><span class="p">,</span>
+                                   <span class="n">sess</span><span class="o">=</span><span class="n">sess</span><span class="p">,</span>
+                                   <span class="n">model_dir</span><span class="o">=</span><span class="n">model_dir</span>
+                                   <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Estimator.from_keras"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.Estimator.from_keras">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">from_keras</span><span class="p">(</span><span class="n">keras_model</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">model_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;bigdl&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create an Estimator from a tensorflow.keras model. The model must be compiled.</span>
+
+<span class="sd">        :param keras_model: the tensorflow.keras model, which must be compiled.</span>
+<span class="sd">        :param metrics: user specified metric.</span>
+<span class="sd">        :param model_dir: location to save model checkpoint and summaries.</span>
+<span class="sd">        :param optimizer: an optional orca optimMethod that will override the optimizer in</span>
+<span class="sd">               keras_model.compile</span>
+<span class="sd">        :param backend: backend for estimator. Now it only can be &quot;bigdl&quot;.</span>
+<span class="sd">        :return: an Estimator object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="n">backend</span> <span class="o">==</span> <span class="s2">&quot;bigdl&quot;</span><span class="p">,</span> <span class="s2">&quot;only bigdl backend is supported for now&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">KerasEstimator</span><span class="p">(</span><span class="n">keras_model</span><span class="p">,</span> <span class="n">metrics</span><span class="p">,</span> <span class="n">model_dir</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Estimator.load_keras_model"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.Estimator.load_keras_model">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="nd">@enable_multi_fs_load_static</span>
+    <span class="k">def</span> <span class="nf">load_keras_model</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create Estimator by loading an existing keras model (with weights) from HDF5 file.</span>
+
+<span class="sd">        :param path: String. The path to the pre-defined model.</span>
+<span class="sd">        :return: Orca TF Estimator.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">tensorflow.python.keras</span> <span class="k">import</span> <span class="n">models</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Estimator</span><span class="o">.</span><span class="n">from_keras</span><span class="p">(</span><span class="n">keras_model</span><span class="o">=</span><span class="n">model</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="is_tf_data_dataset"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.is_tf_data_dataset">[docs]</a><span class="k">def</span> <span class="nf">is_tf_data_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="n">is_dataset</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span>
+    <span class="n">is_dataset_v2</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">python</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">dataset_ops</span><span class="o">.</span><span class="n">DatasetV2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">is_dataset</span> <span class="ow">or</span> <span class="n">is_dataset_v2</span></div>
+
+
+<div class="viewcode-block" id="to_dataset"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.to_dataset">[docs]</a><span class="k">def</span> <span class="nf">to_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">batch_per_thread</span><span class="p">,</span> <span class="n">validation_data</span><span class="p">,</span>
+               <span class="n">feature_cols</span><span class="p">,</span> <span class="n">label_cols</span><span class="p">,</span> <span class="n">hard_code_batch_size</span><span class="p">,</span>
+               <span class="n">sequential_order</span><span class="p">,</span> <span class="n">shuffle</span><span class="p">,</span> <span class="n">auto_shard_files</span><span class="p">,</span> <span class="n">memory_type</span><span class="o">=</span><span class="s2">&quot;DRAM&quot;</span><span class="p">):</span>
+    <span class="c1"># todo wrap argument into kwargs</span>
+    <span class="k">if</span> <span class="n">validation_data</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">SparkXShards</span><span class="p">):</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">validation_data</span><span class="p">,</span> <span class="n">SparkXShards</span><span class="p">),</span>
+                              <span class="s2">&quot;train data and validation data should be both SparkXShards&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">Dataset</span><span class="p">):</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">validation_data</span><span class="p">,</span> <span class="n">Dataset</span><span class="p">),</span>
+                              <span class="s2">&quot;train data and validation data should be both&quot;</span>
+                              <span class="s2">&quot; orca.data.tf.Dataset&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">):</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">validation_data</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">),</span>
+                              <span class="s2">&quot;train data and validation data should be both Spark DataFrame&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">validation_data</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="p">),</span>
+                              <span class="s2">&quot;train data and validation data should be both tf.data.Dataset&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">SparkXShards</span><span class="p">):</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">xshards_to_tf_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">,</span>
+                                        <span class="n">batch_size</span><span class="p">,</span>
+                                        <span class="n">batch_per_thread</span><span class="p">,</span>
+                                        <span class="n">validation_data</span><span class="p">,</span>
+                                        <span class="n">hard_code_batch_size</span><span class="o">=</span><span class="n">hard_code_batch_size</span><span class="p">,</span>
+                                        <span class="n">memory_type</span><span class="o">=</span><span class="n">memory_type</span><span class="p">,</span>
+                                        <span class="n">sequential_order</span><span class="o">=</span><span class="n">sequential_order</span><span class="p">,</span>
+                                        <span class="n">shuffle</span><span class="o">=</span><span class="n">shuffle</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">Dataset</span><span class="p">):</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">TF1Dataset</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+                             <span class="n">batch_per_thread</span><span class="o">=</span><span class="n">batch_per_thread</span><span class="p">,</span>
+                             <span class="n">validation_dataset</span><span class="o">=</span><span class="n">validation_data</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">):</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">TFDataset</span><span class="o">.</span><span class="n">from_dataframe</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">feature_cols</span><span class="p">,</span> <span class="n">label_cols</span><span class="p">,</span>
+                                           <span class="n">batch_size</span><span class="p">,</span>
+                                           <span class="n">batch_per_thread</span><span class="p">,</span>
+                                           <span class="n">hard_code_batch_size</span><span class="p">,</span>
+                                           <span class="n">validation_data</span><span class="p">,</span>
+                                           <span class="n">memory_type</span><span class="p">,</span>
+                                           <span class="n">sequential_order</span><span class="p">,</span>
+                                           <span class="n">shuffle</span>
+                                           <span class="p">)</span>
+    <span class="k">elif</span> <span class="n">is_tf_data_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">TFDataset</span><span class="o">.</span><span class="n">from_tf_data_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">,</span>
+                                                 <span class="n">batch_size</span><span class="p">,</span>
+                                                 <span class="n">batch_per_thread</span><span class="p">,</span>
+                                                 <span class="n">hard_code_batch_size</span><span class="p">,</span>
+                                                 <span class="n">validation_data</span><span class="p">,</span>
+                                                 <span class="n">sequential_order</span><span class="p">,</span>
+                                                 <span class="n">shuffle</span><span class="p">,</span> <span class="n">auto_shard_files</span><span class="o">=</span><span class="n">auto_shard_files</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                          <span class="s2">&quot;data must be SparkXShards or orca.data.tf.Dataset or &quot;</span>
+                          <span class="s2">&quot;Spark DataFrame or tf.data.Dataset&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">dataset</span></div>
+
+
+<div class="viewcode-block" id="save_model_dir"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.save_model_dir">[docs]</a><span class="k">def</span> <span class="nf">save_model_dir</span><span class="p">(</span><span class="n">model_dir</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">model_dir</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;dbfs:/&quot;</span><span class="p">):</span>
+        <span class="n">model_dir</span> <span class="o">=</span> <span class="s2">&quot;/dbfs/&quot;</span> <span class="o">+</span> <span class="n">model_dir</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="s2">&quot;dbfs:/&quot;</span><span class="p">):]</span>
+    <span class="k">return</span> <span class="n">model_dir</span></div>
+
+
+<div class="viewcode-block" id="TensorFlowEstimator"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.TensorFlowEstimator">[docs]</a><span class="k">class</span> <span class="nc">TensorFlowEstimator</span><span class="p">(</span><span class="n">Estimator</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span>
+                 <span class="n">optimizer</span><span class="p">,</span> <span class="n">clip_norm</span><span class="p">,</span> <span class="n">clip_value</span><span class="p">,</span>
+                 <span class="n">metrics</span><span class="p">,</span> <span class="n">updates</span><span class="p">,</span> <span class="n">sess</span><span class="p">,</span> <span class="n">model_dir</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span> <span class="o">=</span> <span class="n">inputs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span> <span class="o">=</span> <span class="n">outputs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_bigdl_optim</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clip_norm</span> <span class="o">=</span> <span class="n">clip_norm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clip_value</span> <span class="o">=</span> <span class="n">clip_value</span>
+        <span class="k">if</span> <span class="n">optimizer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">bigdl.orca.learn.optimizers</span> <span class="k">import</span> <span class="n">Optimizer</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">Optimizer</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">train_op</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">get_optimizer</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">use_bigdl_optim</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">),</span>
+                                  <span class="n">f</span><span class="s2">&quot;optimizer is of type {str(type(optimizer))},&quot;</span>
+                                  <span class="n">f</span><span class="s2">&quot; it should be an instance of tf.train.Optimizer&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">ZooOptimizer</span><span class="p">(</span><span class="n">optimizer</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">clip_norm</span> <span class="ow">or</span> <span class="n">clip_value</span><span class="p">:</span>
+                    <span class="n">gvs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">compute_gradients</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">clip_norm</span><span class="p">:</span>
+                        <span class="n">gvs</span> <span class="o">=</span> <span class="p">[(</span><span class="n">tf</span><span class="o">.</span><span class="n">clip_by_norm</span><span class="p">(</span><span class="n">g_v</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">clip_norm</span><span class="p">),</span> <span class="n">g_v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">g_v</span> <span class="ow">in</span> <span class="n">gvs</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">clip_value</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">clip_value</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                            <span class="n">invalidInputError</span><span class="p">(</span>
+                                <span class="nb">len</span><span class="p">(</span><span class="n">clip_value</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">clip_value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">clip_value</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                                <span class="s2">&quot;clip value should be (clip_min, clip_max)&quot;</span><span class="p">)</span>
+                            <span class="n">gvs</span> <span class="o">=</span> <span class="p">[(</span><span class="n">tf</span><span class="o">.</span><span class="n">clip_by_value</span><span class="p">(</span><span class="n">g_v</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">clip_value</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">clip_value</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">g_v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                                   <span class="k">for</span> <span class="n">g_v</span> <span class="ow">in</span> <span class="n">gvs</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">clip_value</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+                            <span class="n">invalidInputError</span><span class="p">(</span><span class="n">clip_value</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span>
+                                              <span class="s2">&quot;clip value should be larger than 0&quot;</span><span class="p">)</span>
+                            <span class="n">gvs</span> <span class="o">=</span> <span class="p">[(</span><span class="n">tf</span><span class="o">.</span><span class="n">clip_by_value</span><span class="p">(</span><span class="n">g_v</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="n">clip_value</span><span class="p">,</span> <span class="n">clip_value</span><span class="p">),</span> <span class="n">g_v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                                   <span class="k">for</span> <span class="n">g_v</span> <span class="ow">in</span> <span class="n">gvs</span><span class="p">]</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                                              <span class="s2">&quot;clip_value should be a tuple or one number&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">train_op</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">apply_gradients</span><span class="p">(</span><span class="n">gvs</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">train_op</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">minimize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">train_op</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="o">=</span> <span class="n">metrics</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">updates</span> <span class="o">=</span> <span class="n">updates</span>
+        <span class="k">if</span> <span class="n">sess</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sess</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">global_variables_initializer</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sess</span> <span class="o">=</span> <span class="n">sess</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_dir</span> <span class="o">=</span> <span class="n">model_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_checkpoint</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tf_optimizer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_dir</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app_name</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="TensorFlowEstimator.fit"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.TensorFlowEstimator.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span>
+            <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+            <span class="n">feature_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">label_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">validation_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">session_config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">checkpoint_trigger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">auto_shard_files</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">feed_dict</span><span class="o">=</span><span class="kc">None</span>
+            <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Train this graph model with train data.</span>
+
+<span class="sd">        :param data: train data. It can be XShards, Spark DataFrame, tf.data.Dataset.</span>
+<span class="sd">               If data is XShards, each partition can be a Pandas DataFrame or a dictionary of</span>
+<span class="sd">               {&#39;x&#39;: feature, &#39;y&#39;: label}, where feature(label) is a numpy array or a tuple of</span>
+<span class="sd">               numpy arrays.</span>
+<span class="sd">               If data is tf.data.Dataset, each element is a tuple of input tensors.</span>
+<span class="sd">        :param epochs: number of epochs to train.</span>
+<span class="sd">        :param batch_size: total batch size for each iteration.</span>
+<span class="sd">        :param feature_cols: feature column names if train data is Spark DataFrame or XShards</span>
+<span class="sd">               of Pandas DataFrame.</span>
+<span class="sd">        :param label_cols: label column names if train data is Spark DataFrame or XShards of</span>
+<span class="sd">               Pandas DataFrame.</span>
+<span class="sd">        :param validation_data: validation data. Validation data type should be the same</span>
+<span class="sd">               as train data.</span>
+<span class="sd">        :param auto_shard_files: whether to automatically detect if the dataset is file-based and</span>
+<span class="sd">               and apply sharding on files, otherwise sharding on records. Default is False.</span>
+<span class="sd">        :param session_config: tensorflow session configuration for training.</span>
+<span class="sd">               Should be object of tf.ConfigProto</span>
+<span class="sd">        :param feed_dict: a dictionary. The key is TensorFlow tensor, usually a</span>
+<span class="sd">               placeholder, the value of the dictionary is a tuple of two elements. The first one of</span>
+<span class="sd">               the tuple is the value to feed to the tensor in training phase and the second one</span>
+<span class="sd">               is the value to feed to the tensor in validation phase.</span>
+<span class="sd">        :param checkpoint_trigger: when to trigger checkpoint during training.</span>
+<span class="sd">               Should be a bigdl.orca.learn.trigger, like EveryEpoch(), SeveralIteration(</span>
+<span class="sd">               num_iterations),etc.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="s2">&quot;labels is None; it should not be None in training&quot;</span><span class="p">)</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="s2">&quot;loss is None; it should not be None in training&quot;</span><span class="p">)</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="s2">&quot;optimizer is None; it should not be None in training&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">):</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="n">feature_cols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="s2">&quot;feature columns is None; it should not be None in training&quot;</span><span class="p">)</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="n">label_cols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="s2">&quot;label columns is None; it should not be None in training&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">SparkXShards</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">_get_class_name</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;pandas.core.frame.DataFrame&#39;</span><span class="p">:</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="n">feature_cols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                                  <span class="s2">&quot;feature columns is None; it should not be None in training&quot;</span><span class="p">)</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="n">label_cols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                                  <span class="s2">&quot;label columns is None; it should not be None in training&quot;</span><span class="p">)</span>
+                <span class="n">data</span><span class="p">,</span> <span class="n">validation_data</span> <span class="o">=</span> <span class="n">process_xshards_of_pandas_dataframe</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">feature_cols</span><span class="p">,</span>
+                                                                            <span class="n">label_cols</span><span class="p">,</span>
+                                                                            <span class="n">validation_data</span><span class="p">,</span> <span class="s2">&quot;fit&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">checkpoint_trigger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">checkpoint_trigger</span> <span class="o">=</span> <span class="n">Trigger</span><span class="o">.</span><span class="n">convert_trigger</span><span class="p">(</span><span class="n">checkpoint_trigger</span><span class="p">)</span>
+
+        <span class="n">memory_type</span> <span class="o">=</span> <span class="n">OrcaContext</span><span class="o">.</span><span class="n">train_data_store</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">to_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">batch_per_thread</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                             <span class="n">validation_data</span><span class="o">=</span><span class="n">validation_data</span><span class="p">,</span>
+                             <span class="n">feature_cols</span><span class="o">=</span><span class="n">feature_cols</span><span class="p">,</span> <span class="n">label_cols</span><span class="o">=</span><span class="n">label_cols</span><span class="p">,</span>
+                             <span class="n">hard_code_batch_size</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                             <span class="n">sequential_order</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                             <span class="n">auto_shard_files</span><span class="o">=</span><span class="n">auto_shard_files</span><span class="p">,</span>
+                             <span class="n">memory_type</span><span class="o">=</span><span class="n">memory_type</span>
+                             <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">feed_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">tensor_with_value</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">feed_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tensor_with_value</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_bigdl_optim</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tf_optimizer</span> <span class="o">=</span> <span class="n">TFOptimizer</span><span class="o">.</span><span class="n">from_loss</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span>
+                <span class="n">session</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sess</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">),</span> <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
+                <span class="n">clip_norm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">clip_norm</span><span class="p">,</span> <span class="n">clip_value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">clip_value</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">,</span>
+                <span class="n">tensor_with_value</span><span class="o">=</span><span class="n">tensor_with_value</span><span class="p">,</span> <span class="n">session_config</span><span class="o">=</span><span class="n">session_config</span><span class="p">,</span>
+                <span class="n">model_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_dir</span><span class="p">,</span> <span class="n">updates</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">updates</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">tf_optimizer</span> <span class="o">=</span> <span class="n">TFOptimizer</span><span class="o">.</span><span class="n">from_train_op</span><span class="p">(</span>
+                <span class="n">train_op</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">train_op</span><span class="p">,</span>
+                <span class="n">loss</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">,</span>
+                <span class="n">inputs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">,</span>
+                <span class="n">labels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span>
+                <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
+                <span class="n">metrics</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">,</span>
+                <span class="n">updates</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">updates</span><span class="p">,</span> <span class="n">sess</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sess</span><span class="p">,</span>
+                <span class="n">tensor_with_value</span><span class="o">=</span><span class="n">tensor_with_value</span><span class="p">,</span>
+                <span class="n">session_config</span><span class="o">=</span><span class="n">session_config</span><span class="p">,</span>
+                <span class="n">model_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_dir</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tf_optimizer</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">checkpoint_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">checkpoint_version</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_dir</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">app_name</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tf_optimizer</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">set_tensorboard</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">app_name</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">tf_optimizer</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">end_trigger</span><span class="o">=</span><span class="n">MaxEpoch</span><span class="p">(</span><span class="n">epochs</span><span class="p">),</span>
+                                   <span class="n">checkpoint_trigger</span><span class="o">=</span><span class="n">checkpoint_trigger</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="TensorFlowEstimator.predict"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.TensorFlowEstimator.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                <span class="n">feature_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">auto_shard_files</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Predict input data</span>
+
+<span class="sd">        :param data: data to be predicted. It can be XShards, Spark DataFrame.</span>
+<span class="sd">               If data is XShards, each partition can be a Pandas DataFrame or a dictionary of</span>
+<span class="sd">               {&#39;x&#39;: feature}, where feature is a numpy array or a tuple of numpy arrays.</span>
+<span class="sd">        :param batch_size: batch size per thread</span>
+<span class="sd">        :param feature_cols: list of feature column names if input data is Spark DataFrame</span>
+<span class="sd">               or XShards of Pandas DataFrame.</span>
+<span class="sd">        :param auto_shard_files: whether to automatically detect if the dataset is file-based and</span>
+<span class="sd">               and apply sharding on files, otherwise sharding on records. Default is False.</span>
+<span class="sd">        :return: predicted result.</span>
+<span class="sd">                 If input data is XShards or tf.data.Dataset, the predict result is a XShards, each</span>
+<span class="sd">                 partition of the XShards is a dictionary of {&#39;prediction&#39;: result}, where the</span>
+<span class="sd">                 result is a numpy array or a list of numpy arrays.</span>
+<span class="sd">                 If input data is Spark DataFrame, the predict result is a DataFrame which includes</span>
+<span class="sd">                 original columns plus &#39;prediction&#39; column. The &#39;prediction&#39; column can be</span>
+<span class="sd">                 FloatType, VectorUDT or Array of VectorUDT depending on model outputs shape.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outputs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="s2">&quot;output is None, it should not be None in prediction&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">):</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="n">feature_cols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="s2">&quot;feature columns is None; it should not be None in prediction&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">SparkXShards</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">_get_class_name</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;pandas.core.frame.DataFrame&#39;</span><span class="p">:</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="n">feature_cols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                                  <span class="s2">&quot;feature columns is None; it should not be None in prediction&quot;</span><span class="p">)</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">process_xshards_of_pandas_dataframe</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">feature_cols</span><span class="p">)</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="ow">not</span> <span class="n">is_tf_data_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">),</span>
+                          <span class="s2">&quot;tf.data.Dataset currently cannot be used for estimator prediction&quot;</span><span class="p">)</span>
+
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">to_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">batch_per_thread</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+                             <span class="n">validation_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                             <span class="n">feature_cols</span><span class="o">=</span><span class="n">feature_cols</span><span class="p">,</span> <span class="n">label_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                             <span class="n">hard_code_batch_size</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                             <span class="n">sequential_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                             <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                             <span class="n">auto_shard_files</span><span class="o">=</span><span class="n">auto_shard_files</span><span class="p">,</span>
+                             <span class="p">)</span>
+
+        <span class="n">flat_inputs</span> <span class="o">=</span> <span class="n">nest</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="n">flat_outputs</span> <span class="o">=</span> <span class="n">nest</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outputs</span><span class="p">)</span>
+        <span class="n">tfnet</span> <span class="o">=</span> <span class="n">TFNet</span><span class="o">.</span><span class="n">from_session</span><span class="p">(</span><span class="n">sess</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sess</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="n">flat_inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="n">flat_outputs</span><span class="p">)</span>
+        <span class="n">predicted_rdd</span> <span class="o">=</span> <span class="n">tfnet</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">convert_predict_rdd_to_dataframe</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">predicted_rdd</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">SparkXShards</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">convert_predict_rdd_to_xshard</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">predicted_rdd</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">predicted_rdd</span></div>
+
+<div class="viewcode-block" id="TensorFlowEstimator.evaluate"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.TensorFlowEstimator.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+                 <span class="n">feature_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">label_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">auto_shard_files</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Evaluate model.</span>
+
+<span class="sd">        :param data: evaluation data. It can be XShards, Spark DataFrame, tf.data.Dataset.</span>
+<span class="sd">               If data is XShards, each partition can be a Pandas DataFrame or a dictionary of</span>
+<span class="sd">               {&#39;x&#39;: feature, &#39;y&#39;: label}, where feature(label) is a numpy array or a tuple of</span>
+<span class="sd">               numpy arrays.</span>
+<span class="sd">               If data is tf.data.Dataset, each element is a tuple of input tensors.</span>
+<span class="sd">        :param batch_size: batch size per thread.</span>
+<span class="sd">        :param feature_cols: feature_cols: feature column names if train data is Spark DataFrame</span>
+<span class="sd">               or XShards of Pandas DataFrame.</span>
+<span class="sd">        :param label_cols: label column names if train data is Spark DataFrame or XShards</span>
+<span class="sd">               of Pandas DataFrame.</span>
+<span class="sd">        :param auto_shard_files: whether to automatically detect if the dataset is file-based and</span>
+<span class="sd">               and apply sharding on files, otherwise sharding on records. Default is False.</span>
+<span class="sd">        :return: evaluation result as a dictionary of {&#39;metric name&#39;: metric value}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="s2">&quot;metrics is None, it should not be None in evaluate&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">):</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="n">feature_cols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="s2">&quot;feature columns is None; it should not be None in evaluation&quot;</span><span class="p">)</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="n">label_cols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="s2">&quot;label columns is None; it should not be None in evaluation&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">SparkXShards</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">_get_class_name</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;pandas.core.frame.DataFrame&#39;</span><span class="p">:</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="n">feature_cols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                                  <span class="s2">&quot;feature columns is None; it should not be None in evaluation&quot;</span><span class="p">)</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="n">label_cols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                                  <span class="s2">&quot;label columns is None; it should not be None in evaluation&quot;</span><span class="p">)</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">process_xshards_of_pandas_dataframe</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">feature_cols</span><span class="p">,</span> <span class="n">label_cols</span><span class="p">)</span>
+
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">to_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">batch_per_thread</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+                             <span class="n">validation_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                             <span class="n">feature_cols</span><span class="o">=</span><span class="n">feature_cols</span><span class="p">,</span> <span class="n">label_cols</span><span class="o">=</span><span class="n">label_cols</span><span class="p">,</span>
+                             <span class="n">hard_code_batch_size</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                             <span class="n">sequential_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                             <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                             <span class="n">auto_shard_files</span><span class="o">=</span><span class="n">auto_shard_files</span><span class="p">,</span>
+                             <span class="p">)</span>
+
+        <span class="n">flat_inputs</span> <span class="o">=</span> <span class="n">nest</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="n">flat_labels</span> <span class="o">=</span> <span class="n">nest</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">evaluate_metrics</span><span class="p">(</span><span class="n">flat_inputs</span> <span class="o">+</span> <span class="n">flat_labels</span><span class="p">,</span>
+                                <span class="n">sess</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sess</span><span class="p">,</span>
+                                <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TensorFlowEstimator.save_tf_checkpoint"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.TensorFlowEstimator.save_tf_checkpoint">[docs]</a>    <span class="k">def</span> <span class="nf">save_tf_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save tensorflow checkpoint in this estimator.</span>
+
+<span class="sd">        :param path: tensorflow checkpoint path.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">save_tf_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sess</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TensorFlowEstimator.load_tf_checkpoint"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.TensorFlowEstimator.load_tf_checkpoint">[docs]</a>    <span class="k">def</span> <span class="nf">load_tf_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load tensorflow checkpoint to this estimator.</span>
+<span class="sd">        :param path: tensorflow checkpoint path.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">load_tf_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sess</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TensorFlowEstimator.get_model"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.TensorFlowEstimator.get_model">[docs]</a>    <span class="k">def</span> <span class="nf">get_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get_model is not supported in tensorflow graph estimator</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TensorFlowEstimator.save"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.TensorFlowEstimator.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save model (tensorflow checkpoint) to model_path</span>
+
+<span class="sd">        :param model_path: path to save the trained model.</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_tf_checkpoint</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TensorFlowEstimator.load"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.TensorFlowEstimator.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load existing model (tensorflow checkpoint) from model_path</span>
+<span class="sd">        :param model_path: Path to the existing tensorflow checkpoint.</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_tf_checkpoint</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TensorFlowEstimator.clear_gradient_clipping"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.TensorFlowEstimator.clear_gradient_clipping">[docs]</a>    <span class="k">def</span> <span class="nf">clear_gradient_clipping</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clear gradient clipping is not supported in TensorFlowEstimator.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TensorFlowEstimator.set_constant_gradient_clipping"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.TensorFlowEstimator.set_constant_gradient_clipping">[docs]</a>    <span class="k">def</span> <span class="nf">set_constant_gradient_clipping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">min</span><span class="p">,</span> <span class="nb">max</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set constant gradient clipping is not supported in TensorFlowEstimator. Please pass the</span>
+<span class="sd">        clip_value to Estimator.from_graph.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TensorFlowEstimator.set_l2_norm_gradient_clipping"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.TensorFlowEstimator.set_l2_norm_gradient_clipping">[docs]</a>    <span class="k">def</span> <span class="nf">set_l2_norm_gradient_clipping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clip_norm</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set l2 norm gradient clipping is not supported in TensorFlowEstimator. Please pass the</span>
+<span class="sd">        clip_norm to Estimator.from_graph.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TensorFlowEstimator.shutdown"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.TensorFlowEstimator.shutdown">[docs]</a>    <span class="k">def</span> <span class="nf">shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Close TensorFlow session and release resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sess</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="KerasEstimator"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.KerasEstimator">[docs]</a><span class="k">class</span> <span class="nc">KerasEstimator</span><span class="p">(</span><span class="n">Estimator</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keras_model</span><span class="p">,</span> <span class="n">metrics</span><span class="p">,</span> <span class="n">model_dir</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">model_dir</span> <span class="ow">and</span> <span class="n">model_dir</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;dbfs:/&quot;</span><span class="p">):</span>
+            <span class="n">model_dir</span> <span class="o">=</span> <span class="n">save_model_dir</span><span class="p">(</span><span class="n">model_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">KerasModel</span><span class="p">(</span><span class="n">keras_model</span><span class="p">,</span> <span class="n">model_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_checkpoint</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="o">=</span> <span class="n">metrics</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tf_optimizer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span>
+        <span class="kn">from</span> <span class="nn">bigdl.orca.learn.optimizers</span> <span class="k">import</span> <span class="n">Optimizer</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">Optimizer</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">get_optimizer</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_dir</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app_name</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clip_norm</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clip_min</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clip_max</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="KerasEstimator.fit"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.KerasEstimator.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span>
+            <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+            <span class="n">feature_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">label_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">validation_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">session_config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">checkpoint_trigger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">auto_shard_files</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Train this keras model with train data.</span>
+
+<span class="sd">        :param data: train data. It can be XShards, Spark DataFrame, tf.data.Dataset.</span>
+<span class="sd">               If data is XShards, each partition can be a Pandas DataFrame or a dictionary of</span>
+<span class="sd">               {&#39;x&#39;: feature, &#39;y&#39;: label}, where feature(label) is a numpy array or a tuple of</span>
+<span class="sd">               numpy arrays.</span>
+<span class="sd">               If data is tf.data.Dataset, each element is [feature tensor tuple, label tensor</span>
+<span class="sd">               tuple]</span>
+<span class="sd">        :param epochs: number of epochs to train.</span>
+<span class="sd">        :param batch_size: total batch size for each iteration.</span>
+<span class="sd">        :param feature_cols: feature column names if train data is Spark DataFrame or XShards</span>
+<span class="sd">               of Pandas DataFrame.</span>
+<span class="sd">        :param label_cols: label column names if train data is Spark DataFrame or XShards of</span>
+<span class="sd">               Pandas DataFrame.</span>
+<span class="sd">        :param validation_data: validation data. Validation data type should be the same</span>
+<span class="sd">               as train data.</span>
+<span class="sd">        :param session_config: tensorflow session configuration for training.</span>
+<span class="sd">               Should be object of tf.ConfigProto</span>
+<span class="sd">        :param checkpoint_trigger: when to trigger checkpoint during training.</span>
+<span class="sd">               Should be a bigdl.orca.learn.trigger, like EveryEpoch(), SeveralIteration(</span>
+<span class="sd">               num_iterations),etc.</span>
+<span class="sd">        :param auto_shard_files: whether to automatically detect if the dataset is file-based and</span>
+<span class="sd">               and apply sharding on files, otherwise sharding on records. Default is False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">):</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="n">feature_cols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="s2">&quot;feature columns is None; it should not be None in training&quot;</span><span class="p">)</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="n">label_cols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="s2">&quot;label columns is None; it should not be None in training&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">element_spec</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">),</span>
+                              <span class="s2">&quot;If data is tf.data.Dataset, each element should be&quot;</span>
+                              <span class="s2">&quot; (feature tensors, label tensor), where each feature/label&quot;</span>
+                              <span class="s2">&quot; tensor can be either a single tensor or a tuple of tensors&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">validation_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">validation_data</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="p">),</span>
+                                  <span class="s2">&quot;train data and validation data should be both&quot;</span>
+                                  <span class="s2">&quot; tf.data.Dataset&quot;</span><span class="p">)</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">validation_data</span><span class="o">.</span><span class="n">element_spec</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">),</span>
+                                  <span class="s2">&quot;If validation_data is tf.data.Dataset, each element should be&quot;</span>
+                                  <span class="s2">&quot; (feature tensors, label tensor), where each feature/label&quot;</span>
+                                  <span class="s2">&quot; tensor can be either a single tensor or a tuple of tensors&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">SparkXShards</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">_get_class_name</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;pandas.core.frame.DataFrame&#39;</span><span class="p">:</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="n">feature_cols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                                  <span class="s2">&quot;feature columns is None; it should not be None in training&quot;</span><span class="p">)</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="n">label_cols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                                  <span class="s2">&quot;label columns is None; it should not be None in training&quot;</span><span class="p">)</span>
+                <span class="n">data</span><span class="p">,</span> <span class="n">validation_data</span> <span class="o">=</span> <span class="n">process_xshards_of_pandas_dataframe</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">feature_cols</span><span class="p">,</span>
+                                                                            <span class="n">label_cols</span><span class="p">,</span>
+                                                                            <span class="n">validation_data</span><span class="p">,</span>
+                                                                            <span class="s2">&quot;fit&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">checkpoint_trigger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">checkpoint_trigger</span> <span class="o">=</span> <span class="n">Trigger</span><span class="o">.</span><span class="n">convert_trigger</span><span class="p">(</span><span class="n">checkpoint_trigger</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">is_tf_data_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">_standardize_keras_target_data</span><span class="p">)</span>
+            <span class="n">validation_data</span> <span class="o">=</span> <span class="n">validation_data</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">_standardize_keras_target_data</span><span class="p">)</span>
+
+        <span class="n">memory_type</span> <span class="o">=</span> <span class="n">OrcaContext</span><span class="o">.</span><span class="n">train_data_store</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">to_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">batch_per_thread</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                             <span class="n">validation_data</span><span class="o">=</span><span class="n">validation_data</span><span class="p">,</span>
+                             <span class="n">feature_cols</span><span class="o">=</span><span class="n">feature_cols</span><span class="p">,</span> <span class="n">label_cols</span><span class="o">=</span><span class="n">label_cols</span><span class="p">,</span>
+                             <span class="n">hard_code_batch_size</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                             <span class="n">sequential_order</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                             <span class="n">auto_shard_files</span><span class="o">=</span><span class="n">auto_shard_files</span><span class="p">,</span>
+                             <span class="n">memory_type</span><span class="o">=</span><span class="n">memory_type</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">tf_optimizer</span> <span class="o">=</span> <span class="n">TFOptimizer</span><span class="o">.</span><span class="n">from_keras</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span>
+                                                   <span class="n">model_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">model_dir</span><span class="p">,</span>
+                                                   <span class="n">session_config</span><span class="o">=</span><span class="n">session_config</span><span class="p">,</span>
+                                                   <span class="n">metrics</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">,</span>
+                                                   <span class="n">optimizer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">clip_norm</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tf_optimizer</span><span class="o">.</span><span class="n">set_gradient_clipping_by_l2_norm</span><span class="p">(</span><span class="n">clip_norm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">clip_norm</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">clip_min</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">clip_max</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tf_optimizer</span><span class="o">.</span><span class="n">set_constant_gradient_clipping</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">clip_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">clip_max</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tf_optimizer</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">checkpoint_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">checkpoint_version</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_dir</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">app_name</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tf_optimizer</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">set_tensorboard</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">app_name</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">tf_optimizer</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">MaxEpoch</span><span class="p">(</span><span class="n">epochs</span><span class="p">),</span> <span class="n">checkpoint_trigger</span><span class="o">=</span><span class="n">checkpoint_trigger</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="KerasEstimator.predict"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.KerasEstimator.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                <span class="n">feature_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">auto_shard_files</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Predict input data</span>
+
+<span class="sd">        :param data: data to be predicted.</span>
+<span class="sd">               It can be XShards, Spark DataFrame, or tf.data.Dataset.</span>
+<span class="sd">               If data is XShards, each partition can be a Pandas DataFrame or a dictionary of</span>
+<span class="sd">               {&#39;x&#39;: feature}, where feature is a numpy array or a tuple of numpy arrays.</span>
+<span class="sd">               If data is tf.data.Dataset, each element is feature tensor tuple</span>
+<span class="sd">        :param batch_size: batch size per thread</span>
+<span class="sd">        :param feature_cols: list of feature column names if input data is Spark DataFrame or</span>
+<span class="sd">               XShards of Pandas DataFrame.</span>
+<span class="sd">        :param auto_shard_files: whether to automatically detect if the dataset is file-based and</span>
+<span class="sd">               and apply sharding on files, otherwise sharding on records. Default is False.</span>
+<span class="sd">        :return: predicted result.</span>
+<span class="sd">                 If input data is XShards or tf.data.Dataset, the predict result is also a XShards,</span>
+<span class="sd">                 and the schema for each result is: {&#39;prediction&#39;: predicted numpy array or</span>
+<span class="sd">                 list of predicted numpy arrays}.</span>
+<span class="sd">                 If input data is Spark DataFrame, the predict result is a DataFrame which includes</span>
+<span class="sd">                 original columns plus &#39;prediction&#39; column. The &#39;prediction&#39; column can be</span>
+<span class="sd">                 FloatType, VectorUDT or Array of VectorUDT depending on model outputs shape.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">):</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="n">feature_cols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="s2">&quot;feature columns is None; it should not be None in prediction&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">SparkXShards</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">_get_class_name</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;pandas.core.frame.DataFrame&#39;</span><span class="p">:</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="n">feature_cols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                                  <span class="s2">&quot;feature columns is None; it should not be None in prediction&quot;</span><span class="p">)</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">process_xshards_of_pandas_dataframe</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">feature_cols</span><span class="p">)</span>
+
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="ow">not</span> <span class="n">is_tf_data_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">),</span>
+                          <span class="s2">&quot;tf.data.Dataset currently cannot be used for estimator prediction&quot;</span><span class="p">)</span>
+
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">to_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">batch_per_thread</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+                             <span class="n">validation_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                             <span class="n">feature_cols</span><span class="o">=</span><span class="n">feature_cols</span><span class="p">,</span> <span class="n">label_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                             <span class="n">hard_code_batch_size</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                             <span class="n">sequential_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                             <span class="n">auto_shard_files</span><span class="o">=</span><span class="n">auto_shard_files</span><span class="p">,</span>
+                             <span class="p">)</span>
+
+        <span class="n">predicted_rdd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">convert_predict_rdd_to_dataframe</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">predicted_rdd</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">SparkXShards</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">convert_predict_rdd_to_xshard</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">predicted_rdd</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">predicted_rdd</span></div>
+
+<div class="viewcode-block" id="KerasEstimator.evaluate"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.KerasEstimator.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+                 <span class="n">feature_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">label_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">auto_shard_files</span><span class="o">=</span><span class="kc">False</span>
+                 <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Evaluate model.</span>
+
+<span class="sd">        :param data: evaluation data. It can be XShards, Spark DataFrame, tf.data.Dataset.</span>
+<span class="sd">               If data is XShards, each partition can be a Pandas DataFrame or a dictionary of</span>
+<span class="sd">               {&#39;x&#39;: feature, &#39;y&#39;: label}, where feature(label) is a numpy array or a tuple of</span>
+<span class="sd">               numpy arrays.</span>
+<span class="sd">               If data is tf.data.Dataset, each element is [feature tensor tuple, label tensor</span>
+<span class="sd">               tuple]</span>
+<span class="sd">        :param batch_size: batch size per thread.</span>
+<span class="sd">        :param feature_cols: feature_cols: feature column names if train data is Spark DataFrame or</span>
+<span class="sd">               XShards of Pandas DataFrame.</span>
+<span class="sd">        :param label_cols: label column names if train data is Spark DataFrame or XShards</span>
+<span class="sd">               of Pandas DataFrame.</span>
+<span class="sd">        :param auto_shard_files: whether to automatically detect if the dataset is file-based and</span>
+<span class="sd">               and apply sharding on files, otherwise sharding on records. Default is False.</span>
+<span class="sd">        :return: evaluation result as a dictionary of {&#39;metric name&#39;: metric value}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">):</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="n">feature_cols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="s2">&quot;feature columns is None; it should not be None in evaluation&quot;</span><span class="p">)</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="n">label_cols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="s2">&quot;label columns is None; it should not be None in evaluation&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">SparkXShards</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">_get_class_name</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;pandas.core.frame.DataFrame&#39;</span><span class="p">:</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="n">feature_cols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                                  <span class="s2">&quot;feature columns is None; it should not be None in evaluation&quot;</span><span class="p">)</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="n">label_cols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                                  <span class="s2">&quot;label columns is None; it should not be None in evaluation&quot;</span><span class="p">)</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">process_xshards_of_pandas_dataframe</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">feature_cols</span><span class="p">,</span> <span class="n">label_cols</span><span class="p">)</span>
+
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">to_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">batch_per_thread</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+                             <span class="n">validation_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                             <span class="n">feature_cols</span><span class="o">=</span><span class="n">feature_cols</span><span class="p">,</span> <span class="n">label_cols</span><span class="o">=</span><span class="n">label_cols</span><span class="p">,</span>
+                             <span class="n">hard_code_batch_size</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                             <span class="n">sequential_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                             <span class="n">auto_shard_files</span><span class="o">=</span><span class="n">auto_shard_files</span>
+                             <span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">batch_per_thread</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="KerasEstimator.save_keras_model"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.KerasEstimator.save_keras_model">[docs]</a>    <span class="nd">@enable_multi_fs_save</span>
+    <span class="k">def</span> <span class="nf">save_keras_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save tensorflow keras model in this estimator.</span>
+
+<span class="sd">        :param path: keras model save path.</span>
+<span class="sd">        :param overwrite: Whether to silently overwrite any existing file at the target location.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">save_model</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="n">overwrite</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="KerasEstimator.get_model"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.KerasEstimator.get_model">[docs]</a>    <span class="k">def</span> <span class="nf">get_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the trained Keras model</span>
+
+<span class="sd">        :return: The trained Keras model</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">model</span></div>
+
+<div class="viewcode-block" id="KerasEstimator.save"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.KerasEstimator.save">[docs]</a>    <span class="nd">@enable_multi_fs_save</span>
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_path</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save model to model_path</span>
+
+<span class="sd">        :param model_path: path to save the trained model.</span>
+<span class="sd">        :param overwrite: Whether to silently overwrite any existing file at the target location.</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_keras_model</span><span class="p">(</span><span class="n">model_path</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="n">overwrite</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="KerasEstimator.load"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.KerasEstimator.load">[docs]</a>    <span class="nd">@enable_multi_fs_load</span>
+    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load existing keras model</span>
+
+<span class="sd">        :param model_path: Path to the existing keras model.</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">KerasModel</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="KerasEstimator.clear_gradient_clipping"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.KerasEstimator.clear_gradient_clipping">[docs]</a>    <span class="k">def</span> <span class="nf">clear_gradient_clipping</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clear gradient clipping parameters. In this case, gradient clipping will not be applied.</span>
+<span class="sd">        In order to take effect, it needs to be called before fit.</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clip_norm</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clip_min</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clip_max</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="KerasEstimator.set_constant_gradient_clipping"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.KerasEstimator.set_constant_gradient_clipping">[docs]</a>    <span class="k">def</span> <span class="nf">set_constant_gradient_clipping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">min</span><span class="p">,</span> <span class="nb">max</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set constant gradient clipping during the training process.</span>
+<span class="sd">        In order to take effect, it needs to be called before fit.</span>
+
+<span class="sd">        :param min: The minimum value to clip by.</span>
+<span class="sd">        :param max: The maximum value to clip by.</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="nb">min</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;clip value should be larger than 0&quot;</span><span class="p">)</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="nb">min</span> <span class="o">&lt;</span> <span class="nb">max</span><span class="p">,</span> <span class="s2">&quot;clip max should be larger than clip min&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clip_min</span> <span class="o">=</span> <span class="nb">min</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clip_max</span> <span class="o">=</span> <span class="nb">max</span></div>
+
+<div class="viewcode-block" id="KerasEstimator.set_l2_norm_gradient_clipping"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.KerasEstimator.set_l2_norm_gradient_clipping">[docs]</a>    <span class="k">def</span> <span class="nf">set_l2_norm_gradient_clipping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clip_norm</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clip gradient to a maximum L2-Norm during the training process.</span>
+<span class="sd">        In order to take effect, it needs to be called before fit.</span>
+
+<span class="sd">        :param clip_norm: Gradient L2-Norm threshold.</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clip_norm</span> <span class="o">=</span> <span class="n">clip_norm</span></div>
+
+<div class="viewcode-block" id="KerasEstimator.save_keras_weights"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.KerasEstimator.save_keras_weights">[docs]</a>    <span class="nd">@enable_multi_fs_save</span>
+    <span class="k">def</span> <span class="nf">save_keras_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">save_format</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save tensorflow keras model weights in this estimator.</span>
+
+<span class="sd">        :param filepath: keras model weights save path.</span>
+<span class="sd">        :param overwrite: Whether to silently overwrite any existing file at the target location.</span>
+<span class="sd">        :param save_format: Either &#39;tf&#39; or &#39;h5&#39;. A `filepath` ending in &#39;.h5&#39; or</span>
+<span class="sd">               &#39;.keras&#39; will default to HDF5 if `save_format` is `None`. Otherwise</span>
+<span class="sd">               `None` defaults to &#39;tf&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">save_weights</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">overwrite</span><span class="p">,</span> <span class="n">save_format</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="KerasEstimator.load_keras_weights"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf.estimator.KerasEstimator.load_keras_weights">[docs]</a>    <span class="nd">@enable_multi_fs_load</span>
+    <span class="k">def</span> <span class="nf">load_keras_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">by_name</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save tensorflow keras model in this estimator.</span>
+
+<span class="sd">        :param filepath: keras model weights save path.</span>
+<span class="sd">        :param by_name: Boolean, whether to load weights by name or by topological</span>
+<span class="sd">               order. Only topological loading is supported for weight files in</span>
+<span class="sd">               TensorFlow format.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">load_weights</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">by_name</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

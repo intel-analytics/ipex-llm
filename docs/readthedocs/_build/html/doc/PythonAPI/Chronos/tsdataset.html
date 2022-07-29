@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TSDataset &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/design-tabs.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Simulator" href="simulator.html" />
+    <link rel="prev" title="Anomaly Detectors" href="anomaly_detectors.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Chronos API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="autotsestimator.html">AutoTS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="automodels.html">Auto Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="forecasters.html">Forecasters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="anomaly_detectors.html">Anomaly Detectors</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">TSDataset</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">TSDataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#xshardstsdataset">XShardsTSDataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#built-in-dataset">Built-in Dataset</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="simulator.html">Simulator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="evaluator.html">Evaluator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="autots.html">AutoTS (deprecated)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Chronos API</a> &raquo;</li>
+      <li>TSDataset</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/doc/PythonAPI/Chronos/tsdataset.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="tsdataset">
+<h1>TSDataset<a class="headerlink" href="#tsdataset" title="Permalink to this headline">¶</a></h1>
+<section id="id1">
+<h2>TSDataset<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p>Time series data is a special data formulation with specific operations. TSDataset is an abstract of time series dataset, which provides various data processing operations (e.g. impute, deduplicate, resample, scale/unscale, roll) and feature engineering methods (e.g. datetime feature, aggregation feature). Cascade call is supported for most of the methods.
+TSDataset can be initialized from a pandas dataframe and be converted to a pandas dataframe or numpy ndarray.</p>
+<span class="target" id="module-bigdl.chronos.data.tsdataset"></span><dl class="py class">
+<dt class="sig sig-object py" id="bigdl.chronos.data.tsdataset.TSDataset">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bigdl.chronos.data.tsdataset.</span></span><span class="sig-name descname"><span class="pre">TSDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">schema</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/data/tsdataset.html#TSDataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.data.tsdataset.TSDataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>TSDataset is an abstract of time series dataset.
+Cascade call is supported for most of the transform methods.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.data.tsdataset.TSDataset.from_pandas">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_pandas</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt_col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_feature_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_split</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">largest_look_back</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">largest_horizon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/data/tsdataset.html#TSDataset.from_pandas"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.data.tsdataset.TSDataset.from_pandas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize tsdataset(s) from pandas dataframe.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> – a pandas dataframe for your raw time series data.</p></li>
+<li><p><strong>dt_col</strong> – a str indicates the col name of datetime
+column in the input data frame, the dt_col must be sorted
+from past to latest respectively for each id.</p></li>
+<li><p><strong>target_col</strong> – a str or list indicates the col name of target column
+in the input data frame.</p></li>
+<li><p><strong>id_col</strong> – (optional) a str indicates the col name of dataframe id. If
+it is not explicitly stated, then the data is interpreted as only
+containing a single id.</p></li>
+<li><p><strong>extra_feature_col</strong> – (optional) a str or list indicates the col name
+of extra feature columns that needs to predict the target column.</p></li>
+<li><p><strong>with_split</strong> – (optional) bool, states if we need to split the dataframe
+to train, validation and test set. The value defaults to False.</p></li>
+<li><p><strong>val_ratio</strong> – (optional) float, validation ratio. Only effective when
+with_split is set to True. The value defaults to 0.</p></li>
+<li><p><strong>test_ratio</strong> – (optional) float, test ratio. Only effective when with_split
+is set to True. The value defaults to 0.1.</p></li>
+<li><p><strong>largest_look_back</strong> – (optional) int, the largest length to look back.
+Only effective when with_split is set to True. The value defaults to 0.</p></li>
+<li><p><strong>largest_horizon</strong> – (optional) int, the largest num of steps to look
+forward. Only effective when with_split is set to True. The value defaults
+to 1.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a TSDataset instance when with_split is set to False,
+three TSDataset instances when with_split is set to True.</p>
+</dd>
+</dl>
+<p>Create a tsdataset instance by:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Here is a df example:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># id        datetime      value   &quot;extra feature 1&quot;   &quot;extra feature 2&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 00        2019-01-01    1.9     1                   2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 01        2019-01-01    2.3     0                   9</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 00        2019-01-02    2.4     3                   4</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 01        2019-01-02    2.6     0                   2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tsdataset</span> <span class="o">=</span> <span class="n">TSDataset</span><span class="o">.</span><span class="n">from_pandas</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">dt_col</span><span class="o">=</span><span class="s2">&quot;datetime&quot;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                  <span class="n">target_col</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="n">id_col</span><span class="o">=</span><span class="s2">&quot;id&quot;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                  <span class="n">extra_feature_col</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;extra feature 1&quot;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                                     <span class="s2">&quot;extra feature 2&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.data.tsdataset.TSDataset.from_parquet">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_parquet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt_col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_feature_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_split</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">largest_look_back</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">largest_horizon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/data/tsdataset.html#TSDataset.from_parquet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.data.tsdataset.TSDataset.from_parquet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize tsdataset(s) from path of parquet file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> – A string path to parquet file. The string could be a URL.
+Valid URL schemes include hdfs, http, ftp, s3, gs, and file. For file URLs, a host
+is expected. A local file could be: <a class="reference external" href="file://localhost/path/to/table.parquet">file://localhost/path/to/table.parquet</a>.
+A file URL can also be a path to a directory that contains multiple partitioned
+parquet files.</p></li>
+<li><p><strong>dt_col</strong> – a str indicates the col name of datetime
+column in the input data frame.</p></li>
+<li><p><strong>target_col</strong> – a str or list indicates the col name of target column
+in the input data frame.</p></li>
+<li><p><strong>id_col</strong> – (optional) a str indicates the col name of dataframe id. If
+it is not explicitly stated, then the data is interpreted as only
+containing a single id.</p></li>
+<li><p><strong>extra_feature_col</strong> – (optional) a str or list indicates the col name
+of extra feature columns that needs to predict the target column.</p></li>
+<li><p><strong>with_split</strong> – (optional) bool, states if we need to split the dataframe
+to train, validation and test set. The value defaults to False.</p></li>
+<li><p><strong>val_ratio</strong> – (optional) float, validation ratio. Only effective when
+with_split is set to True. The value defaults to 0.</p></li>
+<li><p><strong>test_ratio</strong> – (optional) float, test ratio. Only effective when with_split
+is set to True. The value defaults to 0.1.</p></li>
+<li><p><strong>largest_look_back</strong> – (optional) int, the largest length to look back.
+Only effective when with_split is set to True. The value defaults to 0.</p></li>
+<li><p><strong>largest_horizon</strong> – (optional) int, the largest num of steps to look
+forward. Only effective when with_split is set to True. The value defaults
+to 1.</p></li>
+<li><p><strong>kwargs</strong> – Any additional kwargs are passed to the pd.read_parquet
+and pyarrow.parquet.read_table.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a TSDataset instance when with_split is set to False,
+three TSDataset instances when with_split is set to True.</p>
+</dd>
+</dl>
+<p>Create a tsdataset instance by:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Here is a df example:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># id        datetime      value   &quot;extra feature 1&quot;   &quot;extra feature 2&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 00        2019-01-01    1.9     1                   2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 01        2019-01-01    2.3     0                   9</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 00        2019-01-02    2.4     3                   4</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 01        2019-01-02    2.6     0                   2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tsdataset</span> <span class="o">=</span> <span class="n">TSDataset</span><span class="o">.</span><span class="n">from_parquet</span><span class="p">(</span><span class="s2">&quot;hdfs://path/to/table.parquet&quot;</span><span class="p">,</span> <span class="n">dt_col</span><span class="o">=</span><span class="s2">&quot;datetime&quot;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                  <span class="n">target_col</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="n">id_col</span><span class="o">=</span><span class="s2">&quot;id&quot;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                  <span class="n">extra_feature_col</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;extra feature 1&quot;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                                     <span class="s2">&quot;extra feature 2&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.data.tsdataset.TSDataset.impute">
+<span class="sig-name descname"><span class="pre">impute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'last'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">const_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/data/tsdataset.html#TSDataset.impute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.data.tsdataset.TSDataset.impute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Impute the tsdataset by imputing each univariate time series
+distinguished by id_col and feature_col.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mode</strong> – <p>imputation mode, select from “last”, “const” or “linear”.</p>
+<p>”last”: impute by propagating the last non N/A number to its following N/A.
+if there is no non N/A number ahead, 0 is filled instead.</p>
+<p>”const”: impute by a const value input by user.</p>
+<p>”linear”: impute by linear interpolation.</p>
+</p></li>
+<li><p><strong>const_num</strong> – indicates the const number to fill, which is only effective when mode
+is set to “const”.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the tsdataset instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.data.tsdataset.TSDataset.deduplicate">
+<span class="sig-name descname"><span class="pre">deduplicate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/data/tsdataset.html#TSDataset.deduplicate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.data.tsdataset.TSDataset.deduplicate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove those duplicated records which has exactly the same values in each feature_col
+for each multivariate timeseries distinguished by id_col.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the tsdataset instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.data.tsdataset.TSDataset.resample">
+<span class="sig-name descname"><span class="pre">resample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interval</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">merge_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/data/tsdataset.html#TSDataset.resample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.data.tsdataset.TSDataset.resample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resample on a new interval for each univariate time series distinguished
+by id_col and feature_col.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>interval</strong> – pandas offset aliases, indicating time interval of the output dataframe.</p></li>
+<li><p><strong>start_time</strong> – start time of the output dataframe.</p></li>
+<li><p><strong>end_time</strong> – end time of the output dataframe.</p></li>
+<li><p><strong>merge_mode</strong> – if current interval is smaller than output interval,
+we need to merge the values in a mode. “max”, “min”, “mean”
+or “sum” are supported for now.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the tsdataset instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.data.tsdataset.TSDataset.gen_dt_feature">
+<span class="sig-name descname"><span class="pre">gen_dt_feature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">features</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">one_hot_features</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/data/tsdataset.html#TSDataset.gen_dt_feature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.data.tsdataset.TSDataset.gen_dt_feature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate datetime feature(s) for each record.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>features</strong> – str or list, states which feature(s) will be generated. If the value
+is set to be a str, it should be one of “auto” or “all”. For “auto”, a subset
+of datetime features will be generated under the consideration of the sampling
+frequency of your data. For “all”, the whole set of datetime features will be
+generated. If the value is set to be a list, the list should contain the features
+you want to generate. A table of all datatime features and their description is
+listed below. The value defaults to “auto”.</p></li>
+<li><p><strong>one_hot_features</strong> – list, states which feature(s) will be generated as one-hot-encoded
+feature. The value defaults to None, which means no features will be generated with               one-hot-encoded.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="line-block">
+<div class="line">“MINUTE”: The minute of the time stamp.</div>
+<div class="line">“DAY”: The day of the time stamp.</div>
+<div class="line">“DAYOFYEAR”: The ordinal day of the year of the time stamp.</div>
+<div class="line">“HOUR”: The hour of the time stamp.</div>
+<div class="line">“WEEKDAY”: The day of the week of the time stamp, Monday=0, Sunday=6.</div>
+<div class="line">“WEEKOFYEAR”: The ordinal week of the year of the time stamp.</div>
+<div class="line">“MONTH”: The month of the time stamp.</div>
+<div class="line">“YEAR”: The year of the time stamp.</div>
+<div class="line">“IS_AWAKE”: Bool value indicating whether it belongs to awake hours for the time stamp,</div>
+<div class="line">True for hours between 6A.M. and 1A.M.</div>
+<div class="line">“IS_BUSY_HOURS”: Bool value indicating whether it belongs to busy hours for the time</div>
+<div class="line">stamp, True for hours between 7A.M. and 10A.M. and hours between 4P.M. and 8P.M.</div>
+<div class="line">“IS_WEEKEND”: Bool value indicating whether it belongs to weekends for the time stamp,</div>
+<div class="line">True for Saturdays and Sundays.</div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the tsdataset instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.data.tsdataset.TSDataset.gen_global_feature">
+<span class="sig-name descname"><span class="pre">gen_global_feature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">settings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'comprehensive'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_settings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/data/tsdataset.html#TSDataset.gen_global_feature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.data.tsdataset.TSDataset.gen_global_feature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate per-time-series feature for each time series.
+This method will be implemented by tsfresh.
+Make sure that the specified column name does not contain ‘__’.</p>
+<p>TODO: relationship with scale should be figured out.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>settings</strong> – str or dict. If a string is set, then it must be one of “comprehensive”
+“minimal” and “efficient”. If a dict is set, then it should follow the instruction
+for default_fc_parameters in tsfresh. The value is defaulted to “comprehensive”.</p></li>
+<li><p><strong>full_settings</strong> – dict. It should follow the instruction for kind_to_fc_parameters in
+tsfresh. The value is defaulted to None.</p></li>
+<li><p><strong>n_jobs</strong> – int. The number of processes to use for parallelization.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the tsdataset instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.data.tsdataset.TSDataset.gen_rolling_feature">
+<span class="sig-name descname"><span class="pre">gen_rolling_feature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'comprehensive'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_settings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/data/tsdataset.html#TSDataset.gen_rolling_feature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.data.tsdataset.TSDataset.gen_rolling_feature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate aggregation feature for each sample.
+This method will be implemented by tsfresh.
+Make sure that the specified column name does not contain ‘__’.</p>
+<p>TODO: relationship with scale should be figured out.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>window_size</strong> – int, generate feature according to the rolling result.</p></li>
+<li><p><strong>settings</strong> – str or dict. If a string is set, then it must be one of “comprehensive”
+“minimal” and “efficient”. If a dict is set, then it should follow the instruction
+for default_fc_parameters in tsfresh. The value is defaulted to “comprehensive”.</p></li>
+<li><p><strong>full_settings</strong> – dict. It should follow the instruction for kind_to_fc_parameters in
+tsfresh. The value is defaulted to None.</p></li>
+<li><p><strong>n_jobs</strong> – int. The number of processes to use for parallelization.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the tsdataset instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.data.tsdataset.TSDataset.roll">
+<span class="sig-name descname"><span class="pre">roll</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">horizon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lookback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_sensitive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_enc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_len</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_predict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/data/tsdataset.html#TSDataset.roll"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.data.tsdataset.TSDataset.roll" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sampling by rolling for machine learning/deep learning models.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lookback</strong> – int, lookback value. Default to ‘auto’,
+if ‘auto’, the mode of time series’ cycle length will be taken as the lookback.</p></li>
+<li><p><strong>horizon</strong> – <p>int or list,
+if <cite>horizon</cite> is an int, we will sample <cite>horizon</cite> step
+continuously after the forecasting point.
+if <cite>horizon</cite> is a list, we will sample discretely according
+to the input list. 1 means the timestamp just after the observed data.
+specially, when <cite>horizon</cite> is set to 0, ground truth will be generated as None.</p>
+<p>WARNING: The usage of setting <cite>horizon</cite> to will be deprecated later, please
+use <cite>is_predict</cite> in future.</p>
+</p></li>
+<li><p><strong>feature_col</strong> – str or list, indicates the feature col name. Default to None,
+where we will take all available feature in rolling.</p></li>
+<li><p><strong>target_col</strong> – str or list, indicates the target col name. Default to None,
+where we will take all target in rolling. it should be a subset of target_col
+you used to initialize the tsdataset.</p></li>
+<li><p><strong>id_sensitive</strong> – <p>bool,
+if <cite>id_sensitive</cite> is False, we will rolling on each id’s sub dataframe
+and fuse the sampings.
+The shape of rolling will be
+x: (num_sample, lookback, num_feature_col + num_target_col)
+y: (num_sample, horizon+label_len, num_target_col)
+where num_sample is the summation of sample number of each dataframe</p>
+<p>if <cite>id_sensitive</cite> is True, we will rolling on the wide dataframe whose
+columns are cartesian product of id_col and feature_col
+The shape of rolling will be
+x: (num_sample, lookback, new_num_feature_col + new_num_target_col)
+y: (num_sample, horizon+label_len, new_num_target_col)
+where num_sample is the sample number of the wide dataframe,
+new_num_feature_col is the product of the number of id and the number of feature_col.
+new_num_target_col is the product of the number of id and the number of target_col.</p>
+</p></li>
+<li><p><strong>time_enc</strong> – bool,
+This parameter should be set to True only when you are using Autoformer model. With
+time_enc to be true, 2 additional numpy ndarray will be returned when you call
+<cite>.to_numpy()</cite>. Be sure to have a time type for dt_col if you set time_enc to True.</p></li>
+<li><p><strong>label_len</strong> – int,
+This parameter should be set to True only when you are using Autoformer model. This
+indicates the length of overlap area of output(y) and input(x) on time axis.</p></li>
+<li><p><strong>is_predict</strong> – bool,
+This parameter should be set to True only when you are using Autoformer model. This
+indicates if the dataset will be sampled as a prediction dataset(without groud
+truth).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the tsdataset instance.</p>
+</dd>
+</dl>
+<p>roll() can be called by:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Here is a df example:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># id        datetime      value   &quot;extra feature 1&quot;   &quot;extra feature 2&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 00        2019-01-01    1.9     1                   2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 01        2019-01-01    2.3     0                   9</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 00        2019-01-02    2.4     3                   4</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 01        2019-01-02    2.6     0                   2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tsdataset</span> <span class="o">=</span> <span class="n">TSDataset</span><span class="o">.</span><span class="n">from_pandas</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">dt_col</span><span class="o">=</span><span class="s2">&quot;datetime&quot;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                  <span class="n">target_col</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="n">id_col</span><span class="o">=</span><span class="s2">&quot;id&quot;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                  <span class="n">extra_feature_col</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;extra feature 1&quot;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                                     <span class="s2">&quot;extra feature 2&quot;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">horizon</span><span class="p">,</span> <span class="n">lookback</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tsdataset</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">lookback</span><span class="o">=</span><span class="n">lookback</span><span class="p">,</span> <span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span> <span class="n">id_sensitive</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">tsdataset</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="c1"># x = [[[1.9, 1, 2 ]], [[2.3, 0, 9 ]]] y = [[[ 2.4 ]], [[ 2.6 ]]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="c1"># x.shape = (2, 1, 3) y.shape = (2, 1, 1)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tsdataset</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">lookback</span><span class="o">=</span><span class="n">lookback</span><span class="p">,</span> <span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span> <span class="n">id_sensitive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">tsdataset</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="c1"># x = [[[ 1.9, 2.3, 1, 2, 0, 9 ]]] y = [[[ 2.4, 2.6]]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="c1"># x.shape = (1, 1, 6) y.shape = (1, 1, 2)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.data.tsdataset.TSDataset.to_torch_data_loader">
+<span class="sig-name descname"><span class="pre">to_torch_data_loader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">roll</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lookback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">horizon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shuffle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_enc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_len</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_predict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/data/tsdataset.html#TSDataset.to_torch_data_loader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.data.tsdataset.TSDataset.to_torch_data_loader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert TSDataset to a PyTorch DataLoader with or without rolling. We recommend to use
+to_torch_data_loader(roll=True) if you don’t need to output the rolled numpy array. It is
+much more efficient than rolling separately, especially when the dataframe or lookback
+is large.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_size</strong> – int, the batch_size for a Pytorch DataLoader. It defaults to 32.</p></li>
+<li><p><strong>roll</strong> – Boolean. Whether to roll the dataframe before converting to DataLoader.
+If True, you must also specify lookback and horizon for rolling. If False, you must
+have called tsdataset.roll() before calling to_torch_data_loader(). Default to False.</p></li>
+<li><p><strong>lookback</strong> – int, lookback value. Default to ‘auto’,
+the mode of time series’ cycle length will be taken as the lookback.</p></li>
+<li><p><strong>horizon</strong> – int or list,
+if <cite>horizon</cite> is an int, we will sample <cite>horizon</cite> step
+continuously after the forecasting point.
+if <cite>horizon</cite> is a list, we will sample discretely according
+to the input list.
+specially, when <cite>horizon</cite> is set to 0, ground truth will be generated as None.</p></li>
+<li><p><strong>feature_col</strong> – str or list, indicates the feature col name. Default to None,
+where we will take all available feature in rolling.</p></li>
+<li><p><strong>target_col</strong> – str or list, indicates the target col name. Default to None,
+where we will take all target in rolling. it should be a subset of target_col
+you used to initialize the tsdataset.</p></li>
+<li><p><strong>shuffle</strong> – if the dataloader is shuffled. default to True.</p></li>
+<li><p><strong>time_enc</strong> – bool,
+This parameter should be set to True only when you are using Autoformer model. With
+time_enc to be true, 2 additional numpy ndarray will be returned when you call
+<cite>.to_numpy()</cite>. Be sure to have a time type for dt_col if you set time_enc to True.</p></li>
+<li><p><strong>label_len</strong> – int,
+This parameter should be set to True only when you are using Autoformer model. This
+indicates the length of overlap area of output(y) and input(x) on time axis.</p></li>
+<li><p><strong>is_predict</strong> – bool,
+This parameter should be set to True only when you are using Autoformer model. This
+indicates if the dataset will be sampled as a prediction dataset(without groud
+truth).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A pytorch DataLoader instance.</p>
+</dd>
+</dl>
+<p>to_torch_data_loader() can be called by:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Here is a df example:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># id        datetime      value   &quot;extra feature 1&quot;   &quot;extra feature 2&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 00        2019-01-01    1.9     1                   2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 01        2019-01-01    2.3     0                   9</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 00        2019-01-02    2.4     3                   4</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 01        2019-01-02    2.6     0                   2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tsdataset</span> <span class="o">=</span> <span class="n">TSDataset</span><span class="o">.</span><span class="n">from_pandas</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">dt_col</span><span class="o">=</span><span class="s2">&quot;datetime&quot;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                  <span class="n">target_col</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="n">id_col</span><span class="o">=</span><span class="s2">&quot;id&quot;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                  <span class="n">extra_feature_col</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;extra feature 1&quot;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                                     <span class="s2">&quot;extra feature 2&quot;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">horizon</span><span class="p">,</span> <span class="n">lookback</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data_loader</span> <span class="o">=</span> <span class="n">tsdataset</span><span class="o">.</span><span class="n">to_torch_data_loader</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                             <span class="n">roll</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                             <span class="n">lookback</span><span class="o">=</span><span class="n">lookback</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                             <span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># or roll outside. That might be less efficient than the way above.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tsdataset</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">lookback</span><span class="o">=</span><span class="n">lookback</span><span class="p">,</span> <span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span> <span class="n">id_sensitive</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">tsdataset</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="c1"># x = [[[1.9, 1, 2 ]], [[2.3, 0, 9 ]]] y = [[[ 2.4 ]], [[ 2.6 ]]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data_loader</span> <span class="o">=</span> <span class="n">tsdataset</span><span class="o">.</span><span class="n">to_torch_data_loader</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.data.tsdataset.TSDataset.to_tf_dataset">
+<span class="sig-name descname"><span class="pre">to_tf_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shuffle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/data/tsdataset.html#TSDataset.to_tf_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.data.tsdataset.TSDataset.to_tf_dataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export a Dataset whose elements are slices of the given tensors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>batch_size</strong> – Number of samples per batch of computation.
+If unspecified, batch_size will default to 32.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a tf.data dataset, including x and y.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.data.tsdataset.TSDataset.to_numpy">
+<span class="sig-name descname"><span class="pre">to_numpy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/data/tsdataset.html#TSDataset.to_numpy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.data.tsdataset.TSDataset.to_numpy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export rolling result in form of a tuple of numpy ndarray (x, y).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a 2-dim tuple. each item is a 3d numpy ndarray. The ndarray
+is casted to float32.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.data.tsdataset.TSDataset.to_pandas">
+<span class="sig-name descname"><span class="pre">to_pandas</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/data/tsdataset.html#TSDataset.to_pandas"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.data.tsdataset.TSDataset.to_pandas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export the pandas dataframe.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the internal dataframe.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.data.tsdataset.TSDataset.scale">
+<span class="sig-name descname"><span class="pre">scale</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scaler</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/data/tsdataset.html#TSDataset.scale"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.data.tsdataset.TSDataset.scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scale the time series dataset’s feature column and target column.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>scaler</strong> – sklearn scaler instance, StandardScaler, MaxAbsScaler,
+MinMaxScaler and RobustScaler are supported.</p></li>
+<li><p><strong>fit</strong> – if we need to fit the scaler. Typically, the value should
+be set to True for training set, while False for validation and
+test set. The value is defaulted to True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the tsdataset instance.</p>
+</dd>
+</dl>
+<p>Assume there is a training set tsdata and a test set tsdata_test.
+scale() should be called first on training set with default value fit=True,
+then be called on test set with the same scaler and fit=False.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="k">import</span> <span class="n">StandardScaler</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">scaler</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tsdata</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">scaler</span><span class="p">,</span> <span class="n">fit</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tsdata_test</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">scaler</span><span class="p">,</span> <span class="n">fit</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.data.tsdataset.TSDataset.unscale">
+<span class="sig-name descname"><span class="pre">unscale</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/data/tsdataset.html#TSDataset.unscale"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.data.tsdataset.TSDataset.unscale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unscale the time series dataset’s feature column and target column.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the tsdataset instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.data.tsdataset.TSDataset.unscale_numpy">
+<span class="sig-name descname"><span class="pre">unscale_numpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/data/tsdataset.html#TSDataset.unscale_numpy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.data.tsdataset.TSDataset.unscale_numpy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unscale the time series forecaster’s numpy prediction result/ground truth.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> – a numpy ndarray with 3 dim whose shape should be exactly the
+same with self.numpy_y.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the unscaled numpy ndarray.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.data.tsdataset.TSDataset.get_cycle_length">
+<span class="sig-name descname"><span class="pre">get_cycle_length</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aggregate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mode'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top_k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/data/tsdataset.html#TSDataset.get_cycle_length"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.data.tsdataset.TSDataset.get_cycle_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the cycle length of the time series in this TSDataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>top_k</strong> (<em>int</em>) – The freq with top top_k power after fft will be
+used to check the autocorrelation. Higher top_k might be time-consuming.
+The value is default to 3.</p></li>
+<li><p><strong>aggregate</strong> (<em>str</em>) – Select the mode of calculation time period,
+We only support ‘min’, ‘max’, ‘mode’, ‘median’, ‘mean’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Describe the value of the time period distribution.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="xshardstsdataset">
+<h2>XShardsTSDataset<a class="headerlink" href="#xshardstsdataset" title="Permalink to this headline">¶</a></h2>
+<p>Time series data is a special data formulation with specific operations. XShardsTSDataset is an abstract of time series dataset, which provides various data processing operations (e.g. impute, deduplicate, resample, scale/unscale, roll) and feature engineering methods (e.g. datetime feature, aggregation feature). Cascade call is supported for most of the methods.
+XShardsTSDataset can be initialized from xshards of pandas dataframe and be converted to xshards of numpy in an distributed and parallized fashion.</p>
+<span class="target" id="module-bigdl.chronos.data.experimental.xshards_tsdataset"></span><dl class="py class">
+<dt class="sig sig-object py" id="bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bigdl.chronos.data.experimental.xshards_tsdataset.</span></span><span class="sig-name descname"><span class="pre">XShardsTSDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shards</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">schema</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/data/experimental/xshards_tsdataset.html#XShardsTSDataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>XShardTSDataset is an abstract of time series dataset with distributed fashion.
+Cascade call is supported for most of the transform methods.
+XShardTSDataset will partition the dataset by id_col, which is experimental.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.from_xshards">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_xshards</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shards</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt_col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_feature_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_split</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">largest_look_back</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">largest_horizon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/data/experimental/xshards_tsdataset.html#XShardsTSDataset.from_xshards"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.from_xshards" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize xshardtsdataset(s) from xshard pandas dataframe.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>shards</strong> – an xshards pandas dataframe for your raw time series data.</p></li>
+<li><p><strong>dt_col</strong> – a str indicates the col name of datetime
+column in the input data frame.</p></li>
+<li><p><strong>target_col</strong> – a str or list indicates the col name of target column
+in the input data frame.</p></li>
+<li><p><strong>id_col</strong> – (optional) a str indicates the col name of dataframe id. If
+it is not explicitly stated, then the data is interpreted as only
+containing a single id.</p></li>
+<li><p><strong>extra_feature_col</strong> – (optional) a str or list indicates the col name
+of extra feature columns that needs to predict the target column.</p></li>
+<li><p><strong>with_split</strong> – (optional) bool, states if we need to split the dataframe
+to train, validation and test set. The value defaults to False.</p></li>
+<li><p><strong>val_ratio</strong> – (optional) float, validation ratio. Only effective when
+with_split is set to True. The value defaults to 0.</p></li>
+<li><p><strong>test_ratio</strong> – (optional) float, test ratio. Only effective when with_split
+is set to True. The value defaults to 0.1.</p></li>
+<li><p><strong>largest_look_back</strong> – (optional) int, the largest length to look back.
+Only effective when with_split is set to True. The value defaults to 0.</p></li>
+<li><p><strong>largest_horizon</strong> – (optional) int, the largest num of steps to look
+forward. Only effective when with_split is set to True. The value defaults
+to 1.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a XShardTSDataset instance when with_split is set to False,
+three XShardTSDataset instances when with_split is set to True.</p>
+</dd>
+</dl>
+<p>Create a xshardtsdataset instance by:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Here is a df example:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># id        datetime      value   &quot;extra feature 1&quot;   &quot;extra feature 2&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 00        2019-01-01    1.9     1                   2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 01        2019-01-01    2.3     0                   9</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 00        2019-01-02    2.4     3                   4</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 01        2019-01-02    2.6     0                   2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bigdl.orca.data.pandas</span> <span class="k">import</span> <span class="n">read_csv</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">shards</span> <span class="o">=</span> <span class="n">read_csv</span><span class="p">(</span><span class="n">csv_path</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tsdataset</span> <span class="o">=</span> <span class="n">XShardsTSDataset</span><span class="o">.</span><span class="n">from_xshards</span><span class="p">(</span><span class="n">shards</span><span class="p">,</span> <span class="n">dt_col</span><span class="o">=</span><span class="s2">&quot;datetime&quot;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                          <span class="n">target_col</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="n">id_col</span><span class="o">=</span><span class="s2">&quot;id&quot;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                          <span class="n">extra_feature_col</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;extra feature 1&quot;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                                             <span class="s2">&quot;extra feature 2&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.from_sparkdf">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_sparkdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt_col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_feature_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_split</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">largest_look_back</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">largest_horizon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/data/experimental/xshards_tsdataset.html#XShardsTSDataset.from_sparkdf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.from_sparkdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize xshardtsdataset(s) from Spark Dataframe.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> – an Spark DataFrame for your raw time series data.</p></li>
+<li><p><strong>dt_col</strong> – a str indicates the col name of datetime
+column in the input data frame.</p></li>
+<li><p><strong>target_col</strong> – a str or list indicates the col name of target column
+in the input data frame.</p></li>
+<li><p><strong>id_col</strong> – (optional) a str indicates the col name of dataframe id. If
+it is not explicitly stated, then the data is interpreted as only
+containing a single id.</p></li>
+<li><p><strong>extra_feature_col</strong> – (optional) a str or list indicates the col name
+of extra feature columns that needs to predict the target column.</p></li>
+<li><p><strong>with_split</strong> – (optional) bool, states if we need to split the dataframe
+to train, validation and test set. The value defaults to False.</p></li>
+<li><p><strong>val_ratio</strong> – (optional) float, validation ratio. Only effective when
+with_split is set to True. The value defaults to 0.</p></li>
+<li><p><strong>test_ratio</strong> – (optional) float, test ratio. Only effective when with_split
+is set to True. The value defaults to 0.1.</p></li>
+<li><p><strong>largest_look_back</strong> – (optional) int, the largest length to look back.
+Only effective when with_split is set to True. The value defaults to 0.</p></li>
+<li><p><strong>largest_horizon</strong> – (optional) int, the largest num of steps to look
+forward. Only effective when with_split is set to True. The value defaults
+to 1.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a XShardTSDataset instance when with_split is set to False,
+three XShardTSDataset instances when with_split is set to True.</p>
+</dd>
+</dl>
+<p>Create a xshardtsdataset instance by:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Here is a df example:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># id        datetime      value   &quot;extra feature 1&quot;   &quot;extra feature 2&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 00        2019-01-01    1.9     1                   2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 01        2019-01-01    2.3     0                   9</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 00        2019-01-02    2.4     3                   4</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 01        2019-01-02    2.6     0                   2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">pyspark</span><span class="o">.</span><span class="n">sql</span><span class="o">.</span><span class="n">dataframe</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tsdataset</span> <span class="o">=</span> <span class="n">XShardsTSDataset</span><span class="o">.</span><span class="n">from_xshards</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">dt_col</span><span class="o">=</span><span class="s2">&quot;datetime&quot;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                          <span class="n">target_col</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="n">id_col</span><span class="o">=</span><span class="s2">&quot;id&quot;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                          <span class="n">extra_feature_col</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;extra feature 1&quot;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                                                             <span class="s2">&quot;extra feature 2&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.roll">
+<span class="sig-name descname"><span class="pre">roll</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lookback</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">horizon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_sensitive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/data/experimental/xshards_tsdataset.html#XShardsTSDataset.roll"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.roll" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sampling by rolling for machine learning/deep learning models.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lookback</strong> – int, lookback value.</p></li>
+<li><p><strong>horizon</strong> – int or list,
+if <cite>horizon</cite> is an int, we will sample <cite>horizon</cite> step
+continuously after the forecasting point.
+if <cite>horizon</cite> is a list, we will sample discretely according
+to the input list.
+specially, when <cite>horizon</cite> is set to 0, ground truth will be generated as None.</p></li>
+<li><p><strong>feature_col</strong> – str or list, indicates the feature col name. Default to None,
+where we will take all available feature in rolling.</p></li>
+<li><p><strong>target_col</strong> – str or list, indicates the target col name. Default to None,
+where we will take all target in rolling. it should be a subset of target_col
+you used to initialize the xshardtsdataset.</p></li>
+<li><p><strong>id_sensitive</strong> – bool,
+<a href="#id2"><span class="problematic" id="id3">|</span></a>if <cite>id_sensitive</cite> is False, we will rolling on each id’s sub dataframe
+<a href="#id4"><span class="problematic" id="id5">|</span></a>and fuse the sampings.
+<a href="#id6"><span class="problematic" id="id7">|</span></a>The shape of rolling will be
+<a href="#id8"><span class="problematic" id="id9">|</span></a>x: (num_sample, lookback, num_feature_col + num_target_col)
+<a href="#id10"><span class="problematic" id="id11">|</span></a>y: (num_sample, horizon, num_target_col)
+<a href="#id12"><span class="problematic" id="id13">|</span></a>where num_sample is the summation of sample number of each dataframe
+<a href="#id14"><span class="problematic" id="id15">|</span></a>if <cite>id_sensitive</cite> is True, we have not implement this currently.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the xshardtsdataset instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.scale">
+<span class="sig-name descname"><span class="pre">scale</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scaler</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/data/experimental/xshards_tsdataset.html#XShardsTSDataset.scale"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scale the time series dataset’s feature column and target column.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>scaler</strong> – a dictionary of scaler instance, where keys are id name
+and values are corresponding scaler instance. e.g. if you have
+2 ids called “id1” and “id2”, a legal scaler input can be
+{“id1”: StandardScaler(), “id2”: StandardScaler()}</p></li>
+<li><p><strong>fit</strong> – if we need to fit the scaler. Typically, the value should
+be set to True for training set, while False for validation and
+test set. The value is defaulted to True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the xshardtsdataset instance.</p>
+</dd>
+</dl>
+<p>Assume there is a training set tsdata and a test set tsdata_test.
+scale() should be called first on training set with default value fit=True,
+then be called on test set with the same scaler and fit=False.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="k">import</span> <span class="n">StandardScaler</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">scaler</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;id1&quot;</span><span class="p">:</span> <span class="n">StandardScaler</span><span class="p">(),</span> <span class="s2">&quot;id2&quot;</span><span class="p">:</span> <span class="n">StandardScaler</span><span class="p">()}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tsdata</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">scaler</span><span class="p">,</span> <span class="n">fit</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tsdata_test</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">scaler</span><span class="p">,</span> <span class="n">fit</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.unscale">
+<span class="sig-name descname"><span class="pre">unscale</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/data/experimental/xshards_tsdataset.html#XShardsTSDataset.unscale"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.unscale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unscale the time series dataset’s feature column and target column.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the xshardtsdataset instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.unscale_xshards">
+<span class="sig-name descname"><span class="pre">unscale_xshards</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/data/experimental/xshards_tsdataset.html#XShardsTSDataset.unscale_xshards"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.unscale_xshards" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unscale the time series forecaster’s numpy prediction result/ground truth.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – xshards same with self.numpy_xshards.</p></li>
+<li><p><strong>key</strong> – str, ‘y’ or ‘prediction’, default to ‘y’. if no “prediction”</p></li>
+</ul>
+</dd>
+</dl>
+<p>or “y” return an error and require our users to input a key. if key is
+None, key will be set ‘prediction’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the unscaled xshardtsdataset instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.impute">
+<span class="sig-name descname"><span class="pre">impute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'last'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">const_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/data/experimental/xshards_tsdataset.html#XShardsTSDataset.impute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.impute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Impute the tsdataset by imputing each univariate time series
+distinguished by id_col and feature_col.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mode</strong> – <p>imputation mode, select from “last”, “const” or “linear”.</p>
+<p>”last”: impute by propagating the last non N/A number to its following N/A.
+if there is no non N/A number ahead, 0 is filled instead.</p>
+<p>”const”: impute by a const value input by user.</p>
+<p>”linear”: impute by linear interpolation.</p>
+</p></li>
+<li><p><strong>const_num</strong> – indicates the const number to fill, which is only effective when mode
+is set to “const”.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the tsdataset instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.to_xshards">
+<span class="sig-name descname"><span class="pre">to_xshards</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">partition_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/data/experimental/xshards_tsdataset.html#XShardsTSDataset.to_xshards"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.to_xshards" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export rolling result in form of a dict of numpy ndarray {‘x’: …, ‘y’: …, ‘id’: …},
+where value for ‘x’ and ‘y’ are 3-dim numpy ndarray and value for ‘id’ is 2-dim ndarray
+with shape (batch_size, 1)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>partition_num</strong> – how many partition you would like to split your data.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a 3-element dict xshard. each value is a 3d numpy ndarray. The ndarray
+is casted to float32. Default to None which will partition according
+to id.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="built-in-dataset">
+<h2>Built-in Dataset<a class="headerlink" href="#built-in-dataset" title="Permalink to this headline">¶</a></h2>
+<p>Built-in dataset can be downloaded and preprocessed by this function. Train, validation and test split is also supported.</p>
+<span class="target" id="module-bigdl.chronos.data.repo_dataset"></span><dl class="py function">
+<dt class="sig sig-object py" id="bigdl.chronos.data.repo_dataset.get_public_dataset">
+<span class="sig-prename descclassname"><span class="pre">bigdl.chronos.data.repo_dataset.</span></span><span class="sig-name descname"><span class="pre">get_public_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'~/.chronos/dataset'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">redownload</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/data/repo_dataset.html#get_public_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.data.repo_dataset.get_public_dataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get public dataset.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">bigdl.chronos.data.repo_dataset</span> <span class="k">import</span> <span class="n">get_public_dataset</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tsdata_network_traffic</span> <span class="o">=</span> <span class="n">get_public_dataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;network_traffic&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – str, public dataset name, e.g. “network_traffic”.
+We only support network_traffic, AIOps, fsi, nyc_taxi, uci_electricity,
+uci_electricity_wide.</p></li>
+<li><p><strong>path</strong> – str, download path, the value defatults to “~/.chronos/dataset/”.</p></li>
+<li><p><strong>redownload</strong> – bool, if redownload the raw dataset file(s).</p></li>
+<li><p><strong>kwargs</strong> – extra arguments passed to initialize the tsdataset,
+including with_split, val_ratio and test_ratio.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="anomaly_detectors.html" class="btn btn-neutral float-left" title="Anomaly Detectors" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="simulator.html" class="btn btn-neutral float-right" title="Simulator" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

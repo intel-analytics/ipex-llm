@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TPC-H with Trusted SparkSQL on Kubernetes &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/design-tabs.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="TPC-DS with Trusted SparkSQL on Kubernetes" href="tpc-ds_with_sparksql_on_k8s.html" />
+    <link rel="prev" title="Trusted Cluster Serving with Graphene on Kubernetes" href="trusted-serving-on-k8s-guide.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">TPC-H with Trusted SparkSQL on Kubernetes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#prepare-tpc-h-kit-and-data">Prepare TPC-H kit and data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#deploy-ppml-tpc-h-on-kubernetes">Deploy PPML TPC-H on Kubernetes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>TPC-H with Trusted SparkSQL on Kubernetes</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/doc/PPML/QuickStart/tpc-h_with_sparksql_on_k8s.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="tpc-h-with-trusted-sparksql-on-kubernetes">
+<h1>TPC-H with Trusted SparkSQL on Kubernetes<a class="headerlink" href="#tpc-h-with-trusted-sparksql-on-kubernetes" title="Permalink to this headline">¶</a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>Hardware that supports SGX</p></li>
+<li><p>A fully configured Kubernetes cluster</p></li>
+<li><p>Intel SGX Device Plugin to use SGX in K8S cluster (install following instructions <a class="reference external" href="https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">here</a>)</p></li>
+</ul>
+</section>
+<section id="prepare-tpc-h-kit-and-data">
+<h2>Prepare TPC-H kit and data<a class="headerlink" href="#prepare-tpc-h-kit-and-data" title="Permalink to this headline">¶</a></h2>
+<ol class="simple">
+<li><p>Generate data</p></li>
+</ol>
+<p>Go to <a class="reference external" href="https://www.tpc.org/tpc_documents_current_versions/current_specifications5.asp">TPC Download</a> site, choose <code class="docutils literal notranslate"><span class="pre">TPC-H</span></code> source code, then download the TPC-H toolkits.
+After you download the tpc-h tools zip and uncompressed the zip file. Go to <code class="docutils literal notranslate"><span class="pre">dbgen</span></code> directory, and create a makefile based on <code class="docutils literal notranslate"><span class="pre">makefile.suite</span></code>, and run <code class="docutils literal notranslate"><span class="pre">make</span></code>.</p>
+<p>This should generate an executable called <code class="docutils literal notranslate"><span class="pre">dbgen</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">dbgen</span> <span class="o">-</span><span class="n">h</span>
+</pre></div>
+</div>
+<p>gives you the various options for generating the tables. The simplest case is running:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">dbgen</span>
+</pre></div>
+</div>
+<p>which generates tables with extension <code class="docutils literal notranslate"><span class="pre">.tbl</span></code> with scale 1 (default) for a total of rougly 1GB size across all tables. For different size tables you can use the <code class="docutils literal notranslate"><span class="pre">-s</span></code> option:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">dbgen</span> <span class="o">-</span><span class="n">s</span> <span class="mi">10</span>
+</pre></div>
+</div>
+<p>will generate roughly 10GB of input data.</p>
+<p>You can then either upload your data to remote file system or read them locally.</p>
+<ol class="simple">
+<li><p>Encrypt Data
+Encrypt data with specified Key Management Service (<code class="docutils literal notranslate"><span class="pre">SimpleKeyManagementService</span></code>, or <code class="docutils literal notranslate"><span class="pre">EHSMKeyManagementService</span></code> , or <code class="docutils literal notranslate"><span class="pre">AzureKeyManagementService</span></code>)</p></li>
+</ol>
+<p>The example code of encrypt data with <code class="docutils literal notranslate"><span class="pre">SimpleKeyManagementService</span></code> is like below:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">java</span> <span class="o">-</span><span class="n">cp</span> <span class="s1">&#39;/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/lib/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/* </span><span class="se">\</span>
+<span class="s1">   -Xmx10g </span><span class="se">\</span>
+<span class="s1">   com.intel.analytics.bigdl.ppml.examples.tpch.EncryptFiles </span><span class="se">\</span>
+<span class="s1">   --inputPath xxx/dbgen </span><span class="se">\</span>
+<span class="s1">   --outputPath xxx/dbgen-encrypted</span>
+</pre></div>
+</div>
+</section>
+<section id="deploy-ppml-tpc-h-on-kubernetes">
+<h2>Deploy PPML TPC-H on Kubernetes<a class="headerlink" href="#deploy-ppml-tpc-h-on-kubernetes" title="Permalink to this headline">¶</a></h2>
+<ol class="simple">
+<li><p>Pull docker image</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">docker</span> <span class="n">pull</span> <span class="n">intelanalytics</span><span class="o">/</span><span class="n">bigdl</span><span class="o">-</span><span class="n">ppml</span><span class="o">-</span><span class="n">trusted</span><span class="o">-</span><span class="n">big</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">ml</span><span class="o">-</span><span class="n">python</span><span class="o">-</span><span class="n">graphene</span><span class="p">:</span><span class="mf">2.1</span><span class="o">.</span><span class="mi">0</span><span class="o">-</span><span class="n">SNAPSHOT</span>
+</pre></div>
+</div>
+<ol class="simple">
+<li><p>Prepare SGX keys (following instructions <a class="reference external" href="https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-graphene#11-prepare-the-keyspassworddataenclave-keypem">here</a>), make sure keys and tpch-spark can be accessed on each K8S node</p></li>
+<li><p>Start a bigdl-ppml enabled Spark K8S client container with configured local IP, key, tpch and kuberconfig path</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>export ENCLAVE_KEY=/root/keys/enclave-key.pem
+export DATA_PATH=/root/zoo-tutorials/tpch-spark
+export KEYS_PATH=/root/keys
+export KUBERCONFIG_PATH=/root/kuberconfig
+export LOCAL_IP=$local_ip
+export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT
+sudo docker run -itd \
+        --privileged \
+        --net=host \
+        --name=spark-local-k8s-client \
+        --oom-kill-disable \
+        --device=/dev/sgx/enclave \
+        --device=/dev/sgx/provision \
+        -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
+        -v $ENCLAVE_KEY:/graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
+        -v $DATA_PATH:/ppml/trusted-big-data-ml/work/tpch-spark \
+        -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
+        -v $KUBERCONFIG_PATH:/root/.kube/config \
+        -e RUNTIME_SPARK_MASTER=k8s://https://$LOCAL_IP:6443 \
+        -e RUNTIME_K8S_SERVICE_ACCOUNT=spark \
+        -e RUNTIME_K8S_SPARK_IMAGE=$DOCKER_IMAGE \
+        -e RUNTIME_DRIVER_HOST=$LOCAL_IP \
+        -e RUNTIME_DRIVER_PORT=54321 \
+        -e RUNTIME_EXECUTOR_INSTANCES=1 \
+        -e RUNTIME_EXECUTOR_CORES=4 \
+        -e RUNTIME_EXECUTOR_MEMORY=20g \
+        -e RUNTIME_TOTAL_EXECUTOR_CORES=4 \
+        -e RUNTIME_DRIVER_CORES=4 \
+        -e RUNTIME_DRIVER_MEMORY=10g \
+        -e SGX_MEM_SIZE=64G \
+        -e SGX_LOG_LEVEL=error \
+        -e LOCAL_IP=$LOCAL_IP \
+        $DOCKER_IMAGE bash
+</pre></div>
+</div>
+<ol class="simple">
+<li><p>Attach to the client container</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">docker</span> <span class="n">exec</span> <span class="o">-</span><span class="n">it</span> <span class="n">spark</span><span class="o">-</span><span class="n">local</span><span class="o">-</span><span class="n">k8s</span><span class="o">-</span><span class="n">client</span> <span class="n">bash</span>
+</pre></div>
+</div>
+<ol class="simple">
+<li><p>Modify <code class="docutils literal notranslate"><span class="pre">spark-executor-template.yaml</span></code>, add path of <code class="docutils literal notranslate"><span class="pre">enclave-key</span></code>, <code class="docutils literal notranslate"><span class="pre">tpch-spark</span></code> and <code class="docutils literal notranslate"><span class="pre">kuberconfig</span></code> on host</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">apiVersion</span><span class="p">:</span> <span class="n">v1</span>
+<span class="n">kind</span><span class="p">:</span> <span class="n">Pod</span>
+<span class="n">spec</span><span class="p">:</span>
+  <span class="n">containers</span><span class="p">:</span>
+  <span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">spark</span><span class="o">-</span><span class="n">executor</span>
+    <span class="n">securityContext</span><span class="p">:</span>
+      <span class="n">privileged</span><span class="p">:</span> <span class="n">true</span>
+    <span class="n">volumeMounts</span><span class="p">:</span>
+	<span class="o">...</span>
+      <span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">tpch</span>
+        <span class="n">mountPath</span><span class="p">:</span> <span class="o">/</span><span class="n">ppml</span><span class="o">/</span><span class="n">trusted</span><span class="o">-</span><span class="n">big</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">ml</span><span class="o">/</span><span class="n">work</span><span class="o">/</span><span class="n">tpch</span><span class="o">-</span><span class="n">spark</span>
+      <span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">kubeconf</span>
+        <span class="n">mountPath</span><span class="p">:</span> <span class="o">/</span><span class="n">root</span><span class="o">/.</span><span class="n">kube</span><span class="o">/</span><span class="n">config</span>
+  <span class="n">volumes</span><span class="p">:</span>
+    <span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">enclave</span><span class="o">-</span><span class="n">key</span>
+      <span class="n">hostPath</span><span class="p">:</span>
+        <span class="n">path</span><span class="p">:</span>  <span class="o">/</span><span class="n">root</span><span class="o">/</span><span class="n">keys</span><span class="o">/</span><span class="n">enclave</span><span class="o">-</span><span class="n">key</span><span class="o">.</span><span class="n">pem</span>
+	<span class="o">...</span>
+    <span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">tpch</span>
+      <span class="n">hostPath</span><span class="p">:</span>
+        <span class="n">path</span><span class="p">:</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">tpch</span><span class="o">-</span><span class="n">spark</span>
+    <span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">kubeconf</span>
+      <span class="n">hostPath</span><span class="p">:</span>
+        <span class="n">path</span><span class="p">:</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">kuberconfig</span>
+</pre></div>
+</div>
+<ol class="simple">
+<li><p>Run PPML TPC-H
+bash```
+secure_password=<code class="docutils literal notranslate"><span class="pre">openssl</span> <span class="pre">rsautl</span> <span class="pre">-inkey</span> <span class="pre">/ppml/trusted-big-data-ml/work/password/key.txt</span> <span class="pre">-decrypt</span> <span class="pre">&lt;/ppml/trusted-big-data-ml/work/password/output.bin</span></code> &amp;&amp; export TF_MKL_ALLOC_MAX_BYTES=10737418240 &amp;&amp; export SPARK_LOCAL_IP=$LOCAL_IP &amp;&amp; export INPUT_DIR=xxx/dbgen export OUTPUT_DIR=xxx/output /opt/jdk8/bin/java -cp ‘/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/lib/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*’ -Xmx10g -Dbigdl.mklNumThreads=1 org.apache.spark.deploy.SparkSubmit –master $RUNTIME_SPARK_MASTER –deploy-mode client –name spark-tpch-sgx –conf spark.driver.host=$LOCAL_IP –conf spark.driver.port=54321 –conf spark.driver.memory=10g –conf spark.driver.blockManager.port=10026 –conf spark.blockManager.port=10025 –conf spark.scheduler.maxRegisteredResourcesWaitingTime=5000000 –conf spark.worker.timeout=600 –conf spark.python.use.daemon=false –conf spark.python.worker.reuse=false –conf spark.network.timeout=10000000 –conf spark.starvation.timeout=250000 –conf spark.rpc.askTimeout=600 –conf spark.sql.autoBroadcastJoinThreshold=-1 –conf spark.io.compression.codec=lz4 –conf spark.sql.shuffle.partitions=8 –conf spark.speculation=false –conf spark.executor.heartbeatInterval=10000000 –conf spark.executor.instances=24 –executor-cores 8 –total-executor-cores 192 –executor-memory 16G –properties-file /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/conf/spark-bigdl.conf –conf spark.kubernetes.authenticate.serviceAccountName=spark –conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE –conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/spark-executor-template.yaml –conf spark.kubernetes.executor.deleteOnTermination=false –conf spark.kubernetes.executor.podNamePrefix=spark-tpch-sgx –conf spark.kubernetes.sgx.enabled=true –conf spark.kubernetes.sgx.executor.mem=32g –conf spark.kubernetes.sgx.executor.jvm.mem=10g –conf spark.kubernetes.sgx.log.level=$SGX_LOG_LEVEL –conf spark.authenticate=true –conf spark.authenticate.secret=$secure_password –conf spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET=”spark-secret:secret” –conf spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET=”spark-secret:secret” –conf spark.authenticate.enableSaslEncryption=true –conf spark.network.crypto.enabled=true –conf spark.network.crypto.keyLength=128 –conf spark.network.crypto.keyFactoryAlgorithm=PBKDF2WithHmacSHA1 –conf spark.io.encryption.enabled=true –conf spark.io.encryption.keySizeBits=128 –conf spark.io.encryption.keygen.algorithm=HmacSHA1 –conf spark.ssl.enabled=true –conf spark.ssl.port=8043 –conf spark.ssl.keyPassword=$secure_password –conf spark.ssl.keyStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks –conf spark.ssl.keyStorePassword=$secure_password –conf spark.ssl.keyStoreType=JKS –conf spark.ssl.trustStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks –conf spark.ssl.trustStorePassword=$secure_password –conf spark.ssl.trustStoreType=JKS –conf spark.bigdl.kms.type=SimpleKeyManagementService –conf spark.bigdl.kms.simple.id=simpleAPPID –conf spark.bigdl.kms.simple.key=simpleAPPKEY –conf spark.bigdl.kms.key.primary=xxxx/primaryKey –conf spark.bigdl.kms.key.data=xxxx/dataKey –class com.intel.analytics.bigdl.ppml.examples.tpch.TpchQuery –verbose /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/lib/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar $INPUT_DIR $OUTPUT_DIR aes_cbc_pkcs5padding plain_text [QUERY]</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="trusted-serving-on-k8s-guide.html" class="btn btn-neutral float-left" title="Trusted Cluster Serving with Graphene on Kubernetes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tpc-ds_with_sparksql_on_k8s.html" class="btn btn-neutral float-right" title="TPC-DS with Trusted SparkSQL on Kubernetes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

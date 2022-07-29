@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Presentations &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/clipboard.min.js"></script>
+        <script src="../../_static/copybutton.js"></script>
+        <script src="../../_static/design-tabs.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Blogs" href="blogs.html" />
+    <link rel="prev" title="Nano HPO API" href="../PythonAPI/Nano/hpo_api.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Presentations</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/doc/Application/presentations.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="presentations">
+<h1>Presentations<a class="headerlink" href="#presentations" title="Permalink to this headline">¶</a></h1>
+<hr class="docutils" />
+<p><strong>Tutorial:</strong></p>
+<ul class="simple">
+<li><p>Seamlessly Scaling out Big Data AI on Ray and Apache Spark, <a class="reference external" href="https://cvpr2021.thecvf.com/program">CVPR 2021</a> <a class="reference external" href="https://jason-dai.github.io/cvpr2021/">tutorial</a>, June 2021 (<a class="reference external" href="https://jason-dai.github.io/cvpr2021/slides/End-to-End%20Big%20Data%20AI%20Pipeline%20using%20Analytics%20Zoo%20-%20CVPR21.pdf">slides</a>)</p></li>
+<li><p>Automated Machine Learning Workflow for Distributed Big Data Using Analytics Zoo,  <a class="reference external" href="https://cvpr2020.thecvf.com/program/tutorials">CVPR 2020</a> <a class="reference external" href="https://jason-dai.github.io/cvpr2020/">tutorial</a>, June 2020 (<a class="reference external" href="https://jason-dai.github.io/cvpr2020/slides/AIonBigData_cvpr20.pdf">slides</a>)</p></li>
+<li><p>Building Deep Learning Applications for Big Data, <a class="reference external" href="https://aaai.org/Conferences/AAAI-19/aaai19tutorials/#sp2">AAAI 2019</a> <a class="reference external" href="https://jason-dai.github.io/aaai2019/">tutorial</a>, January 2019 (<a class="reference external" href="https://jason-dai.github.io/aaai2019/slides/AI%20on%20Big%20Data%20(Jason%20Dai).pdf">slides</a>)</p></li>
+<li><p>Analytics Zoo: Distributed TensorFlow and Keras on Apache Spark, <a class="reference external" href="https://conferences.oreilly.com/artificial-intelligence/ai-ca-2019/public/schedule/detail/77069">AI conference</a>, Sep 2019, San Jose (<a class="reference external" href="https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Tutorial%20Analytics%20ZOO.pdf">slides</a>)</p></li>
+<li><p>Building Deep Learning Applications on Big Data Platforms, <a class="reference external" href="https://cvpr2018.thecvf.com/">CVPR 2018</a> <a class="reference external" href="https://jason-dai.github.io/cvpr2018/">tutorial</a>, June 2018 (<a class="reference external" href="https://jason-dai.github.io/cvpr2018/slides/BigData_DL_Jason-CVPR.pdf">slides</a>)</p></li>
+</ul>
+<p><strong>Talks:</strong></p>
+<ul class="simple">
+<li><p>E2E Smart Transportation CV application in Inspur (using Insight Data-Intelligence platform), <a class="reference external" href="https://jason-dai.github.io/cvpr2021/">CVPR 2021</a>, July 2021 (<a class="reference external" href="https://jason-dai.github.io/cvpr2021/slides/Inspur%20E2E%20Smart%20Transportation%20CV%20application%20-CVPR21.pdf">slides</a>)</p></li>
+<li><p>Mobile Order Click-Through Rate (CTR) Recommendation with Ray on Apache Spark at Burger King, <a class="reference external" href="https://www.anyscale.com/events/2021/06/22/mobile-order-click-through-rate-ctr-recommendation-with-ray-on-apache-spark-at-burger-king">Ray Summit 2021</a>, June 2021 (<a class="reference external" href="https://files.speakerdeck.com/presentations/1870110b5adf4bfc8f0c76255a417f09/Kai_Huang_and_Luyang_Wang.pdf">slides</a>)</p></li>
+<li><p>Deep Reinforcement Learning Recommenders using RayOnSpark, <strong>Data + AI Summit 2021</strong>, May 2021 (<a class="reference external" href="https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/210527DeepReinforcementLearningRecommendersUsingRayOnSpark2.pdf">slides</a>)</p></li>
+<li><p>Cluster Serving: Deep Learning Model Serving for Big Data, <strong>Data + AI Summit 2021</strong>, May 2021 (<a class="reference external" href="https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/210526Cluster-Serving.pdf">slides</a>)</p></li>
+<li><p>Offer Recommendation System with Apache Spark at Burger King, <a class="reference external" href="https://databricks.com/session_na21/offer-recommendation-system-with-apache-spark-at-burger-king">Data + AI Summit 2021</a>, May 2021 (<a class="reference external" href="https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/20210526Offer%20Recommendation.pdf">slides</a>)</p></li>
+<li><p>Context-aware Fast Food Recommendation with Ray on Apache Spark at Burger King, <a class="reference external" href="https://databricks.com/session_eu20/context-aware-fast-food-recommendation-with-ray-on-apache-spark-at-burger-king">Data + AI Summit Europe 2020</a>, November 2020 (<a class="reference external" href="https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/1118%20Context-aware%20Fast%20Food%20Recommendation%20with%20Ray%20on%20Apache%20Spark%20at%20Burger%20King.pdf">slides</a>)</p></li>
+<li><p>Cluster Serving: Distributed Model Inference using Apache Flink in Analytics Zoo, <a class="reference external" href="https://www.flink-forward.org/global-2020/conference-program#cluster-serving--distributed-model-inference-using-apache-flink-in-analytics-zoo">Flink Forward 2020</a>, October 2020 (<a class="reference external" href="https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/1020%20Cluster%20Serving%20Distributed%20Model%20Inference%20using%20Apache%20Flink%20in%20Analytics%20Zoo%20.pdf">slides</a>)</p></li>
+<li><p>Project Zouwu: Scalable AutoML for Telco Time Series Analysis using Ray and Analytics Zoo, <a class="reference external" href="https://anyscale.com/blog/videos-and-slides-for-the-fourth-ray-summit-connect-august-12-2020/">Ray Summit Connect 2020</a>, August 2020 (<a class="reference external" href="https://anyscale.com/wp-content/uploads/2020/08/Ding-Ding-Connect-slides.pdf">slides</a>)</p></li>
+<li><p>Cluster Serving: Distributed Model Inference using Big Data Streaming in Analytics Zoo, <a class="reference external" href="https://www.usenix.org/conference/opml20/presentation/song">OpML 2020</a>, July 2020 (<a class="reference external" href="https://www.usenix.org/sites/default/files/conference/protected-files/opml20_talks_43_slides_song.pdf">slides</a>)</p></li>
+<li><p>Scalable AutoML for Time Series Forecasting using Ray, <a class="reference external" href="https://www.usenix.org/conference/opml20/presentation/huang">OpML 2020</a>, July 2020 (<a class="reference external" href="https://www.usenix.org/sites/default/files/conference/protected-files/opml20_talks_84_slides_huang.pdf">slides</a>)</p></li>
+<li><p>Scalable AutoML for Time Series Forecasting using Ray, <a class="reference external" href="https://databricks.com/session_na20/scalable-automl-for-time-series-forecasting-using-ray">Spark + AI Summit 2020</a>, June 2020 (<a class="reference external" href="https://www.slideshare.net/databricks/scalable-automl-for-time-series-forecasting-using-ray">slides</a>)</p></li>
+<li><p>Running Emerging AI Applications on Big Data Platforms with Ray On Apache Spark, <a class="reference external" href="https://databricks.com/session_na20/running-emerging-ai-applications-on-big-data-platforms-with-ray-on-apache-spark">Spark + AI Summit 2020</a>, June 2020 (<a class="reference external" href="https://www.slideshare.net/databricks/running-emerging-ai-applications-on-big-data-platforms-with-ray-on-apache-spark">slides</a>)</p></li>
+<li><p>Vectorized Deep Learning Acceleration from Preprocessing to Inference and Training on Apache Spark in SK Telecom, <a class="reference external" href="https://databricks.com/session_na20/vectorized-deep-learning-acceleration-from-preprocessing-to-inference-and-training-on-apache-spark-in-sk-telecom">Spark + AI Summit 2020</a>, June 2020 (<a class="reference external" href="https://www.slideshare.net/databricks/vectorized-deep-learning-acceleration-from-preprocessing-to-inference-and-training-on-apache-spark-in-sk-telecom?from_action=save">slides</a>)</p></li>
+<li><p>Architecture and practice of big data analysis and deep learning model inference using Analytics Zoo on Flink, <a class="reference external" href="https://developer.aliyun.com/special/ffa2019-conference?spm=a2c6h.13239638.0.0.21f27955PCNMUB#">Flink Forward Asia 2019</a>, Nov 2019, Beijing (<a class="reference external" href="https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Architecture%20and%20practice%20of%20big%20data%20analysis%20and%20deep%20learning%20model%20inference%20using%20Analytics%20Zoo%20on%20Flink(FFA2019)%20.pdf">slides</a>)</p></li>
+<li><p>Data analysis + AI platform technology and case studies, <a class="reference external" href="https://aicon.infoq.cn/2019/beijing/">AICon BJ 2019</a>, Nov 2019, Beijing (<a class="reference external" href="https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/AICON%20AZ%20Cluster%20Serving%20Beijing%20Qiyuan_v5.pdf">slides</a>)</p></li>
+<li><p>Architectural practices for building a unified big data AI application with Analytics-Zoo, <a class="reference external" href="https://qcon.infoq.cn/2019/shanghai/presentation/1921">QCon SH 2019</a>, Oct 2019, Shanghai (<a class="reference external" href="https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Architectural%20practices%20for%20building%20a%20unified%20big%20data%20AI%20application%20with%20Analytics-Zoo.pdf">slides</a>)</p></li>
+<li><p>Building AI to play the FIFA video game using distributed TensorFlow, <a class="reference external" href="https://conferences.oreilly.com/tensorflow/tf-ca/public/schedule/detail/78309">TensorFlow World</a>, Oct 2019, Santa Clara (<a class="reference external" href="https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Building%20AI%20to%20play%20the%20FIFA%20video%20game%20using%20distributed%20TensorFlow.pdf">slides</a>)</p></li>
+<li><p>Deep Learning Pipelines for High Energy Physics using Apache Spark with Distributed Keras on Analytics Zoo, <a class="reference external" href="https://databricks.com/session_eu19/deep-learning-pipelines-for-high-energy-physics-using-apache-spark-with-distributed-keras-on-analytics-zoo">Spark+AI Summit</a>, Oct 2019, Amsterdam (<a class="reference external" href="https://www.slideshare.net/databricks/deep-learning-pipelines-for-high-energy-physics-using-apache-spark-with-distributed-keras-on-analytics-zoo">slides</a>)</p></li>
+<li><p>Apache Spark AI Use Case in Telco: Network Quality Analysis and Prediction with Geospatial Visualization, <a class="reference external" href="https://databricks.com/session_eu19/apache-spark-ai-use-case-in-telco-network-quality-analysis-and-prediction-with-geospatial-visualization">Spark+AI Summit</a>, Oct 2019, Amsterdam (<a class="reference external" href="https://www.slideshare.net/databricks/apache-spark-ai-use-case-in-telco-network-quality-analysis-and-prediction-with-geospatial-visualization">slides</a>)</p></li>
+<li><p>LSTM-based time series anomaly detection using Analytics Zoo for Spark and BigDL, <a class="reference external" href="https://conferences.oreilly.com/strata/strata-eu/public/schedule/detail/74077">Strata Data conference</a>, May 2019, London (<a class="reference external" href="https://cdn.oreillystatic.com/en/assets/1/event/292/LSTM-based%20time%20series%20anomaly%20detection%20using%20Analytics%20Zoo%20for%20Spark%20and%20BigDL%20Presentation.pptx">slides</a>)</p></li>
+<li><p>Game Playing Using AI on Apache Spark, <a class="reference external" href="https://databricks.com/session/game-playing-using-ai-on-apache-spark">Spark+AI Summit</a>, April 2019, San Francisco (<a class="reference external" href="https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/game-playing-using-ai-on-apache-spark.pdf">slides</a>)</p></li>
+<li><p>Using Deep Learning on Apache Spark to Diagnose Thoracic Pathology from Chest X-rays in DELL EMC, <a class="reference external" href="https://databricks.com/session/using-deep-learning-on-apache-spark-to-diagnose-thoracic-pathology-from-chest-x-rays">Spark+AI Summit</a>, April 2019, San Francisco (<a class="reference external" href="https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Using%20Deep%20Learning%20on%20Apache%20Spark%20to%20diagnose%20thoracic%20pathology%20from%20.._.pdf">slides</a>)</p></li>
+<li><p>Leveraging NLP and Deep Learning for Document Recommendation in the Cloud, <a class="reference external" href="https://databricks.com/session/leveraging-nlp-and-deep-learning-for-document-recommendations-in-the-cloud">Spark+AI Summit</a>, April 2019, San Francisco (<a class="reference external" href="https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Leveraging%20NLP%20and%20Deep%20Learning%20for%20Document%20Recommendation%20in%20the%20Cloud.pdf">slides</a>)</p></li>
+<li><p>Analytics Zoo: Distributed Tensorflow, Keras and BigDL in production on Apache Spark, <a class="reference external" href="https://conferences.oreilly.com/strata/strata-ca/public/schedule/detail/72802">Strata Data conference</a>, March 2019, San Francisco (<a class="reference external" href="https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Analytics%20Zoo-Distributed%20Tensorflow%2C%20Keras%20and%20BigDL%20in%20production%20on%20Apache%20Spark.pdf">slides</a>)</p></li>
+<li><p>User-based real-time product recommendations leveraging deep learning using Analytics Zoo on Apache Spark in Office Depot, <a class="reference external" href="https://conferences.oreilly.com/strata/strata-ca/public/schedule/detail/73079">Strata Data conference</a>, March 2019, San Francisco (<a class="reference external" href="https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/User-based%20real-time%20product%20recommendations%20leveraging%20deep%20learning%20using%20Analytics%20Zoo%20on%20Apache%20Spark%20and%20BigDL%20Presentation.pdf">slides</a>)</p></li>
+<li><p>Analytics Zoo: Unifying Big Data Analytics and AI for Apache Spark, <a class="reference external" href="https://www.meetup.com/Shanghai-Apache-Spark-AI-Meetup/events/255788956/">Shanghai Apache Spark + AI meetup</a>, Nov 2018, Shanghai (<a class="reference external" href="https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Analytics%20Zoo-Unifying%20Big%20Data%20Analytics%20and%20AI%20for%20Apache%20Spark.pdf">slides</a>)</p></li>
+<li><p>Use Intel Analytics Zoo to build an intelligent QA Bot for Microsoft Azure, <a class="reference external" href="https://www.meetup.com/Shanghai-Apache-Spark-AI-Meetup/events/255788956/">Shanghai Apache Spark + AI meetup</a>, Nov 2018, Shanghai (<a class="reference external" href="https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Use%20Intel%20Analytics%20Zoo%20to%20build%20an%20intelligent%20QA%20Bot%20for%20Microsoft%20Azure.pdf">slides</a>)</p></li>
+<li><p>A deep learning approach for precipitation nowcasting with RNN using Analytics Zoo in Cray, <a class="reference external" href="https://conferences.oreilly.com/strata/strata-ny-2018/public/schedule/detail/69413">Strata Data conference</a>, Sep 2018, New York (<a class="reference external" href="https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/A%20deep%20learning%20approach%20for%20precipitation%20nowcasting%20with%20RNN%20using%20Analytics%20Zoo%20on%20BigDL.pdf">slides</a>)</p></li>
+<li><p>Job recommendations leveraging deep learning using Analytics Zoo on Apache Spark in Talroo, <a class="reference external" href="https://conferences.oreilly.com/strata/strata-ny-2018/public/schedule/detail/69113">Strata Data conference</a>, Sep 2018, New York (<a class="reference external" href="https://cdn.oreillystatic.com/en/assets/1/event/278/Job%20recommendations%20leveraging%20deep%20learning%20using%20Analytics%20Zoo%20on%20Apache%20Spark%20and%20BigDL%20Presentation.pdf">slides</a>)</p></li>
+<li><p>Accelerating Deep Learning Training with BigDL and Drizzle on Apache Spark, <a class="reference external" href="https://databricks.com/session/accelerating-deep-learning-training-with-bigdl-and-drizzle-on-apache-spark">Spark + AI Summit</a>, June 2018, San Francisco (<a class="reference external" href="https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Accelerating%20deep%20learning%20on%20apache%20spark%20Using%20BigDL%20with%20coarse-grained%20scheduling.pdf">slides</a>)</p></li>
+<li><p>Using Crowdsourced Images to Create Image Recognition Models with Analytics Zoo in World Bank, <a class="reference external" href="https://databricks.com/session/using-crowdsourced-images-to-create-image-recognition-models-with-bigdl">Spark + AI Summit</a>, June 2018, San Francisco (<a class="reference external" href="https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Using%20Crowdsourced%20Images%20to%20Create%20Image%20Recognition%20Models%20with%20Analytics%20Zoo%20using%20BigDL.pdf">slides</a>)</p></li>
+<li><p>Building Deep Reinforcement Learning Applications on Apache Spark with Analytics Zoo using BigDL, <a class="reference external" href="https://databricks.com/session/building-deep-reinforcement-learning-applications-on-apache-spark-using-bigdl">Spark + AI Summit</a>, June 2018, San Francisco (<a class="reference external" href="https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Building%20Deep%20Reinforcement%20Learning%20Applications%20on%20Apache%20Spark%20with%20Analytics%20Zoo%20using%20BigDL.pdf">slides</a>)</p></li>
+<li><p>Using BigDL on Apache Spark to Improve the MLS Real Estate Search Experience at Scale, <a class="reference external" href="https://databricks.com/session/using-bigdl-on-apache-spark-to-improve-the-mls-real-estate-search-experience-at-scale">Spark + AI Summit</a>, June 2018, San Francisco</p></li>
+<li><p>Analytics Zoo: Building Analytics and AI Pipeline for Apache Spark and BigDL, <a class="reference external" href="https://databricks.com/session/analytics-zoo-building-analytics-and-ai-pipeline-for-apache-spark-and-bigdl">Spark + AI Summit</a>, June 2018, San Francisco</p></li>
+<li><p>Using Siamese CNNs for removing duplicate entries from real estate listing databases, <a class="reference external" href="https://conferences.oreilly.com/strata/strata-eu-2018/public/schedule/detail/65518">Strata Data conference</a>, May 2018, London (<a class="reference external" href="https://cdn.oreillystatic.com/en/assets/1/event/267/Using%20Siamese%20CNNs%20for%20removing%20duplicate%20entries%20from%20real%20estate%20listing%20databases%20Presentation.pdf">slides</a>)</p></li>
+<li><p>Classifying images on Spark in World Bank, <a class="reference external" href="https://conferences.oreilly.com/artificial-intelligence/ai-ny-2018/public/schedule/detail/64939">AI conference</a>, May 2018, New York (<a class="reference external" href="https://cdn.oreillystatic.com/en/assets/1/event/280/Classifying%20images%20in%20Spark%20Presentation.pdf">slides</a>)</p></li>
+<li><p>Improving user-merchant propensity modeling using neural collaborative filtering and wide and deep models on Spark BigDL in Mastercard, <a class="reference external" href="https://conferences.oreilly.com/strata/strata-ca-2018/public/schedule/detail/63897">Strata Data conference</a>, March 2018, San Jose (<a class="reference external" href="https://cdn.oreillystatic.com/en/assets/1/event/269/Improving%20user-merchant%20propensity%20modeling%20using%20neural%20collaborative%20filtering%20and%20wide%20and%20deep%20models%20on%20Spark%20BigDL%20at%20scale%20Presentation.pdf">slides</a>)</p></li>
+<li><p>Accelerating deep learning on Apache Spark using BigDL with coarse-grained scheduling, <a class="reference external" href="https://conferences.oreilly.com/strata/strata-ca-2018/public/schedule/detail/63960">Strata Data conference</a>, March 2018, San Jose (<a class="reference external" href="https://cdn.oreillystatic.com/en/assets/1/event/269/Accelerating%20deep%20learning%20on%20Apache%20Spark%20using%20BigDL%20with%20coarse-grained%20scheduling%20Presentation.pptx">slides</a>)</p></li>
+<li><p>Automatic 3D MRI knee damage classification with 3D CNN using BigDL on Spark in UCSF, <a class="reference external" href="https://conferences.oreilly.com/strata/strata-ca-2018/public/schedule/detail/64023">Strata Data conference</a>, March 2018, San Jose (<a class="reference external" href="https://cdn.oreillystatic.com/en/assets/1/event/269/Automatic%203D%20MRI%20knee%20damage%20classification%20with%203D%20CNN%20using%20BigDL%20on%20Spark%20Presentation.pdf">slides</a>)</p></li>
+</ul>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../PythonAPI/Nano/hpo_api.html" class="btn btn-neutral float-left" title="Nano HPO API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="blogs.html" class="btn btn-neutral float-right" title="Blogs" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

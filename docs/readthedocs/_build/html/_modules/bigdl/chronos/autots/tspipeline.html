@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bigdl.chronos.autots.tspipeline &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/clipboard.min.js"></script>
+        <script src="../../../../_static/copybutton.js"></script>
+        <script src="../../../../_static/tabs.js"></script>
+        <script src="../../../../_static/design-tabs.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>bigdl.chronos.autots.tspipeline</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bigdl.chronos.autots.tspipeline</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright 2016 The BigDL Authors.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">types</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">bigdl.chronos.data</span> <span class="k">import</span> <span class="n">TSDataset</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.metric.forecast_metrics</span> <span class="k">import</span> <span class="n">Evaluator</span>
+
+<span class="n">DEFAULT_MODEL_INIT_DIR</span> <span class="o">=</span> <span class="s2">&quot;model_init.ckpt&quot;</span>
+<span class="n">DEFAULT_BEST_MODEL_DIR</span> <span class="o">=</span> <span class="s2">&quot;best_model.ckpt&quot;</span>
+<span class="n">DEFAULT_DATA_PROCESS_DIR</span> <span class="o">=</span> <span class="s2">&quot;data_process.ckpt&quot;</span>
+<span class="n">DEFAULT_BEST_CONFIG_DIR</span> <span class="o">=</span> <span class="s2">&quot;best_config.ckpt&quot;</span>
+
+
+<div class="viewcode-block" id="TSPipeline"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/autotsestimator.html#bigdl.chronos.autots.tspipeline.TSPipeline">[docs]</a><span class="k">class</span> <span class="nc">TSPipeline</span><span class="p">:</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    TSPipeline is an E2E solution for time series analysis (only forecasting task for now).</span>
+<span class="sd">    You can use TSPipeline to:</span>
+
+<span class="sd">    1. Further development on the prototype. (predict, evaluate, incremental fit)</span>
+
+<span class="sd">    2. Deploy the model to their scenario. (save, load)</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">model</span><span class="p">,</span>
+                 <span class="n">loss</span><span class="p">,</span>
+                 <span class="n">optimizer</span><span class="p">,</span>
+                 <span class="n">model_creator</span><span class="p">,</span>
+                 <span class="n">loss_creator</span><span class="p">,</span>
+                 <span class="n">optimizer_creator</span><span class="p">,</span>
+                 <span class="n">best_config</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">bigdl.nano.pytorch.trainer</span> <span class="k">import</span> <span class="n">Trainer</span>
+
+        <span class="c1"># for runtime fit/predict/evaluate</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_best_model</span> <span class="o">=</span> <span class="n">Trainer</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+                                           <span class="n">loss</span><span class="o">=</span><span class="n">loss</span><span class="p">,</span>
+                                           <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_best_config</span> <span class="o">=</span> <span class="n">best_config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_onnxruntime_fp32</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_onnxruntime_int8</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pytorch_int8</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># for data postprocessing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scaler</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scaler_index</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s2">&quot;scaler&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_scaler</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;scaler&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_scaler_index</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;scaler_index&quot;</span><span class="p">]</span>
+
+        <span class="c1"># for save/load</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_creator</span> <span class="o">=</span> <span class="n">model_creator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss_creator</span> <span class="o">=</span> <span class="n">loss_creator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer_creator</span> <span class="o">=</span> <span class="n">optimizer_creator</span>
+
+<div class="viewcode-block" id="TSPipeline.evaluate"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/autotsestimator.html#bigdl.chronos.autots.tspipeline.TSPipeline.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;mse&#39;</span><span class="p">],</span> <span class="n">multioutput</span><span class="o">=</span><span class="s2">&quot;uniform_average&quot;</span><span class="p">,</span>
+                 <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">quantize</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Evaluate the time series pipeline.</span>
+
+<span class="sd">        :param data: data can be a TSDataset or data creator.</span>
+<span class="sd">               The TSDataset should follow the same operations as the training</span>
+<span class="sd">               TSDataset used in AutoTSEstimator.fit.</span>
+<span class="sd">        :param metrics: list of string or callable. e.g. [&#39;mse&#39;] or [customized_metrics]</span>
+<span class="sd">               If callable function, it signature should be func(y_true, y_pred), where y_true and</span>
+<span class="sd">               y_pred are numpy ndarray. The function should return a float value as evaluation</span>
+<span class="sd">               result.</span>
+<span class="sd">        :param multioutput: Defines aggregating of multiple output values.</span>
+<span class="sd">               String in [&#39;raw_values&#39;, &#39;uniform_average&#39;]. The value defaults to</span>
+<span class="sd">               &#39;uniform_average&#39;.</span>
+<span class="sd">        :param batch_size: predict batch_size, the process will cost more time</span>
+<span class="sd">               if batch_size is small while cost less memory. The param is only</span>
+<span class="sd">               effective when data is a TSDataset. The values defaults to 32.</span>
+<span class="sd">        :param quantize: if use the quantized model to predict.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="kn">from</span> <span class="nn">bigdl.chronos.pytorch.utils</span> <span class="k">import</span> <span class="n">_pytorch_fashion_inference</span>
+
+        <span class="c1"># predict</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">TSDataset</span><span class="p">):</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tsdataset_to_numpy</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">is_predict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">quantize</span><span class="p">:</span>
+                <span class="n">yhat</span> <span class="o">=</span> <span class="n">_pytorch_fashion_inference</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_pytorch_int8</span><span class="p">,</span>
+                                                  <span class="n">input_data</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
+                                                  <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_best_model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+                <span class="n">yhat</span> <span class="o">=</span> <span class="n">_pytorch_fashion_inference</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_best_model</span><span class="p">,</span>
+                                                  <span class="n">input_data</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
+                                                  <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
+            <span class="c1"># unscale</span>
+            <span class="n">yhat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tsdataset_unscale</span><span class="p">(</span><span class="n">yhat</span><span class="p">)</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tsdataset_unscale</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">FunctionType</span><span class="p">):</span>
+            <span class="n">yhat_list</span><span class="p">,</span> <span class="n">y_list</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_best_config</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;batch_size&#39;</span><span class="p">:</span> <span class="n">batch_size</span><span class="p">})</span>
+            <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_best_config</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">quantize</span><span class="p">:</span>
+                    <span class="n">yhat</span> <span class="o">=</span> <span class="n">_pytorch_fashion_inference</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_pytorch_int8</span><span class="p">,</span>
+                                                      <span class="n">input_data</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_best_model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+                    <span class="n">yhat</span> <span class="o">=</span> <span class="n">_pytorch_fashion_inference</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_best_model</span><span class="p">,</span>
+                                                      <span class="n">input_data</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+                <span class="n">yhat_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">yhat</span><span class="p">)</span>
+                <span class="n">y_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+            <span class="n">yhat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">yhat_list</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">y_list</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;We only support input tsdataset or data creator, &quot;</span>
+                              <span class="n">f</span><span class="s2">&quot;but found </span><span class="si">{data.__class__.__name__}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># evaluate</span>
+        <span class="n">aggregate</span> <span class="o">=</span> <span class="s1">&#39;mean&#39;</span> <span class="k">if</span> <span class="n">multioutput</span> <span class="o">==</span> <span class="s1">&#39;uniform_average&#39;</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">eval_result</span> <span class="o">=</span> <span class="n">Evaluator</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">metrics</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">yhat</span><span class="p">,</span> <span class="n">aggregate</span><span class="o">=</span><span class="n">aggregate</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">eval_result</span></div>
+
+<div class="viewcode-block" id="TSPipeline.evaluate_with_onnx"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/autotsestimator.html#bigdl.chronos.autots.tspipeline.TSPipeline.evaluate_with_onnx">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_with_onnx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;mse&#39;</span><span class="p">],</span> <span class="n">multioutput</span><span class="o">=</span><span class="s2">&quot;uniform_average&quot;</span><span class="p">,</span>
+                           <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">quantize</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Evaluate the time series pipeline with onnx.</span>
+
+<span class="sd">        :param data: data can be a TSDataset or data creator.</span>
+<span class="sd">               The TSDataset should follow the same operations as the training</span>
+<span class="sd">               TSDataset used in AutoTSEstimator.fit.</span>
+<span class="sd">        :param metrics: list of string or callable. e.g. [&#39;mse&#39;] or [customized_metrics]</span>
+<span class="sd">               If callable function, it signature should be func(y_true, y_pred), where y_true and</span>
+<span class="sd">               y_pred are numpy ndarray. The function should return a float value as evaluation</span>
+<span class="sd">               result.</span>
+<span class="sd">        :param multioutput: Defines aggregating of multiple output values.</span>
+<span class="sd">               String in [&#39;raw_values&#39;, &#39;uniform_average&#39;]. The value defaults to</span>
+<span class="sd">               &#39;uniform_average&#39;.</span>
+<span class="sd">        :param batch_size: predict batch_size, the process will cost more time</span>
+<span class="sd">               if batch_size is small while cost less memory. The param is only</span>
+<span class="sd">               effective when data is a TSDataset. The values defaults to 32.</span>
+<span class="sd">        :param quantize: if use the quantized model to predict.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="kn">from</span> <span class="nn">bigdl.chronos.pytorch</span> <span class="k">import</span> <span class="n">TSTrainer</span> <span class="k">as</span> <span class="n">Trainer</span>
+        <span class="kn">from</span> <span class="nn">bigdl.chronos.pytorch.utils</span> <span class="k">import</span> <span class="n">_pytorch_fashion_inference</span>
+        <span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span>
+        <span class="c1"># predict with onnx</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">TSDataset</span><span class="p">):</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tsdataset_to_numpy</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">is_predict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">yhat</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">quantize</span><span class="p">:</span>
+                <span class="n">yhat</span> <span class="o">=</span> <span class="n">_pytorch_fashion_inference</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_onnxruntime_int8</span><span class="p">,</span>
+                                                  <span class="n">input_data</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
+                                                  <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_onnxruntime_fp32</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_onnxruntime_fp32</span> <span class="o">=</span> <span class="n">Trainer</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_best_model</span><span class="p">,</span>
+                                                           <span class="n">input_sample</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">]),</span>
+                                                           <span class="n">accelerator</span><span class="o">=</span><span class="s2">&quot;onnxruntime&quot;</span><span class="p">)</span>
+                <span class="n">yhat</span> <span class="o">=</span> <span class="n">_pytorch_fashion_inference</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_onnxruntime_fp32</span><span class="p">,</span>
+                                                  <span class="n">input_data</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
+                                                  <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
+            <span class="n">yhat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tsdataset_unscale</span><span class="p">(</span><span class="n">yhat</span><span class="p">)</span>
+            <span class="c1"># unscale</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tsdataset_unscale</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">FunctionType</span><span class="p">):</span>
+            <span class="n">yhat_list</span><span class="p">,</span> <span class="n">y_list</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_best_config</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;batch_size&#39;</span><span class="p">:</span> <span class="n">batch_size</span><span class="p">})</span>
+            <span class="n">yhat</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_best_config</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">quantize</span><span class="p">:</span>
+                    <span class="n">yhat</span> <span class="o">=</span> <span class="n">_pytorch_fashion_inference</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_onnxruntime_int8</span><span class="p">,</span>
+                                                      <span class="n">input_data</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span>
+                                                      <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_onnxruntime_fp32</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_onnxruntime_fp32</span> <span class="o">=</span> <span class="n">Trainer</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_best_model</span><span class="p">,</span>
+                                                               <span class="n">input_sample</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">],</span>
+                                                               <span class="n">accelerator</span><span class="o">=</span><span class="s2">&quot;onnxruntime&quot;</span><span class="p">)</span>
+                    <span class="n">yhat</span> <span class="o">=</span> <span class="n">_pytorch_fashion_inference</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_onnxruntime_fp32</span><span class="p">,</span>
+                                                      <span class="n">input_data</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span>
+                                                      <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
+                <span class="n">yhat_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">yhat</span><span class="p">)</span>
+                <span class="n">y_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+            <span class="n">yhat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">yhat_list</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">y_list</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;We only support input tsdataset or data creator, &quot;</span>
+                              <span class="n">f</span><span class="s2">&quot;but found </span><span class="si">{data.__class__.__name__}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="c1"># evaluate</span>
+        <span class="n">aggregate</span> <span class="o">=</span> <span class="s1">&#39;mean&#39;</span> <span class="k">if</span> <span class="n">multioutput</span> <span class="o">==</span> <span class="s1">&#39;uniform_average&#39;</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">eval_result</span> <span class="o">=</span> <span class="n">Evaluator</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">metrics</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">yhat</span><span class="p">,</span> <span class="n">aggregate</span><span class="o">=</span><span class="n">aggregate</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">eval_result</span></div>
+
+<div class="viewcode-block" id="TSPipeline.predict"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/autotsestimator.html#bigdl.chronos.autots.tspipeline.TSPipeline.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">quantize</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Rolling predict with time series pipeline.</span>
+
+<span class="sd">        :param data: data can be a TSDataset or data creator.</span>
+<span class="sd">               The TSDataset should follow the same operations as the training</span>
+<span class="sd">               TSDataset used in AutoTSEstimator.fit.</span>
+<span class="sd">        :param batch_size: predict batch_size, the process will cost more time</span>
+<span class="sd">               if batch_size is small while cost less memory.  The param is only</span>
+<span class="sd">               effective when data is a TSDataset. The values defaults to 32.</span>
+<span class="sd">        :param quantize: if use the quantized model to predict.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="kn">from</span> <span class="nn">bigdl.chronos.pytorch.utils</span> <span class="k">import</span> <span class="n">_pytorch_fashion_inference</span>
+        <span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">TSDataset</span><span class="p">):</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tsdataset_to_numpy</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">is_predict</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">quantize</span><span class="p">:</span>
+                <span class="n">yhat</span> <span class="o">=</span> <span class="n">_pytorch_fashion_inference</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_pytorch_int8</span><span class="p">,</span>
+                                                  <span class="n">input_data</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
+                                                  <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_best_model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+                <span class="n">yhat</span> <span class="o">=</span> <span class="n">_pytorch_fashion_inference</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_best_model</span><span class="p">,</span>
+                                                  <span class="n">input_data</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
+                                                  <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
+            <span class="n">yhat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tsdataset_unscale</span><span class="p">(</span><span class="n">yhat</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">FunctionType</span><span class="p">):</span>
+            <span class="n">yhat_list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_best_config</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;batch_size&#39;</span><span class="p">:</span> <span class="n">batch_size</span><span class="p">})</span>
+            <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_best_config</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">quantize</span><span class="p">:</span>
+                    <span class="n">yhat</span> <span class="o">=</span> <span class="n">_pytorch_fashion_inference</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_pytorch_int8</span><span class="p">,</span>
+                                                      <span class="n">input_data</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_best_model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+                    <span class="n">yhat</span> <span class="o">=</span> <span class="n">_pytorch_fashion_inference</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_best_model</span><span class="p">,</span>
+                                                      <span class="n">input_data</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+                <span class="n">yhat_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">yhat</span><span class="p">)</span>
+            <span class="n">yhat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">yhat_list</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;We only support input tsdataset or data creator, &quot;</span>
+                              <span class="n">f</span><span class="s2">&quot;but found </span><span class="si">{data.__class__.__name__}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">yhat</span></div>
+
+<div class="viewcode-block" id="TSPipeline.predict_with_onnx"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/autotsestimator.html#bigdl.chronos.autots.tspipeline.TSPipeline.predict_with_onnx">[docs]</a>    <span class="k">def</span> <span class="nf">predict_with_onnx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">quantize</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Rolling predict with onnx with time series pipeline.</span>
+
+<span class="sd">        :param data: data can be a TSDataset or data creator.</span>
+<span class="sd">               The TSDataset should follow the same operations as the training</span>
+<span class="sd">               TSDataset used in AutoTSEstimator.fit.</span>
+<span class="sd">        :param batch_size: predict batch_size, the process will cost more time</span>
+<span class="sd">               if batch_size is small while cost less memory.  The param is only</span>
+<span class="sd">               effective when data is a TSDataset. The values defaults to 32.</span>
+<span class="sd">        :param quantize: if use the quantized model to predict.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="kn">from</span> <span class="nn">bigdl.chronos.pytorch</span> <span class="k">import</span> <span class="n">TSTrainer</span> <span class="k">as</span> <span class="n">Trainer</span>
+        <span class="kn">from</span> <span class="nn">bigdl.chronos.pytorch.utils</span> <span class="k">import</span> <span class="n">_pytorch_fashion_inference</span>
+        <span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">TSDataset</span><span class="p">):</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tsdataset_to_numpy</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">is_predict</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">yhat</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">quantize</span><span class="p">:</span>
+                <span class="n">yhat</span> <span class="o">=</span> <span class="n">_pytorch_fashion_inference</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_onnxruntime_int8</span><span class="p">,</span>
+                                                  <span class="n">input_data</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
+                                                  <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_onnxruntime_fp32</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_onnxruntime_fp32</span> <span class="o">=</span> <span class="n">Trainer</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_best_model</span><span class="p">,</span>
+                                                           <span class="n">input_sample</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">]),</span>
+                                                           <span class="n">accelerator</span><span class="o">=</span><span class="s2">&quot;onnxruntime&quot;</span><span class="p">)</span>
+                <span class="n">yhat</span> <span class="o">=</span> <span class="n">_pytorch_fashion_inference</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_onnxruntime_fp32</span><span class="p">,</span>
+                                                  <span class="n">input_data</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
+                                                  <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
+            <span class="n">yhat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tsdataset_unscale</span><span class="p">(</span><span class="n">yhat</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">FunctionType</span><span class="p">):</span>
+            <span class="n">yhat</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">yhat_list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_best_config</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;batch_size&#39;</span><span class="p">:</span> <span class="n">batch_size</span><span class="p">})</span>
+            <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_best_config</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">quantize</span><span class="p">:</span>
+                    <span class="n">yhat</span> <span class="o">=</span> <span class="n">_pytorch_fashion_inference</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_onnxruntime_int8</span><span class="p">,</span>
+                                                      <span class="n">input_data</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span>
+                                                      <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_onnxruntime_fp32</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_onnxruntime_fp32</span> <span class="o">=</span> <span class="n">Trainer</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_best_model</span><span class="p">,</span>
+                                                               <span class="n">input_sample</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">],</span>
+                                                               <span class="n">accelerator</span><span class="o">=</span><span class="s2">&quot;onnxruntime&quot;</span><span class="p">)</span>
+                    <span class="n">yhat</span> <span class="o">=</span> <span class="n">_pytorch_fashion_inference</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_onnxruntime_fp32</span><span class="p">,</span>
+                                                      <span class="n">input_data</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span>
+                                                      <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
+                <span class="n">yhat_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">yhat</span><span class="p">)</span>
+            <span class="n">yhat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">yhat_list</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;We only support input tsdataset or data creator, &quot;</span>
+                              <span class="n">f</span><span class="s2">&quot;but found </span><span class="si">{data.__class__.__name__}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">yhat</span></div>
+
+<div class="viewcode-block" id="TSPipeline.fit"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/autotsestimator.html#bigdl.chronos.autots.tspipeline.TSPipeline.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">validation_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Incremental fitting</span>
+
+<span class="sd">        :param data: The data support following formats:</span>
+
+<span class="sd">               | 1. data creator:</span>
+<span class="sd">               | a function that takes a config dictionary as parameter and</span>
+<span class="sd">               | returns a PyTorch DataLoader.</span>
+<span class="sd">               |</span>
+<span class="sd">               | 2. a bigdl.chronos.data.TSDataset:</span>
+<span class="sd">               | the TSDataset should follow the same operations as the training</span>
+<span class="sd">               | TSDataset used in `AutoTSEstimator.fit`.</span>
+
+<span class="sd">        :param validation_data: validation data, same format as data.</span>
+<span class="sd">        :param epochs: incremental fitting epoch. The value defaults to 1.</span>
+<span class="sd">        :param metric: evaluate metric.</span>
+<span class="sd">        :param batch_size: batch size, defaults to None, which takes the searched best batch_size.</span>
+<span class="sd">        :param **kwargs: args to be passed to bigdl-nano trainer.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="kn">from</span> <span class="nn">bigdl.chronos.pytorch</span> <span class="k">import</span> <span class="n">TSTrainer</span> <span class="k">as</span> <span class="n">Trainer</span>
+        <span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span>
+        <span class="n">train_loader</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">valid_loader</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">TSDataset</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">batch_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">batch_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_config</span><span class="p">[</span><span class="s2">&quot;batch_size&quot;</span><span class="p">]</span>
+            <span class="n">train_loader</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tsdataset_to_loader</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">validation_data</span><span class="p">:</span>
+                <span class="n">valid_loader</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tsdataset_to_loader</span><span class="p">(</span><span class="n">validation_data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">FunctionType</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">batch_size</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_best_config</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;batch_size&#39;</span><span class="p">:</span> <span class="n">batch_size</span><span class="p">})</span>
+            <span class="n">train_loader</span> <span class="o">=</span> <span class="n">data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_best_config</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">validation_data</span><span class="p">:</span>
+                <span class="n">valid_loader</span> <span class="o">=</span> <span class="n">validation_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_best_config</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;We only support input TSDataset or data creator, &quot;</span>
+                              <span class="n">f</span><span class="s2">&quot;but found </span><span class="si">{data.__class__.__name__}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">max_epochs</span><span class="o">=</span><span class="n">epochs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_best_model</span><span class="p">,</span>
+                         <span class="n">train_dataloaders</span><span class="o">=</span><span class="n">train_loader</span><span class="p">,</span>
+                         <span class="n">val_dataloaders</span><span class="o">=</span><span class="n">valid_loader</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TSPipeline.save"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/autotsestimator.html#bigdl.chronos.autots.tspipeline.TSPipeline.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Save the TSPipeline to a folder</span>
+
+<span class="sd">        :param file_path: the folder location to save the pipeline</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="kn">import</span> <span class="nn">pickle</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+        <span class="n">model_init_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">DEFAULT_MODEL_INIT_DIR</span><span class="p">)</span>
+        <span class="n">model_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">DEFAULT_BEST_MODEL_DIR</span><span class="p">)</span>
+        <span class="n">data_process_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">DEFAULT_DATA_PROCESS_DIR</span><span class="p">)</span>
+        <span class="n">best_config_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">DEFAULT_BEST_CONFIG_DIR</span><span class="p">)</span>
+        <span class="n">model_init</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;model_creator&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_creator</span><span class="p">,</span>
+                      <span class="s2">&quot;optimizer_creator&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer_creator</span><span class="p">,</span>
+                      <span class="s2">&quot;loss_creator&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_creator</span><span class="p">}</span>
+        <span class="n">data_process</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;scaler&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scaler</span><span class="p">,</span>
+                        <span class="s2">&quot;scaler_index&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scaler_index</span><span class="p">}</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">model_init_path</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">model_init</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">data_process_path</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data_process</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">best_config_path</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_best_config</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+        <span class="c1"># self._best_model.save(model_path)</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_best_model</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="n">model_path</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TSPipeline.load"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/autotsestimator.html#bigdl.chronos.autots.tspipeline.TSPipeline.load">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Load the TSPipeline to a folder</span>
+
+<span class="sd">        :param file_path: the folder location to load the pipeline</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="kn">import</span> <span class="nn">pickle</span>
+        <span class="n">model_init_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">DEFAULT_MODEL_INIT_DIR</span><span class="p">)</span>
+        <span class="n">model_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">DEFAULT_BEST_MODEL_DIR</span><span class="p">)</span>
+        <span class="n">data_process_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">DEFAULT_DATA_PROCESS_DIR</span><span class="p">)</span>
+        <span class="n">best_config_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">DEFAULT_BEST_CONFIG_DIR</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">model_init_path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">model_init</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">data_process_path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">data_process</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">best_config_path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">best_config</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+        <span class="n">model_creator</span> <span class="o">=</span> <span class="n">model_init</span><span class="p">[</span><span class="s2">&quot;model_creator&quot;</span><span class="p">]</span>
+        <span class="n">optimizer_creator</span> <span class="o">=</span> <span class="n">model_init</span><span class="p">[</span><span class="s2">&quot;optimizer_creator&quot;</span><span class="p">]</span>
+        <span class="n">loss_creator</span> <span class="o">=</span> <span class="n">model_init</span><span class="p">[</span><span class="s2">&quot;loss_creator&quot;</span><span class="p">]</span>
+
+        <span class="n">model</span> <span class="o">=</span> <span class="n">model_creator</span><span class="p">(</span><span class="n">best_config</span><span class="p">)</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model_path</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">optimizer_creator</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">FunctionType</span><span class="p">):</span>
+            <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer_creator</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">best_config</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer_creator</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span>
+                                          <span class="n">lr</span><span class="o">=</span><span class="n">best_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;lr&#39;</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">loss_creator</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">modules</span><span class="o">.</span><span class="n">loss</span><span class="o">.</span><span class="n">_Loss</span><span class="p">):</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_creator</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_creator</span><span class="p">(</span><span class="n">best_config</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">TSPipeline</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+                          <span class="n">loss</span><span class="o">=</span><span class="n">loss</span><span class="p">,</span>
+                          <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
+                          <span class="n">model_creator</span><span class="o">=</span><span class="n">model_creator</span><span class="p">,</span>
+                          <span class="n">loss_creator</span><span class="o">=</span><span class="n">loss_creator</span><span class="p">,</span>
+                          <span class="n">optimizer_creator</span><span class="o">=</span><span class="n">optimizer_creator</span><span class="p">,</span>
+                          <span class="n">best_config</span><span class="o">=</span><span class="n">best_config</span><span class="p">,</span>
+                          <span class="o">**</span><span class="n">data_process</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TSPipeline.quantize"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/autotsestimator.html#bigdl.chronos.autots.tspipeline.TSPipeline.quantize">[docs]</a>    <span class="k">def</span> <span class="nf">quantize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">calib_data</span><span class="p">,</span>
+                 <span class="n">metric</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">conf</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">framework</span><span class="o">=</span><span class="s1">&#39;pytorch_fx&#39;</span><span class="p">,</span>
+                 <span class="n">approach</span><span class="o">=</span><span class="s1">&#39;static&#39;</span><span class="p">,</span>
+                 <span class="n">tuning_strategy</span><span class="o">=</span><span class="s1">&#39;bayesian&#39;</span><span class="p">,</span>
+                 <span class="n">relative_drop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">absolute_drop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">timeout</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                 <span class="n">max_trials</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Quantization TSPipeline.</span>
+
+<span class="sd">        :param calib_data: Required for static quantization or evaluation.</span>
+
+<span class="sd">               | 1. data creator:</span>
+<span class="sd">               | a function that takes a config dictionary as parameter and</span>
+<span class="sd">               | returns a PyTorch DataLoader.</span>
+<span class="sd">               |</span>
+<span class="sd">               | 2. a bigdl.chronos.data.TSDataset:</span>
+<span class="sd">               | the TSDataset should follow the same operations as the training</span>
+<span class="sd">               | TSDataset used in `AutoTSEstimator.fit`.</span>
+<span class="sd">               |</span>
+<span class="sd">               | 3. A torch.utils.data.dataloader.DataLoader object for calibration,</span>
+<span class="sd">               | Users should set the configs correctly (e.g. past_seq_len, ...).</span>
+<span class="sd">               | They can be found in TSPipeline._best_config.</span>
+<span class="sd">               |</span>
+<span class="sd">               | 4. A numpy ndarray tuple (x, y).</span>
+<span class="sd">               | x&#39;s shape is (num_samples, past_seq_len, input_feature_dim).</span>
+<span class="sd">               | y&#39;s shape is (num_samples, future_seq_len, output_feature_dim).</span>
+<span class="sd">               | They can be found in TSPipeline._best_config.</span>
+
+<span class="sd">        :param metric: A str represent the metrics for tunning the quality of</span>
+<span class="sd">               quantization. You may choose from &quot;mse&quot;, &quot;mae&quot;, &quot;rmse&quot;, &quot;r2&quot;, &quot;mape&quot;, &quot;smape&quot;.</span>
+<span class="sd">        :param conf: A path to conf yaml file for quantization. Default to None,</span>
+<span class="sd">               using default config.</span>
+<span class="sd">        :param framework: string or list, [{&#39;pytorch&#39;|&#39;pytorch_fx&#39;|&#39;pytorch_ipex&#39;},</span>
+<span class="sd">               {&#39;onnxrt_integerops&#39;|&#39;onnxrt_qlinearops&#39;}]. Default: &#39;pytorch_fx&#39;.</span>
+<span class="sd">               Consistent with Intel Neural Compressor.</span>
+<span class="sd">        :param approach: str, &#39;static&#39; or &#39;dynamic&#39;. Default to &#39;static&#39;.</span>
+<span class="sd">        :param tuning_strategy: str, &#39;bayesian&#39;, &#39;basic&#39;, &#39;mse&#39; or &#39;sigopt&#39;. Default to &#39;bayesian&#39;.</span>
+<span class="sd">        :param relative_drop: Float, tolerable ralative accuracy drop. Default to None,</span>
+<span class="sd">               e.g. set to 0.1 means that we accept a 10% increase in the metrics error.</span>
+<span class="sd">        :param absolute_drop: Float, tolerable ralative accuracy drop. Default to None,</span>
+<span class="sd">               e.g. set to 5 means that we can only accept metrics smaller than 5.</span>
+<span class="sd">        :param timeout: Tuning timeout (seconds). Default to 0, which means early stop.</span>
+<span class="sd">               Combine with max_trials field to decide when to exit.</span>
+<span class="sd">        :param max_trials: Max tune times. Default to 1. Combine with timeout field to</span>
+<span class="sd">               decide when to exit. &quot;timeout=0, max_trials=1&quot; means it will try quantization</span>
+<span class="sd">               only once and return satisfying best model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="k">import</span> <span class="n">DataLoader</span><span class="p">,</span> <span class="n">TensorDataset</span>
+        <span class="kn">from</span> <span class="nn">bigdl.chronos.data</span> <span class="k">import</span> <span class="n">TSDataset</span>
+        <span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span>
+        <span class="c1"># check model support for quantization</span>
+        <span class="kn">from</span> <span class="nn">bigdl.chronos.autots.utils</span> <span class="k">import</span> <span class="n">check_quantize_available</span>
+        <span class="n">check_quantize_available</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_best_model</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+        <span class="c1"># calib data should be set if the forecaster is just loaded</span>
+        <span class="k">if</span> <span class="n">calib_data</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">approach</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;static&quot;</span><span class="p">):</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;You must set a `calib_data` &quot;</span>
+                              <span class="s2">&quot;for quantization When you use &#39;static&#39;.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">calib_data</span> <span class="ow">and</span> <span class="n">approach</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;dynamic&quot;</span><span class="p">):</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;`calib_data` should be None When you use &#39;dynamic&#39;.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># preprocess data.</span>
+        <span class="kn">from</span> <span class="nn">.utils</span> <span class="k">import</span> <span class="n">preprocess_quantize_data</span>
+        <span class="n">calib_data</span> <span class="o">=</span> <span class="n">preprocess_quantize_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calib_data</span><span class="p">)</span>
+
+        <span class="c1"># map metric str to function</span>
+        <span class="kn">from</span> <span class="nn">bigdl.chronos.metric.forecast_metrics</span> <span class="k">import</span> <span class="n">TORCHMETRICS_REGRESSION_MAP</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metric</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">metric</span> <span class="o">=</span> <span class="n">TORCHMETRICS_REGRESSION_MAP</span><span class="p">[</span><span class="n">metric</span><span class="p">]</span>
+
+        <span class="c1"># init acc criterion</span>
+        <span class="n">accuracy_criterion</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">relative_drop</span> <span class="ow">and</span> <span class="n">absolute_drop</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;Please unset either `relative_drop` or `absolute_drop`.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">relative_drop</span><span class="p">:</span>
+            <span class="n">accuracy_criterion</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;relative&#39;</span><span class="p">:</span> <span class="n">relative_drop</span><span class="p">,</span> <span class="s1">&#39;higher_is_better&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">absolute_drop</span><span class="p">:</span>
+            <span class="n">accuracy_criterion</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;absolute&#39;</span><span class="p">:</span> <span class="n">absolute_drop</span><span class="p">,</span> <span class="s1">&#39;higher_is_better&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+
+        <span class="kn">from</span> <span class="nn">bigdl.nano.pytorch.trainer</span> <span class="k">import</span> <span class="n">Trainer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">logger</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">max_epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                <span class="n">checkpoint_callback</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                <span class="n">use_ipex</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># quantize</span>
+        <span class="n">framework</span> <span class="o">=</span> <span class="p">[</span><span class="n">framework</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">framework</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">framework</span>
+        <span class="n">temp_quantized_model</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">framework_item</span> <span class="ow">in</span> <span class="n">framework</span><span class="p">:</span>
+            <span class="n">accelerator</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="n">framework_item</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">accelerator</span> <span class="o">==</span> <span class="s1">&#39;pytorch&#39;</span><span class="p">:</span>
+                <span class="n">accelerator</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">accelerator</span> <span class="o">=</span> <span class="s1">&#39;onnxruntime&#39;</span>
+                <span class="n">method</span> <span class="o">=</span> <span class="n">method</span><span class="p">[:</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span>
+            <span class="n">q_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trainer</span><span class="o">.</span><span class="n">quantize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_best_model</span><span class="p">,</span>
+                                             <span class="n">precision</span><span class="o">=</span><span class="s1">&#39;int8&#39;</span><span class="p">,</span>
+                                             <span class="n">accelerator</span><span class="o">=</span><span class="n">accelerator</span><span class="p">,</span>
+                                             <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
+                                             <span class="n">calib_dataloader</span><span class="o">=</span><span class="n">calib_data</span><span class="p">,</span>
+                                             <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">,</span>
+                                             <span class="n">conf</span><span class="o">=</span><span class="n">conf</span><span class="p">,</span>
+                                             <span class="n">approach</span><span class="o">=</span><span class="n">approach</span><span class="p">,</span>
+                                             <span class="n">tuning_strategy</span><span class="o">=</span><span class="n">tuning_strategy</span><span class="p">,</span>
+                                             <span class="n">accuracy_criterion</span><span class="o">=</span><span class="n">accuracy_criterion</span><span class="p">,</span>
+                                             <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
+                                             <span class="n">max_trials</span><span class="o">=</span><span class="n">max_trials</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">accelerator</span> <span class="o">==</span> <span class="s2">&quot;onnxruntime&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_onnxruntime_int8</span> <span class="o">=</span> <span class="n">q_model</span>
+            <span class="k">if</span> <span class="n">accelerator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_pytorch_int8</span> <span class="o">=</span> <span class="n">q_model</span></div>
+
+    <span class="k">def</span> <span class="nf">_tsdataset_to_loader</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">is_predict</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_mixed_data_type_usage</span><span class="p">()</span>
+        <span class="n">lookback</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_config</span><span class="p">[</span><span class="s2">&quot;past_seq_len&quot;</span><span class="p">]</span>
+        <span class="n">horizon</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">is_predict</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_config</span><span class="p">[</span><span class="s2">&quot;future_seq_len&quot;</span><span class="p">]</span>
+        <span class="n">selected_features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_config</span><span class="p">[</span><span class="s2">&quot;selected_features&quot;</span><span class="p">]</span>
+        <span class="n">data_loader</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to_torch_data_loader</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+                                                <span class="n">roll</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                                <span class="n">lookback</span><span class="o">=</span><span class="n">lookback</span><span class="p">,</span>
+                                                <span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span>
+                                                <span class="n">feature_col</span><span class="o">=</span><span class="n">selected_features</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data_loader</span>
+
+    <span class="k">def</span> <span class="nf">_tsdataset_to_numpy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">is_predict</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_mixed_data_type_usage</span><span class="p">()</span>
+        <span class="n">lookback</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_config</span><span class="p">[</span><span class="s2">&quot;past_seq_len&quot;</span><span class="p">]</span>
+        <span class="n">horizon</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">is_predict</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_config</span><span class="p">[</span><span class="s2">&quot;future_seq_len&quot;</span><span class="p">]</span>
+        <span class="n">selected_features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_config</span><span class="p">[</span><span class="s2">&quot;selected_features&quot;</span><span class="p">]</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">lookback</span><span class="o">=</span><span class="n">lookback</span><span class="p">,</span>
+                  <span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span>
+                  <span class="n">feature_col</span><span class="o">=</span><span class="n">selected_features</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_check_mixed_data_type_usage</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;past_seq_len&quot;</span><span class="p">,</span> <span class="s2">&quot;future_seq_len&quot;</span><span class="p">,</span> <span class="s2">&quot;selected_features&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_config</span><span class="p">:</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                                  <span class="s2">&quot;You use a data creator to fit your AutoTSEstimator, &quot;</span>
+                                  <span class="s2">&quot;and use a TSDataset to predict/evaluate/fit on the TSPipeline.&quot;</span>
+                                  <span class="s2">&quot;Please stick to the same data type.&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_tsdataset_unscale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scaler</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">bigdl.chronos.data.utils.scale</span> <span class="k">import</span> <span class="n">unscale_timeseries_numpy</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">unscale_timeseries_numpy</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scaler</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scaler_index</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">y</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

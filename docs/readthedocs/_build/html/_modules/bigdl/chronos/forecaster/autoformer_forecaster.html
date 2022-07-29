@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bigdl.chronos.forecaster.autoformer_forecaster &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/clipboard.min.js"></script>
+        <script src="../../../../_static/copybutton.js"></script>
+        <script src="../../../../_static/tabs.js"></script>
+        <script src="../../../../_static/design-tabs.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>bigdl.chronos.forecaster.autoformer_forecaster</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bigdl.chronos.forecaster.autoformer_forecaster</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright 2016 The BigDL Authors.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.forecaster.abstract</span> <span class="k">import</span> <span class="n">Forecaster</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.model.autoformer</span> <span class="k">import</span> <span class="n">model_creator</span><span class="p">,</span> <span class="n">loss_creator</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="k">import</span> <span class="n">TensorDataset</span><span class="p">,</span> <span class="n">DataLoader</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.model.autoformer.Autoformer</span> <span class="k">import</span> <span class="n">AutoFormer</span><span class="p">,</span> <span class="n">_transform_config_to_namedtuple</span>
+<span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span><span class="p">,</span> <span class="n">invalidOperationError</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.forecaster.utils</span> <span class="k">import</span> <span class="n">check_transformer_data</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.pytorch</span> <span class="k">import</span> <span class="n">TSTrainer</span> <span class="k">as</span> <span class="n">Trainer</span>
+<span class="kn">from</span> <span class="nn">bigdl.nano.automl.hpo.space</span> <span class="k">import</span> <span class="n">Space</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.forecaster.utils_hpo</span> <span class="k">import</span> <span class="n">GenericTSTransformerLightningModule</span><span class="p">,</span> \
+    <span class="n">_config_has_search_space</span>
+
+<span class="kn">from</span> <span class="nn">.utils_hpo</span> <span class="k">import</span> <span class="n">_format_metric_str</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+
+<div class="viewcode-block" id="AutoformerForecaster"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/forecasters.html#bigdl.chronos.forecaster.autoformer_forecaster.AutoformerForecaster">[docs]</a><span class="k">class</span> <span class="nc">AutoformerForecaster</span><span class="p">(</span><span class="n">Forecaster</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">past_seq_len</span><span class="p">,</span>
+                 <span class="n">future_seq_len</span><span class="p">,</span>
+                 <span class="n">input_feature_num</span><span class="p">,</span>
+                 <span class="n">output_feature_num</span><span class="p">,</span>
+                 <span class="n">label_len</span><span class="p">,</span>
+                 <span class="n">freq</span><span class="p">,</span>
+                 <span class="n">output_attention</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">moving_avg</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span>
+                 <span class="n">d_model</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span>
+                 <span class="n">embed</span><span class="o">=</span><span class="s1">&#39;timeF&#39;</span><span class="p">,</span>
+                 <span class="n">dropout</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+                 <span class="n">factor</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                 <span class="n">n_head</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                 <span class="n">d_ff</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
+                 <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;gelu&#39;</span><span class="p">,</span>
+                 <span class="n">e_layers</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                 <span class="n">d_layers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">optimizer</span><span class="o">=</span><span class="s2">&quot;Adam&quot;</span><span class="p">,</span>
+                 <span class="n">loss</span><span class="o">=</span><span class="s2">&quot;mse&quot;</span><span class="p">,</span>
+                 <span class="n">lr</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span>
+                 <span class="n">lr_scheduler_milestones</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span>
+                 <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;mse&quot;</span><span class="p">],</span>
+                 <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">distributed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">workers_per_node</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">distributed_backend</span><span class="o">=</span><span class="s2">&quot;ray&quot;</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Build a AutoformerForecaster Forecast Model.</span>
+
+<span class="sd">        :param past_seq_len: Specify the history time steps (i.e. lookback).</span>
+<span class="sd">        :param future_seq_len: Specify the output time steps (i.e. horizon).</span>
+<span class="sd">        :param input_feature_num: Specify the feature dimension.</span>
+<span class="sd">        :param output_feature_num: Specify the output dimension.</span>
+<span class="sd">        :param label_len: Start token length of AutoFormer decoder.</span>
+<span class="sd">        :param freq: Freq for time features encoding. You may choose from &quot;s&quot;,</span>
+<span class="sd">               &quot;t&quot;,&quot;h&quot;,&quot;d&quot;,&quot;w&quot;,&quot;m&quot; for second, minute, hour, day, week or month.</span>
+<span class="sd">        :param optimizer: Specify the optimizer used for training. This value</span>
+<span class="sd">               defaults to &quot;Adam&quot;.</span>
+<span class="sd">        :param loss: str or pytorch loss instance, Specify the loss function</span>
+<span class="sd">               used for training. This value defaults to &quot;mse&quot;. You can choose</span>
+<span class="sd">               from &quot;mse&quot;, &quot;mae&quot;, &quot;huber_loss&quot; or any customized loss instance</span>
+<span class="sd">               you want to use.</span>
+<span class="sd">        :param lr: Specify the learning rate. This value defaults to 0.001.</span>
+<span class="sd">        :param lr_scheduler_milestones: Specify the milestones parameters in</span>
+<span class="sd">               torch.optim.lr_scheduler.MultiStepLR.This value defaults to</span>
+<span class="sd">               [3, 4, 5, 6, 7, 8, 9, 10]. If you don&#39;t want to use scheduler,</span>
+<span class="sd">               set this parameter to None to disbale lr_scheduler.</span>
+<span class="sd">        :param metrics: A list contains metrics for evaluating the quality of</span>
+<span class="sd">               forecasting. You may only choose from &quot;mse&quot; and &quot;mae&quot; for a</span>
+<span class="sd">               distributed forecaster. You may choose from &quot;mse&quot;, &quot;mae&quot;,</span>
+<span class="sd">               &quot;rmse&quot;, &quot;r2&quot;, &quot;mape&quot;, &quot;smape&quot; or a callable function for a</span>
+<span class="sd">               non-distributed forecaster. If callable function, it signature</span>
+<span class="sd">               should be func(y_true, y_pred), where y_true and y_pred are numpy</span>
+<span class="sd">               ndarray.</span>
+<span class="sd">        :param seed: int, random seed for training. This value defaults to None.</span>
+<span class="sd">        :param distributed: bool, if init the forecaster in a distributed</span>
+<span class="sd">               fashion. If True, the internal model will use an Orca Estimator.</span>
+<span class="sd">               If False, the internal model will use a pytorch model. The value</span>
+<span class="sd">               defaults to False.</span>
+<span class="sd">        :param workers_per_node: int, the number of worker you want to use.</span>
+<span class="sd">               The value defaults to 1. The param is only effective when</span>
+<span class="sd">               distributed is set to True.</span>
+<span class="sd">        :param distributed_backend: str, select from &quot;ray&quot; or</span>
+<span class="sd">               &quot;horovod&quot;. The value defaults to &quot;ray&quot;.</span>
+<span class="sd">        :param kwargs: other hyperparameter please refer to</span>
+<span class="sd">               https://github.com/zhouhaoyi/Informer2020#usage</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># config setting</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_config</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;past_seq_len&quot;</span><span class="p">:</span> <span class="n">past_seq_len</span><span class="p">,</span>
+            <span class="s2">&quot;future_seq_len&quot;</span><span class="p">:</span> <span class="n">future_seq_len</span><span class="p">,</span>
+            <span class="s2">&quot;input_feature_num&quot;</span><span class="p">:</span> <span class="n">input_feature_num</span><span class="p">,</span>
+            <span class="s2">&quot;output_feature_num&quot;</span><span class="p">:</span> <span class="n">output_feature_num</span><span class="p">,</span>
+            <span class="s2">&quot;label_len&quot;</span><span class="p">:</span> <span class="n">label_len</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_config</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;seq_len&quot;</span><span class="p">:</span> <span class="n">past_seq_len</span><span class="p">,</span>
+            <span class="s2">&quot;label_len&quot;</span><span class="p">:</span> <span class="n">label_len</span><span class="p">,</span>
+            <span class="s2">&quot;pred_len&quot;</span><span class="p">:</span> <span class="n">future_seq_len</span><span class="p">,</span>
+            <span class="s2">&quot;output_attention&quot;</span><span class="p">:</span> <span class="n">output_attention</span><span class="p">,</span>
+            <span class="s2">&quot;moving_avg&quot;</span><span class="p">:</span> <span class="n">moving_avg</span><span class="p">,</span>
+            <span class="s2">&quot;enc_in&quot;</span><span class="p">:</span> <span class="n">input_feature_num</span><span class="p">,</span>
+            <span class="s2">&quot;d_model&quot;</span><span class="p">:</span> <span class="n">d_model</span><span class="p">,</span>
+            <span class="s2">&quot;embed&quot;</span><span class="p">:</span> <span class="n">embed</span><span class="p">,</span>
+            <span class="s2">&quot;freq&quot;</span><span class="p">:</span> <span class="n">freq</span><span class="p">,</span>
+            <span class="s2">&quot;dropout&quot;</span><span class="p">:</span> <span class="n">dropout</span><span class="p">,</span>
+            <span class="s2">&quot;dec_in&quot;</span><span class="p">:</span> <span class="n">input_feature_num</span><span class="p">,</span>
+            <span class="s2">&quot;factor&quot;</span><span class="p">:</span> <span class="n">factor</span><span class="p">,</span>
+            <span class="s2">&quot;n_head&quot;</span><span class="p">:</span> <span class="n">n_head</span><span class="p">,</span>
+            <span class="s2">&quot;d_ff&quot;</span><span class="p">:</span> <span class="n">d_ff</span><span class="p">,</span>
+            <span class="s2">&quot;activation&quot;</span><span class="p">:</span> <span class="n">activation</span><span class="p">,</span>
+            <span class="s2">&quot;e_layers&quot;</span><span class="p">:</span> <span class="n">e_layers</span><span class="p">,</span>
+            <span class="s2">&quot;c_out&quot;</span><span class="p">:</span> <span class="n">output_feature_num</span><span class="p">,</span>
+            <span class="s2">&quot;d_layers&quot;</span><span class="p">:</span> <span class="n">d_layers</span><span class="p">,</span>
+            <span class="s2">&quot;seed&quot;</span><span class="p">:</span> <span class="n">seed</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss_config</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">loss</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optim_config</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;lr&quot;</span><span class="p">:</span> <span class="n">lr</span><span class="p">,</span>
+            <span class="s2">&quot;optim&quot;</span><span class="p">:</span> <span class="n">optimizer</span><span class="p">,</span>
+            <span class="s2">&quot;lr_scheduler_milestones&quot;</span><span class="p">:</span> <span class="n">lr_scheduler_milestones</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loss_config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optim_config</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="o">=</span> <span class="n">metrics</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">distributed</span> <span class="o">=</span> <span class="n">distributed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">checkpoint_callback</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1"># seed setting</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">seed</span><span class="p">,</span> <span class="n">Space</span><span class="p">):</span>
+            <span class="kn">from</span> <span class="nn">pytorch_lightning</span> <span class="k">import</span> <span class="n">seed_everything</span>
+            <span class="n">seed_everything</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span> <span class="n">workers</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># disable multi-process training for now.</span>
+        <span class="c1"># TODO: enable it in future.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_processes</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_ipex</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">onnx_available</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">quantize_available</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_amp</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_hpo</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="n">has_space</span> <span class="o">=</span> <span class="n">_config_has_search_space</span><span class="p">(</span>
+            <span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">model_config</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">optim_config</span><span class="p">,</span>
+                    <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">loss_config</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">data_config</span><span class="p">})</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">has_space</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_hpo</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;HPO is enabled but no spaces is specified, so disable HPO.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">use_hpo</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">internal</span> <span class="o">=</span> <span class="n">model_creator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_config</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_creator</span> <span class="o">=</span> <span class="n">model_creator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss_creator</span> <span class="o">=</span> <span class="n">loss_creator</span>
+
+    <span class="k">def</span> <span class="nf">_build_automodel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">validation_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Build a Generic Model using config parameters.&quot;&quot;&quot;</span>
+        <span class="n">merged_config</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">model_config</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">optim_config</span><span class="p">,</span>
+                         <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">loss_config</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">data_config</span><span class="p">}</span>
+
+        <span class="n">model_config_keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_config</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">data_config_keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_config</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">optim_config_keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optim_config</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">loss_config_keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loss_config</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+        <span class="k">return</span> <span class="n">GenericTSTransformerLightningModule</span><span class="p">(</span>
+            <span class="n">model_creator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_creator</span><span class="p">,</span>
+            <span class="n">loss_creator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loss_creator</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">validation_data</span><span class="o">=</span><span class="n">validation_data</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">epochs</span><span class="p">,</span>
+            <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="n">_str2metric</span><span class="p">(</span><span class="n">metric</span><span class="p">)</span> <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">],</span>
+            <span class="n">scheduler</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># TODO</span>
+            <span class="n">num_processes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_processes</span><span class="p">,</span>
+            <span class="n">model_config_keys</span><span class="o">=</span><span class="n">model_config_keys</span><span class="p">,</span>
+            <span class="n">data_config_keys</span><span class="o">=</span><span class="n">data_config_keys</span><span class="p">,</span>
+            <span class="n">optim_config_keys</span><span class="o">=</span><span class="n">optim_config_keys</span><span class="p">,</span>
+            <span class="n">loss_config_keys</span><span class="o">=</span><span class="n">loss_config_keys</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">merged_config</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AutoformerForecaster.tune"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/forecasters.html#bigdl.chronos.forecaster.autoformer_forecaster.AutoformerForecaster.tune">[docs]</a>    <span class="k">def</span> <span class="nf">tune</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+             <span class="n">data</span><span class="p">,</span>
+             <span class="n">validation_data</span><span class="p">,</span>
+             <span class="n">target_metric</span><span class="o">=</span><span class="s1">&#39;mse&#39;</span><span class="p">,</span>
+             <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;minimize&quot;</span><span class="p">,</span>
+             <span class="n">n_trials</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+             <span class="n">n_parallels</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+             <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+             <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+             <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Search the hyper parameter.</span>
+
+<span class="sd">        :param data: train data, as numpy ndarray tuple (x, y, x_enc, y_enc)</span>
+<span class="sd">        :param validation_data: validation data, as numpy ndarray tuple (x, y, x_enc, y_enc)</span>
+<span class="sd">        :param target_metric: the target metric to optimize,</span>
+<span class="sd">               a string or an instance of torchmetrics.metric.Metric, default to &#39;mse&#39;.</span>
+<span class="sd">        :param direction: in which direction to optimize the target metric,</span>
+<span class="sd">               &quot;maximize&quot; - larger the better</span>
+<span class="sd">               &quot;minimize&quot; - smaller the better</span>
+<span class="sd">               default to &quot;minimize&quot;.</span>
+<span class="sd">        :param n_trials: number of trials to run</span>
+<span class="sd">        :param n_parallels: number of parallel processes used to run trials.</span>
+<span class="sd">               to use parallel tuning you need to use a RDB url for storage and specify study_name.</span>
+<span class="sd">               For more information, refer to Nano AutoML user guide.</span>
+<span class="sd">        :param epochs: the number of epochs to run in each trial fit, defaults to 1</span>
+<span class="sd">        :param batch_size: number of batch size for each trial fit, defaults to 32</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">distributed</span><span class="p">,</span>
+                          <span class="s2">&quot;HPO is not supported in distributed mode.&quot;</span>
+                          <span class="s2">&quot;Please use AutoTS instead.&quot;</span><span class="p">)</span>
+        <span class="n">invalidOperationError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">use_hpo</span><span class="p">,</span>
+                              <span class="s2">&quot;HPO is disabled for this forecaster.&quot;</span>
+                              <span class="s2">&quot;You may specify search space in hyper parameters to enable it.&quot;</span><span class="p">)</span>
+        <span class="c1"># prepare data</span>
+        <span class="kn">from</span> <span class="nn">bigdl.chronos.pytorch</span> <span class="k">import</span> <span class="n">TSTrainer</span> <span class="k">as</span> <span class="n">Trainer</span>
+
+        <span class="c1"># data transformation</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="n">check_transformer_data</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_config</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">validation_data</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">validation_data</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="n">check_transformer_data</span><span class="p">(</span><span class="n">validation_data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">validation_data</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                                       <span class="n">validation_data</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">validation_data</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_config</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                                  <span class="s2">&quot;To use tuning, you must provide validation_data&quot;</span>
+                                  <span class="s2">&quot;as numpy arrays.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;HPO only supports numpy train input data.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># prepare target metric</span>
+        <span class="k">if</span> <span class="n">validation_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">formated_target_metric</span> <span class="o">=</span> <span class="n">_format_metric_str</span><span class="p">(</span><span class="s1">&#39;val&#39;</span><span class="p">,</span> <span class="n">target_metric</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;To use tuning, you must provide validation_data&quot;</span>
+                                     <span class="s2">&quot;as numpy arrays.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># build auto model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tune_internal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_automodel</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">validation_data</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">epochs</span><span class="p">)</span>
+
+        <span class="kn">from</span> <span class="nn">pytorch_lightning.callbacks</span> <span class="k">import</span> <span class="n">Callback</span>
+
+        <span class="c1"># reset current epoch = 0 after each run</span>
+        <span class="k">class</span> <span class="nc">ResetCallback</span><span class="p">(</span><span class="n">Callback</span><span class="p">):</span>
+            <span class="k">def</span> <span class="nf">on_train_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trainer</span><span class="p">,</span> <span class="n">pl_module</span><span class="p">):</span>
+                <span class="n">trainer</span><span class="o">.</span><span class="n">fit_loop</span><span class="o">.</span><span class="n">current_epoch</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">logger</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">max_epochs</span><span class="o">=</span><span class="n">epochs</span><span class="p">,</span>
+                               <span class="n">checkpoint_callback</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">checkpoint_callback</span><span class="p">,</span>
+                               <span class="n">num_processes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_processes</span><span class="p">,</span> <span class="n">use_ipex</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">use_ipex</span><span class="p">,</span>
+                               <span class="n">use_hpo</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                               <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">ResetCallback</span><span class="p">()]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_processes</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="c1"># run hyper parameter search</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">internal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">search</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tune_internal</span><span class="p">,</span>
+            <span class="n">n_trials</span><span class="o">=</span><span class="n">n_trials</span><span class="p">,</span>
+            <span class="n">target_metric</span><span class="o">=</span><span class="n">formated_target_metric</span><span class="p">,</span>
+            <span class="n">direction</span><span class="o">=</span><span class="n">direction</span><span class="p">,</span>
+            <span class="n">n_parallels</span><span class="o">=</span><span class="n">n_parallels</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># reset train and validation datasets</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">reset_train_val_dataloaders</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">internal</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AutoformerForecaster.search_summary"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/forecasters.html#bigdl.chronos.forecaster.autoformer_forecaster.AutoformerForecaster.search_summary">[docs]</a>    <span class="k">def</span> <span class="nf">search_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># add tuning check</span>
+        <span class="n">invalidOperationError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">use_hpo</span><span class="p">,</span> <span class="s2">&quot;No search summary when HPO is disabled.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">search_summary</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="AutoformerForecaster.fit"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/forecasters.html#bigdl.chronos.forecaster.autoformer_forecaster.AutoformerForecaster.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fit(Train) the forecaster.</span>
+
+<span class="sd">        :param data: The data support following formats:</span>
+
+<span class="sd">               | 1. numpy ndarrays: generate from `TSDataset.roll`,</span>
+<span class="sd">                    be sure to set label_len &gt; 0 and time_enc = True</span>
+<span class="sd">               | 2. pytorch dataloader: generate from `TSDataset.to_torch_data_loader`,</span>
+<span class="sd">                    be sure to set label_len &gt; 0 and time_enc = True</span>
+
+<span class="sd">        :param epochs: Number of epochs you want to train. The value defaults to 1.</span>
+<span class="sd">        :param batch_size: Number of batch size you want to train. The value defaults to 32.</span>
+<span class="sd">               if you input a pytorch dataloader for `data`, the batch_size will follow the</span>
+<span class="sd">               batch_size setted in `data`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># distributed is not supported.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distributed</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;distributed is not support in Autoformer&quot;</span><span class="p">)</span>
+
+        <span class="c1"># transform a tuple to dataloader.</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">TensorDataset</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+                                            <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                                            <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span>
+                                            <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">3</span><span class="p">]),),</span>
+                              <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+                              <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="kn">from</span> <span class="nn">bigdl.chronos.pytorch</span> <span class="k">import</span> <span class="n">TSTrainer</span> <span class="k">as</span> <span class="n">Trainer</span>
+        <span class="c1"># Trainer init and fitting</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_hpo</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">logger</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">max_epochs</span><span class="o">=</span><span class="n">epochs</span><span class="p">,</span>
+                                   <span class="n">checkpoint_callback</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">checkpoint_callback</span><span class="p">,</span> <span class="n">num_processes</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                   <span class="n">use_ipex</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">use_ipex</span><span class="p">,</span> <span class="n">distributed_backend</span><span class="o">=</span><span class="s2">&quot;spawn&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># check whether the user called the tune function</span>
+            <span class="n">invalidOperationError</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;trainer&quot;</span><span class="p">),</span> <span class="s2">&quot;There is no trainer, and you &quot;</span>
+                                  <span class="s2">&quot;should call .tune() before .fit()&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">internal</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AutoformerForecaster.predict"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/forecasters.html#bigdl.chronos.forecaster.autoformer_forecaster.AutoformerForecaster.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Predict using a trained forecaster.</span>
+
+<span class="sd">        :param data: The data support following formats:</span>
+
+<span class="sd">               | 1. numpy ndarrays: generate from `TSDataset.roll`,</span>
+<span class="sd">                    be sure to set label_len &gt; 0 and time_enc = True</span>
+<span class="sd">               | 2. pytorch dataloader: generate from `TSDataset.to_torch_data_loader`,</span>
+<span class="sd">                    be sure to set label_len &gt; 0, time_enc = True and is_predict = True</span>
+
+<span class="sd">        :param batch_size: predict batch size. The value will not affect predict</span>
+<span class="sd">               result but will affect resources cost(e.g. memory and time).</span>
+
+<span class="sd">        :return: A list of numpy ndarray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distributed</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;distributed is not support in Autoformer&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">TensorDataset</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+                                            <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                                            <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span>
+                                            <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">3</span><span class="p">]),),</span>
+                              <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+                              <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">internal</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AutoformerForecaster.evaluate"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/forecasters.html#bigdl.chronos.forecaster.autoformer_forecaster.AutoformerForecaster.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Predict using a trained forecaster.</span>
+
+<span class="sd">        :param data: The data support following formats:</span>
+
+<span class="sd">               | 1. numpy ndarrays: generate from `TSDataset.roll`,</span>
+<span class="sd">                    be sure to set label_len &gt; 0 and time_enc = True</span>
+<span class="sd">               | 2. pytorch dataloader: generate from `TSDataset.to_torch_data_loader`,</span>
+<span class="sd">                    be sure to set label_len &gt; 0 and time_enc = True</span>
+
+<span class="sd">        :param batch_size: predict batch size. The value will not affect predict</span>
+<span class="sd">               result but will affect resources cost(e.g. memory and time).</span>
+
+<span class="sd">        :return: A dict, currently returns the loss rather than metrics</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO: use metrics here</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distributed</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;distributed is not support in Autoformer&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">TensorDataset</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+                                            <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                                            <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span>
+                                            <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">3</span><span class="p">]),),</span>
+                              <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+                              <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">internal</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AutoformerForecaster.load"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/forecasters.html#bigdl.chronos.forecaster.autoformer_forecaster.AutoformerForecaster.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkpoint_file</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        restore the forecaster.</span>
+
+<span class="sd">        :param checkpoint_file: The checkpoint file location you want to load the forecaster.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">logger</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">max_epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                               <span class="n">checkpoint_callback</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">checkpoint_callback</span><span class="p">,</span> <span class="n">num_processes</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                               <span class="n">use_ipex</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">use_ipex</span><span class="p">,</span> <span class="n">distributed_backend</span><span class="o">=</span><span class="s2">&quot;spawn&quot;</span><span class="p">)</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="n">_transform_config_to_namedtuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">internal</span> <span class="o">=</span> <span class="n">AutoFormer</span><span class="o">.</span><span class="n">load_from_checkpoint</span><span class="p">(</span><span class="n">checkpoint_file</span><span class="p">,</span> <span class="n">configs</span><span class="o">=</span><span class="n">args</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AutoformerForecaster.save"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/forecasters.html#bigdl.chronos.forecaster.autoformer_forecaster.AutoformerForecaster.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkpoint_file</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        save the forecaster.</span>
+
+<span class="sd">        :param checkpoint_file: The checkpoint file location you want to load the forecaster.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">save_checkpoint</span><span class="p">(</span><span class="n">checkpoint_file</span><span class="p">)</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">_str2metric</span><span class="p">(</span><span class="n">metric</span><span class="p">):</span>
+    <span class="c1"># map metric str to function</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metric</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">bigdl.chronos.metric.forecast_metrics</span> <span class="k">import</span> <span class="n">TORCHMETRICS_REGRESSION_MAP</span>
+        <span class="n">metric</span> <span class="o">=</span> <span class="n">TORCHMETRICS_REGRESSION_MAP</span><span class="p">[</span><span class="n">metric</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">metric</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

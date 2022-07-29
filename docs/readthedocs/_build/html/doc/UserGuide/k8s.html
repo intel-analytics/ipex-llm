@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>K8s User Guide &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/clipboard.min.js"></script>
+        <script src="../../_static/copybutton.js"></script>
+        <script src="../../_static/design-tabs.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Databricks User Guide" href="databricks.html" />
+    <link rel="prev" title="Hadoop/YARN User Guide" href="hadoop.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">K8s User Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#pull-bigdl-k8s-docker-image"><strong>1. Pull <code class="docutils literal notranslate"><span class="pre">bigdl-k8s</span></code> Docker Image</strong></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#launch-a-client-container"><strong>2. Launch a Client Container</strong></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#submit-to-k8s-from-remote"><strong>3. Submit to k8s from remote</strong></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#run-bigdl-on-k8s"><strong>4. Run BigDL on k8s</strong></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#k8s-client-mode"><strong>4.1 K8s client mode</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#k8s-cluster-mode"><strong>4.2 K8s cluster mode</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#run-jupyter-notebooks"><strong>4.3 Run Jupyter Notebooks</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#run-scala-programs"><strong>4.4 Run Scala programs</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#known-issues"><strong>5 Known Issues</strong></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#how-to-specify-the-python-environment"><strong>5.1 How to specify the Python environment?</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#how-to-retain-executor-logs-for-debugging"><strong>5.2 How to retain executor logs for debugging?</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#how-to-deal-with-jsondecodeerror"><strong>5.3 How to deal with “JSONDecodeError”?</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#how-to-use-nfs"><strong>5.4 How to use NFS?</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#how-to-deal-with-rayactorerror"><strong>5.5 How to deal with “RayActorError”?</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#how-to-set-proper-steps-per-epoch-and-validation-steps"><strong>5.6 How to set proper “steps_per_epoch” and “validation steps”?</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#others"><strong>5.7 Others</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#access-logs-and-clear-pods"><strong>6. Access logs and clear pods</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>K8s User Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/doc/UserGuide/k8s.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="k8s-user-guide">
+<h1>K8s User Guide<a class="headerlink" href="#k8s-user-guide" title="Permalink to this headline">¶</a></h1>
+<hr class="docutils" />
+<section id="pull-bigdl-k8s-docker-image">
+<h2><strong>1. Pull <code class="docutils literal notranslate"><span class="pre">bigdl-k8s</span></code> Docker Image</strong><a class="headerlink" href="#pull-bigdl-k8s-docker-image" title="Permalink to this headline">¶</a></h2>
+<p>You may pull the prebuilt  BigDL <code class="docutils literal notranslate"><span class="pre">bigdl-k8s</span></code> Image from <a class="reference external" href="https://hub.docker.com/r/intelanalytics/bigdl-k8s/tags">Docker Hub</a> as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo docker pull intelanalytics/bigdl-k8s:latest
+</pre></div>
+</div>
+<p><strong>Speed up pulling image by adding mirrors</strong></p>
+<p>To speed up pulling the image from DockerHub, you may add the registry-mirrors key and value by editing <code class="docutils literal notranslate"><span class="pre">daemon.json</span></code> (located in <code class="docutils literal notranslate"><span class="pre">/etc/docker/</span></code> folder on Linux):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;registry-mirrors&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;https://&lt;my-docker-mirror-host&gt;&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>For instance, users in China may add the USTC mirror as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;registry-mirrors&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;https://docker.mirrors.ustc.edu.cn&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>After that, flush changes and restart docker：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">daemon</span><span class="o">-</span><span class="n">reload</span>
+<span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">restart</span> <span class="n">docker</span>
+</pre></div>
+</div>
+</section>
+<section id="launch-a-client-container">
+<h2><strong>2. Launch a Client Container</strong><a class="headerlink" href="#launch-a-client-container" title="Permalink to this headline">¶</a></h2>
+<p>You can submit BigDL application from a client container that provides the required environment.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo docker run -itd --net<span class="o">=</span>host <span class="se">\</span>
+    -v /etc/kubernetes:/etc/kubernetes <span class="se">\</span>
+    -v /root/.kube:/root/.kube <span class="se">\</span>
+    intelanalytics/bigdl-k8s:latest bash
+</pre></div>
+</div>
+<p><strong>Note:</strong> to create the client container, <code class="docutils literal notranslate"><span class="pre">-v</span> <span class="pre">/etc/kubernetes:/etc/kubernetes:</span></code> and <code class="docutils literal notranslate"><span class="pre">-v</span> <span class="pre">/root/.kube:/root/.kube</span></code> are required to specify the path of kube config and installation.</p>
+<p>You can specify more arguments:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo docker run -itd --net<span class="o">=</span>host <span class="se">\</span>
+    -v /etc/kubernetes:/etc/kubernetes <span class="se">\</span>
+    -v /root/.kube:/root/.kube <span class="se">\</span>
+    -e <span class="nv">NOTEBOOK_PORT</span><span class="o">=</span><span class="m">12345</span> <span class="se">\</span>
+    -e <span class="nv">NOTEBOOK_TOKEN</span><span class="o">=</span><span class="s2">&quot;your-token&quot;</span> <span class="se">\</span>
+    -e <span class="nv">http_proxy</span><span class="o">=</span>http://your-proxy-host:your-proxy-port <span class="se">\</span>
+    -e <span class="nv">https_proxy</span><span class="o">=</span>https://your-proxy-host:your-proxy-port <span class="se">\</span>
+    -e <span class="nv">RUNTIME_SPARK_MASTER</span><span class="o">=</span>k8s://https://&lt;k8s-apiserver-host&gt;:&lt;k8s-apiserver-port&gt; <span class="se">\</span>
+    -e <span class="nv">RUNTIME_K8S_SERVICE_ACCOUNT</span><span class="o">=</span>account <span class="se">\</span>
+    -e <span class="nv">RUNTIME_K8S_SPARK_IMAGE</span><span class="o">=</span>intelanalytics/bigdl-k8s:latest <span class="se">\</span>
+    -e <span class="nv">RUNTIME_PERSISTENT_VOLUME_CLAIM</span><span class="o">=</span>myvolumeclaim <span class="se">\</span>
+    -e <span class="nv">RUNTIME_DRIVER_HOST</span><span class="o">=</span>x.x.x.x <span class="se">\</span>
+    -e <span class="nv">RUNTIME_DRIVER_PORT</span><span class="o">=</span><span class="m">54321</span> <span class="se">\</span>
+    -e <span class="nv">RUNTIME_EXECUTOR_INSTANCES</span><span class="o">=</span><span class="m">1</span> <span class="se">\</span>
+    -e <span class="nv">RUNTIME_EXECUTOR_CORES</span><span class="o">=</span><span class="m">4</span> <span class="se">\</span>
+    -e <span class="nv">RUNTIME_EXECUTOR_MEMORY</span><span class="o">=</span>20g <span class="se">\</span>
+    -e <span class="nv">RUNTIME_TOTAL_EXECUTOR_CORES</span><span class="o">=</span><span class="m">4</span> <span class="se">\</span>
+    -e <span class="nv">RUNTIME_DRIVER_CORES</span><span class="o">=</span><span class="m">4</span> <span class="se">\</span>
+    -e <span class="nv">RUNTIME_DRIVER_MEMORY</span><span class="o">=</span>10g <span class="se">\</span>
+    intelanalytics/bigdl-k8s:latest bash 
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>NOTEBOOK_PORT value 12345 is a user specified port number.</p></li>
+<li><p>NOTEBOOK_TOKEN value “your-token” is a user specified string.</p></li>
+<li><p>http_proxy/https_proxy is to specify http proxy/https_proxy.</p></li>
+<li><p>RUNTIME_SPARK_MASTER is to specify spark master, which should be <code class="docutils literal notranslate"><span class="pre">k8s://https://&lt;k8s-apiserver-host&gt;:&lt;k8s-apiserver-port&gt;</span></code> or <code class="docutils literal notranslate"><span class="pre">spark://&lt;spark-master-host&gt;:&lt;spark-master-port&gt;</span></code>.</p></li>
+<li><p>RUNTIME_K8S_SERVICE_ACCOUNT is service account for driver pod. Please refer to k8s <a class="reference external" href="https://spark.apache.org/docs/latest/running-on-kubernetes.html#rbac">RBAC</a>.</p></li>
+<li><p>RUNTIME_K8S_SPARK_IMAGE is the k8s image.</p></li>
+<li><p>RUNTIME_PERSISTENT_VOLUME_CLAIM is to specify <a class="reference external" href="https://spark.apache.org/docs/latest/running-on-kubernetes.html#volume-mounts">Kubernetes volume</a> mount. We are supposed to use volume mount to store or receive data.</p></li>
+<li><p>RUNTIME_DRIVER_HOST/RUNTIME_DRIVER_PORT is to specify driver localhost and port number (only required when submitting jobs via kubernetes client mode).</p></li>
+<li><p>Other environment variables are for spark configuration setting. The default values in this image are listed above. Replace the values as you need.</p></li>
+</ul>
+<p>Once the container is created, execute the container:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo docker <span class="nb">exec</span> -it &lt;containerID&gt; bash
+</pre></div>
+</div>
+<p>You will login into the container and see this as the output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">root</span><span class="o">@</span><span class="p">[</span><span class="n">hostname</span><span class="p">]:</span><span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">spark</span><span class="o">/</span><span class="n">work</span><span class="o">-</span><span class="nb">dir</span><span class="c1"># </span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">/opt/spark/work-dir</span></code> is the spark work path.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">/opt</span></code> directory contains:</p>
+<ul class="simple">
+<li><p>download-bigdl.sh is used for downloading BigDL distributions.</p></li>
+<li><p>start-notebook-spark.sh is used for starting the jupyter notebook on standard spark cluster.</p></li>
+<li><p>start-notebook-k8s.sh is used for starting the jupyter notebook on k8s cluster.</p></li>
+<li><p>bigdl-x.x-SNAPSHOT is <code class="docutils literal notranslate"><span class="pre">BIGDL_HOME</span></code>, which is the home of BigDL distribution.</p></li>
+<li><p>bigdl-examples directory contains downloaded python example code.</p></li>
+<li><p>install-conda-env.sh is displayed that conda env and python dependencies are installed.</p></li>
+<li><p>jdk is the jdk home.</p></li>
+<li><p>spark is the spark home.</p></li>
+<li><p>redis is the redis home.</p></li>
+</ul>
+</section>
+<section id="submit-to-k8s-from-remote">
+<h2><strong>3. Submit to k8s from remote</strong><a class="headerlink" href="#submit-to-k8s-from-remote" title="Permalink to this headline">¶</a></h2>
+<p>Instead of lanuching a client container, you can also submit BigDL application from a remote node with the following steps:</p>
+<ol class="simple">
+<li><p>Check the <a class="reference external" href="https://spark.apache.org/docs/latest/running-on-kubernetes.html#prerequisites">prerequisites</a> of running Spark on Kubernetes.</p>
+<ul class="simple">
+<li><p>The remote node needs to properly setup the configurations and authentications of the k8s cluster (e.g. the <code class="docutils literal notranslate"><span class="pre">config</span></code> file under <code class="docutils literal notranslate"><span class="pre">~/.kube</span></code>, especially the server address in the <code class="docutils literal notranslate"><span class="pre">config</span></code>).</p></li>
+<li><p>Install <code class="docutils literal notranslate"><span class="pre">kubectl</span></code> on the remote node and run some sample commands for verification, for example <code class="docutils literal notranslate"><span class="pre">kubectl</span> <span class="pre">auth</span> <span class="pre">can-i</span> <span class="pre">&lt;list|create|edit|delete&gt;</span> <span class="pre">pods</span></code>.
+Note that the installation of <code class="docutils literal notranslate"><span class="pre">kubectl</span></code> is not a must for the remote node, but it is a useful tool to verify whether the remote node has access to the k8s cluster.</p></li>
+<li><p>The environment variables <code class="docutils literal notranslate"><span class="pre">http_proxy</span></code> and <code class="docutils literal notranslate"><span class="pre">https_proxy</span></code> may affect the connection using <code class="docutils literal notranslate"><span class="pre">kubectl</span></code>. You may check and unset these environment variables in case you get errors when executing the <code class="docutils literal notranslate"><span class="pre">kubectl</span></code> commands on the remote node.</p></li>
+</ul>
+</li>
+<li><p>Follow the steps in the <a class="reference external" href="./python.html#install">Python User Guide</a> to install BigDL in a conda environment.</p></li>
+</ol>
+</section>
+<section id="run-bigdl-on-k8s">
+<h2><strong>4. Run BigDL on k8s</strong><a class="headerlink" href="#run-bigdl-on-k8s" title="Permalink to this headline">¶</a></h2>
+<p><em><strong>Note</strong>: Please make sure <code class="docutils literal notranslate"><span class="pre">kubectl</span></code> has appropriate permission to create, list and delete pod.</em></p>
+<p>You may refer to <a class="reference external" href="#known-issues">Section 5</a> for some known issues when running BigDL on k8s.</p>
+<section id="k8s-client-mode">
+<h3><strong>4.1 K8s client mode</strong><a class="headerlink" href="#k8s-client-mode" title="Permalink to this headline">¶</a></h3>
+<p>We recommend using <code class="docutils literal notranslate"><span class="pre">init_orca_context</span></code> at the very beginning of your code (e.g. in script.py) to initiate and run BigDL on standard K8s clusters in <a class="reference external" href="http://spark.apache.org/docs/latest/running-on-kubernetes.html#client-mode">client mode</a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bigdl.orca</span> <span class="kn">import</span> <span class="n">init_orca_context</span>
+
+<span class="n">init_orca_context</span><span class="p">(</span><span class="n">cluster_mode</span><span class="o">=</span><span class="s2">&quot;k8s&quot;</span><span class="p">,</span> <span class="n">master</span><span class="o">=</span><span class="s2">&quot;k8s://https://&lt;k8s-apiserver-host&gt;:&lt;k8s-apiserver-port&gt;&quot;</span><span class="p">,</span>
+                  <span class="n">container_image</span><span class="o">=</span><span class="s2">&quot;intelanalytics/bigdl-k8s:latest&quot;</span><span class="p">,</span>
+                  <span class="n">num_nodes</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">cores</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">memory</span><span class="o">=</span><span class="s2">&quot;2g&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Remark: You may need to specify Spark driver host and port if necessary by adding the argument: <code class="docutils literal notranslate"><span class="pre">conf={&quot;spark.driver.host&quot;:</span> <span class="pre">&quot;x.x.x.x&quot;,</span> <span class="pre">&quot;spark.driver.port&quot;:</span> <span class="pre">&quot;x&quot;}</span></code>.</p>
+<p>Execute <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">script.py</span></code> to run your program on k8s cluster directly.</p>
+</section>
+<section id="k8s-cluster-mode">
+<h3><strong>4.2 K8s cluster mode</strong><a class="headerlink" href="#k8s-cluster-mode" title="Permalink to this headline">¶</a></h3>
+<p>For k8s <a class="reference external" href="https://spark.apache.org/docs/3.1.2/running-on-kubernetes.html#cluster-mode">cluster mode</a>, you can call <code class="docutils literal notranslate"><span class="pre">init_orca_context</span></code> and specify cluster_mode to be “spark-submit” in your python script (e.g. in script.py):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bigdl.orca</span> <span class="kn">import</span> <span class="n">init_orca_context</span>
+
+<span class="n">init_orca_context</span><span class="p">(</span><span class="n">cluster_mode</span><span class="o">=</span><span class="s2">&quot;spark-submit&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Use spark-submit to submit your BigDL program:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="si">${</span><span class="nv">SPARK_HOME</span><span class="si">}</span>/bin/spark-submit <span class="se">\</span>
+  --master k8s://https://&lt;k8s-apiserver-host&gt;:&lt;k8s-apiserver-port&gt; <span class="se">\</span>
+  --deploy-mode cluster <span class="se">\</span>
+  --conf spark.kubernetes.authenticate.driver.serviceAccountName<span class="o">=</span>account <span class="se">\</span>
+  --name bigdl <span class="se">\</span>
+  --conf spark.kubernetes.container.image<span class="o">=</span><span class="s2">&quot;intelanalytics/bigdl-k8s:latest&quot;</span> <span class="se">\</span>
+  --conf spark.kubernetes.container.image.pullPolicy<span class="o">=</span>Always <span class="se">\</span>
+  --conf spark.pyspark.driver.python<span class="o">=</span>./env/bin/python <span class="se">\</span>
+  --conf spark.pyspark.python<span class="o">=</span>./env/bin/python <span class="se">\</span>
+  --archives path/to/environment.tar.gz#env <span class="se">\</span>
+  --conf spark.executor.instances<span class="o">=</span><span class="m">1</span> <span class="se">\</span>
+  --executor-memory 10g <span class="se">\</span>
+  --driver-memory 10g <span class="se">\</span>
+  --executor-cores <span class="m">8</span> <span class="se">\</span>
+  --num-executors <span class="m">2</span> <span class="se">\</span>
+  --properties-file <span class="si">${</span><span class="nv">BIGDL_HOME</span><span class="si">}</span>/conf/spark-bigdl.conf <span class="se">\</span>
+  --py-files local://<span class="si">${</span><span class="nv">BIGDL_HOME</span><span class="si">}</span>/python/bigdl-spark_<span class="si">${</span><span class="nv">SPARK_VERSION</span><span class="si">}</span>-<span class="si">${</span><span class="nv">BIGDL_VERSION</span><span class="si">}</span>-python-api.zip,local:///path/script.py
+  --conf spark.driver.extraClassPath<span class="o">=</span>local://<span class="si">${</span><span class="nv">BIGDL_HOME</span><span class="si">}</span>/jars/* <span class="se">\</span>
+  --conf spark.executor.extraClassPath<span class="o">=</span>local://<span class="si">${</span><span class="nv">BIGDL_HOME</span><span class="si">}</span>/jars/* <span class="se">\</span>
+  local:///path/script.py
+</pre></div>
+</div>
+</section>
+<section id="run-jupyter-notebooks">
+<h3><strong>4.3 Run Jupyter Notebooks</strong><a class="headerlink" href="#run-jupyter-notebooks" title="Permalink to this headline">¶</a></h3>
+<p>After a Docker container is launched and user login into the container, you can start the Jupyter Notebook service inside the container.</p>
+<p>In the <code class="docutils literal notranslate"><span class="pre">/opt</span></code> directory, run this command line to start the Jupyter Notebook service:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">start</span><span class="o">-</span><span class="n">notebook</span><span class="o">-</span><span class="n">k8s</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+<p>You will see the output message like below. This means the Jupyter Notebook service has started successfully within the container.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[I 23:51:08.456 NotebookApp] Serving notebooks from local directory: /opt/bigdl-2.1.0-SNAPSHOT/apps
+[I 23:51:08.456 NotebookApp] Jupyter Notebook 6.2.0 is running at:
+[I 23:51:08.456 NotebookApp] http://xxxx:12345/?token=...
+[I 23:51:08.457 NotebookApp]  or http://127.0.0.1:12345/?token=...
+[I 23:51:08.457 NotebookApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+</pre></div>
+</div>
+<p>Then, refer <a class="reference internal" href="docker.html"><span class="doc">docker guide</span></a> to open Jupyter Notebook service from a browser and run notebook.</p>
+</section>
+<section id="run-scala-programs">
+<h3><strong>4.4 Run Scala programs</strong><a class="headerlink" href="#run-scala-programs" title="Permalink to this headline">¶</a></h3>
+<p>Use spark-submit to submit your BigDL program.  e.g., run <a class="reference external" href="../../../../../../scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/nnframes/imageInference">nnframes imageInference</a> example (running in either local mode or cluster mode) as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="si">${</span><span class="nv">SPARK_HOME</span><span class="si">}</span>/bin/spark-submit <span class="se">\</span>
+  --master <span class="si">${</span><span class="nv">RUNTIME_SPARK_MASTER</span><span class="si">}</span> <span class="se">\</span>
+  --deploy-mode client <span class="se">\</span>
+  --conf spark.driver.host<span class="o">=</span><span class="si">${</span><span class="nv">RUNTIME_DRIVER_HOST</span><span class="si">}</span> <span class="se">\</span>
+  --conf spark.driver.port<span class="o">=</span><span class="si">${</span><span class="nv">RUNTIME_DRIVER_PORT</span><span class="si">}</span> <span class="se">\</span>
+  --conf spark.kubernetes.authenticate.driver.serviceAccountName<span class="o">=</span><span class="si">${</span><span class="nv">RUNTIME_K8S_SERVICE_ACCOUNT</span><span class="si">}</span> <span class="se">\</span>
+  --name bigdl <span class="se">\</span>
+  --conf spark.kubernetes.container.image<span class="o">=</span><span class="si">${</span><span class="nv">RUNTIME_K8S_SPARK_IMAGE</span><span class="si">}</span> <span class="se">\</span>
+  --conf spark.executor.instances<span class="o">=</span><span class="si">${</span><span class="nv">RUNTIME_EXECUTOR_INSTANCES</span><span class="si">}</span> <span class="se">\</span>
+  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.<span class="si">${</span><span class="nv">RUNTIME_PERSISTENT_VOLUME_CLAIM</span><span class="si">}</span>.options.claimName<span class="o">=</span><span class="si">${</span><span class="nv">RUNTIME_PERSISTENT_VOLUME_CLAIM</span><span class="si">}</span> <span class="se">\</span>
+  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.<span class="si">${</span><span class="nv">RUNTIME_PERSISTENT_VOLUME_CLAIM</span><span class="si">}</span>.mount.path<span class="o">=</span>/path <span class="se">\</span>
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.<span class="si">${</span><span class="nv">RUNTIME_PERSISTENT_VOLUME_CLAIM</span><span class="si">}</span>.options.claimName<span class="o">=</span><span class="si">${</span><span class="nv">RUNTIME_PERSISTENT_VOLUME_CLAIM</span><span class="si">}</span> <span class="se">\</span>
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.<span class="si">${</span><span class="nv">RUNTIME_PERSISTENT_VOLUME_CLAIM</span><span class="si">}</span>.mount.path<span class="o">=</span>/path <span class="se">\</span>
+  --conf spark.kubernetes.driver.label.&lt;your-label&gt;<span class="o">=</span><span class="nb">true</span> <span class="se">\</span>
+  --conf spark.kubernetes.executor.label.&lt;your-label&gt;<span class="o">=</span><span class="nb">true</span> <span class="se">\</span>
+  --executor-cores <span class="si">${</span><span class="nv">RUNTIME_EXECUTOR_CORES</span><span class="si">}</span> <span class="se">\</span>
+  --executor-memory <span class="si">${</span><span class="nv">RUNTIME_EXECUTOR_MEMORY</span><span class="si">}</span> <span class="se">\</span>
+  --total-executor-cores <span class="si">${</span><span class="nv">RUNTIME_TOTAL_EXECUTOR_CORES</span><span class="si">}</span> <span class="se">\</span>
+  --driver-cores <span class="si">${</span><span class="nv">RUNTIME_DRIVER_CORES</span><span class="si">}</span> <span class="se">\</span>
+  --driver-memory <span class="si">${</span><span class="nv">RUNTIME_DRIVER_MEMORY</span><span class="si">}</span> <span class="se">\</span>
+  --properties-file <span class="si">${</span><span class="nv">BIGDL_HOME</span><span class="si">}</span>/conf/spark-bigdl.conf <span class="se">\</span>
+  --conf spark.driver.extraJavaOptions<span class="o">=</span>-Dderby.stream.error.file<span class="o">=</span>/tmp <span class="se">\</span>
+  --conf spark.sql.catalogImplementation<span class="o">=</span><span class="s1">&#39;in-memory&#39;</span> <span class="se">\</span>
+  --conf spark.driver.extraClassPath<span class="o">=</span>local://<span class="si">${</span><span class="nv">BIGDL_HOME</span><span class="si">}</span>/jars/*  <span class="se">\</span>
+  --conf spark.executor.extraClassPath<span class="o">=</span>local://<span class="si">${</span><span class="nv">BIGDL_HOME</span><span class="si">}</span>/jars/*  <span class="se">\</span>
+  --class com.intel.analytics.bigdl.dllib.examples.nnframes.imageInference.ImageTransferLearning <span class="se">\</span>
+  <span class="si">${</span><span class="nv">BIGDL_HOME</span><span class="si">}</span>/python/bigdl-spark_<span class="si">${</span><span class="nv">SPARK_VERSION</span><span class="si">}</span>-<span class="si">${</span><span class="nv">BIGDL_VERSION</span><span class="si">}</span>-python-api.zip <span class="se">\</span>
+  --inputDir /path
+</pre></div>
+</div>
+<p>Options:</p>
+<ul class="simple">
+<li><p>–master: the spark mater, must be a URL with the format <code class="docutils literal notranslate"><span class="pre">k8s://https://&lt;k8s-apiserver-host&gt;:&lt;k8s-apiserver-port&gt;</span></code>.</p></li>
+<li><p>–deploy-mode: submit application in client/cluster mode.</p></li>
+<li><p>–name: the Spark application name.</p></li>
+<li><p>–conf: to specify k8s service account, container image to use for the Spark application, driver volumes name and path, label of pods, spark driver and executor configuration, etc. You can refer to <a class="reference external" href="https://spark.apache.org/docs/latest/configuration.html">spark configuration</a> and <a class="reference external" href="https://spark.apache.org/docs/latest/running-on-kubernetes.html#configuration">spark on k8s configuration</a> for more details.</p></li>
+<li><p>–properties-file: the customized conf properties.</p></li>
+<li><p>–py-files: the extra python packages is needed.</p></li>
+<li><p>–class: scala example class name.</p></li>
+<li><p>–inputDir: input data path of the nnframe example. The data path is the mounted filesystem of the host. Refer to more details by <a class="reference external" href="https://spark.apache.org/docs/latest/running-on-kubernetes.html#using-kubernetes-volumes">Kubernetes Volumes</a>.</p></li>
+</ul>
+</section>
+</section>
+<section id="known-issues">
+<h2><strong>5 Known Issues</strong><a class="headerlink" href="#known-issues" title="Permalink to this headline">¶</a></h2>
+<p>This section shows some common topics for both client mode and cluster mode.</p>
+<section id="how-to-specify-the-python-environment">
+<h3><strong>5.1 How to specify the Python environment?</strong><a class="headerlink" href="#how-to-specify-the-python-environment" title="Permalink to this headline">¶</a></h3>
+<p>In client mode, follow <a class="reference internal" href="python.html"><span class="doc">python user guide</span></a> to install conda and BigDL and run application:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">script</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>In cluster mode, install conda, pack environment and use on both the driver and executor.</p>
+<ul class="simple">
+<li><p>Pack the current conda environment to <code class="docutils literal notranslate"><span class="pre">environment.tar.gz</span></code> (you can use any name you like):</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda pack -o environment.tar.gz
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>spark-submit with “–archives” and specify python stores for dirver and executor</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--conf spark.pyspark.driver.python<span class="o">=</span>./env/bin/python <span class="se">\</span>
+--conf spark.pyspark.python<span class="o">=</span>./env/bin/python <span class="se">\</span>
+--archives local:///bigdl2.0/data/environment.tar.gz#env <span class="se">\ </span><span class="c1"># this path shoud be that k8s pod can access</span>
+</pre></div>
+</div>
+</section>
+<section id="how-to-retain-executor-logs-for-debugging">
+<h3><strong>5.2 How to retain executor logs for debugging?</strong><a class="headerlink" href="#how-to-retain-executor-logs-for-debugging" title="Permalink to this headline">¶</a></h3>
+<p>The k8s would delete the pod once the executor failed in client mode and cluster mode.  If you want to get the content of executor log, you could set “temp-dir” to a mounted network file system (NFS) storage to change the log dir to replace the former one. In this case, you may meet <code class="docutils literal notranslate"><span class="pre">JSONDecodeError</span></code> because multiple executors would write logs to the same physical folder and cause conflicts. The solutions are in the next section.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">init_orca_context</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">extra_params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;temp-dir&quot;</span><span class="p">:</span> <span class="s2">&quot;/bigdl/&quot;</span><span class="p">})</span>
+</pre></div>
+</div>
+</section>
+<section id="how-to-deal-with-jsondecodeerror">
+<h3><strong>5.3 How to deal with “JSONDecodeError”?</strong><a class="headerlink" href="#how-to-deal-with-jsondecodeerror" title="Permalink to this headline">¶</a></h3>
+<p>If you set <code class="docutils literal notranslate"><span class="pre">temp-dir</span></code> to a mounted nfs storage and use multiple executors , you may meet <code class="docutils literal notranslate"><span class="pre">JSONDecodeError</span></code> since multiple executors would write to the same physical folder and cause conflicts. Do not mount <code class="docutils literal notranslate"><span class="pre">temp-dir</span></code> to shared storage is one option to avoid conflicts. But if you debug ray on k8s, you need to output logs to a shared storage. In this case, you could set num-nodes to 1. After testing, you can remove <code class="docutils literal notranslate"><span class="pre">temp-dir</span></code> setting and run multiple executors.</p>
+</section>
+<section id="how-to-use-nfs">
+<h3><strong>5.4 How to use NFS?</strong><a class="headerlink" href="#how-to-use-nfs" title="Permalink to this headline">¶</a></h3>
+<p>If you want to save some files out of pod’s lifecycle, such as logging callbacks or tensorboard callbacks, you need to set the output dir to a mounted persistent volume dir. Let NFS be a simple example.</p>
+<p>Use NFS in client mode:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">init_orca_context</span><span class="p">(</span><span class="n">cluster_mode</span><span class="o">=</span><span class="s2">&quot;k8s&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>
+                  <span class="n">conf</span><span class="o">=</span><span class="p">{</span><span class="o">...</span><span class="p">,</span>
+                  <span class="s2">&quot;spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName&quot;</span><span class="p">:</span><span class="s2">&quot;nfsvolumeclaim&quot;</span><span class="p">,</span>
+                  <span class="s2">&quot;spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path&quot;</span><span class="p">:</span> <span class="s2">&quot;/bigdl&quot;</span> 
+                  <span class="p">})</span>
+</pre></div>
+</div>
+<p>Use NFS in cluster mode:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="si">${</span><span class="nv">SPARK_HOME</span><span class="si">}</span>/bin/spark-submit <span class="se">\</span>
+  --... ...<span class="se">\</span>
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName<span class="o">=</span><span class="s2">&quot;nfsvolumeclaim&quot;</span> <span class="se">\</span>
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path<span class="o">=</span><span class="s2">&quot;/bigdl&quot;</span> <span class="se">\</span>
+  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName<span class="o">=</span><span class="s2">&quot;nfsvolumeclaim&quot;</span> <span class="se">\</span>
+  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path<span class="o">=</span><span class="s2">&quot;/bigdl&quot;</span> <span class="se">\</span>
+  file:///path/script.py
+</pre></div>
+</div>
+</section>
+<section id="how-to-deal-with-rayactorerror">
+<h3><strong>5.5 How to deal with “RayActorError”?</strong><a class="headerlink" href="#how-to-deal-with-rayactorerror" title="Permalink to this headline">¶</a></h3>
+<p>“RayActorError” may caused by running out of the ray memory. If you meet this error, try to increase the memory for ray.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">init_orca_context</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">extra_executor_memory_for_ray</span><span class="o">=</span><span class="s2">&quot;100g&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="how-to-set-proper-steps-per-epoch-and-validation-steps">
+<h3><strong>5.6 How to set proper “steps_per_epoch” and “validation steps”?</strong><a class="headerlink" href="#how-to-set-proper-steps-per-epoch-and-validation-steps" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">steps_per_epoch</span></code> and <code class="docutils literal notranslate"><span class="pre">validation_steps</span></code> should equal to numbers of dataset divided by batch size if you want to train all dataset. The <code class="docutils literal notranslate"><span class="pre">steps_per_epoch</span></code> and <code class="docutils literal notranslate"><span class="pre">validation_steps</span></code> do not relate to the <code class="docutils literal notranslate"><span class="pre">num_nodes</span></code> when total dataset and batch size are fixed. For example, you set <code class="docutils literal notranslate"><span class="pre">num_nodes</span></code> to 1, and set <code class="docutils literal notranslate"><span class="pre">steps_per_epoch</span></code> to 6. If you change the <code class="docutils literal notranslate"><span class="pre">num_nodes</span></code> to 3, the <code class="docutils literal notranslate"><span class="pre">steps_per_epoch</span></code> should still be 6.</p>
+</section>
+<section id="others">
+<h3><strong>5.7 Others</strong><a class="headerlink" href="#others" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">spark.kubernetes.container.image.pullPolicy</span></code> needs to be specified as <code class="docutils literal notranslate"><span class="pre">always</span></code> if you need to update your spark executor image for k8s.</p>
+</section>
+</section>
+<section id="access-logs-and-clear-pods">
+<h2><strong>6. Access logs and clear pods</strong><a class="headerlink" href="#access-logs-and-clear-pods" title="Permalink to this headline">¶</a></h2>
+<p>When application is running, it’s possible to stream logs on the driver pod:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ kubectl logs &lt;spark-driver-pod&gt;
+</pre></div>
+</div>
+<p>To check pod status or to get some basic information around pod using:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ kubectl describe pod &lt;spark-driver-pod&gt;
+</pre></div>
+</div>
+<p>You can also check other pods using the similar way.</p>
+<p>After finishing running the application, deleting the driver pod:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ kubectl delete &lt;spark-driver-pod&gt;
+</pre></div>
+</div>
+<p>Or clean up the entire spark application by pod label:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ kubectl delete pod -l &lt;pod label&gt;
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="hadoop.html" class="btn btn-neutral float-left" title="Hadoop/YARN User Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="databricks.html" class="btn btn-neutral float-right" title="Databricks User Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

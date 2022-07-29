@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Preserving Machine Learning (PPML) User Guide &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/design-tabs.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Trusted Big Data Analytics and ML" href="trusted_big_data_analytics_and_ml.html" />
+    <link rel="prev" title="Chronos Known Issue" href="../../Chronos/Overview/chronos_known_issue.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Privacy Preserving Machine Learning (PPML) User Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">1. Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ppml-for-big-data-ai">1.1 PPML for Big Data AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#trusted-big-data-analytics-and-ml">2. Trusted Big Data Analytics and ML</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#prerequisite">2.1 Prerequisite</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trusted-big-data-analytics-and-ml-on-jvm">2.2 Trusted Big Data Analytics and ML on JVM</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#prepare-docker-image">2.2.1 Prepare Docker Image</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run-trusted-big-data-and-ml-on-single-node">2.2.2 Run Trusted Big Data and ML on Single Node</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run-trusted-big-data-and-ml-on-cluster">2.2.3 Run Trusted Big Data and ML on Cluster</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#trusted-big-data-analytics-and-ml-with-python">2.3 Trusted Big Data Analytics and ML with Python</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">2.3.1 Prepare Docker Image</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id2">2.3.2 Run Trusted Big Data and ML on Single Node</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id6">2.3.3 Run Trusted Big Data and ML on Cluster</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#trusted-realtime-compute-and-ml">3. Trusted Realtime Compute and ML</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id8">3.1 Prerequisite</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id9">3.2 Prepare Docker Image</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#run-trusted-realtime-compute-and-ml">3.3 Run Trusted Realtime Compute and ML</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id10">3.3.1 Configure the Environment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#start-the-service">3.3.2 Start the service</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run-trusted-flink-program">3.3.3 Run Trusted Flink Program</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run-trusted-cluster-serving">3.3.4 Run Trusted Cluster Serving</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Privacy Preserving Machine Learning (PPML) User Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/doc/PPML/Overview/ppml.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="privacy-preserving-machine-learning-ppml-user-guide">
+<h1>Privacy Preserving Machine Learning (PPML) User Guide<a class="headerlink" href="#privacy-preserving-machine-learning-ppml-user-guide" title="Permalink to this headline">¶</a></h1>
+<section id="introduction">
+<h2>1. Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>Protecting privacy and confidentiality is critical for large-scale data analysis and machine learning. BigDL <em><strong>PPML</strong></em> combines various low-level hardware and software security technologies (e.g., <a class="reference external" href="https://www.intel.com/content/www/us/en/architecture-and-technology/software-guard-extensions.html">Intel® Software Guard Extensions (Intel® SGX)</a>, <a class="reference external" href="https://events19.linuxfoundation.org/wp-content/uploads/2017/12/Library-OS-is-the-New-Container-Why-is-Library-OS-A-Better-Option-for-Compatibility-and-Sandboxing-Chia-Che-Tsai-UC-Berkeley.pdf">Library Operating System (LibOS)</a> such as <a class="reference external" href="https://github.com/gramineproject/graphene">Graphene</a> and <a class="reference external" href="https://github.com/occlum/occlum">Occlum</a>, <a class="reference external" href="https://en.wikipedia.org/wiki/Federated_learning">Federated Learning</a>, etc.), so that users can continue to apply standard Big Data and AI technologies (such as Apache Spark, Apache Flink, Tensorflow, PyTorch, etc.) without sacrificing privacy.</p>
+</section>
+<section id="ppml-for-big-data-ai">
+<h2>1.1 PPML for Big Data AI<a class="headerlink" href="#ppml-for-big-data-ai" title="Permalink to this headline">¶</a></h2>
+<p>BigDL provides a distributed PPML platform for protecting the <em>end-to-end Big Data AI pipeline</em> (from data ingestion, data analysis, all the way to machine learning and deep learning). In particular, it extends the single-node <a class="reference external" href="https://en.wikipedia.org/wiki/Trusted_execution_environment">Trusted Execution Environment</a> to provide a <em>Trusted Cluster Environment</em>, so as to run unmodified Big Data analysis and ML/DL programs in a secure fashion on (private or public) cloud:</p>
+<ul class="simple">
+<li><p>Compute and memory protected by SGX Enclaves</p></li>
+<li><p>Network communication protected by remote attestation and <a class="reference external" href="https://en.wikipedia.org/wiki/Transport_Layer_Security">Transport Layer Security (TLS)</a></p></li>
+<li><p>Storage (e.g., data and model) protected by encryption</p></li>
+<li><p>Optional Federated Learning support</p></li>
+</ul>
+<p>That is, even when the program runs in an untrusted cloud environment, all the data and models are protected (e.g., using encryption) on disk and network, and the compute and memory are also protected using SGX Enclaves, so as to preserve confidentiality and privacy during data analysis and machine learning.</p>
+<p>In the current release, two types of trusted Big Data AI applications are supported:</p>
+<ol class="simple">
+<li><p>Big Data analytics and ML/DL (supporting Apache Spark and BigDL)</p></li>
+<li><p>Realtime compute and ML/DL (supporting Apache Flink and <a class="reference external" href="https://www.usenix.org/conference/opml20/presentation/song">BigDL Cluster Serving</a>)</p></li>
+</ol>
+</section>
+<section id="trusted-big-data-analytics-and-ml">
+<h2>2. Trusted Big Data Analytics and ML<a class="headerlink" href="#trusted-big-data-analytics-and-ml" title="Permalink to this headline">¶</a></h2>
+<p>With the trusted Big Data analytics and Machine Learning(ML)/Deep Learning(DL) support, users can run standard Spark data analysis (such as Spark SQL, Dataframe, Spark MLlib, etc.) and distributed deep learning (using BigDL) in a secure and trusted fashion.</p>
+<section id="prerequisite">
+<h3>2.1 Prerequisite<a class="headerlink" href="#prerequisite" title="Permalink to this headline">¶</a></h3>
+<p>Download scripts and dockerfiles from <a class="reference external" href="https://github.com/intel-analytics/BigDL">here</a>. And do the following commands:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> BigDL/ppml/
+</pre></div>
+</div>
+<ol>
+<li><p>Install SGX Driver</p>
+<p>Please check if the current processor supports SGX from <a class="reference external" href="https://www.intel.com/content/www/us/en/support/articles/000028173/processors/intel-core-processors.html">here</a>. Then, enable SGX feature in BIOS. Note that after SGX is enabled, a portion of memory will be assigned to SGX (this memory cannot be seen/used by OS and other applications).</p>
+<p>Check SGX driver with <code class="docutils literal notranslate"><span class="pre">ls</span> <span class="pre">/dev</span> <span class="pre">|</span> <span class="pre">grep</span> <span class="pre">sgx</span></code>. If SGX driver is not installed, please install SGX Data Center Attestation Primitives driver from <a class="reference external" href="https://github.com/intel/SGXDataCenterAttestationPrimitives/tree/master/driver/linux">here</a>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> scripts/
+./install-graphene-driver.sh
+<span class="nb">cd</span> ..
+</pre></div>
+</div>
+</li>
+<li><p>Generate the signing key for SGX Enclaves</p>
+<p>Generate the enclave key using the command below, keep it safely for future remote attestations and to start SGX Enclaves more securely. It will generate a file <code class="docutils literal notranslate"><span class="pre">enclave-key.pem</span></code> in the current working directory, which will be the  enclave key. To store the key elsewhere, modify the output file path.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> scripts/
+openssl genrsa -3 -out enclave-key.pem <span class="m">3072</span>
+<span class="nb">cd</span> ..
+</pre></div>
+</div>
+</li>
+<li><p>Prepare keys for TLS with root permission (test only, need input security password for keys). Please also install JDK/OpenJDK and set the environment path of the java path to get <code class="docutils literal notranslate"><span class="pre">keytool</span></code>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> scripts/
+./generate-keys.sh
+<span class="nb">cd</span> ..
+</pre></div>
+</div>
+<p>When entering the passphrase or password, you could input the same password by yourself; and these passwords could also be used for the next step of generating other passwords. Password should be longer than 6 bits and contain numbers and letters, and one sample password is “3456abcd”. These passwords would be used for future remote attestations and to start SGX enclaves more securely. And This script will generate 6 files in <code class="docutils literal notranslate"><span class="pre">./ppml/scripts/keys</span></code> dir (you can replace them with your own TLS keys).</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>keystore.jks
+keystore.pkcs12
+server.crt
+server.csr
+server.key
+server.pem
+</pre></div>
+</div>
+</li>
+<li><p>Generate <code class="docutils literal notranslate"><span class="pre">password</span></code> to avoid plain text security password (used for key generation in <code class="docutils literal notranslate"><span class="pre">generate-keys.sh</span></code>) transfer.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> scripts/
+./generate-password.sh used_password_when_generate_keys
+<span class="nb">cd</span> ..
+</pre></div>
+</div>
+<p>This script will generate 2 files in <code class="docutils literal notranslate"><span class="pre">./ppml/scripts/password</span></code> dir.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>key.txt
+output.bin
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+<section id="trusted-big-data-analytics-and-ml-on-jvm">
+<h3>2.2 Trusted Big Data Analytics and ML on JVM<a class="headerlink" href="#trusted-big-data-analytics-and-ml-on-jvm" title="Permalink to this headline">¶</a></h3>
+<section id="prepare-docker-image">
+<h4>2.2.1 Prepare Docker Image<a class="headerlink" href="#prepare-docker-image" title="Permalink to this headline">¶</a></h4>
+<p>Pull Docker image from Dockerhub</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-graphene:2.1.0-SNAPSHOT
+</pre></div>
+</div>
+<p>Alternatively, you can build Docker image from Dockerfile (this will take some time):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> trusted-big-data-ml/python/docker-graphene
+./build-docker-image.sh
+</pre></div>
+</div>
+</section>
+<section id="run-trusted-big-data-and-ml-on-single-node">
+<h4>2.2.2 Run Trusted Big Data and ML on Single Node<a class="headerlink" href="#run-trusted-big-data-and-ml-on-single-node" title="Permalink to this headline">¶</a></h4>
+<section id="start-ppml-container">
+<h5>2.2.2.1 Start PPML Container<a class="headerlink" href="#start-ppml-container" title="Permalink to this headline">¶</a></h5>
+<p>Enter <code class="docutils literal notranslate"><span class="pre">BigDL/ppml/trusted-big-data-ml/python/docker-graphene</span></code> dir.</p>
+<ol>
+<li><p>Copy <code class="docutils literal notranslate"><span class="pre">keys</span></code> and <code class="docutils literal notranslate"><span class="pre">password</span></code></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> trusted-big-data-ml/python/docker-graphene
+<span class="c1"># copy keys and password into the current directory</span>
+cp -r ../.././../scripts/keys/ .
+cp -r ../.././../scripts/password/ .
+</pre></div>
+</div>
+</li>
+<li><p>Prepare the data
+To train a model with PPML in BigDL, you need to prepare the data first. The Docker image is taking lenet and mnist as examples. <br>
+You can download the MNIST Data from <a class="reference external" href="http://yann.lecun.com/exdb/mnist/">here</a>. Unzip all the files and put them in one folder(e.g. mnist). <br>
+There are four files. <strong>train-images-idx3-ubyte</strong> contains train images, <strong>train-labels-idx1-ubyte</strong> is train label file, <strong>t10k-images-idx3-ubyte</strong> has validation images    and <strong>t10k-labels-idx1-ubyte</strong> contains validation labels. For more detail, please refer to the download page. <br>
+After you decompress the gzip files, these files may be renamed by some decompress tools, e.g. <strong>train-images-idx3-ubyte</strong> is renamed to <strong>train-images.idx3-ubyte</strong>. Please change the name back before you run the example.  <br></p></li>
+<li><p>To start the container, modify the paths in deploy-local-spark-sgx.sh, and then run the following commands:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./deploy-local-spark-sgx.sh
+sudo docker <span class="nb">exec</span> -it spark-local bash
+<span class="nb">cd</span> /ppml/trusted-big-data-ml
+./init.sh
+</pre></div>
+</div>
+<p><strong>ENCLAVE_KEY_PATH</strong> means the absolute path to the “enclave-key.pem”, according to the above commands, the path would be like “BigDL/ppml/scripts/enclave-key.pem”. <br>
+<strong>DATA_PATH</strong> means the absolute path to the data(like mnist) that would use later in the spark program. According to the above commands, the path would be like “BigDL/ppml/trusted-big-data-ml/python/docker-graphene/mnist” <br>
+<strong>KEYS_PATH</strong> means the absolute path to the keys you just created and copied to. According to the above commands, the path would be like “BigDL/ppml/trusted-big-data-ml/python/docker-graphene/keys” <br>
+<strong>LOCAL_IP</strong> means your local IP address. <br></p>
+</li>
+</ol>
+</section>
+<section id="run-your-spark-program-with-bigdl-ppml-on-sgx">
+<h5>2.2.2.2 Run Your Spark Program with BigDL PPML on SGX<a class="headerlink" href="#run-your-spark-program-with-bigdl-ppml-on-sgx" title="Permalink to this headline">¶</a></h5>
+<p>To run your pyspark program, you need to prepare your own pyspark program and put it under the trusted directory in SGX  <code class="docutils literal notranslate"><span class="pre">/ppml/trusted-big-data-ml/work</span></code>. Then run with <code class="docutils literal notranslate"><span class="pre">bigdl-ppml-submit.sh</span></code> using the command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./bigdl-ppml-submit.sh work/YOUR_PROMGRAM.py <span class="p">|</span> tee YOUR_PROGRAM-sgx.log
+</pre></div>
+</div>
+<p>When the program finishes, check the results with the log <code class="docutils literal notranslate"><span class="pre">YOUR_PROGRAM-sgx.log</span></code>.</p>
+</section>
+<section id="run-trusted-spark-examples-with-bigdl-ppml-sgx">
+<h5>2.2.2.3 Run Trusted Spark Examples with BigDL PPML SGX<a class="headerlink" href="#run-trusted-spark-examples-with-bigdl-ppml-sgx" title="Permalink to this headline">¶</a></h5>
+</section>
+<section id="run-trusted-spark-pi">
+<h5>2.2.2.3.1 Run Trusted Spark Pi<a class="headerlink" href="#run-trusted-spark-pi" title="Permalink to this headline">¶</a></h5>
+<p>This example runs a simple Spark PI program, which is an easy way to verify if the Trusted PPML environment is ready.</p>
+<p>Run the script to run trusted Spark Pi:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash start-spark-local-pi-sgx.sh
+</pre></div>
+</div>
+<p>Open another terminal and check the log:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo docker <span class="nb">exec</span> -it spark-local cat /ppml/trusted-big-data-ml/spark.local.pi.sgx.log <span class="p">|</span> egrep <span class="s2">&quot;###|INFO|Pi&quot;</span>
+</pre></div>
+</div>
+<p>The result should look something like this:</p>
+<blockquote>
+<div><p>Pi is roughly 3.1422957114785572</p>
+</div></blockquote>
+</section>
+<section id="run-trusted-spark-sql">
+<h5>2.2.2.3.2 Run Trusted Spark SQL<a class="headerlink" href="#run-trusted-spark-sql" title="Permalink to this headline">¶</a></h5>
+<p>This example shows how to run trusted Spark SQL (e.g.,  TPC-H queries).</p>
+<p>First, download and install sbt from <a class="reference external" href="https://www.scala-sbt.org/download.html">here</a> and deploy an Hadoop Distributed File System(HDFS) from <a class="reference external" href="https://hadoop.apache.org/docs/r2.7.7/hadoop-project-dist/hadoop-common/ClusterSetup.html">here</a> for the Transaction Processing Performance Council Benchmark H (TPC-H) dataset and output, then build the source codes with SBT and generate the TPC-H dataset according to the TPC-H example from <a class="reference external" href="https://github.com/intel-analytics/zoo-tutorials/tree/master/tpch-spark">here</a>. After that, check if there is  <code class="docutils literal notranslate"><span class="pre">spark-tpc-h-queries_2.11-1.0.jar</span></code> under <code class="docutils literal notranslate"><span class="pre">tpch-spark/target/scala-2.11</span></code>; if so, we have successfully packaged the project.</p>
+<p>Copy the TPC-H package to the container:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker cp tpch-spark/ spark-local:/ppml/trusted-big-data-ml/work
+docker cp tpch-spark/start-spark-local-tpc-h-sgx.sh spark-local:/ppml/trusted-big-data-ml/
+sudo docker <span class="nb">exec</span> -it spark-local bash
+<span class="nb">cd</span> /ppml/trusted-big-data-ml/
+</pre></div>
+</div>
+<p>Then run the script below:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash start-spark-local-tpc-h-sgx.sh <span class="o">[</span>your_hdfs_tpch_data_dir<span class="o">]</span> <span class="o">[</span>your_hdfs_output_dir<span class="o">]</span>
+</pre></div>
+</div>
+<p>Open another terminal and check the log:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo docker <span class="nb">exec</span> -it spark-local cat /ppml/trusted-big-data-ml/spark.local.tpc.h.sgx.log <span class="p">|</span> egrep <span class="s2">&quot;###|INFO|finished&quot;</span>
+</pre></div>
+</div>
+<p>The result should look like this:</p>
+<blockquote>
+<div><p>—————-22 finished——————–</p>
+</div></blockquote>
+</section>
+<section id="run-trusted-deep-learning">
+<h5>2.2.2.3.3 Run Trusted Deep Learning<a class="headerlink" href="#run-trusted-deep-learning" title="Permalink to this headline">¶</a></h5>
+<p>This example shows how to run trusted deep learning (using a BigDL LetNet program).</p>
+<p>First, download the MNIST Data from <a class="reference external" href="http://yann.lecun.com/exdb/mnist/">here</a>. Use <code class="docutils literal notranslate"><span class="pre">gzip</span> <span class="pre">-d</span></code> to unzip all the downloaded files (train-images-idx3-ubyte.gz, train-labels-idx1-ubyte.gz, t10k-images-idx3-ubyte.gz, t10k-labels-idx1-ubyte.gz) and put them into folder <code class="docutils literal notranslate"><span class="pre">/ppml/trusted-big-data-ml/work/data</span></code>.</p>
+<p>Then run the following script:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash start-spark-local-train-sgx.sh
+</pre></div>
+</div>
+<p>Open another terminal and check the log:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo docker <span class="nb">exec</span> -it spark-local cat /ppml/trusted-big-data-ml/spark.local.sgx.log <span class="p">|</span> egrep <span class="s2">&quot;###|INFO&quot;</span>
+</pre></div>
+</div>
+<p>or</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo docker logs spark-local <span class="p">|</span> egrep <span class="s2">&quot;###|INFO&quot;</span>
+</pre></div>
+</div>
+<p>The result should look like this:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1">############# train optimized[P1182:T2:java] ---- end time: 310534 ms return from shim_write(...) = 0x1d</span>
+<span class="c1">############# ModuleLoader.saveToFile File.saveBytes end, used 827002 ms[P1182:T2:java] ---- end time: 1142754 ms return from shim_write(...) = 0x48</span>
+<span class="c1">############# ModuleLoader.saveToFile saveWeightsToFile end, used 842543 ms[P1182:T2:java] ---- end time: 1985297 ms return from shim_write(...) = 0x4b</span>
+<span class="c1">############# model saved[P1182:T2:java] ---- end time: 1985297 ms return from shim_write(...) = 0x19</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="run-trusted-big-data-and-ml-on-cluster">
+<h4>2.2.3 Run Trusted Big Data and ML on Cluster<a class="headerlink" href="#run-trusted-big-data-and-ml-on-cluster" title="Permalink to this headline">¶</a></h4>
+<p>WARNING: If you want spark standalone mode, please refer to <a class="reference external" href="https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/standalone/README">standalone/README.md</a>. But it is not recommended.</p>
+<p>Follow the guide below to run Spark on Kubernetes manually. Alternatively, you can also use Helm to set everything up automatically. See <a class="reference external" href="https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/kubernetes/README">kubernetes/README.md</a>.</p>
+<section id="configure-the-environment">
+<h5>2.2.3.1 Configure the Environment<a class="headerlink" href="#configure-the-environment" title="Permalink to this headline">¶</a></h5>
+<ol class="simple">
+<li><p>Enter <code class="docutils literal notranslate"><span class="pre">BigDL/ppml/trusted-big-data-ml/python/docker-graphene</span></code> dir. Refer to the previous section about <a class="reference external" href="#2221-start-ppml-container">preparing data, key and password</a>. Then run the following commands to generate your enclave key and add it to your Kubernetes cluster as a secret.</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl apply -f keys/keys.yaml
+kubectl apply -f password/password.yaml
+<span class="nb">cd</span> kubernetes
+bash enclave-key-to-secret.sh
+</pre></div>
+</div>
+<ol class="simple">
+<li><p>Create the <a class="reference external" href="https://spark.apache.org/docs/latest/running-on-kubernetes.html#rbac">RBAC(Role-based access control)</a> :</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl create serviceaccount spark
+kubectl create clusterrolebinding spark-role --clusterrole<span class="o">=</span>edit --serviceaccount<span class="o">=</span>default:spark --namespace<span class="o">=</span>default
+</pre></div>
+</div>
+<ol class="simple">
+<li><p>Generate k8s config file, modify <code class="docutils literal notranslate"><span class="pre">YOUR_DIR</span></code> to the location you want to store the config:</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl config view --flatten --minify &gt; /YOUR_DIR/kubeconfig
+</pre></div>
+</div>
+<ol class="simple">
+<li><p>Create k8s secret, the secret created <code class="docutils literal notranslate"><span class="pre">YOUR_SECRET</span></code> should be the same as the password you specified in step 1:</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl create secret generic spark-secret --from-literal <span class="nv">secret</span><span class="o">=</span>YOUR_SECRET
+</pre></div>
+</div>
+</section>
+<section id="start-the-client-container">
+<h5>2.2.3.2  Start the client container<a class="headerlink" href="#start-the-client-container" title="Permalink to this headline">¶</a></h5>
+<p>Configure the environment variables in the following script before running it. Check <a class="reference external" href="https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-graphene#1-bigdl-ppml-sgx-related-configurations">Bigdl ppml SGX related configurations</a> for detailed memory configurations. Modify <code class="docutils literal notranslate"><span class="pre">YOUR_DIR</span></code> to the location you specify in section 2.2.3.1. Modify <code class="docutils literal notranslate"><span class="pre">$LOCAL_IP</span></code> to the IP address of your machine.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">K8S_MASTER</span><span class="o">=</span>k8s://<span class="k">$(</span> sudo kubectl cluster-info <span class="p">|</span> grep <span class="s1">&#39;https.*&#39;</span> -o -m <span class="m">1</span> <span class="k">)</span>
+<span class="nb">echo</span> The k8s master is <span class="nv">$K8S_MASTER</span> .
+<span class="nb">export</span> <span class="nv">ENCLAVE_KEY</span><span class="o">=</span>/YOUR_DIR/enclave-key.pem
+<span class="nb">export</span> <span class="nv">DATA_PATH</span><span class="o">=</span>/YOUR_DIR/data
+<span class="nb">export</span> <span class="nv">KEYS_PATH</span><span class="o">=</span>/YOUR_DIR/keys
+<span class="nb">export</span> <span class="nv">SECURE_PASSWORD_PATH</span><span class="o">=</span>/YOUR_DIR/password
+<span class="nb">export</span> <span class="nv">KUBECONFIG_PATH</span><span class="o">=</span>/YOUR_DIR/kubeconfig
+<span class="nb">export</span> <span class="nv">LOCAL_IP</span><span class="o">=</span><span class="nv">$LOCAL_IP</span>
+<span class="nb">export</span> <span class="nv">DOCKER_IMAGE</span><span class="o">=</span>intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT
+sudo docker run -itd <span class="se">\</span>
+    --privileged <span class="se">\</span>
+    --net<span class="o">=</span>host <span class="se">\</span>
+    --name<span class="o">=</span>spark-local-k8s-client <span class="se">\</span>
+    --cpuset-cpus<span class="o">=</span><span class="s2">&quot;0-4&quot;</span> <span class="se">\</span>
+    --oom-kill-disable <span class="se">\</span>
+    --device<span class="o">=</span>/dev/sgx/enclave <span class="se">\</span>
+    --device<span class="o">=</span>/dev/sgx/provision <span class="se">\</span>
+    -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket <span class="se">\</span>
+    -v <span class="nv">$ENCLAVE_KEY</span>:/graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem <span class="se">\</span>
+    -v <span class="nv">$DATA_PATH</span>:/ppml/trusted-big-data-ml/work/data <span class="se">\</span>
+    -v <span class="nv">$KEYS_PATH</span>:/ppml/trusted-big-data-ml/work/keys <span class="se">\</span>
+    -v <span class="nv">$SECURE_PASSWORD_PATH</span>:/ppml/trusted-big-data-ml/work/password <span class="se">\</span>
+    -v <span class="nv">$KUBECONFIG_PATH</span>:/root/.kube/config <span class="se">\</span>
+    -e <span class="nv">RUNTIME_SPARK_MASTER</span><span class="o">=</span><span class="nv">$K8S_MASTER</span> <span class="se">\</span>
+    -e <span class="nv">RUNTIME_K8S_SERVICE_ACCOUNT</span><span class="o">=</span>spark <span class="se">\</span>
+    -e <span class="nv">RUNTIME_K8S_SPARK_IMAGE</span><span class="o">=</span><span class="nv">$DOCKER_IMAGE</span> <span class="se">\</span>
+    -e <span class="nv">RUNTIME_DRIVER_HOST</span><span class="o">=</span><span class="nv">$LOCAL_IP</span> <span class="se">\</span>
+    -e <span class="nv">RUNTIME_DRIVER_PORT</span><span class="o">=</span><span class="m">54321</span> <span class="se">\</span>
+    -e <span class="nv">RUNTIME_DRIVER_CORES</span><span class="o">=</span><span class="m">1</span> <span class="se">\</span>
+    -e <span class="nv">RUNTIME_EXECUTOR_INSTANCES</span><span class="o">=</span><span class="m">1</span> <span class="se">\</span>
+    -e <span class="nv">RUNTIME_EXECUTOR_CORES</span><span class="o">=</span><span class="m">8</span> <span class="se">\</span>
+    -e <span class="nv">RUNTIME_EXECUTOR_MEMORY</span><span class="o">=</span>1g <span class="se">\</span>
+    -e <span class="nv">RUNTIME_TOTAL_EXECUTOR_CORES</span><span class="o">=</span><span class="m">4</span> <span class="se">\</span>
+    -e <span class="nv">RUNTIME_DRIVER_CORES</span><span class="o">=</span><span class="m">4</span> <span class="se">\</span>
+    -e <span class="nv">RUNTIME_DRIVER_MEMORY</span><span class="o">=</span>1g <span class="se">\</span>
+    -e <span class="nv">SGX_DRIVER_MEM</span><span class="o">=</span>32g <span class="se">\</span>
+    -e <span class="nv">SGX_DRIVER_JVM_MEM</span><span class="o">=</span>8g <span class="se">\</span>
+    -e <span class="nv">SGX_EXECUTOR_MEM</span><span class="o">=</span>32g <span class="se">\</span>
+    -e <span class="nv">SGX_EXECUTOR_JVM_MEM</span><span class="o">=</span>12g <span class="se">\</span>
+    -e <span class="nv">SGX_ENABLED</span><span class="o">=</span><span class="nb">true</span> <span class="se">\</span>
+    -e <span class="nv">SGX_LOG_LEVEL</span><span class="o">=</span>error <span class="se">\</span>
+    -e <span class="nv">SPARK_MODE</span><span class="o">=</span>client <span class="se">\</span>
+    -e <span class="nv">LOCAL_IP</span><span class="o">=</span><span class="nv">$LOCAL_IP</span> <span class="se">\</span>
+    <span class="nv">$DOCKER_IMAGE</span> bash
+</pre></div>
+</div>
+</section>
+<section id="init-the-client-and-run-spark-applications-on-k8s">
+<h5>2.2.3.3 Init the client and run Spark applications on k8s<a class="headerlink" href="#init-the-client-and-run-spark-applications-on-k8s" title="Permalink to this headline">¶</a></h5>
+<ol class="simple">
+<li><p>Run <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">exec</span> <span class="pre">-it</span> <span class="pre">spark-local-k8s-client</span> <span class="pre">bash</span></code> to entry the container. Then run the following command to init the Spark local k8s client.</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./init.sh
+</pre></div>
+</div>
+<ol class="simple">
+<li><p>We assume you have a working Network File System (NFS) configured for your Kubernetes cluster. Configure the <code class="docutils literal notranslate"><span class="pre">nfsvolumeclaim</span></code> on the last line to the name of the Persistent Volume Claim (PVC) of your NFS.Please prepare the following and put them in your NFS directory:</p></li>
+</ol>
+<ul class="simple">
+<li><p>The data (in a directory called <code class="docutils literal notranslate"><span class="pre">data</span></code>)</p></li>
+<li><p>The kubeconfig file.</p></li>
+</ul>
+<ol class="simple">
+<li><p>Run the following command to start Spark-Pi example. When the appliction runs in <code class="docutils literal notranslate"><span class="pre">cluster</span></code> mode, you can run <code class="docutils literal notranslate"><span class="pre">kubectl</span> <span class="pre">get</span> <span class="pre">pod</span></code> to get the name and status of your k8s pod(e.g.  driver-xxxx). Then you can run <code class="docutils literal notranslate"><span class="pre">kubectl</span> <span class="pre">logs</span> <span class="pre">-f</span> <span class="pre">driver-xxxx</span></code> to get the output of your appliction.</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+<span class="nv">secure_password</span><span class="o">=</span><span class="sb">`</span>openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt &lt;/ppml/trusted-big-data-ml/work/password/output.bin<span class="sb">`</span> <span class="o">&amp;&amp;</span> <span class="se">\</span>
+<span class="nb">export</span> <span class="nv">TF_MKL_ALLOC_MAX_BYTES</span><span class="o">=</span><span class="m">10737418240</span> <span class="o">&amp;&amp;</span> <span class="se">\</span>
+  <span class="nb">export</span> <span class="nv">SPARK_LOCAL_IP</span><span class="o">=</span><span class="nv">$LOCAL_IP</span> <span class="o">&amp;&amp;</span> <span class="se">\</span>
+  /opt/jdk8/bin/java <span class="se">\</span>
+    -cp <span class="s1">&#39;/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*&#39;</span> <span class="se">\</span>
+    -Xmx8g <span class="se">\</span>
+    org.apache.spark.deploy.SparkSubmit <span class="se">\</span>
+    --master <span class="nv">$RUNTIME_SPARK_MASTER</span> <span class="se">\</span>
+    --deploy-mode <span class="nv">$SPARK_MODE</span> <span class="se">\</span>
+    --name spark-pi-sgx <span class="se">\</span>
+    --conf spark.driver.host<span class="o">=</span><span class="nv">$SPARK_LOCAL_IP</span> <span class="se">\</span>
+    --conf spark.driver.port<span class="o">=</span><span class="nv">$RUNTIME_DRIVER_PORT</span> <span class="se">\</span>
+    --conf spark.driver.memory<span class="o">=</span><span class="nv">$RUNTIME_DRIVER_MEMORY</span> <span class="se">\</span>
+    --conf spark.driver.cores<span class="o">=</span><span class="nv">$RUNTIME_DRIVER_CORES</span> <span class="se">\</span>
+    --conf spark.executor.cores<span class="o">=</span><span class="nv">$RUNTIME_EXECUTOR_CORES</span> <span class="se">\</span>
+    --conf spark.executor.memory<span class="o">=</span><span class="nv">$RUNTIME_EXECUTOR_MEMORY</span> <span class="se">\</span>
+    --conf spark.executor.instances<span class="o">=</span><span class="nv">$RUNTIME_EXECUTOR_INSTANCES</span> <span class="se">\</span>
+    --conf spark.kubernetes.authenticate.driver.serviceAccountName<span class="o">=</span>spark <span class="se">\</span>
+    --conf spark.kubernetes.container.image<span class="o">=</span><span class="nv">$RUNTIME_K8S_SPARK_IMAGE</span> <span class="se">\</span>
+    --conf spark.kubernetes.driver.podTemplateFile<span class="o">=</span>/ppml/trusted-big-data-ml/spark-driver-template.yaml <span class="se">\</span>
+    --conf spark.kubernetes.executor.podTemplateFile<span class="o">=</span>/ppml/trusted-big-data-ml/spark-executor-template.yaml <span class="se">\</span>
+    --conf spark.kubernetes.executor.deleteOnTermination<span class="o">=</span><span class="nb">false</span> <span class="se">\</span>
+    --conf spark.network.timeout<span class="o">=</span><span class="m">10000000</span> <span class="se">\</span>
+    --conf spark.executor.heartbeatInterval<span class="o">=</span><span class="m">10000000</span> <span class="se">\</span>
+    --conf spark.python.use.daemon<span class="o">=</span><span class="nb">false</span> <span class="se">\</span>
+    --conf spark.python.worker.reuse<span class="o">=</span><span class="nb">false</span> <span class="se">\</span>
+    --conf spark.kubernetes.sgx.enabled<span class="o">=</span><span class="nv">$SGX_ENABLED</span> <span class="se">\</span>
+    --conf spark.kubernetes.sgx.driver.mem<span class="o">=</span><span class="nv">$SGX_DRIVER_MEM</span> <span class="se">\</span>
+    --conf spark.kubernetes.sgx.driver.jvm.mem<span class="o">=</span><span class="nv">$SGX_DRIVER_JVM_MEM</span> <span class="se">\</span>
+    --conf spark.kubernetes.sgx.executor.mem<span class="o">=</span><span class="nv">$SGX_EXECUTOR_MEM</span> <span class="se">\</span>
+    --conf spark.kubernetes.sgx.executor.jvm.mem<span class="o">=</span><span class="nv">$SGX_EXECUTOR_JVM_MEM</span> <span class="se">\</span>
+    --conf spark.kubernetes.sgx.log.level<span class="o">=</span><span class="nv">$SGX_LOG_LEVEL</span> <span class="se">\</span>
+    --conf spark.authenticate<span class="o">=</span><span class="nb">true</span> <span class="se">\</span>
+    --conf spark.authenticate.secret<span class="o">=</span><span class="nv">$secure_password</span> <span class="se">\</span>
+    --conf spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET<span class="o">=</span><span class="s2">&quot;spark-secret:secret&quot;</span> <span class="se">\</span>
+    --conf spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET<span class="o">=</span><span class="s2">&quot;spark-secret:secret&quot;</span> <span class="se">\</span>
+    --conf spark.authenticate.enableSaslEncryption<span class="o">=</span><span class="nb">true</span> <span class="se">\</span>
+    --conf spark.network.crypto.enabled<span class="o">=</span><span class="nb">true</span> <span class="se">\</span>
+    --conf spark.network.crypto.keyLength<span class="o">=</span><span class="m">128</span> <span class="se">\</span>
+    --conf spark.network.crypto.keyFactoryAlgorithm<span class="o">=</span>PBKDF2WithHmacSHA1 <span class="se">\</span>
+    --conf spark.io.encryption.enabled<span class="o">=</span><span class="nb">true</span> <span class="se">\</span>
+    --conf spark.io.encryption.keySizeBits<span class="o">=</span><span class="m">128</span> <span class="se">\</span>
+    --conf spark.io.encryption.keygen.algorithm<span class="o">=</span>HmacSHA1 <span class="se">\</span>
+    --conf spark.ssl.enabled<span class="o">=</span><span class="nb">true</span> <span class="se">\</span>
+    --conf spark.ssl.port<span class="o">=</span><span class="m">8043</span> <span class="se">\</span>
+    --conf spark.ssl.keyPassword<span class="o">=</span><span class="nv">$secure_password</span> <span class="se">\</span>
+    --conf spark.ssl.keyStore<span class="o">=</span>/ppml/trusted-big-data-ml/work/keys/keystore.jks <span class="se">\</span>
+    --conf spark.ssl.keyStorePassword<span class="o">=</span><span class="nv">$secure_password</span> <span class="se">\</span>
+    --conf spark.ssl.keyStoreType<span class="o">=</span>JKS <span class="se">\</span>
+    --conf spark.ssl.trustStore<span class="o">=</span>/ppml/trusted-big-data-ml/work/keys/keystore.jks <span class="se">\</span>
+    --conf spark.ssl.trustStorePassword<span class="o">=</span><span class="nv">$secure_password</span> <span class="se">\</span>
+    --conf spark.ssl.trustStoreType<span class="o">=</span>JKS <span class="se">\</span>
+    --class org.apache.spark.examples.SparkPi <span class="se">\</span>
+    --verbose <span class="se">\</span>
+    local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar <span class="m">100</span> <span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span> <span class="p">|</span> tee spark-pi-sgx-<span class="nv">$SPARK_MODE</span>.log
+</pre></div>
+</div>
+<p>You can run your own Spark Appliction after changing <code class="docutils literal notranslate"><span class="pre">--class</span></code> and jar path.</p>
+<ol class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar</span></code> =&gt; <code class="docutils literal notranslate"><span class="pre">your_jar_path</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--class</span> <span class="pre">org.apache.spark.examples.SparkPi</span></code> =&gt; <code class="docutils literal notranslate"><span class="pre">--class</span> <span class="pre">your_class_path</span></code></p></li>
+</ol>
+</section>
+</section>
+</section>
+<section id="trusted-big-data-analytics-and-ml-with-python">
+<h3>2.3 Trusted Big Data Analytics and ML with Python<a class="headerlink" href="#trusted-big-data-analytics-and-ml-with-python" title="Permalink to this headline">¶</a></h3>
+<section id="id1">
+<h4>2.3.1 Prepare Docker Image<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<p>Pull Docker image from Dockerhub</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT
+</pre></div>
+</div>
+<p>Alternatively, you can build Docker image from Dockerfile (this will take some time):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> ppml/trusted-big-data-ml/python/docker-graphene
+./build-docker-image.sh
+</pre></div>
+</div>
+</section>
+<section id="id2">
+<h4>2.3.2 Run Trusted Big Data and ML on Single Node<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<section id="id3">
+<h5>2.3.2.1 Start PPML Container<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h5>
+<p>Enter <code class="docutils literal notranslate"><span class="pre">BigDL/ppml/trusted-big-data-ml/python/docker-graphene</span></code> directory.</p>
+<ol>
+<li><p>Copy <code class="docutils literal notranslate"><span class="pre">keys</span></code> and <code class="docutils literal notranslate"><span class="pre">password</span></code> to the current directory</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> ppml/trusted-big-data-ml/python/docker-graphene
+<span class="c1"># copy keys and password into the current directory</span>
+cp -r ../keys .
+cp -r ../password .
+</pre></div>
+</div>
+</li>
+<li><p>To start the container, modify the paths in deploy-local-spark-sgx.sh, and then run the following commands:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./deploy-local-spark-sgx.sh
+sudo docker <span class="nb">exec</span> -it spark-local bash
+<span class="nb">cd</span> /ppml/trusted-big-data-ml
+./init.sh
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+<section id="run-your-pyspark-program-with-bigdl-ppml-on-sgx">
+<h5>2.3.2.2 Run Your Pyspark Program with BigDL PPML on SGX<a class="headerlink" href="#run-your-pyspark-program-with-bigdl-ppml-on-sgx" title="Permalink to this headline">¶</a></h5>
+<p>To run your pyspark program, you need to prepare your own pyspark program and put it under the trusted directory in SGX  <code class="docutils literal notranslate"><span class="pre">/ppml/trusted-big-data-ml/work</span></code>. Then run with <code class="docutils literal notranslate"><span class="pre">bigdl-ppml-submit.sh</span></code> using the command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./bigdl-ppml-submit.sh work/YOUR_PROMGRAM.py <span class="p">|</span> tee YOUR_PROGRAM-sgx.log
+</pre></div>
+</div>
+<p>When the program finishes, check the results with the log <code class="docutils literal notranslate"><span class="pre">YOUR_PROGRAM-sgx.log</span></code>.</p>
+</section>
+<section id="run-python-and-pyspark-examples-with-bigdl-ppml-on-sgx">
+<h5>2.3.2.3 Run Python and Pyspark Examples with BigDL PPML on SGX<a class="headerlink" href="#run-python-and-pyspark-examples-with-bigdl-ppml-on-sgx" title="Permalink to this headline">¶</a></h5>
+</section>
+<section id="run-trusted-python-helloworld">
+<h5>2.3.2.3.1 Run Trusted Python Helloworld<a class="headerlink" href="#run-trusted-python-helloworld" title="Permalink to this headline">¶</a></h5>
+<p>This example runs a simple native python program, which is an easy way to verify if the Trusted PPML environment is correctly set up.</p>
+<p>Run the script to run trusted Python Helloworld:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash work/start-scripts/start-python-helloworld-sgx.sh
+</pre></div>
+</div>
+<p>Open another terminal and check the log:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo docker <span class="nb">exec</span> -it spark-local cat /ppml/trusted-big-data-ml/test-helloworld-sgx.log <span class="p">|</span> egrep <span class="s2">&quot;Hello World&quot;</span>
+</pre></div>
+</div>
+<p>The result should look something like this:</p>
+<blockquote>
+<div><p>Hello World</p>
+</div></blockquote>
+</section>
+<section id="run-trusted-python-numpy">
+<h5>2.3.2.3.2 Run Trusted Python Numpy<a class="headerlink" href="#run-trusted-python-numpy" title="Permalink to this headline">¶</a></h5>
+<p>This example shows how to run trusted native python numpy.</p>
+<p>Run the script to run trusted Python Numpy:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash work/start-scripts/start-python-numpy-sgx.sh
+</pre></div>
+</div>
+<p>Open another terminal and check the log:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo docker <span class="nb">exec</span> -it spark-local cat /ppml/trusted-big-data-ml/test-numpy-sgx.log <span class="p">|</span> egrep <span class="s2">&quot;numpy.dot&quot;</span>
+</pre></div>
+</div>
+<p>The result should look something like this:</p>
+<blockquote>
+<div><p>numpy.dot: 0.034211914986371994 sec</p>
+</div></blockquote>
+</section>
+<section id="id4">
+<h5>2.3.2.3.3 Run Trusted Spark Pi<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h5>
+<p>This example runs a simple Spark PI program.</p>
+<p>Run the script to run trusted Spark Pi:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash work/start-scripts/start-spark-local-pi-sgx.sh
+</pre></div>
+</div>
+<p>Open another terminal and check the log:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo docker <span class="nb">exec</span> -it spark-local cat /ppml/trusted-big-data-ml/test-pi-sgx.log <span class="p">|</span> egrep <span class="s2">&quot;roughly&quot;</span>
+</pre></div>
+</div>
+<p>The result should look something like this:</p>
+<blockquote>
+<div><p>Pi is roughly 3.146760</p>
+</div></blockquote>
+</section>
+<section id="run-trusted-spark-wordcount">
+<h5>2.3.2.3.4 Run Trusted Spark Wordcount<a class="headerlink" href="#run-trusted-spark-wordcount" title="Permalink to this headline">¶</a></h5>
+<p>This example runs a simple Spark Wordcount program.</p>
+<p>Run the script to run trusted Spark Wordcount:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash work/start-scripts/start-spark-local-wordcount-sgx.sh
+</pre></div>
+</div>
+<p>Open another terminal and check the log:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo docker <span class="nb">exec</span> -it spark-local cat /ppml/trusted-big-data-ml/test-wordcount-sgx.log <span class="p">|</span> egrep <span class="s2">&quot;print&quot;</span>
+</pre></div>
+</div>
+<p>The result should look something like this:</p>
+<blockquote>
+<div><p>print(”Hello: 1</p>
+<p>print(sys.path);: 1</p>
+</div></blockquote>
+</section>
+<section id="id5">
+<h5>2.3.2.3.5 Run Trusted Spark SQL<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h5>
+<p>This example shows how to run trusted Spark SQL.</p>
+<p>First, make sure that the paths of resource in <code class="docutils literal notranslate"><span class="pre">/ppml/trusted-big-data-ml/work/spark-2.4.6/examples/src/main/python/sql/basic.py</span></code> are the same as the paths of <code class="docutils literal notranslate"><span class="pre">people.json</span></code>  and <code class="docutils literal notranslate"><span class="pre">people.txt</span></code>.</p>
+<p>Run the script to run trusted Spark SQL:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash work/start-scripts/start-spark-local-sql-sgx.sh
+</pre></div>
+</div>
+<p>Open another terminal and check the log:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo docker <span class="nb">exec</span> -it spark-local cat /ppml/trusted-big-data-ml/test-sql-basic-sgx.log <span class="p">|</span> egrep <span class="s2">&quot;Justin&quot;</span>
+</pre></div>
+</div>
+<p>The result should look something like this:</p>
+<blockquote>
+<div><p>| 19| Justin|</p>
+<p>| Justin|</p>
+<p>| Justin| 20|</p>
+<p>| 19| Justin|</p>
+<p>| 19| Justin|</p>
+<p>| 19| Justin|</p>
+<p>Name: Justin</p>
+<p>| Justin|</p>
+</div></blockquote>
+</section>
+<section id="run-trusted-spark-bigdl">
+<h5>2.3.2.3.6 Run Trusted Spark BigDL<a class="headerlink" href="#run-trusted-spark-bigdl" title="Permalink to this headline">¶</a></h5>
+<p>This example shows how to run trusted Spark BigDL.</p>
+<p>Run the script to run trusted Spark BigDL and it would take some time to show the final results:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash work/start-scripts/start-spark-local-bigdl-sgx.sh
+</pre></div>
+</div>
+<p>Open another terminal and check the log:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo docker <span class="nb">exec</span> -it spark-local cat /ppml/trusted-big-data-ml/test-bigdl-lenet-sgx.log <span class="p">|</span> egrep <span class="s2">&quot;Accuracy&quot;</span>
+</pre></div>
+</div>
+<p>The result should look something like this:</p>
+<blockquote>
+<div><p>creating: createTop1Accuracy</p>
+<p>2021-06-18 01:39:45 INFO DistriOptimizer$:180 - [Epoch 1 60032/60000][Iteration 469][Wall Clock 457.926565s] Top1Accuracy is Accuracy(correct: 9488, count: 10000, accuracy: 0.9488)</p>
+<p>2021-06-18 01:46:20 INFO DistriOptimizer$:180 - [Epoch 2 60032/60000][Iteration 938][Wall Clock 845.747782s] Top1Accuracy is Accuracy(correct: 9696, count: 10000, accuracy: 0.9696)</p>
+</div></blockquote>
+</section>
+<section id="run-trusted-spark-xgboost-regressor">
+<h5>2.3.2.3.7 Run Trusted Spark XGBoost Regressor<a class="headerlink" href="#run-trusted-spark-xgboost-regressor" title="Permalink to this headline">¶</a></h5>
+<p>This example shows how to run trusted Spark XGBoost Regressor.</p>
+<p>First, make sure that <code class="docutils literal notranslate"><span class="pre">Boston_Housing.csv</span></code> is under <code class="docutils literal notranslate"><span class="pre">work/data</span></code> directory or the same path in the <code class="docutils literal notranslate"><span class="pre">start-spark-local-xgboost-regressor-sgx.sh</span></code>. Replace the value of <code class="docutils literal notranslate"><span class="pre">RABIT_TRACKER_IP</span></code> with your own IP address in the script.</p>
+<p>Run the script to run trusted Spark XGBoost Regressor and it would take some time to show the final results:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash work/start-scripts/start-spark-local-xgboost-regressor-sgx.sh
+</pre></div>
+</div>
+<p>Open another terminal and check the log:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo docker <span class="nb">exec</span> -it spark-local cat /ppml/trusted-big-data-ml/test-bigdl-xgboost-regressor-sgx.log <span class="p">|</span> egrep <span class="s2">&quot;prediction&quot;</span> -A19
+</pre></div>
+</div>
+<p>The result should look something like this:</p>
+<blockquote>
+<div><p>| features|label| prediction|</p>
+<p>+——————–+—–+——————+</p>
+<p>|[41.5292,0.0,18.1…| 8.5| 8.51994514465332|</p>
+<p>|[67.9208,0.0,18.1…| 5.0| 5.720333099365234|</p>
+<p>|[20.7162,0.0,18.1…| 11.9|10.601168632507324|</p>
+<p>|[11.9511,0.0,18.1…| 27.9| 26.19390106201172|</p>
+<p>|[7.40389,0.0,18.1…| 17.2|16.112293243408203|</p>
+<p>|[14.4383,0.0,18.1…| 27.5|25.952226638793945|</p>
+<p>|[51.1358,0.0,18.1…| 15.0| 14.67484188079834|</p>
+<p>|[14.0507,0.0,18.1…| 17.2|16.112293243408203|</p>
+<p>|[18.811,0.0,18.1,…| 17.9| 17.42863655090332|</p>
+<p>|[28.6558,0.0,18.1…| 16.3| 16.0191593170166|</p>
+<p>|[45.7461,0.0,18.1…| 7.0| 5.300708770751953|</p>
+<p>|[18.0846,0.0,18.1…| 7.2| 6.346951007843018|</p>
+<p>|[10.8342,0.0,18.1…| 7.5| 6.571983814239502|</p>
+<p>|[25.9406,0.0,18.1…| 10.4|10.235769271850586|</p>
+<p>|[73.5341,0.0,18.1…| 8.8| 8.460335731506348|</p>
+<p>|[11.8123,0.0,18.1…| 8.4| 9.193297386169434|</p>
+<p>|[11.0874,0.0,18.1…| 16.7|16.174896240234375|</p>
+<p>|[7.02259,0.0,18.1…| 14.2| 13.38729190826416|</p>
+</div></blockquote>
+</section>
+<section id="run-trusted-spark-xgboost-classifier">
+<h5>2.3.2.3.8 Run Trusted Spark XGBoost Classifier<a class="headerlink" href="#run-trusted-spark-xgboost-classifier" title="Permalink to this headline">¶</a></h5>
+<p>This example shows how to run trusted Spark XGBoost Classifier.</p>
+<p>Before running the example, download the sample dataset from <a class="reference external" href="https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv">pima-indians-diabetes</a> dataset. After downloading the dataset, make sure that <code class="docutils literal notranslate"><span class="pre">pima-indians-diabetes.data.csv</span></code> is under <code class="docutils literal notranslate"><span class="pre">work/data</span></code> directory or the same path in the <code class="docutils literal notranslate"><span class="pre">start-spark-local-xgboost-classifier-sgx.sh</span></code>. Replace <code class="docutils literal notranslate"><span class="pre">path_of_pima_indians_diabetes_csv</span></code> with your path of <code class="docutils literal notranslate"><span class="pre">pima-indians-diabetes.data.csv</span></code>  and the value of <code class="docutils literal notranslate"><span class="pre">RABIT_TRACKER_IP</span></code> with your own IP address in the script.</p>
+<p>Run the script to run trusted Spark XGBoost Classifier and it would take some time to show the final results:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash start-spark-local-xgboost-classifier-sgx.sh
+</pre></div>
+</div>
+<p>Open another terminal and check the log:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo docker <span class="nb">exec</span> -it spark-local cat /ppml/trusted-big-data-ml/test-xgboost-classifier-sgx.log <span class="p">|</span> egrep <span class="s2">&quot;prediction&quot;</span> -A7
+</pre></div>
+</div>
+<p>The result should look something like this:</p>
+<blockquote>
+<div><p>| f1|  f2| f3| f4|  f5| f6|  f7| f8|label|    rawPrediction|     probability|prediction|</p>
+<p>+—-+—–+—-+—-+—–+—-+—–+—-+—–+——————–+——————–+———-+</p>
+<p>|11.0|138.0|74.0|26.0|144.0|36.1|0.557|50.0| 1.0|[-0.8209581375122…|[0.17904186248779…|    1.0|</p>
+<p>| 3.0|106.0|72.0| 0.0| 0.0|25.8|0.207|27.0| 0.0|[-0.0427864193916…|[0.95721358060836…|    0.0|</p>
+<p>| 6.0|117.0|96.0| 0.0| 0.0|28.7|0.157|30.0| 0.0|[-0.2336160838603…|[0.76638391613960…|    0.0|</p>
+<p>| 2.0| 68.0|62.0|13.0| 15.0|20.1|0.257|23.0| 0.0|[-0.0315906107425…|[0.96840938925743…|    0.0|</p>
+<p>| 9.0|112.0|82.0|24.0| 0.0|28.2|1.282|50.0| 1.0|[-0.7087597250938…|[0.29124027490615…|    1.0|</p>
+<p>| 0.0|119.0| 0.0| 0.0| 0.0|32.4|0.141|24.0| 1.0|[-0.4473398327827…|[0.55266016721725…|    0.0|</p>
+</div></blockquote>
+</section>
+<section id="run-trusted-spark-orca-data">
+<h5>2.3.2.3.9 Run Trusted Spark Orca Data<a class="headerlink" href="#run-trusted-spark-orca-data" title="Permalink to this headline">¶</a></h5>
+<p>This example shows how to run trusted Spark Orca Data.</p>
+<p>Before running the example, download the NYC Taxi dataset in Numenta Anomaly Benchmark from <a class="reference external" href="https://raw.githubusercontent.com/numenta/NAB/master/data/realKnownCause/nyc_taxi.csv">here</a> for demo. After downloading the dataset, make sure that <code class="docutils literal notranslate"><span class="pre">nyc_taxi.csv</span></code> is under <code class="docutils literal notranslate"><span class="pre">work/data</span></code> directory or the same path in the <code class="docutils literal notranslate"><span class="pre">start-spark-local-orca-data-sgx.sh</span></code>. Replace  <code class="docutils literal notranslate"><span class="pre">path_of_nyc_taxi_csv</span></code> with your path of <code class="docutils literal notranslate"><span class="pre">nyc_taxi.csv</span></code> in the script.</p>
+<p>Run the script to run trusted Spark Orca Data and it would take some time to show the final results:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash start-spark-local-orca-data-sgx.sh
+</pre></div>
+</div>
+<p>Open another terminal and check the log:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo docker <span class="nb">exec</span> -it spark-local cat /ppml/trusted-big-data-ml/test-orca-data-sgx.log <span class="p">|</span> egrep -a <span class="s2">&quot;INFO data|Stopping&quot;</span> -A10
+</pre></div>
+</div>
+<p>The result should contain the content look like this:</p>
+<blockquote>
+<div><p>INFO data collected: [        timestamp value</p>
+<p>0   2014-07-01 00:00:00 10844</p>
+<p>1   2014-07-01 00:30:00  8127</p>
+<p>2   2014-07-01 01:00:00  6210</p>
+<p>3   2014-07-01 01:30:00  4656</p>
+<p>4   2014-07-01 02:00:00  3820</p>
+<p>…          …  …</p>
+<p>10315 2015-01-31 21:30:00 24670</p>
+<p>10316 2015-01-31 22:00:00 25721</p>
+<p>10317 2015-01-31 22:30:00 27309</p>
+<p>10318 2015-01-31 23:00:00 26591</p>
+<p>--</p>
+<p>INFO data2 collected: [        timestamp value      datetime hours awake</p>
+<p>0  2014-07-01 00:00:00 10844 2014-07-01 00:00:00   0   1</p>
+<p>1  2014-07-01 00:30:00  8127 2014-07-01 00:30:00   0   1</p>
+<p>2  2014-07-01 03:00:00  2369 2014-07-01 03:00:00   3   0</p>
+<p>3  2014-07-01 04:30:00  2158 2014-07-01 04:30:00   4   0</p>
+<p>4  2014-07-01 05:00:00  2515 2014-07-01 05:00:00   5   0</p>
+<p>…         …  …         …  …  …</p>
+<p>5215 2015-01-31 17:30:00 23595 2015-01-31 17:30:00   17   1</p>
+<p>5216 2015-01-31 18:30:00 27286 2015-01-31 18:30:00   18   1</p>
+<p>5217 2015-01-31 19:00:00 28804 2015-01-31 19:00:00   19   1</p>
+<p>5218 2015-01-31 19:30:00 27773 2015-01-31 19:30:00   19   1</p>
+<p>--</p>
+<p>Stopping orca context</p>
+</div></blockquote>
+</section>
+<section id="run-trusted-spark-orca-learn-tensorflow-basic-text-classification">
+<h5>2.3.2.3.10 Run Trusted Spark Orca Learn Tensorflow Basic Text Classification<a class="headerlink" href="#run-trusted-spark-orca-learn-tensorflow-basic-text-classification" title="Permalink to this headline">¶</a></h5>
+<p>This example shows how to run Trusted Spark Orca learn Tensorflow basic text classification.</p>
+<p>Run the script to run Trusted Spark Orca learn Tensorflow basic text classification and it would take some time to show the final results. To run this example in standalone mode, replace <code class="docutils literal notranslate"><span class="pre">-e</span> <span class="pre">SGX_MEM_SIZE=32G</span> <span class="pre">\</span></code> with <code class="docutils literal notranslate"><span class="pre">-e</span> <span class="pre">SGX_MEM_SIZE=64G</span> <span class="pre">\</span></code> in <code class="docutils literal notranslate"><span class="pre">start-distributed-spark-driver.sh</span></code></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash start-spark-local-orca-tf-text.sh
+</pre></div>
+</div>
+<p>Open another terminal and check the log:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo docker <span class="nb">exec</span> -it spark-local cat test-orca-tf-text.log <span class="p">|</span> egrep <span class="s2">&quot;results&quot;</span>
+</pre></div>
+</div>
+<p>The result should be similar to:</p>
+<blockquote>
+<div><p>INFO results: {’loss’: 0.6932533979415894, ‘acc Top1Accuracy’: 0.7544000148773193}</p>
+</div></blockquote>
+</section>
+</section>
+<section id="id6">
+<h4>2.3.3 Run Trusted Big Data and ML on Cluster<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h4>
+<section id="id7">
+<h5>2.3.3.1 Configure the Environment<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h5>
+<p>Prerequisite: passwordless ssh login to all the nodes needs to be properly set up first.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nano environments.sh
+</pre></div>
+</div>
+</section>
+<section id="start-distributed-big-data-and-ml-platform">
+<h5>2.3.3.2 Start Distributed Big Data and ML Platform<a class="headerlink" href="#start-distributed-big-data-and-ml-platform" title="Permalink to this headline">¶</a></h5>
+<p>First run the following command to start the service:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./deploy-distributed-standalone-spark.sh
+</pre></div>
+</div>
+<p>Then start the service:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./start-distributed-spark-driver.sh
+</pre></div>
+</div>
+<p>After that, you can run previous examples on the cluster by replacing <code class="docutils literal notranslate"><span class="pre">--master</span> <span class="pre">'local[4]'</span></code> in the start scripts with</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--master <span class="s1">&#39;spark://your_master_url&#39;</span> <span class="se">\</span>
+--conf spark.authenticate<span class="o">=</span><span class="nb">true</span> <span class="se">\</span>
+--conf spark.authenticate.secret<span class="o">=</span>your_secret_key <span class="se">\</span>
+</pre></div>
+</div>
+</section>
+<section id="stop-distributed-big-data-and-ml-platform">
+<h5>2.3.3.3 Stop Distributed Big Data and ML Platform<a class="headerlink" href="#stop-distributed-big-data-and-ml-platform" title="Permalink to this headline">¶</a></h5>
+<p>First, stop the training:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./stop-distributed-standalone-spark.sh
+</pre></div>
+</div>
+<p>Then stop the service:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./undeploy-distributed-standalone-spark.sh
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+</section>
+<section id="trusted-realtime-compute-and-ml">
+<h2>3. Trusted Realtime Compute and ML<a class="headerlink" href="#trusted-realtime-compute-and-ml" title="Permalink to this headline">¶</a></h2>
+<p>With the Trusted Realtime Compute and ML/DL support, users can run standard Flink stream processing and distributed DL model inference (using Cluster Serving in a secure and trusted fashion. In this feature, both Graphene and Occlum are supported, users can choose one of them as LibOS layer.</p>
+<section id="id8">
+<h3>3.1 Prerequisite<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<p>Please refer to <a class="reference external" href="#prerequisite">Section 2.1 Prerequisite</a>. For the Occlum backend, if your kernel version is below 5.11, please install enable_rdfsbase from <a class="reference external" href="https://github.com/occlum/enable_rdfsbase">here</a>.</p>
+</section>
+<section id="id9">
+<h3>3.2 Prepare Docker Image<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<p>Pull Docker image from Dockerhub</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># For Graphene</span>
+docker pull intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-graphene:2.1.0-SNAPSHOT
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># For Occlum</span>
+docker pull intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-occlum:2.1.0-SNAPSHOT
+</pre></div>
+</div>
+<p>Also, you can build Docker image from Dockerfile (this will take some time).</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># For Graphene</span>
+<span class="nb">cd</span> ppml/trusted-realtime-ml/scala/docker-graphene
+./build-docker-image.sh
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># For Occlum</span>
+<span class="nb">cd</span> ppml/trusted-realtime-ml/scala/docker-occlum
+./build-docker-image.sh
+</pre></div>
+</div>
+</section>
+<section id="run-trusted-realtime-compute-and-ml">
+<h3>3.3 Run Trusted Realtime Compute and ML<a class="headerlink" href="#run-trusted-realtime-compute-and-ml" title="Permalink to this headline">¶</a></h3>
+<section id="id10">
+<h4>3.3.1 Configure the Environment<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h4>
+<p>Enter <code class="docutils literal notranslate"><span class="pre">BigDL/ppml/trusted-realtime-ml/scala/docker-graphene</span></code> or <code class="docutils literal notranslate"><span class="pre">BigDL/ppml/trusted-realtime-ml/scala/docker-occlum</span></code> dir.</p>
+<p>Modify <code class="docutils literal notranslate"><span class="pre">environments.sh</span></code>. Change MASTER, WORKER IP and file paths (e.g., <code class="docutils literal notranslate"><span class="pre">keys</span></code> and <code class="docutils literal notranslate"><span class="pre">password</span></code>).</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nano environments.sh
+</pre></div>
+</div>
+</section>
+<section id="start-the-service">
+<h4>3.3.2 Start the service<a class="headerlink" href="#start-the-service" title="Permalink to this headline">¶</a></h4>
+<p>Start Flink service:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./deploy-flink.sh
+</pre></div>
+</div>
+</section>
+<section id="run-trusted-flink-program">
+<h4>3.3.3 Run Trusted Flink Program<a class="headerlink" href="#run-trusted-flink-program" title="Permalink to this headline">¶</a></h4>
+<p>Submit Flink jobs:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> <span class="si">${</span><span class="nv">FLINK_HOME</span><span class="si">}</span>
+./bin/flink run ./examples/batch/WordCount.jar
+</pre></div>
+</div>
+<p>If Jobmanager is not running on the current node, please add <code class="docutils literal notranslate"><span class="pre">-m</span> <span class="pre">${FLINK_JOB_MANAGER_IP}</span></code>.</p>
+<p>The result should look like this:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>a,5<span class="o">)</span>    
+<span class="o">(</span>action,1<span class="o">)</span> 
+<span class="o">(</span>after,1<span class="o">)</span>
+<span class="o">(</span>against,1<span class="o">)</span>  
+<span class="o">(</span>all,2<span class="o">)</span> 
+<span class="o">(</span>and,12<span class="o">)</span> 
+<span class="o">(</span>arms,1<span class="o">)</span>   
+<span class="o">(</span>arrows,1<span class="o">)</span>  
+<span class="o">(</span>awry,1<span class="o">)</span>   
+<span class="o">(</span>ay,1<span class="o">)</span>    
+<span class="o">(</span>bare,1<span class="o">)</span>  
+<span class="o">(</span>be,4<span class="o">)</span>      
+<span class="o">(</span>bear,3<span class="o">)</span>      
+<span class="o">(</span>bodkin,1<span class="o">)</span> 
+<span class="o">(</span>bourn,1<span class="o">)</span>  
+</pre></div>
+</div>
+</section>
+<section id="run-trusted-cluster-serving">
+<h4>3.3.4 Run Trusted Cluster Serving<a class="headerlink" href="#run-trusted-cluster-serving" title="Permalink to this headline">¶</a></h4>
+<p>Start Cluster Serving as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./start-local-cluster-serving.sh
+</pre></div>
+</div>
+<p>After all services are ready, you can directly push inference requests int queue with <a class="reference external" href="https://analytics-zoo.github.io/master/#ClusterServingGuide/ProgrammingGuide/#restful-api">Restful API</a>. Also, you can push image/input into queue with Python API</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bigdl.serving.client</span> <span class="kn">import</span> <span class="n">InputQueue</span>
+<span class="n">input_api</span> <span class="o">=</span> <span class="n">InputQueue</span><span class="p">()</span>
+<span class="n">input_api</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span><span class="s1">&#39;my-image1&#39;</span><span class="p">,</span> <span class="n">user_define_key</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="s1">&#39;path/to/image1&#39;</span><span class="p">})</span>
+</pre></div>
+</div>
+<p>Cluster Serving service is a long running service in container, you can stop it as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker stop trusted-cluster-serving-local
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../../Chronos/Overview/chronos_known_issue.html" class="btn btn-neutral float-left" title="Chronos Known Issue" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="trusted_big_data_analytics_and_ml.html" class="btn btn-neutral float-right" title="Trusted Big Data Analytics and ML" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

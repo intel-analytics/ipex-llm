@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trusted Cluster Serving with Graphene on Kubernetes &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/design-tabs.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="TPC-H with Trusted SparkSQL on Kubernetes" href="tpc-h_with_sparksql_on_k8s.html" />
+    <link rel="prev" title="Deploy the Intel SGX Device Plugin for Kubernetes" href="deploy_intel_sgx_device_plugin_for_kubernetes.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Trusted Cluster Serving with Graphene on Kubernetes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#deploy-trusted-realtime-ml-for-kubernetes">Deploy Trusted Realtime ML for Kubernetes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#configure-sgx-mode">Configure SGX mode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#configure-resource-for-components">Configure Resource for Components</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#deploy-cluster-serving">Deploy Cluster Serving</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Trusted Cluster Serving with Graphene on Kubernetes</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/doc/PPML/QuickStart/trusted-serving-on-k8s-guide.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="trusted-cluster-serving-with-graphene-on-kubernetes">
+<h1>Trusted Cluster Serving with Graphene on Kubernetes<a class="headerlink" href="#trusted-cluster-serving-with-graphene-on-kubernetes" title="Permalink to this headline">¶</a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
+<p>Prior to deploying PPML Cluster Serving, please make sure the following is setup</p>
+<ul class="simple">
+<li><p>Hardware that supports SGX</p></li>
+<li><p>A fully configured Kubernetes cluster</p></li>
+<li><p>Intel SGX Device Plugin to use SGX in K8S cluster (install following instructions <a class="reference external" href="https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-realtime-ml/scala/docker-graphene/kubernetes#deploy-the-intel-sgx-device-plugin-for-kubernetes">here</a>)</p></li>
+<li><p>Java</p></li>
+</ul>
+</section>
+<section id="deploy-trusted-realtime-ml-for-kubernetes">
+<h2>Deploy Trusted Realtime ML for Kubernetes<a class="headerlink" href="#deploy-trusted-realtime-ml-for-kubernetes" title="Permalink to this headline">¶</a></h2>
+<ol>
+<li><p>Pull docker image from dockerhub</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ docker pull intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-graphene:2.1.0-SNAPSHOT
+</pre></div>
+</div>
+</li>
+<li><p>Pull the source code of BigDL and enter PPML graphene k8s directory</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ git clone https://github.com/intel-analytics/BigDL.git
+$ cd BigDL/ppml/trusted-realtime-ml/scala/docker-graphene/kubernetes
+</pre></div>
+</div>
+</li>
+<li><p>Generate secure keys and passwords, and deploy as secrets (Refer <a class="reference external" href="https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-realtime-ml/scala/docker-graphene/kubernetes#secure-keys-and-password">here</a> for details)</p>
+<ol>
+<li><p>Generate keys and passwords</p>
+<p>Note: Make sure to add <code class="docutils literal notranslate"><span class="pre">${JAVA_HOME}/bin</span></code> to <code class="docutils literal notranslate"><span class="pre">$PATH</span></code> to avoid <code class="docutils literal notranslate"><span class="pre">keytool:</span> <span class="pre">command</span> <span class="pre">not</span> <span class="pre">found</span></code> error.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo ../../../../scripts/generate-keys.sh
+$ openssl genrsa -3 -out enclave-key.pem 3072
+$ ../../../../scripts/generate-password.sh &lt;used_password_when_generate_keys&gt;
+</pre></div>
+</div>
+</li>
+<li><p>Deploy as secrets for Kubernetes</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ kubectl apply -f keys/keys.yaml
+$ kubectl apply -f password/password.yaml
+</pre></div>
+</div>
+</li>
+</ol>
+</li>
+<li><p>In <code class="docutils literal notranslate"><span class="pre">values.yaml</span></code>, configure pulled image name, path of <code class="docutils literal notranslate"><span class="pre">enclave-key.pem</span></code> generated in step 3 and path of script <code class="docutils literal notranslate"><span class="pre">start-all-but-flink.sh</span></code>.</p></li>
+<li><p>If kernel version is 5.11+ with built-in SGX support, create soft links for SGX device</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo ln -s /dev/sgx_enclave /dev/sgx/enclave
+$ sudo ln -s /dev/sgx_provision /dev/sgx/provision
+</pre></div>
+</div>
+</li>
+</ol>
+<section id="configure-sgx-mode">
+<h3>Configure SGX mode<a class="headerlink" href="#configure-sgx-mode" title="Permalink to this headline">¶</a></h3>
+<p>In <code class="docutils literal notranslate"><span class="pre">templates/flink-configuration-configmap.yaml</span></code>, configure <code class="docutils literal notranslate"><span class="pre">sgx.mode</span></code> to <code class="docutils literal notranslate"><span class="pre">sgx</span></code> or <code class="docutils literal notranslate"><span class="pre">nonsgx</span></code> to determine whether to run the workload with SGX.</p>
+</section>
+<section id="configure-resource-for-components">
+<h3>Configure Resource for Components<a class="headerlink" href="#configure-resource-for-components" title="Permalink to this headline">¶</a></h3>
+<ol>
+<li><p>Configure jobmanager resource allocation in <code class="docutils literal notranslate"><span class="pre">templates/jobmanager-deployment.yaml</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="n">env</span><span class="p">:</span>
+  <span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">SGX_MEM_SIZE</span>
+    <span class="n">value</span><span class="p">:</span> <span class="s2">&quot;16G&quot;</span>
+<span class="o">...</span>
+<span class="n">resources</span><span class="p">:</span>
+  <span class="n">requests</span><span class="p">:</span>
+    <span class="n">cpu</span><span class="p">:</span> <span class="mi">2</span>
+    <span class="n">memory</span><span class="p">:</span> <span class="mi">16</span><span class="n">Gi</span>
+    <span class="n">sgx</span><span class="o">.</span><span class="n">intel</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">enclave</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span>
+    <span class="n">sgx</span><span class="o">.</span><span class="n">intel</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">epc</span><span class="p">:</span> <span class="mi">16</span><span class="n">Gi</span>
+  <span class="n">limits</span><span class="p">:</span>
+    <span class="n">cpu</span><span class="p">:</span> <span class="mi">2</span>
+    <span class="n">memory</span><span class="p">:</span> <span class="mi">16</span><span class="n">Gi</span>
+    <span class="n">sgx</span><span class="o">.</span><span class="n">intel</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">enclave</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span>
+    <span class="n">sgx</span><span class="o">.</span><span class="n">intel</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">epc</span><span class="p">:</span> <span class="mi">16</span><span class="n">Gi</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+</li>
+<li><p>Configure Taskmanager resource allocation</p>
+<ul>
+<li><p>Memory allocation in <code class="docutils literal notranslate"><span class="pre">templates/flink-configuration-configmap.yaml</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">taskmanager</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">managed</span><span class="o">.</span><span class="n">size</span><span class="p">:</span> <span class="mi">4</span><span class="n">gb</span>
+<span class="n">taskmanager</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">heap</span><span class="o">.</span><span class="n">size</span><span class="p">:</span> <span class="mi">5</span><span class="n">gb</span>
+<span class="n">xmx</span><span class="o">.</span><span class="n">size</span><span class="p">:</span> <span class="mi">5</span><span class="n">g</span>
+</pre></div>
+</div>
+</li>
+<li><p>Pod resource allocation</p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">taskmanager-deployment.yaml</span></code> instead of <code class="docutils literal notranslate"><span class="pre">taskmanager-statefulset.yaml</span></code> for functionality test</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ mv templates/taskmanager-statefulset.yaml ./
+$ mv taskmanager-deployment.yaml.back templates/taskmanager-deployment.yaml
+</pre></div>
+</div>
+<p>Configure resource in <code class="docutils literal notranslate"><span class="pre">templates/taskmanager-deployment.yaml</span></code> (allocate 16 cores in this example, please configure according to scenario)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="n">env</span><span class="p">:</span>
+  <span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">CORE_NUM</span>
+    <span class="n">value</span><span class="p">:</span> <span class="s2">&quot;16&quot;</span>
+  <span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">SGX_MEM_SIZE</span>
+    <span class="n">value</span><span class="p">:</span> <span class="s2">&quot;32G&quot;</span>
+<span class="o">...</span>
+<span class="n">resources</span><span class="p">:</span>
+  <span class="n">requests</span><span class="p">:</span>
+    <span class="n">cpu</span><span class="p">:</span> <span class="mi">16</span>
+    <span class="n">memory</span><span class="p">:</span> <span class="mi">32</span><span class="n">Gi</span>
+    <span class="n">sgx</span><span class="o">.</span><span class="n">intel</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">enclave</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span>
+    <span class="n">sgx</span><span class="o">.</span><span class="n">intel</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">epc</span><span class="p">:</span> <span class="mi">32</span><span class="n">Gi</span>
+  <span class="n">limits</span><span class="p">:</span>
+    <span class="n">cpu</span><span class="p">:</span> <span class="mi">16</span>
+    <span class="n">memory</span><span class="p">:</span> <span class="mi">32</span><span class="n">Gi</span>
+    <span class="n">sgx</span><span class="o">.</span><span class="n">intel</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">enclave</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span>
+    <span class="n">sgx</span><span class="o">.</span><span class="n">intel</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">epc</span><span class="p">:</span> <span class="mi">32</span><span class="n">Gi</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</li>
+<li><p>Configure Redis and client resource allocation</p>
+<ul>
+<li><p>SGX memory allocation in <code class="docutils literal notranslate"><span class="pre">start-all-but-flink.sh</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span> <span class="o">...</span>
+ <span class="n">cd</span> <span class="o">/</span><span class="n">ppml</span><span class="o">/</span><span class="n">trusted</span><span class="o">-</span><span class="n">realtime</span><span class="o">-</span><span class="n">ml</span><span class="o">/</span><span class="n">java</span>
+ <span class="n">export</span> <span class="n">SGX_MEM_SIZE</span><span class="o">=</span><span class="mi">16</span><span class="n">G</span>
+ <span class="n">test</span> <span class="s2">&quot;$SGX_MODE&quot;</span> <span class="o">=</span> <span class="n">sgx</span> <span class="o">&amp;&amp;</span> <span class="o">./</span><span class="n">init</span><span class="o">.</span><span class="n">sh</span>
+ <span class="n">echo</span> <span class="s2">&quot;java initiated&quot;</span>
+ <span class="o">...</span>
+</pre></div>
+</div>
+</li>
+<li><p>Pod resource allocation in <code class="docutils literal notranslate"><span class="pre">templates/master-deployment.yaml</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="n">env</span><span class="p">:</span>
+  <span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">CORE_NUM</span>  <span class="c1">#batchsize per instance</span>
+    <span class="n">value</span><span class="p">:</span> <span class="s2">&quot;16&quot;</span>
+<span class="o">...</span>
+<span class="n">resources</span><span class="p">:</span>
+  <span class="n">requests</span><span class="p">:</span>
+    <span class="n">cpu</span><span class="p">:</span> <span class="mi">12</span>
+    <span class="n">memory</span><span class="p">:</span> <span class="mi">32</span><span class="n">Gi</span>
+    <span class="n">sgx</span><span class="o">.</span><span class="n">intel</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">enclave</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span>
+    <span class="n">sgx</span><span class="o">.</span><span class="n">intel</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">epc</span><span class="p">:</span> <span class="mi">32</span><span class="n">Gi</span>
+  <span class="n">limits</span><span class="p">:</span>
+    <span class="n">cpu</span><span class="p">:</span> <span class="mi">12</span>
+    <span class="n">memory</span><span class="p">:</span> <span class="mi">32</span><span class="n">Gi</span>
+    <span class="n">sgx</span><span class="o">.</span><span class="n">intel</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">enclave</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span>
+    <span class="n">sgx</span><span class="o">.</span><span class="n">intel</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">epc</span><span class="p">:</span> <span class="mi">32</span><span class="n">Gi</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</li>
+</ol>
+</section>
+<section id="deploy-cluster-serving">
+<h3>Deploy Cluster Serving<a class="headerlink" href="#deploy-cluster-serving" title="Permalink to this headline">¶</a></h3>
+<ol>
+<li><p>Deploy all components and start job</p>
+<ol>
+<li><p>Download helm from <a class="reference external" href="https://github.com/helm/helm/releases">release page</a> and install</p></li>
+<li><p>Deploy cluster serving</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ helm install ppml ./
+</pre></div>
+</div>
+</li>
+</ol>
+</li>
+<li><p>Port forwarding</p>
+<p>Set up port forwarding of jobmanager Rest port for access to Flink WebUI on host</p>
+<ol class="simple">
+<li><p>Run <code class="docutils literal notranslate"><span class="pre">kubectl</span> <span class="pre">port-forward</span> <span class="pre">&lt;flink-jobmanager-pod&gt;</span> <span class="pre">--address</span> <span class="pre">0.0.0.0</span> <span class="pre">8081:8081</span></code> to forward jobmanager’s web UI port to 8081 on host.</p></li>
+<li><p>Navigate to <code class="docutils literal notranslate"><span class="pre">http://&lt;host-IP&gt;:8081</span></code> in web browser to check status of Flink cluster and job.</p></li>
+</ol>
+</li>
+<li><p>Performance benchmark</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ kubectl exec &lt;master-deployment-pod&gt; -it -- bash
+$ cd /ppml/trusted-realtime-ml/java/work/benchmark/
+$ bash init-benchmark.sh
+$ python3 e2e_throughput.py -n &lt;image_num&gt; -i ../data/ILSVRC2012_val_00000001.JPEG
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">e2e_throughput.py</span></code> script pushes test image for <code class="docutils literal notranslate"><span class="pre">-n</span></code> times (default 1000 if not manually set), and time the process from push images (enqueue) to retrieve all inference results (dequeue), to calculate cluster serving end-to-end throughput. The output should look like <code class="docutils literal notranslate"><span class="pre">Served</span> <span class="pre">xxx</span> <span class="pre">images</span> <span class="pre">in</span> <span class="pre">xxx</span> <span class="pre">sec,</span> <span class="pre">e2e</span> <span class="pre">throughput</span> <span class="pre">is</span> <span class="pre">xxx</span> <span class="pre">images/sec</span></code></p>
+</li>
+</ol>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="deploy_intel_sgx_device_plugin_for_kubernetes.html" class="btn btn-neutral float-left" title="Deploy the Intel SGX Device Plugin for Kubernetes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tpc-h_with_sparksql_on_k8s.html" class="btn btn-neutral float-right" title="TPC-H with Trusted SparkSQL on Kubernetes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

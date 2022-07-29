@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Time Series Forecasting Overview &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/design-tabs.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Time Series Anomaly Detection Overview" href="anomaly_detection.html" />
+    <link rel="prev" title="Time Series Processing and Feature Engineering Overview" href="data_processing_feature_engineering.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="deep_dive.html">Chronos Deep Dive</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="data_processing_feature_engineering.html">Time Series Processing and Feature Engineering Overview</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Time Series Forecasting Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#supported-time-series-forecasting-model"><strong>0. Supported Time Series Forecasting Model</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#time-series-forecasting-concepts"><strong>1. Time Series Forecasting Concepts</strong></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#traditional-statistical-ts-style"><strong>1.1 Traditional Statistical(TS) Style</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#regular-regression-rr-style"><strong>1.2 Regular Regression(RR) Style</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#use-autots-pipeline"><strong>2. Use AutoTS Pipeline</strong></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#prepare-dataset"><strong>2.1 Prepare dataset</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#create-an-autotsestimator"><strong>2.2 Create an AutoTSEstimator</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fit-on-autotsestimator"><strong>2.3 Fit on AutoTSEstimator</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#development-on-tspipeline"><strong>2.4 Development on TSPipeline</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#use-standalone-forecaster-pipeline"><strong>3. Use Standalone Forecaster Pipeline</strong></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#lstmforecaster"><strong>3.1 LSTMForecaster</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#seq2seqforecaster"><strong>3.2 Seq2SeqForecaster</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tcnforecaster"><strong>3.3 TCNForecaster</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#mtnetforecaster"><strong>3.4 MTNetForecaster</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tcmfforecaster"><strong>3.5 TCMFForecaster</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#arimaforecaster"><strong>3.6 ARIMAForecaster</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#prophetforecaster"><strong>3.7 ProphetForecaster</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#nbeatsforecaster"><strong>3.8 NBeatsForecaster</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#use-auto-forecasting-model"><strong>4. Use Auto forecasting model</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="anomaly_detection.html">Time Series Anomaly Detection Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="simulation.html">Generate Synthetic Sequential Data Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="speed_up.html">Speed up Chronos built-in models/customized time-series models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="useful_functionalities.html">Useful Functionalities Overview</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="deep_dive.html">Chronos Deep Dive</a> &raquo;</li>
+      <li>Time Series Forecasting Overview</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/doc/Chronos/Overview/forecasting.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="time-series-forecasting-overview">
+<h1>Time Series Forecasting Overview<a class="headerlink" href="#time-series-forecasting-overview" title="Permalink to this headline">¶</a></h1>
+<p><em>Chronos</em> provides both deep learning/machine learning models and traditional statistical models for forecasting.</p>
+<p>There’re three ways to do forecasting:</p>
+<ul class="simple">
+<li><p>Use highly integrated <a class="reference external" href="#use-autots-pipeline"><strong>AutoTS pipeline</strong></a> with auto feature generation, data pre/post-processing, hyperparameter optimization.</p></li>
+<li><p>Use <a class="reference external" href="#use-auto-forecasting-model"><strong>auto forecasting models</strong></a> with auto hyperparameter optimization.</p></li>
+<li><p>Use <a class="reference external" href="#use-standalone-forecaster-pipeline"><strong>standalone forecasters</strong></a>.</p></li>
+</ul>
+<section id="supported-time-series-forecasting-model">
+<h2><strong>0. Supported Time Series Forecasting Model</strong><a class="headerlink" href="#supported-time-series-forecasting-model" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Model</span></code>: Model name.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Style</span></code>: Forecasting model style. Detailed information will be stated in <a class="reference external" href="#time-series-forecasting-concepts">this section</a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Multi-Variate</span></code>: Predict more than one variable at the same time?</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Multi-Step</span></code>: Predict more than one data point in the future?</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Exogenous</span> <span class="pre">Variables</span></code>: Take other variables(you don’t need to predict) into consideration?</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Distributed</span></code>: Scale the model to a cluster and take data from distributed file system?</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ONNX</span></code>: Export and use <code class="docutils literal notranslate"><span class="pre">OnnxRuntime</span></code> to do the inference.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Quantization</span></code>: Export and use quantized int8 model to do the inference.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Auto</span> <span class="pre">Models</span></code>: AutoModel API support.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">AutoTS</span></code>: AutoTS API support.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Backend</span></code>: The DL framework we use to implement this model.</p></li>
+</ul>
+<p><span id="supported_forecasting_model"></span></p>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Model</th>
+<th>Style</th>
+<th>Multi-Variate</th>
+<th>Multi-Step</th>
+<th>Exogenous Variables</th>
+<th>Distributed</th>
+<th>ONNX</th>
+<th>Quantization</th>
+<th>Auto Models</th>
+<th>AutoTS</th>
+<th>Backend</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LSTM</td>
+<td>RR</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>pytorch/tf2</td>
+</tr>
+<tr>
+<td>Seq2Seq</td>
+<td>RR</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+<td>pytorch/tf2</td>
+</tr>
+<tr>
+<td>TCN</td>
+<td>RR</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>pytorch</td>
+</tr>
+<tr>
+<td>NBeats</td>
+<td>RR</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>pytorch</td>
+</tr>
+<tr>
+<td>MTNet</td>
+<td>RR</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>✳️**</td>
+<td>tf2</td>
+</tr>
+<tr>
+<td>TCMF</td>
+<td>TS</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✳️*</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>pytorch</td>
+</tr>
+<tr>
+<td>Prophet</td>
+<td>TS</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+<td>prophet</td>
+</tr>
+<tr>
+<td>ARIMA</td>
+<td>TS</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+<td>pmdarima</td>
+</tr>
+<tr>
+<td>Customized***</td>
+<td>RR</td>
+<td>Customized</td>
+<td>Customized</td>
+<td>Customized</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+<td>pytorch</td>
+</tr>
+</tbody>
+</table><p>* TCMF only partially supports distributed training.<br>
+**  Auto tuning of MTNet is only supported in our deprecated AutoTS API.<br>
+*** Customized model is only supported in <code class="docutils literal notranslate"><span class="pre">AutoTSEstimator</span></code> with pytorch as backend.</p>
+</section>
+<section id="time-series-forecasting-concepts">
+<h2><strong>1. Time Series Forecasting Concepts</strong><a class="headerlink" href="#time-series-forecasting-concepts" title="Permalink to this headline">¶</a></h2>
+<p>Time series forecasting is one of the most popular tasks on time series data. <strong>In short, forecasing aims at predicting the future by using the knowledge you can learn from the history.</strong></p>
+<section id="traditional-statistical-ts-style">
+<h3><strong>1.1 Traditional Statistical(TS) Style</strong><a class="headerlink" href="#traditional-statistical-ts-style" title="Permalink to this headline">¶</a></h3>
+<p>Traditionally, Time series forecasting problem was formulated with rich mathematical fundamentals and statistical models. Typically, one model can only handle one time series and fit on the whole time series before the last observed timestamp and predict the next few steps. Training(fit) is needed every time you change the last observed timestamp.</p>
+<p><img alt="../../../_images/forecast-TS.png" src="../../../_images/forecast-TS.png" /></p>
+</section>
+<section id="regular-regression-rr-style">
+<h3><strong>1.2 Regular Regression(RR) Style</strong><a class="headerlink" href="#regular-regression-rr-style" title="Permalink to this headline">¶</a></h3>
+<p>Recent years, common deep learning architectures (e.g. RNN, CNN, Transformer, etc.) are being successfully applied to forecasting problem. Forecasting is transformed to a supervised learning regression problem in this style. A model can predict several time series. Typically, a sampling process based on sliding-window is needed, some terminology is explained as following:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">lookback</span></code> / <code class="docutils literal notranslate"><span class="pre">past_seq_len</span></code>: the length of historical data along time. This number is tunable.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">horizon</span></code> / <code class="docutils literal notranslate"><span class="pre">future_seq_len</span></code>: the length of predicted data along time. This number is depended on the task definition. If this value larger than 1, then the forecasting task is <em>Multi-Step</em>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">input_feature_num</span></code>: The number of variables the model can observe. This number is tunable since we can select a subset of extra feature to use.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">output_feature_num</span></code>: The number of variables the model to predict. This number is depended on the task definition. If this value larger than 1, then the forecasting task is <em>Multi-Variate</em>.</p></li>
+</ul>
+<p><span id="RR-forecast-image"></span>
+<img alt="../../../_images/forecast-RR.png" src="../../../_images/forecast-RR.png" /></p>
+</section>
+</section>
+<section id="use-autots-pipeline">
+<h2><strong>2. Use AutoTS Pipeline</strong><a class="headerlink" href="#use-autots-pipeline" title="Permalink to this headline">¶</a></h2>
+<p>For AutoTS Pipeline, we will leverage <code class="docutils literal notranslate"><span class="pre">AutoTSEstimator</span></code>, <code class="docutils literal notranslate"><span class="pre">TSPipeline</span></code> and preferably <code class="docutils literal notranslate"><span class="pre">TSDataset</span></code>. A typical usage of AutoTS pipeline basically contains 3 steps.</p>
+<ol class="simple">
+<li><p>Prepare a <code class="docutils literal notranslate"><span class="pre">TSDataset</span></code> or customized data creator.</p></li>
+<li><p>Init a <code class="docutils literal notranslate"><span class="pre">AutoTSEstimator</span></code> and call <code class="docutils literal notranslate"><span class="pre">.fit()</span></code> on the data.</p></li>
+<li><p>Use the returned <code class="docutils literal notranslate"><span class="pre">TSPipeline</span></code> for further development.</p></li>
+</ol>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><cite>AutoTSTrainer</cite> workflow has been deprecated, no feature updates or performance improvement will be carried out. Users of <cite>AutoTSTrainer</cite> may refer to <a class="reference external" href="https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/autots.html">Chronos API doc</a>.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><cite>AutoTSEstimator</cite> currently only support pytorch backend.</p>
+</div>
+<p>View <a class="reference external" href="../QuickStart/chronos-autotsest-quickstart.html">Quick Start</a> for a more detailed example.</p>
+<section id="prepare-dataset">
+<h3><strong>2.1 Prepare dataset</strong><a class="headerlink" href="#prepare-dataset" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">AutoTSEstimator</span></code> support 2 types of data input.</p>
+<p>You can easily prepare your data in <code class="docutils literal notranslate"><span class="pre">TSDataset</span></code> (recommended). You may refer to <a class="reference external" href="#TSDataset">here</a> for the detailed information to prepare your <code class="docutils literal notranslate"><span class="pre">TSDataset</span></code> with proper data processing and feature generation. Here is a typical <code class="docutils literal notranslate"><span class="pre">TSDataset</span></code> preparation.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bigdl.chronos.data</span> <span class="kn">import</span> <span class="n">TSDataset</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">StandardScaler</span>
+
+<span class="n">tsdata_train</span><span class="p">,</span> <span class="n">tsdata_val</span><span class="p">,</span> <span class="n">tsdata_test</span>\
+    <span class="o">=</span> <span class="n">TSDataset</span><span class="o">.</span><span class="n">from_pandas</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">dt_col</span><span class="o">=</span><span class="s2">&quot;timestamp&quot;</span><span class="p">,</span> <span class="n">target_col</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="n">with_split</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">val_ratio</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">test_ratio</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+
+<span class="n">standard_scaler</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">tsdata</span> <span class="ow">in</span> <span class="p">[</span><span class="n">tsdata_train</span><span class="p">,</span> <span class="n">tsdata_val</span><span class="p">,</span> <span class="n">tsdata_test</span><span class="p">]:</span>
+    <span class="n">tsdata</span><span class="o">.</span><span class="n">gen_dt_feature</span><span class="p">()</span>\
+          <span class="o">.</span><span class="n">impute</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;last&quot;</span><span class="p">)</span>\
+          <span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">standard_scaler</span><span class="p">,</span> <span class="n">fit</span><span class="o">=</span><span class="p">(</span><span class="n">tsdata</span> <span class="ow">is</span> <span class="n">tsdata_train</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>You can also create your own data creator. The data creator takes a dictionary config and returns a pytorch dataloader. Users may define their own customized key and add them to the search space. “batch_size” is the only fixed key.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
+<span class="k">def</span> <span class="nf">training_data_creator</span><span class="p">(</span><span class="n">config</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">Dataloader</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;batch_size&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</section>
+<section id="create-an-autotsestimator">
+<h3><strong>2.2 Create an AutoTSEstimator</strong><a class="headerlink" href="#create-an-autotsestimator" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">AutoTSEstimator</span></code> depends on the <a class="reference external" href="../../Orca/Overview/distributed-tuning.html">Distributed Hyper-parameter Tuning</a> supported by Project Orca. It also provides time series only functionalities and optimization. Here is a typical initialization process.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">bigdl.orca.automl.hp</span> <span class="kn">as</span> <span class="nn">hp</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.autots</span> <span class="kn">import</span> <span class="n">AutoTSEstimator</span>
+<span class="n">auto_estimator</span> <span class="o">=</span> <span class="n">AutoTSEstimator</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s1">&#39;lstm&#39;</span><span class="p">,</span>
+                                 <span class="n">search_space</span><span class="o">=</span><span class="s1">&#39;normal&#39;</span><span class="p">,</span>
+                                 <span class="n">past_seq_len</span><span class="o">=</span><span class="n">hp</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+                                 <span class="n">future_seq_len</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                 <span class="n">selected_features</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">)</span> 
+</pre></div>
+</div>
+<p>We prebuild three defualt search space for each build-in model, which you can use the by setting <code class="docutils literal notranslate"><span class="pre">search_space</span></code> to “minimal”，”normal”, or “large” or define your own search space in a dictionary. The larger the search space, the better accuracy you will get and the more time will be cost.</p>
+<p><code class="docutils literal notranslate"><span class="pre">past_seq_len</span></code> can be set as a hp sample function, the proper range is highly related to your data. A range between 0.5 cycle and 2 cycle is reasonable. You may set it to <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>, then a cycle length will be detected automatically and this parameter will be set to a random search between 0.5 cycle and 2 cycle length.</p>
+<p><code class="docutils literal notranslate"><span class="pre">selected_features</span></code> is set to <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> by default, where the <code class="docutils literal notranslate"><span class="pre">AutoTSEstimator</span></code> will find the best subset of extra features to help the forecasting task.</p>
+</section>
+<section id="fit-on-autotsestimator">
+<h3><strong>2.3 Fit on AutoTSEstimator</strong><a class="headerlink" href="#fit-on-autotsestimator" title="Permalink to this headline">¶</a></h3>
+<p>Fitting on <code class="docutils literal notranslate"><span class="pre">AutoTSEstimator</span></code> is fairly easy. A <code class="docutils literal notranslate"><span class="pre">TSPipeline</span></code> will be returned once fitting is completed.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ts_pipeline</span> <span class="o">=</span> <span class="n">auto_estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">tsdata_train</span><span class="p">,</span>
+                                 <span class="n">validation_data</span><span class="o">=</span><span class="n">tsdata_val</span><span class="p">,</span>
+                                 <span class="n">batch_size</span><span class="o">=</span><span class="n">hp</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span>
+                                 <span class="n">epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Detailed information and settings please refer to <a class="reference external" href="../../PythonAPI/Chronos/autotsestimator.html#id1">AutoTSEstimator API doc</a>.</p>
+</section>
+<section id="development-on-tspipeline">
+<h3><strong>2.4 Development on TSPipeline</strong><a class="headerlink" href="#development-on-tspipeline" title="Permalink to this headline">¶</a></h3>
+<p>You may carry out predict, evaluate, incremental training or save/load for further development.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># predict with the best trial</span>
+<span class="n">y_pred</span> <span class="o">=</span> <span class="n">ts_pipeline</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">tsdata_test</span><span class="p">)</span>
+
+<span class="c1"># evaluate the result pipeline</span>
+<span class="n">mse</span><span class="p">,</span> <span class="n">smape</span> <span class="o">=</span> <span class="n">ts_pipeline</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">tsdata_test</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;mse&quot;</span><span class="p">,</span> <span class="s2">&quot;smape&quot;</span><span class="p">])</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Evaluate: the mean square error is&quot;</span><span class="p">,</span> <span class="n">mse</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Evaluate: the smape value is&quot;</span><span class="p">,</span> <span class="n">smape</span><span class="p">)</span>
+
+<span class="c1"># save the pipeline</span>
+<span class="n">my_ppl_file_path</span> <span class="o">=</span> <span class="s2">&quot;/tmp/saved_pipeline&quot;</span>
+<span class="n">ts_pipeline</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">my_ppl_file_path</span><span class="p">)</span>
+
+<span class="c1"># restore the pipeline for further deployment</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.autots</span> <span class="kn">import</span> <span class="n">TSPipeline</span>
+<span class="n">loaded_ppl</span> <span class="o">=</span> <span class="n">TSPipeline</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">my_ppl_file_path</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Detailed information please refer to <a class="reference external" href="../../PythonAPI/Chronos/autotsestimator.html#tspipeline">TSPipeline API doc</a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><cite>init_orca_context</cite> is not needed if you just use the trained TSPipeline for inference, evaluation or incremental fitting.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Incremental fitting on TSPipeline just update the model weights the standard way, which does not involve AutoML.</p>
+</div>
+</section>
+</section>
+<section id="use-standalone-forecaster-pipeline">
+<h2><strong>3. Use Standalone Forecaster Pipeline</strong><a class="headerlink" href="#use-standalone-forecaster-pipeline" title="Permalink to this headline">¶</a></h2>
+<p><em>Chronos</em> provides a set of standalone time series forecasters without AutoML support, including deep learning models as well as traditional statistical models.</p>
+<p>View some examples notebooks for <a class="reference external" href="https://github.com/intel-analytics/BigDL/tree/main/python/chronos/use-case/network_traffic">Network Traffic Prediction</a></p>
+<p>The common process of using a Forecaster looks like below.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># set fixed hyperparameters, loss, metric...</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">Forecaster</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="c1"># input data, batch size, epoch...</span>
+<span class="n">f</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="c1"># input test data x, batch size...</span>
+<span class="n">f</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The input data can be easily get from <code class="docutils literal notranslate"><span class="pre">TSDataset</span></code>.
+View <a class="reference internal" href="../QuickStart/chronos-tsdataset-forecaster-quickstart.html"><span class="doc">Quick Start</span></a> for a more detailed example. Refer to <a class="reference external" href="../../PythonAPI/Chronos/forecasters.html">API docs</a> of each Forecaster for detailed usage instructions and examples.</p>
+<p><span id="LSTMForecaster"></span></p>
+<section id="lstmforecaster">
+<h3><strong>3.1 LSTMForecaster</strong><a class="headerlink" href="#lstmforecaster" title="Permalink to this headline">¶</a></h3>
+<p>LSTMForecaster wraps a vanilla LSTM model, and is suitable for univariate time series forecasting.</p>
+<p>View Network Traffic Prediction <a class="reference external" href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.ipynb">notebook</a> and <a class="reference external" href="../../PythonAPI/Chronos/forecasters.html#lstmforecaster">LSTMForecaster API Doc</a> for more details.</p>
+<p><span id="Seq2SeqForecaster"></span></p>
+</section>
+<section id="seq2seqforecaster">
+<h3><strong>3.2 Seq2SeqForecaster</strong><a class="headerlink" href="#seq2seqforecaster" title="Permalink to this headline">¶</a></h3>
+<p>Seq2SeqForecaster wraps a sequence to sequence model based on LSTM, and is suitable for multivariant &amp; multistep time series forecasting.</p>
+<p>View <a class="reference external" href="../../PythonAPI/Chronos/forecasters.html#seq2seqforecaster">Seq2SeqForecaster API Doc</a> for more details.</p>
+<p><span id="TCNForecaster"></span></p>
+</section>
+<section id="tcnforecaster">
+<h3><strong>3.3 TCNForecaster</strong><a class="headerlink" href="#tcnforecaster" title="Permalink to this headline">¶</a></h3>
+<p>Temporal Convolutional Networks (TCN) is a neural network that use convolutional architecture rather than recurrent networks. It supports multi-step and multi-variant cases. Causal Convolutions enables large scale parallel computing which makes TCN has less inference time than RNN based model such as LSTM.</p>
+<p>View Network Traffic multivariate multistep Prediction <a class="reference external" href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.ipynb">notebook</a> and <a class="reference external" href="../../PythonAPI/Chronos/forecasters.html#tcnforecaster">TCNForecaster API Doc</a> for more details.</p>
+<p><span id="MTNetForecaster"></span></p>
+</section>
+<section id="mtnetforecaster">
+<h3><strong>3.4 MTNetForecaster</strong><a class="headerlink" href="#mtnetforecaster" title="Permalink to this headline">¶</a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Additional Dependencies</strong>:
+You need to install <cite>bigdl-nano[tensorflow]</cite> to enable this built-in model.</p>
+<p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">bigdl-nano[tensorflow]</span></code></p>
+</div>
+<p>MTNetForecaster wraps a MTNet model. The model architecture mostly follows the <a class="reference external" href="https://arxiv.org/abs/1809.02105">MTNet paper</a> with slight modifications, and is suitable for multivariate time series forecasting.</p>
+<p>View Network Traffic Prediction <a class="reference external" href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.ipynb">notebook</a> and <a class="reference external" href="../../PythonAPI/Chronos/forecasters.html#mtnetforecaster">MTNetForecaster API Doc</a> for more details.</p>
+<p><span id="TCMFForecaster"></span></p>
+</section>
+<section id="tcmfforecaster">
+<h3><strong>3.5 TCMFForecaster</strong><a class="headerlink" href="#tcmfforecaster" title="Permalink to this headline">¶</a></h3>
+<p>TCMFForecaster wraps a model architecture that follows implementation of the paper <a class="reference external" href="https://arxiv.org/abs/1905.03806">DeepGLO paper</a> with slight modifications. It is especially suitable for extremely high dimensional (up-to millions) multivariate time series forecasting.</p>
+<p>View High-dimensional Electricity Data Forecasting <a class="reference external" href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/example/tcmf/run_electricity.py">example</a> and <a class="reference external" href="../../PythonAPI/Chronos/forecasters.html#tcmfforecaster">TCMFForecaster API Doc</a> for more details.</p>
+<p><span id="ARIMAForecaster"></span></p>
+</section>
+<section id="arimaforecaster">
+<h3><strong>3.6 ARIMAForecaster</strong><a class="headerlink" href="#arimaforecaster" title="Permalink to this headline">¶</a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Additional Dependencies</strong>:
+You need to install <cite>pmdarima</cite> to enable this built-in model.</p>
+<p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">pmdarima==1.8.2</span></code></p>
+</div>
+<p>ARIMAForecaster wraps a ARIMA model and is suitable for univariate time series forecasting. It works best with data that show evidence of non-stationarity in the sense of mean (and an initial differencing step (corresponding to the “I, integrated” part of the model) can be applied one or more times to eliminate the non-stationarity of the mean function.</p>
+<p>View <a class="reference external" href="../../PythonAPI/Chronos/forecasters.html#arimaforecaster">ARIMAForecaster API Doc</a> for more details.</p>
+<p><span id="ProphetForecaster"></span></p>
+</section>
+<section id="prophetforecaster">
+<h3><strong>3.7 ProphetForecaster</strong><a class="headerlink" href="#prophetforecaster" title="Permalink to this headline">¶</a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Additional Dependencies</strong>:
+You need to install <cite>prophet</cite> to enable this built-in model.</p>
+<p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">prophet==1.0.1</span></code></p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Acceleration Note</strong>:
+Intel® Distribution for Python may improve the speed of prophet’s training and inferencing. You may install it by refering to <a class="reference external" href="https://www.intel.com/content/www/us/en/developer/tools/oneapi/distribution-for-python.html">https://www.intel.com/content/www/us/en/developer/tools/oneapi/distribution-for-python.html</a>.</p>
+</div>
+<p>ProphetForecaster wraps the Prophet model (<a class="reference external" href="https://github.com/facebook/prophet">site</a>) which is an additive model where non-linear trends are fit with yearly, weekly, and daily seasonality, plus holiday effects and is suitable for univariate time series forecasting. It works best with time series that have strong seasonal effects and several seasons of historical data and is robust to missing data and shifts in the trend, and typically handles outliers well.</p>
+<p>View Stock Prediction <a class="reference external" href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/fsi/stock_prediction_prophet.ipynb">notebook</a> and <a class="reference external" href="../../PythonAPI/Chronos/forecasters.html#prophetforecaster">ProphetForecaster API Doc</a> for more details.</p>
+<p><span id="NBeatsForecaster"></span></p>
+</section>
+<section id="nbeatsforecaster">
+<h3><strong>3.8 NBeatsForecaster</strong><a class="headerlink" href="#nbeatsforecaster" title="Permalink to this headline">¶</a></h3>
+<p>Neural basis expansion analysis for interpretable time series forecasting (<a class="reference external" href="https://arxiv.org/abs/1905.10437">N-BEATS</a>) is a deep neural architecture based on backward and forward residual links and a very deep stack of fully-connected layers. Nbeats can solve univariate time series point forecasting problems, being interpretable, and fast to train.</p>
+</section>
+</section>
+<section id="use-auto-forecasting-model">
+<h2><strong>4. Use Auto forecasting model</strong><a class="headerlink" href="#use-auto-forecasting-model" title="Permalink to this headline">¶</a></h2>
+<p>Auto forecasting models are designed to be used exactly the same as Forecasters. The only difference is that you can set hp search function to the hyperparameters and the <code class="docutils literal notranslate"><span class="pre">.fit()</span></code> method will search the best hyperparameter setting.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># set hyperparameters in hp search function, loss, metric...</span>
+<span class="n">auto_model</span> <span class="o">=</span> <span class="n">AutoModel</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="c1"># input data, batch size, epoch...</span>
+<span class="n">auto_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="c1"># input test data x, batch size...</span>
+<span class="n">auto_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The input data can be easily get from <code class="docutils literal notranslate"><span class="pre">TSDataset</span></code>. Users can refer to detailed <a class="reference external" href="../../PythonAPI/Chronos/automodels.html">API doc</a>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="data_processing_feature_engineering.html" class="btn btn-neutral float-left" title="Time Series Processing and Feature Engineering Overview" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="anomaly_detection.html" class="btn btn-neutral float-right" title="Time Series Anomaly Detection Overview" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

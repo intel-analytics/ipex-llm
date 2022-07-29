@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Databricks User Guide &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/clipboard.min.js"></script>
+        <script src="../../_static/copybutton.js"></script>
+        <script src="../../_static/design-tabs.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Developer Guide" href="develop.html" />
+    <link rel="prev" title="K8s User Guide" href="k8s.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Databricks User Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#create-a-databricks-cluster"><strong>1. Create a Databricks Cluster</strong></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installing-bigdl-python-libraries"><strong>2. Installing BigDL Python libraries</strong></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installing-bigdl-java-libraries"><strong>3. Installing BigDL Java libraries</strong></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#setting-spark-configuration"><strong>4. Setting Spark configuration</strong></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-bigdl-on-databricks"><strong>5. Running BigDL on Databricks</strong></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#install-other-third-party-libraries-on-databricks-if-necessary"><strong>6. Install other third-party libraries on Databricks if necessary</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Databricks User Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/doc/UserGuide/databricks.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="databricks-user-guide">
+<h1>Databricks User Guide<a class="headerlink" href="#databricks-user-guide" title="Permalink to this headline">¶</a></h1>
+<hr class="docutils" />
+<p>You can run BigDL program on the <a class="reference external" href="https://databricks.com/">Databricks</a> cluster as follows.</p>
+<section id="create-a-databricks-cluster">
+<h2><strong>1. Create a Databricks Cluster</strong><a class="headerlink" href="#create-a-databricks-cluster" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>Create either <a class="reference external" href="https://docs.databricks.com/getting-started/try-databricks.html">AWS Databricks</a> workspace or <a class="reference external" href="https://docs.microsoft.com/en-us/azure/azure-databricks/">Azure Databricks</a> workspace.</p></li>
+<li><p>Create a Databricks <a class="reference external" href="https://docs.databricks.com/clusters/create.html">clusters</a> using the UI. Choose Databricks runtime version. This guide is tested on Runtime 7.3 (includes Apache Spark 3.0.1, Scala 2.12).</p></li>
+</ul>
+</section>
+<section id="installing-bigdl-python-libraries">
+<h2><strong>2. Installing BigDL Python libraries</strong><a class="headerlink" href="#installing-bigdl-python-libraries" title="Permalink to this headline">¶</a></h2>
+<p>In the left pane, click <strong>Clusters</strong> and select your cluster.</p>
+<p><img alt="../../_images/cluster.png" src="../../_images/cluster.png" /></p>
+<p>Install BigDL DLLib python environment using prebuilt release Wheel package. Click <strong>Libraries &gt; Install New &gt; Upload &gt; Python Whl</strong>. Download BigDL DLLib prebuilt Wheel <a class="reference external" href="https://sourceforge.net/projects/analytics-zoo/files/dllib-py">here</a>. Choose a wheel with timestamp for the same Spark version and platform as Databricks runtime. Download and drop it on Databricks.</p>
+<p><img alt="../../_images/dllib-whl.png" src="../../_images/dllib-whl.png" /></p>
+<p>Install BigDL Orca python environment using prebuilt release Wheel package. Click <strong>Libraries &gt; Install New &gt; Upload &gt; Python Whl</strong>. Download Bigdl Orca prebuilt Wheel <a class="reference external" href="https://sourceforge.net/projects/analytics-zoo/files/dllib-py">here</a>. Choose a wheel with timestamp for the same Spark version and platform as Databricks runtime. Download and drop it on Databricks.</p>
+<p><img alt="../../_images/orca-whl.png" src="../../_images/orca-whl.png" /></p>
+<p>If you want to use other BigDL libraries (Friesian, Chronos, Nano, Serving, etc.), download prebuilt release Wheel package from <a class="reference external" href="https://sourceforge.net/projects/analytics-zoo/files/">here</a> and install to cluster in the similar ways.</p>
+</section>
+<section id="installing-bigdl-java-libraries">
+<h2><strong>3. Installing BigDL Java libraries</strong><a class="headerlink" href="#installing-bigdl-java-libraries" title="Permalink to this headline">¶</a></h2>
+<p>Install BigDL DLLib prebuilt jar package. Click <strong>Libraries &gt; Install New &gt; Upload &gt; Jar</strong>. Download BigDL DLLib prebuilt package from <a class="reference internal" href="../release.html"><span class="doc">Release Page</span></a>. Please note that you should choose the same spark version of package as your Databricks runtime version. Find jar named “bigdl-dllib-spark_*-jar-with-dependencies.jar” in the lib directory. Drop the jar on Databricks.</p>
+<p><img alt="../../_images/dllib-jar.png" src="../../_images/dllib-jar.png" /></p>
+<p>Install BigDL Orca prebuilt jar package. Click <strong>Libraries &gt; Install New &gt; Upload &gt; Jar</strong>. Download BigDL Orca prebuilt package from <a class="reference internal" href="../release.html"><span class="doc">Release Page</span></a>. Please note that you should choose the same spark version of package as your Databricks runtime version. Find jar named “bigdl-orca-spark_*-jar-with-dependencies.jar” in the lib directory. Drop the jar on Databricks.</p>
+<p><img alt="../../_images/orca-jar.png" src="../../_images/orca-jar.png" /></p>
+<p>If you want to use other BigDL libraries (Friesian, Chronos, Nano, Serving, etc.), download prebuilt jar package from <a class="reference internal" href="../release.html"><span class="doc">Release Page</span></a> and install to cluster in the similar ways.</p>
+<p>Make sure the jar files and whl files are installed on all clusters. In <strong>Libraries</strong> tab of your cluster, check installed libraries and click “Install automatically on all clusters” option in <strong>Admin Settings</strong>.</p>
+<p><img alt="../../_images/apply-all.png" src="../../_images/apply-all.png" /></p>
+</section>
+<section id="setting-spark-configuration">
+<h2><strong>4. Setting Spark configuration</strong><a class="headerlink" href="#setting-spark-configuration" title="Permalink to this headline">¶</a></h2>
+<p>On the cluster configuration page, click the <strong>Advanced Options</strong> toggle. Click the <strong>Spark</strong> tab. You can provide custom <a class="reference external" href="https://spark.apache.org/docs/latest/configuration.html">Spark configuration properties</a> in a cluster configuration. Please set it according to your cluster resource and program needs.</p>
+<p><img alt="../../_images/Databricks5.PNG" src="../../_images/Databricks5.PNG" /></p>
+<p>See below for an example of Spark config setting needed by BigDL. Here it sets 2 core per executor. Note that “spark.cores.max” needs to be properly set below.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">spark</span><span class="o">.</span><span class="n">executor</span><span class="o">.</span><span class="n">cores</span> <span class="mi">2</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">cores</span><span class="o">.</span><span class="n">max</span> <span class="mi">4</span>
+</pre></div>
+</div>
+</section>
+<section id="running-bigdl-on-databricks">
+<h2><strong>5. Running BigDL on Databricks</strong><a class="headerlink" href="#running-bigdl-on-databricks" title="Permalink to this headline">¶</a></h2>
+<p>Open a new notebook, and call <code class="docutils literal notranslate"><span class="pre">init_orca_context</span></code> at the beginning of your code (with <code class="docutils literal notranslate"><span class="pre">cluster_mode</span></code> set to “spark-submit”).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bigdl.orca</span> <span class="kn">import</span> <span class="n">init_orca_context</span><span class="p">,</span> <span class="n">stop_orca_context</span>
+<span class="n">init_orca_context</span><span class="p">(</span><span class="n">cluster_mode</span><span class="o">=</span><span class="s2">&quot;spark-submit&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Output on Databricks:</p>
+<p><img alt="../../_images/spark-context.png" src="../../_images/spark-context.png" /></p>
+</section>
+<section id="install-other-third-party-libraries-on-databricks-if-necessary">
+<h2><strong>6. Install other third-party libraries on Databricks if necessary</strong><a class="headerlink" href="#install-other-third-party-libraries-on-databricks-if-necessary" title="Permalink to this headline">¶</a></h2>
+<p>If you want to use other third-party libraries, check related Databricks documentation of <a class="reference external" href="https://docs.databricks.com/libraries/index.html">libraries for AWS Databricks</a> and <a class="reference external" href="https://docs.microsoft.com/en-us/azure/databricks/libraries/">libraries for Azure Databricks</a>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="k8s.html" class="btn btn-neutral float-left" title="K8s User Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="develop.html" class="btn btn-neutral float-right" title="Developer Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

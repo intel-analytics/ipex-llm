@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Distributed Hyper-Parameter Tuning &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/design-tabs.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="RayOnSpark" href="../../Ray/Overview/ray.html" />
+    <link rel="prev" title="Distributed Training and Inference" href="distributed-training-inference.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Distributed Hyper-Parameter Tuning</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#install"><strong>Install</strong></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#autoestimator"><strong>1. AutoEstimator</strong></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pytorch-autoestimator"><strong>2. Pytorch AutoEstimator</strong></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#data-creator-function"><strong>2.1 Data Creator Function</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#model-creator-function"><strong>2.2 Model Creator Function</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#optimizer-creator-function"><strong>2.3 Optimizer Creator Function</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#create-and-fit-pytorch-autoestimator"><strong>2.4 Create and Fit Pytorch AutoEstimator</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#tensorflow-keras-autoestimator"><strong>3. TensorFlow/Keras AutoEstimator</strong></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#search-space-and-search-algorithms"><strong>4. Search Space and Search Algorithms</strong></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#basic-search-algorithms"><strong>4.1 Basic Search Algorithms</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#advanced-search-algorithms"><strong>4.2 Advanced Search Algorithms</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#scheduler"><strong>5. Scheduler</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Distributed Hyper-Parameter Tuning</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/doc/Orca/Overview/distributed-tuning.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="distributed-hyper-parameter-tuning">
+<h1>Distributed Hyper-Parameter Tuning<a class="headerlink" href="#distributed-hyper-parameter-tuning" title="Permalink to this headline">¶</a></h1>
+<hr class="docutils" />
+<p><strong>Orca <code class="docutils literal notranslate"><span class="pre">AutoEstimator</span></code> provides similar APIs as Orca <code class="docutils literal notranslate"><span class="pre">Estimator</span></code> for distributed hyper-parameter tuning.</strong></p>
+<section id="install">
+<h2><strong>Install</strong><a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h2>
+<p>We recommend using <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/">conda</a> to prepare the Python environment.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda create -n bigdl-orca-automl <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.7  <span class="c1"># &quot;bigdl-orca-automl&quot; is conda environment name, you can use any name you like.</span>
+conda activate bigdl-orca-automl
+pip install bigdl-orca<span class="o">[</span>automl<span class="o">]</span>
+</pre></div>
+</div>
+<p>You can install the latest release version of BigDL Orca as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install --pre --upgrade bigdl-orca<span class="o">[</span>automl<span class="o">]</span>
+</pre></div>
+</div>
+<p><em>Note that with extra key of [automl], <code class="docutils literal notranslate"><span class="pre">pip</span></code> will automatically install the additional dependencies for distributed hyper-parameter tuning,
+including <code class="docutils literal notranslate"><span class="pre">ray[tune]==1.9.2</span></code>, <code class="docutils literal notranslate"><span class="pre">scikit-learn</span></code>, <code class="docutils literal notranslate"><span class="pre">tensorboard</span></code>, <code class="docutils literal notranslate"><span class="pre">xgboost</span></code>.</em></p>
+<p>To use <a class="reference external" href="#pytorch-autoestimator">Pytorch Estimator</a>, you need to install Pytorch with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">torch==1.8.1</span></code>.</p>
+<p>To use <a class="reference external" href="#tensorflow-keras-autoestimator">TensorFlow/Keras AutoEstimator</a>, you need to install Tensorflow with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">tensorflow==1.15.0</span></code>.</p>
+</section>
+<section id="autoestimator">
+<h2><strong>1. AutoEstimator</strong><a class="headerlink" href="#autoestimator" title="Permalink to this headline">¶</a></h2>
+<p>To perform distributed hyper-parameter tuning, user can first create an Orca <code class="docutils literal notranslate"><span class="pre">AutoEstimator</span></code> from standard TensorFlow Keras or PyTorch model, and then call <code class="docutils literal notranslate"><span class="pre">AutoEstimator.fit</span></code>.</p>
+<p>Under the hood, the Orca <code class="docutils literal notranslate"><span class="pre">AutoEstimator</span></code> generates different trials and schedules them on each mode in the cluster. Each trial runs a different combination of hyper parameters, sampled from the user-desired hyper-parameter space.
+HDFS is used to save temporary results of each trial and all the results will be finally transferred to driver for further analysis.</p>
+</section>
+<section id="pytorch-autoestimator">
+<h2><strong>2. Pytorch AutoEstimator</strong><a class="headerlink" href="#pytorch-autoestimator" title="Permalink to this headline">¶</a></h2>
+<p>User could pass <em>Creator Function</em>s, including <em>Data Creator Function</em>, <em>Model Creator Function</em> and <em>Optimizer Creator Function</em> to <code class="docutils literal notranslate"><span class="pre">AutoEstimator</span></code> for training.</p>
+<p>The <em>Creator Function</em>s should take a parameter of <code class="docutils literal notranslate"><span class="pre">config</span></code> as input and get the hyper-parameter values from <code class="docutils literal notranslate"><span class="pre">config</span></code> to enable hyper parameter search.</p>
+<section id="data-creator-function">
+<h3><strong>2.1 Data Creator Function</strong><a class="headerlink" href="#data-creator-function" title="Permalink to this headline">¶</a></h3>
+<p>You can define the train and validation datasets using <em>Data Creator Function</em>. The <em>Data Creator Function</em> takes <code class="docutils literal notranslate"><span class="pre">config</span></code> as input and returns a <code class="docutils literal notranslate"><span class="pre">torch.utils.data.DataLoader</span></code> object, as shown below.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># &quot;batch_size&quot; is the hyper-parameter to be tuned.</span>
+<span class="k">def</span> <span class="nf">train_loader_creator</span><span class="p">(</span><span class="n">config</span><span class="p">):</span>
+    <span class="n">train_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
+        <span class="n">datasets</span><span class="o">.</span><span class="n">MNIST</span><span class="p">(</span><span class="nb">dir</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                       <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
+                           <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
+                           <span class="n">transforms</span><span class="o">.</span><span class="n">Normalize</span><span class="p">((</span><span class="mf">0.1307</span><span class="p">,),</span> <span class="p">(</span><span class="mf">0.3081</span><span class="p">,))</span>
+                       <span class="p">])),</span>
+        <span class="n">batch_size</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;batch_size&quot;</span><span class="p">],</span> <span class="n">shuffle</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">train_loader</span>
+</pre></div>
+</div>
+<p>The input data for Pytorch <code class="docutils literal notranslate"><span class="pre">AutoEstimator</span></code> can be a <em>Data Creator Function</em> or a tuple of numpy ndarrays in the form of (x, y), where x is training input data and y is training target data.</p>
+</section>
+<section id="model-creator-function">
+<h3><strong>2.2 Model Creator Function</strong><a class="headerlink" href="#model-creator-function" title="Permalink to this headline">¶</a></h3>
+<p><em>Model Creator Function</em> also takes <code class="docutils literal notranslate"><span class="pre">config</span></code> as input and returns a <code class="docutils literal notranslate"><span class="pre">torch.nn.Module</span></code> object, as shown below.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch.nn</span> <span class="kn">as</span> <span class="nn">nn</span>
+<span class="k">class</span> <span class="nc">LeNet</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fc1_hidden_size</span><span class="o">=</span><span class="mi">500</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">LeNet</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fc1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">4</span><span class="o">*</span><span class="mi">4</span><span class="o">*</span><span class="mi">50</span><span class="p">,</span> <span class="n">fc1_hidden_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fc2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">fc1_hidden_size</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+<span class="k">def</span> <span class="nf">model_creator</span><span class="p">(</span><span class="n">config</span><span class="p">):</span>
+    <span class="c1"># &quot;fc1_hidden_size&quot; is the hyper-parameter to be tuned.</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">LeNet</span><span class="p">(</span><span class="n">fc1_hidden_size</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;fc1_hidden_size&quot;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">model</span>
+</pre></div>
+</div>
+</section>
+<section id="optimizer-creator-function">
+<h3><strong>2.3 Optimizer Creator Function</strong><a class="headerlink" href="#optimizer-creator-function" title="Permalink to this headline">¶</a></h3>
+<p><em>Optimizer Creator Function</em> takes <code class="docutils literal notranslate"><span class="pre">model</span></code> and <code class="docutils literal notranslate"><span class="pre">config</span></code> as input, and returns a <code class="docutils literal notranslate"><span class="pre">torch.optim.Optimizer</span></code> object.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="k">def</span> <span class="nf">optim_creator</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;lr&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Note that the <code class="docutils literal notranslate"><span class="pre">optimizer</span></code> argument in Pytorch <code class="docutils literal notranslate"><span class="pre">AutoEstimator</span></code> constructor could be a <em>Optimizer Creator Function</em> or a string, which is the name of Pytorch Optimizer. The above <em>Optimizer Creator Function</em> has the same functionality with “Adam”.</p>
+</section>
+<section id="create-and-fit-pytorch-autoestimator">
+<h3><strong>2.4 Create and Fit Pytorch AutoEstimator</strong><a class="headerlink" href="#create-and-fit-pytorch-autoestimator" title="Permalink to this headline">¶</a></h3>
+<p>User could create a Pytorch <code class="docutils literal notranslate"><span class="pre">AutoEstimator</span></code> as below.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bigdl.orca.automl.auto_estimator</span> <span class="kn">import</span> <span class="n">AutoEstimator</span>
+
+<span class="n">auto_est</span> <span class="o">=</span> <span class="n">AutoEstimator</span><span class="o">.</span><span class="n">from_torch</span><span class="p">(</span><span class="n">model_creator</span><span class="o">=</span><span class="n">model_creator</span><span class="p">,</span>
+                                    <span class="n">optimizer</span><span class="o">=</span><span class="n">optim_creator</span><span class="p">,</span>
+                                    <span class="n">loss</span><span class="o">=</span><span class="n">nn</span><span class="o">.</span><span class="n">NLLLoss</span><span class="p">(),</span>
+                                    <span class="n">logs_dir</span><span class="o">=</span><span class="s2">&quot;/tmp/orca_automl_logs&quot;</span><span class="p">,</span>
+                                    <span class="n">resources_per_trial</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;cpu&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span>
+                                    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;lenet_mnist&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Then user can perform distributed hyper-parameter tuning as follows. For more details about the <code class="docutils literal notranslate"><span class="pre">search_space</span></code> argument, view the <em>search space and search algorithms</em> <a class="reference external" href="#search-space-and-search-algorithms">page</a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">auto_est</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">train_loader_creator</span><span class="p">,</span>
+             <span class="n">validation_data</span><span class="o">=</span><span class="n">test_loader_creator</span><span class="p">,</span>
+             <span class="n">search_space</span><span class="o">=</span><span class="n">search_space</span><span class="p">,</span>
+             <span class="n">n_sampling</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+             <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+             <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;accuracy&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Finally, user can get the best learned model and the best hyper-parameters for further deployment.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">best_model</span> <span class="o">=</span> <span class="n">auto_est</span><span class="o">.</span><span class="n">get_best_model</span><span class="p">()</span> <span class="c1"># a `torch.nn.Module` object</span>
+<span class="n">best_config</span> <span class="o">=</span> <span class="n">auto_est</span><span class="o">.</span><span class="n">get_best_config</span><span class="p">()</span> <span class="c1"># a dictionary of hyper-parameter names and values.</span>
+</pre></div>
+</div>
+<p>View the related <a class="reference external" href="https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-auto-estimator">Python API doc</a> for more details.</p>
+</section>
+</section>
+<section id="tensorflow-keras-autoestimator">
+<h2><strong>3. TensorFlow/Keras AutoEstimator</strong><a class="headerlink" href="#tensorflow-keras-autoestimator" title="Permalink to this headline">¶</a></h2>
+<p>Users can create an <code class="docutils literal notranslate"><span class="pre">AutoEstimator</span></code> for TensorFlow Keras from a <code class="docutils literal notranslate"><span class="pre">tf.keras</span></code> model (using a <em>Model Creator Function</em>). For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">model_creator</span><span class="p">(</span><span class="n">config</span><span class="p">):</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">Sequential</span><span class="p">([</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;hidden_size&quot;</span><span class="p">],</span>
+                                                              <span class="n">input_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,)),</span>
+                                        <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">1</span><span class="p">)])</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">loss</span><span class="o">=</span><span class="s2">&quot;mse&quot;</span><span class="p">,</span>
+                  <span class="n">optimizer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;lr&quot;</span><span class="p">]),</span>
+                  <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;mse&quot;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">model</span>
+
+<span class="n">auto_est</span> <span class="o">=</span> <span class="n">AutoEstimator</span><span class="o">.</span><span class="n">from_keras</span><span class="p">(</span><span class="n">model_creator</span><span class="o">=</span><span class="n">model_creator</span><span class="p">,</span>
+                                    <span class="n">logs_dir</span><span class="o">=</span><span class="s2">&quot;/tmp/orca_automl_logs&quot;</span><span class="p">,</span>
+                                    <span class="n">resources_per_trial</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;cpu&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span>
+                                    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;auto_keras&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Then user can perform distributed hyper-parameter tuning as follows. For more details about <code class="docutils literal notranslate"><span class="pre">search_space</span></code>, view the <em>search space and search algorithms</em> <a class="reference external" href="#search-space-and-search-algorithms">page</a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">auto_est</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">train_data</span><span class="p">,</span>
+             <span class="n">validation_data</span><span class="o">=</span><span class="n">val_data</span><span class="p">,</span>
+             <span class="n">search_space</span><span class="o">=</span><span class="n">search_space</span><span class="p">,</span>
+             <span class="n">n_sampling</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+             <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+             <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;accuracy&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">data</span></code> and <code class="docutils literal notranslate"><span class="pre">validation_data</span></code> in <code class="docutils literal notranslate"><span class="pre">fit</span></code> method can only be a tuple of numpy ndarrays. We haven’t support <em>Data Create Function</em> now. The numpy ndarray should also be in the form of (x, y), where x is training input data and y is training target data.</p>
+<p>Finally, user can get the best learned model and the best hyper-parameters for further deployment.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">best_model</span> <span class="o">=</span> <span class="n">auto_est</span><span class="o">.</span><span class="n">get_best_model</span><span class="p">()</span> <span class="c1"># a `torch.nn.Module` object</span>
+<span class="n">best_config</span> <span class="o">=</span> <span class="n">auto_est</span><span class="o">.</span><span class="n">get_best_config</span><span class="p">()</span> <span class="c1"># a dictionary of hyper-parameter names and values.</span>
+</pre></div>
+</div>
+<p>View the related <a class="reference external" href="https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-auto-estimator">Python API doc</a> for more details.</p>
+</section>
+<section id="search-space-and-search-algorithms">
+<h2><strong>4. Search Space and Search Algorithms</strong><a class="headerlink" href="#search-space-and-search-algorithms" title="Permalink to this headline">¶</a></h2>
+<p>For Hyper-parameter Optimization, user should define the search space of various hyper-parameter values for neural network training, as well as how to search through the chosen hyper-parameter space.</p>
+<section id="basic-search-algorithms">
+<h3><strong>4.1 Basic Search Algorithms</strong><a class="headerlink" href="#basic-search-algorithms" title="Permalink to this headline">¶</a></h3>
+<p>For basic search algorithms like <strong>Grid Search</strong> and <strong>Random Search</strong>, we provide several sampling functions with <code class="docutils literal notranslate"><span class="pre">automl.hp</span></code>. See <a class="reference external" href="https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-hp">API doc</a> for more details.</p>
+<p><code class="docutils literal notranslate"><span class="pre">AutoEstimator</span></code> requires a dictionary for the <code class="docutils literal notranslate"><span class="pre">search_space</span></code> argument in <code class="docutils literal notranslate"><span class="pre">fit</span></code>.
+In the dictionary, the keys are the hyper-parameter names, and the values specify how to sample the search spaces for the hyper-parameters.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bigdl.orca.automl</span> <span class="kn">import</span> <span class="n">hp</span>
+
+<span class="n">search_space</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;fc1_hidden_size&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">grid_search</span><span class="p">([</span><span class="mi">500</span><span class="p">,</span> <span class="mi">600</span><span class="p">]),</span>
+    <span class="s2">&quot;lr&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">loguniform</span><span class="p">(</span><span class="mf">0.001</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span>
+    <span class="s2">&quot;batch_size&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">160</span><span class="p">,</span> <span class="mi">320</span><span class="p">,</span> <span class="mi">640</span><span class="p">]),</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="advanced-search-algorithms">
+<h3><strong>4.2 Advanced Search Algorithms</strong><a class="headerlink" href="#advanced-search-algorithms" title="Permalink to this headline">¶</a></h3>
+<p>Beside grid search and random search, user could also choose to use some advanced hyper-parameter optimization methods,
+such as <a class="reference external" href="https://ax.dev/">Ax</a>, <a class="reference external" href="https://github.com/fmfn/BayesianOptimization">Bayesian Optimization</a>, <a class="reference external" href="https://scikit-optimize.github.io">Scikit-Optimize</a>, etc. We supported all <em>Search Algorithms</em> in <a class="reference external" href="https://docs.ray.io/en/master/index.html">Ray Tune</a>. View the <a class="reference external" href="https://docs.ray.io/en/master/tune/api_docs/suggestion.html">Ray Tune Search Algorithms</a> for more details.
+Note that you should install the dependency for your search algorithm manually.</p>
+<p>Take bayesian optimization as an instance. You need to first install the dependency with</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install bayesian-optimization
+</pre></div>
+</div>
+<p>And pass the search algorithm name to <code class="docutils literal notranslate"><span class="pre">search_alg</span></code> in <code class="docutils literal notranslate"><span class="pre">AutoEstimator.fit</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bigdl.orca.automl</span> <span class="kn">import</span> <span class="n">hp</span>
+
+<span class="n">search_space</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;width&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span>
+    <span class="s2">&quot;height&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="n">auto_estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">,</span>
+    <span class="n">search_space</span><span class="o">=</span><span class="n">search_space</span><span class="p">,</span>
+    <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;mean_loss&quot;</span><span class="p">,</span>
+    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">,</span>
+    <span class="n">search_alg</span><span class="o">=</span><span class="s2">&quot;bayesopt&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>See <a class="reference external" href="https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-auto-estimator">API Doc</a> for more details.</p>
+</section>
+</section>
+<section id="scheduler">
+<h2><strong>5. Scheduler</strong><a class="headerlink" href="#scheduler" title="Permalink to this headline">¶</a></h2>
+<p><em>Scheduler</em> can stop/pause/tweak the hyper-parameters of running trials, making the hyper-parameter tuning process much efficient.</p>
+<p>We support all <em>Schedulers</em> in <a class="reference external" href="https://docs.ray.io/en/master/index.html">Ray Tune</a>. See <a class="reference external" href="https://docs.ray.io/en/master/tune/api_docs/schedulers.html#schedulers-ref">Ray Tune Schedulers</a> for more details.</p>
+<p>User can pass the <em>Scheduler</em> name to <code class="docutils literal notranslate"><span class="pre">scheduler</span></code> in <code class="docutils literal notranslate"><span class="pre">AutoEstimator.fit</span></code>. The <em>Scheduler</em> names supported are “fifo”, “hyperband”, “async_hyperband”, “median_stopping_rule”, “hb_bohb”, “pbt”, “pbt_replay”.
+The default <code class="docutils literal notranslate"><span class="pre">scheduler</span></code> is “fifo”, which just runs trials in submission order.</p>
+<p>See examples below about how to use <em>Scheduler</em> in <code class="docutils literal notranslate"><span class="pre">AutoEstimator</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">scheduler_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">max_t</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+            <span class="n">grace_period</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">reduction_factor</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+            <span class="n">brackets</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<span class="n">auto_estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">,</span>
+    <span class="n">search_space</span><span class="o">=</span><span class="n">search_space</span><span class="p">,</span>
+    <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;mean_loss&quot;</span><span class="p">,</span>
+    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">,</span>
+    <span class="n">search_alg</span><span class="o">=</span><span class="s2">&quot;skopt&quot;</span><span class="p">,</span>
+    <span class="n">scheduler</span> <span class="o">=</span> <span class="s2">&quot;AsyncHyperBand&quot;</span><span class="p">,</span>
+    <span class="n">scheduler_params</span><span class="o">=</span><span class="n">scheduler_params</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><em>Scheduler</em> shares the same parameters as ray tune schedulers.
+And <code class="docutils literal notranslate"><span class="pre">scheduler_params</span></code> are extra parameters for <code class="docutils literal notranslate"><span class="pre">scheduler</span></code> other than <code class="docutils literal notranslate"><span class="pre">metric</span></code> and <code class="docutils literal notranslate"><span class="pre">mode</span></code>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="distributed-training-inference.html" class="btn btn-neutral float-left" title="Distributed Training and Inference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../Ray/Overview/ray.html" class="btn btn-neutral float-right" title="RayOnSpark" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

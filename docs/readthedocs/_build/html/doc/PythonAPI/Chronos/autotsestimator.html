@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AutoTS &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/tabs.js"></script>
+        <script src="../../../_static/design-tabs.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Auto Models" href="automodels.html" />
+    <link rel="prev" title="Chronos API" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Chronos API</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">AutoTS</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#autotsestimator">AutoTSEstimator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tspipeline">TSPipeline</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="automodels.html">Auto Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="forecasters.html">Forecasters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="anomaly_detectors.html">Anomaly Detectors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tsdataset.html">TSDataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="simulator.html">Simulator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="evaluator.html">Evaluator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="autots.html">AutoTS (deprecated)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Chronos API</a> &raquo;</li>
+      <li>AutoTS</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/doc/PythonAPI/Chronos/autotsestimator.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="autots">
+<h1>AutoTS<a class="headerlink" href="#autots" title="Permalink to this headline">¶</a></h1>
+<section id="autotsestimator">
+<h2>AutoTSEstimator<a class="headerlink" href="#autotsestimator" title="Permalink to this headline">¶</a></h2>
+<p>Automated TimeSeries Estimator for time series forecasting task.
+AutoTSEstimator will replace AutoTSTrainer in later version.</p>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-0-0-0" aria-selected="true" class="sphinx-tabs-tab" id="tab-0-0-0" name="0-0" role="tab" tabindex="0">PyTorch/Tensorflow</button></div><div aria-labelledby="tab-0-0-0" class="sphinx-tabs-panel" id="panel-0-0-0" name="0-0" role="tabpanel" tabindex="0"><span class="target" id="module-bigdl.chronos.autots.autotsestimator"></span><dl class="py class">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.autotsestimator.AutoTSEstimator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bigdl.chronos.autots.autotsestimator.</span></span><span class="sig-name descname"><span class="pre">AutoTSEstimator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'lstm'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_space</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mse'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Adam'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">past_seq_len</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">future_seq_len</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_feature_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_target_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selected_features</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'torch'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/tmp/autots_estimator'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cpus_per_trial</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'autots_estimator'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remote_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/autotsestimator.html#AutoTSEstimator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.autotsestimator.AutoTSEstimator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Automated TimeSeries Estimator for time series forecasting task, which supports
+TSDataset and customized data creator as data input on built-in model (only
+“lstm”, “tcn”, “seq2seq” for now) or 3rd party model.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Here is a use case example:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># prepare train/valid/test tsdataset</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">autoest</span> <span class="o">=</span> <span class="n">AutoTSEstimator</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;lstm&quot;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                          <span class="n">search_space</span><span class="o">=</span><span class="n">search_space</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                          <span class="n">past_seq_len</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                          <span class="n">future_seq_len</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tsppl</span> <span class="o">=</span> <span class="n">autoest</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">tsdata_train</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                    <span class="n">validation_data</span><span class="o">=</span><span class="n">tsdata_valid</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tsppl</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">tsdata_test</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tsppl</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;my_tsppl&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>AutoTSEstimator trains a model for time series forecasting.
+Users can choose one of the built-in models, or pass in a customized pytorch or keras model
+for tuning using AutoML.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> – a string or a model creation function.
+A string indicates a built-in model, currently “lstm”, “tcn”, “seq2seq” are
+supported.
+A model creation function indicates a 3rd party model, the function should take a
+config param and return a torch.nn.Module (backend=”torch”) / tf model
+(backend=”keras”).
+If you use chronos.data.TSDataset as data input, the 3rd party
+should have 3 dim input (num_sample, past_seq_len, input_feature_num) and 3 dim
+output (num_sample, future_seq_len, output_feature_num) and use the same key
+in the model creation function. If you use a customized data creator, the output of
+data creator should fit the input of model creation function.</p></li>
+<li><p><strong>search_space</strong> – str or dict. hyper parameter configurations. For str, you can choose
+from “minimal”, “normal”, or “large”, each represents a default search_space for
+our built-in model with different computing requirement. For dict, Read the API docs
+for each auto model. Some common hyper parameter can be explicitly set in named
+parameter. search_space should contain those parameters other than the keyword
+arguments in this constructor in its key. If a 3rd parth model is used, then you
+must set search_space to a dict.</p></li>
+<li><p><strong>metric</strong> – String or customized evaluation metric function.
+If string, metric is the evaluation metric name to optimize, e.g. “mse”.
+If callable function, it signature should be func(y_true, y_pred), where y_true and
+y_pred are numpy ndarray. The function should return a float value as evaluation
+result.</p></li>
+<li><p><strong>metric_mode</strong> – One of [“min”, “max”]. “max” means greater metric value is better.
+You have to specify metric_mode if you use a customized metric function.
+You don’t have to specify metric_mode if you use the built-in metric in
+bigdl.orca.automl.metrics.Evaluator.</p></li>
+<li><p><strong>loss</strong> – String or pytorch loss instance or pytorch loss creator function. The
+default loss function for pytorch backend is nn.MSELoss(). If users use
+backend=”keras” and 3rd parth model this parameter will be ignored.</p></li>
+<li><p><strong>optimizer</strong> – String or pyTorch optimizer creator function or tf.keras optimizer
+instance. If users use backend=”keras” and 3rd parth model, this parameter will
+be ignored.</p></li>
+<li><p><strong>past_seq_len</strong> – Int or or hp sampling function. The number of historical steps (i.e.
+lookback) used for forecasting. For hp sampling, see bigdl.orca.automl.hp for more
+details. The values defaults to ‘auto’, which will automatically infer the
+cycle length of each time series and take the mode of them. The search space
+will be automatically set to hp.randint(0.5*cycle_length, 2*cycle_length).</p></li>
+<li><p><strong>future_seq_len</strong> – Int or List. The number of future steps to forecast. The value
+defaults to 1, if <cite>future_seq_len</cite> is a list, we will sample discretely according
+to the input list. 1 means the timestamp just after the observed data.</p></li>
+<li><p><strong>input_feature_num</strong> – Int. The number of features in the input. The value is ignored if
+you use chronos.data.TSDataset as input data type.</p></li>
+<li><p><strong>output_target_num</strong> – Int. The number of targets in the output. The value is ignored if
+you use chronos.data.TSDataset as input data type.</p></li>
+<li><p><strong>selected_features</strong> – String. “all” and “auto” are supported for now. For “all”,
+all features that are generated are used for each trial. For “auto”, a subset
+is sampled randomly from all features for each trial. The parameter is ignored
+if not using chronos.data.TSDataset as input data type. The value defaults
+to “auto”.</p></li>
+<li><p><strong>backend</strong> – The backend of the auto model. We only support backend as “torch” or
+“keras” for now.</p></li>
+<li><p><strong>logs_dir</strong> – Local directory to save logs and results.
+It defaults to “/tmp/autots_estimator”</p></li>
+<li><p><strong>cpus_per_trial</strong> – Int. Number of cpus for each trial. It defaults to 1.</p></li>
+<li><p><strong>name</strong> – name of the autots estimator. It defaults to “autots_estimator”.</p></li>
+<li><p><strong>remote_dir</strong> – String. Remote directory to sync training results and checkpoints. It
+defaults to None and doesn’t take effects while running in local. While running in
+cluster, it defaults to “hdfs:///tmp/{name}”.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.autotsestimator.AutoTSEstimator.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validation_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_sampling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_alg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_alg_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/autotsestimator.html#AutoTSEstimator.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.autotsestimator.AutoTSEstimator.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>fit using AutoEstimator</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – <p>train data.
+For backend of “torch”, data can be a TSDataset or a function that takes a
+config dictionary as parameter and returns a PyTorch DataLoader.</p>
+<p>For backend of “keras”, data can be a TSDataset or a function that takes a
+config dictionary as parameter and returns a Tensorflow Dataset.</p>
+<p>Please notice that you should stick to the same data type when you
+predict/evaluate/fit on the TSPipeline you get from <cite>AutoTSEstimator.fit</cite>.</p>
+</p></li>
+<li><p><strong>epochs</strong> – Max number of epochs to train in each trial. Defaults to 1.
+If you have also set metric_threshold, a trial will stop if either it has been
+optimized to the metric_threshold or it has been trained for {epochs} epochs.</p></li>
+<li><p><strong>batch_size</strong> – Int or hp sampling function from an integer space. Training batch size.
+It defaults to 32.</p></li>
+<li><p><strong>validation_data</strong> – Validation data. Validation data type should be the same as data.</p></li>
+<li><p><strong>metric_threshold</strong> – a trial will be terminated when metric threshold is met.</p></li>
+<li><p><strong>n_sampling</strong> – Number of trials to evaluate in total. Defaults to 1.
+If hp.grid_search is in search_space, the grid will be run n_sampling of trials
+and round up n_sampling according to hp.grid_search.
+If this is -1, (virtually) infinite samples are generated
+until a stopping condition is met.</p></li>
+<li><p><strong>search_alg</strong> – str, all supported searcher provided by ray tune
+(i.e.”variant_generator”, “random”, “ax”, “dragonfly”, “skopt”,
+“hyperopt”, “bayesopt”, “bohb”, “nevergrad”, “optuna”, “zoopt” and
+“sigopt”)</p></li>
+<li><p><strong>search_alg_params</strong> – extra parameters for searcher algorithm besides search_space,
+metric and searcher mode</p></li>
+<li><p><strong>scheduler</strong> – str, all supported scheduler provided by ray tune</p></li>
+<li><p><strong>scheduler_params</strong> – parameters for scheduler</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a TSPipeline with the best model.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.autotsestimator.AutoTSEstimator.get_best_config">
+<span class="sig-name descname"><span class="pre">get_best_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/autotsestimator.html#AutoTSEstimator.get_best_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.autotsestimator.AutoTSEstimator.get_best_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the best configuration</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A dictionary of best hyper parameters</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div></div>
+</section>
+<section id="tspipeline">
+<h2>TSPipeline<a class="headerlink" href="#tspipeline" title="Permalink to this headline">¶</a></h2>
+<p>TSPipeline is an E2E solution for time series forecasting task.
+AutoTSEstimator will replace original TSPipeline returned by AutoTSTrainer in later version.</p>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-1-1-0" aria-selected="true" class="sphinx-tabs-tab" id="tab-1-1-0" name="1-0" role="tab" tabindex="0">PyTorch</button></div><div aria-labelledby="tab-1-1-0" class="sphinx-tabs-panel" id="panel-1-1-0" name="1-0" role="tabpanel" tabindex="0"><span class="target" id="module-bigdl.chronos.autots.tspipeline"></span><dl class="py class">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.tspipeline.TSPipeline">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bigdl.chronos.autots.tspipeline.</span></span><span class="sig-name descname"><span class="pre">TSPipeline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_creator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_creator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer_creator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">best_config</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/tspipeline.html#TSPipeline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.tspipeline.TSPipeline" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>TSPipeline is an E2E solution for time series analysis (only forecasting task for now).
+You can use TSPipeline to:</p>
+<ol class="arabic simple">
+<li><p>Further development on the prototype. (predict, evaluate, incremental fit)</p></li>
+<li><p>Deploy the model to their scenario. (save, load)</p></li>
+</ol>
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.tspipeline.TSPipeline.evaluate">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['mse']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multioutput</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'uniform_average'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/tspipeline.html#TSPipeline.evaluate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.tspipeline.TSPipeline.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate the time series pipeline.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – data can be a TSDataset or data creator.
+The TSDataset should follow the same operations as the training
+TSDataset used in AutoTSEstimator.fit.</p></li>
+<li><p><strong>metrics</strong> – list of string or callable. e.g. [‘mse’] or [customized_metrics]
+If callable function, it signature should be func(y_true, y_pred), where y_true and
+y_pred are numpy ndarray. The function should return a float value as evaluation
+result.</p></li>
+<li><p><strong>multioutput</strong> – Defines aggregating of multiple output values.
+String in [‘raw_values’, ‘uniform_average’]. The value defaults to
+‘uniform_average’.</p></li>
+<li><p><strong>batch_size</strong> – predict batch_size, the process will cost more time
+if batch_size is small while cost less memory. The param is only
+effective when data is a TSDataset. The values defaults to 32.</p></li>
+<li><p><strong>quantize</strong> – if use the quantized model to predict.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.tspipeline.TSPipeline.evaluate_with_onnx">
+<span class="sig-name descname"><span class="pre">evaluate_with_onnx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['mse']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multioutput</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'uniform_average'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/tspipeline.html#TSPipeline.evaluate_with_onnx"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.tspipeline.TSPipeline.evaluate_with_onnx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate the time series pipeline with onnx.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – data can be a TSDataset or data creator.
+The TSDataset should follow the same operations as the training
+TSDataset used in AutoTSEstimator.fit.</p></li>
+<li><p><strong>metrics</strong> – list of string or callable. e.g. [‘mse’] or [customized_metrics]
+If callable function, it signature should be func(y_true, y_pred), where y_true and
+y_pred are numpy ndarray. The function should return a float value as evaluation
+result.</p></li>
+<li><p><strong>multioutput</strong> – Defines aggregating of multiple output values.
+String in [‘raw_values’, ‘uniform_average’]. The value defaults to
+‘uniform_average’.</p></li>
+<li><p><strong>batch_size</strong> – predict batch_size, the process will cost more time
+if batch_size is small while cost less memory. The param is only
+effective when data is a TSDataset. The values defaults to 32.</p></li>
+<li><p><strong>quantize</strong> – if use the quantized model to predict.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.tspipeline.TSPipeline.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/tspipeline.html#TSPipeline.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.tspipeline.TSPipeline.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rolling predict with time series pipeline.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – data can be a TSDataset or data creator.
+The TSDataset should follow the same operations as the training
+TSDataset used in AutoTSEstimator.fit.</p></li>
+<li><p><strong>batch_size</strong> – predict batch_size, the process will cost more time
+if batch_size is small while cost less memory.  The param is only
+effective when data is a TSDataset. The values defaults to 32.</p></li>
+<li><p><strong>quantize</strong> – if use the quantized model to predict.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.tspipeline.TSPipeline.predict_with_onnx">
+<span class="sig-name descname"><span class="pre">predict_with_onnx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/tspipeline.html#TSPipeline.predict_with_onnx"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.tspipeline.TSPipeline.predict_with_onnx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rolling predict with onnx with time series pipeline.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – data can be a TSDataset or data creator.
+The TSDataset should follow the same operations as the training
+TSDataset used in AutoTSEstimator.fit.</p></li>
+<li><p><strong>batch_size</strong> – predict batch_size, the process will cost more time
+if batch_size is small while cost less memory.  The param is only
+effective when data is a TSDataset. The values defaults to 32.</p></li>
+<li><p><strong>quantize</strong> – if use the quantized model to predict.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.tspipeline.TSPipeline.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validation_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/tspipeline.html#TSPipeline.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.tspipeline.TSPipeline.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Incremental fitting</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – <p>The data support following formats:</p>
+<div class="line-block">
+<div class="line">1. data creator:</div>
+<div class="line">a function that takes a config dictionary as parameter and</div>
+<div class="line">returns a PyTorch DataLoader.</div>
+<div class="line"><br /></div>
+<div class="line">2. a bigdl.chronos.data.TSDataset:</div>
+<div class="line">the TSDataset should follow the same operations as the training</div>
+<div class="line">TSDataset used in <cite>AutoTSEstimator.fit</cite>.</div>
+</div>
+</p></li>
+<li><p><strong>validation_data</strong> – validation data, same format as data.</p></li>
+<li><p><strong>epochs</strong> – incremental fitting epoch. The value defaults to 1.</p></li>
+<li><p><strong>metric</strong> – evaluate metric.</p></li>
+<li><p><strong>batch_size</strong> – batch size, defaults to None, which takes the searched best batch_size.</p></li>
+<li><p><strong>**kwargs</strong> – <p>args to be passed to bigdl-nano trainer.</p>
+</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.tspipeline.TSPipeline.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/tspipeline.html#TSPipeline.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.tspipeline.TSPipeline.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the TSPipeline to a folder</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>file_path</strong> – the folder location to save the pipeline</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.tspipeline.TSPipeline.load">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/tspipeline.html#TSPipeline.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.tspipeline.TSPipeline.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the TSPipeline to a folder</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>file_path</strong> – the folder location to load the pipeline</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.tspipeline.TSPipeline.quantize">
+<span class="sig-name descname"><span class="pre">quantize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">calib_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framework</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pytorch_fx'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">approach</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'static'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tuning_strategy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bayesian'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">relative_drop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">absolute_drop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_trials</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/tspipeline.html#TSPipeline.quantize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.tspipeline.TSPipeline.quantize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Quantization TSPipeline.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>calib_data</strong> – <p>Required for static quantization or evaluation.</p>
+<div class="line-block">
+<div class="line">1. data creator:</div>
+<div class="line">a function that takes a config dictionary as parameter and</div>
+<div class="line">returns a PyTorch DataLoader.</div>
+<div class="line"><br /></div>
+<div class="line">2. a bigdl.chronos.data.TSDataset:</div>
+<div class="line">the TSDataset should follow the same operations as the training</div>
+<div class="line">TSDataset used in <cite>AutoTSEstimator.fit</cite>.</div>
+<div class="line"><br /></div>
+<div class="line">3. A torch.utils.data.dataloader.DataLoader object for calibration,</div>
+<div class="line">Users should set the configs correctly (e.g. past_seq_len, …).</div>
+<div class="line">They can be found in TSPipeline._best_config.</div>
+<div class="line"><br /></div>
+<div class="line">4. A numpy ndarray tuple (x, y).</div>
+<div class="line">x’s shape is (num_samples, past_seq_len, input_feature_dim).</div>
+<div class="line">y’s shape is (num_samples, future_seq_len, output_feature_dim).</div>
+<div class="line">They can be found in TSPipeline._best_config.</div>
+</div>
+</p></li>
+<li><p><strong>metric</strong> – A str represent the metrics for tunning the quality of
+quantization. You may choose from “mse”, “mae”, “rmse”, “r2”, “mape”, “smape”.</p></li>
+<li><p><strong>conf</strong> – A path to conf yaml file for quantization. Default to None,
+using default config.</p></li>
+<li><p><strong>framework</strong> – string or list, [{‘pytorch’|’pytorch_fx’|’pytorch_ipex’},
+{‘onnxrt_integerops’|’onnxrt_qlinearops’}]. Default: ‘pytorch_fx’.
+Consistent with Intel Neural Compressor.</p></li>
+<li><p><strong>approach</strong> – str, ‘static’ or ‘dynamic’. Default to ‘static’.</p></li>
+<li><p><strong>tuning_strategy</strong> – str, ‘bayesian’, ‘basic’, ‘mse’ or ‘sigopt’. Default to ‘bayesian’.</p></li>
+<li><p><strong>relative_drop</strong> – Float, tolerable ralative accuracy drop. Default to None,
+e.g. set to 0.1 means that we accept a 10% increase in the metrics error.</p></li>
+<li><p><strong>absolute_drop</strong> – Float, tolerable ralative accuracy drop. Default to None,
+e.g. set to 5 means that we can only accept metrics smaller than 5.</p></li>
+<li><p><strong>timeout</strong> – Tuning timeout (seconds). Default to 0, which means early stop.
+Combine with max_trials field to decide when to exit.</p></li>
+<li><p><strong>max_trials</strong> – Max tune times. Default to 1. Combine with timeout field to
+decide when to exit. “timeout=0, max_trials=1” means it will try quantization
+only once and return satisfying best model.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div></div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Chronos API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="automodels.html" class="btn btn-neutral float-right" title="Auto Models" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

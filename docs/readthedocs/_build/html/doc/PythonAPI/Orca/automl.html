@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>orca.automl.auto_estimator &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/design-tabs.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Friesian Feature API" href="../Friesian/feature.html" />
+    <link rel="prev" title="Orca API" href="orca.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="orca.html">Orca API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="orca.html#module-bigdl.orca.learn.bigdl.estimator">orca.learn.bigdl.estimator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="orca.html#module-bigdl.orca.learn.tf.estimator">orca.learn.tf.estimator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="orca.html#module-bigdl.orca.learn.tf2.estimator">orca.learn.tf2.estimator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="orca.html#module-bigdl.orca.learn.pytorch.estimator">orca.learn.pytorch.estimator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="orca.html#module-bigdl.orca.learn.openvino.estimator">orca.learn.openvino.estimator</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="orca.html#automl">AutoML</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">orca.automl.auto_estimator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#orca-automl-hp">orca.automl.hp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#orca-automl-metrics">orca.automl.metrics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#orca-automl-auto-xgb">orca.automl.auto_xgb</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="orca.html">Orca API</a> &raquo;</li>
+      <li>orca.automl.auto_estimator</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/doc/PythonAPI/Orca/automl.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="orca-automl-auto-estimator">
+<h1>orca.automl.auto_estimator<a class="headerlink" href="#orca-automl-auto-estimator" title="Permalink to this headline">¶</a></h1>
+<p>A general estimator supports automatic model tuning. It allows users to fit and search the best hyperparameter for their model.</p>
+<span class="target" id="module-bigdl.orca.automl.auto_estimator"></span><dl class="py class">
+<dt class="sig sig-object py" id="bigdl.orca.automl.auto_estimator.AutoEstimator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bigdl.orca.automl.auto_estimator.</span></span><span class="sig-name descname"><span class="pre">AutoEstimator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_builder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/tmp/auto_estimator_logs'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resources_per_trial</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remote_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/auto_estimator.html#AutoEstimator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.auto_estimator.AutoEstimator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">auto_est</span> <span class="o">=</span> <span class="n">AutoEstimator</span><span class="o">.</span><span class="n">from_torch</span><span class="p">(</span><span class="n">model_creator</span><span class="o">=</span><span class="n">model_creator</span><span class="p">,</span>
+<span class="go">                                        optimizer=get_optimizer,</span>
+<span class="go">                                        loss=nn.BCELoss(),</span>
+<span class="go">                                        logs_dir=&quot;/tmp/zoo_automl_logs&quot;,</span>
+<span class="go">                                        resources_per_trial={&quot;cpu&quot;: 2},</span>
+<span class="go">                                        name=&quot;test_fit&quot;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">auto_est</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+<span class="go">                 validation_data=validation_data,</span>
+<span class="go">                 search_space=create_linear_search_space(),</span>
+<span class="go">                 n_sampling=4,</span>
+<span class="go">                 epochs=1,</span>
+<span class="go">                 metric=&quot;accuracy&quot;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">best_model</span> <span class="o">=</span> <span class="n">auto_est</span><span class="o">.</span><span class="n">get_best_model</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.orca.automl.auto_estimator.AutoEstimator.from_torch">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_torch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_creator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/tmp/auto_estimator_logs'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resources_per_trial</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto_pytorch_estimator'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remote_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/auto_estimator.html#AutoEstimator.from_torch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.auto_estimator.AutoEstimator.from_torch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an AutoEstimator for torch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_creator</strong> – PyTorch model creator function.</p></li>
+<li><p><strong>optimizer</strong> – PyTorch optimizer creator function or pytorch optimizer name (string).
+Note that you should specify learning rate search space with key as “lr” or LR_NAME
+(from bigdl.orca.automl.pytorch_utils import LR_NAME) if input optimizer name.
+Without learning rate search space specified, the default learning rate value of 1e-3
+will be used for all estimators.</p></li>
+<li><p><strong>loss</strong> – PyTorch loss instance or PyTorch loss creator function
+or pytorch loss name (string).</p></li>
+<li><p><strong>logs_dir</strong> – Local directory to save logs and results. It defaults to
+“/tmp/auto_estimator_logs”</p></li>
+<li><p><strong>resources_per_trial</strong> – Dict. resources for each trial. e.g. {“cpu”: 2}.</p></li>
+<li><p><strong>name</strong> – Name of the auto estimator. It defaults to “auto_pytorch_estimator”</p></li>
+<li><p><strong>remote_dir</strong> – String. Remote directory to sync training results and checkpoints. It
+defaults to None and doesn’t take effects while running in local. While running in
+cluster, it defaults to “hdfs:///tmp/{name}”.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>an AutoEstimator object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.orca.automl.auto_estimator.AutoEstimator.from_keras">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_keras</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_creator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/tmp/auto_estimator_logs'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resources_per_trial</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto_keras_estimator'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remote_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/auto_estimator.html#AutoEstimator.from_keras"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.auto_estimator.AutoEstimator.from_keras" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an AutoEstimator for tensorflow keras.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_creator</strong> – Tensorflow keras model creator function.</p></li>
+<li><p><strong>logs_dir</strong> – Local directory to save logs and results. It defaults to
+“/tmp/auto_estimator_logs”</p></li>
+<li><p><strong>resources_per_trial</strong> – Dict. resources for each trial. e.g. {“cpu”: 2}.</p></li>
+<li><p><strong>name</strong> – Name of the auto estimator. It defaults to “auto_keras_estimator”</p></li>
+<li><p><strong>remote_dir</strong> – String. Remote directory to sync training results and checkpoints. It
+defaults to None and doesn’t take effects while running in local. While running in
+cluster, it defaults to “hdfs:///tmp/{name}”.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>an AutoEstimator object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.orca.automl.auto_estimator.AutoEstimator.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validation_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_sampling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_space</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_alg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_alg_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/auto_estimator.html#AutoEstimator.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.auto_estimator.AutoEstimator.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Automatically fit the model and search for the best hyperparameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – train data.
+If the AutoEstimator is created with from_torch, data can be a tuple of
+ndarrays or a PyTorch DataLoader or a function that takes a config dictionary as
+parameter and returns a PyTorch DataLoader.
+If the AutoEstimator is created with from_keras, data can be a tuple of
+ndarrays or a function that takes a config dictionary as
+parameter and returns a Tensorflow Dataset.
+If data is a tuple of ndarrays, it should be in the form of (x, y),
+where x is training input data and y is training target data.</p></li>
+<li><p><strong>epochs</strong> – Max number of epochs to train in each trial. Defaults to 1.
+If you have also set metric_threshold, a trial will stop if either it has been
+optimized to the metric_threshold or it has been trained for {epochs} epochs.</p></li>
+<li><p><strong>validation_data</strong> – Validation data. Validation data type should be the same as data.</p></li>
+<li><p><strong>metric</strong> – String or customized evaluation metric function.
+If string, metric is the evaluation metric name to optimize, e.g. “mse”.
+If callable function, it signature should be func(y_true, y_pred), where y_true and
+y_pred are numpy ndarray. The function should return a float value as evaluation result.</p></li>
+<li><p><strong>metric_mode</strong> – One of [“min”, “max”]. “max” means greater metric value is better.
+You have to specify metric_mode if you use a customized metric function.
+You don’t have to specify metric_mode if you use the built-in metric in
+bigdl.orca.automl.metrics.Evaluator.</p></li>
+<li><p><strong>metric_threshold</strong> – a trial will be terminated when metric threshold is met</p></li>
+<li><p><strong>n_sampling</strong> – Number of times to sample from the search_space. Defaults to 1.
+If hp.grid_search is in search_space, the grid will be repeated n_sampling of times.
+If this is -1, (virtually) infinite samples are generated
+until a stopping condition is met.</p></li>
+<li><p><strong>search_space</strong> – a dict for search space</p></li>
+<li><p><strong>search_alg</strong> – str, all supported searcher provided by ray tune
+(i.e.”variant_generator”, “random”, “ax”, “dragonfly”, “skopt”,
+“hyperopt”, “bayesopt”, “bohb”, “nevergrad”, “optuna”, “zoopt” and
+“sigopt”)</p></li>
+<li><p><strong>search_alg_params</strong> – extra parameters for searcher algorithm besides search_space,
+metric and searcher mode</p></li>
+<li><p><strong>scheduler</strong> – str, all supported scheduler provided by ray tune</p></li>
+<li><p><strong>scheduler_params</strong> – parameters for scheduler</p></li>
+<li><p><strong>feature_cols</strong> – feature column names if data is Spark DataFrame.</p></li>
+<li><p><strong>label_cols</strong> – target column names if data is Spark DataFrame.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.orca.automl.auto_estimator.AutoEstimator.get_best_model">
+<span class="sig-name descname"><span class="pre">get_best_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/auto_estimator.html#AutoEstimator.get_best_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.auto_estimator.AutoEstimator.get_best_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the best model found by the AutoEstimator</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the best model instance</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.orca.automl.auto_estimator.AutoEstimator.get_best_config">
+<span class="sig-name descname"><span class="pre">get_best_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/auto_estimator.html#AutoEstimator.get_best_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.auto_estimator.AutoEstimator.get_best_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the best config found by the AutoEstimator</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A dictionary of best hyper parameters</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="orca-automl-hp">
+<h1>orca.automl.hp<a class="headerlink" href="#orca-automl-hp" title="Permalink to this headline">¶</a></h1>
+<p>Sampling specs to be used in search space configuration.</p>
+<span class="target" id="module-bigdl.orca.automl.hp"></span><dl class="py function">
+<dt class="sig sig-object py" id="bigdl.orca.automl.hp.uniform">
+<span class="sig-prename descclassname"><span class="pre">bigdl.orca.automl.hp.</span></span><span class="sig-name descname"><span class="pre">uniform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lower</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/hp.html#uniform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.hp.uniform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sample a float uniformly between lower and upper.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lower</strong> – Lower bound of the sampling range.</p></li>
+<li><p><strong>upper</strong> – Upper bound of the sampling range.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bigdl.orca.automl.hp.quniform">
+<span class="sig-prename descclassname"><span class="pre">bigdl.orca.automl.hp.</span></span><span class="sig-name descname"><span class="pre">quniform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lower</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/hp.html#quniform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.hp.quniform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sample a float uniformly between lower and upper.
+Round the result to nearest value with granularity q, include upper.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lower</strong> – Lower bound of the sampling range.</p></li>
+<li><p><strong>upper</strong> – Upper bound of the sampling range.</p></li>
+<li><p><strong>q</strong> – Granularity for increment.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bigdl.orca.automl.hp.loguniform">
+<span class="sig-prename descclassname"><span class="pre">bigdl.orca.automl.hp.</span></span><span class="sig-name descname"><span class="pre">loguniform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lower</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/hp.html#loguniform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.hp.loguniform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sample a float between lower and upper.
+Power distribute uniformly between log_{base}(lower) and log_{base}(upper).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lower</strong> – Lower bound of the sampling range.</p></li>
+<li><p><strong>upper</strong> – Upper bound of the sampling range.</p></li>
+<li><p><strong>base</strong> – Log base for distribution. Default to 10.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bigdl.orca.automl.hp.qloguniform">
+<span class="sig-prename descclassname"><span class="pre">bigdl.orca.automl.hp.</span></span><span class="sig-name descname"><span class="pre">qloguniform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lower</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/hp.html#qloguniform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.hp.qloguniform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sample a float between lower and upper.
+Power distribute uniformly between log_{base}(lower) and log_{base}(upper).
+Round the result to nearest value with granularity q, include upper.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lower</strong> – Lower bound of the sampling range.</p></li>
+<li><p><strong>upper</strong> – Upper bound of the sampling range.</p></li>
+<li><p><strong>q</strong> – Granularity for increment.</p></li>
+<li><p><strong>base</strong> – Log base for distribution. Default to 10.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bigdl.orca.automl.hp.randn">
+<span class="sig-prename descclassname"><span class="pre">bigdl.orca.automl.hp.</span></span><span class="sig-name descname"><span class="pre">randn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">std</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/hp.html#randn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.hp.randn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sample a float from normal distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mean</strong> – Mean of the normal distribution. Default to 0.0.</p></li>
+<li><p><strong>std</strong> – Std of the normal distribution. Default to 1.0.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bigdl.orca.automl.hp.qrandn">
+<span class="sig-prename descclassname"><span class="pre">bigdl.orca.automl.hp.</span></span><span class="sig-name descname"><span class="pre">qrandn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mean</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">std</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/hp.html#qrandn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.hp.qrandn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sample a float from normal distribution.
+Round the result to nearest value with granularity q.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mean</strong> – Mean of the normal distribution. Default to 0.0.</p></li>
+<li><p><strong>std</strong> – Std of the normal distribution. Default to 1.0.</p></li>
+<li><p><strong>q</strong> – Granularity for increment.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bigdl.orca.automl.hp.randint">
+<span class="sig-prename descclassname"><span class="pre">bigdl.orca.automl.hp.</span></span><span class="sig-name descname"><span class="pre">randint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lower</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/hp.html#randint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.hp.randint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uniformly sample integer between lower and upper. (Both inclusive)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lower</strong> – Lower bound of the sampling range.</p></li>
+<li><p><strong>upper</strong> – Upper bound of the sampling range.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bigdl.orca.automl.hp.qrandint">
+<span class="sig-prename descclassname"><span class="pre">bigdl.orca.automl.hp.</span></span><span class="sig-name descname"><span class="pre">qrandint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lower</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/hp.html#qrandint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.hp.qrandint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uniformly sample integer between lower and upper. (Both inclusive)
+Round the result to nearest value with granularity q.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lower</strong> – Lower bound of the sampling range.</p></li>
+<li><p><strong>upper</strong> – Upper bound of the sampling range.</p></li>
+<li><p><strong>q</strong> – Integer Granularity for increment.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bigdl.orca.automl.hp.choice">
+<span class="sig-prename descclassname"><span class="pre">bigdl.orca.automl.hp.</span></span><span class="sig-name descname"><span class="pre">choice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">categories</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/hp.html#choice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.hp.choice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uniformly sample from a list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>categories</strong> – A list to be sampled.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bigdl.orca.automl.hp.choice_n">
+<span class="sig-prename descclassname"><span class="pre">bigdl.orca.automl.hp.</span></span><span class="sig-name descname"><span class="pre">choice_n</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">categories</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_items</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_items</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/hp.html#choice_n"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.hp.choice_n" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sample a subset from a list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>categories</strong> – A list to be sampled</p></li>
+<li><p><strong>min_items</strong> – minimum number of items to be sampled</p></li>
+<li><p><strong>max_items</strong> – maximum number of items to be sampled</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bigdl.orca.automl.hp.sample_from">
+<span class="sig-prename descclassname"><span class="pre">bigdl.orca.automl.hp.</span></span><span class="sig-name descname"><span class="pre">sample_from</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/hp.html#sample_from"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.hp.sample_from" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sample from a function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>func</strong> – The function to be sampled.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bigdl.orca.automl.hp.grid_search">
+<span class="sig-prename descclassname"><span class="pre">bigdl.orca.automl.hp.</span></span><span class="sig-name descname"><span class="pre">grid_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/hp.html#grid_search"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.hp.grid_search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifying grid search over a list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>values</strong> – A list to be grid searched.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="orca-automl-metrics">
+<h1>orca.automl.metrics<a class="headerlink" href="#orca-automl-metrics" title="Permalink to this headline">¶</a></h1>
+<p>Evaluate unscaled metrics between y true value and y predicted value.</p>
+<span class="target" id="module-bigdl.orca.automl.metrics"></span><dl class="py function">
+<dt class="sig sig-object py" id="bigdl.orca.automl.metrics.sMAPE">
+<span class="sig-prename descclassname"><span class="pre">bigdl.orca.automl.metrics.</span></span><span class="sig-name descname"><span class="pre">sMAPE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multioutput</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raw_values'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/metrics.html#sMAPE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.metrics.sMAPE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate Symmetric mean absolute percentage error (sMAPE).</p>
+<div class="math notranslate nohighlight">
+\[\text{sMAPE} = \frac{100\%}{n} \sum_{t=1}^n \frac{|y_t-\hat{y_t}|}{|y_t|+|\hat{y_t}|}\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y_true</strong> – Array-like of shape = (n_samples, *).
+Ground truth (correct) target values.</p></li>
+<li><p><strong>y_pred</strong> – Array-like of shape = (n_samples, *).
+Estimated target values.</p></li>
+<li><p><strong>multioutput</strong> – String in [‘raw_values’, ‘uniform_average’]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Float or ndarray of floats.
+A non-negative floating point value (the best value is 0.0), or an
+array of floating point values, one for each individual target.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bigdl.orca.automl.metrics.MPE">
+<span class="sig-prename descclassname"><span class="pre">bigdl.orca.automl.metrics.</span></span><span class="sig-name descname"><span class="pre">MPE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multioutput</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raw_values'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/metrics.html#MPE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.metrics.MPE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate mean percentage error (MPE).</p>
+<div class="math notranslate nohighlight">
+\[\text{MPE} = \frac{100\%}{n}\sum_{t=1}^n \frac{y_t-\hat{y_t}}{y_t}\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y_true</strong> – Array-like of shape = (n_samples, *).
+Ground truth (correct) target values.</p></li>
+<li><p><strong>y_pred</strong> – Array-like of shape = (n_samples, *).
+Estimated target values.</p></li>
+<li><p><strong>multioutput</strong> – String in [‘raw_values’, ‘uniform_average’]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Float or ndarray of floats.
+A non-negative floating point value (the best value is 0.0), or an
+array of floating point values, one for each individual target.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bigdl.orca.automl.metrics.MAPE">
+<span class="sig-prename descclassname"><span class="pre">bigdl.orca.automl.metrics.</span></span><span class="sig-name descname"><span class="pre">MAPE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multioutput</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raw_values'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/metrics.html#MAPE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.metrics.MAPE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate mean absolute percentage error (MAPE).</p>
+<div class="math notranslate nohighlight">
+\[\text{MAPE} = \frac{100\%}{n}\sum_{t=1}^n  |\frac{y_t-\hat{y_t}}{y_t}|\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y_true</strong> – Array-like of shape = (n_samples, *).
+Ground truth (correct) target values.</p></li>
+<li><p><strong>y_pred</strong> – Array-like of shape = (n_samples, *).
+Estimated target values.</p></li>
+<li><p><strong>multioutput</strong> – String in [‘raw_values’, ‘uniform_average’]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Float or ndarray of floats.
+A non-negative floating point value (the best value is 0.0), or an
+array of floating point values, one for each individual target.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bigdl.orca.automl.metrics.MDAPE">
+<span class="sig-prename descclassname"><span class="pre">bigdl.orca.automl.metrics.</span></span><span class="sig-name descname"><span class="pre">MDAPE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multioutput</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raw_values'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/metrics.html#MDAPE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.metrics.MDAPE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate Median Absolute Percentage Error (MDAPE).</p>
+<div class="math notranslate nohighlight">
+\[\text{MDAPE} = 100\%\ median(|\frac{y_1-\hat{y_1}}{y_1}|,
+\ldots, |\frac{y_n-\hat{y_n}}{y_n}|)\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y_true</strong> – Array-like of shape = (n_samples, *).
+Ground truth (correct) target values.</p></li>
+<li><p><strong>y_pred</strong> – Array-like of shape = (n_samples, *).
+Estimated target values.</p></li>
+<li><p><strong>multioutput</strong> – String in [‘raw_values’, ‘uniform_average’]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Float or ndarray of floats.
+A non-negative floating point value (the best value is 0.0), or an
+array of floating point values, one for each individual target.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bigdl.orca.automl.metrics.sMDAPE">
+<span class="sig-prename descclassname"><span class="pre">bigdl.orca.automl.metrics.</span></span><span class="sig-name descname"><span class="pre">sMDAPE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multioutput</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raw_values'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/metrics.html#sMDAPE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.metrics.sMDAPE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate Symmetric Median Absolute Percentage Error (sMDAPE).</p>
+<div class="math notranslate nohighlight">
+\[\text{sMDAPE} = 100\%\ median(\frac{|y_1-\hat{y_1}|}{|y_1|+|\hat{y_1}|},
+\ldots, \frac{|y_n-\hat{y_n}|}{|y_n|+|\hat{y_n}|})\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y_true</strong> – Array-like of shape = (n_samples, *).
+Ground truth (correct) target values.</p></li>
+<li><p><strong>y_pred</strong> – Array-like of shape = (n_samples, *).
+Estimated target values.</p></li>
+<li><p><strong>multioutput</strong> – String in [‘raw_values’, ‘uniform_average’]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Float or ndarray of floats.
+A non-negative floating point value (the best value is 0.0), or an
+array of floating point values, one for each individual target.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bigdl.orca.automl.metrics.ME">
+<span class="sig-prename descclassname"><span class="pre">bigdl.orca.automl.metrics.</span></span><span class="sig-name descname"><span class="pre">ME</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multioutput</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raw_values'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/metrics.html#ME"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.metrics.ME" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate Mean Error (ME).</p>
+<div class="math notranslate nohighlight">
+\[\text{ME} = \frac{1}{n}\sum_{t=1}^n  y_t-\hat{y_t}\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y_true</strong> – Array-like of shape = (n_samples, *).
+Ground truth (correct) target values.</p></li>
+<li><p><strong>y_pred</strong> – Array-like of shape = (n_samples, *).
+Estimated target values.</p></li>
+<li><p><strong>multioutput</strong> – String in [‘raw_values’, ‘uniform_average’]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Float or ndarray of floats.
+A floating point value (the best value is 0.0), or an
+array of floating point values, one for each individual target.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bigdl.orca.automl.metrics.MSPE">
+<span class="sig-prename descclassname"><span class="pre">bigdl.orca.automl.metrics.</span></span><span class="sig-name descname"><span class="pre">MSPE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multioutput</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raw_values'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/metrics.html#MSPE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.metrics.MSPE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate mean squared percentage error (MSPE).</p>
+<div class="math notranslate nohighlight">
+\[\text{MSPE} = \frac{100\%}{n}\sum_{t=1}^n  (\frac{y_n-\hat{y_n}}{y_n})^2\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y_true</strong> – Array-like of shape = (n_samples, *).
+Ground truth (correct) target values.</p></li>
+<li><p><strong>y_pred</strong> – Array-like of shape = (n_samples, *).
+Estimated target values.</p></li>
+<li><p><strong>multioutput</strong> – String in [‘raw_values’, ‘uniform_average’]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Float or ndarray of floats.
+A non-negative floating point value (the best value is 0.0), or an
+array of floating point values, one for each individual target.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bigdl.orca.automl.metrics.MSLE">
+<span class="sig-prename descclassname"><span class="pre">bigdl.orca.automl.metrics.</span></span><span class="sig-name descname"><span class="pre">MSLE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multioutput</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raw_values'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/metrics.html#MSLE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.metrics.MSLE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the mean squared log error(MSLE).</p>
+<div class="math notranslate nohighlight">
+\[\text{MSLE} = \frac{1}{n}\sum_{t=1}^n (log_e(1+y_t)-log_e(1+\hat{y_t}))^2\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y_true</strong> – Array-like of shape = (n_samples, *).
+Ground truth (correct) target values.</p></li>
+<li><p><strong>y_pred</strong> – Array-like of shape = (n_samples, *).
+Estimated target values.</p></li>
+<li><p><strong>multioutput</strong> – String in [‘raw_values’, ‘uniform_average’]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Float or ndarray of floats.
+A non-negative floating point value (the best value is 0.0), or an
+array of floating point values, one for each individual target.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bigdl.orca.automl.metrics.R2">
+<span class="sig-prename descclassname"><span class="pre">bigdl.orca.automl.metrics.</span></span><span class="sig-name descname"><span class="pre">R2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multioutput</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raw_values'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/metrics.html#R2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.metrics.R2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the r2 score.</p>
+<div class="math notranslate nohighlight">
+\[R^2 = 1-\frac{\sum_{t=1}^n (y_t-\hat{y_t})^2}{\sum_{t=1}^n (y_t-\bar{y})^2}\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y_true</strong> – Array-like of shape = (n_samples, *).
+Ground truth (correct) target values.</p></li>
+<li><p><strong>y_pred</strong> – Array-like of shape = (n_samples, *).
+Estimated target values.</p></li>
+<li><p><strong>multioutput</strong> – String in [‘raw_values’, ‘uniform_average’]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Float or ndarray of floats.
+A non-negative floating point value (the best value is 1.0), or an
+array of floating point values, one for each individual target.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bigdl.orca.automl.metrics.MAE">
+<span class="sig-prename descclassname"><span class="pre">bigdl.orca.automl.metrics.</span></span><span class="sig-name descname"><span class="pre">MAE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multioutput</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raw_values'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/metrics.html#MAE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.metrics.MAE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the mean absolute error (MAE).</p>
+<div class="math notranslate nohighlight">
+\[\text{MAE} = \frac{1}{n}\sum_{t=1}^n |y_t-\hat{y_t}|\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y_true</strong> – Array-like of shape = (n_samples, *).
+Ground truth (correct) target values.</p></li>
+<li><p><strong>y_pred</strong> – Array-like of shape = (n_samples, *).
+Estimated target values.</p></li>
+<li><p><strong>multioutput</strong> – String in [‘raw_values’, ‘uniform_average’]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Float or ndarray of floats.
+A non-negative floating point value (the best value is 0.0), or an
+array of floating point values, one for each individual target.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bigdl.orca.automl.metrics.RMSE">
+<span class="sig-prename descclassname"><span class="pre">bigdl.orca.automl.metrics.</span></span><span class="sig-name descname"><span class="pre">RMSE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multioutput</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raw_values'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/metrics.html#RMSE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.metrics.RMSE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate square root of the mean squared error (RMSE).</p>
+<div class="math notranslate nohighlight">
+\[\text{RMSE} = \sqrt{(\frac{1}{n}\sum_{t=1}^n (y_t-\hat{y_t})^2)}\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y_true</strong> – Array-like of shape = (n_samples, *).
+Ground truth (correct) target values.</p></li>
+<li><p><strong>y_pred</strong> – Array-like of shape = (n_samples, *).
+Estimated target values.</p></li>
+<li><p><strong>multioutput</strong> – String in [‘raw_values’, ‘uniform_average’]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Float or ndarray of floats.
+A non-negative floating point value (the best value is 0.0), or an
+array of floating point values, one for each individual target.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bigdl.orca.automl.metrics.MSE">
+<span class="sig-prename descclassname"><span class="pre">bigdl.orca.automl.metrics.</span></span><span class="sig-name descname"><span class="pre">MSE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multioutput</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'uniform_average'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/metrics.html#MSE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.metrics.MSE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the mean squared error (MSE).</p>
+<div class="math notranslate nohighlight">
+\[\text{MSE} = \frac{1}{n}\sum_{t=1}^n (y_t-\hat{y_t})^2\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y_true</strong> – Array-like of shape = (n_samples, *).
+Ground truth (correct) target values.</p></li>
+<li><p><strong>y_pred</strong> – Array-like of shape = (n_samples, *).
+Estimated target values.</p></li>
+<li><p><strong>multioutput</strong> – String in [‘raw_values’, ‘uniform_average’]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Float or ndarray of floats.
+A non-negative floating point value (the best value is 0.0), or an
+array of floating point values, one for each individual target.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bigdl.orca.automl.metrics.Accuracy">
+<span class="sig-prename descclassname"><span class="pre">bigdl.orca.automl.metrics.</span></span><span class="sig-name descname"><span class="pre">Accuracy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multioutput</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/metrics.html#Accuracy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.metrics.Accuracy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the accuracy score (Accuracy).</p>
+<div class="math notranslate nohighlight">
+\[\text{Accuracy} = \frac{1}{n}\sum_{t=1}^n 1(y_t=\hat{y_t})\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y_true</strong> – Array-like of shape = (n_samples, *).
+Ground truth (correct) target values.</p></li>
+<li><p><strong>y_pred</strong> – Array-like of shape = (n_samples, *).
+Estimated target values.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Float or ndarray of floats.
+A non-negative floating point value (the best value is 1.0), or an
+array of floating point values, one for each individual target.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bigdl.orca.automl.metrics.Evaluator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bigdl.orca.automl.metrics.</span></span><span class="sig-name descname"><span class="pre">Evaluator</span></span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/metrics.html#Evaluator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.metrics.Evaluator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Evaluate metrics for y_true and y_pred.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.orca.automl.metrics.Evaluator.evaluate">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metric</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multioutput</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raw_values'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/metrics.html#Evaluator.evaluate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.metrics.Evaluator.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate a specific metric for y_true and y_pred.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>metric</strong> – String in [‘me’, ‘mae’, ‘mse’, ‘rmse’, ‘msle’, ‘r2’
+, ‘mpe’, ‘mape’, ‘mspe’, ‘smape’, ‘mdape’, ‘smdape’, ‘accuracy’]</p></li>
+<li><p><strong>y_true</strong> – Array-like of shape = (n_samples, *).
+Ground truth (correct) target values.</p></li>
+<li><p><strong>y_pred</strong> – Array-like of shape = (n_samples, *).
+Estimated target values.</p></li>
+<li><p><strong>multioutput</strong> – String in [‘raw_values’, ‘uniform_average’]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Float or ndarray of floats.
+A floating point value, or an
+array of floating point values, one for each individual target.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="orca-automl-auto-xgb">
+<h1>orca.automl.auto_xgb<a class="headerlink" href="#orca-automl-auto-xgb" title="Permalink to this headline">¶</a></h1>
+<p>Automatic hyperparameter optimization for XGBoost models.</p>
+<p>AutoXGBoost is inherited from AutoEstimator. You could refer to <a class="reference external" href="https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-auto-estimator">AutoEstimator API Guide</a> for more APIs.</p>
+<span class="target" id="module-bigdl.orca.automl.xgboost.auto_xgb"></span><dl class="py class">
+<dt class="sig sig-object py" id="bigdl.orca.automl.xgboost.auto_xgb.AutoXGBClassifier">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bigdl.orca.automl.xgboost.auto_xgb.</span></span><span class="sig-name descname"><span class="pre">AutoXGBClassifier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logs_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/tmp/auto_xgb_classifier_logs'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cpus_per_trial</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remote_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">xgb_configs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/xgboost/auto_xgb.html#AutoXGBClassifier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.xgboost.auto_xgb.AutoXGBClassifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bigdl.orca.automl.auto_estimator.AutoEstimator" title="bigdl.orca.automl.auto_estimator.AutoEstimator"><code class="xref py py-class docutils literal notranslate"><span class="pre">bigdl.orca.automl.auto_estimator.AutoEstimator</span></code></a></p>
+<p>Automated xgboost classifier</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">search_space</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;n_estimators&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">grid_search</span><span class="p">([</span><span class="mi">50</span><span class="p">,</span> <span class="mi">1000</span><span class="p">]),</span>
+<span class="go">                    &quot;max_depth&quot;: hp.grid_search([2, 15]),</span>
+<span class="go">                    &quot;lr&quot;: hp.loguniform(1e-4, 1e-1)}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">auto_xgb_clf</span> <span class="o">=</span> <span class="n">AutoXGBClassifier</span><span class="p">(</span><span class="n">cpus_per_trial</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+<span class="go">                                     name=&quot;auto_xgb_classifier&quot;,</span>
+<span class="go">                                     **config)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">auto_xgb_clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">),</span>
+<span class="go">                     validation_data=(X_val, y_val),</span>
+<span class="go">                     metric=&quot;error&quot;,</span>
+<span class="go">                     metric_mode=&quot;min&quot;,</span>
+<span class="go">                     n_sampling=1,</span>
+<span class="go">                     search_space=search_space)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">best_model</span> <span class="o">=</span> <span class="n">auto_xgb_clf</span><span class="o">.</span><span class="n">get_best_model</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>logs_dir</strong> – Local directory to save logs and results. It defaults to
+“/tmp/auto_xgb_classifier_logs”</p></li>
+<li><p><strong>cpus_per_trial</strong> – Int. Number of cpus for each trial. It defaults to 1.
+The value will also be assigned to n_jobs in xgboost,
+which is the number of parallel threads used to run xgboost.</p></li>
+<li><p><strong>name</strong> – Name of the auto xgboost classifier.</p></li>
+<li><p><strong>remote_dir</strong> – String. Remote directory to sync training results and checkpoints. It
+defaults to None and doesn’t take effects while running in local. While running in
+cluster, it defaults to “hdfs:///tmp/{name}”.</p></li>
+<li><p><strong>xgb_configs</strong> – Other scikit learn xgboost parameters. You may refer to
+<a class="reference external" href="https://xgboost.readthedocs.io/en/latest/python/python_api.html#module-xgboost.sklearn">https://xgboost.readthedocs.io/en/latest/python/python_api.html#module-xgboost.sklearn</a>
+for the parameter names to specify. Note that we will directly use cpus_per_trial value
+for n_jobs in xgboost and you shouldn’t specify n_jobs again.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.orca.automl.xgboost.auto_xgb.AutoXGBClassifier.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validation_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_sampling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_space</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_alg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_alg_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/xgboost/auto_xgb.html#AutoXGBClassifier.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.xgboost.auto_xgb.AutoXGBClassifier.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Automatically fit the model and search for the best hyperparameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – A Spark DataFrame, a tuple of ndarrays or a function.
+If data is a tuple of ndarrays, it should be in the form of (x, y),
+where x is training input data and y is training target data.
+If data is a function, it should takes config as argument and returns a tuple of
+ndarrays in the form of (x, y).</p></li>
+<li><p><strong>epochs</strong> – Max number of epochs to train in each trial. Defaults to 1.
+If you have also set metric_threshold, a trial will stop if either it has been
+optimized to the metric_threshold or it has been trained for {epochs} epochs.</p></li>
+<li><p><strong>validation_data</strong> – Validation data. Validation data type should be the same as data.</p></li>
+<li><p><strong>metric</strong> – String or customized evaluation metric function.
+If string, metric is the evaluation metric name to optimize, e.g. “mse”.
+If callable function, it signature should be func(y_true, y_pred), where y_true and
+y_pred are numpy ndarray. The function should return a float value as evaluation result.</p></li>
+<li><p><strong>metric_mode</strong> – One of [“min”, “max”]. “max” means greater metric value is better.
+You have to specify metric_mode if you use a customized metric function.
+You don’t have to specify metric_mode if you use the built-in metric in
+bigdl.orca.automl.metrics.Evaluator.</p></li>
+<li><p><strong>metric_threshold</strong> – a trial will be terminated when metric threshold is met</p></li>
+<li><p><strong>n_sampling</strong> – Number of times to sample from the search_space. Defaults to 1.
+If hp.grid_search is in search_space, the grid will be repeated n_sampling of times.
+If this is -1, (virtually) infinite samples are generated
+until a stopping condition is met.</p></li>
+<li><p><strong>search_space</strong> – a dict for search space</p></li>
+<li><p><strong>search_alg</strong> – str, all supported searcher provided by ray tune
+(i.e.”variant_generator”, “random”, “ax”, “dragonfly”, “skopt”,
+“hyperopt”, “bayesopt”, “bohb”, “nevergrad”, “optuna”, “zoopt” and
+“sigopt”)</p></li>
+<li><p><strong>search_alg_params</strong> – extra parameters for searcher algorithm besides search_space,
+metric and searcher mode</p></li>
+<li><p><strong>scheduler</strong> – str, all supported scheduler provided by ray tune</p></li>
+<li><p><strong>scheduler_params</strong> – parameters for scheduler</p></li>
+<li><p><strong>feature_cols</strong> – feature column names if data is Spark DataFrame.</p></li>
+<li><p><strong>label_cols</strong> – target column names if data is Spark DataFrame.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bigdl.orca.automl.xgboost.auto_xgb.AutoXGBRegressor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bigdl.orca.automl.xgboost.auto_xgb.</span></span><span class="sig-name descname"><span class="pre">AutoXGBRegressor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logs_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/tmp/auto_xgb_regressor_logs'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cpus_per_trial</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remote_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">xgb_configs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/xgboost/auto_xgb.html#AutoXGBRegressor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.xgboost.auto_xgb.AutoXGBRegressor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bigdl.orca.automl.auto_estimator.AutoEstimator" title="bigdl.orca.automl.auto_estimator.AutoEstimator"><code class="xref py py-class docutils literal notranslate"><span class="pre">bigdl.orca.automl.auto_estimator.AutoEstimator</span></code></a></p>
+<p>Automated xgboost regressor</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">search_space</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;n_estimators&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">grid_search</span><span class="p">([</span><span class="mi">800</span><span class="p">,</span> <span class="mi">1000</span><span class="p">]),</span>
+<span class="go">                    &quot;max_depth&quot;: hp.grid_search([10, 15]),</span>
+<span class="go">                    &quot;lr&quot;: hp.loguniform(1e-4, 1e-1),</span>
+<span class="go">                    &quot;min_child_weight&quot;: hp.choice([1, 2, 3]),</span>
+<span class="go">                    }</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">auto_xgb_reg</span> <span class="o">=</span> <span class="n">AutoXGBRegressor</span><span class="p">(</span><span class="n">cpus_per_trial</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+<span class="go">                                    name=&quot;auto_xgb_regressor&quot;,</span>
+<span class="go">                                    **config)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">auto_xgb_reg</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">),</span>
+<span class="go">                     validation_data=(X_val, y_val),</span>
+<span class="go">                     metric=&quot;rmse&quot;,</span>
+<span class="go">                     n_sampling=1,</span>
+<span class="go">                     search_space=search_space)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">best_model</span> <span class="o">=</span> <span class="n">auto_xgb_reg</span><span class="o">.</span><span class="n">get_best_model</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>logs_dir</strong> – Local directory to save logs and results. It defaults to
+“/tmp/auto_xgb_classifier_logs”</p></li>
+<li><p><strong>cpus_per_trial</strong> – Int. Number of cpus for each trial. The value will also be assigned
+to n_jobs, which is the number of parallel threads used to run xgboost.</p></li>
+<li><p><strong>name</strong> – Name of the auto xgboost classifier.</p></li>
+<li><p><strong>remote_dir</strong> – String. Remote directory to sync training results and checkpoints. It
+defaults to None and doesn’t take effects while running in local. While running in
+cluster, it defaults to “hdfs:///tmp/{name}”.</p></li>
+<li><p><strong>xgb_configs</strong> – Other scikit learn xgboost parameters. You may refer to
+<a class="reference external" href="https://xgboost.readthedocs.io/en/latest/python/python_api.html#module-xgboost.sklearn">https://xgboost.readthedocs.io/en/latest/python/python_api.html#module-xgboost.sklearn</a>
+for the parameter names to specify. Note that we will directly use cpus_per_trial value
+for n_jobs in xgboost and you shouldn’t specify n_jobs again.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.orca.automl.xgboost.auto_xgb.AutoXGBRegressor.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validation_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_sampling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_space</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_alg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_alg_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/orca/automl/xgboost/auto_xgb.html#AutoXGBRegressor.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.orca.automl.xgboost.auto_xgb.AutoXGBRegressor.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Automatically fit the model and search for the best hyperparameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – A Spark DataFrame, a tuple of ndarrays or a function.
+If data is a tuple of ndarrays, it should be in the form of (x, y),
+where x is training input data and y is training target data.
+If data is a function, it should takes config as argument and returns a tuple of
+ndarrays in the form of (x, y).</p></li>
+<li><p><strong>epochs</strong> – Max number of epochs to train in each trial. Defaults to 1.
+If you have also set metric_threshold, a trial will stop if either it has been
+optimized to the metric_threshold or it has been trained for {epochs} epochs.</p></li>
+<li><p><strong>validation_data</strong> – Validation data. Validation data type should be the same as data.</p></li>
+<li><p><strong>metric</strong> – String or customized evaluation metric function.
+If string, metric is the evaluation metric name to optimize, e.g. “mse”.
+If callable function, it signature should be func(y_true, y_pred), where y_true and
+y_pred are numpy ndarray. The function should return a float value as evaluation result.</p></li>
+<li><p><strong>metric_mode</strong> – One of [“min”, “max”]. “max” means greater metric value is better.
+You have to specify metric_mode if you use a customized metric function.
+You don’t have to specify metric_mode if you use the built-in metric in
+bigdl.orca.automl.metrics.Evaluator.</p></li>
+<li><p><strong>metric_threshold</strong> – a trial will be terminated when metric threshold is met</p></li>
+<li><p><strong>n_sampling</strong> – Number of times to sample from the search_space. Defaults to 1.
+If hp.grid_search is in search_space, the grid will be repeated n_sampling of times.
+If this is -1, (virtually) infinite samples are generated
+until a stopping condition is met.</p></li>
+<li><p><strong>search_space</strong> – a dict for search space</p></li>
+<li><p><strong>search_alg</strong> – str, all supported searcher provided by ray tune
+(i.e.”variant_generator”, “random”, “ax”, “dragonfly”, “skopt”,
+“hyperopt”, “bayesopt”, “bohb”, “nevergrad”, “optuna”, “zoopt” and
+“sigopt”)</p></li>
+<li><p><strong>search_alg_params</strong> – extra parameters for searcher algorithm besides search_space,
+metric and searcher mode</p></li>
+<li><p><strong>scheduler</strong> – str, all supported scheduler provided by ray tune</p></li>
+<li><p><strong>scheduler_params</strong> – parameters for scheduler</p></li>
+<li><p><strong>feature_cols</strong> – feature column names if data is Spark DataFrame.</p></li>
+<li><p><strong>label_cols</strong> – target column names if data is Spark DataFrame.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="orca.html" class="btn btn-neutral float-left" title="Orca API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../Friesian/feature.html" class="btn btn-neutral float-right" title="Friesian Feature API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

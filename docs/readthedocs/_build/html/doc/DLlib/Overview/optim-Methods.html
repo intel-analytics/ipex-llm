@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Adam &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/design-tabs.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Adam</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/doc/DLlib/Overview/optim-Methods.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="adam">
+<h1>Adam<a class="headerlink" href="#adam" title="Permalink to this headline">¶</a></h1>
+<p><strong>Scala:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">optim</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">Adam</span><span class="o">(</span><span class="n">learningRate</span><span class="k">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">3</span><span class="o">,</span> <span class="n">learningRateDecay</span><span class="k">=</span><span class="mf">0.0</span><span class="o">,</span> <span class="n">beta1</span><span class="k">=</span><span class="mf">0.9</span><span class="o">,</span> <span class="n">beta2</span><span class="k">=</span><span class="mf">0.999</span><span class="o">,</span> <span class="nc">Epsilon</span><span class="k">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">8</span><span class="o">)</span>
+</pre></div>
+</div>
+<p><strong>Python:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">optim</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="n">learningrate</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">learningrate_decay</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">beta1</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">beta2</span><span class="o">=</span><span class="mf">0.999</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span> <span class="n">bigdl_type</span><span class="o">=</span><span class="s2">&quot;float&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>An implementation of Adam optimization, first-order gradient-based optimization of stochastic  objective  functions. http://arxiv.org/pdf/1412.6980.pdf</p>
+<p><code class="docutils literal notranslate"><span class="pre">learningRate</span></code> learning rate. Default value is 1e-3.</p>
+<p><code class="docutils literal notranslate"><span class="pre">learningRateDecay</span></code> learning rate decay. Default value is 0.0.</p>
+<p><code class="docutils literal notranslate"><span class="pre">beta1</span></code> first moment coefficient. Default value is 0.9.</p>
+<p><code class="docutils literal notranslate"><span class="pre">beta2</span></code> second moment coefficient. Default value is 0.999.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Epsilon</span></code> for numerical stability. Default value is 1e-8.</p>
+<p><strong>Scala example:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span>import com.intel.analytics.bigdl.dllib.optim._
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.dllib.utils.T
+
+val optm = new Adam(learningRate=0.002)
+def rosenBrock(x: Tensor[Float]): (Float, Tensor[Float]) = {
+    // (1) compute f(x)
+    val d = x.size(1)
+
+    // x1 = x(i)
+    val x1 = Tensor[Float](d - 1).copy(x.narrow(1, 1, d - 1))
+    // x(i + 1) - x(i)^2
+    x1.cmul(x1).mul(-1).add(x.narrow(1, 2, d - 1))
+    // 100 * (x(i + 1) - x(i)^2)^2
+    x1.cmul(x1).mul(100)
+
+    // x0 = x(i)
+    val x0 = Tensor[Float](d - 1).copy(x.narrow(1, 1, d - 1))
+    // 1-x(i)
+    x0.mul(-1).add(1)
+    x0.cmul(x0)
+    // 100*(x(i+1) - x(i)^2)^2 + (1-x(i))^2
+    x1.add(x0)
+
+    val fout = x1.sum()
+
+    // (2) compute f(x)/dx
+    val dxout = Tensor[Float]().resizeAs(x).zero()
+    // df(1:D-1) = - 400*x(1:D-1).*(x(2:D)-x(1:D-1).^2) - 2*(1-x(1:D-1));
+    x1.copy(x.narrow(1, 1, d - 1))
+    x1.cmul(x1).mul(-1).add(x.narrow(1, 2, d - 1)).cmul(x.narrow(1, 1, d - 1)).mul(-400)
+    x0.copy(x.narrow(1, 1, d - 1)).mul(-1).add(1).mul(-2)
+    x1.add(x0)
+    dxout.narrow(1, 1, d - 1).copy(x1)
+
+    // df(2:D) = df(2:D) + 200*(x(2:D)-x(1:D-1).^2);
+    x0.copy(x.narrow(1, 1, d - 1))
+    x0.cmul(x0).mul(-1).add(x.narrow(1, 2, d - 1)).mul(200)
+    dxout.narrow(1, 2, d - 1).add(x0)
+
+    (fout, dxout)
+  }  
+val x = Tensor(2).fill(0)
+&gt; print(optm.optimize(rosenBrock, x))
+(0.0019999996
+0.0
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 2],[D@302d88d8)
+</pre></div>
+</div>
+<p><strong>Python example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">optim_method</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="n">learningrate</span><span class="o">=</span><span class="mf">0.002</span><span class="p">)</span>
+                  
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">Optimizer</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">mlp_model</span><span class="p">,</span>
+    <span class="n">training_rdd</span><span class="o">=</span><span class="n">train_data</span><span class="p">,</span>
+    <span class="n">criterion</span><span class="o">=</span><span class="n">ClassNLLCriterion</span><span class="p">(),</span>
+    <span class="n">optim_method</span><span class="o">=</span><span class="n">optim_method</span><span class="p">,</span>
+    <span class="n">end_trigger</span><span class="o">=</span><span class="n">MaxEpoch</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="sgd">
+<h1>SGD<a class="headerlink" href="#sgd" title="Permalink to this headline">¶</a></h1>
+<p><strong>Scala:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">optimMethod</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">SGD</span><span class="o">(</span><span class="n">learningRate</span><span class="k">=</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">3</span><span class="o">,</span><span class="n">learningRateDecay</span><span class="k">=</span><span class="mf">0.0</span><span class="o">,</span>
+                      <span class="n">weightDecay</span><span class="k">=</span><span class="mf">0.0</span><span class="o">,</span><span class="n">momentum</span><span class="k">=</span><span class="mf">0.0</span><span class="o">,</span><span class="n">dampening</span><span class="k">=</span><span class="nc">Double</span><span class="o">.</span><span class="nc">MaxValue</span><span class="o">,</span>
+                      <span class="n">nesterov</span><span class="k">=</span><span class="kc">false</span><span class="o">,</span><span class="n">learningRateSchedule</span><span class="k">=</span><span class="nc">Default</span><span class="o">(),</span>
+                      <span class="n">learningRates</span><span class="k">=</span><span class="kc">null</span><span class="o">,</span><span class="n">weightDecays</span><span class="k">=</span><span class="kc">null</span><span class="o">)</span>
+</pre></div>
+</div>
+<p><strong>Python:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">optim_method</span> <span class="o">=</span> <span class="n">SGD</span><span class="p">(</span><span class="n">learningrate</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span><span class="n">learningrate_decay</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="n">weightdecay</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+                   <span class="n">momentum</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="n">dampening</span><span class="o">=</span><span class="n">DOUBLEMAX</span><span class="p">,</span><span class="n">nesterov</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                   <span class="n">leaningrate_schedule</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">learningrates</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                   <span class="n">weightdecays</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">bigdl_type</span><span class="o">=</span><span class="s2">&quot;float&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A plain implementation of SGD which provides optimize method. After setting
+optimization method when create Optimize, Optimize will call optimization method at the end of
+each iteration.</p>
+<p><strong>Scala example:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">optimMethod</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">SGD</span><span class="o">[</span><span class="kt">Float</span><span class="o">](</span><span class="n">learningRate</span><span class="k">=</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">3</span><span class="o">,</span><span class="n">learningRateDecay</span><span class="k">=</span><span class="mf">0.0</span><span class="o">,</span>
+                               <span class="n">weightDecay</span><span class="k">=</span><span class="mf">0.0</span><span class="o">,</span><span class="n">momentum</span><span class="k">=</span><span class="mf">0.0</span><span class="o">,</span><span class="n">dampening</span><span class="k">=</span><span class="nc">Double</span><span class="o">.</span><span class="nc">MaxValue</span><span class="o">,</span>
+                               <span class="n">nesterov</span><span class="k">=</span><span class="kc">false</span><span class="o">,</span><span class="n">learningRateSchedule</span><span class="k">=</span><span class="nc">Default</span><span class="o">(),</span>
+                               <span class="n">learningRates</span><span class="k">=</span><span class="kc">null</span><span class="o">,</span><span class="n">weightDecays</span><span class="k">=</span><span class="kc">null</span><span class="o">)</span>
+<span class="n">optimizer</span><span class="o">.</span><span class="n">setOptimMethod</span><span class="o">(</span><span class="n">optimMethod</span><span class="o">)</span>
+</pre></div>
+</div>
+<p><strong>Python example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">optim_method</span> <span class="o">=</span> <span class="n">SGD</span><span class="p">(</span><span class="n">learningrate</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span><span class="n">learningrate_decay</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="n">weightdecay</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+                  <span class="n">momentum</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="n">dampening</span><span class="o">=</span><span class="n">DOUBLEMAX</span><span class="p">,</span><span class="n">nesterov</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                  <span class="n">leaningrate_schedule</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">learningrates</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                  <span class="n">weightdecays</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">bigdl_type</span><span class="o">=</span><span class="s2">&quot;float&quot;</span><span class="p">)</span>
+                  
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">Optimizer</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">mlp_model</span><span class="p">,</span>
+    <span class="n">training_rdd</span><span class="o">=</span><span class="n">train_data</span><span class="p">,</span>
+    <span class="n">criterion</span><span class="o">=</span><span class="n">ClassNLLCriterion</span><span class="p">(),</span>
+    <span class="n">optim_method</span><span class="o">=</span><span class="n">optim_method</span><span class="p">,</span>
+    <span class="n">end_trigger</span><span class="o">=</span><span class="n">MaxEpoch</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="adadelta">
+<h1>Adadelta<a class="headerlink" href="#adadelta" title="Permalink to this headline">¶</a></h1>
+<p><em>AdaDelta</em> implementation for <em>SGD</em>
+It has been proposed in <code class="docutils literal notranslate"><span class="pre">ADADELTA:</span> <span class="pre">An</span> <span class="pre">Adaptive</span> <span class="pre">Learning</span> <span class="pre">Rate</span> <span class="pre">Method</span></code>.
+http://arxiv.org/abs/1212.5701.</p>
+<p><strong>Scala:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">optimMethod</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">Adadelta</span><span class="o">(</span><span class="n">decayRate</span> <span class="k">=</span> <span class="mf">0.9</span><span class="o">,</span> <span class="nc">Epsilon</span> <span class="k">=</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">10</span><span class="o">)</span>
+</pre></div>
+</div>
+<p><strong>Python:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">optim_method</span> <span class="o">=</span> <span class="n">AdaDelta</span><span class="p">(</span><span class="n">decayrate</span> <span class="o">=</span> <span class="mf">0.9</span><span class="p">,</span> <span class="n">epsilon</span> <span class="o">=</span> <span class="mf">1e-10</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Scala example:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span><span class="o">.</span><span class="n">setOptimMethod</span><span class="o">(</span><span class="k">new</span> <span class="nc">Adadelta</span><span class="o">(</span><span class="mf">0.9</span><span class="o">,</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">10</span><span class="o">))</span>
+</pre></div>
+</div>
+<p><strong>Python example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">Optimizer</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">mlp_model</span><span class="p">,</span>
+    <span class="n">training_rdd</span><span class="o">=</span><span class="n">train_data</span><span class="p">,</span>
+    <span class="n">criterion</span><span class="o">=</span><span class="n">ClassNLLCriterion</span><span class="p">(),</span>
+    <span class="n">optim_method</span><span class="o">=</span><span class="n">Adadelta</span><span class="p">(</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.00001</span><span class="p">),</span>
+    <span class="n">end_trigger</span><span class="o">=</span><span class="n">MaxEpoch</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="rmsprop">
+<h1>RMSprop<a class="headerlink" href="#rmsprop" title="Permalink to this headline">¶</a></h1>
+<p>An implementation of RMSprop (Reference: http://arxiv.org/pdf/1308.0850v5.pdf, Sec 4.2)</p>
+<ul class="simple">
+<li><p>learningRate : learning rate</p></li>
+<li><p>learningRateDecay : learning rate decay</p></li>
+<li><p>decayRate : decayRate, also called rho</p></li>
+<li><p>Epsilon : for numerical stability</p></li>
+</ul>
+</section>
+<section id="adamax">
+<h1>Adamax<a class="headerlink" href="#adamax" title="Permalink to this headline">¶</a></h1>
+<p>An implementation of Adamax http://arxiv.org/pdf/1412.6980.pdf</p>
+<p>Arguments:</p>
+<ul class="simple">
+<li><p>learningRate : learning rate</p></li>
+<li><p>beta1 : first moment coefficient</p></li>
+<li><p>beta2 : second moment coefficient</p></li>
+<li><p>Epsilon : for numerical stability</p></li>
+</ul>
+<p>Returns:</p>
+<p>the new x vector and the function list {fx}, evaluated before the update</p>
+</section>
+<section id="adagrad">
+<h1>Adagrad<a class="headerlink" href="#adagrad" title="Permalink to this headline">¶</a></h1>
+<p><strong>Scala:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">adagrad</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">Adagrad</span><span class="o">(</span><span class="n">learningRate</span> <span class="k">=</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">3</span><span class="o">,</span>
+                          <span class="n">learningRateDecay</span> <span class="k">=</span> <span class="mf">0.0</span><span class="o">,</span>
+                          <span class="n">weightDecay</span> <span class="k">=</span> <span class="mf">0.0</span><span class="o">)</span>
+</pre></div>
+</div>
+<p>An implementation of Adagrad. See the original paper:
+<a class="reference external" href="http://jmlr.org/papers/volume12/duchi11a/duchi11a.pdf">http://jmlr.org/papers/volume12/duchi11a/duchi11a.pdf</a></p>
+<p><strong>Scala example:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span>import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.dllib.optim._
+import com.intel.analytics.bigdl.dllib.tensor._
+import com.intel.analytics.bigdl.dllib.utils.T
+
+val adagrad = new Adagrad(0.01, 0.0, 0.0)
+    def feval(x: Tensor[Float]): (Float, Tensor[Float]) = {
+      // (1) compute f(x)
+      val d = x.size(1)
+      // x1 = x(i)
+      val x1 = Tensor[Float](d - 1).copy(x.narrow(1, 1, d - 1))
+      // x(i + 1) - x(i)^2
+      x1.cmul(x1).mul(-1).add(x.narrow(1, 2, d - 1))
+      // 100 * (x(i + 1) - x(i)^2)^2
+      x1.cmul(x1).mul(100)
+      // x0 = x(i)
+      val x0 = Tensor[Float](d - 1).copy(x.narrow(1, 1, d - 1))
+      // 1-x(i)
+      x0.mul(-1).add(1)
+      x0.cmul(x0)
+      // 100*(x(i+1) - x(i)^2)^2 + (1-x(i))^2
+      x1.add(x0)
+      val fout = x1.sum()
+      // (2) compute f(x)/dx
+      val dxout = Tensor[Float]().resizeAs(x).zero()
+      // df(1:D-1) = - 400*x(1:D-1).*(x(2:D)-x(1:D-1).^2) - 2*(1-x(1:D-1));
+      x1.copy(x.narrow(1, 1, d - 1))
+      x1.cmul(x1).mul(-1).add(x.narrow(1, 2, d - 1)).cmul(x.narrow(1, 1, d - 1)).mul(-400)
+      x0.copy(x.narrow(1, 1, d - 1)).mul(-1).add(1).mul(-2)
+      x1.add(x0)
+      dxout.narrow(1, 1, d - 1).copy(x1)
+      // df(2:D) = df(2:D) + 200*(x(2:D)-x(1:D-1).^2);
+      x0.copy(x.narrow(1, 1, d - 1))
+      x0.cmul(x0).mul(-1).add(x.narrow(1, 2, d - 1)).mul(200)
+      dxout.narrow(1, 2, d - 1).add(x0)
+      (fout, dxout)
+    }
+val x = Tensor(2).fill(0)
+val config = T(&quot;learningRate&quot; -&gt; 1e-1)
+for (i &lt;- 1 to 10) {
+  adagrad.optimize(feval, x, config, config)
+}
+x after optimize: 0.27779138
+0.07226955
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2]
+</pre></div>
+</div>
+</section>
+<section id="lbfgs">
+<h1>LBFGS<a class="headerlink" href="#lbfgs" title="Permalink to this headline">¶</a></h1>
+<p><strong>Scala:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">optimMethod</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">LBFGS</span><span class="o">(</span><span class="n">maxIter</span><span class="k">=</span><span class="mi">20</span><span class="o">,</span> <span class="n">maxEval</span><span class="k">=</span><span class="nc">Double</span><span class="o">.</span><span class="nc">MaxValue</span><span class="o">,</span>
+                            <span class="n">tolFun</span><span class="k">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">5</span><span class="o">,</span> <span class="n">tolX</span><span class="k">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">9</span><span class="o">,</span> <span class="n">nCorrection</span><span class="k">=</span><span class="mi">100</span><span class="o">,</span>
+                            <span class="n">learningRate</span><span class="k">=</span><span class="mf">1.0</span><span class="o">,</span> <span class="n">lineSearch</span><span class="k">=</span><span class="nc">None</span><span class="o">,</span> <span class="n">lineSearchOptions</span><span class="k">=</span><span class="nc">None</span><span class="o">)</span>
+</pre></div>
+</div>
+<p><strong>Python:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">optim_method</span> <span class="o">=</span> <span class="n">LBFGS</span><span class="p">(</span><span class="n">max_iter</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">max_eval</span><span class="o">=</span><span class="n">Double</span><span class="o">.</span><span class="n">MaxValue</span><span class="p">,</span> \
+                 <span class="n">tol_fun</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">tol_x</span><span class="o">=</span><span class="mf">1e-9</span><span class="p">,</span> <span class="n">n_correction</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> \
+                 <span class="n">learning_rate</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">line_search</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">line_search_options</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This implementation of L-BFGS relies on a user-provided line search function
+(state.lineSearch). If this function is not provided, then a simple learningRate
+is used to produce fixed size steps. Fixed size steps are much less costly than line
+searches, and can be useful for stochastic problems.</p>
+<p>The learning rate is used even when a line search is provided.This is also useful for
+large-scale stochastic problems, where opfunc is a noisy approximation of f(x). In that
+case, the learning rate allows a reduction of confidence in the step size.</p>
+<p><strong>Parameters:</strong></p>
+<ul class="simple">
+<li><p>maxIter - Maximum number of iterations allowed. Default: 20</p></li>
+<li><p>maxEval - Maximum number of function evaluations. Default: Double.MaxValue</p></li>
+<li><p>tolFun - Termination tolerance on the first-order optimality. Default: 1e-5</p></li>
+<li><p>tolX - Termination tol on progress in terms of func/param changes. Default: 1e-9</p></li>
+<li><p>learningRate - the learning rate. Default: 1.0</p></li>
+<li><p>lineSearch - A line search function. Default: None</p></li>
+<li><p>lineSearchOptions - If no line search provided, then a fixed step size is used. Default: None</p></li>
+</ul>
+<p><strong>Scala example:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">optimMethod</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">LBFGS</span><span class="o">(</span><span class="n">maxIter</span><span class="k">=</span><span class="mi">20</span><span class="o">,</span> <span class="n">maxEval</span><span class="k">=</span><span class="nc">Double</span><span class="o">.</span><span class="nc">MaxValue</span><span class="o">,</span>
+                            <span class="n">tolFun</span><span class="k">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">5</span><span class="o">,</span> <span class="n">tolX</span><span class="k">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">9</span><span class="o">,</span> <span class="n">nCorrection</span><span class="k">=</span><span class="mi">100</span><span class="o">,</span>
+                            <span class="n">learningRate</span><span class="k">=</span><span class="mf">1.0</span><span class="o">,</span> <span class="n">lineSearch</span><span class="k">=</span><span class="nc">None</span><span class="o">,</span> <span class="n">lineSearchOptions</span><span class="k">=</span><span class="nc">None</span><span class="o">)</span>
+<span class="n">optimizer</span><span class="o">.</span><span class="n">setOptimMethod</span><span class="o">(</span><span class="n">optimMethod</span><span class="o">)</span>
+</pre></div>
+</div>
+<p><strong>Python example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">optim_method</span> <span class="o">=</span> <span class="n">LBFGS</span><span class="p">(</span><span class="n">max_iter</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">max_eval</span><span class="o">=</span><span class="n">DOUBLEMAX</span><span class="p">,</span> \
+                 <span class="n">tol_fun</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">tol_x</span><span class="o">=</span><span class="mf">1e-9</span><span class="p">,</span> <span class="n">n_correction</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> \
+                 <span class="n">learning_rate</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">line_search</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">line_search_options</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+                  
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">Optimizer</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">mlp_model</span><span class="p">,</span>
+    <span class="n">training_rdd</span><span class="o">=</span><span class="n">train_data</span><span class="p">,</span>
+    <span class="n">criterion</span><span class="o">=</span><span class="n">ClassNLLCriterion</span><span class="p">(),</span>
+    <span class="n">optim_method</span><span class="o">=</span><span class="n">optim_method</span><span class="p">,</span>
+    <span class="n">end_trigger</span><span class="o">=</span><span class="n">MaxEpoch</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="ftrl">
+<h1>Ftrl<a class="headerlink" href="#ftrl" title="Permalink to this headline">¶</a></h1>
+<p><strong>Scala:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">optimMethod</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">Ftrl</span><span class="o">(</span>
+  <span class="n">learningRate</span> <span class="k">=</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">3</span><span class="o">,</span> <span class="n">learningRatePower</span> <span class="k">=</span> <span class="o">-</span><span class="mf">0.5</span><span class="o">,</span>
+  <span class="n">initialAccumulatorValue</span> <span class="k">=</span> <span class="mf">0.1</span><span class="o">,</span> <span class="n">l1RegularizationStrength</span> <span class="k">=</span> <span class="mf">0.0</span><span class="o">,</span>
+  <span class="n">l2RegularizationStrength</span> <span class="k">=</span> <span class="mf">0.0</span><span class="o">,</span> <span class="n">l2ShrinkageRegularizationStrength</span> <span class="k">=</span> <span class="mf">0.0</span><span class="o">)</span>
+</pre></div>
+</div>
+<p><strong>Python:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">optim_method</span> <span class="o">=</span> <span class="n">Ftrl</span><span class="p">(</span><span class="n">learningrate</span> <span class="o">=</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="n">learningrate_power</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> \
+                 <span class="n">initial_accumulator_value</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">l1_regularization_strength</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> \
+                 <span class="n">l2_regularization_strength</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">l2_shrinkage_regularization_strength</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>An implementation of (Ftrl)[https://www.eecs.tufts.edu/~dsculley/papers/ad-click-prediction.pdf.]
+Support L1 penalty, L2 penalty and shrinkage-type L2 penalty.</p>
+<p><strong>Parameters:</strong></p>
+<ul class="simple">
+<li><p>learningRate: learning rate</p></li>
+<li><p>learningRatePower: double, must be less or equal to zero. Default is -0.5.</p></li>
+<li><p>initialAccumulatorValue: double, the starting value for accumulators, require zero or positive values. Default is 0.1.</p></li>
+<li><p>l1RegularizationStrength: double, must be greater or equal to zero. Default is zero.</p></li>
+<li><p>l2RegularizationStrength: double, must be greater or equal to zero. Default is zero.</p></li>
+<li><p>l2ShrinkageRegularizationStrength: double, must be greater or equal to zero. Default is zero. This differs from l2RegularizationStrength above. L2 above is a stabilization penalty, whereas this one is a magnitude penalty.</p></li>
+</ul>
+<p><strong>Scala example:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">optimMethod</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">Ftrl</span><span class="o">(</span><span class="n">learningRate</span> <span class="k">=</span> <span class="mi">5</span><span class="n">e</span><span class="o">-</span><span class="mi">3</span><span class="o">,</span> <span class="n">learningRatePower</span> <span class="k">=</span> <span class="o">-</span><span class="mf">0.5</span><span class="o">,</span>
+  <span class="n">initialAccumulatorValue</span> <span class="k">=</span> <span class="mf">0.01</span><span class="o">)</span>
+<span class="n">optimizer</span><span class="o">.</span><span class="n">setOptimMethod</span><span class="o">(</span><span class="n">optimMethod</span><span class="o">)</span>
+</pre></div>
+</div>
+<p><strong>Python example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">optim_method</span> <span class="o">=</span> <span class="n">Ftrl</span><span class="p">(</span><span class="n">learningrate</span> <span class="o">=</span> <span class="mf">5e-3</span><span class="p">,</span> \
+    <span class="n">learningrate_power</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> \
+    <span class="n">initial_accumulator_value</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">)</span>
+                  
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">Optimizer</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">mlp_model</span><span class="p">,</span>
+    <span class="n">training_rdd</span><span class="o">=</span><span class="n">train_data</span><span class="p">,</span>
+    <span class="n">criterion</span><span class="o">=</span><span class="n">ClassNLLCriterion</span><span class="p">(),</span>
+    <span class="n">optim_method</span><span class="o">=</span><span class="n">optim_method</span><span class="p">,</span>
+    <span class="n">end_trigger</span><span class="o">=</span><span class="n">MaxEpoch</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="paralleladam">
+<h1>ParallelAdam<a class="headerlink" href="#paralleladam" title="Permalink to this headline">¶</a></h1>
+<p>Multi-Thread version of <a class="reference external" href="#adam">Adam</a>.</p>
+<p><strong>Scala:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">optim</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">ParallelAdam</span><span class="o">(</span><span class="n">learningRate</span><span class="k">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">3</span><span class="o">,</span> <span class="n">learningRateDecay</span><span class="k">=</span><span class="mf">0.0</span><span class="o">,</span> <span class="n">beta1</span><span class="k">=</span><span class="mf">0.9</span><span class="o">,</span> <span class="n">beta2</span><span class="k">=</span><span class="mf">0.999</span><span class="o">,</span> <span class="nc">Epsilon</span><span class="k">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">8</span><span class="o">,</span> <span class="n">parallelNum</span><span class="k">=</span><span class="nc">Engine</span><span class="o">.</span><span class="n">coreNumber</span><span class="o">())</span>
+</pre></div>
+</div>
+<p><strong>Python:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">optim</span> <span class="o">=</span> <span class="n">ParallelAdam</span><span class="p">(</span><span class="n">learningrate</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">learningrate_decay</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">beta1</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">beta2</span><span class="o">=</span><span class="mf">0.999</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span> <span class="n">parallel_num</span><span class="o">=</span><span class="n">get_node_and_core_number</span><span class="p">()[</span><span class="mi">1</span><span class="p">],</span> <span class="n">bigdl_type</span><span class="o">=</span><span class="s2">&quot;float&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

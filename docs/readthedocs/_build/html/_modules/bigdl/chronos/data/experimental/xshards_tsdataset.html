@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bigdl.chronos.data.experimental.xshards_tsdataset &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+        <script src="../../../../../_static/clipboard.min.js"></script>
+        <script src="../../../../../_static/copybutton.js"></script>
+        <script src="../../../../../_static/tabs.js"></script>
+        <script src="../../../../../_static/design-tabs.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../index.html">Module code</a> &raquo;</li>
+      <li>bigdl.chronos.data.experimental.xshards_tsdataset</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bigdl.chronos.data.experimental.xshards_tsdataset</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright 2016 The BigDL Authors.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+
+
+<span class="kn">from</span> <span class="nn">bigdl.orca.data.shard</span> <span class="k">import</span> <span class="n">SparkXShards</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca.learn.utils</span> <span class="k">import</span> <span class="n">dataframe_to_xshards_of_pandas_df</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.data.utils.utils</span> <span class="k">import</span> <span class="n">_to_list</span><span class="p">,</span> <span class="n">_check_type</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.data.utils.roll</span> <span class="k">import</span> <span class="n">roll_timeseries_dataframe</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.data.utils.impute</span> <span class="k">import</span> <span class="n">impute_timeseries_dataframe</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.data.utils.split</span> <span class="k">import</span> <span class="n">split_timeseries_dataframe</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.data.experimental.utils</span> <span class="k">import</span> <span class="n">add_row</span><span class="p">,</span> <span class="n">transform_to_dict</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.data.utils.scale</span> <span class="k">import</span> <span class="n">unscale_timeseries_numpy</span>
+
+
+<span class="n">_DEFAULT_ID_COL_NAME</span> <span class="o">=</span> <span class="s2">&quot;id&quot;</span>
+<span class="n">_DEFAULT_ID_PLACEHOLDER</span> <span class="o">=</span> <span class="s2">&quot;0&quot;</span>
+
+
+<div class="viewcode-block" id="XShardsTSDataset"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset">[docs]</a><span class="k">class</span> <span class="nc">XShardsTSDataset</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shards</span><span class="p">,</span> <span class="o">**</span><span class="n">schema</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        XShardTSDataset is an abstract of time series dataset with distributed fashion.</span>
+<span class="sd">        Cascade call is supported for most of the transform methods.</span>
+<span class="sd">        XShardTSDataset will partition the dataset by id_col, which is experimental.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shards</span> <span class="o">=</span> <span class="n">shards</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id_col</span> <span class="o">=</span> <span class="n">schema</span><span class="p">[</span><span class="s2">&quot;id_col&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span> <span class="o">=</span> <span class="n">schema</span><span class="p">[</span><span class="s2">&quot;dt_col&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">feature_col</span> <span class="o">=</span> <span class="n">schema</span><span class="p">[</span><span class="s2">&quot;feature_col&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_col</span> <span class="o">=</span> <span class="n">schema</span><span class="p">[</span><span class="s2">&quot;target_col&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scaler_index</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_col</span><span class="p">))]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">numpy_shards</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_id_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">shards</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">id_col</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+
+<div class="viewcode-block" id="XShardsTSDataset.from_xshards"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.from_xshards">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">from_xshards</span><span class="p">(</span><span class="n">shards</span><span class="p">,</span>
+                     <span class="n">dt_col</span><span class="p">,</span>
+                     <span class="n">target_col</span><span class="p">,</span>
+                     <span class="n">id_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">extra_feature_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">with_split</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                     <span class="n">val_ratio</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                     <span class="n">test_ratio</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                     <span class="n">largest_look_back</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                     <span class="n">largest_horizon</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Initialize xshardtsdataset(s) from xshard pandas dataframe.</span>
+
+<span class="sd">        :param shards: an xshards pandas dataframe for your raw time series data.</span>
+<span class="sd">        :param dt_col: a str indicates the col name of datetime</span>
+<span class="sd">               column in the input data frame.</span>
+<span class="sd">        :param target_col: a str or list indicates the col name of target column</span>
+<span class="sd">               in the input data frame.</span>
+<span class="sd">        :param id_col: (optional) a str indicates the col name of dataframe id. If</span>
+<span class="sd">               it is not explicitly stated, then the data is interpreted as only</span>
+<span class="sd">               containing a single id.</span>
+<span class="sd">        :param extra_feature_col: (optional) a str or list indicates the col name</span>
+<span class="sd">               of extra feature columns that needs to predict the target column.</span>
+<span class="sd">        :param with_split: (optional) bool, states if we need to split the dataframe</span>
+<span class="sd">               to train, validation and test set. The value defaults to False.</span>
+<span class="sd">        :param val_ratio: (optional) float, validation ratio. Only effective when</span>
+<span class="sd">               with_split is set to True. The value defaults to 0.</span>
+<span class="sd">        :param test_ratio: (optional) float, test ratio. Only effective when with_split</span>
+<span class="sd">               is set to True. The value defaults to 0.1.</span>
+<span class="sd">        :param largest_look_back: (optional) int, the largest length to look back.</span>
+<span class="sd">               Only effective when with_split is set to True. The value defaults to 0.</span>
+<span class="sd">        :param largest_horizon: (optional) int, the largest num of steps to look</span>
+<span class="sd">               forward. Only effective when with_split is set to True. The value defaults</span>
+<span class="sd">               to 1.</span>
+
+<span class="sd">        :return: a XShardTSDataset instance when with_split is set to False,</span>
+<span class="sd">                 three XShardTSDataset instances when with_split is set to True.</span>
+
+<span class="sd">        Create a xshardtsdataset instance by:</span>
+
+<span class="sd">        &gt;&gt;&gt; # Here is a df example:</span>
+<span class="sd">        &gt;&gt;&gt; # id        datetime      value   &quot;extra feature 1&quot;   &quot;extra feature 2&quot;</span>
+<span class="sd">        &gt;&gt;&gt; # 00        2019-01-01    1.9     1                   2</span>
+<span class="sd">        &gt;&gt;&gt; # 01        2019-01-01    2.3     0                   9</span>
+<span class="sd">        &gt;&gt;&gt; # 00        2019-01-02    2.4     3                   4</span>
+<span class="sd">        &gt;&gt;&gt; # 01        2019-01-02    2.6     0                   2</span>
+<span class="sd">        &gt;&gt;&gt; from bigdl.orca.data.pandas import read_csv</span>
+<span class="sd">        &gt;&gt;&gt; shards = read_csv(csv_path)</span>
+<span class="sd">        &gt;&gt;&gt; tsdataset = XShardsTSDataset.from_xshards(shards, dt_col=&quot;datetime&quot;,</span>
+<span class="sd">        &gt;&gt;&gt;                                           target_col=&quot;value&quot;, id_col=&quot;id&quot;,</span>
+<span class="sd">        &gt;&gt;&gt;                                           extra_feature_col=[&quot;extra feature 1&quot;,</span>
+<span class="sd">        &gt;&gt;&gt;                                                              &quot;extra feature 2&quot;])</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">_check_type</span><span class="p">(</span><span class="n">shards</span><span class="p">,</span> <span class="s2">&quot;shards&quot;</span><span class="p">,</span> <span class="n">SparkXShards</span><span class="p">)</span>
+
+        <span class="n">target_col</span> <span class="o">=</span> <span class="n">_to_list</span><span class="p">(</span><span class="n">target_col</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;target_col&quot;</span><span class="p">)</span>
+        <span class="n">feature_col</span> <span class="o">=</span> <span class="n">_to_list</span><span class="p">(</span><span class="n">extra_feature_col</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;extra_feature_col&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">id_col</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">shards</span> <span class="o">=</span> <span class="n">shards</span><span class="o">.</span><span class="n">transform_shard</span><span class="p">(</span><span class="n">add_row</span><span class="p">,</span>
+                                            <span class="n">_DEFAULT_ID_COL_NAME</span><span class="p">,</span>
+                                            <span class="n">_DEFAULT_ID_PLACEHOLDER</span><span class="p">)</span>
+            <span class="n">id_col</span> <span class="o">=</span> <span class="n">_DEFAULT_ID_COL_NAME</span>
+
+        <span class="c1"># repartition to id</span>
+        <span class="n">shards</span> <span class="o">=</span> <span class="n">shards</span><span class="o">.</span><span class="n">partition_by</span><span class="p">(</span><span class="n">cols</span><span class="o">=</span><span class="n">id_col</span><span class="p">,</span>
+                                     <span class="n">num_partitions</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">shards</span><span class="p">[</span><span class="n">id_col</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()))</span>
+
+        <span class="k">if</span> <span class="n">with_split</span><span class="p">:</span>
+            <span class="n">tsdataset_shards</span>\
+                <span class="o">=</span> <span class="n">shards</span><span class="o">.</span><span class="n">transform_shard</span><span class="p">(</span><span class="n">split_timeseries_dataframe</span><span class="p">,</span>
+                                         <span class="n">id_col</span><span class="p">,</span> <span class="n">val_ratio</span><span class="p">,</span> <span class="n">test_ratio</span><span class="p">,</span>
+                                         <span class="n">largest_look_back</span><span class="p">,</span> <span class="n">largest_horizon</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">XShardsTSDataset</span><span class="p">(</span><span class="n">shards</span><span class="o">=</span><span class="n">tsdataset_shards</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                                     <span class="n">id_col</span><span class="o">=</span><span class="n">id_col</span><span class="p">,</span>
+                                     <span class="n">dt_col</span><span class="o">=</span><span class="n">dt_col</span><span class="p">,</span>
+                                     <span class="n">target_col</span><span class="o">=</span><span class="n">target_col</span><span class="p">,</span>
+                                     <span class="n">feature_col</span><span class="o">=</span><span class="n">feature_col</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)]</span>
+
+        <span class="k">return</span> <span class="n">XShardsTSDataset</span><span class="p">(</span><span class="n">shards</span><span class="o">=</span><span class="n">shards</span><span class="p">,</span>
+                                <span class="n">id_col</span><span class="o">=</span><span class="n">id_col</span><span class="p">,</span>
+                                <span class="n">dt_col</span><span class="o">=</span><span class="n">dt_col</span><span class="p">,</span>
+                                <span class="n">target_col</span><span class="o">=</span><span class="n">target_col</span><span class="p">,</span>
+                                <span class="n">feature_col</span><span class="o">=</span><span class="n">feature_col</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="XShardsTSDataset.from_sparkdf"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.from_sparkdf">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">from_sparkdf</span><span class="p">(</span><span class="n">df</span><span class="p">,</span>
+                     <span class="n">dt_col</span><span class="p">,</span>
+                     <span class="n">target_col</span><span class="p">,</span>
+                     <span class="n">id_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">extra_feature_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">with_split</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                     <span class="n">val_ratio</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                     <span class="n">test_ratio</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                     <span class="n">largest_look_back</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                     <span class="n">largest_horizon</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Initialize xshardtsdataset(s) from Spark Dataframe.</span>
+
+<span class="sd">        :param df: an Spark DataFrame for your raw time series data.</span>
+<span class="sd">        :param dt_col: a str indicates the col name of datetime</span>
+<span class="sd">               column in the input data frame.</span>
+<span class="sd">        :param target_col: a str or list indicates the col name of target column</span>
+<span class="sd">               in the input data frame.</span>
+<span class="sd">        :param id_col: (optional) a str indicates the col name of dataframe id. If</span>
+<span class="sd">               it is not explicitly stated, then the data is interpreted as only</span>
+<span class="sd">               containing a single id.</span>
+<span class="sd">        :param extra_feature_col: (optional) a str or list indicates the col name</span>
+<span class="sd">               of extra feature columns that needs to predict the target column.</span>
+<span class="sd">        :param with_split: (optional) bool, states if we need to split the dataframe</span>
+<span class="sd">               to train, validation and test set. The value defaults to False.</span>
+<span class="sd">        :param val_ratio: (optional) float, validation ratio. Only effective when</span>
+<span class="sd">               with_split is set to True. The value defaults to 0.</span>
+<span class="sd">        :param test_ratio: (optional) float, test ratio. Only effective when with_split</span>
+<span class="sd">               is set to True. The value defaults to 0.1.</span>
+<span class="sd">        :param largest_look_back: (optional) int, the largest length to look back.</span>
+<span class="sd">               Only effective when with_split is set to True. The value defaults to 0.</span>
+<span class="sd">        :param largest_horizon: (optional) int, the largest num of steps to look</span>
+<span class="sd">               forward. Only effective when with_split is set to True. The value defaults</span>
+<span class="sd">               to 1.</span>
+
+<span class="sd">        :return: a XShardTSDataset instance when with_split is set to False,</span>
+<span class="sd">                 three XShardTSDataset instances when with_split is set to True.</span>
+
+<span class="sd">        Create a xshardtsdataset instance by:</span>
+
+<span class="sd">        &gt;&gt;&gt; # Here is a df example:</span>
+<span class="sd">        &gt;&gt;&gt; # id        datetime      value   &quot;extra feature 1&quot;   &quot;extra feature 2&quot;</span>
+<span class="sd">        &gt;&gt;&gt; # 00        2019-01-01    1.9     1                   2</span>
+<span class="sd">        &gt;&gt;&gt; # 01        2019-01-01    2.3     0                   9</span>
+<span class="sd">        &gt;&gt;&gt; # 00        2019-01-02    2.4     3                   4</span>
+<span class="sd">        &gt;&gt;&gt; # 01        2019-01-02    2.6     0                   2</span>
+<span class="sd">        &gt;&gt;&gt; df = &lt;pyspark.sql.dataframe.DataFrame&gt;</span>
+<span class="sd">        &gt;&gt;&gt; tsdataset = XShardsTSDataset.from_xshards(df, dt_col=&quot;datetime&quot;,</span>
+<span class="sd">        &gt;&gt;&gt;                                           target_col=&quot;value&quot;, id_col=&quot;id&quot;,</span>
+<span class="sd">        &gt;&gt;&gt;                                           extra_feature_col=[&quot;extra feature 1&quot;,</span>
+<span class="sd">        &gt;&gt;&gt;                                                              &quot;extra feature 2&quot;])</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="kn">from</span> <span class="nn">pyspark.sql.dataframe</span> <span class="k">import</span> <span class="n">DataFrame</span>
+        <span class="n">_check_type</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="s2">&quot;df&quot;</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">)</span>
+
+        <span class="n">target_col</span> <span class="o">=</span> <span class="n">_to_list</span><span class="p">(</span><span class="n">target_col</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;target_col&quot;</span><span class="p">)</span>
+        <span class="n">feature_col</span> <span class="o">=</span> <span class="n">_to_list</span><span class="p">(</span><span class="n">extra_feature_col</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;extra_feature_col&quot;</span><span class="p">)</span>
+        <span class="n">all_col</span> <span class="o">=</span> <span class="n">target_col</span> <span class="o">+</span> <span class="n">feature_col</span> <span class="o">+</span> <span class="n">_to_list</span><span class="p">(</span><span class="n">id_col</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;id_col&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="n">dt_col</span><span class="p">]</span>
+
+        <span class="n">shards</span> <span class="o">=</span> <span class="n">dataframe_to_xshards_of_pandas_df</span><span class="p">(</span><span class="n">df</span><span class="p">,</span>
+                                                   <span class="n">feature_cols</span><span class="o">=</span><span class="n">all_col</span><span class="p">,</span>
+                                                   <span class="n">label_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                                   <span class="n">accept_str_col</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">id_col</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">shards</span> <span class="o">=</span> <span class="n">shards</span><span class="o">.</span><span class="n">transform_shard</span><span class="p">(</span><span class="n">add_row</span><span class="p">,</span>
+                                            <span class="n">_DEFAULT_ID_COL_NAME</span><span class="p">,</span>
+                                            <span class="n">_DEFAULT_ID_PLACEHOLDER</span><span class="p">)</span>
+            <span class="n">id_col</span> <span class="o">=</span> <span class="n">_DEFAULT_ID_COL_NAME</span>
+
+        <span class="c1"># repartition to id</span>
+        <span class="n">shards</span> <span class="o">=</span> <span class="n">shards</span><span class="o">.</span><span class="n">partition_by</span><span class="p">(</span><span class="n">cols</span><span class="o">=</span><span class="n">id_col</span><span class="p">,</span>
+                                     <span class="n">num_partitions</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">shards</span><span class="p">[</span><span class="n">id_col</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()))</span>
+
+        <span class="k">if</span> <span class="n">with_split</span><span class="p">:</span>
+            <span class="n">tsdataset_shards</span>\
+                <span class="o">=</span> <span class="n">shards</span><span class="o">.</span><span class="n">transform_shard</span><span class="p">(</span><span class="n">split_timeseries_dataframe</span><span class="p">,</span>
+                                         <span class="n">id_col</span><span class="p">,</span> <span class="n">val_ratio</span><span class="p">,</span> <span class="n">test_ratio</span><span class="p">,</span>
+                                         <span class="n">largest_look_back</span><span class="p">,</span> <span class="n">largest_horizon</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">XShardsTSDataset</span><span class="p">(</span><span class="n">shards</span><span class="o">=</span><span class="n">tsdataset_shards</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                                     <span class="n">id_col</span><span class="o">=</span><span class="n">id_col</span><span class="p">,</span>
+                                     <span class="n">dt_col</span><span class="o">=</span><span class="n">dt_col</span><span class="p">,</span>
+                                     <span class="n">target_col</span><span class="o">=</span><span class="n">target_col</span><span class="p">,</span>
+                                     <span class="n">feature_col</span><span class="o">=</span><span class="n">feature_col</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)]</span>
+
+        <span class="k">return</span> <span class="n">XShardsTSDataset</span><span class="p">(</span><span class="n">shards</span><span class="o">=</span><span class="n">shards</span><span class="p">,</span>
+                                <span class="n">id_col</span><span class="o">=</span><span class="n">id_col</span><span class="p">,</span>
+                                <span class="n">dt_col</span><span class="o">=</span><span class="n">dt_col</span><span class="p">,</span>
+                                <span class="n">target_col</span><span class="o">=</span><span class="n">target_col</span><span class="p">,</span>
+                                <span class="n">feature_col</span><span class="o">=</span><span class="n">feature_col</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="XShardsTSDataset.roll"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.roll">[docs]</a>    <span class="k">def</span> <span class="nf">roll</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+             <span class="n">lookback</span><span class="p">,</span>
+             <span class="n">horizon</span><span class="p">,</span>
+             <span class="n">feature_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">target_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">id_sensitive</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Sampling by rolling for machine learning/deep learning models.</span>
+
+<span class="sd">        :param lookback: int, lookback value.</span>
+<span class="sd">        :param horizon: int or list,</span>
+<span class="sd">               if `horizon` is an int, we will sample `horizon` step</span>
+<span class="sd">               continuously after the forecasting point.</span>
+<span class="sd">               if `horizon` is a list, we will sample discretely according</span>
+<span class="sd">               to the input list.</span>
+<span class="sd">               specially, when `horizon` is set to 0, ground truth will be generated as None.</span>
+<span class="sd">        :param feature_col: str or list, indicates the feature col name. Default to None,</span>
+<span class="sd">               where we will take all available feature in rolling.</span>
+<span class="sd">        :param target_col: str or list, indicates the target col name. Default to None,</span>
+<span class="sd">               where we will take all target in rolling. it should be a subset of target_col</span>
+<span class="sd">               you used to initialize the xshardtsdataset.</span>
+<span class="sd">        :param id_sensitive: bool,</span>
+<span class="sd">               |if `id_sensitive` is False, we will rolling on each id&#39;s sub dataframe</span>
+<span class="sd">               |and fuse the sampings.</span>
+<span class="sd">               |The shape of rolling will be</span>
+<span class="sd">               |x: (num_sample, lookback, num_feature_col + num_target_col)</span>
+<span class="sd">               |y: (num_sample, horizon, num_target_col)</span>
+<span class="sd">               |where num_sample is the summation of sample number of each dataframe</span>
+<span class="sd">               |if `id_sensitive` is True, we have not implement this currently.</span>
+
+<span class="sd">        :return: the xshardtsdataset instance.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span>
+        <span class="k">if</span> <span class="n">id_sensitive</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;id_sensitive option has not been implemented.&quot;</span><span class="p">)</span>
+        <span class="n">feature_col</span> <span class="o">=</span> <span class="n">_to_list</span><span class="p">(</span><span class="n">feature_col</span><span class="p">,</span> <span class="s2">&quot;feature_col&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">feature_col</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> \
+            <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_col</span>
+        <span class="n">target_col</span> <span class="o">=</span> <span class="n">_to_list</span><span class="p">(</span><span class="n">target_col</span><span class="p">,</span> <span class="s2">&quot;target_col&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">target_col</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> \
+            <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_col</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">numpy_shards</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shards</span><span class="o">.</span><span class="n">transform_shard</span><span class="p">(</span><span class="n">roll_timeseries_dataframe</span><span class="p">,</span>
+                                                        <span class="kc">None</span><span class="p">,</span> <span class="n">lookback</span><span class="p">,</span> <span class="n">horizon</span><span class="p">,</span>
+                                                        <span class="n">feature_col</span><span class="p">,</span> <span class="n">target_col</span><span class="p">,</span>
+                                                        <span class="bp">self</span><span class="o">.</span><span class="n">id_col</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scaler_index</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_col</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">target_col</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">target_col</span><span class="p">))]</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="XShardsTSDataset.scale"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.scale">[docs]</a>    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scaler</span><span class="p">,</span> <span class="n">fit</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Scale the time series dataset&#39;s feature column and target column.</span>
+
+<span class="sd">        :param scaler: a dictionary of scaler instance, where keys are id name</span>
+<span class="sd">               and values are corresponding scaler instance. e.g. if you have</span>
+<span class="sd">               2 ids called &quot;id1&quot; and &quot;id2&quot;, a legal scaler input can be</span>
+<span class="sd">               {&quot;id1&quot;: StandardScaler(), &quot;id2&quot;: StandardScaler()}</span>
+<span class="sd">        :param fit: if we need to fit the scaler. Typically, the value should</span>
+<span class="sd">               be set to True for training set, while False for validation and</span>
+<span class="sd">               test set. The value is defaulted to True.</span>
+
+<span class="sd">        :return: the xshardtsdataset instance.</span>
+
+<span class="sd">        Assume there is a training set tsdata and a test set tsdata_test.</span>
+<span class="sd">        scale() should be called first on training set with default value fit=True,</span>
+<span class="sd">        then be called on test set with the same scaler and fit=False.</span>
+
+<span class="sd">        &gt;&gt;&gt; from sklearn.preprocessing import StandardScaler</span>
+<span class="sd">        &gt;&gt;&gt; scaler = {&quot;id1&quot;: StandardScaler(), &quot;id2&quot;: StandardScaler()}</span>
+<span class="sd">        &gt;&gt;&gt; tsdata.scale(scaler, fit=True)</span>
+<span class="sd">        &gt;&gt;&gt; tsdata_test.scale(scaler, fit=False)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">def</span> <span class="nf">_fit</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">id_col</span><span class="p">,</span> <span class="n">scaler</span><span class="p">,</span> <span class="n">feature_col</span><span class="p">,</span> <span class="n">target_col</span><span class="p">):</span>
+            <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">            This function is used to fit scaler dictionary on each shard.</span>
+<span class="sd">            returns a dictionary of id-scaler pair for each shard.</span>
+
+<span class="sd">            Note: this function will not transform the shard.</span>
+<span class="sd">            &#39;&#39;&#39;</span>
+            <span class="n">scaler_for_this_id</span> <span class="o">=</span> <span class="n">scaler</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="n">id_col</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+            <span class="n">df</span><span class="p">[</span><span class="n">target_col</span> <span class="o">+</span> <span class="n">feature_col</span><span class="p">]</span> <span class="o">=</span> <span class="n">scaler_for_this_id</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">target_col</span> <span class="o">+</span> <span class="n">feature_col</span><span class="p">])</span>
+
+            <span class="k">return</span> <span class="p">{</span><span class="n">id_col</span><span class="p">:</span> <span class="n">df</span><span class="p">[</span><span class="n">id_col</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;scaler&quot;</span><span class="p">:</span> <span class="n">scaler_for_this_id</span><span class="p">}</span>
+
+        <span class="k">def</span> <span class="nf">_transform</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">id_col</span><span class="p">,</span> <span class="n">scaler</span><span class="p">,</span> <span class="n">feature_col</span><span class="p">,</span> <span class="n">target_col</span><span class="p">):</span>
+            <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">            This function is used to transform the shard by fitted scaler.</span>
+
+<span class="sd">            Note: this function will not fit the scaler.</span>
+<span class="sd">            &#39;&#39;&#39;</span>
+            <span class="kn">from</span> <span class="nn">sklearn.utils.validation</span> <span class="k">import</span> <span class="n">check_is_fitted</span>
+            <span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span>
+
+            <span class="n">scaler_for_this_id</span> <span class="o">=</span> <span class="n">scaler</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="n">id_col</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="ow">not</span> <span class="n">check_is_fitted</span><span class="p">(</span><span class="n">scaler_for_this_id</span><span class="p">),</span>
+                              <span class="s2">&quot;scaler is not fitted. When calling scale for the first time, &quot;</span>
+                              <span class="s2">&quot;you need to set fit=True.&quot;</span><span class="p">)</span>
+            <span class="n">df</span><span class="p">[</span><span class="n">target_col</span> <span class="o">+</span> <span class="n">feature_col</span><span class="p">]</span> <span class="o">=</span>\
+                <span class="n">scaler_for_this_id</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">target_col</span> <span class="o">+</span> <span class="n">feature_col</span><span class="p">])</span>
+
+            <span class="k">return</span> <span class="n">df</span>
+
+        <span class="k">if</span> <span class="n">fit</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shards_scaler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shards</span><span class="o">.</span><span class="n">transform_shard</span><span class="p">(</span><span class="n">_fit</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id_col</span><span class="p">,</span> <span class="n">scaler</span><span class="p">,</span>
+                                                             <span class="bp">self</span><span class="o">.</span><span class="n">feature_col</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_col</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scaler_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shards_scaler</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scaler_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">sc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">id_col</span><span class="p">]:</span> <span class="n">sc</span><span class="p">[</span><span class="s2">&quot;scaler&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">sc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaler_dict</span><span class="p">}</span>
+            <span class="n">scaler</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scaler_dict</span><span class="p">)</span>  <span class="c1"># make the change up-to-date outside the tsdata</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">shards</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shards</span><span class="o">.</span><span class="n">transform_shard</span><span class="p">(</span><span class="n">_transform</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id_col</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaler_dict</span><span class="p">,</span>
+                                                      <span class="bp">self</span><span class="o">.</span><span class="n">feature_col</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_col</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scaler_dict</span> <span class="o">=</span> <span class="n">scaler</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shards</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shards</span><span class="o">.</span><span class="n">transform_shard</span><span class="p">(</span><span class="n">_transform</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id_col</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaler_dict</span><span class="p">,</span>
+                                                      <span class="bp">self</span><span class="o">.</span><span class="n">feature_col</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_col</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="XShardsTSDataset.unscale"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.unscale">[docs]</a>    <span class="k">def</span> <span class="nf">unscale</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Unscale the time series dataset&#39;s feature column and target column.</span>
+
+<span class="sd">        :return: the xshardtsdataset instance.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">def</span> <span class="nf">_inverse_transform</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">id_col</span><span class="p">,</span> <span class="n">scaler</span><span class="p">,</span> <span class="n">feature_col</span><span class="p">,</span> <span class="n">target_col</span><span class="p">):</span>
+            <span class="kn">from</span> <span class="nn">sklearn.utils.validation</span> <span class="k">import</span> <span class="n">check_is_fitted</span>
+            <span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span>
+
+            <span class="n">scaler_for_this_id</span> <span class="o">=</span> <span class="n">scaler</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="n">id_col</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="ow">not</span> <span class="n">check_is_fitted</span><span class="p">(</span><span class="n">scaler_for_this_id</span><span class="p">),</span>
+                              <span class="s2">&quot;scaler is not fitted. When calling scale for the first time, &quot;</span>
+                              <span class="s2">&quot;you need to set fit=True.&quot;</span><span class="p">)</span>
+
+            <span class="n">df</span><span class="p">[</span><span class="n">target_col</span> <span class="o">+</span> <span class="n">feature_col</span><span class="p">]</span> <span class="o">=</span>\
+                <span class="n">scaler_for_this_id</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">target_col</span> <span class="o">+</span> <span class="n">feature_col</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">df</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">shards</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shards</span><span class="o">.</span><span class="n">transform_shard</span><span class="p">(</span><span class="n">_inverse_transform</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id_col</span><span class="p">,</span>
+                                                  <span class="bp">self</span><span class="o">.</span><span class="n">scaler_dict</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_col</span><span class="p">,</span>
+                                                  <span class="bp">self</span><span class="o">.</span><span class="n">target_col</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="XShardsTSDataset.unscale_xshards"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.unscale_xshards">[docs]</a>    <span class="k">def</span> <span class="nf">unscale_xshards</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Unscale the time series forecaster&#39;s numpy prediction result/ground truth.</span>
+
+<span class="sd">        :param data: xshards same with self.numpy_xshards.</span>
+<span class="sd">        :param key: str, &#39;y&#39; or &#39;prediction&#39;, default to &#39;y&#39;. if no &quot;prediction&quot;</span>
+<span class="sd">        or &quot;y&quot; return an error and require our users to input a key. if key is</span>
+<span class="sd">        None, key will be set &#39;prediction&#39;.</span>
+
+<span class="sd">        :return: the unscaled xshardtsdataset instance.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span>
+
+        <span class="k">def</span> <span class="nf">_inverse_transform</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">scaler</span><span class="p">,</span> <span class="n">scaler_index</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+            <span class="kn">from</span> <span class="nn">sklearn.utils.validation</span> <span class="k">import</span> <span class="n">check_is_fitted</span>
+            <span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span>
+
+            <span class="nb">id</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="n">scaler_for_this_id</span> <span class="o">=</span> <span class="n">scaler</span><span class="p">[</span><span class="nb">id</span><span class="p">]</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="ow">not</span> <span class="n">check_is_fitted</span><span class="p">(</span><span class="n">scaler_for_this_id</span><span class="p">),</span>
+                              <span class="s2">&quot;scaler is not fitted. When calling scale for the first time, &quot;</span>
+                              <span class="s2">&quot;you need to set fit=True.&quot;</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">unscale_timeseries_numpy</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">scaler_for_this_id</span><span class="p">,</span> <span class="n">scaler_index</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;prediction&#39;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="n">key</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;prediction&#39;</span><span class="p">},</span> <span class="s2">&quot;key is not in {&#39;y&#39;, &#39;prediction&#39;}, &quot;</span>
+                          <span class="s2">&quot;please input the correct key.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">transform_shard</span><span class="p">(</span><span class="n">_inverse_transform</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaler_dict</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaler_index</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="XShardsTSDataset.impute"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.impute">[docs]</a>    <span class="k">def</span> <span class="nf">impute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+               <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;last&quot;</span><span class="p">,</span>
+               <span class="n">const_num</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Impute the tsdataset by imputing each univariate time series</span>
+<span class="sd">        distinguished by id_col and feature_col.</span>
+
+<span class="sd">        :param mode: imputation mode, select from &quot;last&quot;, &quot;const&quot; or &quot;linear&quot;.</span>
+
+<span class="sd">            &quot;last&quot;: impute by propagating the last non N/A number to its following N/A.</span>
+<span class="sd">            if there is no non N/A number ahead, 0 is filled instead.</span>
+
+<span class="sd">            &quot;const&quot;: impute by a const value input by user.</span>
+
+<span class="sd">            &quot;linear&quot;: impute by linear interpolation.</span>
+<span class="sd">        :param const_num:  indicates the const number to fill, which is only effective when mode</span>
+<span class="sd">            is set to &quot;const&quot;.</span>
+
+<span class="sd">        :return: the tsdataset instance.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">def</span> <span class="nf">df_reset_index</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+                <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">df</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shards</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shards</span><span class="o">.</span><span class="n">transform_shard</span><span class="p">(</span><span class="n">impute_timeseries_dataframe</span><span class="p">,</span>
+                                                  <span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span>
+                                                  <span class="n">const_num</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shards</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shards</span><span class="o">.</span><span class="n">transform_shard</span><span class="p">(</span><span class="n">df_reset_index</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="XShardsTSDataset.to_xshards"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.experimental.xshards_tsdataset.XShardsTSDataset.to_xshards">[docs]</a>    <span class="k">def</span> <span class="nf">to_xshards</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">partition_num</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Export rolling result in form of a dict of numpy ndarray {&#39;x&#39;: ..., &#39;y&#39;: ..., &#39;id&#39;: ...},</span>
+<span class="sd">        where value for &#39;x&#39; and &#39;y&#39; are 3-dim numpy ndarray and value for &#39;id&#39; is 2-dim ndarray</span>
+<span class="sd">        with shape (batch_size, 1)</span>
+
+<span class="sd">        :param partition_num: how many partition you would like to split your data.</span>
+
+<span class="sd">        :return: a 3-element dict xshard. each value is a 3d numpy ndarray. The ndarray</span>
+<span class="sd">                 is casted to float32. Default to None which will partition according</span>
+<span class="sd">                 to id.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">numpy_shards</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;Please call &#39;roll&#39; method &quot;</span>
+                              <span class="s2">&quot;before transform a XshardsTSDataset to numpy ndarray!&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">partition_num</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">numpy_shards</span><span class="o">.</span><span class="n">transform_shard</span><span class="p">(</span><span class="n">transform_to_dict</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">numpy_shards</span><span class="o">.</span><span class="n">transform_shard</span><span class="p">(</span><span class="n">transform_to_dict</span><span class="p">)</span><span class="o">.</span><span class="n">repartition</span><span class="p">(</span><span class="n">partition_num</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

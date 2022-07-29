@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scala User Guide &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/clipboard.min.js"></script>
+        <script src="../../_static/copybutton.js"></script>
+        <script src="../../_static/design-tabs.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Colab User Guide" href="colab.html" />
+    <link rel="prev" title="Python User Guide" href="python.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="python.html">Python User Guide</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Scala User Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#try-bigdl-examples"><strong>1. Try BigDL Examples</strong></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#download-and-config"><strong>1.1 Download and config</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#use-spark-interactive-shell"><strong>1.2 Use Spark interactive shell</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#run-bigdl-examples"><strong>1.3 Run BigDL examples</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#build-bigdl-applications"><strong>2. Build BigDL Applications</strong></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#add-bigdl-dependency"><strong>2.1 Add BigDL dependency</strong></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#official-release"><strong>2.1.1 official Release</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#nightly-build"><strong>2.1.2 Nightly Build</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#build-a-scala-project"><strong>2.2 Build a Scala project</strong></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Scala User Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/doc/UserGuide/scala.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="scala-user-guide">
+<h1>Scala User Guide<a class="headerlink" href="#scala-user-guide" title="Permalink to this headline">¶</a></h1>
+<hr class="docutils" />
+<p>Supported Platforms: Linux and macOS. <em><strong>Note:</strong> Windows is currently not supported.</em></p>
+<section id="try-bigdl-examples">
+<h2><strong>1. Try BigDL Examples</strong><a class="headerlink" href="#try-bigdl-examples" title="Permalink to this headline">¶</a></h2>
+<p>This section will show you how to download BigDL prebuild packages and run the build-in examples.</p>
+<section id="download-and-config">
+<h3><strong>1.1 Download and config</strong><a class="headerlink" href="#download-and-config" title="Permalink to this headline">¶</a></h3>
+<p>You can download the BigDL official releases and nightly build from the <a class="reference internal" href="../release.html"><span class="doc">Release Page</span></a>. After extracting the prebuild package, you need to set environment variables <strong>BIGDL_HOME</strong> and <strong>SPARK_HOME</strong> as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">SPARK_HOME</span><span class="o">=</span>folder path where you extract the Spark package
+<span class="nb">export</span> <span class="nv">BIGDL_HOME</span><span class="o">=</span>folder path where you extract the BigDL package
+</pre></div>
+</div>
+</section>
+<section id="use-spark-interactive-shell">
+<h3><strong>1.2 Use Spark interactive shell</strong><a class="headerlink" href="#use-spark-interactive-shell" title="Permalink to this headline">¶</a></h3>
+<p>You can  try BigDL using the Spark interactive shell as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="si">${</span><span class="nv">BIGDL_HOME</span><span class="si">}</span>/bin/spark-shell-with-dllib.sh
+</pre></div>
+</div>
+<p>You will then see a welcome message like below:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Welcome to
+      ____              __
+     / __/__  ___ _____/ /__
+    _\ \/ _ \/ _ `/ __/  &#39;_/
+   /___/ .__/\_,_/_/ /_/\_\   version 2.4.6
+      /_/
+         
+Using Scala version 2.11.12 (Java HotSpot(TM) 64-Bit Server VM, Java 1.8.0_112)
+Type in expressions to have them evaluated.
+Type :help for more information.
+</pre></div>
+</div>
+<p>Before you try BigDL APIs, you should use <code class="docutils literal notranslate"><span class="pre">initNNcontext</span></code> to verify your environment:</p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span>scala&gt; import com.intel.analytics.bigdl.dllib.NNContext
+import com.intel.analytics.bigdl.dllib.NNContext
+
+scala&gt; val sc = NNContext.initNNContext(&quot;Run Example&quot;)
+2021-01-26 10:19:52 WARN  SparkContext:66 - Using an existing SparkContext; some configuration may not take effect.
+2021-01-26 10:19:53 WARN  SparkContext:66 - Using an existing SparkContext; some configuration may not take effect.
+sc: org.apache.spark.SparkContext = org.apache.spark.SparkContext@487f025
+</pre></div>
+</div>
+<p>Once the environment is successfully initiated, you’ll be able to play with dllib API’s.
+For instance, to experiment with the <code class="docutils literal notranslate"><span class="pre">dllib.keras</span></code> APIs in dllib, you may try below code:</p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="n">scala</span><span class="o">&gt;</span> <span class="k">import</span> <span class="nn">com.intel.analytics.bigdl.dllib.keras.layers._</span>
+<span class="n">scala</span><span class="o">&gt;</span> <span class="k">import</span> <span class="nn">com.intel.analytics.bigdl.numeric.NumericFloat</span>
+<span class="n">scala</span><span class="o">&gt;</span> <span class="k">import</span> <span class="nn">com.intel.analytics.bigdl.dllib.utils.Shape</span>
+
+<span class="n">scala</span><span class="o">&gt;</span> <span class="k">val</span> <span class="n">seq</span> <span class="k">=</span> <span class="nc">Sequential</span><span class="o">()</span>
+       <span class="k">val</span> <span class="n">layer</span> <span class="k">=</span> <span class="nc">ConvLSTM2D</span><span class="o">(</span><span class="mi">32</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="n">returnSequences</span> <span class="k">=</span> <span class="kc">true</span><span class="o">,</span> <span class="n">borderMode</span> <span class="k">=</span> <span class="s">&quot;same&quot;</span><span class="o">,</span>
+            <span class="n">inputShape</span> <span class="k">=</span> <span class="nc">Shape</span><span class="o">(</span><span class="mi">8</span><span class="o">,</span> <span class="mi">40</span><span class="o">,</span> <span class="mi">40</span><span class="o">,</span> <span class="mi">32</span><span class="o">))</span>
+       <span class="n">seq</span><span class="o">.</span><span class="n">add</span><span class="o">(</span><span class="n">layer</span><span class="o">)</span>
+</pre></div>
+</div>
+</section>
+<section id="run-bigdl-examples">
+<h3><strong>1.3 Run BigDL examples</strong><a class="headerlink" href="#run-bigdl-examples" title="Permalink to this headline">¶</a></h3>
+<p>You can run a bigdl-dllib program, e.g., the <a class="reference external" href="https://github.com/intel-analytics/BigDL/tree/branch-2.0/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/languagemodel">Language Model</a>, as a standard Spark program (running on either a local machine or a distributed cluster) as follows:</p>
+<ol class="simple">
+<li><p>Prepare the dataset, please refer <a class="reference external" href="https://github.com/intel-analytics/BigDL/tree/branch-2.0/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/languagemodel">Prepare PTB Data</a> for details</p></li>
+<li><p>Run the following command:</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Spark local mode</span>
+<span class="si">${</span><span class="nv">BIGDL_HOME</span><span class="si">}</span>/bin/spark-submit-with-dllib.sh <span class="se">\</span>
+  --master local<span class="o">[</span><span class="m">2</span><span class="o">]</span> <span class="se">\</span>
+  --class com.intel.analytics.bigdl.dllib.example.languagemodel.PTBWordLM <span class="se">\</span>
+  <span class="si">${</span><span class="nv">BIGDL_HOME</span><span class="si">}</span>/jars/bigdl-dllib-2.1.0-SNAPSHOT-jar-with-dependencies.jar <span class="se">\ </span>  <span class="c1">#change to your jar file if your download is not spark_2.4.3-2.0.0</span>
+  -f DATA_PATH <span class="se">\</span>
+  -b <span class="m">4</span> <span class="se">\</span>
+  --numLayers <span class="m">2</span> --vocab <span class="m">100</span> --hidden <span class="m">6</span> <span class="se">\</span>
+  --numSteps <span class="m">3</span> --learningRate <span class="m">0</span>.005 -e <span class="m">1</span> <span class="se">\</span>
+  --learningRateDecay <span class="m">0</span>.001 --keepProb <span class="m">0</span>.5
+
+<span class="c1"># Spark standalone mode</span>
+<span class="c1">## ${SPARK_HOME}/sbin/start-master.sh</span>
+<span class="c1">## check master URL from http://localhost:8080</span>
+<span class="si">${</span><span class="nv">BIGDL_HOME</span><span class="si">}</span>/bin/spark-submit-with-dllib.sh <span class="se">\</span>
+  --master spark://... <span class="se">\</span>
+  --executor-cores cores_per_executor <span class="se">\</span>
+  --total-executor-cores total_cores_for_the_job <span class="se">\</span>
+  --class com.intel.analytics.bigdl.dllib.example.languagemodel.PTBWordLM <span class="se">\</span>
+  <span class="si">${</span><span class="nv">BIGDL_HOME</span><span class="si">}</span>/jars/bigdl-dllib-2.1.0-SNAPSHOT-jar-with-dependencies.jar <span class="se">\ </span>  <span class="c1">#change to your jar file if your download is not spark_2.4.3-2.0.0</span>
+  -f DATA_PATH <span class="se">\</span>
+  -b <span class="m">4</span> <span class="se">\</span>
+  --numLayers <span class="m">2</span> --vocab <span class="m">100</span> --hidden <span class="m">6</span> <span class="se">\</span>
+  --numSteps <span class="m">3</span> --learningRate <span class="m">0</span>.005 -e <span class="m">1</span> <span class="se">\</span>
+  --learningRateDecay <span class="m">0</span>.001 --keepProb <span class="m">0</span>.5
+
+<span class="c1"># Spark yarn client mode</span>
+<span class="si">${</span><span class="nv">BIGDL_HOME</span><span class="si">}</span>/bin/spark-submit-with-dllib.sh <span class="se">\</span>
+ --master yarn <span class="se">\</span>
+ --deploy-mode client <span class="se">\</span>
+ --executor-cores cores_per_executor <span class="se">\</span>
+ --num-executors executors_number <span class="se">\</span>
+ --class com.intel.analytics.bigdl.dllib.example.languagemodel.PTBWordLM <span class="se">\</span>
+ <span class="si">${</span><span class="nv">BIGDL_HOME</span><span class="si">}</span>/jars/bigdl-dllib-2.1.0-SNAPSHOT-jar-with-dependencies.jar <span class="se">\ </span>  <span class="c1">#change to your jar file if your download is not spark_2.4.3-2.0.0</span>
+ -f DATA_PATH <span class="se">\</span>
+ -b <span class="m">4</span> <span class="se">\</span>
+ --numLayers <span class="m">2</span> --vocab <span class="m">100</span> --hidden <span class="m">6</span> <span class="se">\</span>
+ --numSteps <span class="m">3</span> --learningRate <span class="m">0</span>.005 -e <span class="m">1</span> <span class="se">\</span>
+ --learningRateDecay <span class="m">0</span>.001 --keepProb <span class="m">0</span>.5
+
+<span class="c1"># Spark yarn cluster mode</span>
+<span class="si">${</span><span class="nv">BIGDL_HOME</span><span class="si">}</span>/bin/spark-submit-with-dllib.sh <span class="se">\</span>
+ --master yarn <span class="se">\</span>
+ --deploy-mode cluster <span class="se">\</span>
+ --executor-cores cores_per_executor <span class="se">\</span>
+ --num-executors executors_number <span class="se">\</span>
+ --class com.intel.analytics.bigdl.dllib.example.languagemodel.PTBWordLM <span class="se">\</span>
+ <span class="si">${</span><span class="nv">BIGDL_HOME</span><span class="si">}</span>/jars/bigdl-dllib-2.1.0-SNAPSHOT-jar-with-dependencies.jar <span class="se">\ </span>  <span class="c1">#change to your jar file if your download is not spark_2.4.3-2.0.0</span>
+ -f DATA_PATH <span class="se">\</span>
+ -b <span class="m">4</span> <span class="se">\</span>
+ --numLayers <span class="m">2</span> --vocab <span class="m">100</span> --hidden <span class="m">6</span> <span class="se">\</span>
+ --numSteps <span class="m">3</span> --learningRate <span class="m">0</span>.005 -e <span class="m">1</span> <span class="se">\</span>
+ --learningRateDecay <span class="m">0</span>.001 --keepProb <span class="m">0</span>.5
+</pre></div>
+</div>
+<p>The parameters used in the above command are:</p>
+<ul class="simple">
+<li><p>-f: The path where you put your PTB data.</p></li>
+<li><p>-b: The mini-batch size. The mini-batch size is expected to be a multiple of <em>total cores</em> used in the job. In this example, the mini-batch size is suggested to be set to <em>total cores * 4</em></p></li>
+<li><p>–learningRate: learning rate for adagrad</p></li>
+<li><p>–learningRateDecay: learning rate decay for adagrad</p></li>
+<li><p>–hidden: hiddensize for lstm</p></li>
+<li><p>–vocabSize: vocabulary size, default 10000</p></li>
+<li><p>–numLayers: numbers of lstm cell, default 2 lstm cells</p></li>
+<li><p>–numSteps: number of words per record in LM</p></li>
+<li><p>–keepProb: the probability to do dropout</p></li>
+</ul>
+<p>If you are to run your own program, do remember to do the initialize before call other bigdl-dllib API’s, as shown below.</p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span> <span class="c1">// Scala code example</span>
+ <span class="k">import</span> <span class="nn">com.intel.analytics.bigdl.dllib.NNContext</span>
+ <span class="nc">NNContext</span><span class="o">.</span><span class="n">initNNContext</span><span class="o">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="build-bigdl-applications">
+<h2><strong>2. Build BigDL Applications</strong><a class="headerlink" href="#build-bigdl-applications" title="Permalink to this headline">¶</a></h2>
+<p>This section will show you how to build your own deep learning project with BigDL.</p>
+<section id="add-bigdl-dependency">
+<h3><strong>2.1 Add BigDL dependency</strong><a class="headerlink" href="#add-bigdl-dependency" title="Permalink to this headline">¶</a></h3>
+<section id="official-release">
+<h4><strong>2.1.1 official Release</strong><a class="headerlink" href="#official-release" title="Permalink to this headline">¶</a></h4>
+<p>Currently, BigDL releases are hosted on maven central; below is an example to add the BigDL dllib dependency to your own project:</p>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;dependency&gt;</span>
+    <span class="nt">&lt;groupId&gt;</span>com.intel.analytics.bigdl<span class="nt">&lt;/groupId&gt;</span>
+    <span class="nt">&lt;artifactId&gt;</span>bigdl-dllib-spark_2.4.6<span class="nt">&lt;/artifactId&gt;</span>
+    <span class="nt">&lt;version&gt;</span>0.14.0<span class="nt">&lt;/version&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span>
+</pre></div>
+</div>
+<p>You can find the other SPARK version <a class="reference external" href="https://search.maven.org/search?q=bigdl-dllib">here</a>, such as <code class="docutils literal notranslate"><span class="pre">spark_3.1.2</span></code>.</p>
+<p>SBT developers can use</p>
+<div class="highlight-sbt notranslate"><div class="highlight"><pre><span></span>libraryDependencies += &quot;com.intel.analytics.bigdl&quot; % &quot;bigdl-dllib-spark_2.4.6&quot; % &quot;0.14.0&quot;
+</pre></div>
+</div>
+</section>
+<section id="nightly-build">
+<h4><strong>2.1.2 Nightly Build</strong><a class="headerlink" href="#nightly-build" title="Permalink to this headline">¶</a></h4>
+<p>Currently, BigDL nightly build is hosted on <a class="reference external" href="https://oss.sonatype.org/content/groups/public/com/intel/analytics/bigdl/">SonaType</a>.</p>
+<p>To link your application with the latest BigDL nightly build, you should add some dependencies like <a class="reference external" href="#11-official-release">official releases</a>, but change <code class="docutils literal notranslate"><span class="pre">2.0.0</span></code> to the snapshot version (such as 0.14.0-snapshot), and add below repository to your pom.xml.</p>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;repository&gt;</span>
+    <span class="nt">&lt;id&gt;</span>sonatype<span class="nt">&lt;/id&gt;</span>
+    <span class="nt">&lt;name&gt;</span>sonatype repository<span class="nt">&lt;/name&gt;</span>
+    <span class="nt">&lt;url&gt;</span>https://oss.sonatype.org/content/groups/public/<span class="nt">&lt;/url&gt;</span>
+    <span class="nt">&lt;releases&gt;</span>
+        <span class="nt">&lt;enabled&gt;</span>true<span class="nt">&lt;/enabled&gt;</span>
+    <span class="nt">&lt;/releases&gt;</span>
+    <span class="nt">&lt;snapshots&gt;</span>
+        <span class="nt">&lt;enabled&gt;</span>true<span class="nt">&lt;/enabled&gt;</span>
+    <span class="nt">&lt;/snapshots&gt;</span>
+<span class="nt">&lt;/repository&gt;</span>
+</pre></div>
+</div>
+<p>SBT developers can use</p>
+<div class="highlight-sbt notranslate"><div class="highlight"><pre><span></span>resolvers += &quot;ossrh repository&quot; at &quot;https://oss.sonatype.org/content/repositories/snapshots/&quot;
+</pre></div>
+</div>
+</section>
+</section>
+<section id="build-a-scala-project">
+<h3><strong>2.2 Build a Scala project</strong><a class="headerlink" href="#build-a-scala-project" title="Permalink to this headline">¶</a></h3>
+<p>To enable BigDL in project, you should add BigDL to your project’s dependencies using maven or sbt. Here is a <a class="reference external" href="https://github.com/intel-analytics/BigDL/tree/branch-2.0/apps/SimpleMlp">simple MLP example</a> to show you how to use BigDL to build your own deep learning project using maven or sbt, and how to run the simple example in IDEA and spark-submit.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="python.html" class="btn btn-neutral float-left" title="Python User Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="colab.html" class="btn btn-neutral float-right" title="Colab User Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
