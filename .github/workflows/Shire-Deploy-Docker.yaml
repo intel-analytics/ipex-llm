@@ -42,7 +42,7 @@ jobs:
         --build-arg no_proxy=${NO_PROXY} \
         --rm --no-cache -t ${IMAGE}-spark-3.1.2:${TAG} .
         docker tag ${IMAGE}-spark-3.1.2:${TAG} ${IMAGE}-spark-3.1.2:latest
-        docker push {$IMAGE}-spark-3.1.2:latest
+        docker push ${IMAGE}-spark-3.1.2:latest
         docker tag ${IMAGE}-spark-3.1.2:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${TAG}
         docker push 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${TAG}
         docker rmi -f ${IMAGE}-spark-3.1.2:${TAG}
