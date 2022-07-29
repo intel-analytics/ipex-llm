@@ -138,7 +138,7 @@ def schedule_processors(num_workers: int,
             env = os.environ.copy()
 
             env.update({
-                "KMP_AFFINITY": "disable",
+                "KMP_AFFINITY": "disabled",
                 "OMP_NUM_THREADS": "1",
                 "PROCESS_IDX": str(i)
             })

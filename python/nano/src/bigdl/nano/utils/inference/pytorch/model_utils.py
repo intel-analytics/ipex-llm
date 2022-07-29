@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 from typing import Any
-from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
+from bigdl.nano.pytorch.lightning import LightningModule
 import inspect
 from torch.utils.data import DataLoader
 import torch
@@ -23,7 +23,7 @@ from bigdl.nano.utils.log4Error import invalidInputError
 
 def get_forward_args(model):
     forward_args = inspect.getfullargspec(model.forward).args[1:]
-    if isinstance(model, LightningModuleFromTorch):
+    if isinstance(model, LightningModule):
         # forward param list for compiled model
         forward_args = get_forward_args(model.model)
     return forward_args

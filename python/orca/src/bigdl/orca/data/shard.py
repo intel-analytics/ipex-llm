@@ -408,6 +408,18 @@ class SparkXShards(XShards):
             invalidInputError(False,
                               "Currently only support unique() on XShards of Pandas Series")
 
+    def deduplicates(self):
+        if self._get_class_name() == 'pandas.core.frame.DataFrame':
+            import pandas as pd
+            df = self.to_spark_df()
+            distinctDF = df.distinct()
+            data_shards = spark_df_to_pd_sparkxshards(distinctDF)
+            return data_shards
+        else:
+            # we may support numpy or other types later
+            invalidInputError(False,
+                              "Currently only support dedup() on XShards of Pandas DataFrame")
+
     def split(self):
         """
 
@@ -462,6 +474,25 @@ class SparkXShards(XShards):
             invalidInputError(False,
                               "The two SparkXShards should have the same number of elements "
                               "in each partition")
+
+    def to_spark_df(self):
+        if self._get_class_name() != 'pandas.core.frame.DataFrame':
+            invalidInputError(False,
+                              "Currently only support to_spark_df on XShards of Pandas DataFrame")
+
+        def f(iter):
+            for pdf in iter:
+                np_records = pdf.to_records(index=False)
+                return [r.tolist() for r in np_records]
+
+        def getSchema(iter):
+            for pdf in iter:
+                return [pdf.columns.values]
+
+        rdd = self.rdd.mapPartitions(f)
+        column = self.rdd.mapPartitions(getSchema).first()
+        df = rdd.toDF(list(column))
+        return df
 
     def __len__(self):
         return self.rdd.map(lambda data: len(data) if hasattr(data, '__len__') else 1)\
