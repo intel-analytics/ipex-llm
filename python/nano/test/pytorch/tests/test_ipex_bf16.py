@@ -55,32 +55,6 @@ class Pytorch1_12:
         y_hat = bf16_model(x)
         assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
 
-    def test_bf16_with_amx_bf16(self):
-        trainer = Trainer(max_epochs=1)
-        model = resnet18(num_classes=10)
-
-        x = torch.rand((10, 3, 256, 256))
-        y = torch.ones((10,), dtype=torch.long)
-
-        bf16_model = trainer.quantize(model, precision='bf16')
-        with patch.object(type(bf16_model), "_has_bf16_isa", PropertyMock(return_value=True)):
-            bf16_model._max_bf16_isa = MagicMock(return_value="AMX")
-            y_hat = bf16_model(x)
-        assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
-
-    def test_bf16_with_avx512_bf16(self):
-        trainer = Trainer(max_epochs=1)
-        model = resnet18(num_classes=10)
-
-        x = torch.rand((10, 3, 256, 256))
-        y = torch.ones((10,), dtype=torch.long)
-
-        bf16_model = trainer.quantize(model, precision='bf16')
-        with patch.object(type(bf16_model), "_has_bf16_isa", PropertyMock(return_value=True)):
-            bf16_model._max_bf16_isa = MagicMock(return_value="AVX512")
-            y_hat = bf16_model(x)
-        assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
-
 
 TORCH_VERSION_CLS = Pytorch1_12
 
