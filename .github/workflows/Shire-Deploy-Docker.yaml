@@ -1,4 +1,4 @@
-name: Docker deploy Shire
+name: Nightly Build Docker Publish BigDL/BigDL-K8S
 
 on:
   #release:
