@@ -65,6 +65,7 @@ jobs:
             pip install onnx onnxruntime onnxruntime-extensions
             pip install lightning-bolts
             bash python/nano/notebooks/pytorch/tutorial/run-nano-notebooks-pytorch-tutorial-tests.sh false
+            bash python/nano/tutorials/inference/pytorch/run_nano_pytorch_inference_tests_onnx.sh
             source $CONDA/bin/deactivate
             $CONDA/bin/conda remove -n notebooks-pytorch --all
         env:
@@ -82,6 +83,7 @@ jobs:
             pip install ipykernel==5.5.6
             pip install openvino-dev
             bash python/nano/notebooks/pytorch/tutorial/run-nano-notebooks-pytorch-tutorial-tests.sh true
+            bash python/nano/tutorials/inference/pytorch/run_nano_pytorch_inference_tests_openvino.sh
             source $CONDA/bin/deactivate
             $CONDA/bin/conda remove -n notebooks-tutorial-pytorch --all
         env:
