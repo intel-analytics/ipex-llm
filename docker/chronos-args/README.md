@@ -1,5 +1,5 @@
 # How to use chronos in docker
-This dockerfile helps user to build a docker image where Chronos nightly build version is deploied.
+This dockerfile helps user to build a docker image where Chronos nightly build version with customized build modes is deploied.
 
 ## Build an image
 First clone the repo `BigDL` to the local.
@@ -11,7 +11,7 @@ Then `cd` to the root directory of `BigDL`, and copy the Dockerfile to it.
 cd BigDL
 cp docker/chronos-args/Dockerfile ./Dockerfile
 ```
-Then build your docker image with Dockerfile, and it will automatically set installation mode `default`:
+Then build your docker image with Dockerfile. There are several build modes(installation modes) and the default mode will install common dependency libraries. If you don't specify the mode, it will automatically set installation mode `default`:
 ```bash
 sudo docker build -t chronos-args:b1 . # You may choose any NAME:TAG you want.
 ```
@@ -34,7 +34,7 @@ According to your network status, this building will cost **10-20 mins**. If bui
 
 **Tips:** When errors happen like `E: Package 'apt-utils' has no installation candidate`, it's usually related to the bad network status. Please build with a proxy.
 
-**Tips:** There are several installation modes. You can choose the mode according to your need and build with corresponding args like `--build-arg MODE=<yourmode>`. All modes and their meanings are listed at the end of this `README.md`.
+**Tips:** There are several installation modes. You can choose the mode according to your need and build with corresponding args like `--build-arg MODE=<yourmode>`. All modes and their meanings are listed in the section `All Installation Modes Available` at the end of this `README.md`.
 
 ## Run the image
 ```bash
@@ -80,7 +80,7 @@ sudo docker rm -f 40de2cdad025
 ```
 
 ## All Installation Modes Available
-</br>default all pytorch-only pytorch-onnx pytorch-automl pytorch-dist pytorch-automl-dist tf-only tf-automl tf-dist tf-automl-dist automl-prophet
+`default` `all` `pytorch-only` `pytorch-onnx` `pytorch-automl` `pytorch-dist` `pytorch-automl-dist` `tf-only` `tf-automl` `tf-dist` `tf-automl-dist` `automl-prophet`
 
 
 
