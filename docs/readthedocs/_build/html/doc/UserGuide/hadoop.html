@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hadoop/YARN User Guide &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/clipboard.min.js"></script>
+        <script src="../../_static/copybutton.js"></script>
+        <script src="../../_static/design-tabs.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="K8s User Guide" href="k8s.html" />
+    <link rel="prev" title="Docker User Guide" href="docker.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">Docker User Guide</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Hadoop/YARN User Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#prepare-python-environment"><strong>1. Prepare Python Environment</strong></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#run-on-yarn-with-built-in-function"><strong>2. Run on YARN with built-in function</strong></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#run-on-yarn-with-spark-submit"><strong>3. Run on YARN with spark-submit</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chronos/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Hadoop/YARN User Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/doc/UserGuide/hadoop.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="hadoop-yarn-user-guide">
+<h1>Hadoop/YARN User Guide<a class="headerlink" href="#hadoop-yarn-user-guide" title="Permalink to this headline">¶</a></h1>
+<p>Hadoop version: Apache Hadoop &gt;= 2.7 (3.X included) or <a class="reference external" href="https://www.cloudera.com/products/open-source/apache-hadoop/key-cdh-components.html">CDH</a> 5.X. CDH 6.X have not been tested and thus currently not supported.</p>
+<hr class="docutils" />
+<p>For <em><strong>Scala users</strong></em>, please see <a class="reference internal" href="scala.html"><span class="doc">Scala User Guide</span></a> for how to run BigDL on Hadoop/YARN clusters.</p>
+<p>For <em><strong>Python users</strong></em>, you can run BigDL programs on standard Hadoop/YARN clusters without any changes to the cluster (i.e., no need to pre-install BigDL or other Python libraries on all nodes in the cluster).</p>
+<section id="prepare-python-environment">
+<h2><strong>1. Prepare Python Environment</strong><a class="headerlink" href="#prepare-python-environment" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p>You need to first use <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/">conda</a> to prepare the Python environment <em><strong>on the local machine</strong></em> where you submit your application. Create a conda environment, install BigDL and all the needed Python libraries in the created conda environment:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda create -n bigdl <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.7  <span class="c1"># &quot;bigdl&quot; is conda environment name, you can use any name you like.</span>
+conda activate bigdl
+
+pip install bigdl
+
+<span class="c1"># Use conda or pip to install all the needed Python dependencies in the created conda environment.</span>
+</pre></div>
+</div>
+<p>View the <a class="reference internal" href="python.html"><span class="doc">Python User Guide</span></a> for more details for BigDL installation.</p>
+</li>
+<li><p>You need to download and install JDK in the environment, and properly set the environment variable <code class="docutils literal notranslate"><span class="pre">JAVA_HOME</span></code>, which is required by Spark. <strong>JDK8</strong> is highly recommended.</p>
+<p>You may take the following commands as a reference for installing <a class="reference external" href="https://openjdk.java.net/install/">OpenJDK</a>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># For Ubuntu</span>
+sudo apt-get install openjdk-8-jre
+<span class="nb">export</span> <span class="nv">JAVA_HOME</span><span class="o">=</span>/usr/lib/jvm/java-8-openjdk-amd64/
+
+<span class="c1"># For CentOS</span>
+su -c <span class="s2">&quot;yum install java-1.8.0-openjdk&quot;</span>
+<span class="nb">export</span> <span class="nv">JAVA_HOME</span><span class="o">=</span>/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.282.b08-1.el7_9.x86_64/jre
+
+<span class="nb">export</span> <span class="nv">PATH</span><span class="o">=</span><span class="nv">$PATH</span>:<span class="nv">$JAVA_HOME</span>/bin
+java -version  <span class="c1"># Verify the version of JDK.</span>
+</pre></div>
+</div>
+</li>
+<li><p>Check the Hadoop setup and configurations of your cluster. Make sure you properly set the environment variable <code class="docutils literal notranslate"><span class="pre">HADOOP_CONF_DIR</span></code>, which is needed to initialize Spark on YARN:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">HADOOP_CONF_DIR</span><span class="o">=</span>the directory of the hadoop and yarn configurations
+</pre></div>
+</div>
+</li>
+<li><p><strong>For CDH users</strong></p>
+<p>If your CDH cluster has already installed Spark, the CDH’s Spark might be conflict with the pyspark installed by pip required by BigDL.</p>
+<p>Thus before running BigDL applications, you should unset all the Spark related environment variables. You can use <code class="docutils literal notranslate"><span class="pre">env</span> <span class="pre">|</span> <span class="pre">grep</span> <span class="pre">SPARK</span></code> to find all the existing Spark environment variables.</p>
+<p>Also, a CDH cluster’s <code class="docutils literal notranslate"><span class="pre">HADOOP_CONF_DIR</span></code> should be <code class="docutils literal notranslate"><span class="pre">/etc/hadoop/conf</span></code> on CDH by default.</p>
+</li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="run-on-yarn-with-built-in-function">
+<h2><strong>2. Run on YARN with built-in function</strong><a class="headerlink" href="#run-on-yarn-with-built-in-function" title="Permalink to this headline">¶</a></h2>
+<p><em><strong>This is the easiest and most recommended way to run BigDL on YARN,</strong></em> as you don’t need to care about environment preparation and Spark related commands. In this way, you can easily switch your job between local (for test) and YARN (for production) by changing the “cluster_mode”.</p>
+<ul>
+<li><p>Call <code class="docutils literal notranslate"><span class="pre">init_orca_context</span></code> at the very beginning of your code to initiate and run BigDL on standard <a class="reference external" href="https://spark.apache.org/docs/latest/running-on-yarn.html#launching-spark-on-yarn">Hadoop/YARN clusters</a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bigdl.orca</span> <span class="kn">import</span> <span class="n">init_orca_context</span>
+
+<span class="n">sc</span> <span class="o">=</span> <span class="n">init_orca_context</span><span class="p">(</span><span class="n">cluster_mode</span><span class="o">=</span><span class="s2">&quot;yarn-client&quot;</span><span class="p">,</span> <span class="n">cores</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">memory</span><span class="o">=</span><span class="s2">&quot;10g&quot;</span><span class="p">,</span> <span class="n">num_nodes</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">init_orca_context</span></code> would automatically prepare the runtime Python environment, detect the current Hadoop configurations from <code class="docutils literal notranslate"><span class="pre">HADOOP_CONF_DIR</span></code> and initiate the distributed execution engine on the underlying YARN cluster. View <a class="reference internal" href="../Orca/Overview/orca-context.html"><span class="doc">Orca Context</span></a> for more details.</p>
+<p>By specifying “cluster_mode” to be <code class="docutils literal notranslate"><span class="pre">yarn-client</span></code> or <code class="docutils literal notranslate"><span class="pre">yarn-cluster</span></code>, <code class="docutils literal notranslate"><span class="pre">init_orca_context</span></code> will submit the job to YARN with client and cluster mode respectively.</p>
+<p>The difference between <code class="docutils literal notranslate"><span class="pre">yarn-client</span></code> and <code class="docutils literal notranslate"><span class="pre">yarn-cluster</span></code> is where you run your Spark driver. For <code class="docutils literal notranslate"><span class="pre">yarn-client</span></code>, the Spark driver will run on the node where you start Python, while for <code class="docutils literal notranslate"><span class="pre">yarn-cluster</span></code> the Spark driver will run on a random node in the YARN cluster. So if you are running with <code class="docutils literal notranslate"><span class="pre">yarn-cluster</span></code>, you should change the application’s data loading from local file to a network file system (e.g. HDFS).</p>
+</li>
+<li><p>You can then simply run your BigDL program in a Jupyter notebook. Note that <em><strong>jupyter cannot run on yarn-cluster</strong></em>, as the driver is not running on the local node.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>jupyter notebook --notebook-dir<span class="o">=</span>./ --ip<span class="o">=</span>* --no-browser
+</pre></div>
+</div>
+<p>Or you can run your BigDL program as a normal Python script (e.g. script.py) and in this case both <code class="docutils literal notranslate"><span class="pre">yarn-client</span></code> and <code class="docutils literal notranslate"><span class="pre">yarn-cluster</span></code> are supported.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python script.py
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="run-on-yarn-with-spark-submit">
+<h2><strong>3. Run on YARN with spark-submit</strong><a class="headerlink" href="#run-on-yarn-with-spark-submit" title="Permalink to this headline">¶</a></h2>
+<p>Follow the steps below if you need to run BigDL with <a class="reference external" href="https://spark.apache.org/docs/latest/running-on-yarn.html#launching-spark-on-yarn">spark-submit</a>.</p>
+<ul>
+<li><p>Pack the current active conda environment to <code class="docutils literal notranslate"><span class="pre">environment.tar.gz</span></code> (you can use any name you like) in the current working directory:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda pack -o environment.tar.gz
+</pre></div>
+</div>
+</li>
+<li><p><em><strong>You need to write your BigDL program as a Python script.</strong></em> In the script, you need to call <code class="docutils literal notranslate"><span class="pre">init_orca_context</span></code> at the very beginning of your code and specify “cluster_mode” to be <code class="docutils literal notranslate"><span class="pre">spark-submit</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bigdl.orca</span> <span class="kn">import</span> <span class="n">init_orca_context</span>
+
+<span class="n">sc</span> <span class="o">=</span> <span class="n">init_orca_context</span><span class="p">(</span><span class="n">cluster_mode</span><span class="o">=</span><span class="s2">&quot;spark-submit&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">spark-submit-with-bigdl</span></code> to submit your BigDL program (e.g. script.py). You can adjust the configurations according to your cluster settings. Note that if <code class="docutils literal notranslate"><span class="pre">environment.tar.gz</span></code> is not under the same directory with <code class="docutils literal notranslate"><span class="pre">script.py</span></code>, you may need to modify its path in <code class="docutils literal notranslate"><span class="pre">--archives</span></code> in the running command below.</p>
+<p>For <code class="docutils literal notranslate"><span class="pre">yarn-cluster</span></code> mode:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>spark-submit-with-bigdl <span class="se">\</span>
+    --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON<span class="o">=</span>environment/bin/python <span class="se">\</span>
+    --conf spark.executorEnv.PYSPARK_PYTHON<span class="o">=</span>environment/bin/python <span class="se">\</span>
+    --master yarn <span class="se">\</span>
+    --deploy-mode cluster <span class="se">\</span>
+    --executor-memory 10g <span class="se">\</span>
+    --driver-memory 10g <span class="se">\</span>
+    --executor-cores <span class="m">8</span> <span class="se">\</span>
+    --num-executors <span class="m">2</span> <span class="se">\</span>
+    --archives environment.tar.gz#environment <span class="se">\</span>
+    script.py
+</pre></div>
+</div>
+<p>Note: For <code class="docutils literal notranslate"><span class="pre">yarn-client</span></code>, the Spark driver is running on local and it will use the Python interpreter in the current active conda environment while the executors will use the Python interpreter in <code class="docutils literal notranslate"><span class="pre">environment.tar.gz</span></code>.</p>
+<p>For <code class="docutils literal notranslate"><span class="pre">yarn-client</span></code> mode:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">PYSPARK_PYTHON</span><span class="o">=</span>environment/bin/python spark-submit-with-bigdl <span class="se">\</span>
+    --master yarn <span class="se">\</span>
+    --deploy-mode client <span class="se">\</span>
+    --executor-memory 10g <span class="se">\</span>
+    --driver-memory 10g <span class="se">\</span>
+    --executor-cores <span class="m">8</span> <span class="se">\</span>
+    --num-executors <span class="m">2</span> <span class="se">\</span>
+    --archives environment.tar.gz#environment <span class="se">\</span>
+    script.py
+</pre></div>
+</div>
+<p>Note: For <code class="docutils literal notranslate"><span class="pre">yarn-cluster</span></code>, the Spark driver is running in a YARN container as well and thus both the driver and executors will use the Python interpreter in <code class="docutils literal notranslate"><span class="pre">environment.tar.gz</span></code>.</p>
+</li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="docker.html" class="btn btn-neutral float-left" title="Docker User Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="k8s.html" class="btn btn-neutral float-right" title="K8s User Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

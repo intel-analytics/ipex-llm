@@ -1,0 +1,1920 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Friesian Feature API &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/design-tabs.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Chronos API" href="../Chronos/index.html" />
+    <link rel="prev" title="orca.automl.auto_estimator" href="../Orca/automl.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Friesian Feature API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-bigdl.friesian.feature.table">friesian.feature.table</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Friesian Feature API</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/doc/PythonAPI/Friesian/feature.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="friesian-feature-api">
+<h1>Friesian Feature API<a class="headerlink" href="#friesian-feature-api" title="Permalink to this headline">¶</a></h1>
+<section id="module-bigdl.friesian.feature.table">
+<span id="friesian-feature-table"></span><h2>friesian.feature.table<a class="headerlink" href="#module-bigdl.friesian.feature.table" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bigdl.friesian.feature.table.</span></span><span class="sig-name descname"><span class="pre">Table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py property">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.schema">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">schema</span></span><a class="headerlink" href="#bigdl.friesian.feature.table.Table.schema" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.compute">
+<span class="sig-name descname"><span class="pre">compute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.compute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.compute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trigger computation of the Table.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.to_spark_df">
+<span class="sig-name descname"><span class="pre">to_spark_df</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.to_spark_df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.to_spark_df" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the current Table to a Spark DataFrame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The converted Spark DataFrame.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.size">
+<span class="sig-name descname"><span class="pre">size</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the number of rows in this Table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The number of rows in the current Table.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.broadcast">
+<span class="sig-name descname"><span class="pre">broadcast</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.broadcast"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.broadcast" title="Permalink to this definition">¶</a></dt>
+<dd><p>Marks the Table as small enough for use in broadcast join.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.select">
+<span class="sig-name descname"><span class="pre">select</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">cols</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.select"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.select" title="Permalink to this definition">¶</a></dt>
+<dd><p>Select specific columns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>cols</strong> – str or a list of str that specifies column names. If it is ‘*’,
+select all the columns.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new Table that contains the specified columns.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.drop">
+<span class="sig-name descname"><span class="pre">drop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">cols</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.drop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.drop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new Table that drops the specified column.
+This is a no-op if schema doesn’t contain the given column name(s).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>cols</strong> – str or a list of str that specifies the name of the columns
+to drop.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new Table that drops the specified column.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.limit">
+<span class="sig-name descname"><span class="pre">limit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.limit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.limit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Limits the result count to the number specified.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>num</strong> – int that specifies the number of results.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new Table that contains <cite>num</cite> counts of rows.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.repartition">
+<span class="sig-name descname"><span class="pre">repartition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_partitions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.repartition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.repartition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a new Table that has exactly num_partitions partitions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>num_partitions</strong> – target number of partitions</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a new Table that has num_partitions partitions.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.get_partition_row_number">
+<span class="sig-name descname"><span class="pre">get_partition_row_number</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.get_partition_row_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.get_partition_row_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a Table that contains partitionId and corresponding row number.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a new Table that contains partitionId and corresponding row number.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.fillna">
+<span class="sig-name descname"><span class="pre">fillna</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.fillna"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.fillna" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replace null values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> – int, long, float, string, or boolean.
+Value to replace null values with.</p></li>
+<li><p><strong>columns</strong> – list of str, the target columns to be filled. If columns=None and value
+is int, all columns of integer type will be filled. If columns=None and value is
+long, float, str or boolean, all columns will be filled.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new Table that replaced the null values with the specified value.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.dropna">
+<span class="sig-name descname"><span class="pre">dropna</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">how</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'any'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thresh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.dropna"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.dropna" title="Permalink to this definition">¶</a></dt>
+<dd><p>Drops the rows containing null values in the specified columns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>columns</strong> – str or a list of str that specifies column names. If it is None,
+it will operate on all columns.</p></li>
+<li><p><strong>how</strong> – If <cite>how</cite> is “any”, then drop rows containing any null values in <cite>columns</cite>.
+If <cite>how</cite> is “all”, then drop rows only if every column in <cite>columns</cite> is null for
+that row.</p></li>
+<li><p><strong>thresh</strong> – int, if specified, drop rows that have less than thresh non-null values.
+Default is None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new Table that drops the rows containing null values in the specified columns.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.distinct">
+<span class="sig-name descname"><span class="pre">distinct</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.distinct"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.distinct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Select the distinct rows of the Table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A new Table that only contains distinct rows.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.filter">
+<span class="sig-name descname"><span class="pre">filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">condition</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filters the rows that satisfy <cite>condition</cite>. For instance, filter(“col_1 == 1”) will filter
+the rows that has value 1 at column col_1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>condition</strong> – str that gives the condition for filtering.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new Table with filtered rows.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.random_split">
+<span class="sig-name descname"><span class="pre">random_split</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.random_split"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.random_split" title="Permalink to this definition">¶</a></dt>
+<dd><p>Randomly split Table into multiple Tables with the provided weights for train, validation
+and test.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>weights</strong> – list of doubles as weights with which to split the Table.
+Weights will be normalized if they don’t sum up to 1.0.</p></li>
+<li><p><strong>seed</strong> – The seed for sampling.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of Tables split by the provided weights.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.split">
+<span class="sig-name descname"><span class="pre">split</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.friesian.feature.table.Table.split" title="Permalink to this definition">¶</a></dt>
+<dd><p>Randomly split Table into multiple Tables with the provided weights for train, validation
+and test.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>weights</strong> – list of doubles as weights with which to split the Table.
+Weights will be normalized if they don’t sum up to 1.0.</p></li>
+<li><p><strong>seed</strong> – The seed for sampling.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of Tables split by the provided weights.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.clip">
+<span class="sig-name descname"><span class="pre">clip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.clip"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.clip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clips continuous values so that they are within the range [min, max]. For instance, by
+setting the min value to 0, all negative values in columns will be replaced with 0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>columns</strong> – str or a list of str, the target columns to be clipped.</p></li>
+<li><p><strong>min</strong> – numeric, the minimum value to clip values to. Values less than this will be
+replaced with this value.</p></li>
+<li><p><strong>max</strong> – numeric, the maximum value to clip values to. Values greater than this will be
+replaced with this value.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new Table that replaced the value less than <cite>min</cite> with specified <cite>min</cite> and the
+value greater than <cite>max</cite> with specified <cite>max</cite>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.log">
+<span class="sig-name descname"><span class="pre">log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clipping</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.log"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the log of continuous columns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>columns</strong> – str or a list of str, the target columns to calculate log.</p></li>
+<li><p><strong>clipping</strong> – boolean. Default is True, and in this case the negative values in columns
+will be clipped to 0 and <cite>log(x+1)</cite> will be calculated. If False, <cite>log(x)</cite> will be
+calculated.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new Table that replaced value in columns with logged value.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.fill_median">
+<span class="sig-name descname"><span class="pre">fill_median</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.fill_median"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.fill_median" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replaces null values with the median in the specified numeric columns. Any column to be
+filled should not contain only null values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>columns</strong> – str or a list of str that specifies column names. If it is None,
+it will operate on all numeric columns.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new Table that replaces null values with the median in the specified numeric
+columns.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.median">
+<span class="sig-name descname"><span class="pre">median</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.median"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.median" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new Table that has two columns, <cite>column</cite> and <cite>median</cite>, containing the column
+names and the medians of the specified numeric columns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>columns</strong> – str or a list of str that specifies column names. If it is None,
+it will operate on all numeric columns.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new Table that contains the medians of the specified columns.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.merge_cols">
+<span class="sig-name descname"><span class="pre">merge_cols</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.merge_cols"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.merge_cols" title="Permalink to this definition">¶</a></dt>
+<dd><p>Merge the target column values as a list to a new column.
+The original columns will be dropped.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>columns</strong> – a list of str, the target columns to be merged.</p></li>
+<li><p><strong>target</strong> – str, the new column name of the merged column.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new Table that replaces columns with a new target column of merged list values.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.rename">
+<span class="sig-name descname"><span class="pre">rename</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.rename"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.rename" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rename columns with new column names</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>columns</strong> – dict. Name pairs. For instance, {‘old_name1’: ‘new_name1’, ‘old_name2’:
+‘new_name2’}”.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new Table with new column names.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.show">
+<span class="sig-name descname"><span class="pre">show</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">truncate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.show"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.show" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prints the first <cite>n</cite> rows to the console.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> – int, the number of rows to show.</p></li>
+<li><p><strong>truncate</strong> – If set to True, truncate strings longer than 20 chars by default.
+If set to a number greater than one, truncates long strings to length <cite>truncate</cite> and
+align cells right.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.get_stats">
+<span class="sig-name descname"><span class="pre">get_stats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.get_stats"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.get_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the statistics of the values over the target column(s).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>columns</strong> – str or a list of str that specifies the name(s) of the target column(s).
+If columns is None, then the function will return statistics for all numeric columns.</p></li>
+<li><p><strong>aggr</strong> – str or a list of str or dict to specify aggregate functions,
+min/max/avg/sum/count are supported.
+If aggr is a str or a list of str, it contains the name(s) of aggregate function(s).
+If aggr is a dict, the key is the column name, and the value is the aggregate
+function(s).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>dict, the key is the column name, and the value is aggregate result(s).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.min">
+<span class="sig-name descname"><span class="pre">min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.min"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.min" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new Table that has two columns, <cite>column</cite> and <cite>min</cite>, containing the column
+names and the minimum values of the specified numeric columns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>columns</strong> – str or a list of str that specifies column names. If it is None,
+it will operate on all numeric columns.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new Table that contains the minimum values of the specified columns.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.max">
+<span class="sig-name descname"><span class="pre">max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.max"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.max" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new Table that has two columns, <cite>column</cite> and <cite>max</cite>, containing the column
+names and the maximum values of the specified numeric columns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>columns</strong> – str or a list of str that specifies column names. If it is None,
+it will operate on all numeric columns.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new Table that contains the maximum values of the specified columns.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.to_list">
+<span class="sig-name descname"><span class="pre">to_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.to_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.to_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert all values of the target column to a list.
+Only call this if the Table is small enough.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>column</strong> – str, specifies the name of target column.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list, contains all values of the target column.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the Table to a dictionary.
+Only call this if the Table is small enough.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict, the key is the column name, and the value is the list containing</p>
+</dd>
+</dl>
+<p>all values in the corresponding column.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.add">
+<span class="sig-name descname"><span class="pre">add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.add"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Increase all of values of the target numeric column(s) by a constant value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>columns</strong> – str or a list of str, the target columns to be increased.</p></li>
+<li><p><strong>value</strong> – numeric (int/float/double/short/long), the constant value to be added.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new Table with updated numeric values on specified columns.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.columns">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">columns</span></span><a class="headerlink" href="#bigdl.friesian.feature.table.Table.columns" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get column names of the Table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A list of strings that specify column names.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.sample">
+<span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fraction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a sampled subset of Table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fraction</strong> – float, fraction of rows to generate, should be within the
+range [0, 1].</p></li>
+<li><p><strong>replace</strong> – allow or disallow sampling of the same row more than once.</p></li>
+<li><p><strong>seed</strong> – seed for sampling.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new Table with sampled rows.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.ordinal_shuffle_partition">
+<span class="sig-name descname"><span class="pre">ordinal_shuffle_partition</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.ordinal_shuffle_partition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.ordinal_shuffle_partition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shuffle each partition of the Table by adding a random ordinal column for each row and sort
+by this ordinal column within each partition.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A new Table with shuffled partitions.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.write_parquet">
+<span class="sig-name descname"><span class="pre">write_parquet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'overwrite'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.write_parquet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.write_parquet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the Table to Parquet file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> – str, the path to the Parquet file.</p></li>
+<li><p><strong>mode</strong> – str. One of “append”, “overwrite”, “error” or “ignore”.
+append: Append contents to the existing data.
+overwrite: Overwrite the existing data.
+error: Throw an exception if the data already exists.
+ignore: Silently ignore this operation if data already exists.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.cast">
+<span class="sig-name descname"><span class="pre">cast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.cast"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.cast" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cast columns to the specified type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>columns</strong> – str or a list of str that specifies column names.
+If it is None, then cast all of the columns.</p></li>
+<li><p><strong>dtype</strong> – str (“string”, “boolean”, “int”, “long”, “short”, “float”, “double”)
+that specifies the data type.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new Table that casts all of the specified columns to the specified type.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.write_csv">
+<span class="sig-name descname"><span class="pre">write_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delimiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">','</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'overwrite'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_partitions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.write_csv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.write_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the Table to csv file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> – str, the path to the csv file.</p></li>
+<li><p><strong>delimiter</strong> – str, the delimiter to use for separating fields. Default is “,”.</p></li>
+<li><p><strong>mode</strong> – str. One of “append”, “overwrite”, “error” or “ignore”.
+append: Append the contents of this StringIndex to the existing data.
+overwrite: Overwrite the existing data.
+error: Throw an exception if the data already exists.
+ignore: Silently ignore this operation if the data already exists.</p></li>
+<li><p><strong>header</strong> – boolean, whether to include the schema at the first line of the csv file.
+Default is True.</p></li>
+<li><p><strong>num_partitions</strong> – positive int. The number of files to write.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.concat">
+<span class="sig-name descname"><span class="pre">concat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'inner'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.concat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.concat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Concatenate a list of Tables into one Table in the dimension of row.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tables</strong> – a Table or a list of Tables.</p></li>
+<li><p><strong>mode</strong> – str, either inner or outer. For inner mode, the new Table would only
+contain columns that are shared by all Tables. For outer mode, the resulting
+Table would contain all the columns that appear in all Tables.</p></li>
+<li><p><strong>distinct</strong> – boolean. If True, the result Table would only contain distinct rows.
+Default is False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A single concatenated Table.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.drop_duplicates">
+<span class="sig-name descname"><span class="pre">drop_duplicates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'min'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.drop_duplicates"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.drop_duplicates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a new Table with duplicate rows removed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>subset</strong> – str or a list of str, specifies which column(s) to be considered when
+referring to duplication. If subset is None, all the columns will be considered.</p></li>
+<li><p><strong>sort_cols</strong> – str or a list of str, specifies the column(s) to determine which
+item to keep when duplicated. If sort_cols is None, duplicate rows will be
+dropped randomly.</p></li>
+<li><p><strong>keep</strong> – str, the strategy to keep the duplicate, either min and max. Default is min.
+It will only take effect when sort_cols is not None.
+If keep is min, rows with the smallest values in sort_cols will be kept.
+If keep is max, rows with the largest values in sort_cols will be kept.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new Table with duplicate rows removed.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.append_column">
+<span class="sig-name descname"><span class="pre">append_column</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.append_column"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.append_column" title="Permalink to this definition">¶</a></dt>
+<dd><p>Append a column with a constant value to the Table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – str, the name of the new column.</p></li>
+<li><p><strong>column</strong> – pyspark.sql.column.Column, new column to be added into the table.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new Table with the appended column.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.subtract">
+<span class="sig-name descname"><span class="pre">subtract</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.subtract"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.subtract" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a new <a class="reference internal" href="#bigdl.friesian.feature.table.Table" title="bigdl.friesian.feature.table.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> containing rows in this <a class="reference internal" href="#bigdl.friesian.feature.table.Table" title="bigdl.friesian.feature.table.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a>
+but not in another <a class="reference internal" href="#bigdl.friesian.feature.table.Table" title="bigdl.friesian.feature.table.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>other</strong> – Table.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new Table.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.col">
+<span class="sig-name descname"><span class="pre">col</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.col"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.col" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the target column of the Table.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.sort">
+<span class="sig-name descname"><span class="pre">sort</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">cols</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.sort"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.sort" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sort the Table by specified column(s).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cols</strong> – list of <code class="xref py py-class docutils literal notranslate"><span class="pre">Column</span></code> or column names to sort by.</p></li>
+<li><p><strong>ascending</strong> – boolean or list of boolean (default <code class="docutils literal notranslate"><span class="pre">True</span></code>).
+Sort ascending vs. descending. Specify list for multiple sort orders.
+If a list is specified, length of the list must equal length of the <cite>cols</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.order_by">
+<span class="sig-name descname"><span class="pre">order_by</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">cols</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.friesian.feature.table.Table.order_by" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sort the Table by specified column(s).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cols</strong> – list of <code class="xref py py-class docutils literal notranslate"><span class="pre">Column</span></code> or column names to sort by.</p></li>
+<li><p><strong>ascending</strong> – boolean or list of boolean (default <code class="docutils literal notranslate"><span class="pre">True</span></code>).
+Sort ascending vs. descending. Specify list for multiple sort orders.
+If a list is specified, length of the list must equal length of the <cite>cols</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.to_pandas">
+<span class="sig-name descname"><span class="pre">to_pandas</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.to_pandas"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.to_pandas" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.cache">
+<span class="sig-name descname"><span class="pre">cache</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.cache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.cache" title="Permalink to this definition">¶</a></dt>
+<dd><p>Persist this Table in memory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>This Table.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.uncache">
+<span class="sig-name descname"><span class="pre">uncache</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.uncache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.uncache" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make this table as non-persistent and remove all its blocks from memory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>This Table.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.coalesce">
+<span class="sig-name descname"><span class="pre">coalesce</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_partitions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.coalesce"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.coalesce" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a new Table that has exactly num_partitions partitions.
+coalesce uses existing partitions to minimize the amount of data that’s shuffled.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>num_partitions</strong> – target number of partitions</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a new Table that has num_partitions partitions.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.intersect">
+<span class="sig-name descname"><span class="pre">intersect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.intersect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.intersect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a new <a class="reference internal" href="#bigdl.friesian.feature.table.Table" title="bigdl.friesian.feature.table.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> containing rows only in both this <a class="reference internal" href="#bigdl.friesian.feature.table.Table" title="bigdl.friesian.feature.table.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a>
+and another <a class="reference internal" href="#bigdl.friesian.feature.table.Table" title="bigdl.friesian.feature.table.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>other</strong> – Table.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new Table.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.collect">
+<span class="sig-name descname"><span class="pre">collect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#Table.collect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.Table.collect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all the records as a list of <code class="xref py py-class docutils literal notranslate"><span class="pre">Row</span></code>.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.Table.dtypes">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dtypes</span></span><a class="headerlink" href="#bigdl.friesian.feature.table.Table.dtypes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all column names and their data types as a list.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bigdl.friesian.feature.table.</span></span><span class="sig-name descname"><span class="pre">FeatureTable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#FeatureTable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bigdl.friesian.feature.table.Table" title="bigdl.friesian.feature.table.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">bigdl.friesian.feature.table.Table</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable.read_parquet">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">read_parquet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">paths</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#FeatureTable.read_parquet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable.read_parquet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads Parquet files as a FeatureTable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>paths</strong> – str or a list of str, the path(s) to Parquet file(s).</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A FeatureTable for recommendation data.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable.read_json">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">read_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">paths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#FeatureTable.read_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable.read_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads json files as a FeatureTable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>paths</strong> – str or a list of str, the path(s) to the json file(s).</p></li>
+<li><p><strong>cols</strong> – str or a list of str. The columns to select from the json file(s).
+Default is None and in this case all the columns will be considered.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A FeatureTable for recommendation data.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable.read_csv">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">read_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">paths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delimiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">','</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#FeatureTable.read_csv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable.read_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads csv files as a FeatureTable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>paths</strong> – str or a list of str, the path(s) to the csv file(s).</p></li>
+<li><p><strong>delimiter</strong> – str, the delimiter to use for parsing the csv file(s). Default is “,”.</p></li>
+<li><p><strong>header</strong> – boolean, whether the first line of the csv file(s) will be treated
+as the header for column names. Default is False.</p></li>
+<li><p><strong>names</strong> – str or a list of str, the column names for the csv file(s). You need to
+provide this if the header cannot be inferred. If specified, names should
+have the same length as the number of columns.</p></li>
+<li><p><strong>dtype</strong> – str or a list of str or dict, the column data type(s) for the csv file(s).               You may need to provide this if you want to change the default inferred types
+of specified columns.
+If dtype is a str, then all the columns will be cast to the target dtype.
+If dtype is a list of str, then it should have the same length as the number of
+columns and each column will be cast to the corresponding str dtype.
+If dtype is a dict, then the key should be the column name and the value should be
+the str dtype to cast the column to.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A FeatureTable for recommendation data.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable.read_text">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">read_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">paths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'value'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#FeatureTable.read_text"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable.read_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads text files as a FeatureTable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>paths</strong> – str or a list of str, the path(s) to the text file(s).</p></li>
+<li><p><strong>col_name</strong> – the column name of the text. Default is “value”.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A FeatureTable for recommendation data.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable.from_pandas">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_pandas</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pandas_df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#FeatureTable.from_pandas"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable.from_pandas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the contents of of a pandas DataFrame as FeatureTable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>pandas_df</strong> – a pandas DataFrame.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A FeatureTable for recommendation data.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable.encode_string">
+<span class="sig-name descname"><span class="pre">encode_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">broadcast</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_split</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">','</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort_for_array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_most_frequent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#FeatureTable.encode_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable.encode_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Encode columns with provided list of StringIndex. Unknown string will be
+None after the encoding and you may need to fillna with 0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>columns</strong> – str or a list of str, the target columns to be encoded.</p></li>
+<li><p><strong>indices</strong> – StringIndex or a list of StringIndex, StringIndexes of target columns.
+The StringIndex should at least have two columns: id and the corresponding
+categorical column.
+Or it can be a dict or a list of dicts. In this case,
+the keys of the dict should be within the categorical column
+and the values are the target ids to be encoded.</p></li>
+<li><p><strong>broadcast</strong> – bool, whether need to broadcast index when encode string.
+Default is True.</p></li>
+<li><p><strong>do_split</strong> – bool, whether need to split column value to array to encode string.
+Default is False.</p></li>
+<li><p><strong>sep</strong> – str, a string representing a regular expression to split a column value.
+Default is ‘,’.</p></li>
+<li><p><strong>sort_for_array</strong> – bool, whether need to sort array columns. Default is False.</p></li>
+<li><p><strong>keep_most_frequent</strong> – bool, whether need to keep most frequent value as the
+column value. Default is False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new FeatureTable which transforms categorical features into unique integer
+values with provided StringIndexes.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable.filter_by_frequency">
+<span class="sig-name descname"><span class="pre">filter_by_frequency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#FeatureTable.filter_by_frequency"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable.filter_by_frequency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filter the FeatureTable by the given minimum frequency on the target columns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>columns</strong> – str or a list of str, column names which are considered for filtering.</p></li>
+<li><p><strong>min_freq</strong> – int, min frequency. Columns with occurrence below this value
+would be filtered.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new FeatureTable with filtered records.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable.hash_encode">
+<span class="sig-name descname"><span class="pre">hash_encode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'md5'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#FeatureTable.hash_encode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable.hash_encode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hash encode for categorical column(s).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>columns</strong> – str or a list of str, the target columns to be encoded.
+For dense features, you need to cut them into discrete intervals beforehand.</p></li>
+<li><p><strong>bins</strong> – int, defines the number of equal-width bins in the range of column(s) values.</p></li>
+<li><p><strong>method</strong> – hashlib supported method, like md5, sha256 etc.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new FeatureTable with hash encoded columns.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable.cross_hash_encode">
+<span class="sig-name descname"><span class="pre">cross_hash_encode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cross_columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bin_sizes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cross_col_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'md5'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#FeatureTable.cross_hash_encode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable.cross_hash_encode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cross columns and hashed to specified bin size.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cross_columns</strong> – nested list of str, nested list of categorical column names to be
+encoded as cross features. e.g. [[‘a’, ‘b’], [‘c’, ‘d’]].
+For dense features, you need to cut them into discrete intervals beforehand.</p></li>
+<li><p><strong>bin_sizes</strong> – list of int, defined the numbers of equal-width bins in the range
+of columns values. e.g. [100, 200].</p></li>
+<li><p><strong>cross_col_names</strong> – list of str, the column names for output cross columns.
+Default is None, and in this case the default cross column name will
+be ‘col1_col2’ for [‘col1’, ‘col2’]. e.g. [‘cross_1’, ‘cross_2’].</p></li>
+<li><p><strong>method</strong> – hashlib supported method, like md5, sha256 etc.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new FeatureTable with the target cross columns.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable.cross_columns">
+<span class="sig-name descname"><span class="pre">cross_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cross_columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bin_sizes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cross_col_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'md5'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable.cross_columns" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cross columns and hashed to specified bin size.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cross_columns</strong> – nested list of str, nested list of categorical column names to be
+encoded as cross features. e.g. [[‘a’, ‘b’], [‘c’, ‘d’]].
+For dense features, you need to cut them into discrete intervals beforehand.</p></li>
+<li><p><strong>bin_sizes</strong> – list of int, defined the numbers of equal-width bins in the range
+of columns values. e.g. [100, 200].</p></li>
+<li><p><strong>cross_col_names</strong> – list of str, the column names for output cross columns.
+Default is None, and in this case the default cross column name will
+be ‘col1_col2’ for [‘col1’, ‘col2’]. e.g. [‘cross_1’, ‘cross_2’].</p></li>
+<li><p><strong>method</strong> – hashlib supported method, like md5, sha256 etc.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new FeatureTable with the target cross columns.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable.category_encode">
+<span class="sig-name descname"><span class="pre">category_encode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_by_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_split</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">','</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort_for_array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_most_frequent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">broadcast</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#FeatureTable.category_encode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable.category_encode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Category encode the given columns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>columns</strong> – str or a list of str, target columns to encode from string to index.</p></li>
+<li><p><strong>freq_limit</strong> – int, dict or None. Categories with a count/frequency below freq_limit
+will be omitted from the encoding. Can be represented as either an integer,
+dict. For instance, 15, {‘col_4’: 10, ‘col_5’: 2} etc. Default is None,
+and in this case all the categories that appear will be encoded.</p></li>
+<li><p><strong>order_by_freq</strong> – boolean, whether the result StringIndex will assign smaller indices
+to values with more frequencies. Default is False and in this case frequency order
+may not be preserved when assigning indices.</p></li>
+<li><p><strong>do_split</strong> – bool, whether need to split column value to array to encode string.
+Default is False.</p></li>
+<li><p><strong>sep</strong> – str, a string representing a regular expression to split a column value.
+Default is ‘,’.</p></li>
+<li><p><strong>sort_for_array</strong> – bool, whether need to sort array columns. Default is False.</p></li>
+<li><p><strong>keep_most_frequent</strong> – bool, whether need to keep most frequent value as the
+column value. Default is False.</p></li>
+<li><p><strong>broadcast</strong> – bool, whether need to broadcast index when encode string.
+Default is True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A tuple of a new FeatureTable which transforms categorical features into unique
+integer values, and a list of StringIndex for the mapping.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable.one_hot_encode">
+<span class="sig-name descname"><span class="pre">one_hot_encode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sizes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_original_columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#FeatureTable.one_hot_encode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable.one_hot_encode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert categorical features into ont hot encodings.
+If the features are string, you should first call category_encode to encode them into
+indices before one hot encoding.
+For each input column, a one hot vector will be created expanding multiple output columns,
+with the value of each one hot column either 0 or 1.
+Note that you may only use one hot encoding on the columns with small dimensions
+for memory concerns.</p>
+<p>For example, for column ‘x’ with size 5:
+Input:
+<a href="#id1"><span class="problematic" id="id2">|x|</span></a>
+<a href="#id3"><span class="problematic" id="id4">|1|</span></a>
+<a href="#id5"><span class="problematic" id="id6">|3|</span></a>
+<a href="#id7"><span class="problematic" id="id8">|0|</span></a>
+Output will contain 5 one hot columns:
+<a href="#id9"><span class="problematic" id="id10">|prefix_0|prefix_1|prefix_2|prefix_3|prefix_4|</span></a>
+|   0    |   1    |   0    |   0    |   0    |
+|   0    |   0    |   0    |   1    |   0    |
+|   1    |   0    |   0    |   0    |   0    |</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>columns</strong> – str or a list of str, the target columns to be encoded.</p></li>
+<li><p><strong>sizes</strong> – int or a list of int, the size(s) of the one hot vectors of the column(s).
+Default is None, and in this case, the sizes will be calculated by the maximum
+value(s) of the columns(s) + 1, namely the one hot vector will cover 0 to the
+maximum value.
+You are recommended to provided the sizes if they are known beforehand. If specified,
+sizes should have the same length as columns.</p></li>
+<li><p><strong>prefix</strong> – str or a list of str, the prefix of the one hot columns for the input
+column(s). Default is None, and in this case, the prefix will be the input
+column names. If specified, prefix should have the same length as columns.
+The one hot columns for each input column will have column names:
+prefix_0, prefix_1, … , prefix_maximum</p></li>
+<li><p><strong>keep_original_columns</strong> – boolean, whether to keep the original index column(s) before
+the one hot encoding. Default is False, and in this case the original column(s)
+will be replaced by the one hot columns. If True, the one hot columns will be
+appended to each original column.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new FeatureTable which transforms categorical indices into one hot encodings.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable.gen_string_idx">
+<span class="sig-name descname"><span class="pre">gen_string_idx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_by_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_split</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">','</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#FeatureTable.gen_string_idx"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable.gen_string_idx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate unique index value of categorical features. The resulting index would
+start from 1 with 0 reserved for unknown features.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>columns</strong> – str, dict or a list of str, dict, target column(s) to generate StringIndex.
+dict is a mapping of source column names -&gt; target column name if needs to combine multiple
+source columns to generate index.
+For example: {‘src_cols’:[‘a_user’, ‘b_user’], ‘col_name’:’user’}.</p></li>
+<li><p><strong>freq_limit</strong> – int, dict or None. Categories with a count/frequency below freq_limit
+will be omitted from the encoding. Can be represented as either an integer,
+dict. For instance, 15, {‘col_4’: 10, ‘col_5’: 2} etc. Default is None,
+and in this case all the categories that appear will be encoded.</p></li>
+<li><p><strong>order_by_freq</strong> – boolean, whether the result StringIndex will assign smaller indices
+to values with more frequencies. Default is False and in this case frequency order
+may not be preserved when assigning indices.</p></li>
+<li><p><strong>do_split</strong> – bool, whether need to split column value to array to generate index.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Default is False.
+:param sep: str, a string representing a regular expression to split a column value.</p>
+<blockquote>
+<div><p>Default is ‘,’.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A StringIndex or a list of StringIndex.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable.min_max_scale">
+<span class="sig-name descname"><span class="pre">min_max_scale</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#FeatureTable.min_max_scale"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable.min_max_scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rescale each column individually to a common range [min, max] linearly using
+column summary statistics, which is also known as min-max normalization or rescaling.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>columns</strong> – str or a list of str, the column(s) to be rescaled.</p></li>
+<li><p><strong>min</strong> – int, the lower bound after transformation, shared by all columns.
+Default is 0.0.</p></li>
+<li><p><strong>max</strong> – int, the upper bound after transformation, shared by all columns.
+Default is 1.0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A tuple of a new FeatureTable with rescaled column(s), and a dict of the
+original min and max values of the input column(s).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable.transform_min_max_scale">
+<span class="sig-name descname"><span class="pre">transform_min_max_scale</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_max_dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#FeatureTable.transform_min_max_scale"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable.transform_min_max_scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rescale each column individually with the given [min, max] range of each column.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>columns</strong> – str or a list of str, the column(s) to be rescaled.</p></li>
+<li><p><strong>min_max_dict</strong> – dict, the key is the column name, and the value is the
+tuple of min and max values of this column.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new FeatureTable with rescaled column(s).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable.add_negative_samples">
+<span class="sig-name descname"><span class="pre">add_negative_samples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">item_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'item'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'label'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neg_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#FeatureTable.add_negative_samples"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable.add_negative_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate negative records for each record in the FeatureTable. All the records in the
+original FeatureTable will be treated as positive samples with value 1 for label_col
+and the negative samples will be randomly generated with value 0 for label_col.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>item_size</strong> – int, the total number of items in the FeatureTable.</p></li>
+<li><p><strong>item_col</strong> – str, the name of the item column. Whether the record is positive or
+negative will be based on this column. Default is ‘item’.</p></li>
+<li><p><strong>label_col</strong> – str, the name of the label column. Default is ‘label’.</p></li>
+<li><p><strong>neg_num</strong> – int, the number of negative records for each positive record. Default is 1.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new FeatureTable with negative samples.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable.add_hist_seq">
+<span class="sig-name descname"><span class="pre">add_hist_seq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cols</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'time'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_len</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_len</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_seqs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2147483647</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#FeatureTable.add_hist_seq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable.add_hist_seq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a column of history visits of each user.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cols</strong> – str or a list of str, the column(s) to be treated as histories.</p></li>
+<li><p><strong>user_col</strong> – str, the column to be treated as the user.</p></li>
+<li><p><strong>sort_col</strong> – str, the column to sort by for each user. Default is ‘time’.</p></li>
+<li><p><strong>min_len</strong> – int, the minimal length of a history sequence. Default is 1.</p></li>
+<li><p><strong>max_len</strong> – int, the maximal length of a history sequence. Default is 100.</p></li>
+<li><p><strong>num_seqs</strong> – int, default is 2147483647 (maximum value of 4-byte integer),
+which means to to keep all the histories.
+You can set num_seqs=1 to only keep the last history.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new FeatureTable with history sequences.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable.add_neg_hist_seq">
+<span class="sig-name descname"><span class="pre">add_neg_hist_seq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">item_history_col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neg_num</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#FeatureTable.add_neg_hist_seq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable.add_neg_hist_seq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a list of negative samples for each item in the history sequence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>item_size</strong> – int, the total number of items in the FeatureTable.</p></li>
+<li><p><strong>item_history_col</strong> – str, the history column to generate negative samples.</p></li>
+<li><p><strong>neg_num</strong> – int, the number of negative items for each history (positive) item.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new FeatureTable with negative history sequences.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable.mask">
+<span class="sig-name descname"><span class="pre">mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask_cols</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seq_len</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#FeatureTable.mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable.mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add mask on specified column(s).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mask_cols</strong> – str or a list of str, the column(s) to be masked with 1s and 0s.
+Each column should be of list type.</p></li>
+<li><p><strong>seq_len</strong> – int, the length of the masked column. Default is 100.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new FeatureTable with masked columns.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable.pad">
+<span class="sig-name descname"><span class="pre">pad</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cols</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seq_len</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_token</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#FeatureTable.pad"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable.pad" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add padding on specified column(s).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cols</strong> – str or a list of str, the column(s) to be padded with mask_tokens. Each column
+should be of list type.</p></li>
+<li><p><strong>seq_len</strong> – int, the length to be padded to for cols. Default is 100.</p></li>
+<li><p><strong>mask_cols</strong> – str or a list of str, the column(s) to be masked with 1s and 0s.</p></li>
+<li><p><strong>mask_token</strong> – numeric types or str, should be consistent with element’s type of cols.
+Default is 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new FeatureTable with padded columns.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable.apply">
+<span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'string'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#FeatureTable.apply"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable.apply" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform a FeatureTable using a user-defined Python function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_col</strong> – str or a list of str, the column(s) to be transformed.</p></li>
+<li><p><strong>out_col</strong> – str, the name of output column.</p></li>
+<li><p><strong>func</strong> – The Python function with in_col as input and out_col.
+When in_col is a list of str, func should take a list as input,
+and in this case you are generating out_col given multiple
+input columns.</p></li>
+<li><p><strong>dtype</strong> – str, the data type of out_col. Default is string type.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new FeatureTable after column transformation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable.join">
+<span class="sig-name descname"><span class="pre">join</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">how</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lsuffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rsuffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#FeatureTable.join"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable.join" title="Permalink to this definition">¶</a></dt>
+<dd><p>Join a FeatureTable with another FeatureTable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>table</strong> – A FeatureTable.</p></li>
+<li><p><strong>on</strong> – str or a list of str, the column(s) to join.</p></li>
+<li><p><strong>how</strong> – str, default is inner. Must be one of: inner, cross, outer, full,
+fullouter, full_outer, left, leftouter, left_outer, right, rightouter,
+right_outer, semi, leftsemi, left_semi, anti, leftanti and left_anti.</p></li>
+<li><p><strong>lsuffix</strong> – The suffix to use for the original Table’s overlapping columns.</p></li>
+<li><p><strong>rsuffix</strong> – The suffix to use for the input Table’s overlapping columns.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A joined FeatureTable.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable.add_value_features">
+<span class="sig-name descname"><span class="pre">add_value_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict_tbl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#FeatureTable.add_value_features"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable.add_value_features" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add features based on key columns and the key value Table.
+For each column in columns, it adds a value column using key-value pairs from dict_tbl.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>columns</strong> – str or a list of str, the key columns in the original FeatureTable.</p></li>
+<li><p><strong>dict_tbl</strong> – A Table for the key value mapping.</p></li>
+<li><p><strong>key</strong> – str, the name of the key column in dict_tbl.</p></li>
+<li><p><strong>value</strong> – str, the name of value column in dict_tbl.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new FeatureTable with value columns.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable.reindex">
+<span class="sig-name descname"><span class="pre">reindex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index_tbls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#FeatureTable.reindex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable.reindex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replace the value using index_dicts for each col in columns, set 0 for default</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>columns</strong> – str of a list of str</p></li>
+<li><p><strong>dict_tbls</strong> – table or list of tables, each one has a mapping from old index to new one</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>FeatureTable</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable.gen_reindex_mapping">
+<span class="sig-name descname"><span class="pre">gen_reindex_mapping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#FeatureTable.gen_reindex_mapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable.gen_reindex_mapping" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Generate a mapping from old index to new one based on popularity count on descending order</dt><dd><dl class="field-list simple">
+<dt class="field-odd">param columns</dt>
+<dd class="field-odd"><p>str or a list of str</p>
+</dd>
+<dt class="field-even">param freq_limit</dt>
+<dd class="field-even"><p>int, dict or None. Indices with a count below freq_limit
+will be omitted. Can be represented as either an integer or dict.
+For instance, 15, {‘col_4’: 10, ‘col_5’: 2} etc. Default is 10,</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a list of FeatureTables, each table has a mapping from old index to new index
+new index starts from 1, save 0 for default</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable.group_by">
+<span class="sig-name descname"><span class="pre">group_by</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'count'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">join</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#FeatureTable.group_by"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable.group_by" title="Permalink to this definition">¶</a></dt>
+<dd><p>Group the Table with specified columns and then run aggregation. Optionally join the result
+with the original Table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>columns</strong> – str or a list of str. Columns to group the Table. If it is an empty list,
+aggregation is run directly without grouping. Default is [].</p></li>
+<li><p><strong>agg</strong> – <p>str, list or dict. Aggregate functions to be applied to grouped Table.
+Default is “count”.
+Supported aggregate functions are: “max”, “min”, “count”, “sum”, “avg”, “mean”,
+“sumDistinct”, “stddev”, “stddev_pop”, “variance”, “var_pop”, “skewness”, “kurtosis”,
+“collect_list”, “collect_set”, “approx_count_distinct”, “first”, “last”.
+If agg is a str, then agg is the aggregate function and the aggregation is performed
+on all columns that are not in <cite>columns</cite>.
+If agg is a list of str, then agg is a list of aggregate function and the aggregation
+is performed on all columns that are not in <cite>columns</cite>.
+If agg is a single dict mapping from str to str, then the key is the column
+to perform aggregation on, and the value is the aggregate function.
+If agg is a single dict mapping from str to list, then the key is the
+column to perform aggregation on, and the value is list of aggregate functions.</p>
+<p>Examples:
+agg=”sum”
+agg=[“last”, “stddev”]
+agg={“*”:”count”}
+agg={“col_1”:”sum”, “col_2”:[“count”, “mean”]}</p>
+</p></li>
+<li><p><strong>join</strong> – boolean. If True, join the aggregation result with original Table.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new Table with aggregated column fields.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable.target_encode">
+<span class="sig-name descname"><span class="pre">target_encode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cat_cols</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_cols</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_mean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smooth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kfold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fold_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fold_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'__fold__'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_cat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_fold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#FeatureTable.target_encode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable.target_encode" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each categorical column or column group in cat_cols, calculate the mean of target
+columns in target_cols and encode the FeatureTable with the target mean(s) to generate
+new features.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cat_cols</strong> – str, a list of str or a nested list of str. Categorical column(s) or column
+group(s) to target encode. To encode categorical column(s), cat_cols should be a str
+or a list of str. To encode categorical column group(s), cat_cols should be a nested
+list of str.</p></li>
+<li><p><strong>target_cols</strong> – str or a list of str. Numeric target column(s) to calculate the mean.
+If target_cols is a list, then each target_col would be used separately to encode the
+cat_cols.</p></li>
+<li><p><strong>target_mean</strong> – dict of {target column : mean} to provides global mean of target
+column(s) if known beforehand to save calculation. Default is None and in this case
+the global mean(s) would be calculated on demand.</p></li>
+<li><p><strong>smooth</strong> – int. The mean of each category is smoothed by the overall mean. Default is
+20.</p></li>
+<li><p><strong>kfold</strong> – int. Specifies number of folds for cross validation. The mean values within
+the i-th fold are calculated with data from all other folds. If kfold is 1,
+global-mean statistics are applied; otherwise, cross validation is applied. Default
+is 2.</p></li>
+<li><p><strong>fold_seed</strong> – int. Random seed used for generating folds. Default is None and in this
+case folds will be generated with row number in each partition.</p></li>
+<li><p><strong>fold_col</strong> – str. Name of integer column used for splitting folds. If fold_col exists
+in the FeatureTable, then this column is used; otherwise, it is randomly generated
+within the range [0, kfold). Default is “__fold__”.</p></li>
+<li><p><strong>drop_cat</strong> – boolean, whether to drop the original categorical columns.
+Default is False.</p></li>
+<li><p><strong>drop_fold</strong> – boolean, whether to drop the fold column. Default is True.</p></li>
+<li><p><strong>out_cols</strong> – str, a list of str or a nested list of str. When both cat_cols and
+target_cols has only one element, out_cols can be a single str. When cat_cols or
+target_cols has only one element, out_cols can be a list of str, and each element
+in out_cols corresponds to an element in target_cols or cat_cols. When it is a
+nested list of str, each inner list corresponds to the categorical column in the
+same position of cat_cols. Each element in the inner list corresponds to the target
+column in the same position of target_cols. Default to be None and in this case the
+output column will be cat_col + “_te_” + target_col.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A tuple of a new FeatureTable with target encoded columns and a list of TargetCodes
+which contains the target encode values of the whole FeatureTable.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable.encode_target">
+<span class="sig-name descname"><span class="pre">encode_target</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_cat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#FeatureTable.encode_target"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable.encode_target" title="Permalink to this definition">¶</a></dt>
+<dd><p>Encode columns with the provided TargetCode(s).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>targets</strong> – TargetCode or a list of TargetCode.</p></li>
+<li><p><strong>target_cols</strong> – str or a list of str. Selects part of target columns of which target
+encoding will be applied. Default is None and in this case all target columns
+contained in targets will be encoded.</p></li>
+<li><p><strong>drop_cat</strong> – boolean, whether to drop the categorical column(s). Default is True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new FeatureTable which encodes each categorical column into group-specific
+mean of target columns with provided TargetCodes.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable.difference_lag">
+<span class="sig-name descname"><span class="pre">difference_lag</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort_cols</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shifts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#FeatureTable.difference_lag"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable.difference_lag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the difference between two consecutive rows, or two rows with certain interval
+of the specified continuous columns. The table is first partitioned by partition_cols if it
+is not None, and then sorted by sort_cols before the calculation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>columns</strong> – str or a list of str. Continuous columns to calculate the difference.</p></li>
+<li><p><strong>sort_cols</strong> – str or a list of str. Columns by which the table is sorted.</p></li>
+<li><p><strong>shifts</strong> – int or a list of int. Intervals between two rows.</p></li>
+<li><p><strong>partition_cols</strong> – Columns by which the table is partitioned.</p></li>
+<li><p><strong>out_cols</strong> – str, a list of str, or a nested list of str. When both columns and shifts
+has only one element, out_cols can be a single str. When columns or shifts has only
+one element, out_cols can be a list of str, and each element in out_cols corresponds
+to an element in shifts or columns. When it is a list of list of str, each inner list
+corresponds to a column in columns. Each element in the inner list corresponds to a
+shift in shifts. If it is None, the output column will be sort_cols + “_diff_lag_”
++ column + “_” + shift. Default is None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new FeatureTable with difference columns.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable.cut_bins">
+<span class="sig-name descname"><span class="pre">cut_bins</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#FeatureTable.cut_bins"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable.cut_bins" title="Permalink to this definition">¶</a></dt>
+<dd><p>Segment values of the target column(s) into bins, which is also known as bucketization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>columns</strong> – str or a list of str, the numeric column(s) to segment into intervals.</p></li>
+<li><p><strong>bins</strong> – int, a list of int or dict.
+If bins is a list, it defines the bins to be used. <strong>NOTE</strong> that for bins of
+length n, there will be <strong>n+1</strong> buckets.
+For example, if bins is [0, 6, 18, 60], the resulting buckets are
+(-inf, 0), [0, 6), [6, 18), [18, 60), [60, inf).
+If bins is an int, it defines the number of equal-width bins in the range of all
+the column values, i.e. from column min to max. <strong>NOTE</strong> that there will be
+<strong>bins+2</strong> resulting buckets in total to take the values below min and beyond max
+into consideration.
+For examples, if bins is 2, the resulting buckets are
+(-inf, col_min), [col_min, (col_min+col_max)/2), [(col_min+col_max)/2, col_max),
+[col_max, inf).
+If bins is a dict, the key should be the input column(s) and the value should be
+int or a list of int to specify the bins as described above.</p></li>
+<li><p><strong>labels</strong> – a list of str or dict, the labels for the returned bins.
+Default is None, and in this case the new bin column would use the integer index to
+encode the interval. Index would start from 0.
+If labels is a list of str, then the corresponding label would be used to replace
+the integer index at the same position. The number of elements in labels should be
+the same as the number of bins.
+If labels is a dict, the key should be the input column(s) and the value should be a
+list of str as described above.</p></li>
+<li><p><strong>out_cols</strong> – str or a list of str, the name of output bucketized column(s).
+Default is None, and in this case the name of each output column will be “column_bin”
+for each input column.</p></li>
+<li><p><strong>drop</strong> – boolean, whether to drop the original column(s). Default is True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new FeatureTable with feature bucket column(s).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable.get_vocabularies">
+<span class="sig-name descname"><span class="pre">get_vocabularies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#FeatureTable.get_vocabularies"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable.get_vocabularies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create vocabulary for each column, and return dict of vocabularies</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>columns</strong> – str or a list of str. Columns to generate vocabularies.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A dict of vocabularies.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.FeatureTable.sample_listwise">
+<span class="sig-name descname"><span class="pre">sample_listwise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_sampled_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_sampled_item</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#FeatureTable.sample_listwise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.FeatureTable.sample_listwise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the FeatureTable to a sample listwise FeatureTable. The columns should be of list
+type and have the same length. Note that the rows with list length &lt; num_sampled_item will
+be dropped since they don’t have enough examples.</p>
+<p>You can use groupby to aggregate records under the same key before calling sample_listwise.
+&gt;&gt;&gt; tbl
++—-+—-+—-+
+<a href="#id11"><span class="problematic" id="id12">|name|</span></a>   a|   b|
++—-+—-+—-+
+|   a|   1|   1|
+|   a|   2|   2|
+|   b|   1|   1|
++—-+—-+—-+
+&gt;&gt;&gt; tbl.group_by(“name”, agg=”collect_list”)
++—-+——————+——————+
+<a href="#id13"><span class="problematic" id="id14">|name|</span></a>   collect_list(a)|   collect_list(b)|
++—-+——————+——————+
+|   a|            [1, 2]|            [1, 2]|
+|   b|               [1]|               [1]|
++—-+——————+——————+
+&gt;&gt;&gt; tbl
++—-+————+————+——————–+
+<a href="#id15"><span class="problematic" id="id16">|name|</span></a>     int_arr|     str_arr|         int_arr_arr|
++—-+————+————+——————–+
+|   a|   [1, 2, 3]|   [1, 2, 3]|     [[1], [2], [3]]|
+|   b|[1, 2, 3, 4]|[1, 2, 3, 4]|[[1], [2], [3], [4]]|
+|   c|         [1]|         [1]|               [[1]]|
++—-+————+————+——————–+
+&gt;&gt;&gt; tbl.sample_listwise([“int_arr”, “str_arr”, “int_arr_arr”], num_sampled_list=4,
+&gt;&gt;&gt;                     num_sampled_item=2)
++—-+——-+——-+———–+
+<a href="#id17"><span class="problematic" id="id18">|name|int_arr|str_arr|int_arr_arr|</span></a>
++—-+——-+——-+———–+
+|   a| [1, 3]| [1, 3]| [[1], [3]]|
+|   a| [2, 1]| [2, 1]| [[2], [1]]|
+|   a| [3, 2]| [3, 2]| [[3], [2]]|
+|   a| [2, 3]| [2, 3]| [[2], [3]]|
+|   b| [4, 1]| [4, 1]| [[4], [1]]|
+|   b| [2, 3]| [2, 3]| [[2], [3]]|
+|   b| [2, 3]| [2, 3]| [[2], [3]]|
+|   b| [2, 3]| [2, 3]| [[2], [3]]|
++—-+——-+——-+———–+
+&gt;&gt;&gt; tbl.sample_listwise([“int_arr”, “str_arr”], num_sampled_list=2,
+&gt;&gt;&gt;                     num_sampled_item=2, replace=False)
++—-+————+————+——————–+—————+—————+
+<a href="#id19"><span class="problematic" id="id20">|name|</span></a>     int_arr|     str_arr|         int_arr_arr|sampled_int_arr|sampled_str_arr|
++—-+————+————+——————–+—————+—————+
+|   a|   [1, 2, 3]|   [1, 2, 3]|     [[1], [2], [3]]|         [3, 2]|         [3, 2]|
+|   a|   [1, 2, 3]|   [1, 2, 3]|     [[1], [2], [3]]|         [2, 1]|         [2, 1]|
+|   b|[1, 2, 3, 4]|[1, 2, 3, 4]|[[1], [2], [3], [4]]|         [2, 4]|         [2, 4]|
+|   b|[1, 2, 3, 4]|[1, 2, 3, 4]|[[1], [2], [3], [4]]|         [4, 2]|         [4, 2]|
++—-+————+————+——————–+—————+—————+</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>columns</strong> – str or a list of str. Columns to convert to sampled list. Each column
+should be of list type. The list length of specified columns in the same row must
+be the same.</p></li>
+<li><p><strong>num_sampled_list</strong> – int. The number of lists that should be sampled for each row.</p></li>
+<li><p><strong>num_sampled_item</strong> – int. The number of elements to be sampled for each list from
+the list of each column.</p></li>
+<li><p><strong>random_seed</strong> – int. The number for creating ‘np.random.RandomState’. Default: None.</p></li>
+<li><p><strong>replace</strong> – bool. Indicates whether to replace the original columns. If replace=False,
+a corresponding column “sampled_col” will be generated for each sampled column.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new sampled listwise FeatureTable.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.StringIndex">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bigdl.friesian.feature.table.</span></span><span class="sig-name descname"><span class="pre">StringIndex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#StringIndex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.StringIndex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bigdl.friesian.feature.table.Table" title="bigdl.friesian.feature.table.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">bigdl.friesian.feature.table.Table</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.StringIndex.read_parquet">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">read_parquet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">paths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#StringIndex.read_parquet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.StringIndex.read_parquet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads Parquet files as a StringIndex.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>paths</strong> – str or a list of str, the path(s) to Parquet file(s).</p></li>
+<li><p><strong>col_name</strong> – str. The column name of the corresponding categorical column. If
+col_name is None, the file name will be used as col_name.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A StringIndex.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.StringIndex.from_dict">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#StringIndex.from_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.StringIndex.from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the StringIndex from a dict of indices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>indices</strong> – dict, the key is the categorical column, and the value is the
+corresponding index. We assume that the key is a str and the value
+is a int.</p></li>
+<li><p><strong>col_name</strong> – str. The column name of the categorical column.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A StringIndex.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.StringIndex.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#StringIndex.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.StringIndex.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the StringIndex to a dict, with the categorical features as keys and indices
+as values.
+Note that you may only call this if the StringIndex is small.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A dict for the mapping from string to index.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.StringIndex.write_parquet">
+<span class="sig-name descname"><span class="pre">write_parquet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'overwrite'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#StringIndex.write_parquet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.StringIndex.write_parquet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the StringIndex to Parquet file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> – str, the path to the Parquet file. Note that the col_name
+will be used as basename of the Parquet file.</p></li>
+<li><p><strong>mode</strong> – str. One of “append”, “overwrite”, “error” or “ignore”.
+append: Append the contents of this StringIndex to the existing data.
+overwrite: Overwrite the existing data.
+error: Throw an exception if the data already exists.
+ignore: Silently ignore this operation if the data already exists.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.StringIndex.cast">
+<span class="sig-name descname"><span class="pre">cast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#StringIndex.cast"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.StringIndex.cast" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cast columns to the specified type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>columns</strong> – str or a list of str that specifies column names.
+If it is None, then cast all of the columns.</p></li>
+<li><p><strong>dtype</strong> – str (“string”, “boolean”, “int”, “long”, “short”, “float”, “double”)
+that specifies the data type.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new Table that casts all of the specified columns to the specified type.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.TargetCode">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bigdl.friesian.feature.table.</span></span><span class="sig-name descname"><span class="pre">TargetCode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cat_col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_target_mean</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#TargetCode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.TargetCode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bigdl.friesian.feature.table.Table" title="bigdl.friesian.feature.table.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">bigdl.friesian.feature.table.Table</span></code></a></p>
+<p>Target Encoding output used for encoding new FeatureTables, which consists of the encoded
+categorical column or column group and the target encoded columns (mean statistics of
+the categorical column or column group).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> – Target encoded data.</p></li>
+<li><p><strong>cat_col</strong> – str or list of str. The categorical column or column group encoded in the
+original FeatureTable.</p></li>
+<li><p><strong>out_target_mean</strong> – dict, the key is the target encoded output column in this
+TargetCode, and the value is a tuple of the target column in the original
+FeatureTable together with the target column’s global mean in the original
+FeatureTable.
+For example: {“col3_te_target1”: (“target1”, 3.0)}, and in this case cat_col for this
+TargetCode should be “col3”.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.friesian.feature.table.TargetCode.rename">
+<span class="sig-name descname"><span class="pre">rename</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/friesian/feature/table.html#TargetCode.rename"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.friesian.feature.table.TargetCode.rename" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rename columns with new column names</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>columns</strong> – dict. Name pairs. For instance, {‘old_name1’: ‘new_name1’, ‘old_name2’:
+‘new_name2’}”.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new Table with new column names.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../Orca/automl.html" class="btn btn-neutral float-left" title="orca.automl.auto_estimator" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../Chronos/index.html" class="btn btn-neutral float-right" title="Chronos API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

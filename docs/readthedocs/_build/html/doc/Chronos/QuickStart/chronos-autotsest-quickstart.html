@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tune a Forecasting Task Automatically &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/design-tabs.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Tune a Forecasting Task Automatically</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/doc/Chronos/QuickStart/chronos-autotsest-quickstart.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="tune-a-forecasting-task-automatically">
+<h1>Tune a Forecasting Task Automatically<a class="headerlink" href="#tune-a-forecasting-task-automatically" title="Permalink to this headline">¶</a></h1>
+<hr class="docutils" />
+<p><img alt="../../../_images/colab_logo_32px.png" src="../../../_images/colab_logo_32px.png" /><a class="reference external" href="https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_autots_nyc_taxi.ipynb">Run in Google Colab</a>  <img alt="../../../_images/GitHub-Mark-32px.png" src="../../../_images/GitHub-Mark-32px.png" /><a class="reference external" href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_autots_nyc_taxi.ipynb">View source on GitHub</a></p>
+<hr class="docutils" />
+<p><strong>In this guide we will demonstrate how to use <em>Chronos AutoTSEstimator</em> and <em>Chronos TSPipeline</em> to auto tune a time seires forecasting task and handle the whole model development process easily.</strong></p>
+<section id="introduction">
+<h2><strong>Introduction</strong><a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>Chronos provides <code class="docutils literal notranslate"><span class="pre">AutoTSEstimator</span></code> as a highly integrated solution for time series forecasting task with hyperparameter autotuning, auto feature selection and auto preprocessing. Users can prepare a <code class="docutils literal notranslate"><span class="pre">TSDataset</span></code>(recommended, used in this notebook) or their own data creator as input data. By constructing a <code class="docutils literal notranslate"><span class="pre">AutoTSEstimator</span></code> and calling <code class="docutils literal notranslate"><span class="pre">fit</span></code> on the data, a <code class="docutils literal notranslate"><span class="pre">TSPipeline</span></code> contains the best model and pre/post data processing will be returned for further development of deployment.</p>
+<p><code class="docutils literal notranslate"><span class="pre">AutoTSEstimator</span></code> only support LSTM, TCN, and Seq2seq built-in models and 3rd party models for now.</p>
+</section>
+<section id="step-0-prepare-environment">
+<h2><strong>Step 0: Prepare Environment</strong><a class="headerlink" href="#step-0-prepare-environment" title="Permalink to this headline">¶</a></h2>
+<p>We recommend using <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/">conda</a> to prepare the environment. Please refer to the <a class="reference external" href="../Overview/chronos.html#install">install guide</a> for more details.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda create -n my_env <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.7
+conda activate my_env
+pip install --pre --upgrade bigdl-chronos<span class="o">[</span>all<span class="o">]</span>
+</pre></div>
+</div>
+</section>
+<section id="step-1-init-orca-context">
+<h2><strong>Step 1: Init Orca Context</strong><a class="headerlink" href="#step-1-init-orca-context" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">cluster_mode</span> <span class="o">==</span> <span class="s2">&quot;local&quot;</span><span class="p">:</span>
+    <span class="n">init_orca_context</span><span class="p">(</span><span class="n">cluster_mode</span><span class="o">=</span><span class="s2">&quot;local&quot;</span><span class="p">,</span> <span class="n">cores</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span> <span class="c1"># run in local mode</span>
+<span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">cluster_mode</span> <span class="o">==</span> <span class="s2">&quot;k8s&quot;</span><span class="p">:</span>
+    <span class="n">init_orca_context</span><span class="p">(</span><span class="n">cluster_mode</span><span class="o">=</span><span class="s2">&quot;k8s&quot;</span><span class="p">,</span> <span class="n">num_nodes</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">cores</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># run on K8s cluster</span>
+<span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">cluster_mode</span> <span class="o">==</span> <span class="s2">&quot;yarn&quot;</span><span class="p">:</span>
+    <span class="n">init_orca_context</span><span class="p">(</span><span class="n">cluster_mode</span><span class="o">=</span><span class="s2">&quot;yarn-client&quot;</span><span class="p">,</span> <span class="n">num_nodes</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">cores</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># run on Hadoop YARN cluster</span>
+</pre></div>
+</div>
+<p>This is the only place where you need to specify local or distributed mode. View <a class="reference internal" href="../../Orca/Overview/orca-context.html"><span class="doc">Orca Context</span></a> for more details.</p>
+<p><strong>Note:</strong> You should <code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">HADOOP_CONF_DIR=/path/to/hadoop/conf/dir</span></code> when running on Hadoop YARN cluster. View <a class="reference internal" href="../../UserGuide/hadoop.html"><span class="doc">Hadoop User Guide</span></a> for more details.</p>
+</section>
+<section id="step-2-prepare-a-tsdataset">
+<h2><strong>Step 2: Prepare a TSDataset</strong><a class="headerlink" href="#step-2-prepare-a-tsdataset" title="Permalink to this headline">¶</a></h2>
+<p>Prepare a <code class="docutils literal notranslate"><span class="pre">TSDataset</span></code> and call necessary operations on it.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bigdl.chronos.data</span> <span class="kn">import</span> <span class="n">TSDataset</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">StandardScaler</span>
+
+<span class="n">tsdata_train</span><span class="p">,</span> <span class="n">tsdata_val</span><span class="p">,</span> <span class="n">tsdata_test</span>\
+    <span class="o">=</span> <span class="n">TSDataset</span><span class="o">.</span><span class="n">from_pandas</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">dt_col</span><span class="o">=</span><span class="s2">&quot;timestamp&quot;</span><span class="p">,</span> <span class="n">target_col</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="n">with_split</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">val_ratio</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">test_ratio</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+
+<span class="n">standard_scaler</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">tsdata</span> <span class="ow">in</span> <span class="p">[</span><span class="n">tsdata_train</span><span class="p">,</span> <span class="n">tsdata_val</span><span class="p">,</span> <span class="n">tsdata_test</span><span class="p">]:</span>
+    <span class="n">tsdata</span><span class="o">.</span><span class="n">gen_dt_feature</span><span class="p">()</span>\
+          <span class="o">.</span><span class="n">impute</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;last&quot;</span><span class="p">)</span>\
+          <span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">standard_scaler</span><span class="p">,</span> <span class="n">fit</span><span class="o">=</span><span class="p">(</span><span class="n">tsdata</span> <span class="ow">is</span> <span class="n">tsdata_train</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>There is no need to call <code class="docutils literal notranslate"><span class="pre">.roll()</span></code> or <code class="docutils literal notranslate"><span class="pre">.to_torch_data_loader()</span></code> in this step, which is the largest difference between the usage of <code class="docutils literal notranslate"><span class="pre">AutoTSEstimator</span></code> and <em>Chronos Forecaster</em>. <code class="docutils literal notranslate"><span class="pre">AutoTSEstimator</span></code> will do that automatically and tune the parameters as well.</p>
+<p>Please call <code class="docutils literal notranslate"><span class="pre">.gen_dt_feature()</span></code>(recommended), <code class="docutils literal notranslate"><span class="pre">.gen_rolling_feature()</span></code>, and <code class="docutils literal notranslate"><span class="pre">gen_global_feature()</span></code> to generate all candidate features to be selected by <code class="docutils literal notranslate"><span class="pre">AutoTSEstimator</span></code> as well as your input extra feature.</p>
+<p>Detailed information please refer to <a class="reference external" href="../../PythonAPI/Chronos/tsdataset.html">TSDataset API doc</a> and <a class="reference external" href="../Overview/data_processing_feature_engineering.html">Time series data basic concepts</a>.</p>
+</section>
+<section id="step-3-create-an-autotsestimator">
+<h2><strong>Step 3: Create an AutoTSEstimator</strong><a class="headerlink" href="#step-3-create-an-autotsestimator" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">bigdl.orca.automl.hp</span> <span class="kn">as</span> <span class="nn">hp</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.autots</span> <span class="kn">import</span> <span class="n">AutoTSEstimator</span>
+<span class="n">auto_estimator</span> <span class="o">=</span> <span class="n">AutoTSEstimator</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s1">&#39;lstm&#39;</span><span class="p">,</span> <span class="c1"># the model name used for training</span>
+                                 <span class="n">search_space</span><span class="o">=</span><span class="s1">&#39;normal&#39;</span><span class="p">,</span> <span class="c1"># a default hyper parameter search space</span>
+                                 <span class="n">past_seq_len</span><span class="o">=</span><span class="n">hp</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="c1"># hp sampling function of past_seq_len for auto-tuning</span>
+<span class="p">)</span> 
+</pre></div>
+</div>
+<p>We prebuild three defualt search space for each build-in model, which you can use the by setting <code class="docutils literal notranslate"><span class="pre">search_space</span></code> to “minimal”，”normal”, or “large” or define your own search space in a dictionary. The larger the search space, the better accuracy you will get and the more time will be cost.</p>
+<p><code class="docutils literal notranslate"><span class="pre">past_seq_len</span></code> can be set as a hp sample function, the proper range is highly related to your data. A range between 0.5 cycle and 3 cycle is reasonable.</p>
+<p>Detailed information please refer to <a class="reference external" href="../../PythonAPI/Chronos/autotsestimator.html#autotsestimator">AutoTSEstimator API doc</a> and basic concepts <a class="reference external" href="../Overview/forecasting.html#use-autots-pipeline">here</a>.</p>
+</section>
+<section id="step-4-fit-with-autotsestimator">
+<h2><strong>Step 4: Fit with AutoTSEstimator</strong><a class="headerlink" href="#step-4-fit-with-autotsestimator" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># fit with AutoTSEstimator for a returned TSPipeline</span>
+<span class="n">ts_pipeline</span> <span class="o">=</span> <span class="n">auto_estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">tsdata_train</span><span class="p">,</span> <span class="c1"># train dataset</span>
+                                 <span class="n">validation_data</span><span class="o">=</span><span class="n">tsdata_val</span><span class="p">,</span> <span class="c1"># validation dataset</span>
+                                 <span class="n">epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span> <span class="c1"># number of epochs to train in each trial</span>
+</pre></div>
+</div>
+<p>Detailed information please refer to <a class="reference external" href="../../PythonAPI/Chronos/autotsestimator.html#autotsestimator">AutoTSEstimator API doc</a>.</p>
+</section>
+<section id="step-5-further-deployment-with-tspipeline">
+<h2><strong>Step 5: Further deployment with TSPipeline</strong><a class="headerlink" href="#step-5-further-deployment-with-tspipeline" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">TSPipeline</span></code> will reply the same preprcessing and corresponding postprocessing operations on the test data. You may carry out predict, evaluate or save/load for further development.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># predict with the best trial</span>
+<span class="n">y_pred</span> <span class="o">=</span> <span class="n">ts_pipeline</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">tsdata_test</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># evaluate the result pipeline</span>
+<span class="n">mse</span><span class="p">,</span> <span class="n">smape</span> <span class="o">=</span> <span class="n">ts_pipeline</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">tsdata_test</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;mse&quot;</span><span class="p">,</span> <span class="s2">&quot;smape&quot;</span><span class="p">])</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Evaluate: the mean square error is&quot;</span><span class="p">,</span> <span class="n">mse</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Evaluate: the smape value is&quot;</span><span class="p">,</span> <span class="n">smape</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># save the pipeline</span>
+<span class="n">my_ppl_file_path</span> <span class="o">=</span> <span class="s2">&quot;/tmp/saved_pipeline&quot;</span>
+<span class="n">ts_pipeline</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">my_ppl_file_path</span><span class="p">)</span>
+<span class="c1"># restore the pipeline for further deployment</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.autots</span> <span class="kn">import</span> <span class="n">TSPipeline</span>
+<span class="n">loaded_ppl</span> <span class="o">=</span> <span class="n">TSPipeline</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">my_ppl_file_path</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Detailed information please refer to <a class="reference external" href="../../PythonAPI/Chronos/tsdataset.html">TSPipeline API doc</a>.</p>
+</section>
+<section id="optional-examine-the-leaderboard-visualization">
+<h2><strong>Optional: Examine the leaderboard visualization</strong><a class="headerlink" href="#optional-examine-the-leaderboard-visualization" title="Permalink to this headline">¶</a></h2>
+<p>To view the evaluation result of “not chosen” trails and find some insight or even possibly improve you search space for a new autotuning task. We provide a leaderboard through tensorboard.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># show a tensorboard view</span>
+<span class="o">%</span><span class="n">load_ext</span> <span class="n">tensorboard</span>
+<span class="o">%</span><span class="n">tensorboard</span> <span class="o">--</span><span class="n">logdir</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">autots_estimator</span><span class="o">/</span><span class="n">autots_estimator_leaderboard</span><span class="o">/</span>
+</pre></div>
+</div>
+<p>Detailed information please refer to <a class="reference external" href="../Overview/useful_functionalities.html#automl-visualization">Visualization</a>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

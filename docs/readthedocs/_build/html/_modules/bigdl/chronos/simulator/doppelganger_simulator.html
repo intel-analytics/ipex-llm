@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bigdl.chronos.simulator.doppelganger_simulator &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/clipboard.min.js"></script>
+        <script src="../../../../_static/copybutton.js"></script>
+        <script src="../../../../_static/tabs.js"></script>
+        <script src="../../../../_static/design-tabs.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Chronos/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>bigdl.chronos.simulator.doppelganger_simulator</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bigdl.chronos.simulator.doppelganger_simulator</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright 2016 The BigDL Authors.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">bigdl.chronos.simulator.doppelganger.util</span> <span class="k">import</span> <span class="n">gen_attribute_input_noise</span><span class="p">,</span>\
+    <span class="n">gen_feature_input_noise</span><span class="p">,</span> <span class="n">gen_feature_input_data_free</span><span class="p">,</span> <span class="n">renormalize_per_sample</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.simulator.doppelganger.output</span> <span class="k">import</span> <span class="n">OutputType</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+
+<span class="n">MODEL_PATH</span> <span class="o">=</span> <span class="s2">&quot;doppelganger.ckpt&quot;</span>
+<span class="n">FEATURE_OUTPUT</span> <span class="o">=</span> <span class="s2">&quot;feature.output.ckpt&quot;</span>
+<span class="n">ATTRIBUTE_OUTPUT</span> <span class="o">=</span> <span class="s2">&quot;attribute.output.ckpt&quot;</span>
+
+
+<div class="viewcode-block" id="DPGANSimulator"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/simulator.html#bigdl.chronos.simulator.doppelganger_simulator.DPGANSimulator">[docs]</a><span class="k">class</span> <span class="nc">DPGANSimulator</span><span class="p">:</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Doppelganger Simulator for time series generation.</span>
+<span class="sd">    The codes and algorithm are adapted from https://github.com/fjxmlzn/DoppelGANger.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">L_max</span><span class="p">,</span>
+                 <span class="n">sample_len</span><span class="p">,</span>
+                 <span class="n">feature_dim</span><span class="p">,</span>
+                 <span class="n">num_real_attribute</span><span class="p">,</span>
+                 <span class="n">discriminator_num_layers</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                 <span class="n">discriminator_num_units</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+                 <span class="n">attr_discriminator_num_layers</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                 <span class="n">attr_discriminator_num_units</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+                 <span class="n">attribute_num_units</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                 <span class="n">attribute_num_layers</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                 <span class="n">feature_num_units</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                 <span class="n">feature_num_layers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">attribute_input_noise_dim</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                 <span class="n">addi_attribute_input_noise_dim</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                 <span class="n">d_gp_coe</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                 <span class="n">attr_d_gp_coe</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                 <span class="n">g_attr_d_coe</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">d_lr</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
+                 <span class="n">attr_d_lr</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
+                 <span class="n">g_lr</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
+                 <span class="n">g_rounds</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">d_rounds</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                 <span class="n">num_threads</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">ckpt_dir</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
+                 <span class="n">checkpoint_every_n_epoch</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Initialize a doppelganger simulator.</span>
+
+<span class="sd">        :param L_max: the maximum length of your feature.</span>
+<span class="sd">        :param sample_len: the sample length to control LSTM length, should be a divider to L_max</span>
+<span class="sd">        :param feature_dim: dimention of the feature</span>
+<span class="sd">        :param num_real_attribute: the length of you attribute, which should be equal to the</span>
+<span class="sd">               len(data_attribute).</span>
+<span class="sd">        :param discriminator_num_layers: MLP layer num for discriminator.</span>
+<span class="sd">        :param discriminator_num_units: MLP hidden unit for discriminator.</span>
+<span class="sd">        :param attr_discriminator_num_layers: MLP layer num for attr discriminator.</span>
+<span class="sd">        :param attr_discriminator_num_units: MLP hidden unit for attr discriminator.</span>
+<span class="sd">        :param attribute_num_units: MLP layer num for attr generator/addi attr generator.</span>
+<span class="sd">        :param attribute_num_layers:  MLP hidden unit for attr generator/addi attr generator.</span>
+<span class="sd">        :param feature_num_units: LSTM hidden unit for feature generator.</span>
+<span class="sd">        :param feature_num_layers: LSTM layer num for feature generator.</span>
+<span class="sd">        :param attribute_input_noise_dim: noise data dim for attr generator.</span>
+<span class="sd">        :param addi_attribute_input_noise_dim: noise data dim for addi attr generator.</span>
+<span class="sd">        :param d_gp_coe: gradient penalty ratio for d loss.</span>
+<span class="sd">        :param attr_d_gp_coe: gradient penalty ratio for attr d loss.</span>
+<span class="sd">        :param g_attr_d_coe: ratio between feature loss and attr loss for g loss.</span>
+<span class="sd">        :param d_lr: learning rate for discriminator.</span>
+<span class="sd">        :param attr_d_lr: learning rate for attr discriminator.</span>
+<span class="sd">        :param g_lr: learning rate for genereators.</span>
+<span class="sd">        :param g_rounds: g rounds.</span>
+<span class="sd">        :param d_rounds: d rounds.</span>
+<span class="sd">        :param seed: random seed.</span>
+<span class="sd">        :param num_threads: num of threads to be used for training.</span>
+<span class="sd">        :param ckpt_dir: The checkpoint location, defaults to the working dir.</span>
+<span class="sd">        :param checkpoint_every_n_epoch: checkpoint every n epoch, defaults to 0</span>
+<span class="sd">               for no checkpoints.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="c1"># additional settings</span>
+        <span class="kn">from</span> <span class="nn">pytorch_lightning</span> <span class="k">import</span> <span class="n">seed_everything</span>
+        <span class="n">seed_everything</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">num_threads</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">set_num_threads</span><span class="p">(</span><span class="n">num_threads</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ckpt_dir</span> <span class="o">=</span> <span class="n">ckpt_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ckpt_dir_model</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ckpt_dir</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">checkpoint_every_n_epoch</span> <span class="o">=</span> <span class="n">checkpoint_every_n_epoch</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sample_len</span> <span class="o">=</span> <span class="n">sample_len</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">L_max</span> <span class="o">=</span> <span class="n">L_max</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">feature_dim</span> <span class="o">=</span> <span class="n">feature_dim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_real_attribute</span> <span class="o">=</span> <span class="n">num_real_attribute</span>
+
+        <span class="c1"># hparam saving</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;discriminator_num_layers&quot;</span><span class="p">:</span> <span class="n">discriminator_num_layers</span><span class="p">,</span>
+                       <span class="s2">&quot;discriminator_num_units&quot;</span><span class="p">:</span> <span class="n">discriminator_num_units</span><span class="p">,</span>
+                       <span class="s2">&quot;attr_discriminator_num_layers&quot;</span><span class="p">:</span> <span class="n">attr_discriminator_num_layers</span><span class="p">,</span>
+                       <span class="s2">&quot;attr_discriminator_num_units&quot;</span><span class="p">:</span> <span class="n">attr_discriminator_num_units</span><span class="p">,</span>
+                       <span class="s2">&quot;attribute_num_units&quot;</span><span class="p">:</span> <span class="n">attribute_num_units</span><span class="p">,</span>
+                       <span class="s2">&quot;attribute_num_layers&quot;</span><span class="p">:</span> <span class="n">attribute_num_layers</span><span class="p">,</span>
+                       <span class="s2">&quot;feature_num_units&quot;</span><span class="p">:</span> <span class="n">feature_num_units</span><span class="p">,</span>
+                       <span class="s2">&quot;feature_num_layers&quot;</span><span class="p">:</span> <span class="n">feature_num_layers</span><span class="p">,</span>
+                       <span class="s2">&quot;attribute_input_noise_dim&quot;</span><span class="p">:</span> <span class="n">attribute_input_noise_dim</span><span class="p">,</span>
+                       <span class="s2">&quot;addi_attribute_input_noise_dim&quot;</span><span class="p">:</span> <span class="n">addi_attribute_input_noise_dim</span><span class="p">,</span>
+                       <span class="s2">&quot;d_gp_coe&quot;</span><span class="p">:</span> <span class="n">d_gp_coe</span><span class="p">,</span>
+                       <span class="s2">&quot;attr_d_gp_coe&quot;</span><span class="p">:</span> <span class="n">attr_d_gp_coe</span><span class="p">,</span>
+                       <span class="s2">&quot;g_attr_d_coe&quot;</span><span class="p">:</span> <span class="n">g_attr_d_coe</span><span class="p">,</span>
+                       <span class="s2">&quot;d_lr&quot;</span><span class="p">:</span> <span class="n">d_lr</span><span class="p">,</span>
+                       <span class="s2">&quot;attr_d_lr&quot;</span><span class="p">:</span> <span class="n">attr_d_lr</span><span class="p">,</span>
+                       <span class="s2">&quot;g_lr&quot;</span><span class="p">:</span> <span class="n">g_lr</span><span class="p">,</span>
+                       <span class="s2">&quot;g_rounds&quot;</span><span class="p">:</span> <span class="n">g_rounds</span><span class="p">,</span>
+                       <span class="s2">&quot;d_rounds&quot;</span><span class="p">:</span> <span class="n">d_rounds</span><span class="p">}</span>
+
+        <span class="c1"># model init</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># model will be lazy built since the dim will depend on the data</span>
+
+<div class="viewcode-block" id="DPGANSimulator.fit"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/simulator.html#bigdl.chronos.simulator.doppelganger_simulator.DPGANSimulator.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+            <span class="n">data_feature</span><span class="p">,</span>
+            <span class="n">data_attribute</span><span class="p">,</span>
+            <span class="n">data_gen_flag</span><span class="p">,</span>
+            <span class="n">feature_outputs</span><span class="p">,</span>
+            <span class="n">attribute_outputs</span><span class="p">,</span>
+            <span class="n">epoch</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Fit on the training data(typically the private data).</span>
+
+<span class="sd">        :param data_feature: Training features, in numpy float32 array format.</span>
+<span class="sd">               The size is [(number of training samples) x (maximum length)</span>
+<span class="sd">               x (total dimension of features)]. Categorical features are stored</span>
+<span class="sd">               by one-hot encoding; for example, if a categorical feature has 3</span>
+<span class="sd">               possibilities, then it can take values between [1., 0., 0.],</span>
+<span class="sd">               [0., 1., 0.], and [0., 0., 1.]. Each continuous feature should be</span>
+<span class="sd">               normalized to [0, 1] or [-1, 1]. The array is padded by zeros after</span>
+<span class="sd">               the time series ends.</span>
+<span class="sd">        :param data_attribute: Training attributes, in numpy float32 array format. The size is</span>
+<span class="sd">               [(number of training samples) x (total dimension of attributes)]. Categorical</span>
+<span class="sd">               attributes are stored by one-hot encoding; for example, if a categorical</span>
+<span class="sd">               attribute has 3 possibilities, then it can take values between [1., 0., 0.],</span>
+<span class="sd">               [0., 1., 0.], and [0., 0., 1.]. Each continuous attribute should be normalized</span>
+<span class="sd">               to [0, 1] or [-1, 1].</span>
+<span class="sd">        :param data_gen_flag: Flags indicating the activation of features, in numpy float32</span>
+<span class="sd">               array format. The size is [(number of training samples) x (maximum length)].</span>
+<span class="sd">               1 means the time series is activated at this time step, 0 means the time series</span>
+<span class="sd">               is inactivated at this timestep.</span>
+<span class="sd">        :param feature_outputs: A list of Output indicates the meta data of data_feature.</span>
+<span class="sd">        :param attribute_outputs: A list of Output indicates the meta data of data_attribute.</span>
+<span class="sd">        :param epoch: training epoch.</span>
+<span class="sd">        :param batch_size: training batchsize.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="c1"># data preparation</span>
+        <span class="n">real_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">real_data</span><span class="p">[</span><span class="s2">&quot;data_feature&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_feature</span>
+        <span class="n">real_data</span><span class="p">[</span><span class="s2">&quot;data_attribute&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_attribute</span>
+        <span class="n">real_data</span><span class="p">[</span><span class="s2">&quot;data_gen_flag&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_gen_flag</span>
+        <span class="kn">from</span> <span class="nn">bigdl.chronos.simulator.doppelganger.data_module</span> <span class="k">import</span> <span class="n">DoppelGANgerDataModule</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_module</span> <span class="o">=</span> <span class="n">DoppelGANgerDataModule</span><span class="p">(</span><span class="n">real_data</span><span class="o">=</span><span class="n">real_data</span><span class="p">,</span>
+                                                  <span class="n">feature_outputs</span><span class="o">=</span><span class="n">feature_outputs</span><span class="p">,</span>
+                                                  <span class="n">attribute_outputs</span><span class="o">=</span><span class="n">attribute_outputs</span><span class="p">,</span>
+                                                  <span class="n">sample_len</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_len</span><span class="p">,</span>
+                                                  <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
+
+        <span class="kn">from</span> <span class="nn">pytorch_lightning.callbacks</span> <span class="k">import</span> <span class="n">ModelCheckpoint</span>
+        <span class="n">checkpoint_callback</span> <span class="o">=</span> <span class="n">ModelCheckpoint</span><span class="p">(</span><span class="n">dirpath</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ckpt_dir_model</span><span class="p">,</span>
+                                              <span class="n">save_top_k</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                                              <span class="n">every_n_epochs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">checkpoint_every_n_epoch</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">checkpoint_every_n_epoch</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ckpt_dir</span><span class="p">,</span> <span class="n">FEATURE_OUTPUT</span><span class="p">),</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_module</span><span class="o">.</span><span class="n">data_feature_outputs</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ckpt_dir</span><span class="p">,</span> <span class="n">ATTRIBUTE_OUTPUT</span><span class="p">),</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_module</span><span class="o">.</span><span class="n">data_attribute_outputs</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+
+        <span class="c1"># build the model</span>
+        <span class="kn">from</span> <span class="nn">bigdl.chronos.simulator.doppelganger.doppelganger_pl</span> <span class="k">import</span> <span class="n">DoppelGANger_pl</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">DoppelGANger_pl</span><span class="p">(</span><span class="n">data_feature_outputs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_module</span><span class="o">.</span><span class="n">data_feature_outputs</span><span class="p">,</span>
+                                     <span class="n">data_attribute_outputs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_module</span><span class="o">.</span><span class="n">data_attribute_outputs</span><span class="p">,</span>
+                                     <span class="n">L_max</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">L_max</span><span class="p">,</span>
+                                     <span class="n">sample_len</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_len</span><span class="p">,</span>
+                                     <span class="n">num_real_attribute</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_real_attribute</span><span class="p">,</span>
+                                     <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+        <span class="kn">from</span> <span class="nn">pytorch_lightning</span> <span class="k">import</span> <span class="n">Trainer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">logger</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                               <span class="n">callbacks</span><span class="o">=</span><span class="n">checkpoint_callback</span><span class="p">,</span>
+                               <span class="n">max_epochs</span><span class="o">=</span><span class="n">epoch</span><span class="p">,</span>
+                               <span class="n">default_root_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ckpt_dir</span><span class="p">)</span>
+
+        <span class="c1"># fit!</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_module</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DPGANSimulator.generate"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/simulator.html#bigdl.chronos.simulator.doppelganger_simulator.DPGANSimulator.generate">[docs]</a>    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_num</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Generate synthetic data with similar distribution as training data.</span>
+
+<span class="sd">        :param sample_num: How many samples to be generated.</span>
+<span class="sd">        :param batch_size: batch size to generate.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="c1"># set to inference mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+        <span class="n">total_generate_num_sample</span> <span class="o">=</span> <span class="n">sample_num</span>
+
+        <span class="c1"># generate noise and inputs</span>
+        <span class="n">real_attribute_input_noise</span> <span class="o">=</span> <span class="n">gen_attribute_input_noise</span><span class="p">(</span><span class="n">total_generate_num_sample</span><span class="p">)</span>
+        <span class="n">addi_attribute_input_noise</span> <span class="o">=</span> <span class="n">gen_attribute_input_noise</span><span class="p">(</span><span class="n">total_generate_num_sample</span><span class="p">)</span>
+        <span class="n">feature_input_noise</span> <span class="o">=</span> <span class="n">gen_feature_input_noise</span><span class="p">(</span><span class="n">total_generate_num_sample</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+        <span class="n">feature_input_data</span> <span class="o">=</span> <span class="n">gen_feature_input_data_free</span><span class="p">(</span><span class="n">total_generate_num_sample</span><span class="p">,</span>
+                                                         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">sample_len</span><span class="p">,</span>
+                                                         <span class="bp">self</span><span class="o">.</span><span class="n">feature_dim</span><span class="p">)</span>
+        <span class="n">real_attribute_input_noise</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">real_attribute_input_noise</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+        <span class="n">addi_attribute_input_noise</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">addi_attribute_input_noise</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+        <span class="n">feature_input_noise</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">feature_input_noise</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+        <span class="n">feature_input_data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">feature_input_data</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+
+        <span class="c1"># generate</span>
+        <span class="n">features</span><span class="p">,</span> <span class="n">attributes</span><span class="p">,</span> <span class="n">gen_flags</span><span class="p">,</span> <span class="n">lengths</span>\
+            <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">sample_from</span><span class="p">(</span><span class="n">real_attribute_input_noise</span><span class="p">,</span>
+                                     <span class="n">addi_attribute_input_noise</span><span class="p">,</span>
+                                     <span class="n">feature_input_noise</span><span class="p">,</span>
+                                     <span class="n">feature_input_data</span><span class="p">,</span>
+                                     <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
+
+        <span class="c1"># renormalize (max, min)</span>
+        <span class="n">features</span><span class="p">,</span> <span class="n">attributes</span> <span class="o">=</span> <span class="n">renormalize_per_sample</span><span class="p">(</span>
+            <span class="n">features</span><span class="p">,</span> <span class="n">attributes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">data_feature_outputs</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">data_attribute_outputs</span><span class="p">,</span> <span class="n">gen_flags</span><span class="p">,</span>
+            <span class="n">num_real_attribute</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_real_attribute</span><span class="p">)</span>  <span class="c1"># -2 for addi attr</span>
+
+        <span class="c1"># post-process the attributes</span>
+        <span class="n">output_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">current_idx</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">data_attribute_outputs</span><span class="p">)):</span>
+            <span class="n">output_it</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">data_attribute_outputs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">output_it</span><span class="o">.</span><span class="n">type_</span> <span class="o">==</span> <span class="n">OutputType</span><span class="o">.</span><span class="n">DISCRETE</span><span class="p">:</span>
+                <span class="n">sub_output</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">attributes</span><span class="p">[:,</span> <span class="n">current_idx</span><span class="p">:</span>
+                                                                   <span class="n">current_idx</span><span class="o">+</span><span class="n">output_it</span><span class="o">.</span><span class="n">dim</span><span class="p">]))</span>
+                <span class="n">sub_output_discrete</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">one_hot</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">sub_output</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                                                <span class="n">num_classes</span><span class="o">=</span><span class="n">output_it</span><span class="o">.</span><span class="n">dim</span><span class="p">)</span>
+                <span class="n">output_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub_output_discrete</span><span class="p">)</span>
+            <span class="n">current_idx</span> <span class="o">+=</span> <span class="n">output_it</span><span class="o">.</span><span class="n">dim</span>
+        <span class="n">attributes</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">output_list</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">features</span><span class="p">,</span> <span class="n">attributes</span><span class="p">,</span> <span class="n">gen_flags</span><span class="p">,</span> <span class="n">lengths</span></div>
+
+<div class="viewcode-block" id="DPGANSimulator.save"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/simulator.html#bigdl.chronos.simulator.doppelganger_simulator.DPGANSimulator.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path_dir</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Save the simulator.</span>
+
+<span class="sd">        :param path_dir: saving path</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">path_dir_model</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_dir</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">save_checkpoint</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_dir_model</span><span class="p">,</span> <span class="n">MODEL_PATH</span><span class="p">))</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_dir</span><span class="p">,</span> <span class="n">FEATURE_OUTPUT</span><span class="p">),</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_module</span><span class="o">.</span><span class="n">data_feature_outputs</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_dir</span><span class="p">,</span> <span class="n">ATTRIBUTE_OUTPUT</span><span class="p">),</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_module</span><span class="o">.</span><span class="n">data_attribute_outputs</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DPGANSimulator.load"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/simulator.html#bigdl.chronos.simulator.doppelganger_simulator.DPGANSimulator.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+             <span class="n">path_dir</span><span class="p">,</span>
+             <span class="n">model_version</span><span class="o">=</span><span class="n">MODEL_PATH</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Load the simulator.</span>
+
+<span class="sd">        :param path_dir: saving path</span>
+<span class="sd">        :param model_version: model version(filename) you would like to load.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_dir</span><span class="p">,</span> <span class="n">FEATURE_OUTPUT</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">data_feature_outputs</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_dir</span><span class="p">,</span> <span class="n">ATTRIBUTE_OUTPUT</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">data_attribute_outputs</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="n">path_dir_model</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_dir</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">)</span>
+        <span class="kn">from</span> <span class="nn">bigdl.chronos.simulator.doppelganger.doppelganger_pl</span> <span class="k">import</span> <span class="n">DoppelGANger_pl</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span>\
+            <span class="n">DoppelGANger_pl</span><span class="o">.</span><span class="n">load_from_checkpoint</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_dir_model</span><span class="p">,</span> <span class="n">model_version</span><span class="p">),</span>
+                                                 <span class="n">data_feature_outputs</span><span class="o">=</span><span class="n">data_feature_outputs</span><span class="p">,</span>
+                                                 <span class="n">data_attribute_outputs</span><span class="o">=</span><span class="n">data_attribute_outputs</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

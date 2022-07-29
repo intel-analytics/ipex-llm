@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bigdl.orca.learn.pytorch.pytorch_ray_estimator &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+        <script src="../../../../../_static/clipboard.min.js"></script>
+        <script src="../../../../../_static/copybutton.js"></script>
+        <script src="../../../../../_static/tabs.js"></script>
+        <script src="../../../../../_static/design-tabs.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../index.html">Module code</a> &raquo;</li>
+      <li>bigdl.orca.learn.pytorch.pytorch_ray_estimator</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bigdl.orca.learn.pytorch.pytorch_ray_estimator</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright 2016 The BigDL Authors.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">types</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">numbers</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">bigdl.orca.data.ray_xshards</span> <span class="k">import</span> <span class="n">RayXShards</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca.learn.pytorch.training_operator</span> <span class="k">import</span> <span class="n">TrainingOperator</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca.learn.pytorch.pytorch_ray_worker</span> <span class="k">import</span> <span class="n">PytorchRayWorker</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca.learn.utils</span> <span class="k">import</span> <span class="n">maybe_dataframe_to_xshards</span><span class="p">,</span> <span class="n">dataframe_to_xshards</span><span class="p">,</span> \
+    <span class="n">convert_predict_xshards_to_dataframe</span><span class="p">,</span> <span class="n">update_predict_xshards</span><span class="p">,</span> \
+    <span class="n">process_xshards_of_pandas_dataframe</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca.ray</span> <span class="k">import</span> <span class="n">OrcaRayContext</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca.learn.ray_estimator</span> <span class="k">import</span> <span class="n">Estimator</span> <span class="k">as</span> <span class="n">OrcaRayEstimator</span>
+<span class="kn">from</span> <span class="nn">bigdl.dllib.utils.file_utils</span> <span class="k">import</span> <span class="n">enable_multi_fs_load</span><span class="p">,</span> <span class="n">enable_multi_fs_save</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca.learn.pytorch.utils</span> <span class="k">import</span> <span class="n">find_free_port</span>
+
+<span class="kn">import</span> <span class="nn">ray</span>
+<span class="kn">from</span> <span class="nn">ray.exceptions</span> <span class="k">import</span> <span class="n">RayActorError</span>
+<span class="kn">from</span> <span class="nn">bigdl.dllib.utils.log4Error</span> <span class="k">import</span> <span class="o">*</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">check_for_failure</span><span class="p">(</span><span class="n">remote_values</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Checks remote values for any that returned and failed.</span>
+<span class="sd">    :param remote_values: List of object IDs representing functions</span>
+<span class="sd">            that may fail in the middle of execution. For example, running</span>
+<span class="sd">            a SGD training loop in multiple parallel actor calls.</span>
+<span class="sd">    :return Bool for success in executing given remote tasks.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">unfinished</span> <span class="o">=</span> <span class="n">remote_values</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">unfinished</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">finished</span><span class="p">,</span> <span class="n">unfinished</span> <span class="o">=</span> <span class="n">ray</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">unfinished</span><span class="p">)</span>
+            <span class="n">finished</span> <span class="o">=</span> <span class="n">ray</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">finished</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="n">RayActorError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">))</span>
+    <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="k">def</span> <span class="nf">partition_refs_to_creator</span><span class="p">(</span><span class="n">partition_refs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">data_creator</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">bigdl.orca.data.utils</span> <span class="k">import</span> <span class="n">ray_partitions_get_data_label</span><span class="p">,</span> <span class="n">index_data</span><span class="p">,</span> <span class="n">get_size</span>
+        <span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="k">import</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">DataLoader</span>
+
+        <span class="k">class</span> <span class="nc">NDArrayDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
+            <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span>  <span class="c1"># features</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">y</span>  <span class="c1"># labels</span>
+
+            <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">get_size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+
+            <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">index_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">i</span><span class="p">),</span> <span class="n">index_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;batch_size&quot;</span><span class="p">:</span> <span class="n">batch_size</span><span class="p">,</span> <span class="s2">&quot;shuffle&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+        <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;shuffle&quot;</span><span class="p">,</span> <span class="s2">&quot;sampler&quot;</span><span class="p">,</span> <span class="s2">&quot;batch_sampler&quot;</span><span class="p">,</span> <span class="s2">&quot;num_workers&quot;</span><span class="p">,</span> <span class="s2">&quot;collate_fn&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;pin_memory&quot;</span><span class="p">,</span> <span class="s2">&quot;drop_last&quot;</span><span class="p">,</span> <span class="s2">&quot;timeout&quot;</span><span class="p">,</span> <span class="s2">&quot;worker_init_fn&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;multiprocessing_context&quot;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+                <span class="n">params</span><span class="p">[</span><span class="n">arg</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="n">arg</span><span class="p">]</span>
+        <span class="n">data</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="n">ray_partitions_get_data_label</span><span class="p">(</span><span class="n">ray</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">partition_refs</span><span class="p">),</span>
+                                                    <span class="n">allow_tuple</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                    <span class="n">allow_list</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Data size on worker: &quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">label</span><span class="p">))</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">NDArrayDataset</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
+        <span class="n">data_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data_loader</span>
+
+    <span class="k">return</span> <span class="n">data_creator</span>
+
+
+<span class="k">def</span> <span class="nf">get_driver_node_ip</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the IP address of the current node.</span>
+
+<span class="sd">    :return: the IP address of the current node.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">ray</span><span class="o">.</span><span class="n">_private</span><span class="o">.</span><span class="n">services</span><span class="o">.</span><span class="n">get_node_ip_address</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="PyTorchRayEstimator"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.pytorch.pytorch_ray_estimator.PyTorchRayEstimator">[docs]</a><span class="k">class</span> <span class="nc">PyTorchRayEstimator</span><span class="p">(</span><span class="n">OrcaRayEstimator</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="o">*</span><span class="p">,</span>
+            <span class="n">model_creator</span><span class="p">,</span>
+            <span class="n">optimizer_creator</span><span class="p">,</span>
+            <span class="n">loss_creator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">scheduler_creator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">training_operator_cls</span><span class="o">=</span><span class="n">TrainingOperator</span><span class="p">,</span>
+            <span class="n">initialization_hook</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">scheduler_step_freq</span><span class="o">=</span><span class="s2">&quot;batch&quot;</span><span class="p">,</span>
+            <span class="n">use_tqdm</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;ray&quot;</span><span class="p">,</span>
+            <span class="n">workers_per_node</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">sync_stats</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">log_level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">&quot;batch_size&quot;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;Please do not specify batch_size in config. Input batch_size in the&quot;</span>
+                              <span class="s2">&quot; fit/evaluate/predict function of the estimator instead.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># todo remove ray_ctx to run on workers</span>
+        <span class="n">ray_ctx</span> <span class="o">=</span> <span class="n">OrcaRayContext</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">model_creator</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">FunctionType</span><span class="p">)</span> <span class="ow">and</span>
+                <span class="nb">isinstance</span><span class="p">(</span><span class="n">optimizer_creator</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">FunctionType</span><span class="p">)):</span>  <span class="c1"># Torch model is also callable.</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;Must provide a function for both model_creator and&quot;</span>
+                              <span class="s2">&quot; optimizer_creator&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_creator</span> <span class="o">=</span> <span class="n">model_creator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer_creator</span> <span class="o">=</span> <span class="n">optimizer_creator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss_creator</span> <span class="o">=</span> <span class="n">loss_creator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_creator</span> <span class="o">=</span> <span class="n">scheduler_creator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">training_operator_cls</span> <span class="o">=</span> <span class="n">training_operator_cls</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_step_freq</span> <span class="o">=</span> <span class="n">scheduler_step_freq</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_tqdm</span> <span class="o">=</span> <span class="n">use_tqdm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sync_stats</span> <span class="o">=</span> <span class="n">sync_stats</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="n">backend</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">training_operator_cls</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">loss_creator</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;If a loss_creator is not provided, you must &quot;</span>
+                              <span class="s2">&quot;provide a custom training operator.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialization_hook</span> <span class="o">=</span> <span class="n">initialization_hook</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">config</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">config</span>
+        <span class="n">worker_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">model_creator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_creator</span><span class="p">,</span>
+            <span class="n">optimizer_creator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer_creator</span><span class="p">,</span>
+            <span class="n">loss_creator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loss_creator</span><span class="p">,</span>
+            <span class="n">scheduler_creator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scheduler_creator</span><span class="p">,</span>
+            <span class="n">training_operator_cls</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">training_operator_cls</span><span class="p">,</span>
+            <span class="n">scheduler_step_freq</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scheduler_step_freq</span><span class="p">,</span>
+            <span class="n">use_tqdm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">use_tqdm</span><span class="p">,</span>
+            <span class="n">config</span><span class="o">=</span><span class="n">worker_config</span><span class="p">,</span>
+            <span class="n">metrics</span><span class="o">=</span><span class="n">metrics</span><span class="p">,</span>
+            <span class="n">sync_stats</span><span class="o">=</span><span class="n">sync_stats</span><span class="p">,</span>
+            <span class="n">log_level</span><span class="o">=</span><span class="n">log_level</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">backend</span> <span class="o">==</span> <span class="s2">&quot;ray&quot;</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">torch.distributed</span> <span class="k">as</span> <span class="nn">dist</span>
+            <span class="n">cores_per_node</span> <span class="o">=</span> <span class="n">ray_ctx</span><span class="o">.</span><span class="n">ray_node_cpu_cores</span> <span class="o">//</span> <span class="n">workers_per_node</span>
+            <span class="n">num_nodes</span> <span class="o">=</span> <span class="n">ray_ctx</span><span class="o">.</span><span class="n">num_ray_nodes</span> <span class="o">*</span> <span class="n">workers_per_node</span>
+            <span class="n">RemoteRunner</span> <span class="o">=</span> <span class="n">ray</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="n">num_cpus</span><span class="o">=</span><span class="n">cores_per_node</span><span class="p">)(</span><span class="n">PytorchRayWorker</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">remote_workers</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">RemoteRunner</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_nodes</span><span class="p">)</span>
+            <span class="p">]</span>
+            <span class="n">ray</span><span class="o">.</span><span class="n">get</span><span class="p">([</span>
+                <span class="n">worker</span><span class="o">.</span><span class="n">setup</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="n">cores_per_node</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">worker</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_workers</span><span class="p">)</span>
+            <span class="p">])</span>
+
+            <span class="n">driver_ip</span> <span class="o">=</span> <span class="n">get_driver_node_ip</span><span class="p">()</span>
+            <span class="n">driver_tcp_store_port</span> <span class="o">=</span> <span class="n">find_free_port</span><span class="p">()</span>
+
+            <span class="n">_</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">TCPStore</span><span class="p">(</span><span class="n">driver_ip</span><span class="p">,</span> <span class="n">driver_tcp_store_port</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span>
+                              <span class="n">dist</span><span class="o">.</span><span class="n">constants</span><span class="o">.</span><span class="n">default_pg_timeout</span><span class="p">)</span>
+
+            <span class="n">ray</span><span class="o">.</span><span class="n">get</span><span class="p">([</span>
+                <span class="n">worker</span><span class="o">.</span><span class="n">setup_torch_distribute</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span>
+                    <span class="n">driver_ip</span><span class="p">,</span> <span class="n">driver_tcp_store_port</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">num_nodes</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">worker</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_workers</span><span class="p">)</span>
+            <span class="p">])</span>
+
+        <span class="k">elif</span> <span class="n">backend</span> <span class="o">==</span> <span class="s2">&quot;horovod&quot;</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">bigdl.orca.learn.horovod.horovod_ray_runner</span> <span class="k">import</span> <span class="n">HorovodRayRunner</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">horovod_runner</span> <span class="o">=</span> <span class="n">HorovodRayRunner</span><span class="p">(</span><span class="n">ray_ctx</span><span class="p">,</span>
+                                                   <span class="n">worker_cls</span><span class="o">=</span><span class="n">PytorchRayWorker</span><span class="p">,</span>
+                                                   <span class="n">worker_param</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
+                                                   <span class="n">workers_per_node</span><span class="o">=</span><span class="n">workers_per_node</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">remote_workers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">horovod_runner</span><span class="o">.</span><span class="n">remote_workers</span>
+            <span class="n">cores_per_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">horovod_runner</span><span class="o">.</span><span class="n">cores_per_node</span>
+            <span class="n">ray</span><span class="o">.</span><span class="n">get</span><span class="p">([</span>
+                <span class="n">worker</span><span class="o">.</span><span class="n">setup</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="n">cores_per_node</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">worker</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_workers</span><span class="p">)</span>
+            <span class="p">])</span>
+
+            <span class="n">ray</span><span class="o">.</span><span class="n">get</span><span class="p">([</span>
+                <span class="n">worker</span><span class="o">.</span><span class="n">setup_horovod</span><span class="o">.</span><span class="n">remote</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">worker</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_workers</span><span class="p">)</span>
+            <span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;Only </span><span class="se">\&quot;</span><span class="s2">ray</span><span class="se">\&quot;</span><span class="s2"> and </span><span class="se">\&quot;</span><span class="s2">horovod</span><span class="se">\&quot;</span><span class="s2"> are supported &quot;</span>
+                              <span class="s2">&quot;values of backend, but got </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">backend</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_workers</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PyTorchRayEstimator.fit"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.pytorch.pytorch_ray_estimator.PyTorchRayEstimator.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+            <span class="n">profile</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">reduce_results</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">info</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">feature_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">label_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">validation_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">callbacks</span><span class="o">=</span><span class="p">[]):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Trains a PyTorch model given training data for several epochs.</span>
+<span class="sd">        Calls `TrainingOperator.train_epoch()` on N parallel workers simultaneously</span>
+<span class="sd">        underneath the hood.</span>
+
+<span class="sd">        :param data: An instance of SparkXShards, a Ray Dataset, a Spark DataFrame or a function</span>
+<span class="sd">               that takes config and batch_size as argument and returns a PyTorch DataLoader for</span>
+<span class="sd">               training.</span>
+<span class="sd">        :param epochs: The number of epochs to train the model. Default is 1.</span>
+<span class="sd">        :param batch_size: The number of samples per batch for each worker. Default is 32.</span>
+<span class="sd">               The total batch size would be workers_per_node*num_nodes.</span>
+<span class="sd">               If your training data is a function, you can set batch_size to be the input</span>
+<span class="sd">               batch_size of the function for the PyTorch DataLoader.</span>
+<span class="sd">        :param profile: Boolean. Whether to return time stats for the training procedure.</span>
+<span class="sd">               Default is False.</span>
+<span class="sd">        :param reduce_results: Boolean. Whether to average all metrics across all workers into</span>
+<span class="sd">               one dict. If a metric is a non-numerical value (or nested dictionaries), one value</span>
+<span class="sd">               will be randomly selected among the workers. If False, returns a list of dicts for</span>
+<span class="sd">               all workers.</span>
+<span class="sd">               Default is True.</span>
+<span class="sd">        :param info: An optional dictionary that can be passed to the TrainingOperator for</span>
+<span class="sd">               train_epoch and train_batch.</span>
+<span class="sd">        :param feature_cols: feature column names if data is Spark DataFrame or Ray Dataset.</span>
+<span class="sd">        :param label_cols: label column names if data is Spark DataFrame or Ray Dataset.</span>
+<span class="sd">        :param validation_data: validation data. Validation data type should be the same</span>
+<span class="sd">               as train data.</span>
+<span class="sd">        :param callbacks: A list for all callbacks.</span>
+
+<span class="sd">        :return: A list of dictionary of metrics for every training epoch. If reduce_results is</span>
+<span class="sd">                False, this will return a nested list of metric dictionaries whose length will be</span>
+<span class="sd">                equal to the total number of workers.</span>
+<span class="sd">                You can also provide custom metrics by passing in a custom training_operator_cls</span>
+<span class="sd">                when creating the Estimator.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">epochs</span><span class="o">=</span><span class="n">epochs</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="n">profile</span><span class="o">=</span><span class="n">profile</span><span class="p">,</span>
+            <span class="n">info</span><span class="o">=</span><span class="n">info</span><span class="p">,</span>
+            <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="kn">from</span> <span class="nn">bigdl.orca.data</span> <span class="k">import</span> <span class="n">SparkXShards</span>
+        <span class="kn">from</span> <span class="nn">ray.data</span> <span class="k">import</span> <span class="n">Dataset</span>
+
+        <span class="n">data</span><span class="p">,</span> <span class="n">validation_data</span> <span class="o">=</span> <span class="n">maybe_dataframe_to_xshards</span><span class="p">(</span><span class="n">data</span><span class="p">,</span>
+                                                           <span class="n">validation_data</span><span class="o">=</span><span class="n">validation_data</span><span class="p">,</span>
+                                                           <span class="n">feature_cols</span><span class="o">=</span><span class="n">feature_cols</span><span class="p">,</span>
+                                                           <span class="n">label_cols</span><span class="o">=</span><span class="n">label_cols</span><span class="p">,</span>
+                                                           <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;fit&quot;</span><span class="p">,</span>
+                                                           <span class="n">num_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">SparkXShards</span><span class="p">):</span>
+            <span class="c1"># Should not wrap DistributedSampler on DataLoader for SparkXShards input.</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;wrap_dataloader&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">_get_class_name</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;pandas.core.frame.DataFrame&#39;</span><span class="p">:</span>
+                <span class="n">data</span><span class="p">,</span> <span class="n">validation_data</span> <span class="o">=</span> <span class="n">process_xshards_of_pandas_dataframe</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">feature_cols</span><span class="p">,</span>
+                                                                            <span class="n">label_cols</span><span class="p">,</span>
+                                                                            <span class="n">validation_data</span><span class="p">,</span> <span class="s2">&quot;fit&quot;</span><span class="p">)</span>
+            <span class="kn">from</span> <span class="nn">bigdl.orca.data.utils</span> <span class="k">import</span> <span class="n">process_spark_xshards</span>
+            <span class="n">ray_xshards</span> <span class="o">=</span> <span class="n">process_spark_xshards</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">validation_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">def</span> <span class="nf">transform_func</span><span class="p">(</span><span class="n">worker</span><span class="p">,</span> <span class="n">partition_refs</span><span class="p">):</span>
+                    <span class="n">data_creator</span> <span class="o">=</span> <span class="n">partition_refs_to_creator</span><span class="p">(</span><span class="n">partition_refs</span><span class="p">)</span>
+                    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;data_creator&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_creator</span>
+                    <span class="k">return</span> <span class="n">worker</span><span class="o">.</span><span class="n">train_epochs</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+
+                <span class="n">worker_stats</span> <span class="o">=</span> <span class="n">ray_xshards</span><span class="o">.</span><span class="n">reduce_partitions_for_actors</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_workers</span><span class="p">,</span>
+                                                                        <span class="n">transform_func</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">==</span> <span class="s2">&quot;horovod&quot;</span><span class="p">:</span>
+                    <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                                      <span class="s2">&quot;Currently, we don&#39;t support input validation_data&quot;</span>
+                                      <span class="s2">&quot; for horovod backend&quot;</span><span class="p">)</span>
+                <span class="n">val_ray_xshards</span> <span class="o">=</span> <span class="n">process_spark_xshards</span><span class="p">(</span><span class="n">validation_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">)</span>
+
+                <span class="k">def</span> <span class="nf">zip_func</span><span class="p">(</span><span class="n">worker</span><span class="p">,</span> <span class="n">this_partition_refs</span><span class="p">,</span> <span class="n">that_partition_refs</span><span class="p">):</span>
+                    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;data_creator&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">partition_refs_to_creator</span><span class="p">(</span><span class="n">this_partition_refs</span><span class="p">)</span>
+                    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;validation_data_creator&quot;</span><span class="p">]</span> <span class="o">=</span> \
+                        <span class="n">partition_refs_to_creator</span><span class="p">(</span><span class="n">that_partition_refs</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">worker</span><span class="o">.</span><span class="n">train_epochs</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+
+                <span class="n">worker_stats</span> <span class="o">=</span> <span class="n">ray_xshards</span><span class="o">.</span><span class="n">zip_reduce_shards_with_actors</span><span class="p">(</span><span class="n">val_ray_xshards</span><span class="p">,</span>
+                                                                         <span class="bp">self</span><span class="o">.</span><span class="n">remote_workers</span><span class="p">,</span>
+                                                                         <span class="n">zip_func</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">Dataset</span><span class="p">):</span>
+            <span class="c1"># todo: need to refactor to align with tf2 code</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;wrap_dataloader&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">shards</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">,</span> <span class="n">locality_hints</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_workers</span><span class="p">)</span>
+
+            <span class="k">def</span> <span class="nf">make_data_creator</span><span class="p">(</span><span class="n">shard</span><span class="p">,</span> <span class="n">feature_cols</span><span class="p">,</span> <span class="n">label_cols</span><span class="p">):</span>
+                <span class="k">def</span> <span class="nf">data_creator</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">):</span>
+                    <span class="n">torch_datashard</span> <span class="o">=</span> <span class="n">shard</span><span class="o">.</span><span class="n">to_torch</span><span class="p">(</span><span class="n">label_column</span><span class="o">=</span><span class="n">label_cols</span><span class="p">,</span>
+                                                     <span class="n">feature_columns</span><span class="o">=</span><span class="n">feature_cols</span><span class="p">,</span>
+                                                     <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">torch_datashard</span>
+                <span class="k">return</span> <span class="n">data_creator</span>
+
+            <span class="n">remote_worker_stats</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">if</span> <span class="n">validation_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">shard</span><span class="p">,</span> <span class="n">worker</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">shards</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_workers</span><span class="p">):</span>
+                    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;data_creator&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">make_data_creator</span><span class="p">(</span><span class="n">shard</span><span class="p">,</span> <span class="n">feature_cols</span><span class="p">,</span> <span class="n">label_cols</span><span class="p">)</span>
+                    <span class="n">stats</span> <span class="o">=</span> <span class="n">worker</span><span class="o">.</span><span class="n">train_epochs</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+                    <span class="n">remote_worker_stats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stats</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">==</span> <span class="s2">&quot;horovod&quot;</span><span class="p">:</span>
+                    <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                                      <span class="s2">&quot;Currently, we don&#39;t support input validation_data for&quot;</span>
+                                      <span class="s2">&quot; horovod backend&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">validation_data</span><span class="p">,</span> <span class="n">ray</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
+                    <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                                      <span class="s2">&quot;Validation data type should be the same as train data,&quot;</span>
+                                      <span class="s2">&quot; but got type: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">validation_data</span><span class="p">)))</span>
+
+                <span class="n">val_shards</span> <span class="o">=</span> <span class="n">validation_data</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">,</span>
+                                                   <span class="n">locality_hints</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_workers</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">shard</span><span class="p">,</span> <span class="n">val_shard</span><span class="p">,</span> <span class="n">worker</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">shards</span><span class="p">,</span> <span class="n">val_shards</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">):</span>
+                    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;data_creator&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">make_data_creator</span><span class="p">(</span><span class="n">shard</span><span class="p">,</span> <span class="n">feature_cols</span><span class="p">,</span> <span class="n">label_cols</span><span class="p">)</span>
+
+                    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;validation_data_creator&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">make_data_creator</span><span class="p">(</span><span class="n">val_shard</span><span class="p">,</span>
+                                                                          <span class="n">feature_cols</span><span class="p">,</span>
+                                                                          <span class="n">label_cols</span><span class="p">)</span>
+                    <span class="n">stats</span> <span class="o">=</span> <span class="n">worker</span><span class="o">.</span><span class="n">train_epochs</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+                    <span class="n">remote_worker_stats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stats</span><span class="p">)</span>
+
+            <span class="n">success</span> <span class="o">=</span> <span class="n">check_for_failure</span><span class="p">(</span><span class="n">remote_worker_stats</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">success</span><span class="p">:</span>
+                <span class="n">worker_stats</span> <span class="o">=</span> <span class="n">ray</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">remote_worker_stats</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">worker_stats</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">FunctionType</span><span class="p">),</span>
+                              <span class="s2">&quot;data should be either an instance of SparkXShards,&quot;</span>
+                              <span class="s2">&quot; Ray Dataset or a callable function, but&quot;</span>
+                              <span class="s2">&quot; got type: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)))</span>
+
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;data_creator&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;validation_data_creator&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">validation_data</span>
+            <span class="n">success</span><span class="p">,</span> <span class="n">worker_stats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_train_epochs</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+
+        <span class="n">epoch_stats</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">worker_stats</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="n">reduce_results</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">epoch_stats</span><span class="p">)):</span>
+                <span class="n">epoch_stats</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_stats</span><span class="p">(</span><span class="n">epoch_stats</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">epoch_stats</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">epoch_stats</span></div>
+
+<div class="viewcode-block" id="PyTorchRayEstimator.predict"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.pytorch.pytorch_ray_estimator.PyTorchRayEstimator.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                <span class="n">data</span><span class="p">,</span>
+                <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+                <span class="n">feature_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">profile</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Using this PyTorch model to make predictions on the data.</span>
+
+<span class="sd">        :param data: An instance of SparkXShards, a Ray Dataset or a Spark DataFrame</span>
+<span class="sd">        :param batch_size: The number of samples per batch for each worker. Default is 32.</span>
+<span class="sd">        :param profile: Boolean. Whether to return time stats for the training procedure.</span>
+<span class="sd">               Default is False.</span>
+<span class="sd">        :param feature_cols: feature column names if data is a Spark DataFrame or Ray Dataset.</span>
+<span class="sd">        :return: A SparkXShards or a list that contains the predictions with key &quot;prediction&quot;</span>
+<span class="sd">               in each shard</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">bigdl.orca.data</span> <span class="k">import</span> <span class="n">SparkXShards</span>
+        <span class="n">param</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="n">profile</span><span class="o">=</span><span class="n">profile</span>
+        <span class="p">)</span>
+        <span class="kn">from</span> <span class="nn">pyspark.sql</span> <span class="k">import</span> <span class="n">DataFrame</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">):</span>
+            <span class="n">xshards</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">dataframe_to_xshards</span><span class="p">(</span><span class="n">data</span><span class="p">,</span>
+                                              <span class="n">validation_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                              <span class="n">feature_cols</span><span class="o">=</span><span class="n">feature_cols</span><span class="p">,</span>
+                                              <span class="n">label_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                              <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;predict&quot;</span><span class="p">)</span>
+            <span class="n">pred_shards</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_predict_spark_xshards</span><span class="p">(</span><span class="n">xshards</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">convert_predict_xshards_to_dataframe</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">pred_shards</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">SparkXShards</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">_get_class_name</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;pandas.core.frame.DataFrame&#39;</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">process_xshards_of_pandas_dataframe</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">feature_cols</span><span class="p">)</span>
+            <span class="n">pred_shards</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_predict_spark_xshards</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">update_predict_xshards</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">pred_shards</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ray</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
+            <span class="n">shards</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">,</span> <span class="n">locality_hints</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_workers</span><span class="p">)</span>
+
+            <span class="k">def</span> <span class="nf">data_creator</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">):</span>
+                <span class="n">torch_datashard</span> <span class="o">=</span> <span class="n">shard</span><span class="o">.</span><span class="n">to_torch</span><span class="p">(</span><span class="n">feature_columns</span><span class="o">=</span><span class="n">feature_cols</span><span class="p">,</span>
+                                                 <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">torch_datashard</span>
+
+            <span class="n">remote_worker_stats</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">shard</span><span class="p">,</span> <span class="n">worker</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">shards</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_workers</span><span class="p">):</span>
+                <span class="n">worker_stats</span> <span class="o">=</span> <span class="n">worker</span><span class="o">.</span><span class="n">predict</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="n">data_creator</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">profile</span><span class="p">)</span>
+                <span class="n">remote_worker_stats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">worker_stats</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">ray</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">remote_worker_stats</span><span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+                <span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;prediction_result&quot;</span><span class="p">:</span> <span class="n">r</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;Only xshards, Spark DataFrame or Ray Dataset&quot;</span>
+                              <span class="s2">&quot; is supported for predict&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="PyTorchRayEstimator.evaluate"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.pytorch.pytorch_ray_estimator.PyTorchRayEstimator.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">data</span><span class="p">,</span>
+                 <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+                 <span class="n">num_steps</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">profile</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">info</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">feature_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">label_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Evaluates a PyTorch model given validation data.</span>
+<span class="sd">        Note that only accuracy for classification with zero-based label is supported by</span>
+<span class="sd">        default. You can override validate_batch in TrainingOperator for other metrics.</span>
+<span class="sd">        Calls `TrainingOperator.validate()` on N parallel workers simultaneously</span>
+<span class="sd">        underneath the hood.</span>
+
+<span class="sd">        :param data: An instance of SparkXShards, a Spark DataFrame, a Ray Dataset or a function</span>
+<span class="sd">               that takes config and batch_size as argument and returns a PyTorch DataLoader for</span>
+<span class="sd">               validation.</span>
+<span class="sd">        :param batch_size: The number of samples per batch for each worker. Default is 32.</span>
+<span class="sd">               The total batch size would be workers_per_node*num_nodes.</span>
+<span class="sd">               If your validation data is a function, you can set batch_size to be the input</span>
+<span class="sd">               batch_size of the function for the PyTorch DataLoader.</span>
+<span class="sd">        :param num_steps: The number of batches to compute the validation results on. This</span>
+<span class="sd">               corresponds to the number of times `TrainingOperator.validate_batch` is called.</span>
+<span class="sd">        :param profile: Boolean. Whether to return time stats for the training procedure.</span>
+<span class="sd">               Default is False.</span>
+<span class="sd">        :param info: An optional dictionary that can be passed to the TrainingOperator</span>
+<span class="sd">               for validate.</span>
+<span class="sd">        :param feature_cols: feature column names if train data is Spark DataFrame or Ray Dataset.</span>
+<span class="sd">        :param label_cols: label column names if train data is Spark DataFrame or Ray Dataset.</span>
+
+<span class="sd">        :return: A dictionary of metrics for the given data, including validation accuracy and loss.</span>
+<span class="sd">                You can also provide custom metrics by passing in a custom training_operator_cls</span>
+<span class="sd">                when creating the Estimator.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">bigdl.orca.data</span> <span class="k">import</span> <span class="n">SparkXShards</span>
+        <span class="n">data</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">maybe_dataframe_to_xshards</span><span class="p">(</span><span class="n">data</span><span class="p">,</span>
+                                             <span class="n">validation_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                             <span class="n">feature_cols</span><span class="o">=</span><span class="n">feature_cols</span><span class="p">,</span>
+                                             <span class="n">label_cols</span><span class="o">=</span><span class="n">label_cols</span><span class="p">,</span>
+                                             <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;evaluate&quot;</span><span class="p">,</span>
+                                             <span class="n">num_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">SparkXShards</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">_get_class_name</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;pandas.core.frame.DataFrame&#39;</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">process_xshards_of_pandas_dataframe</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">feature_cols</span><span class="p">,</span> <span class="n">label_cols</span><span class="p">)</span>
+            <span class="kn">from</span> <span class="nn">bigdl.orca.data.utils</span> <span class="k">import</span> <span class="n">process_spark_xshards</span>
+            <span class="n">ray_xshards</span> <span class="o">=</span> <span class="n">process_spark_xshards</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">)</span>
+
+            <span class="k">def</span> <span class="nf">transform_func</span><span class="p">(</span><span class="n">worker</span><span class="p">,</span> <span class="n">partition_refs</span><span class="p">):</span>
+                <span class="n">data_creator</span> <span class="o">=</span> <span class="n">partition_refs_to_creator</span><span class="p">(</span><span class="n">partition_refs</span><span class="p">)</span>
+                <span class="c1"># Should not wrap DistributedSampler on DataLoader for SparkXShards input.</span>
+                <span class="k">return</span> <span class="n">worker</span><span class="o">.</span><span class="n">validate</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span>
+                    <span class="n">data_creator</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">num_steps</span><span class="p">,</span> <span class="n">profile</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+            <span class="n">worker_stats</span> <span class="o">=</span> <span class="n">ray_xshards</span><span class="o">.</span><span class="n">reduce_partitions_for_actors</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_workers</span><span class="p">,</span>
+                                                                    <span class="n">transform_func</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ray</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
+            <span class="n">shards</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">,</span> <span class="n">locality_hints</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_workers</span><span class="p">)</span>
+
+            <span class="k">def</span> <span class="nf">data_creator</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">):</span>
+                <span class="n">torch_datashard</span> <span class="o">=</span> <span class="n">shard</span><span class="o">.</span><span class="n">to_torch</span><span class="p">(</span><span class="n">label_column</span><span class="o">=</span><span class="n">label_cols</span><span class="p">,</span>
+                                                 <span class="n">feature_columns</span><span class="o">=</span><span class="n">feature_cols</span><span class="p">,</span>
+                                                 <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">torch_datashard</span>
+
+            <span class="n">remote_worker_stats</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">shard</span><span class="p">,</span> <span class="n">worker</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">shards</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_workers</span><span class="p">):</span>
+                <span class="n">stats</span> <span class="o">=</span> <span class="n">worker</span><span class="o">.</span><span class="n">validate</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span>
+                    <span class="n">data_creator</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">num_steps</span><span class="p">,</span> <span class="n">profile</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+                <span class="n">remote_worker_stats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stats</span><span class="p">)</span>
+            <span class="n">worker_stats</span> <span class="o">=</span> <span class="n">ray</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">remote_worker_stats</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">FunctionType</span><span class="p">),</span>
+                              <span class="s2">&quot;data should be either an instance of SparkXShards or a callable&quot;</span>
+                              <span class="s2">&quot; function, but got type: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)))</span>
+
+            <span class="n">params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">data_creator</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">num_steps</span><span class="o">=</span><span class="n">num_steps</span><span class="p">,</span>
+                          <span class="n">profile</span><span class="o">=</span><span class="n">profile</span><span class="p">,</span> <span class="n">info</span><span class="o">=</span><span class="n">info</span><span class="p">)</span>
+
+            <span class="n">worker_stats</span> <span class="o">=</span> <span class="n">ray</span><span class="o">.</span><span class="n">get</span><span class="p">([</span><span class="n">w</span><span class="o">.</span><span class="n">validate</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_workers</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_stats</span><span class="p">(</span><span class="n">worker_stats</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PyTorchRayEstimator.get_model"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.pytorch.pytorch_ray_estimator.PyTorchRayEstimator.get_model">[docs]</a>    <span class="k">def</span> <span class="nf">get_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the learned PyTorch model.</span>
+
+<span class="sd">        :return: The learned PyTorch model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_state_dict</span><span class="p">()</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_creator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+        <span class="n">model_state</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;models&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">model_state</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">module</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;module&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">model</span></div>
+
+<div class="viewcode-block" id="PyTorchRayEstimator.save"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.pytorch.pytorch_ray_estimator.PyTorchRayEstimator.save">[docs]</a>    <span class="nd">@enable_multi_fs_save</span>
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Saves the Estimator state (including model and optimizer) to the provided model_path.</span>
+
+<span class="sd">        :param model_path: (str) Path to save the model.</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">state_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_state_dict</span><span class="p">()</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">state_dict</span><span class="p">,</span> <span class="n">model_path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">model_path</span></div>
+
+<div class="viewcode-block" id="PyTorchRayEstimator.load"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.pytorch.pytorch_ray_estimator.PyTorchRayEstimator.load">[docs]</a>    <span class="nd">@enable_multi_fs_load</span>
+    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loads the Estimator state (including model and optimizer) from the provided model_path.</span>
+
+<span class="sd">        :param model_path: (str) Path to the existing model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">state_dict</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state_dict</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PyTorchRayEstimator.save_checkpoint"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.pytorch.pytorch_ray_estimator.PyTorchRayEstimator.save_checkpoint">[docs]</a>    <span class="k">def</span> <span class="nf">save_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Manually saves the Estimator state (including model and optimizer) to the provided</span>
+<span class="sd">        model_path.</span>
+
+<span class="sd">        :param model_path: (str) Path to save the model. Both local and remote path are supported.</span>
+<span class="sd">               e.g. &quot;/tmp/estimator.ckpt&quot; or &quot;hdfs:///tmp/estimator.ckpt&quot;</span>
+<span class="sd">        :return: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">bigdl.dllib.utils.file_utils</span> <span class="k">import</span> <span class="n">is_local_path</span>
+        <span class="k">if</span> <span class="n">is_local_path</span><span class="p">(</span><span class="n">model_path</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">worker</span><span class="o">.</span><span class="n">save_checkpoint</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">worker</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_workers</span>
+            <span class="p">]</span>
+            <span class="n">ray</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">results</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PyTorchRayEstimator.load_checkpoint"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.pytorch.pytorch_ray_estimator.PyTorchRayEstimator.load_checkpoint">[docs]</a>    <span class="k">def</span> <span class="nf">load_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loads the Estimator state (including model and optimizer) from the provided model_path.</span>
+
+<span class="sd">        :param model_path: (str) Path to the existing model. Both local and remote path are</span>
+<span class="sd">               supported. e.g. &quot;/tmp/estimator.ckpt&quot; or &quot;hdfs:///tmp/estimator.ckpt&quot;</span>
+<span class="sd">        :return: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">bigdl.dllib.utils.file_utils</span> <span class="k">import</span> <span class="n">is_local_path</span>
+        <span class="k">if</span> <span class="n">is_local_path</span><span class="p">(</span><span class="n">model_path</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">worker</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">worker</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_workers</span>
+            <span class="p">]</span>
+            <span class="n">ray</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">results</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PyTorchRayEstimator.shutdown"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.pytorch.pytorch_ray_estimator.PyTorchRayEstimator.shutdown">[docs]</a>    <span class="k">def</span> <span class="nf">shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Shuts down workers and releases resources.</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">force</span><span class="p">:</span>
+            <span class="n">cleanup</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">worker</span><span class="o">.</span><span class="n">shutdown</span><span class="o">.</span><span class="n">remote</span><span class="p">()</span> <span class="k">for</span> <span class="n">worker</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_workers</span>
+            <span class="p">]</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">ray</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">cleanup</span><span class="p">)</span>
+                <span class="p">[</span>
+                    <span class="n">worker</span><span class="o">.</span><span class="n">__ray_terminate__</span><span class="o">.</span><span class="n">remote</span><span class="p">()</span>
+                    <span class="k">for</span> <span class="n">worker</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_workers</span>
+                <span class="p">]</span>
+            <span class="k">except</span> <span class="n">RayActorError</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s2">&quot;Failed to shutdown gracefully, forcing a shutdown.&quot;</span><span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">worker</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_workers</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Killing worker </span><span class="si">{}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">worker</span><span class="p">))</span>
+                    <span class="n">ray</span><span class="o">.</span><span class="n">kill</span><span class="p">(</span><span class="n">worker</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">worker</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_workers</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Killing worker </span><span class="si">{}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">worker</span><span class="p">))</span>
+                <span class="n">ray</span><span class="o">.</span><span class="n">kill</span><span class="p">(</span><span class="n">worker</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">remote_workers</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+    <span class="k">def</span> <span class="nf">_process_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worker_stats</span><span class="p">):</span>
+        <span class="n">stats</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;num_samples&quot;</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span>
+                <span class="n">stats</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;num_samples&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span> <span class="k">for</span> <span class="n">stats</span> <span class="ow">in</span> <span class="n">worker_stats</span><span class="p">)</span>
+        <span class="p">}</span>
+
+        <span class="k">for</span> <span class="n">stat_key</span> <span class="ow">in</span> <span class="n">worker_stats</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">worker_stats</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Number</span><span class="p">):</span>
+                <span class="n">stats</span><span class="p">[</span><span class="n">stat_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span>
+                    <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">stat_key</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">worker_stats</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">stats</span><span class="p">[</span><span class="n">stat_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">worker_stats</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">stat_key</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">stats</span>
+
+    <span class="k">def</span> <span class="nf">_train_epochs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="n">remote_worker_stats</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">w</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_workers</span><span class="p">):</span>
+            <span class="n">stats</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">train_epochs</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+            <span class="n">remote_worker_stats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stats</span><span class="p">)</span>
+
+        <span class="n">success</span> <span class="o">=</span> <span class="n">check_for_failure</span><span class="p">(</span><span class="n">remote_worker_stats</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">success</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">success</span><span class="p">,</span> <span class="n">ray</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">remote_worker_stats</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">success</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_predict_spark_xshards</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xshards</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
+        <span class="n">ray_xshards</span> <span class="o">=</span> <span class="n">RayXShards</span><span class="o">.</span><span class="n">from_spark_xshards</span><span class="p">(</span><span class="n">xshards</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">transform_func</span><span class="p">(</span><span class="n">worker</span><span class="p">,</span> <span class="n">shards_ref</span><span class="p">):</span>
+            <span class="n">data_creator</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">config</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="n">shards_ref</span>
+            <span class="k">return</span> <span class="n">worker</span><span class="o">.</span><span class="n">predict</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span>
+                <span class="n">data_creator</span><span class="p">,</span> <span class="o">**</span><span class="n">param</span><span class="p">)</span>
+
+        <span class="n">pred_shards</span> <span class="o">=</span> <span class="n">ray_xshards</span><span class="o">.</span><span class="n">transform_shards_with_actors</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_workers</span><span class="p">,</span>
+                                                               <span class="n">transform_func</span><span class="p">)</span>
+        <span class="n">spark_xshards</span> <span class="o">=</span> <span class="n">pred_shards</span><span class="o">.</span><span class="n">to_spark_xshards</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">spark_xshards</span>
+
+<div class="viewcode-block" id="PyTorchRayEstimator.get_state_dict"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.pytorch.pytorch_ray_estimator.PyTorchRayEstimator.get_state_dict">[docs]</a>    <span class="k">def</span> <span class="nf">get_state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">stream_ids</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">worker</span><span class="o">.</span><span class="n">get_state_stream</span><span class="o">.</span><span class="n">remote</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">worker</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_workers</span>
+        <span class="p">]</span>
+        <span class="c1"># get the first task id that finished executing.</span>
+        <span class="p">[</span><span class="n">stream_id</span><span class="p">],</span> <span class="n">stream_ids</span> <span class="o">=</span> <span class="n">ray</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">stream_ids</span><span class="p">,</span> <span class="n">num_returns</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">byte_obj</span> <span class="o">=</span> <span class="n">ray</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">stream_id</span><span class="p">)</span>
+        <span class="n">_buffer</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">byte_obj</span><span class="p">)</span>
+        <span class="n">state_dict</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
+            <span class="n">_buffer</span><span class="p">,</span>
+            <span class="n">map_location</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">state_dict</span></div>
+
+<div class="viewcode-block" id="PyTorchRayEstimator.load_state_dict"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.pytorch.pytorch_ray_estimator.PyTorchRayEstimator.load_state_dict">[docs]</a>    <span class="k">def</span> <span class="nf">load_state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_dict</span><span class="p">,</span> <span class="n">blocking</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">_buffer</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">state_dict</span><span class="p">,</span> <span class="n">_buffer</span><span class="p">)</span>
+        <span class="n">state_stream</span> <span class="o">=</span> <span class="n">_buffer</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+        <span class="n">state_id</span> <span class="o">=</span> <span class="n">ray</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">state_stream</span><span class="p">)</span>
+
+        <span class="n">remote_calls</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">worker</span><span class="o">.</span><span class="n">load_state_stream</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="n">state_id</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">worker</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_workers</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="n">blocking</span><span class="p">:</span>
+            <span class="n">ray</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">remote_calls</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

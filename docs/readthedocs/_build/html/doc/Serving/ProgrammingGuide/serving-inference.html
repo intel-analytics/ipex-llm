@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inference by Cluster Serving &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/design-tabs.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Cluster Serving Example" href="../Example/example.html" />
+    <link rel="prev" title="Start Cluster Serving" href="serving-start.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Inference by Cluster Serving</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#model-inference">Model Inference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#python-api">Python API</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#sync-api">Sync API</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#restful-api">RESTful API</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#predict-api">Predict API</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#metrics-api">Metrics API</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#logs-and-visualization">Logs and Visualization</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Inference by Cluster Serving</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/doc/Serving/ProgrammingGuide/serving-inference.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="inference-by-cluster-serving">
+<h1>Inference by Cluster Serving<a class="headerlink" href="#inference-by-cluster-serving" title="Permalink to this headline">¶</a></h1>
+<section id="model-inference">
+<h2>Model Inference<a class="headerlink" href="#model-inference" title="Permalink to this headline">¶</a></h2>
+<p>Once you finish the installation and service launch, you could do inference using Cluster Serving client API.</p>
+<p>We support Python API and HTTP RESTful API for conducting inference with Data Pipeline in Cluster Serving.</p>
+<section id="python-api">
+<h3>Python API<a class="headerlink" href="#python-api" title="Permalink to this headline">¶</a></h3>
+<p>For Python API, the requirements of python packages are <code class="docutils literal notranslate"><span class="pre">opencv-python</span></code>(for raw image only), <code class="docutils literal notranslate"><span class="pre">pyyaml</span></code>, <code class="docutils literal notranslate"><span class="pre">redis</span></code>. You can use <code class="docutils literal notranslate"><span class="pre">InputQueue</span></code> and <code class="docutils literal notranslate"><span class="pre">OutputQueue</span></code> to connect to data pipeline by providing the pipeline url, e.g. <code class="docutils literal notranslate"><span class="pre">my_input_queue</span> <span class="pre">=</span> <span class="pre">InputQueue(host,</span> <span class="pre">port)</span></code> and <code class="docutils literal notranslate"><span class="pre">my_output_queue</span> <span class="pre">=</span> <span class="pre">OutputQueue(host,</span> <span class="pre">port)</span></code>. If parameters are not provided, default url <code class="docutils literal notranslate"><span class="pre">localhost:6379</span></code> would be used.</p>
+<p>We provide some basic usages here, for more details, please see <a class="reference external" href="APIGuide">API Guide</a>.</p>
+<p>To input data to queue, you need a <code class="docutils literal notranslate"><span class="pre">InputQueue</span></code> instance, and using <code class="docutils literal notranslate"><span class="pre">enqueue</span></code> method, for each input, give a key correspond to your model or give arbitrary key if your model does not care about it.</p>
+<p>To enqueue an image</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bigdl.serving.client</span> <span class="k">import</span> <span class="n">InputQueue</span>
+<span class="n">input_api</span> <span class="o">=</span> <span class="n">InputQueue</span><span class="p">()</span>
+<span class="n">input_api</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span><span class="s1">&#39;my-image1&#39;</span><span class="p">,</span> <span class="n">user_define_key</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;path: &#39;path/to/image1&#39;})</span>
+</pre></div>
+</div>
+<p>To enqueue an instance containing 1 image and 2 ndarray</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bigdl.serving.client</span> <span class="k">import</span> <span class="n">InputQueue</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="n">input_api</span> <span class="o">=</span> <span class="n">InputQueue</span><span class="p">()</span>
+<span class="n">t1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<span class="n">t2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">]])</span>
+<span class="n">input_api</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span><span class="s1">&#39;my-instance&#39;</span><span class="p">,</span> <span class="n">img</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="s1">&#39;path/to/image&#39;</span><span class="p">},</span> <span class="n">tensor1</span><span class="o">=</span><span class="n">t1</span><span class="p">,</span> <span class="n">tensor2</span><span class="o">=</span><span class="n">t2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>There are 4 types of inputs in total, string, image, tensor, sparse tensor, which could represents nearly all types of models. For more details of usage, go to <a class="reference external" href="APIGuide">API Guide</a></p>
+<p>To get data from queue, you need a <code class="docutils literal notranslate"><span class="pre">OutputQueue</span></code> instance, and using <code class="docutils literal notranslate"><span class="pre">query</span></code> or <code class="docutils literal notranslate"><span class="pre">dequeue</span></code> method. The <code class="docutils literal notranslate"><span class="pre">query</span></code> method takes image uri as parameter and returns the corresponding result. The <code class="docutils literal notranslate"><span class="pre">dequeue</span></code> method takes no parameter and just returns all results and also delete them in data queue. See following example.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bigdl.serving.client</span> <span class="k">import</span> <span class="n">OutputQueue</span>
+<span class="n">output_api</span> <span class="o">=</span> <span class="n">OutputQueue</span><span class="p">()</span>
+<span class="n">img1_result</span> <span class="o">=</span> <span class="n">output_api</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;img1&#39;</span><span class="p">)</span>
+<span class="n">all_result</span> <span class="o">=</span> <span class="n">output_api</span><span class="o">.</span><span class="n">dequeue</span><span class="p">()</span> <span class="c1"># the output queue is empty after this code</span>
+</pre></div>
+</div>
+<p>Consider the code above,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">img1_result</span> <span class="o">=</span> <span class="n">output_api</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;img1&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<section id="sync-api">
+<h4>Sync API<a class="headerlink" href="#sync-api" title="Permalink to this headline">¶</a></h4>
+<p>Python API is a pub-sub schema async API. Specifically, thread would not block once you call <code class="docutils literal notranslate"><span class="pre">enqueue</span></code> method. If you want the thread to block, see this section.</p>
+<p>To use sync API, create a <code class="docutils literal notranslate"><span class="pre">InputQueue</span></code> instance with <code class="docutils literal notranslate"><span class="pre">sync=True</span></code> and <code class="docutils literal notranslate"><span class="pre">frontend_url=frontend_server_url</span></code> argument.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bigdl.serving.client</span> <span class="k">import</span> <span class="n">InputQueue</span>
+<span class="n">input_api</span> <span class="o">=</span> <span class="n">InputQueue</span><span class="p">(</span><span class="n">sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">frontend_url</span><span class="o">=</span><span class="n">frontend_server_url</span><span class="p">)</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">input_api</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">request_json_string</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>example of <code class="docutils literal notranslate"><span class="pre">request_json_string</span></code> is</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s1">&#39;{</span>
+  <span class="s2">&quot;instances&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="p">{</span>
+    <span class="s2">&quot;ids&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="mf">100.0</span><span class="p">,</span> <span class="mf">88.0</span> <span class="p">]</span>
+  <span class="p">}]</span>
+<span class="p">}</span><span class="s1">&#39;</span>
+</pre></div>
+</div>
+<p>This API is also a python support of <a class="reference external" href="#restful-api">Restful API</a> section, so for more details of input format, refer to it.</p>
+</section>
+</section>
+<section id="restful-api">
+<h3>RESTful API<a class="headerlink" href="#restful-api" title="Permalink to this headline">¶</a></h3>
+<p>RESTful API uses serving HTTP server.
+This part describes API endpoints and end-to-end examples on usage.
+The requests and responses are in JSON format. The composition of them depends on the requests type or verb. See the APIs for details.
+In case of error, all APIs will return a JSON object in the response body with error as key and the error message as the value:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">error</span> <span class="n">message</span> <span class="n">string</span><span class="o">&gt;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<section id="predict-api">
+<h4>Predict API<a class="headerlink" href="#predict-api" title="Permalink to this headline">¶</a></h4>
+<p>URL</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">host</span><span class="p">:</span><span class="n">port</span><span class="o">/</span><span class="n">predict</span>
+</pre></div>
+</div>
+<p>Request Example for images as inputs:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">d</span> \
+<span class="s1">&#39;{</span>
+  <span class="s2">&quot;instances&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="s2">&quot;/9j/4AAQSkZJRgABAQEASABIAAD/7RcEUGhvdG9za...&quot;</span>
+    <span class="p">},</span>   
+    <span class="p">{</span>
+      <span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="s2">&quot;/9j/4AAQSkZJRgABAQEASABIAAD/7RcEUGhvdG9za...&quot;</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span><span class="s1">&#39; </span><span class="se">\</span>
+<span class="s1">-X POST http://host:port/predict</span>
+</pre></div>
+</div>
+<p>Response Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;predictions&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;{value=[[903,0.1306194]]}&quot;</span><span class="p">,</span>    
+    <span class="s2">&quot;{value=[[903,0.1306194]]}&quot;</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Request Example for tensor as inputs:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">d</span> \
+<span class="s1">&#39;{</span>
+  <span class="s2">&quot;instances&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="p">{</span>
+    <span class="s2">&quot;ids&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="mf">100.0</span><span class="p">,</span> <span class="mf">88.0</span> <span class="p">]</span>
+  <span class="p">},</span> <span class="p">{</span>
+    <span class="s2">&quot;ids&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="mf">100.0</span><span class="p">,</span> <span class="mf">88.0</span> <span class="p">]</span>
+  <span class="p">}</span> <span class="p">]</span>
+<span class="p">}</span><span class="s1">&#39; </span><span class="se">\</span>
+<span class="s1">-X POST http://host:port/predict</span>
+</pre></div>
+</div>
+<p>Response Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;predictions&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;{value=[[1,0.6427843]]}&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;{value=[[1,0.6427842]]}&quot;</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Another request example for composition of scalars and tensors.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">d</span> \
+ <span class="s1">&#39;{</span>
+  <span class="s2">&quot;instances&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="p">{</span>
+    <span class="s2">&quot;intScalar&quot;</span> <span class="p">:</span> <span class="mi">12345</span><span class="p">,</span>
+    <span class="s2">&quot;floatScalar&quot;</span> <span class="p">:</span> <span class="mf">3.14159</span><span class="p">,</span>
+    <span class="s2">&quot;stringScalar&quot;</span> <span class="p">:</span> <span class="s2">&quot;hello, world. hello, arrow.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;intTensor&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="mi">7756</span><span class="p">,</span> <span class="mi">9549</span><span class="p">,</span> <span class="mi">1094</span><span class="p">,</span> <span class="mi">9808</span><span class="p">,</span> <span class="mi">4959</span><span class="p">,</span> <span class="mi">3831</span><span class="p">,</span> <span class="mi">3926</span><span class="p">,</span> <span class="mi">6578</span><span class="p">,</span> <span class="mi">1870</span><span class="p">,</span> <span class="mi">1741</span> <span class="p">],</span>
+    <span class="s2">&quot;floatTensor&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="mf">0.6804766</span><span class="p">,</span> <span class="mf">0.30136853</span><span class="p">,</span> <span class="mf">0.17394465</span><span class="p">,</span> <span class="mf">0.44770062</span><span class="p">,</span> <span class="mf">0.20275897</span><span class="p">,</span> <span class="mf">0.32762378</span><span class="p">,</span> <span class="mf">0.45966738</span><span class="p">,</span> <span class="mf">0.30405098</span><span class="p">,</span> <span class="mf">0.62053126</span><span class="p">,</span> <span class="mf">0.7037923</span> <span class="p">],</span>
+    <span class="s2">&quot;stringTensor&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="s2">&quot;come&quot;</span><span class="p">,</span> <span class="s2">&quot;on&quot;</span><span class="p">,</span> <span class="s2">&quot;united&quot;</span> <span class="p">],</span>
+    <span class="s2">&quot;intTensor2&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="p">[</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span> <span class="p">],</span> <span class="p">[</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span> <span class="p">],</span> <span class="p">[</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span> <span class="p">]</span> <span class="p">],</span>
+    <span class="s2">&quot;floatTensor2&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="p">[</span> <span class="p">[</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span> <span class="p">],</span> <span class="p">[</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.6</span> <span class="p">]</span> <span class="p">],</span> <span class="p">[</span> <span class="p">[</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span> <span class="p">],</span> <span class="p">[</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.6</span> <span class="p">]</span> <span class="p">]</span> <span class="p">],</span>
+    <span class="s2">&quot;stringTensor2&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="p">[</span> <span class="p">[</span> <span class="p">[</span> <span class="s2">&quot;come&quot;</span><span class="p">,</span> <span class="s2">&quot;on&quot;</span><span class="p">,</span> <span class="s2">&quot;united&quot;</span> <span class="p">],</span> <span class="p">[</span> <span class="s2">&quot;come&quot;</span><span class="p">,</span> <span class="s2">&quot;on&quot;</span><span class="p">,</span> <span class="s2">&quot;united&quot;</span> <span class="p">],</span> <span class="p">[</span> <span class="s2">&quot;come&quot;</span><span class="p">,</span> <span class="s2">&quot;on&quot;</span><span class="p">,</span> <span class="s2">&quot;united&quot;</span> <span class="p">],</span> <span class="p">[</span> <span class="s2">&quot;come&quot;</span><span class="p">,</span> <span class="s2">&quot;on&quot;</span><span class="p">,</span> <span class="s2">&quot;united&quot;</span> <span class="p">]</span> <span class="p">],</span> <span class="p">[</span> <span class="p">[</span> <span class="s2">&quot;come&quot;</span><span class="p">,</span> <span class="s2">&quot;on&quot;</span><span class="p">,</span> <span class="s2">&quot;united&quot;</span> <span class="p">],</span> <span class="p">[</span> <span class="s2">&quot;come&quot;</span><span class="p">,</span> <span class="s2">&quot;on&quot;</span><span class="p">,</span> <span class="s2">&quot;united&quot;</span> <span class="p">],</span> <span class="p">[</span> <span class="s2">&quot;come&quot;</span><span class="p">,</span> <span class="s2">&quot;on&quot;</span><span class="p">,</span> <span class="s2">&quot;united&quot;</span> <span class="p">],</span> <span class="p">[</span> <span class="s2">&quot;come&quot;</span><span class="p">,</span> <span class="s2">&quot;on&quot;</span><span class="p">,</span> <span class="s2">&quot;united&quot;</span> <span class="p">]</span> <span class="p">]</span> <span class="p">],</span> <span class="p">[</span> <span class="p">[</span> <span class="p">[</span> <span class="s2">&quot;come&quot;</span><span class="p">,</span> <span class="s2">&quot;on&quot;</span><span class="p">,</span> <span class="s2">&quot;united&quot;</span> <span class="p">],</span> <span class="p">[</span> <span class="s2">&quot;come&quot;</span><span class="p">,</span> <span class="s2">&quot;on&quot;</span><span class="p">,</span> <span class="s2">&quot;united&quot;</span> <span class="p">],</span> <span class="p">[</span> <span class="s2">&quot;come&quot;</span><span class="p">,</span> <span class="s2">&quot;on&quot;</span><span class="p">,</span> <span class="s2">&quot;united&quot;</span> <span class="p">],</span> <span class="p">[</span> <span class="s2">&quot;come&quot;</span><span class="p">,</span> <span class="s2">&quot;on&quot;</span><span class="p">,</span> <span class="s2">&quot;united&quot;</span> <span class="p">]</span> <span class="p">],</span> <span class="p">[</span> <span class="p">[</span> <span class="s2">&quot;come&quot;</span><span class="p">,</span> <span class="s2">&quot;on&quot;</span><span class="p">,</span> <span class="s2">&quot;united&quot;</span> <span class="p">],</span> <span class="p">[</span> <span class="s2">&quot;come&quot;</span><span class="p">,</span> <span class="s2">&quot;on&quot;</span><span class="p">,</span> <span class="s2">&quot;united&quot;</span> <span class="p">],</span> <span class="p">[</span> <span class="s2">&quot;come&quot;</span><span class="p">,</span> <span class="s2">&quot;on&quot;</span><span class="p">,</span> <span class="s2">&quot;united&quot;</span> <span class="p">],</span> <span class="p">[</span> <span class="s2">&quot;come&quot;</span><span class="p">,</span> <span class="s2">&quot;on&quot;</span><span class="p">,</span> <span class="s2">&quot;united&quot;</span> <span class="p">]</span> <span class="p">]</span> <span class="p">]</span> <span class="p">]</span>
+  <span class="p">}]</span>
+<span class="p">}</span><span class="s1">&#39; </span><span class="se">\</span>
+<span class="s1">-X POST http://host:port/predict</span>
+</pre></div>
+</div>
+<p>Another request example for composition of sparse and dense tensors.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">d</span> \
+<span class="s1">&#39;{</span>
+  <span class="s2">&quot;instances&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="p">{</span>
+    <span class="s2">&quot;sparseTensor&quot;</span> <span class="p">:</span> <span class="p">{</span>
+      <span class="s2">&quot;shape&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">10000</span><span class="p">,</span> <span class="mi">10</span> <span class="p">],</span>
+      <span class="s2">&quot;data&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">3.45</span><span class="p">,</span> <span class="mf">6.78</span> <span class="p">],</span>
+      <span class="s2">&quot;indices&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="p">[</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span> <span class="p">],</span> <span class="p">[</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span> <span class="p">],</span> <span class="p">[</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span> <span class="p">],</span> <span class="p">[</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span> <span class="p">]</span> <span class="p">]</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;intTensor2&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="p">[</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span> <span class="p">],</span> <span class="p">[</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span> <span class="p">],</span> <span class="p">[</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span> <span class="p">]</span> <span class="p">]</span>
+  <span class="p">}]</span>
+<span class="p">}</span><span class="s1">&#39; </span><span class="se">\</span>
+<span class="s1">-X POST http://host:port/predict</span>
+</pre></div>
+</div>
+</section>
+<section id="metrics-api">
+<h4>Metrics API<a class="headerlink" href="#metrics-api" title="Permalink to this headline">¶</a></h4>
+<p>URL</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GET</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">host</span><span class="p">:</span><span class="n">port</span><span class="o">/</span><span class="n">metrics</span>
+</pre></div>
+</div>
+<p>Response example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+  <span class="p">{</span>
+    <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;bigdl.serving.redis.get&quot;</span><span class="p">,</span>
+    <span class="n">count</span><span class="p">:</span> <span class="mi">810</span><span class="p">,</span>
+    <span class="n">meanRate</span><span class="p">:</span> <span class="mf">12.627772820651845</span><span class="p">,</span>
+    <span class="nb">min</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="nb">max</span><span class="p">:</span> <span class="mi">25</span><span class="p">,</span>
+    <span class="n">mean</span><span class="p">:</span> <span class="mf">0.9687099303718213</span><span class="p">,</span>
+    <span class="n">median</span><span class="p">:</span> <span class="mf">0.928579</span><span class="p">,</span>
+    <span class="n">stdDev</span><span class="p">:</span> <span class="mf">0.8150031623593447</span><span class="p">,</span>
+    <span class="n">_75thPercentile</span><span class="p">:</span> <span class="mf">1.000047</span><span class="p">,</span>
+    <span class="n">_95thPercentile</span><span class="p">:</span> <span class="mf">1.141443</span><span class="p">,</span>
+    <span class="n">_98thPercentile</span><span class="p">:</span> <span class="mf">1.268665</span><span class="p">,</span>
+    <span class="n">_99thPercentile</span><span class="p">:</span> <span class="mf">1.608387</span><span class="p">,</span>
+    <span class="n">_999thPercentile</span><span class="p">:</span> <span class="mf">25.874584</span>
+  <span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="logs-and-visualization">
+<h2>Logs and Visualization<a class="headerlink" href="#logs-and-visualization" title="Permalink to this headline">¶</a></h2>
+<p>To see outputs/logs, go to FLink UI -&gt; job -&gt; taskmanager, (<code class="docutils literal notranslate"><span class="pre">localhost:8081</span></code> by default), or go to <code class="docutils literal notranslate"><span class="pre">${FLINK_HOME}/logs</span></code></p>
+<p>To visualize the statistics, e.g. performance, go to Flink UI -&gt; job -&gt; metrics, and select the statistic to monitor</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="serving-start.html" class="btn btn-neutral float-left" title="Start Cluster Serving" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../Example/example.html" class="btn btn-neutral float-right" title="Cluster Serving Example" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

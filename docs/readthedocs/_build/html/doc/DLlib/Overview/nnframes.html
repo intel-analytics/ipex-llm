@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spark ML Pipeline Support &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/design-tabs.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="The Orca Library" href="../../Orca/Overview/orca.html" />
+    <link rel="prev" title="Keras-Like API" href="keras-api.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Spark ML Pipeline Support</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#nnframes-overview">1. NNFrames Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#primary-apis">2. Primary APIs</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#nnestimator">2.1 NNEstimator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nnmodel">2.2 NNModel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nnclassifier">2.3 NNClassifier</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nnclassifiermodel">2.4 NNClassifierModel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#hyperparameter-setting">2.5 Hyperparameter Setting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#training">2.6 Training</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#prediction">2.7 Prediction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nnimagereader">2.8 NNImageReader</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Spark ML Pipeline Support</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/doc/DLlib/Overview/nnframes.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="spark-ml-pipeline-support">
+<h1>Spark ML Pipeline Support<a class="headerlink" href="#spark-ml-pipeline-support" title="Permalink to this headline">¶</a></h1>
+<section id="nnframes-overview">
+<h2>1. NNFrames Overview<a class="headerlink" href="#nnframes-overview" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">NNFrames</span></code> in <a class="reference internal" href="dllib.html"><span class="doc">DLlib</span></a> provides Spark DataFrame and ML Pipeline support of distributed deep learning on Apache Spark. It includes both Python and Scala interfaces, and is compatible with both Spark 2.x and Spark 3.x.</p>
+<p><strong>Examples</strong></p>
+<p>The examples are included in the DLlib source code.</p>
+<ul class="simple">
+<li><p>image classification: model inference using pre-trained Inception v1 model. (See <a class="reference external" href="https://github.com/intel-analytics/BigDL/tree/branch-2.0/python/dllib/examples/nnframes/imageInference">Python version</a>)</p></li>
+<li><p>image classification: transfer learning from pre-trained Inception v1 model. (See <a class="reference external" href="https://github.com/intel-analytics/BigDL/tree/branch-2.0/python/dllib/examples/nnframes/imageTransferLearning">Python version</a>)</p></li>
+</ul>
+</section>
+<section id="primary-apis">
+<h2>2. Primary APIs<a class="headerlink" href="#primary-apis" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p><strong>NNEstimator and NNModel</strong></p>
+<p>BigDL DLLib provides <code class="docutils literal notranslate"><span class="pre">NNEstimator</span></code> for model training with Spark DataFrame, which provides high level API for training a BigDL Model with the Apache Spark <a class="reference external" href="https://spark.apache.org/docs/2.1.1/ml-pipeline.html#estimators">Estimator</a> and <a class="reference external" href="https://spark.apache.org/docs/2.1.1/ml-pipeline.html#transformers">Transfomer</a> pattern, thus users can conveniently fit BigDL DLLib into a ML pipeline. The fit result of <code class="docutils literal notranslate"><span class="pre">NNEstimator</span></code> is a NNModel, which is a Spark ML Transformer.</p>
+</li>
+<li><p><strong>NNClassifier and NNClassifierModel</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">NNClassifier</span></code> and <code class="docutils literal notranslate"><span class="pre">NNClassifierModel</span></code>extends <code class="docutils literal notranslate"><span class="pre">NNEstimator</span></code> and <code class="docutils literal notranslate"><span class="pre">NNModel</span></code> and focus on classification tasks, where both label column and prediction column are of Double type.</p>
+</li>
+<li><p><strong>NNImageReader</strong></p>
+<p>NNImageReader loads image into Spark DataFrame.</p>
+</li>
+</ul>
+<hr class="docutils" />
+<section id="nnestimator">
+<h3>2.1 NNEstimator<a class="headerlink" href="#nnestimator" title="Permalink to this headline">¶</a></h3>
+<p><strong>Scala:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">estimator</span> <span class="k">=</span> <span class="nc">NNEstimator</span><span class="o">(</span><span class="n">model</span><span class="o">,</span> <span class="n">criterion</span><span class="o">)</span>
+</pre></div>
+</div>
+<p><strong>Python:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">estimator</span> <span class="o">=</span> <span class="n">NNEstimator</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">criterion</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">NNEstimator</span></code> extends <code class="docutils literal notranslate"><span class="pre">org.apache.spark.ml.Estimator</span></code> and supports training a BigDL model with Spark DataFrame data. It can be integrated into a standard Spark ML Pipeline
+to allow users to combine the components of BigDL and Spark MLlib.</p>
+<p><code class="docutils literal notranslate"><span class="pre">NNEstimator</span></code> supports different feature and label data types through <code class="docutils literal notranslate"><span class="pre">Preprocessing</span></code>. During fit (training), NNEstimator will extract feature and label data from input DataFrame and use the <code class="docutils literal notranslate"><span class="pre">Preprocessing</span></code> to convert data for the model, typically converts the feature and label to Tensors or converts the (feature, option[Label]) tuple to a BigDL <code class="docutils literal notranslate"><span class="pre">Sample</span></code>.</p>
+<p>Each<code class="docutils literal notranslate"><span class="pre">Preprocessing</span></code> conducts a data conversion step in the preprocessing phase, multiple <code class="docutils literal notranslate"><span class="pre">Preprocessing</span></code> can be combined into a <code class="docutils literal notranslate"><span class="pre">ChainedPreprocessing</span></code>. Some pre-defined
+<code class="docutils literal notranslate"><span class="pre">Preprocessing</span></code> for popular data types like Image, Array or Vector are provided in package <code class="docutils literal notranslate"><span class="pre">com.intel.analytics.bigdl.dllib.feature</span></code>, while user can also develop customized <code class="docutils literal notranslate"><span class="pre">Preprocessing</span></code>.</p>
+<p>NNEstimator and NNClassifier also supports setting the caching level for the training data. Options are “DRAM”, “PMEM” or “DISK_AND_DRAM”. If DISK_AND_DRAM(numSlice) is used, only 1/numSlice data will be loaded into memory during training time. By default, DRAM mode is used and all data are cached in memory.</p>
+<p>By default, <code class="docutils literal notranslate"><span class="pre">SeqToTensor</span></code> is used to convert an array or Vector to a 1-dimension Tensor. Using the <code class="docutils literal notranslate"><span class="pre">Preprocessing</span></code> allows <code class="docutils literal notranslate"><span class="pre">NNEstimator</span></code> to cache only the raw data and decrease the memory consumption during feature conversion and training, it also enables the model to digest extra data types that DataFrame does not support currently.</p>
+<p>More concrete examples are available in package <code class="docutils literal notranslate"><span class="pre">com.intel.analytics.bigdl.dllib.examples.nnframes</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">NNEstimator</span></code> can be created with various parameters for different scenarios.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">NNEstimator(model,</span> <span class="pre">criterion)</span></code></p>
+<p>Takes only model and criterion and use <code class="docutils literal notranslate"><span class="pre">SeqToTensor</span></code> as feature and label <code class="docutils literal notranslate"><span class="pre">Preprocessing</span></code>. <code class="docutils literal notranslate"><span class="pre">NNEstimator</span></code> will extract the data from feature and label columns (only Scalar, Array[_] or Vector data type are supported) and convert each feature/label to 1-dimension Tensor. The tensors will be combined into BigDL <code class="docutils literal notranslate"><span class="pre">Sample</span></code> and send to model for training.</p>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">NNEstimator(model,</span> <span class="pre">criterion,</span> <span class="pre">featureSize:</span> <span class="pre">Array[Int],</span> <span class="pre">labelSize:</span> <span class="pre">Array[Int])</span></code></p>
+<p>Takes model, criterion, featureSize(Array of Int) and labelSize(Array of Int). <code class="docutils literal notranslate"><span class="pre">NNEstimator</span></code> will extract the data from feature and label columns (only Scalar, Array[_] or Vector data type are supported) and convert each feature/label to Tensor according to the specified Tensor size.</p>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">NNEstimator(model,</span> <span class="pre">criterion,</span> <span class="pre">featureSize:</span> <span class="pre">Array[Array[Int]],</span> <span class="pre">labelSize:</span> <span class="pre">Array[Int])</span></code></p>
+<p>This is the interface for multi-input model. It takes model, criterion, featureSize(Array of Int Array) and labelSize(Array of Int). <code class="docutils literal notranslate"><span class="pre">NNEstimator</span></code> will extract the data from feature and label columns (only Scalar, Array[_] or Vector data type are supported) and convert each feature/label to Tensor according to the specified Tensor size.</p>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">NNEstimator(model,</span> <span class="pre">criterion,</span> <span class="pre">featurePreprocessing:</span> <span class="pre">Preprocessing[F,</span> <span class="pre">Tensor[T]],</span> <span class="pre">labelPreprocessing:</span> <span class="pre">Preprocessing[F,</span> <span class="pre">Tensor[T]])</span></code></p>
+<p>Takes model, criterion, featurePreprocessing and labelPreprocessing.  <code class="docutils literal notranslate"><span class="pre">NNEstimator</span></code> will extract the data from feature and label columns and convert each feature/label to Tensor with the featurePreprocessing and labelPreprocessing. This constructor provides more flexibility in supporting extra data types.</p>
+</li>
+</ul>
+<p>Meanwhile, for advanced use cases (e.g. model with multiple input tensor), <code class="docutils literal notranslate"><span class="pre">NNEstimator</span></code> supports: <code class="docutils literal notranslate"><span class="pre">setSamplePreprocessing(value:</span> <span class="pre">Preprocessing[(Any,</span> <span class="pre">Option[Any]),</span> <span class="pre">Sample[T]])</span></code> to directly compose Sample according to user-specified Preprocessing.</p>
+<p><strong>Scala Example:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">import</span> <span class="nn">com.intel.analytics.bigdl.dllib.nn._</span>
+<span class="k">import</span> <span class="nn">com.intel.analytics.bigdl.dllib.nnframes.NNEstimator</span>
+<span class="k">import</span> <span class="nn">com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat</span>
+
+<span class="k">val</span> <span class="n">model</span> <span class="k">=</span> <span class="nc">Sequential</span><span class="o">().</span><span class="n">add</span><span class="o">(</span><span class="nc">Linear</span><span class="o">(</span><span class="mi">2</span><span class="o">,</span> <span class="mi">2</span><span class="o">))</span>
+<span class="k">val</span> <span class="n">criterion</span> <span class="k">=</span> <span class="nc">MSECriterion</span><span class="o">()</span>
+<span class="k">val</span> <span class="n">estimator</span> <span class="k">=</span> <span class="nc">NNEstimator</span><span class="o">(</span><span class="n">model</span><span class="o">,</span> <span class="n">criterion</span><span class="o">)</span>
+  <span class="o">.</span><span class="n">setLearningRate</span><span class="o">(</span><span class="mf">0.2</span><span class="o">)</span>
+  <span class="o">.</span><span class="n">setMaxEpoch</span><span class="o">(</span><span class="mi">40</span><span class="o">)</span>
+<span class="k">val</span> <span class="n">data</span> <span class="k">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">parallelize</span><span class="o">(</span><span class="nc">Seq</span><span class="o">(</span>
+  <span class="o">(</span><span class="nc">Array</span><span class="o">(</span><span class="mf">2.0</span><span class="o">,</span> <span class="mf">1.0</span><span class="o">),</span> <span class="nc">Array</span><span class="o">(</span><span class="mf">1.0</span><span class="o">,</span> <span class="mf">2.0</span><span class="o">)),</span>
+  <span class="o">(</span><span class="nc">Array</span><span class="o">(</span><span class="mf">1.0</span><span class="o">,</span> <span class="mf">2.0</span><span class="o">),</span> <span class="nc">Array</span><span class="o">(</span><span class="mf">2.0</span><span class="o">,</span> <span class="mf">1.0</span><span class="o">)),</span>
+  <span class="o">(</span><span class="nc">Array</span><span class="o">(</span><span class="mf">2.0</span><span class="o">,</span> <span class="mf">1.0</span><span class="o">),</span> <span class="nc">Array</span><span class="o">(</span><span class="mf">1.0</span><span class="o">,</span> <span class="mf">2.0</span><span class="o">)),</span>
+  <span class="o">(</span><span class="nc">Array</span><span class="o">(</span><span class="mf">1.0</span><span class="o">,</span> <span class="mf">2.0</span><span class="o">),</span> <span class="nc">Array</span><span class="o">(</span><span class="mf">2.0</span><span class="o">,</span> <span class="mf">1.0</span><span class="o">))))</span>
+<span class="k">val</span> <span class="n">df</span> <span class="k">=</span> <span class="n">sqlContext</span><span class="o">.</span><span class="n">createDataFrame</span><span class="o">(</span><span class="n">data</span><span class="o">).</span><span class="n">toDF</span><span class="o">(</span><span class="s">&quot;features&quot;</span><span class="o">,</span> <span class="s">&quot;label&quot;</span><span class="o">)</span>
+<span class="k">val</span> <span class="n">nnModel</span> <span class="k">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="o">(</span><span class="n">df</span><span class="o">)</span>
+<span class="n">nnModel</span><span class="o">.</span><span class="n">transform</span><span class="o">(</span><span class="n">df</span><span class="o">).</span><span class="n">show</span><span class="o">(</span><span class="kc">false</span><span class="o">)</span>
+</pre></div>
+</div>
+<p><strong>Python Example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bigdl.dllib.nn.layer</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">bigdl.dllib.nn.criterion</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">bigdl.dllib.utils.common</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">bigdl.dllib.nnframes.nn_classifier</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">bigdl.dllib.feature.common</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="o">.</span><span class="n">parallelize</span><span class="p">([</span>
+    <span class="p">((</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)),</span>
+    <span class="p">((</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)),</span>
+    <span class="p">((</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)),</span>
+    <span class="p">((</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))])</span>
+
+<span class="n">schema</span> <span class="o">=</span> <span class="n">StructType</span><span class="p">([</span>
+    <span class="n">StructField</span><span class="p">(</span><span class="s2">&quot;features&quot;</span><span class="p">,</span> <span class="n">ArrayType</span><span class="p">(</span><span class="n">DoubleType</span><span class="p">(),</span> <span class="bp">False</span><span class="p">),</span> <span class="bp">False</span><span class="p">),</span>
+    <span class="n">StructField</span><span class="p">(</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="n">ArrayType</span><span class="p">(</span><span class="n">DoubleType</span><span class="p">(),</span> <span class="bp">False</span><span class="p">),</span> <span class="bp">False</span><span class="p">)])</span>
+<span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sqlContext</span><span class="o">.</span><span class="n">createDataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">schema</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Sequential</span><span class="p">()</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Linear</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="n">criterion</span> <span class="o">=</span> <span class="n">MSECriterion</span><span class="p">()</span>
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">NNEstimator</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="n">SeqToTensor</span><span class="p">([</span><span class="mi">2</span><span class="p">]),</span> <span class="n">ArrayToTensor</span><span class="p">([</span><span class="mi">2</span><span class="p">]))</span>\
+    <span class="o">.</span><span class="n">setBatchSize</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">setLearningRate</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span><span class="o">.</span><span class="n">setMaxEpoch</span><span class="p">(</span><span class="mi">40</span><span class="p">)</span> \
+<span class="n">nnModel</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">nnModel</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><em><strong>Example with multi-inputs Model.</strong></em>
+This example trains a model with 3 inputs. And users can use VectorAssembler from Spark MLlib to combine different fields. With the specified sizes for each model input, NNEstiamtor and NNClassifer will split the input features data and send tensors to corresponding inputs.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sparkConf</span> <span class="o">=</span> <span class="n">init_spark_conf</span><span class="p">()</span><span class="o">.</span><span class="n">setAppName</span><span class="p">(</span><span class="s2">&quot;testNNClassifer&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setMaster</span><span class="p">(</span><span class="s1">&#39;local[1]&#39;</span><span class="p">)</span>
+<span class="n">sc</span> <span class="o">=</span> <span class="n">init_nncontext</span><span class="p">(</span><span class="n">sparkConf</span><span class="p">)</span>
+<span class="n">spark</span> <span class="o">=</span> <span class="n">SparkSession</span>\
+    <span class="o">.</span><span class="n">builder</span>\
+    <span class="o">.</span><span class="n">getOrCreate</span><span class="p">()</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">createDataFrame</span><span class="p">(</span>
+    <span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mf">109.0</span><span class="p">,</span> <span class="n">Vectors</span><span class="o">.</span><span class="n">dense</span><span class="p">([</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]),</span> <span class="mf">1.0</span><span class="p">),</span>
+     <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">58</span><span class="p">,</span> <span class="mf">2998.0</span><span class="p">,</span> <span class="n">Vectors</span><span class="o">.</span><span class="n">dense</span><span class="p">([</span><span class="mf">4.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]),</span> <span class="mf">2.0</span><span class="p">),</span>
+     <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mf">123.0</span><span class="p">,</span> <span class="n">Vectors</span><span class="o">.</span><span class="n">dense</span><span class="p">([</span><span class="mf">3.0</span><span class="p">,</span> <span class="mf">15.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]),</span> <span class="mf">1.0</span><span class="p">)],</span>
+    <span class="p">[</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">,</span> <span class="s2">&quot;income&quot;</span><span class="p">,</span> <span class="s2">&quot;history&quot;</span><span class="p">,</span> <span class="s2">&quot;label&quot;</span><span class="p">])</span>
+
+<span class="n">assembler</span> <span class="o">=</span> <span class="n">VectorAssembler</span><span class="p">(</span>
+    <span class="n">inputCols</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">,</span> <span class="s2">&quot;income&quot;</span><span class="p">,</span> <span class="s2">&quot;history&quot;</span><span class="p">],</span>
+    <span class="n">outputCol</span><span class="o">=</span><span class="s2">&quot;features&quot;</span><span class="p">)</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">assembler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+<span class="n">x1</span> <span class="o">=</span> <span class="n">ZLayer</span><span class="o">.</span><span class="n">Input</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,))</span>
+<span class="n">x2</span> <span class="o">=</span> <span class="n">ZLayer</span><span class="o">.</span><span class="n">Input</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,))</span>
+<span class="n">x3</span> <span class="o">=</span> <span class="n">ZLayer</span><span class="o">.</span><span class="n">Input</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,))</span>
+
+<span class="n">user_embedding</span> <span class="o">=</span> <span class="n">ZLayer</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">)(</span><span class="n">x1</span><span class="p">)</span>
+<span class="n">flatten</span> <span class="o">=</span> <span class="n">ZLayer</span><span class="o">.</span><span class="n">Flatten</span><span class="p">()(</span><span class="n">user_embedding</span><span class="p">)</span>
+<span class="n">dense1</span> <span class="o">=</span> <span class="n">ZLayer</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">2</span><span class="p">)(</span><span class="n">x2</span><span class="p">)</span>
+<span class="n">gru</span> <span class="o">=</span> <span class="n">ZLayer</span><span class="o">.</span><span class="n">LSTM</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">input_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))(</span><span class="n">x3</span><span class="p">)</span>
+
+<span class="n">merged</span> <span class="o">=</span> <span class="n">ZLayer</span><span class="o">.</span><span class="n">merge</span><span class="p">([</span><span class="n">flatten</span><span class="p">,</span> <span class="n">dense1</span><span class="p">,</span> <span class="n">gru</span><span class="p">],</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;concat&quot;</span><span class="p">)</span>
+<span class="n">zy</span> <span class="o">=</span> <span class="n">ZLayer</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">2</span><span class="p">)(</span><span class="n">merged</span><span class="p">)</span>
+
+<span class="n">zmodel</span> <span class="o">=</span> <span class="n">ZModel</span><span class="p">([</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">x3</span><span class="p">],</span> <span class="n">zy</span><span class="p">)</span>
+<span class="n">criterion</span> <span class="o">=</span> <span class="n">ZooClassNLLCriterion</span><span class="p">()</span>
+<span class="n">classifier</span> <span class="o">=</span> <span class="n">NNClassifier</span><span class="p">(</span><span class="n">zmodel</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="p">[[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]])</span> \
+    <span class="o">.</span><span class="n">setOptimMethod</span><span class="p">(</span><span class="n">Adam</span><span class="p">())</span> \
+    <span class="o">.</span><span class="n">setLearningRate</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>\
+    <span class="o">.</span><span class="n">setBatchSize</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">setMaxEpoch</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="n">nnClassifierModel</span> <span class="o">=</span> <span class="n">classifier</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">nnClassifierModel</span><span class="o">.</span><span class="n">getBatchSize</span><span class="p">())</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">nnClassifierModel</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="nnmodel">
+<h3>2.2 NNModel<a class="headerlink" href="#nnmodel" title="Permalink to this headline">¶</a></h3>
+<p><strong>Scala:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">nnModel</span> <span class="k">=</span> <span class="nc">NNModel</span><span class="o">(</span><span class="n">bigDLModel</span><span class="o">)</span>
+</pre></div>
+</div>
+<p><strong>Python:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">nn_model</span> <span class="o">=</span> <span class="n">NNModel</span><span class="p">(</span><span class="n">bigDLModel</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">NNModel</span></code> extends Spark’s ML
+<a class="reference external" href="https://spark.apache.org/docs/2.1.1/ml-pipeline.html#transformers">Transformer</a>. User can invoke <code class="docutils literal notranslate"><span class="pre">fit</span></code> in <code class="docutils literal notranslate"><span class="pre">NNEstimator</span></code> to get a <code class="docutils literal notranslate"><span class="pre">NNModel</span></code>, or directly compose a <code class="docutils literal notranslate"><span class="pre">NNModel</span></code> from BigDLModel. It enables users to wrap a pre-trained BigDL Model into a NNModel, and use it as a transformer in your Spark ML pipeline to predict the results for <code class="docutils literal notranslate"><span class="pre">DataFrame</span> <span class="pre">(DataSet)</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">NNModel</span></code> can be created with various parameters for different scenarios.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">NNModel(model)</span></code></p>
+<p>Takes only model and use <code class="docutils literal notranslate"><span class="pre">SeqToTensor</span></code> as feature Preprocessing. <code class="docutils literal notranslate"><span class="pre">NNModel</span></code> will extract the data from feature column (only Scalar, Array[_] or Vector data type are supported) and convert each feature to 1-dimension Tensor. The tensors will be sent to model for inference.</p>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">NNModel(model,</span> <span class="pre">featureSize:</span> <span class="pre">Array[Int])</span></code></p>
+<p>Takes model and featureSize(Array of Int). <code class="docutils literal notranslate"><span class="pre">NNModel</span></code> will extract the data from feature column (only Scalar, Array[_] or Vector data type are supported) and convert each feature to Tensor according to the specified Tensor size. User can also set featureSize as Array[Array[Int]] for multi-inputs model.</p>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">NNModel(model,</span> <span class="pre">featurePreprocessing:</span> <span class="pre">Preprocessing[F,</span> <span class="pre">Tensor[T]])</span></code></p>
+<p>Takes model and featurePreprocessing. <code class="docutils literal notranslate"><span class="pre">NNModel</span></code> will extract the data from feature column and convert each feature to Tensor with the featurePreprocessing. This constructor provides more flexibility in supporting extra data types.</p>
+</li>
+</ul>
+<p>Meanwhile, for advanced use cases (e.g. model with multiple input tensor), <code class="docutils literal notranslate"><span class="pre">NNModel</span></code> supports: <code class="docutils literal notranslate"><span class="pre">setSamplePreprocessing(value:</span> <span class="pre">Preprocessing[Any,</span> <span class="pre">Sample[T]])</span></code>to directly compose Sample according to user-specified Preprocessing.</p>
+<p>We can get model from <code class="docutils literal notranslate"><span class="pre">NNModel</span></code> by:</p>
+<p><strong>Scala:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">model</span> <span class="k">=</span> <span class="n">nnModel</span><span class="o">.</span><span class="n">getModel</span><span class="o">()</span>
+</pre></div>
+</div>
+<p><strong>Python:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">nn_model</span><span class="o">.</span><span class="n">getModel</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="nnclassifier">
+<h3>2.3 NNClassifier<a class="headerlink" href="#nnclassifier" title="Permalink to this headline">¶</a></h3>
+<p><strong>Scala:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">classifer</span> <span class="k">=</span>  <span class="nc">NNClassifer</span><span class="o">(</span><span class="n">model</span><span class="o">,</span> <span class="n">criterion</span><span class="o">)</span>
+</pre></div>
+</div>
+<p><strong>Python:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">classifier</span> <span class="o">=</span> <span class="n">NNClassifer</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">criterion</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">NNClassifier</span></code> is a specialized <code class="docutils literal notranslate"><span class="pre">NNEstimator</span></code> that simplifies the data format for classification tasks where the label space is discrete. It only supports label column of
+DoubleType, and the fitted <code class="docutils literal notranslate"><span class="pre">NNClassifierModel</span></code> will have the prediction column of DoubleType.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> BigDL module to be optimized in the fit() method</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">criterion</span></code> the criterion used to compute the loss and the gradient</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">NNClassifier</span></code> can be created with various parameters for different scenarios.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">NNClassifier(model,</span> <span class="pre">criterion)</span></code></p>
+<p>Takes only model and criterion and use <code class="docutils literal notranslate"><span class="pre">SeqToTensor</span></code> as feature and label Preprocessing. <code class="docutils literal notranslate"><span class="pre">NNClassifier</span></code> will extract the data from feature and label columns (only Scalar, Array[_] or Vector data type are supported) and convert each feature/label to 1-dimension Tensor. The tensors will be combined into BigDL samples and send to model for   training.</p>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">NNClassifier(model,</span> <span class="pre">criterion,</span> <span class="pre">featureSize:</span> <span class="pre">Array[Int])</span></code></p>
+<p>Takes model, criterion, featureSize(Array of Int). <code class="docutils literal notranslate"><span class="pre">NNClassifier</span></code> will extract the data from feature and label columns and convert each feature to Tensor according to the specified Tensor size. <code class="docutils literal notranslate"><span class="pre">ScalarToTensor</span></code> is used to convert the label column. User can also set featureSize as Array[Array[Int]] for multi-inputs model.</p>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">NNClassifier(model,</span> <span class="pre">criterion,</span> <span class="pre">featurePreprocessing:</span> <span class="pre">Preprocessing[F,</span> <span class="pre">Tensor[T]])</span></code></p>
+<p>Takes model, criterion and featurePreprocessing.  <code class="docutils literal notranslate"><span class="pre">NNClassifier</span></code> will extract the data from feature and label columns and convert each feature to Tensor with the featurePreprocessing. This constructor provides more flexibility in supporting extra data types.</p>
+</li>
+</ul>
+<p>Meanwhile, for advanced use cases (e.g. model with multiple input tensor), <code class="docutils literal notranslate"><span class="pre">NNClassifier</span></code> supports <code class="docutils literal notranslate"><span class="pre">setSamplePreprocessing(value:</span> <span class="pre">Preprocessing[(Any,</span> <span class="pre">Option[Any]),</span> <span class="pre">Sample[T]])</span></code> to directly compose Sample with user-specified Preprocessing.</p>
+<p><strong>Scala example:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">import</span> <span class="nn">com.intel.analytics.bigdl.dllib.nn._</span>
+<span class="k">import</span> <span class="nn">com.intel.analytics.bigdl.dllib.nnframes.NNClassifier</span>
+<span class="k">import</span> <span class="nn">com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat</span>
+
+<span class="k">val</span> <span class="n">model</span> <span class="k">=</span> <span class="nc">Sequential</span><span class="o">().</span><span class="n">add</span><span class="o">(</span><span class="nc">Linear</span><span class="o">(</span><span class="mi">2</span><span class="o">,</span> <span class="mi">2</span><span class="o">))</span>
+<span class="k">val</span> <span class="n">criterion</span> <span class="k">=</span> <span class="nc">MSECriterion</span><span class="o">()</span>
+<span class="k">val</span> <span class="n">estimator</span> <span class="k">=</span> <span class="nc">NNClassifier</span><span class="o">(</span><span class="n">model</span><span class="o">,</span> <span class="n">criterion</span><span class="o">)</span>
+  <span class="o">.</span><span class="n">setLearningRate</span><span class="o">(</span><span class="mf">0.2</span><span class="o">)</span>
+  <span class="o">.</span><span class="n">setMaxEpoch</span><span class="o">(</span><span class="mi">40</span><span class="o">)</span>
+<span class="k">val</span> <span class="n">data</span> <span class="k">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">parallelize</span><span class="o">(</span><span class="nc">Seq</span><span class="o">(</span>
+  <span class="o">(</span><span class="nc">Array</span><span class="o">(</span><span class="mf">0.0</span><span class="o">,</span> <span class="mf">1.0</span><span class="o">),</span> <span class="mf">1.0</span><span class="o">),</span>
+  <span class="o">(</span><span class="nc">Array</span><span class="o">(</span><span class="mf">1.0</span><span class="o">,</span> <span class="mf">0.0</span><span class="o">),</span> <span class="mf">2.0</span><span class="o">),</span>
+  <span class="o">(</span><span class="nc">Array</span><span class="o">(</span><span class="mf">0.0</span><span class="o">,</span> <span class="mf">1.0</span><span class="o">),</span> <span class="mf">1.0</span><span class="o">),</span>
+  <span class="o">(</span><span class="nc">Array</span><span class="o">(</span><span class="mf">1.0</span><span class="o">,</span> <span class="mf">0.0</span><span class="o">),</span> <span class="mf">2.0</span><span class="o">)))</span>
+<span class="k">val</span> <span class="n">df</span> <span class="k">=</span> <span class="n">sqlContext</span><span class="o">.</span><span class="n">createDataFrame</span><span class="o">(</span><span class="n">data</span><span class="o">).</span><span class="n">toDF</span><span class="o">(</span><span class="s">&quot;features&quot;</span><span class="o">,</span> <span class="s">&quot;label&quot;</span><span class="o">)</span>
+<span class="k">val</span> <span class="n">dlModel</span> <span class="k">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="o">(</span><span class="n">df</span><span class="o">)</span>
+<span class="n">dlModel</span><span class="o">.</span><span class="n">transform</span><span class="o">(</span><span class="n">df</span><span class="o">).</span><span class="n">show</span><span class="o">(</span><span class="kc">false</span><span class="o">)</span>
+</pre></div>
+</div>
+<p><strong>Python Example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bigdl.nn.layer</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">bigdl.nn.criterion</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">bigdl.util.common</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">bigdl.dlframes.dl_classifier</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">pyspark.sql.types</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="c1">#Logistic Regression with BigDL layers and NNClassifier</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Sequential</span><span class="p">()</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Linear</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">LogSoftMax</span><span class="p">())</span>
+<span class="n">criterion</span> <span class="o">=</span> <span class="n">ZooClassNLLCriterion</span><span class="p">()</span>
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">NNClassifier</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">setBatchSize</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">setMaxEpoch</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">parallelize</span><span class="p">([</span>
+    <span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">]),</span>
+    <span class="p">((</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">[</span><span class="mf">2.0</span><span class="p">]),</span>
+    <span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">]),</span>
+    <span class="p">((</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">[</span><span class="mf">2.0</span><span class="p">])])</span>
+
+<span class="n">schema</span> <span class="o">=</span> <span class="n">StructType</span><span class="p">([</span>
+    <span class="n">StructField</span><span class="p">(</span><span class="s2">&quot;features&quot;</span><span class="p">,</span> <span class="n">ArrayType</span><span class="p">(</span><span class="n">DoubleType</span><span class="p">(),</span> <span class="bp">False</span><span class="p">),</span> <span class="bp">False</span><span class="p">),</span>
+    <span class="n">StructField</span><span class="p">(</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="n">ArrayType</span><span class="p">(</span><span class="n">DoubleType</span><span class="p">(),</span> <span class="bp">False</span><span class="p">),</span> <span class="bp">False</span><span class="p">)])</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">sqlContext</span><span class="o">.</span><span class="n">createDataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">schema</span><span class="p">)</span>
+<span class="n">dlModel</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">dlModel</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="nnclassifiermodel">
+<h3>2.4 NNClassifierModel<a class="headerlink" href="#nnclassifiermodel" title="Permalink to this headline">¶</a></h3>
+<p><strong>Scala:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">nnClassifierModel</span> <span class="k">=</span> <span class="nc">NNClassifierModel</span><span class="o">(</span><span class="n">model</span><span class="o">,</span> <span class="n">featureSize</span><span class="o">)</span>
+</pre></div>
+</div>
+<p><strong>Python:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">nn_classifier_model</span> <span class="o">=</span> <span class="n">NNClassifierModel</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>NNClassifierModel is a specialized <code class="docutils literal notranslate"><span class="pre">NNModel</span></code> for classification tasks. Both label and prediction column will have the datatype of Double.</p>
+<p><code class="docutils literal notranslate"><span class="pre">NNClassifierModel</span></code> can be created with various parameters for different scenarios.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">NNClassifierModel(model)</span></code></p>
+<p>Takes only model and use <code class="docutils literal notranslate"><span class="pre">SeqToTensor</span></code> as feature Preprocessing. <code class="docutils literal notranslate"><span class="pre">NNClassifierModel</span></code> will extract the data from feature column (only Scalar, Array[_] or Vector data type are supported) and convert each feature to 1-dimension Tensor. The tensors will be sent to model for inference.</p>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">NNClassifierModel(model,</span> <span class="pre">featureSize:</span> <span class="pre">Array[Int])</span></code></p>
+<p>Takes model and featureSize(Array of Int). <code class="docutils literal notranslate"><span class="pre">NNClassifierModel</span></code> will extract the data from feature column (only Scalar, Array[_] or Vector data type are supported) and convert each feature to Tensor according to the specified Tensor size. User can also set featureSize as Array[Array[Int]] for multi-inputs model.</p>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">NNClassifierModel(model,</span> <span class="pre">featurePreprocessing:</span> <span class="pre">Preprocessing[F,</span> <span class="pre">Tensor[T]])</span></code></p>
+<p>Takes model and featurePreprocessing. <code class="docutils literal notranslate"><span class="pre">NNClassifierModel</span></code> will extract the data from feature column and convert each feature to Tensor with the featurePreprocessing. This constructor provides more flexibility in supporting extra data types.</p>
+</li>
+</ul>
+<p>Meanwhile, for advanced use cases (e.g. model with multiple input tensor), <code class="docutils literal notranslate"><span class="pre">NNClassifierModel</span></code> supports: <code class="docutils literal notranslate"><span class="pre">setSamplePreprocessing(value:</span> <span class="pre">Preprocessing[Any,</span> <span class="pre">Sample[T]])</span></code>to directly compose Sample according to user-specified Preprocessing.</p>
+</section>
+<hr class="docutils" />
+<section id="hyperparameter-setting">
+<h3>2.5 Hyperparameter Setting<a class="headerlink" href="#hyperparameter-setting" title="Permalink to this headline">¶</a></h3>
+<p>Prior to the commencement of the training process, you can modify the optimization algorithm, batch size, the epoch number of your training, and learning rate to meet your goal or <code class="docutils literal notranslate"><span class="pre">NNEstimator</span></code>/<code class="docutils literal notranslate"><span class="pre">NNClassifier</span></code> will use the default value.</p>
+<p>Continue the codes above, NNEstimator and NNClassifier can be set in the same way.</p>
+<p><strong>Scala:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="c1">//for esitmator</span>
+<span class="n">estimator</span><span class="o">.</span><span class="n">setBatchSize</span><span class="o">(</span><span class="mi">4</span><span class="o">).</span><span class="n">setMaxEpoch</span><span class="o">(</span><span class="mi">10</span><span class="o">).</span><span class="n">setLearningRate</span><span class="o">(</span><span class="mf">0.01</span><span class="o">).</span><span class="n">setOptimMethod</span><span class="o">(</span><span class="k">new</span> <span class="nc">Adam</span><span class="o">())</span>
+<span class="c1">//for classifier</span>
+<span class="n">classifier</span><span class="o">.</span><span class="n">setBatchSize</span><span class="o">(</span><span class="mi">4</span><span class="o">).</span><span class="n">setMaxEpoch</span><span class="o">(</span><span class="mi">10</span><span class="o">).</span><span class="n">setLearningRate</span><span class="o">(</span><span class="mf">0.01</span><span class="o">).</span><span class="n">setOptimMethod</span><span class="o">(</span><span class="k">new</span> <span class="nc">Adam</span><span class="o">())</span>
+</pre></div>
+</div>
+<p><strong>Python:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># for esitmator</span>
+<span class="n">estimator</span><span class="o">.</span><span class="n">setBatchSize</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">setMaxEpoch</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">setLearningRate</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span><span class="o">.</span><span class="n">setOptimMethod</span><span class="p">(</span><span class="n">Adam</span><span class="p">())</span>
+<span class="c1"># for classifier</span>
+<span class="n">classifier</span><span class="o">.</span><span class="n">setBatchSize</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">setMaxEpoch</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">setLearningRate</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span><span class="o">.</span><span class="n">setOptimMethod</span><span class="p">(</span><span class="n">Adam</span><span class="p">())</span>
+</pre></div>
+</div>
+</section>
+<section id="training">
+<h3>2.6 Training<a class="headerlink" href="#training" title="Permalink to this headline">¶</a></h3>
+<p>NNEstimator/NNCLassifer supports training with Spark’s <a class="reference external" href="https://spark.apache.org/docs/latest/sql-programming-guide.html#datasets-and-dataframes">DataFrame/DataSet</a></p>
+<p>Suppose <code class="docutils literal notranslate"><span class="pre">df</span></code> is the training data, simple call <code class="docutils literal notranslate"><span class="pre">fit</span></code> method and let BigDL DLLib train the model for you.</p>
+<p><strong>Scala:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="c1">//get a NNClassifierModel</span>
+<span class="k">val</span> <span class="n">nnClassifierModel</span> <span class="k">=</span> <span class="n">classifier</span><span class="o">.</span><span class="n">fit</span><span class="o">(</span><span class="n">df</span><span class="o">)</span>
+</pre></div>
+</div>
+<p><strong>Python:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># get a NNClassifierModel</span>
+<span class="n">nnClassifierModel</span> <span class="o">=</span> <span class="n">classifier</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>User may also set validation DataFrame and validation frequency through <code class="docutils literal notranslate"><span class="pre">setValidation</span></code> method. Train summay and validation summary can also be configured to log the training process for visualization in Tensorboard.</p>
+</section>
+<section id="prediction">
+<h3>2.7 Prediction<a class="headerlink" href="#prediction" title="Permalink to this headline">¶</a></h3>
+<p>Since <code class="docutils literal notranslate"><span class="pre">NNModel</span></code>/<code class="docutils literal notranslate"><span class="pre">NNClassifierModel</span></code> inherits from Spark’s <code class="docutils literal notranslate"><span class="pre">Transformer</span></code> abstract class, simply call <code class="docutils literal notranslate"><span class="pre">transform</span></code> method on <code class="docutils literal notranslate"><span class="pre">NNModel</span></code>/<code class="docutils literal notranslate"><span class="pre">NNClassifierModel</span></code> to make prediction.</p>
+<p><strong>Scala:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="n">nnModel</span><span class="o">.</span><span class="n">transform</span><span class="o">(</span><span class="n">df</span><span class="o">).</span><span class="n">show</span><span class="o">(</span><span class="kc">false</span><span class="o">)</span>
+</pre></div>
+</div>
+<p><strong>Python:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">nnModel</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">false</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For the complete examples of NNFrames, please refer to:
+<a class="reference external" href="https://github.com/intel-analytics/BigDL/tree/branch-2.0/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/nnframes">Scala examples</a>
+<a class="reference external" href="https://github.com/intel-analytics/BigDL/tree/branch-2.0/python/dllib/examples/nnframes">Python examples</a></p>
+</section>
+<section id="nnimagereader">
+<h3>2.8 NNImageReader<a class="headerlink" href="#nnimagereader" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">NNImageReader</span></code> is the primary DataFrame-based image loading interface, defining API to read images into DataFrame.</p>
+<p>Scala:</p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">imageDF</span> <span class="k">=</span> <span class="nc">NNImageReader</span><span class="o">.</span><span class="n">readImages</span><span class="o">(</span><span class="n">imageDirectory</span><span class="o">,</span> <span class="n">sc</span><span class="o">)</span>
+</pre></div>
+</div>
+<p>Python:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">image_frame</span> <span class="o">=</span> <span class="n">NNImageReader</span><span class="o">.</span><span class="n">readImages</span><span class="p">(</span><span class="n">image_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sc</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output DataFrame contains a sinlge column named “image”. The schema of “image” column can be accessed from <code class="docutils literal notranslate"><span class="pre">com.intel.analytics.bigdl.dllib.nnframes.DLImageSchema.byteSchema</span></code>. Each record in “image” column represents one image record, in the format of Row(origin, height, width, num of channels, mode, data), where origin contains the URI for the image file, and <code class="docutils literal notranslate"><span class="pre">data</span></code> holds the original file bytes for the image file. <code class="docutils literal notranslate"><span class="pre">mode</span></code> represents the OpenCV-compatible type: CV_8UC3, CV_8UC1 in most cases.</p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">byteSchema</span> <span class="k">=</span> <span class="nc">StructType</span><span class="o">(</span>
+  <span class="nc">StructField</span><span class="o">(</span><span class="s">&quot;origin&quot;</span><span class="o">,</span> <span class="nc">StringType</span><span class="o">,</span> <span class="kc">true</span><span class="o">)</span> <span class="o">::</span>
+    <span class="nc">StructField</span><span class="o">(</span><span class="s">&quot;height&quot;</span><span class="o">,</span> <span class="nc">IntegerType</span><span class="o">,</span> <span class="kc">false</span><span class="o">)</span> <span class="o">::</span>
+    <span class="nc">StructField</span><span class="o">(</span><span class="s">&quot;width&quot;</span><span class="o">,</span> <span class="nc">IntegerType</span><span class="o">,</span> <span class="kc">false</span><span class="o">)</span> <span class="o">::</span>
+    <span class="nc">StructField</span><span class="o">(</span><span class="s">&quot;nChannels&quot;</span><span class="o">,</span> <span class="nc">IntegerType</span><span class="o">,</span> <span class="kc">false</span><span class="o">)</span> <span class="o">::</span>
+    <span class="c1">// OpenCV-compatible type: CV_8UC3, CV_32FC3 in most cases</span>
+    <span class="nc">StructField</span><span class="o">(</span><span class="s">&quot;mode&quot;</span><span class="o">,</span> <span class="nc">IntegerType</span><span class="o">,</span> <span class="kc">false</span><span class="o">)</span> <span class="o">::</span>
+    <span class="c1">// Bytes in OpenCV-compatible order: row-wise BGR in most cases</span>
+    <span class="nc">StructField</span><span class="o">(</span><span class="s">&quot;data&quot;</span><span class="o">,</span> <span class="nc">BinaryType</span><span class="o">,</span> <span class="kc">false</span><span class="o">)</span> <span class="o">::</span> <span class="nc">Nil</span><span class="o">)</span>
+</pre></div>
+</div>
+<p>After loading the image, user can compose the preprocess steps with the <code class="docutils literal notranslate"><span class="pre">Preprocessing</span></code> defined in <code class="docutils literal notranslate"><span class="pre">com.intel.analytics.bigdl.dllib.feature.image</span></code>.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="keras-api.html" class="btn btn-neutral float-left" title="Keras-Like API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../Orca/Overview/orca.html" class="btn btn-neutral float-right" title="The Orca Library" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

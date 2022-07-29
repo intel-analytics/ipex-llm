@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TPC-DS with Trusted SparkSQL on Kubernetes &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/design-tabs.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Privacy Preserving Machine Learning (PPML) on Azure User Guide" href="../Overview/azure_ppml.html" />
+    <link rel="prev" title="TPC-H with Trusted SparkSQL on Kubernetes" href="tpc-h_with_sparksql_on_k8s.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">TPC-DS with Trusted SparkSQL on Kubernetes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#prepare-tpc-ds-kit-and-data">Prepare TPC-DS kit and data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#deploy-ppml-tpc-ds-on-kubernetes">Deploy PPML TPC-DS on Kubernetes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>TPC-DS with Trusted SparkSQL on Kubernetes</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/doc/PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="tpc-ds-with-trusted-sparksql-on-kubernetes">
+<h1>TPC-DS with Trusted SparkSQL on Kubernetes<a class="headerlink" href="#tpc-ds-with-trusted-sparksql-on-kubernetes" title="Permalink to this headline">¶</a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>Hardware that supports SGX</p></li>
+<li><p>A fully configured Kubernetes cluster</p></li>
+<li><p>Intel SGX Device Plugin to use SGX in K8S cluster (install following instructions <a class="reference external" href="https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">here</a>)</p></li>
+</ul>
+</section>
+<section id="prepare-tpc-ds-kit-and-data">
+<h2>Prepare TPC-DS kit and data<a class="headerlink" href="#prepare-tpc-ds-kit-and-data" title="Permalink to this headline">¶</a></h2>
+<ol class="simple">
+<li><p>Download and compile tpc-ds</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone --recursive https://github.com/intel-analytics/zoo-tutorials.git
+<span class="nb">cd</span> /path/to/zoo-tutorials
+git clone https://github.com/databricks/tpcds-kit.git
+<span class="nb">cd</span> tpcds-kit/tools
+make <span class="nv">OS</span><span class="o">=</span>LINUX
+</pre></div>
+</div>
+<ol class="simple">
+<li><p>Generate data</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> /path/to/zoo-tutorials
+<span class="nb">cd</span> tpcds-spark/spark-sql-perf
+sbt <span class="s2">&quot;test:runMain com.databricks.spark.sql.perf.tpcds.GenTPCDSData -d &lt;dsdgenDir&gt; -s &lt;scaleFactor&gt; -l &lt;dataDir&gt; -f parquet&quot;</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">dsdgenDir</span></code> is the path of <code class="docutils literal notranslate"><span class="pre">tpcds-kit/tools</span></code>, <code class="docutils literal notranslate"><span class="pre">scaleFactor</span></code> is the size of the data, for example <code class="docutils literal notranslate"><span class="pre">-s</span> <span class="pre">1</span></code> will generate 1G data, <code class="docutils literal notranslate"><span class="pre">dataDir</span></code> is the path to store generated data.</p>
+</section>
+<section id="deploy-ppml-tpc-ds-on-kubernetes">
+<h2>Deploy PPML TPC-DS on Kubernetes<a class="headerlink" href="#deploy-ppml-tpc-ds-on-kubernetes" title="Permalink to this headline">¶</a></h2>
+<ol class="simple">
+<li><p>Compile Kit</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> zoo-tutorials/tpcds-spark
+sbt package
+</pre></div>
+</div>
+<ol class="simple">
+<li><p>Create external tables</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">$SPARK_HOME</span>/bin/spark-submit <span class="se">\</span>
+        --class <span class="s2">&quot;createTables&quot;</span> <span class="se">\</span>
+        --master &lt;spark-master&gt; <span class="se">\</span>
+        --driver-memory 20G <span class="se">\</span>
+        --executor-cores &lt;executor-cores&gt; <span class="se">\</span>
+        --total-executor-cores &lt;total-cores&gt; <span class="se">\</span>
+        --executor-memory 20G <span class="se">\</span>
+        --jars spark-sql-perf/target/scala-2.12/spark-sql-perf_2.12-0.5.1-SNAPSHOT.jar <span class="se">\</span>
+        target/scala-2.12/tpcds-benchmark_2.12-0.1.jar &lt;dataDir&gt; &lt;dsdgenDir&gt; &lt;scaleFactor&gt;
+</pre></div>
+</div>
+<ol class="simple">
+<li><p>Pull docker image</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT
+</pre></div>
+</div>
+<ol class="simple">
+<li><p>Prepare SGX keys (following instructions <a class="reference external" href="https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-graphene#11-prepare-the-keyspassworddataenclave-keypem">here</a>), make sure keys and tpcds-spark can be accessed on each K8S node</p></li>
+<li><p>Start a bigdl-ppml enabled Spark K8S client container with configured local IP, key, tpc-ds and kuberconfig path</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">ENCLAVE_KEY</span><span class="o">=</span>/YOUR_DIR/keys/enclave-key.pem
+<span class="nb">export</span> <span class="nv">DATA_PATH</span><span class="o">=</span>/YOUR_DIR/zoo-tutorials/tpcds-spark
+<span class="nb">export</span> <span class="nv">KEYS_PATH</span><span class="o">=</span>/YOUR_DIR/keys
+<span class="nb">export</span> <span class="nv">SECURE_PASSWORD_PATH</span><span class="o">=</span>/YOUR_DIR/password
+<span class="nb">export</span> <span class="nv">KUBERCONFIG_PATH</span><span class="o">=</span>/YOUR_DIR/kuberconfig
+<span class="nb">export</span> <span class="nv">LOCAL_IP</span><span class="o">=</span><span class="nv">$local_ip</span>
+<span class="nb">export</span> <span class="nv">DOCKER_IMAGE</span><span class="o">=</span>intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT
+sudo docker run -itd <span class="se">\</span>
+        --privileged <span class="se">\</span>
+        --net<span class="o">=</span>host <span class="se">\</span>
+        --name<span class="o">=</span>spark-local-k8s-client <span class="se">\</span>
+        --oom-kill-disable <span class="se">\</span>
+        --device<span class="o">=</span>/dev/sgx/enclave <span class="se">\</span>
+        --device<span class="o">=</span>/dev/sgx/provision <span class="se">\</span>
+        -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket <span class="se">\</span>
+        -v <span class="nv">$ENCLAVE_KEY</span>:/graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem <span class="se">\</span>
+        -v <span class="nv">$DATA_PATH</span>:/ppml/trusted-big-data-ml/work/tpcds-spark <span class="se">\</span>
+        -v <span class="nv">$KEYS_PATH</span>:/ppml/trusted-big-data-ml/work/keys <span class="se">\</span>
+	-v <span class="nv">$SECURE_PASSWORD_PATH</span>:/ppml/trusted-big-data-ml/work/password <span class="se">\</span>
+        -v <span class="nv">$KUBERCONFIG_PATH</span>:/root/.kube/config <span class="se">\</span>
+        -e <span class="nv">RUNTIME_SPARK_MASTER</span><span class="o">=</span>k8s://https://<span class="nv">$LOCAL_IP</span>:6443 <span class="se">\</span>
+        -e <span class="nv">RUNTIME_K8S_SERVICE_ACCOUNT</span><span class="o">=</span>spark <span class="se">\</span>
+        -e <span class="nv">RUNTIME_K8S_SPARK_IMAGE</span><span class="o">=</span><span class="nv">$DOCKER_IMAGE</span> <span class="se">\</span>
+        -e <span class="nv">RUNTIME_DRIVER_HOST</span><span class="o">=</span><span class="nv">$LOCAL_IP</span> <span class="se">\</span>
+        -e <span class="nv">RUNTIME_DRIVER_PORT</span><span class="o">=</span><span class="m">54321</span> <span class="se">\</span>
+        -e <span class="nv">RUNTIME_EXECUTOR_INSTANCES</span><span class="o">=</span><span class="m">1</span> <span class="se">\</span>
+        -e <span class="nv">RUNTIME_EXECUTOR_CORES</span><span class="o">=</span><span class="m">4</span> <span class="se">\</span>
+        -e <span class="nv">RUNTIME_EXECUTOR_MEMORY</span><span class="o">=</span>20g <span class="se">\</span>
+        -e <span class="nv">RUNTIME_TOTAL_EXECUTOR_CORES</span><span class="o">=</span><span class="m">4</span> <span class="se">\</span>
+        -e <span class="nv">RUNTIME_DRIVER_CORES</span><span class="o">=</span><span class="m">4</span> <span class="se">\</span>
+        -e <span class="nv">RUNTIME_DRIVER_MEMORY</span><span class="o">=</span>10g <span class="se">\</span>
+        -e <span class="nv">SGX_MEM_SIZE</span><span class="o">=</span>64G <span class="se">\</span>
+        -e <span class="nv">SGX_LOG_LEVEL</span><span class="o">=</span>error <span class="se">\</span>
+        -e <span class="nv">LOCAL_IP</span><span class="o">=</span><span class="nv">$LOCAL_IP</span> <span class="se">\</span>
+        <span class="nv">$DOCKER_IMAGE</span> bash
+</pre></div>
+</div>
+<ol class="simple">
+<li><p>Attach to the client container</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo docker <span class="nb">exec</span> -it spark-local-k8s-client bash
+</pre></div>
+</div>
+<ol class="simple">
+<li><p>Modify <code class="docutils literal notranslate"><span class="pre">spark-executor-template.yaml</span></code>, add path of <code class="docutils literal notranslate"><span class="pre">enclave-key</span></code>, <code class="docutils literal notranslate"><span class="pre">tpcds-spark</span></code> and <code class="docutils literal notranslate"><span class="pre">kuberconfig</span></code> on host</p></li>
+</ol>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span>apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: spark-executor
+    securityContext:
+      privileged: true
+    volumeMounts:
+	...
+      - name: tpcds
+        mountPath: /ppml/trusted-big-data-ml/work/tpcds-spark
+      - name: kubeconf
+        mountPath: /root/.kube/config
+  volumes:
+    - name: enclave-key
+      hostPath:
+        path:  /root/keys/enclave-key.pem
+	...
+    - name: tpcds
+      hostPath:
+        path: /path/to/tpcds-spark
+    - name: kubeconf
+      hostPath:
+        path: /path/to/kuberconfig
+</pre></div>
+</div>
+<ol class="simple">
+<li><p>Execute TPC-DS queries</p></li>
+</ol>
+<p>Optional argument <code class="docutils literal notranslate"><span class="pre">QUERY</span></code> is the query number to run. Multiple query numbers should be separated by space, e.g. <code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">2</span> <span class="pre">3</span></code>. If no query number is specified, all 1-99 queries would be executed.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">secure_password</span><span class="o">=</span><span class="sb">`</span>openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt &lt;/ppml/trusted-big-data-ml/work/password/output.bin<span class="sb">`</span> <span class="o">&amp;&amp;</span> <span class="se">\</span>
+<span class="nb">export</span> <span class="nv">TF_MKL_ALLOC_MAX_BYTES</span><span class="o">=</span><span class="m">10737418240</span> <span class="o">&amp;&amp;</span> <span class="se">\</span>
+<span class="nb">export</span> <span class="nv">SPARK_LOCAL_IP</span><span class="o">=</span><span class="nv">$LOCAL_IP</span> <span class="o">&amp;&amp;</span> <span class="se">\</span>
+<span class="nb">export</span> <span class="nv">HDFS_HOST</span><span class="o">=</span><span class="nv">$hdfs_host_ip</span> <span class="o">&amp;&amp;</span> <span class="se">\</span>
+<span class="nb">export</span> <span class="nv">HDFS_PORT</span><span class="o">=</span><span class="nv">$hdfs_port</span> <span class="o">&amp;&amp;</span> <span class="se">\</span>
+<span class="nb">export</span> <span class="nv">TPCDS_DIR</span><span class="o">=</span>/ppml/trusted-big-data-ml/work/tpcds-spark <span class="se">\</span>
+<span class="nb">export</span> <span class="nv">OUTPUT_DIR</span><span class="o">=</span>hdfs://<span class="nv">$HDFS_HOST</span>:<span class="nv">$HDFS_PORT</span>/tpc-ds/output <span class="se">\</span>
+<span class="nb">export</span> <span class="nv">QUERY</span><span class="o">=</span><span class="m">3</span>
+  /opt/jdk8/bin/java <span class="se">\</span>
+    -cp <span class="s1">&#39;$TPCDS_DIR/target/scala-2.12/tpcds-benchmark_2.12-0.1.jar:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*&#39;</span> <span class="se">\</span>
+    -Xmx10g <span class="se">\</span>
+    -Dbigdl.mklNumThreads<span class="o">=</span><span class="m">1</span> <span class="se">\</span>
+    org.apache.spark.deploy.SparkSubmit <span class="se">\</span>
+    --master <span class="nv">$RUNTIME_SPARK_MASTER</span> <span class="se">\</span>
+    --deploy-mode client <span class="se">\</span>
+    --name spark-tpcds-sgx <span class="se">\</span>
+    --conf spark.driver.host<span class="o">=</span><span class="nv">$LOCAL_IP</span> <span class="se">\</span>
+    --conf spark.driver.port<span class="o">=</span><span class="m">54321</span> <span class="se">\</span>
+    --conf spark.driver.memory<span class="o">=</span>10g <span class="se">\</span>
+    --conf spark.driver.blockManager.port<span class="o">=</span><span class="m">10026</span> <span class="se">\</span>
+    --conf spark.blockManager.port<span class="o">=</span><span class="m">10025</span> <span class="se">\</span>
+    --conf spark.scheduler.maxRegisteredResourcesWaitingTime<span class="o">=</span><span class="m">5000000</span> <span class="se">\</span>
+    --conf spark.worker.timeout<span class="o">=</span><span class="m">600</span> <span class="se">\</span>
+    --conf spark.python.use.daemon<span class="o">=</span><span class="nb">false</span> <span class="se">\</span>
+    --conf spark.python.worker.reuse<span class="o">=</span><span class="nb">false</span> <span class="se">\</span>
+    --conf spark.network.timeout<span class="o">=</span><span class="m">10000000</span> <span class="se">\</span>
+    --conf spark.starvation.timeout<span class="o">=</span><span class="m">250000</span> <span class="se">\</span>
+    --conf spark.rpc.askTimeout<span class="o">=</span><span class="m">600</span> <span class="se">\</span>
+    --conf spark.sql.autoBroadcastJoinThreshold<span class="o">=</span>-1 <span class="se">\</span>
+    --conf spark.io.compression.codec<span class="o">=</span>lz4 <span class="se">\</span>
+    --conf spark.sql.shuffle.partitions<span class="o">=</span><span class="m">8</span> <span class="se">\</span>
+    --conf spark.speculation<span class="o">=</span><span class="nb">false</span> <span class="se">\</span>
+    --conf spark.executor.heartbeatInterval<span class="o">=</span><span class="m">10000000</span> <span class="se">\</span>
+    --conf spark.executor.instances<span class="o">=</span><span class="m">24</span> <span class="se">\</span>
+    --executor-cores <span class="m">8</span> <span class="se">\</span>
+    --total-executor-cores <span class="m">192</span> <span class="se">\</span>
+    --executor-memory 16G <span class="se">\</span>
+    --properties-file /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/conf/spark-bigdl.conf <span class="se">\</span>
+    --conf spark.kubernetes.authenticate.serviceAccountName<span class="o">=</span>spark <span class="se">\</span>
+    --conf spark.kubernetes.container.image<span class="o">=</span><span class="nv">$RUNTIME_K8S_SPARK_IMAGE</span> <span class="se">\</span>
+    --conf spark.kubernetes.executor.podTemplateFile<span class="o">=</span>/ppml/trusted-big-data-ml/spark-executor-template.yaml <span class="se">\</span>
+    --conf spark.kubernetes.executor.deleteOnTermination<span class="o">=</span><span class="nb">false</span> <span class="se">\</span>
+    --conf spark.kubernetes.executor.podNamePrefix<span class="o">=</span>spark-tpcds-sgx <span class="se">\</span>
+    --conf spark.kubernetes.sgx.enabled<span class="o">=</span><span class="nb">true</span> <span class="se">\</span>
+    --conf spark.kubernetes.sgx.executor.mem<span class="o">=</span>32g <span class="se">\</span>
+    --conf spark.kubernetes.sgx.executor.jvm.mem<span class="o">=</span>6g <span class="se">\</span>
+    --conf spark.kubernetes.sgx.log.level<span class="o">=</span><span class="nv">$SGX_LOG_LEVEL</span> <span class="se">\</span>
+    --conf spark.authenticate<span class="o">=</span><span class="nb">true</span> <span class="se">\</span>
+    --conf spark.authenticate.secret<span class="o">=</span><span class="nv">$secure_password</span> <span class="se">\</span>
+    --conf spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET<span class="o">=</span><span class="s2">&quot;spark-secret:secret&quot;</span> <span class="se">\</span>
+    --conf spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET<span class="o">=</span><span class="s2">&quot;spark-secret:secret&quot;</span> <span class="se">\</span>
+    --conf spark.authenticate.enableSaslEncryption<span class="o">=</span><span class="nb">true</span> <span class="se">\</span>
+    --conf spark.network.crypto.enabled<span class="o">=</span><span class="nb">true</span> <span class="se">\</span>
+    --conf spark.network.crypto.keyLength<span class="o">=</span><span class="m">128</span> <span class="se">\</span>
+    --conf spark.network.crypto.keyFactoryAlgorithm<span class="o">=</span>PBKDF2WithHmacSHA1 <span class="se">\</span>
+    --conf spark.io.encryption.enabled<span class="o">=</span><span class="nb">true</span> <span class="se">\</span>
+    --conf spark.io.encryption.keySizeBits<span class="o">=</span><span class="m">128</span> <span class="se">\</span>
+    --conf spark.io.encryption.keygen.algorithm<span class="o">=</span>HmacSHA1 <span class="se">\</span>
+    --conf spark.ssl.enabled<span class="o">=</span><span class="nb">true</span> <span class="se">\</span>
+    --conf spark.ssl.port<span class="o">=</span><span class="m">8043</span> <span class="se">\</span>
+    --conf spark.ssl.keyPassword<span class="o">=</span><span class="nv">$secure_password</span> <span class="se">\</span>
+    --conf spark.ssl.keyStore<span class="o">=</span>/ppml/trusted-big-data-ml/work/keys/keystore.jks <span class="se">\</span>
+    --conf spark.ssl.keyStorePassword<span class="o">=</span><span class="nv">$secure_password</span> <span class="se">\</span>
+    --conf spark.ssl.keyStoreType<span class="o">=</span>JKS <span class="se">\</span>
+    --conf spark.ssl.trustStore<span class="o">=</span>/ppml/trusted-big-data-ml/work/keys/keystore.jks <span class="se">\</span>
+    --conf spark.ssl.trustStorePassword<span class="o">=</span><span class="nv">$secure_password</span> <span class="se">\</span>
+    --conf spark.ssl.trustStoreType<span class="o">=</span>JKS <span class="se">\</span>
+    --class <span class="s2">&quot;TPCDSBenchmark&quot;</span> <span class="se">\</span>
+    --verbose <span class="se">\</span>
+    <span class="nv">$TPCDS_DIR</span>/target/scala-2.12/tpcds-benchmark_2.12-0.1.jar <span class="se">\</span>
+    <span class="nv">$OUTPUT_DIR</span> <span class="nv">$QUERY</span>
+</pre></div>
+</div>
+<p>After benchmark is finished, the performance result is saved as <code class="docutils literal notranslate"><span class="pre">part-*.csv</span></code> file under <code class="docutils literal notranslate"><span class="pre">&lt;OUTPUT_DIR&gt;/performance</span></code> directory.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tpc-h_with_sparksql_on_k8s.html" class="btn btn-neutral float-left" title="TPC-H with Trusted SparkSQL on Kubernetes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../Overview/azure_ppml.html" class="btn btn-neutral float-right" title="Privacy Preserving Machine Learning (PPML) on Azure User Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

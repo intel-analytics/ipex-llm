@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bigdl.chronos.autots.deprecated.config.recipe &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../../" id="documentation_options" src="../../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../../_static/jquery.js"></script>
+        <script src="../../../../../../_static/underscore.js"></script>
+        <script src="../../../../../../_static/doctools.js"></script>
+        <script src="../../../../../../_static/clipboard.min.js"></script>
+        <script src="../../../../../../_static/copybutton.js"></script>
+        <script src="../../../../../../_static/tabs.js"></script>
+        <script src="../../../../../../_static/design-tabs.js"></script>
+    <script src="../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Chronos/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../doc/Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../../index.html">Module code</a> &raquo;</li>
+      <li>bigdl.chronos.autots.deprecated.config.recipe</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bigdl.chronos.autots.deprecated.config.recipe</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright 2016 The BigDL Authors.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+
+<span class="kn">from</span> <span class="nn">bigdl.chronos.autots.deprecated.config.base</span> <span class="k">import</span> <span class="n">Recipe</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca.automl</span> <span class="k">import</span> <span class="n">hp</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.utils</span> <span class="k">import</span> <span class="n">deprecated</span>
+
+
+<div class="viewcode-block" id="SmokeRecipe"><a class="viewcode-back" href="../../../../../../doc/PythonAPI/Chronos/autots.html#bigdl.chronos.autots.deprecated.config.recipe.SmokeRecipe">[docs]</a><span class="nd">@deprecated</span><span class="p">(</span><span class="s1">&#39;Please use `bigdl.orca.automl.hp` instead.&#39;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">SmokeRecipe</span><span class="p">(</span><span class="n">Recipe</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A very simple Recipe for smoke test that runs one epoch and one iteration</span>
+<span class="sd">    with only 1 random sample.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        __init__()</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">search_space</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;LSTM&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lstm_1_units&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">]),</span>
+            <span class="s2">&quot;dropout_1&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span>
+            <span class="s2">&quot;lstm_2_units&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">]),</span>
+            <span class="s2">&quot;dropout_2&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span>
+            <span class="s2">&quot;lr&quot;</span><span class="p">:</span> <span class="mf">0.001</span><span class="p">,</span>
+            <span class="s2">&quot;batch_size&quot;</span><span class="p">:</span> <span class="mi">1024</span><span class="p">,</span>
+            <span class="s2">&quot;epochs&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;past_seq_len&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="MTNetSmokeRecipe"><a class="viewcode-back" href="../../../../../../doc/PythonAPI/Chronos/autots.html#bigdl.chronos.autots.deprecated.config.recipe.MTNetSmokeRecipe">[docs]</a><span class="nd">@deprecated</span><span class="p">(</span><span class="s1">&#39;Please use `bigdl.orca.automl.hp` instead.&#39;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">MTNetSmokeRecipe</span><span class="p">(</span><span class="n">Recipe</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A very simple Recipe for smoke test that runs one epoch and one iteration</span>
+<span class="sd">    with only 1 random sample.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        __init__()</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">search_space</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;MTNet&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lr&quot;</span><span class="p">:</span> <span class="mf">0.001</span><span class="p">,</span>
+            <span class="s2">&quot;batch_size&quot;</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
+            <span class="s2">&quot;epochs&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;cnn_dropout&quot;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>
+            <span class="s2">&quot;rnn_dropout&quot;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>
+            <span class="s2">&quot;time_step&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]),</span>
+            <span class="s2">&quot;cnn_height&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="s2">&quot;long_num&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]),</span>
+            <span class="s2">&quot;ar_size&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span>
+            <span class="s2">&quot;past_seq_len&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">sample_from</span><span class="p">(</span><span class="k">lambda</span> <span class="n">spec</span><span class="p">:</span>
+                                           <span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">long_num</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">spec</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">time_step</span><span class="p">),</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="TCNSmokeRecipe"><a class="viewcode-back" href="../../../../../../doc/PythonAPI/Chronos/autots.html#bigdl.chronos.autots.deprecated.config.recipe.TCNSmokeRecipe">[docs]</a><span class="nd">@deprecated</span><span class="p">(</span><span class="s1">&#39;Please use `bigdl.orca.automl.hp` instead.&#39;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">TCNSmokeRecipe</span><span class="p">(</span><span class="n">Recipe</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A very simple Recipe for smoke test that runs one epoch and one iteration</span>
+<span class="sd">    with only 1 random sample.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        __init__()</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">search_space</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;lr&quot;</span><span class="p">:</span> <span class="mf">0.001</span><span class="p">,</span>
+            <span class="s2">&quot;batch_size&quot;</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
+            <span class="s2">&quot;nhid&quot;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>
+            <span class="s2">&quot;levels&quot;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>
+            <span class="s2">&quot;kernel_size&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+            <span class="s2">&quot;dropout&quot;</span><span class="p">:</span> <span class="mf">0.1</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="PastSeqParamHandler"><a class="viewcode-back" href="../../../../../../doc/PythonAPI/Chronos/autots.html#bigdl.chronos.autots.deprecated.config.recipe.PastSeqParamHandler">[docs]</a><span class="k">class</span> <span class="nc">PastSeqParamHandler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Utility to handle PastSeq Param</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="PastSeqParamHandler.get_past_seq_config"><a class="viewcode-back" href="../../../../../../doc/PythonAPI/Chronos/autots.html#bigdl.chronos.autots.deprecated.config.recipe.PastSeqParamHandler.get_past_seq_config">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="nd">@deprecated</span><span class="p">(</span><span class="s1">&#39;Please use `bigdl.orca.automl.hp` instead.&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">get_past_seq_config</span><span class="p">(</span><span class="n">look_back</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        get_past_seq_config(look_back)</span>
+<span class="sd">        Generate pass sequence config based on look_back.</span>
+
+<span class="sd">        :param look_back: look_back configuration</span>
+<span class="sd">        :return: search configuration for past sequence</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span>
+            <span class="n">look_back</span><span class="p">,</span>
+            <span class="nb">tuple</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">look_back</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span>
+                <span class="n">look_back</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span>
+                <span class="n">look_back</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="nb">int</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">look_back</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                                  <span class="s2">&quot;The max look back value should be at least 2&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">look_back</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="s2">&quot;The input min look back value is smaller than 2. &quot;</span>
+                    <span class="s2">&quot;We sample from range (2, </span><span class="si">{}</span><span class="s2">) instead.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">look_back</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="n">past_seq_config</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">look_back</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">look_back</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">look_back</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">look_back</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                                  <span class="s2">&quot;look back value should not be smaller than 2. &quot;</span>
+                                  <span class="s2">&quot;Current value is &quot;</span><span class="p">,</span> <span class="n">look_back</span><span class="p">)</span>
+            <span class="n">past_seq_config</span> <span class="o">=</span> <span class="n">look_back</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;look back is </span><span class="si">{}</span><span class="s2">.</span><span class="se">\n</span><span class="s2"> &quot;</span>
+                              <span class="s2">&quot;look_back should be either a tuple with 2 int values:&quot;</span>
+                              <span class="s2">&quot; (min_len, max_len) or a single int&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">look_back</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">past_seq_config</span></div></div>
+
+
+<div class="viewcode-block" id="GridRandomRecipe"><a class="viewcode-back" href="../../../../../../doc/PythonAPI/Chronos/autots.html#bigdl.chronos.autots.deprecated.config.recipe.GridRandomRecipe">[docs]</a><span class="nd">@deprecated</span><span class="p">(</span><span class="s1">&#39;Please use `bigdl.orca.automl.hp` instead.&#39;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">GridRandomRecipe</span><span class="p">(</span><span class="n">Recipe</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A recipe involves both grid search and random search.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">num_rand_samples</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">look_back</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="n">epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+            <span class="n">training_iteration</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        __init__()</span>
+<span class="sd">        Constructor.</span>
+<span class="sd">        :param num_rand_samples: number of hyper-param configurations sampled randomly</span>
+<span class="sd">        :param look_back: the length to look back, either a tuple with 2 int values,</span>
+<span class="sd">          which is in format is (min len, max len), or a single int, which is</span>
+<span class="sd">          a fixed length to look back.</span>
+<span class="sd">        :param training_iteration: no. of iterations for training (n epochs) in trials</span>
+<span class="sd">        :param epochs: no. of epochs to train in each iteration</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span> <span class="o">=</span> <span class="n">num_rand_samples</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">training_iteration</span> <span class="o">=</span> <span class="n">training_iteration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">past_seq_config</span> <span class="o">=</span> <span class="n">PastSeqParamHandler</span><span class="o">.</span><span class="n">get_past_seq_config</span><span class="p">(</span>
+            <span class="n">look_back</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span> <span class="o">=</span> <span class="n">epochs</span>
+
+    <span class="k">def</span> <span class="nf">search_space</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="c1"># -------- model selection TODO add MTNet</span>
+            <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="s2">&quot;LSTM&quot;</span><span class="p">,</span> <span class="s2">&quot;Seq2seq&quot;</span><span class="p">]),</span>
+
+            <span class="c1"># --------- Vanilla LSTM model parameters</span>
+            <span class="s2">&quot;lstm_1_units&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">grid_search</span><span class="p">([</span><span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">]),</span>
+            <span class="s2">&quot;dropout_1&quot;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>
+            <span class="s2">&quot;lstm_2_units&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">grid_search</span><span class="p">([</span><span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">]),</span>
+            <span class="s2">&quot;dropout_2&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span>
+
+            <span class="c1"># ----------- Seq2Seq model parameters</span>
+            <span class="s2">&quot;latent_dim&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">grid_search</span><span class="p">([</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">]),</span>
+            <span class="s2">&quot;dropout&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span>
+
+            <span class="c1"># ----------- optimization parameters</span>
+            <span class="s2">&quot;lr&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.001</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">),</span>
+            <span class="s2">&quot;batch_size&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">]),</span>
+            <span class="s2">&quot;epochs&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span><span class="p">,</span>
+            <span class="s2">&quot;past_seq_len&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">past_seq_config</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="LSTMSeq2SeqRandomRecipe"><a class="viewcode-back" href="../../../../../../doc/PythonAPI/Chronos/autots.html#bigdl.chronos.autots.deprecated.config.recipe.LSTMSeq2SeqRandomRecipe">[docs]</a><span class="nd">@deprecated</span><span class="p">(</span><span class="s1">&#39;Please use `bigdl.orca.automl.hp` instead.&#39;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">LSTMSeq2SeqRandomRecipe</span><span class="p">(</span><span class="n">Recipe</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A recipe involves both grid search and random search, only for Seq2SeqPytorch.</span>
+<span class="sd">    Note: This recipe is specifically designed for third-party model searching, rather</span>
+<span class="sd">    than TimeSequencePredictor.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">input_feature_num</span><span class="p">,</span>
+            <span class="n">output_feature_num</span><span class="p">,</span>
+            <span class="n">future_seq_len</span><span class="p">,</span>
+            <span class="n">num_rand_samples</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">training_iteration</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span>
+            <span class="n">lr</span><span class="o">=</span><span class="p">(</span><span class="mf">0.001</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">),</span>
+            <span class="n">lstm_hidden_dim</span><span class="o">=</span><span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">],</span>
+            <span class="n">lstm_layer_num</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+            <span class="n">dropout</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">),</span>
+            <span class="n">teacher_forcing</span><span class="o">=</span><span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        __init__()</span>
+<span class="sd">        Constructor.</span>
+<span class="sd">        set the param to a list for grid search.</span>
+<span class="sd">        set the param to a tuple with length = 2 for random search.</span>
+
+<span class="sd">        :param input_feature_num: (int) no. of input feature</span>
+<span class="sd">        :param output_feature_num: (int) no. of ouput feature</span>
+<span class="sd">        :param future_seq_len: (int) no. of steps to be predicted (i.e. horizon)</span>
+<span class="sd">        :param num_rand_samples: (int) number of hyper-param configurations sampled randomly</span>
+<span class="sd">        :param epochs: (int) no. of epochs to train in each iteration</span>
+<span class="sd">        :param training_iteration: (int) no. of iterations for training (n epochs) in trials</span>
+<span class="sd">        :param batch_size: (tuple|list) grid search candidates for batch size</span>
+<span class="sd">        :param lr: (tuple|list) learning rate</span>
+<span class="sd">        :param lstm_hidden_dim: (tuple|list) lstm hidden dim for both encoder and decoder</span>
+<span class="sd">        :param lstm_layer_num: (tuple|list) no. of lstm layer for both encoder and decoder</span>
+<span class="sd">        :param dropout: (tuple|list) dropout for lstm layer</span>
+<span class="sd">        :param teacher_forcing: (list) if to use teacher forcing machanism during training</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="c1"># -- runtime params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span> <span class="o">=</span> <span class="n">num_rand_samples</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">training_iteration</span> <span class="o">=</span> <span class="n">training_iteration</span>
+
+        <span class="c1"># -- optimization params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gen_sample_func</span><span class="p">(</span><span class="n">lr</span><span class="p">,</span> <span class="s2">&quot;lr&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gen_sample_func</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="s2">&quot;batch_size&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span> <span class="o">=</span> <span class="n">epochs</span>
+
+        <span class="c1"># -- model params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_feature_num</span> <span class="o">=</span> <span class="n">input_feature_num</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_feature_num</span> <span class="o">=</span> <span class="n">output_feature_num</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">future_seq_len</span> <span class="o">=</span> <span class="n">future_seq_len</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lstm_hidden_dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gen_sample_func</span><span class="p">(</span>
+            <span class="n">lstm_hidden_dim</span><span class="p">,</span> <span class="s2">&quot;lstm_hidden_dim&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lstm_layer_num</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gen_sample_func</span><span class="p">(</span>
+            <span class="n">lstm_layer_num</span><span class="p">,</span> <span class="s2">&quot;lstm_layer_num&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dropout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gen_sample_func</span><span class="p">(</span><span class="n">dropout</span><span class="p">,</span> <span class="s2">&quot;dropout&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">teacher_forcing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gen_sample_func</span><span class="p">(</span>
+            <span class="n">teacher_forcing</span><span class="p">,</span> <span class="s2">&quot;teacher_forcing&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_gen_sample_func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ranges</span><span class="p">,</span> <span class="n">param_name</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ranges</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ranges</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span>
+                              <span class="n">f</span><span class="s2">&quot;length of tuple </span><span class="si">{param_name}</span><span class="s2"> should be&quot;</span>
+                              <span class="n">f</span><span class="s2">&quot; 2 while get {len(ranges)} instead.&quot;</span><span class="p">)</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="n">param_name</span> <span class="o">!=</span> <span class="s2">&quot;teacher_forcing&quot;</span><span class="p">,</span>
+                              <span class="n">f</span><span class="s2">&quot;type of </span><span class="si">{param_name}</span><span class="s2"> can only be a list while get a tuple&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">param_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;lr&quot;</span><span class="p">]:</span>
+                <span class="k">return</span> <span class="n">hp</span><span class="o">.</span><span class="n">loguniform</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="n">ranges</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">upper</span><span class="o">=</span><span class="n">ranges</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">param_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;lstm_hidden_dim&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;lstm_layer_num&quot;</span><span class="p">,</span> <span class="s2">&quot;batch_size&quot;</span><span class="p">]:</span>
+                <span class="k">return</span> <span class="n">hp</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="n">ranges</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">upper</span><span class="o">=</span><span class="n">ranges</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">param_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;dropout&quot;</span><span class="p">]:</span>
+                <span class="k">return</span> <span class="n">hp</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="n">ranges</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">upper</span><span class="o">=</span><span class="n">ranges</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ranges</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">hp</span><span class="o">.</span><span class="n">grid_search</span><span class="p">(</span><span class="n">ranges</span><span class="p">)</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{param_name}</span><span class="s2"> should be either a list or a tuple.&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">search_space</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="c1"># ----------- data parameters</span>
+            <span class="s2">&quot;input_feature_num&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_feature_num</span><span class="p">,</span>
+            <span class="s2">&quot;output_feature_num&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_feature_num</span><span class="p">,</span>
+            <span class="s2">&quot;future_seq_len&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">future_seq_len</span><span class="p">,</span>
+            <span class="c1"># ----------- optimization parameters</span>
+            <span class="s2">&quot;lr&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr</span><span class="p">,</span>
+            <span class="s2">&quot;batch_size&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="s2">&quot;epochs&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span><span class="p">,</span>
+            <span class="c1"># ----------- model parameters</span>
+            <span class="s2">&quot;lstm_hidden_dim&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">lstm_hidden_dim</span><span class="p">,</span>
+            <span class="s2">&quot;lstm_layer_num&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">lstm_layer_num</span><span class="p">,</span>
+            <span class="s2">&quot;dropout&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout</span><span class="p">,</span>
+            <span class="s2">&quot;teacher_forcing&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">teacher_forcing</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="LSTMGridRandomRecipe"><a class="viewcode-back" href="../../../../../../doc/PythonAPI/Chronos/autots.html#bigdl.chronos.autots.deprecated.config.recipe.LSTMGridRandomRecipe">[docs]</a><span class="nd">@deprecated</span><span class="p">(</span><span class="s1">&#39;Please use `bigdl.orca.automl.hp` instead.&#39;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">LSTMGridRandomRecipe</span><span class="p">(</span><span class="n">Recipe</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A recipe involves both grid search and random search, only for LSTM.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">num_rand_samples</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+            <span class="n">training_iteration</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+            <span class="n">look_back</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="n">lstm_1_units</span><span class="o">=</span><span class="p">[</span><span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">],</span>
+            <span class="n">lstm_2_units</span><span class="o">=</span><span class="p">[</span><span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">],</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="p">[</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        __init__()</span>
+<span class="sd">        Constructor.</span>
+
+<span class="sd">        :param lstm_1_units: random search candidates for num of lstm_1_units</span>
+<span class="sd">        :param lstm_2_units: grid search candidates for num of lstm_1_units</span>
+<span class="sd">        :param batch_size: grid search candidates for batch size</span>
+<span class="sd">        :param num_rand_samples: number of hyper-param configurations sampled randomly</span>
+<span class="sd">        :param look_back: the length to look back, either a tuple with 2 int values,</span>
+<span class="sd">          which is in format is (min len, max len), or a single int, which is</span>
+<span class="sd">          a fixed length to look back.</span>
+<span class="sd">        :param training_iteration: no. of iterations for training (n epochs) in trials</span>
+<span class="sd">        :param epochs: no. of epochs to train in each iteration</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="c1"># -- runtime params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span> <span class="o">=</span> <span class="n">num_rand_samples</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">training_iteration</span> <span class="o">=</span> <span class="n">training_iteration</span>
+
+        <span class="c1"># -- model params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">past_seq_config</span> <span class="o">=</span> <span class="n">PastSeqParamHandler</span><span class="o">.</span><span class="n">get_past_seq_config</span><span class="p">(</span>
+            <span class="n">look_back</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lstm_1_units_config</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">lstm_1_units</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lstm_2_units_config</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">grid_search</span><span class="p">(</span><span class="n">lstm_2_units</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dropout_2_config</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+
+        <span class="c1"># -- optimization params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lr</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.001</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">grid_search</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span> <span class="o">=</span> <span class="n">epochs</span>
+
+    <span class="k">def</span> <span class="nf">search_space</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;LSTM&quot;</span><span class="p">,</span>
+
+            <span class="c1"># --------- Vanilla LSTM model parameters</span>
+            <span class="s2">&quot;lstm_1_units&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">lstm_1_units_config</span><span class="p">,</span>
+            <span class="s2">&quot;dropout_1&quot;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>
+            <span class="s2">&quot;lstm_2_units&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">lstm_2_units_config</span><span class="p">,</span>
+            <span class="s2">&quot;dropout_2&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout_2_config</span><span class="p">,</span>
+
+            <span class="c1"># ----------- optimization parameters</span>
+            <span class="s2">&quot;lr&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr</span><span class="p">,</span>
+            <span class="s2">&quot;batch_size&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="s2">&quot;epochs&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span><span class="p">,</span>
+            <span class="s2">&quot;past_seq_len&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">past_seq_config</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="Seq2SeqRandomRecipe"><a class="viewcode-back" href="../../../../../../doc/PythonAPI/Chronos/autots.html#bigdl.chronos.autots.deprecated.config.recipe.Seq2SeqRandomRecipe">[docs]</a><span class="nd">@deprecated</span><span class="p">(</span><span class="s1">&#39;Please use `bigdl.orca.automl.hp` instead.&#39;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">Seq2SeqRandomRecipe</span><span class="p">(</span><span class="n">Recipe</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A recipe involves both grid search and random search, only for LSTM.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">num_rand_samples</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+            <span class="n">training_iteration</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+            <span class="n">look_back</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="n">latent_dim</span><span class="o">=</span><span class="p">[</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">],</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="p">[</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        __init__()</span>
+<span class="sd">        Constructor.</span>
+
+<span class="sd">        :param lstm_1_units: random search candidates for num of lstm_1_units</span>
+<span class="sd">        :param lstm_2_units: grid search candidates for num of lstm_1_units</span>
+<span class="sd">        :param batch_size: grid search candidates for batch size</span>
+<span class="sd">        :param num_rand_samples: number of hyper-param configurations sampled randomly</span>
+<span class="sd">        :param look_back: the length to look back, either a tuple with 2 int values,</span>
+<span class="sd">          which is in format is (min len, max len), or a single int, which is</span>
+<span class="sd">          a fixed length to look back.</span>
+<span class="sd">        :param training_iteration: no. of iterations for training (n epochs) in trials</span>
+<span class="sd">        :param epochs: no. of epochs to train in each iteration</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="c1"># -- runtime params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span> <span class="o">=</span> <span class="n">num_rand_samples</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">training_iteration</span> <span class="o">=</span> <span class="n">training_iteration</span>
+
+        <span class="c1"># -- model params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">past_seq_config</span> <span class="o">=</span> <span class="n">PastSeqParamHandler</span><span class="o">.</span><span class="n">get_past_seq_config</span><span class="p">(</span>
+            <span class="n">look_back</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">latent_dim</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">latent_dim</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dropout_config</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+
+        <span class="c1"># -- optimization params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lr</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.001</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">grid_search</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span> <span class="o">=</span> <span class="n">epochs</span>
+
+    <span class="k">def</span> <span class="nf">search_space</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;Seq2Seq&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;latent_dim&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">latent_dim</span><span class="p">,</span>
+            <span class="s2">&quot;dropout&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout_config</span><span class="p">,</span>
+
+            <span class="c1"># ----------- optimization parameters</span>
+            <span class="s2">&quot;lr&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr</span><span class="p">,</span>
+            <span class="s2">&quot;batch_size&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="s2">&quot;epochs&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span><span class="p">,</span>
+            <span class="s2">&quot;past_seq_len&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">past_seq_config</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="MTNetGridRandomRecipe"><a class="viewcode-back" href="../../../../../../doc/PythonAPI/Chronos/autots.html#bigdl.chronos.autots.deprecated.config.recipe.MTNetGridRandomRecipe">[docs]</a><span class="nd">@deprecated</span><span class="p">(</span><span class="s1">&#39;Please use `bigdl.orca.automl.hp` instead.&#39;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">MTNetGridRandomRecipe</span><span class="p">(</span><span class="n">Recipe</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Grid+Random Recipe for MTNet</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">num_rand_samples</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                 <span class="n">training_iteration</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                 <span class="n">time_step</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+                 <span class="n">long_num</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+                 <span class="n">cnn_height</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+                 <span class="n">cnn_hid_size</span><span class="o">=</span><span class="p">[</span><span class="mi">32</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span>
+                 <span class="n">ar_size</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+                 <span class="n">batch_size</span><span class="o">=</span><span class="p">[</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        __init__()</span>
+<span class="sd">        Constructor.</span>
+
+<span class="sd">        :param num_rand_samples: number of hyper-param configurations sampled randomly</span>
+<span class="sd">        :param training_iteration: no. of iterations for training (n epochs) in trials</span>
+<span class="sd">        :param epochs: no. of epochs to train in each iteration</span>
+<span class="sd">        :param time_step: random search candidates for model param &quot;time_step&quot;</span>
+<span class="sd">        :param long_num: random search candidates for model param &quot;long_num&quot;</span>
+<span class="sd">        :param ar_size: random search candidates for model param &quot;ar_size&quot;</span>
+<span class="sd">        :param batch_size: grid search candidates for batch size</span>
+<span class="sd">        :param cnn_height: random search candidates for model param &quot;cnn_height&quot;</span>
+<span class="sd">        :param cnn_hid_size: random search candidates for model param &quot;cnn_hid_size&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="c1"># -- run time params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span> <span class="o">=</span> <span class="n">num_rand_samples</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">training_iteration</span> <span class="o">=</span> <span class="n">training_iteration</span>
+
+        <span class="c1"># -- optimization params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lr</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.001</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">grid_search</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span> <span class="o">=</span> <span class="n">epochs</span>
+
+        <span class="c1"># ---- model params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cnn_dropout</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rnn_dropout</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">time_step</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">long_num</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">long_num</span><span class="p">,)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cnn_height</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">cnn_height</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cnn_hid_size</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">cnn_hid_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ar_size</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">ar_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">past_seq_len</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">sample_from</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">spec</span><span class="p">:</span> <span class="p">(</span>
+                <span class="n">spec</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">long_num</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">spec</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">time_step</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">search_space</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;MTNet&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lr&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr</span><span class="p">,</span>
+            <span class="s2">&quot;batch_size&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="s2">&quot;epochs&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span><span class="p">,</span>
+            <span class="s2">&quot;cnn_dropout&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cnn_dropout</span><span class="p">,</span>
+            <span class="s2">&quot;rnn_dropout&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">rnn_dropout</span><span class="p">,</span>
+            <span class="s2">&quot;time_step&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span><span class="p">,</span>
+            <span class="s2">&quot;long_num&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">long_num</span><span class="p">,</span>
+            <span class="s2">&quot;ar_size&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ar_size</span><span class="p">,</span>
+            <span class="s2">&quot;past_seq_len&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">past_seq_len</span><span class="p">,</span>
+            <span class="s2">&quot;cnn_hid_size&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cnn_hid_size</span><span class="p">,</span>
+            <span class="s2">&quot;cnn_height&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cnn_height</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="TCNGridRandomRecipe"><a class="viewcode-back" href="../../../../../../doc/PythonAPI/Chronos/autots.html#bigdl.chronos.autots.deprecated.config.recipe.TCNGridRandomRecipe">[docs]</a><span class="nd">@deprecated</span><span class="p">(</span><span class="s1">&#39;Please use `bigdl.orca.automl.hp` instead.&#39;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">TCNGridRandomRecipe</span><span class="p">(</span><span class="n">Recipe</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Grid+Random Recipe for TCN</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># TODO: use some more generalized exp hyperparameters</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">num_rand_samples</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">training_iteration</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span>
+                 <span class="n">batch_size</span><span class="o">=</span><span class="p">[</span><span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span>
+                 <span class="n">hidden_size</span><span class="o">=</span><span class="p">[</span><span class="mi">32</span><span class="p">,</span> <span class="mi">48</span><span class="p">],</span>
+                 <span class="n">levels</span><span class="o">=</span><span class="p">[</span><span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span>
+                 <span class="n">kernel_size</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
+                 <span class="n">dropout</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">],</span>
+                 <span class="n">lr</span><span class="o">=</span><span class="p">[</span><span class="mf">0.001</span><span class="p">,</span> <span class="mf">0.003</span><span class="p">]</span>
+                 <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        __init__()</span>
+<span class="sd">        Constructor.</span>
+
+<span class="sd">        :param num_rand_samples: number of hyper-param configurations sampled randomly</span>
+<span class="sd">        :param training_iteration: no. of iterations for training (n epochs) in trials</span>
+<span class="sd">        :param batch_size: grid search candidates for batch size</span>
+<span class="sd">        :param hidden_size: grid search candidates for hidden size of each layer</span>
+<span class="sd">        :param levels: the number of layers</span>
+<span class="sd">        :param kernel_size: the kernel size of each layer</span>
+<span class="sd">        :param dropout: dropout rate (1 - keep probability)</span>
+<span class="sd">        :param lr: learning rate</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="c1"># -- run time params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span> <span class="o">=</span> <span class="n">num_rand_samples</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">training_iteration</span> <span class="o">=</span> <span class="n">training_iteration</span>
+
+        <span class="c1"># -- optimization params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lr</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">lr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">grid_search</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span>
+
+        <span class="c1"># ---- model params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hidden_size</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">grid_search</span><span class="p">(</span><span class="n">hidden_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">levels</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">grid_search</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">grid_search</span><span class="p">(</span><span class="n">kernel_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dropout</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">dropout</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">search_space</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;lr&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr</span><span class="p">,</span>
+            <span class="s2">&quot;batch_size&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="s2">&quot;nhid&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden_size</span><span class="p">,</span>
+            <span class="s2">&quot;levels&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">levels</span><span class="p">,</span>
+            <span class="s2">&quot;kernel_size&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span><span class="p">,</span>
+            <span class="s2">&quot;dropout&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="RandomRecipe"><a class="viewcode-back" href="../../../../../../doc/PythonAPI/Chronos/autots.html#bigdl.chronos.autots.deprecated.config.recipe.RandomRecipe">[docs]</a><span class="nd">@deprecated</span><span class="p">(</span><span class="s1">&#39;Please use `bigdl.orca.automl.hp` instead.&#39;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">RandomRecipe</span><span class="p">(</span><span class="n">Recipe</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Pure random sample Recipe. Often used as baseline.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">num_rand_samples</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">look_back</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="n">epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+            <span class="n">reward_metric</span><span class="o">=-</span><span class="mf">0.05</span><span class="p">,</span>
+            <span class="n">training_iteration</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        __init__()</span>
+<span class="sd">        Constructor.</span>
+
+<span class="sd">        :param num_rand_samples: number of hyper-param configurations sampled randomly</span>
+<span class="sd">        :param look_back:the length to look back, either a tuple with 2 int values,</span>
+<span class="sd">          which is in format is (min len, max len), or a single int, which is</span>
+<span class="sd">          a fixed length to look back.</span>
+<span class="sd">        :param reward_metric: the rewarding metric value, when reached, stop trial</span>
+<span class="sd">        :param training_iteration: no. of iterations for training (n epochs) in trials</span>
+<span class="sd">        :param epochs: no. of epochs to train in each iteration</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span> <span class="o">=</span> <span class="n">num_rand_samples</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reward_metric</span> <span class="o">=</span> <span class="n">reward_metric</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">training_iteration</span> <span class="o">=</span> <span class="n">training_iteration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span> <span class="o">=</span> <span class="n">epochs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">past_seq_config</span> <span class="o">=</span> <span class="n">PastSeqParamHandler</span><span class="o">.</span><span class="n">get_past_seq_config</span><span class="p">(</span>
+            <span class="n">look_back</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">search_space</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="s2">&quot;LSTM&quot;</span><span class="p">,</span> <span class="s2">&quot;Seq2seq&quot;</span><span class="p">]),</span>
+            <span class="c1"># --------- Vanilla LSTM model parameters</span>
+            <span class="s2">&quot;lstm_1_units&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">8</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">]),</span>
+            <span class="s2">&quot;dropout_1&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span>
+            <span class="s2">&quot;lstm_2_units&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">8</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">]),</span>
+            <span class="s2">&quot;dropout_2&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span>
+
+            <span class="c1"># ----------- Seq2Seq model parameters</span>
+            <span class="s2">&quot;latent_dim&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">]),</span>
+            <span class="s2">&quot;dropout&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span>
+
+            <span class="c1"># ----------- optimization parameters</span>
+            <span class="s2">&quot;lr&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.001</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">),</span>
+            <span class="s2">&quot;batch_size&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">1024</span><span class="p">]),</span>
+            <span class="s2">&quot;epochs&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span><span class="p">,</span>
+            <span class="s2">&quot;past_seq_len&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">past_seq_config</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="BayesRecipe"><a class="viewcode-back" href="../../../../../../doc/PythonAPI/Chronos/autots.html#bigdl.chronos.autots.deprecated.config.recipe.BayesRecipe">[docs]</a><span class="nd">@deprecated</span><span class="p">(</span><span class="s1">&#39;Please use `bigdl.orca.automl.hp` instead.&#39;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">BayesRecipe</span><span class="p">(</span><span class="n">Recipe</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A Bayes search Recipe. (Experimental)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">num_samples</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">look_back</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="n">epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+            <span class="n">reward_metric</span><span class="o">=-</span><span class="mf">0.05</span><span class="p">,</span>
+            <span class="n">training_iteration</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        __init__()</span>
+<span class="sd">        Constructor.</span>
+
+<span class="sd">        :param num_samples: number of hyper-param configurations sampled</span>
+<span class="sd">        :param look_back: the length to look back, either a tuple with 2 int values,</span>
+<span class="sd">          which is in format is (min len, max len), or a single int, which is</span>
+<span class="sd">          a fixed length to look back.</span>
+<span class="sd">        :param reward_metric: the rewarding metric value, when reached, stop trial</span>
+<span class="sd">        :param training_iteration: no. of iterations for training (n epochs) in trials</span>
+<span class="sd">        :param epochs: no. of epochs to train in each iteration</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span> <span class="o">=</span> <span class="n">num_samples</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reward_metric</span> <span class="o">=</span> <span class="n">reward_metric</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">training_iteration</span> <span class="o">=</span> <span class="n">training_iteration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span> <span class="o">=</span> <span class="n">epochs</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">look_back</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">look_back</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> \
+                <span class="nb">isinstance</span><span class="p">(</span><span class="n">look_back</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">look_back</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">look_back</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                                  <span class="s2">&quot;The max look back value should be at least 2&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">look_back</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The input min look back value is smaller than 2. &quot;</span>
+                      <span class="s2">&quot;We sample from range (2, </span><span class="si">{}</span><span class="s2">) instead.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">look_back</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bayes_past_seq_config</span> <span class="o">=</span> \
+                <span class="p">{</span><span class="s2">&quot;past_seq_len_float&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">look_back</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">look_back</span><span class="p">[</span><span class="mi">1</span><span class="p">])}</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">look_back</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">look_back</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                                  <span class="s2">&quot;look back value should not be smaller than 2. &quot;</span>
+                                  <span class="s2">&quot;Current value is &quot;</span><span class="p">,</span> <span class="n">look_back</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bayes_past_seq_config</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;past_seq_len&quot;</span><span class="p">:</span> <span class="n">look_back</span><span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;look back is </span><span class="si">{}</span><span class="s2">.</span><span class="se">\n</span><span class="s2"> &quot;</span>
+                              <span class="s2">&quot;look_back should be either a tuple with 2 int values:&quot;</span>
+                              <span class="s2">&quot; (min_len, max_len) or a single int&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">look_back</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">search_space</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">total_params</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;epochs&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span><span class="p">,</span>
+            <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;LSTM&quot;</span><span class="p">,</span>
+            <span class="c1"># --------- model parameters</span>
+            <span class="s2">&quot;lstm_1_units_float&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span>
+            <span class="s2">&quot;dropout_1&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span>
+            <span class="s2">&quot;lstm_2_units_float&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span>
+            <span class="s2">&quot;dropout_2&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span>
+            <span class="c1"># ----------- optimization parameters</span>
+            <span class="s2">&quot;lr&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.001</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span>
+            <span class="s2">&quot;batch_size_float&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span>
+        <span class="p">}</span>
+        <span class="n">total_params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bayes_past_seq_config</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">total_params</span></div>
+
+
+<div class="viewcode-block" id="XgbRegressorGridRandomRecipe"><a class="viewcode-back" href="../../../../../../doc/PythonAPI/Chronos/autots.html#bigdl.chronos.autots.deprecated.config.recipe.XgbRegressorGridRandomRecipe">[docs]</a><span class="k">class</span> <span class="nc">XgbRegressorGridRandomRecipe</span><span class="p">(</span><span class="n">Recipe</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Grid + Random Recipe for XGBoost Regressor.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">num_rand_samples</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">n_estimators</span><span class="o">=</span><span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">15</span><span class="p">],</span>
+            <span class="n">max_depth</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">],</span>
+            <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">tree_method</span><span class="o">=</span><span class="s1">&#39;hist&#39;</span><span class="p">,</span>
+            <span class="n">random_state</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">lr</span><span class="o">=</span><span class="p">(</span><span class="mf">1e-4</span><span class="p">,</span> <span class="mf">1e-1</span><span class="p">),</span>
+            <span class="n">subsample</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
+            <span class="n">colsample_bytree</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
+            <span class="n">min_child_weight</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+            <span class="n">gamma</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">reg_alpha</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">reg_lambda</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor. For XGBoost hyper parameters, refer to</span>
+<span class="sd">        https://xgboost.readthedocs.io/en/latest/python/python_api.html for</span>
+<span class="sd">        details.</span>
+
+<span class="sd">        :param num_rand_samples: number of hyper-param configurations sampled</span>
+<span class="sd">          randomly</span>
+<span class="sd">        :param n_estimators: number of gradient boosted trees.</span>
+<span class="sd">        :param max_depth: max tree depth</span>
+<span class="sd">        :param n_jobs: number of parallel threads used to run xgboost.</span>
+<span class="sd">        :param tree_method: specify which tree method to use.</span>
+<span class="sd">        :param random_state: random number seed.</span>
+<span class="sd">        :param seed: seed used to generate the folds</span>
+<span class="sd">        :param lr: learning rate</span>
+<span class="sd">        :param subsample: subsample ratio of the training instance</span>
+<span class="sd">        :param colsample_bytree: subsample ratio of columns when constructing</span>
+<span class="sd">          each tree.</span>
+<span class="sd">        :param min_child_weight: minimum sum of instance weight(hessian)</span>
+<span class="sd">          needed in a child.</span>
+<span class="sd">        :param gamma: minimum loss reduction required to make a further</span>
+<span class="sd">          partition on a leaf node of the tree.</span>
+<span class="sd">        :param reg_alpha: L1 regularization term on weights (xgb’s alpha).</span>
+<span class="sd">        :param reg_lambda: L2 regularization term on weights (xgb’s lambda).</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span> <span class="o">=</span> <span class="n">num_rand_samples</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span> <span class="o">=</span> <span class="n">n_jobs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tree_method</span> <span class="o">=</span> <span class="n">tree_method</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">seed</span> <span class="o">=</span> <span class="n">seed</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">colsample_bytree</span> <span class="o">=</span> <span class="n">colsample_bytree</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="n">gamma</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reg_alpha</span> <span class="o">=</span> <span class="n">reg_alpha</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reg_lambda</span> <span class="o">=</span> <span class="n">reg_lambda</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_estimators</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">grid_search</span><span class="p">(</span><span class="n">n_estimators</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_depth</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">grid_search</span><span class="p">(</span><span class="n">max_depth</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lr</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">loguniform</span><span class="p">(</span><span class="n">lr</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lr</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subsample</span> <span class="o">=</span> <span class="n">subsample</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_child_weight</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">min_child_weight</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">search_space</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="c1"># -------- feature related parameters</span>
+            <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;XGBRegressor&quot;</span><span class="p">,</span>
+
+            <span class="s2">&quot;imputation&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="s2">&quot;LastFillImpute&quot;</span><span class="p">,</span> <span class="s2">&quot;FillZeroImpute&quot;</span><span class="p">]),</span>
+            <span class="s2">&quot;n_estimators&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_estimators</span><span class="p">,</span>
+            <span class="s2">&quot;max_depth&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_depth</span><span class="p">,</span>
+            <span class="s2">&quot;min_child_weight&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_child_weight</span><span class="p">,</span>
+            <span class="s2">&quot;lr&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="XgbRegressorSkOptRecipe"><a class="viewcode-back" href="../../../../../../doc/PythonAPI/Chronos/autots.html#bigdl.chronos.autots.deprecated.config.recipe.XgbRegressorSkOptRecipe">[docs]</a><span class="k">class</span> <span class="nc">XgbRegressorSkOptRecipe</span><span class="p">(</span><span class="n">Recipe</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A recipe using SkOpt search algorithm for XGBoost Regressor.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">num_rand_samples</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+            <span class="n">n_estimators_range</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span>
+            <span class="n">max_depth_range</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">15</span><span class="p">),</span>
+            <span class="n">lr</span><span class="o">=</span><span class="p">(</span><span class="mf">1e-4</span><span class="p">,</span> <span class="mf">1e-1</span><span class="p">),</span>
+            <span class="n">min_child_weight</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor.</span>
+
+<span class="sd">        :param num_rand_samples: number of hyper-param configurations sampled</span>
+<span class="sd">          randomly</span>
+<span class="sd">        :param n_estimators_range: range of number of gradient boosted trees.</span>
+<span class="sd">        :param max_depth_range: range of max tree depth</span>
+<span class="sd">        :param lr: learning rate</span>
+<span class="sd">        :param min_child_weight: minimum sum of instance weight(hessian)</span>
+<span class="sd">          needed in a child.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span> <span class="o">=</span> <span class="n">num_rand_samples</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_estimators_range</span> <span class="o">=</span> <span class="n">n_estimators_range</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_depth_range</span> <span class="o">=</span> <span class="n">max_depth_range</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lr</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">loguniform</span><span class="p">(</span><span class="n">lr</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lr</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_child_weight</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">min_child_weight</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">search_space</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">space</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;n_estimators&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_estimators_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                       <span class="bp">self</span><span class="o">.</span><span class="n">n_estimators_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="s2">&quot;max_depth&quot;</span><span class="p">:</span> <span class="n">hp</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_depth_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">max_depth_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="s2">&quot;min_child_weight&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_child_weight</span><span class="p">,</span>
+            <span class="s2">&quot;lr&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">space</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

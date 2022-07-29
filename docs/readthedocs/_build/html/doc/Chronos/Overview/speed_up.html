@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Speed up Chronos built-in models/customized time-series models &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/design-tabs.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Useful Functionalities Overview" href="useful_functionalities.html" />
+    <link rel="prev" title="Generate Synthetic Sequential Data Overview" href="simulation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="deep_dive.html">Chronos Deep Dive</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="data_processing_feature_engineering.html">Time Series Processing and Feature Engineering Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="forecasting.html">Time Series Forecasting Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="anomaly_detection.html">Time Series Anomaly Detection Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="simulation.html">Generate Synthetic Sequential Data Overview</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Speed up Chronos built-in models/customized time-series models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#overview"><strong>1. Overview</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#training-acceleration"><strong>2. Training Acceleration</strong></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#forecaster-training-acceleration"><strong>2.1 <code class="docutils literal notranslate"><span class="pre">Forecaster</span></code> Training Acceleration</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#customized-model-training-acceleration"><strong>2.2 Customized Model Training Acceleration</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#auto-tuning-acceleration"><strong>2.3 Auto Tuning Acceleration</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#inference-acceleration"><strong>3. Inference Acceleration</strong></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#forecaster-inference-acceleration"><strong>3.1 <code class="docutils literal notranslate"><span class="pre">Forecaster</span></code> Inference Acceleration</strong></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tspipeline-inference-acceleration"><strong>3.2 <code class="docutils literal notranslate"><span class="pre">TSPipeline</span></code> Inference Acceleration</strong></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="useful_functionalities.html">Useful Functionalities Overview</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="deep_dive.html">Chronos Deep Dive</a> &raquo;</li>
+      <li>Speed up Chronos built-in models/customized time-series models</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/doc/Chronos/Overview/speed_up.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="speed-up-chronos-built-in-models-customized-time-series-models">
+<h1>Speed up Chronos built-in models/customized time-series models<a class="headerlink" href="#speed-up-chronos-built-in-models-customized-time-series-models" title="Permalink to this headline">¶</a></h1>
+<p>Chronos provides transparent acceleration for Chronos built-in models and customized time-series models. In this deep-dive page, we will introduce how to enable/disable them.</p>
+<p>We will focus on <strong>single node acceleration for forecasting models’ training and inferencing</strong> in this page. Other topic such as:</p>
+<ul class="simple">
+<li><p>Distributed time series data processing - <a class="reference external" href="./useful_functionalities.html#xshardstsdataset">XShardsTSDataset (based on Spark, powered by <code class="docutils literal notranslate"><span class="pre">bigdl.orca.data</span></code>)</a></p></li>
+<li><p>Distributed training on a cluster - <a class="reference external" href="./useful_functionalities.html#distributed-training">Distributed training (based on Ray/Spark/Horovod, powered by <code class="docutils literal notranslate"><span class="pre">bigdl.orca.learn</span></code>)</a></p></li>
+<li><p>Non-forecasting models / non-deep-learning models - <a class="reference external" href="./forecasting.html#prophetforecaster">Prophet with intel python</a>, <a class="reference external" href="./anomaly_detection.html#dbscandetector">DBScan Detector with intel Sklearn</a>, <a class="reference external" href="./simulation.html#dpgansimulator">DPGANSimulator pytorch implementation</a>.</p></li>
+</ul>
+<p>You may refer to other pages listed above.</p>
+<section id="overview">
+<h2><strong>1. Overview</strong><a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>Time series model, especially those deep learning models, often suffers slow training speed and unsatisfying inference speed. Chronos is adapted to integrate many optimized library and best known methods(BKMs) for performance improvement on built-in models and customized models.</p>
+</section>
+<section id="training-acceleration">
+<h2><strong>2. Training Acceleration</strong><a class="headerlink" href="#training-acceleration" title="Permalink to this headline">¶</a></h2>
+<p>Training Acceleration is transparent in Chronos’s API. Transparentness means that Chronos users will enjoy the acceleration without changing their code(unless some expert users want to set some advanced settings).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Write your script under</strong> <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">__name__==&quot;__main__&quot;:</span></code>:</p>
+<blockquote>
+<div><p>Chronos will automatically utilize the computation resources on the hardware. This may include multi-process training on a single node. Use this header will prevent many strange behavior.</p>
+</div></blockquote>
+</div>
+<section id="forecaster-training-acceleration">
+<h3><strong>2.1 <code class="docutils literal notranslate"><span class="pre">Forecaster</span></code> Training Acceleration</strong><a class="headerlink" href="#forecaster-training-acceleration" title="Permalink to this headline">¶</a></h3>
+<p>Currently, transparent acceleration for <code class="docutils literal notranslate"><span class="pre">LSTMForecaster</span></code>, <code class="docutils literal notranslate"><span class="pre">Seq2SeqForecaster</span></code>, <code class="docutils literal notranslate"><span class="pre">TCNForecaster</span></code> and <code class="docutils literal notranslate"><span class="pre">NBeatsForecaster</span></code> is <strong>automatically enabled</strong> and tested. Chronos will set various environment variables and config multi-processing training according to the hardware paremeters(e.g. cores number, …).</p>
+<p>Currently, this function is under active development and <strong>some expert users may want to change some config or disable some acceleration tricks</strong>. Here are some instructions.</p>
+<p>Users may unset the environment by:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">source</span> bigdl-nano-unset-env
+</pre></div>
+</div>
+<p>Users may set the the number of process to use in training by:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="n">forecaster</span><span class="o">.</span><span class="n">num_processes</span><span class="p">)</span>  <span class="c1"># num_processes is automatically optimized by Chronos</span>
+<span class="n">forecaster</span><span class="o">.</span><span class="n">num_processes</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># disable multi-processing training</span>
+<span class="n">forecaster</span><span class="o">.</span><span class="n">num_processes</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># You may set it to any number you want</span>
+</pre></div>
+</div>
+<p>Users may set the IPEX(Intel Pytorch Extension) availbility to use in training by:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="n">forecaster</span><span class="o">.</span><span class="n">use_ipex</span><span class="p">)</span>  <span class="c1"># use_ipex is automatically optimized by Chronos</span>
+<span class="n">forecaster</span><span class="o">.</span><span class="n">use_ipex</span> <span class="o">=</span> <span class="bp">True</span>  <span class="c1"># enable ipex during training</span>
+<span class="n">forecaster</span><span class="o">.</span><span class="n">use_ipex</span> <span class="o">=</span> <span class="bp">False</span>  <span class="c1"># disable ipex during training</span>
+</pre></div>
+</div>
+</section>
+<section id="customized-model-training-acceleration">
+<h3><strong>2.2 Customized Model Training Acceleration</strong><a class="headerlink" href="#customized-model-training-acceleration" title="Permalink to this headline">¶</a></h3>
+<p>We provide an optimized pytorch-lightning Trainer, <code class="docutils literal notranslate"><span class="pre">TSTrainer</span></code>, to accelerate customized time series model defined by pytorch. A typical use-case can be using <code class="docutils literal notranslate"><span class="pre">pytorch-forecasting</span></code>’s built-in models(they are defined in pytorch-lightning LightningModule) and Chronos <code class="docutils literal notranslate"><span class="pre">TSTrainer</span></code> to accelerate the training process.</p>
+<p><code class="docutils literal notranslate"><span class="pre">TSTrainer</span></code> requires very few code changes to your original code. Here is a quick guide:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># from pytorch-lightning import Trainer</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.pytorch</span> <span class="kn">import</span> <span class="n">TSTrainer</span> <span class="k">as</span> <span class="n">Trainer</span>
+
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="o">...</span>
+                  <span class="c1"># set number of processes for training</span>
+                  <span class="n">num_processes</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                  <span class="c1"># disable GPU training, TSTrainer currently only available for CPU</span>
+                  <span class="n">gpus</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                  <span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We have examples adapted from <code class="docutils literal notranslate"><span class="pre">pytorch-forecasting</span></code>’s examples to show the significant speed-up by using <code class="docutils literal notranslate"><span class="pre">TSTrainer</span></code> in our <a class="reference external" href="https://github.com/intel-analytics/BigDL/tree/main/python/chronos/use-case/pytorch-forecasting">use-case</a>.</p>
+</section>
+<section id="auto-tuning-acceleration">
+<h3><strong>2.3 Auto Tuning Acceleration</strong><a class="headerlink" href="#auto-tuning-acceleration" title="Permalink to this headline">¶</a></h3>
+<p>We are working on the acceleration of <code class="docutils literal notranslate"><span class="pre">AutoModel</span></code> and <code class="docutils literal notranslate"><span class="pre">AutoTSEstimator</span></code>. Please unset the environment by:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">source</span> bigdl-nano-unset-env
+</pre></div>
+</div>
+</section>
+</section>
+<section id="inference-acceleration">
+<h2><strong>3. Inference Acceleration</strong><a class="headerlink" href="#inference-acceleration" title="Permalink to this headline">¶</a></h2>
+<p>Inference has become a critical part for time series model’s performance. This may be divided to two parts:</p>
+<ul class="simple">
+<li><p>Throughput: how many samples can be predicted in a certain amount of time.</p></li>
+<li><p>Latency: how much time is used to predict 1 sample.</p></li>
+</ul>
+<p>Typically, throughput and latency is a trade-off pair. We have three optimization options for inferencing in Chronos.</p>
+<ul class="simple">
+<li><p><strong>Default</strong>: Generally useful for both throughput and latency.</p></li>
+<li><p><strong>ONNX Runtime</strong>: Users may export their trained(w/wo auto tuning) model to ONNX file and deploy it on other service. Chronos also provides an internal onnxruntime inference support for those users who pursue low latency and higher throughput during inference on a single node.</p></li>
+<li><p><strong>Quantization</strong>: Quantization refers to processes that enable lower precision inference. In Chronos, post-training quantization is supported relied on <a class="reference external" href="https://intel.github.io/neural-compressor/README.html">Intel® Neural Compressor</a>.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Additional Dependencies</strong>:</p>
+<p>You need to install <cite>neural-compressor</cite> to enable quantization related methods.</p>
+<p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">neural-compressor==1.8.1</span></code></p>
+</div>
+<section id="forecaster-inference-acceleration">
+<h3><strong>3.1 <code class="docutils literal notranslate"><span class="pre">Forecaster</span></code> Inference Acceleration</strong><a class="headerlink" href="#forecaster-inference-acceleration" title="Permalink to this headline">¶</a></h3>
+<section id="default-acceleration">
+<h4><strong>3.1.1 Default Acceleration</strong><a class="headerlink" href="#default-acceleration" title="Permalink to this headline">¶</a></h4>
+<p>Nothing needs to be done. Chronos has deployed accleration for inferencing. <strong>some expert users may want to change some config or disable some acceleration tricks</strong>. Here are some instructions:</p>
+<p>Users may unset the environment by:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">source</span> bigdl-nano-unset-env
+</pre></div>
+</div>
+</section>
+<section id="onnx-runtime">
+<h4><strong>3.1.2 ONNX Runtime</strong><a class="headerlink" href="#onnx-runtime" title="Permalink to this headline">¶</a></h4>
+<p>LSTM, TCN, Seq2seq and NBeats has supported onnx in their forecasters. When users use these built-in models, they may call <code class="docutils literal notranslate"><span class="pre">predict_with_onnx</span></code>/<code class="docutils literal notranslate"><span class="pre">evaluate_with_onnx</span></code> for prediction or evaluation. They may also call <code class="docutils literal notranslate"><span class="pre">export_onnx_file</span></code> to export the onnx model file and <code class="docutils literal notranslate"><span class="pre">build_onnx</span></code> to change the onnxruntime’s setting(not necessary).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">f</span> <span class="o">=</span> <span class="n">Forecaster</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="n">f</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="n">f</span><span class="o">.</span><span class="n">predict_with_onnx</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="quantization">
+<h4><strong>3.1.3 Quantization</strong><a class="headerlink" href="#quantization" title="Permalink to this headline">¶</a></h4>
+<p>LSTM, TCN and NBeats has supported quantization in their forecasters.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># init</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">Forecaster</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+<span class="c1"># train the forecaster</span>
+<span class="n">f</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_data</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+
+<span class="c1"># quantize the forecaster</span>
+<span class="n">f</span><span class="o">.</span><span class="n">quantize</span><span class="p">(</span><span class="n">train_data</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">framework</span><span class="o">=...</span><span class="p">)</span>
+
+<span class="c1"># predict with int8 model with better inference throughput</span>
+<span class="n">f</span><span class="o">.</span><span class="n">predict</span><span class="o">/</span><span class="n">predict_with_onnx</span><span class="p">(</span><span class="n">test_data</span><span class="p">,</span> <span class="n">quantize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="c1"># predict with fp32</span>
+<span class="n">f</span><span class="o">.</span><span class="n">predict</span><span class="o">/</span><span class="n">predict_with_onnx</span><span class="p">(</span><span class="n">test_data</span><span class="p">,</span> <span class="n">quantize</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="c1"># save</span>
+<span class="n">f</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">checkpoint_file</span><span class="o">=</span><span class="s2">&quot;fp32.model&quot;</span>
+       <span class="n">quantize_checkpoint_file</span><span class="o">=</span><span class="s2">&quot;int8.model&quot;</span><span class="p">)</span>
+
+<span class="c1"># load</span>
+<span class="n">f</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">checkpoint_file</span><span class="o">=</span><span class="s2">&quot;fp32.model&quot;</span>
+       <span class="n">quantize_checkpoint_file</span><span class="o">=</span><span class="s2">&quot;int8.model&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Please refer to <a class="reference external" href="../../PythonAPI/Chronos/forecasters.html">Forecaster API Docs</a> for details.</p>
+</section>
+</section>
+<section id="tspipeline-inference-acceleration">
+<h3><strong>3.2 <code class="docutils literal notranslate"><span class="pre">TSPipeline</span></code> Inference Acceleration</strong><a class="headerlink" href="#tspipeline-inference-acceleration" title="Permalink to this headline">¶</a></h3>
+<p>Basically same to <a class="reference external" href="#31-forecaster-inference-acceleration"><code class="docutils literal notranslate"><span class="pre">Forecaster</span></code></a></p>
+<section id="id1">
+<h4><strong>3.1.1 Default Acceleration</strong><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<p>Basically same to <a class="reference external" href="#31-forecaster-inference-acceleration"><code class="docutils literal notranslate"><span class="pre">Forecaster</span></code></a></p>
+</section>
+<section id="id2">
+<h4><strong>3.1.2 ONNX Runtime</strong><a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tsppl</span><span class="o">.</span><span class="n">predict_with_onnx</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="id3">
+<h4><strong>3.1.3 Quantization</strong><a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tsppl</span><span class="o">.</span><span class="n">quantize</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="n">tsppl</span><span class="o">.</span><span class="n">predict</span><span class="o">/</span><span class="n">predict_with_onnx</span><span class="p">(</span><span class="n">test_data</span><span class="p">,</span> <span class="n">quantize</span><span class="o">=</span><span class="bp">True</span><span class="o">/</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Please refer to <a class="reference external" href="../../PythonAPI/Chronos/autotsestimator.html#tspipeline">TSPipeline API doc</a> for details.</p>
+</section>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="simulation.html" class="btn btn-neutral float-left" title="Generate Synthetic Sequential Data Overview" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="useful_functionalities.html" class="btn btn-neutral float-right" title="Useful Functionalities Overview" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

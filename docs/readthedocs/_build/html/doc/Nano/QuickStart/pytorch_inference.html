@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BigDL-Nano PyTorch Inference Overview &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/design-tabs.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="BigDL-Nano TensorFlow Training Overview" href="tensorflow_train.html" />
+    <link rel="prev" title="BigDL-Nano PyTorch Training Overview" href="pytorch_train.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">BigDL-Nano PyTorch Inference Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#runtime-acceleration">Runtime Acceleration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#onnxruntime-acceleration">ONNXRuntime Acceleration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#openvino-acceleration">OpenVINO Acceleration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#quantization">Quantization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#quantization-using-intel-neural-compressor">Quantization using Intel Neural Compressor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#quantization-using-post-training-optimization-tools">Quantization using Post-training Optimization Tools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#quantization-with-accuracy-control">Quantization with Accuracy Control</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>BigDL-Nano PyTorch Inference Overview</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/doc/Nano/QuickStart/pytorch_inference.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="bigdl-nano-pytorch-inference-overview">
+<h1>BigDL-Nano PyTorch Inference Overview<a class="headerlink" href="#bigdl-nano-pytorch-inference-overview" title="Permalink to this headline">¶</a></h1>
+<p>BigDL-Nano provides several APIs which can help users easily apply optimizations on inference pipelines to improve latency and throughput. Currently, performance accelerations are achieved by integrating extra runtimes as inference backend engines or using quantization methods on full-precision trained models to reduce computation during inference. Trainer (<code class="docutils literal notranslate"><span class="pre">bigdl.nano.pytorch.Trainer</span></code>) provides the APIs for all optimizations you need for inference.</p>
+<p>For runtime acceleration, BigDL-Nano has enabled two kinds of runtime for users in <code class="docutils literal notranslate"><span class="pre">Trainer.trace()</span></code>, ONNXRuntime and OpenVINO.</p>
+<p>For quantization, BigDL-Nano provides only post-training quantization in <code class="docutils literal notranslate"><span class="pre">trainer.quantize()</span></code> for users to infer with models of 8-bit precision. Quantization-Aware Training is not available for now. Model conversion to 16-bit like BF16, and FP16 will be coming soon.</p>
+<p>Before you go ahead with these APIs, you have to make sure BigDL-Nano is correctly installed for PyTorch. If not, please follow <a class="reference internal" href="../Overview/nano.html"><span class="doc">this</span></a> to set up your environment.</p>
+<section id="runtime-acceleration">
+<h2>Runtime Acceleration<a class="headerlink" href="#runtime-acceleration" title="Permalink to this headline">¶</a></h2>
+<p>All available runtime accelerations are integrated in <code class="docutils literal notranslate"><span class="pre">Trainer.trace(accelerator='onnxruntime'/'openvino')</span></code> with different accelerator value. Before you know about BigDL-Nano and any optimizations on inference, taking mobilenetv3 as an example, you may have one script for training and inference like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torchvision.models.mobilenetv3</span> <span class="kn">import</span> <span class="n">mobilenet_v3_small</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data.dataset</span> <span class="kn">import</span> <span class="n">TensorDataset</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data.dataloader</span> <span class="kn">import</span> <span class="n">DataLoader</span>
+<span class="kn">from</span> <span class="nn">bigdl.nano.pytorch</span> <span class="kn">import</span> <span class="n">Trainer</span>
+<span class="c1"># step 1: create your model</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">mobilenet_v3_small</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="c1"># step 2: prepare your data and dataloader</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">))</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span> <span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
+<span class="n">ds</span> <span class="o">=</span> <span class="n">TensorDataset</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="n">dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># (Optional) step 3: Something else, like training ...</span>
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">()</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">)</span>
+<span class="o">...</span>
+<span class="o">...</span>
+
+<span class="c1"># Inference/Prediction</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">ort_model</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">ort_model</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">ort_model</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">)</span>
+</pre></div>
+</div>
+<section id="onnxruntime-acceleration">
+<h3>ONNXRuntime Acceleration<a class="headerlink" href="#onnxruntime-acceleration" title="Permalink to this headline">¶</a></h3>
+<p>Before you start with onnxruntime accelerator, you are required to install some onnx packages as follows to set up your environment with ONNXRuntime acceleration.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip install onnx onnxruntime
+</pre></div>
+</div>
+<p>When you’re ready, you can simply append the following part to enable your ONNXRuntime acceleration.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># step 4: trace your model as an ONNXRuntime model</span>
+<span class="c1"># if you have run `trainer.fit` before trace, then argument `input_sample` is not required.</span>
+<span class="n">ort_model</span> <span class="o">=</span> <span class="n">Trainer</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">accelerator</span><span class="o">=</span><span class="s1">&#39;onnruntime&#39;</span><span class="p">,</span> <span class="n">input_sample</span><span class="o">=</span><span class="n">x</span><span class="p">)</span>
+
+<span class="c1"># step 5: use returned model for transparent acceleration</span>
+<span class="c1"># The usage is almost the same with any PyTorch module</span>
+<span class="n">y_hat</span> <span class="o">=</span> <span class="n">ort_model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="c1"># validate, predict, test in Trainer also support acceleration</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">ort_model</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">ort_model</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">ort_model</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">)</span>
+<span class="c1"># note that `ort_model` is not trainable any more, so you can&#39;t use like </span>
+<span class="c1"># trainer.fit(ort_model, dataloader) # this is illegal</span>
+</pre></div>
+</div>
+</section>
+<section id="openvino-acceleration">
+<h3>OpenVINO Acceleration<a class="headerlink" href="#openvino-acceleration" title="Permalink to this headline">¶</a></h3>
+<p>To use OpenVINO acceleration, you have to install the OpenVINO toolkit:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip install openvino-dev
+</pre></div>
+</div>
+<p>The OpenVINO usage is quite similar to ONNXRuntime, the following usage is for OpenVINO:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># step 4: trace your model as a openvino model</span>
+<span class="c1"># if you have run `trainer.fit` before trace, then argument `input_sample` is not required.</span>
+<span class="n">ov_model</span> <span class="o">=</span> <span class="n">Trainer</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">accelerator</span><span class="o">=</span><span class="s1">&#39;openvino&#39;</span><span class="p">,</span> <span class="n">input_sample</span><span class="o">=</span><span class="n">x</span><span class="p">)</span>
+
+<span class="c1"># step 5: use returned model for transparent acceleration</span>
+<span class="c1"># The usage is almost the same with any pytorch module</span>
+<span class="n">y_hat</span> <span class="o">=</span> <span class="n">ov_model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="c1"># validate, predict, test in Trainer also support acceleration</span>
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">()</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">ort_model</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">ort_model</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">ort_model</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">)</span>
+<span class="c1"># note that `ort_model` is not trainable any more, so you can&#39;t use like </span>
+<span class="c1"># trainer.fit(ort_model, dataloader) # this is illegal</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="quantization">
+<h2>Quantization<a class="headerlink" href="#quantization" title="Permalink to this headline">¶</a></h2>
+<p>Quantization is widely used to compress models to a lower precision, which not only reduces the model size but also accelerates inference. BigDL-Nano provides <code class="docutils literal notranslate"><span class="pre">Trainer.quantize()</span></code> API for users to quickly obtain a quantized model with accuracy control by specifying a few arguments. Intel Neural Compressor (INC) and Post-training Optimization Tools (POT) from OpenVINO toolkit are enabled as options. In the meantime, runtime acceleration is also included directly in the quantization pipeline when using accelerator=’onnxruntime’/’openvino’ so you don’t have to run <code class="docutils literal notranslate"><span class="pre">Trainer.trace</span></code> before quantization.</p>
+<p>To use INC as your quantization engine, you can choose accelerator as None or ‘onnxruntime’. Otherwise, accelerator=’openvino’ means using OpenVINO POT to do quantization.</p>
+<p>By default, <code class="docutils literal notranslate"><span class="pre">Trainer.quantize()</span></code> doesn’t search the tuning space and returns the fully-quantized model without considering the accuracy drop. If you need to search quantization tuning space for a model with accuracy control, you’ll have to specify a few arguments to define the tuning space. More instructions in <a class="reference external" href="#quantization-with-accuracy-control">Quantization with Accuracy control</a></p>
+<section id="quantization-using-intel-neural-compressor">
+<h3>Quantization using Intel Neural Compressor<a class="headerlink" href="#quantization-using-intel-neural-compressor" title="Permalink to this headline">¶</a></h3>
+<p>By default, Intel Neural Compressor is not installed with BigDL-Nano. So if you determine to use it as your quantization backend, you’ll need to install it first:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip install neural-compressor<span class="o">==</span><span class="m">1</span>.11.0
+</pre></div>
+</div>
+<p><strong>Quantization without extra accelerator</strong></p>
+<p>Without extra accelerator, <code class="docutils literal notranslate"><span class="pre">Trainer.quantize()</span></code> returns a pytorch module with desired precision and accuracy. Following the example in <a class="reference external" href="#runtime-acceleration">Runtime Acceleration</a>, you can add quantization as below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">q_model</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">quantize</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">calib_dataloader</span><span class="o">=</span><span class="n">dataloader</span><span class="p">)</span>
+<span class="c1"># run simple prediction with transparent acceleration</span>
+<span class="n">y_hat</span> <span class="o">=</span> <span class="n">q_model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="c1"># validate, predict, test in Trainer also support acceleration</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">q_model</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">q_model</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">q_model</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This is a most basic usage to quantize a model with defaults, INT8 precision, and without search tuning space to control accuracy drop.</p>
+<p><strong>Quantization with ONNXRuntime accelerator</strong></p>
+<p>Without the ONNXRuntime accelerator, <code class="docutils literal notranslate"><span class="pre">Trainer.quantize()</span></code> will return a model with compressed precision but running inference in the ONNXRuntime engine. It’s also required to install onnxruntime-extensions as a dependency of INC when using ONNXRuntime as backend as well as the dependencies required in <a class="reference external" href="#onnxruntime-acceleration">ONNXRuntime Acceleration</a>:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip install onnx onnxruntime onnxruntime-extensions
+</pre></div>
+</div>
+<p>Still taking the example in <a class="reference external" href="pytorch_inference.md#runtime-acceleration">Runtime Acceleration</a>, you can add quantization as below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ort_q_model</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">quantize</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">accelerator</span><span class="o">=</span><span class="s1">&#39;onnxruntime&#39;</span><span class="p">,</span> <span class="n">calib_dataloader</span><span class="o">=</span><span class="n">dataloader</span><span class="p">)</span>
+<span class="c1"># run simple prediction with transparent acceleration</span>
+<span class="n">y_hat</span> <span class="o">=</span> <span class="n">ort_q_model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="c1"># validate, predict, test in Trainer also support acceleration</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">ort_q_model</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">ort_q_model</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">ort_q_model</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Using accelerator=’onnxruntime’ actually equals to converting the model from Pytorch to ONNX firstly and then do quantization on the converted ONNX model:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ort_model</span> <span class="o">=</span> <span class="n">Trainer</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">accelerator</span><span class="o">=</span><span class="s1">&#39;onnruntime&#39;</span><span class="p">,</span> <span class="n">input_sample</span><span class="o">=</span><span class="n">x</span><span class="p">):</span>
+<span class="n">ort_q_model</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">quantize</span><span class="p">(</span><span class="n">ort_model</span><span class="p">,</span> <span class="n">accelerator</span><span class="o">=</span><span class="s1">&#39;onnxruntime&#39;</span><span class="p">,</span> <span class="n">calib_dataloader</span><span class="o">=</span><span class="n">dataloader</span><span class="p">)</span>
+
+<span class="c1"># run inference with transparent acceleration </span>
+<span class="n">y_hat</span> <span class="o">=</span> <span class="n">ort_q_model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">ort_q_model</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">ort_q_model</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">ort_q_model</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="quantization-using-post-training-optimization-tools">
+<h3>Quantization using Post-training Optimization Tools<a class="headerlink" href="#quantization-using-post-training-optimization-tools" title="Permalink to this headline">¶</a></h3>
+<p>The POT(Post-training Optimization Tools) is provided by OpenVINO toolkit. To use POT, you need to install OpenVINO as the same in <a class="reference external" href="#openvino-acceleration">OpenVINO acceleration</a>:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip install openvino-dev
+</pre></div>
+</div>
+<p>Take the example in <a class="reference external" href="#runtime-acceleration">Runtime Acceleration</a>, and add quantization:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ov_q_model</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">quantize</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">accelerator</span><span class="o">=</span><span class="s1">&#39;openvino&#39;</span><span class="p">,</span> <span class="n">calib_dataloader</span><span class="o">=</span><span class="n">dataloader</span><span class="p">)</span>
+<span class="c1"># run simple prediction with transparent acceleration</span>
+<span class="n">y_hat</span> <span class="o">=</span> <span class="n">ov_q_model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="c1"># validate, predict, test in Trainer also support acceleration</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">ov_q_model</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">ov_q_model</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">ov_q_model</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Same as ONNXRuntime, it equals to converting the model from Pytorch to OpenVINO firstly and then doing quantization on the converted OpenVINO model:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ov_model</span> <span class="o">=</span> <span class="n">Trainer</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">accelerator</span><span class="o">=</span><span class="s1">&#39;openvino&#39;</span><span class="p">,</span> <span class="n">input_sample</span><span class="o">=</span><span class="n">x</span><span class="p">):</span>
+<span class="n">ov_q_model</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">quantize</span><span class="p">(</span><span class="n">ov_model</span><span class="p">,</span> <span class="n">accelerator</span><span class="o">=</span><span class="s1">&#39;onnxruntime&#39;</span><span class="p">,</span> <span class="n">calib_dataloader</span><span class="o">=</span><span class="n">dataloader</span><span class="p">)</span>
+
+<span class="c1"># run inference with transparent acceleration </span>
+<span class="n">y_hat</span> <span class="o">=</span> <span class="n">ov_q_model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">ov_q_model</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">ov_q_model</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">ov_q_model</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="quantization-with-accuracy-control">
+<h3>Quantization with Accuracy Control<a class="headerlink" href="#quantization-with-accuracy-control" title="Permalink to this headline">¶</a></h3>
+<p>A set of arguments that helps to tune the results for both INC and POT quantization:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">calib_dataloader</span></code>: A calibration dataloader is required for static post-training quantization. And for POT, it’s also used for evaluation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">metric</span></code>: A metric of <code class="docutils literal notranslate"><span class="pre">torchmetric</span></code> to run evaluation and compare with baseline</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">accuracy_criterion</span></code>: A dictionary to specify the acceptable accuracy drop, e.g. <code class="docutils literal notranslate"><span class="pre">{'relative':</span> <span class="pre">0.01,</span> <span class="pre">'higher_is_better':</span> <span class="pre">True}</span></code></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">relative</span></code> / <code class="docutils literal notranslate"><span class="pre">absolute</span></code>: Drop type, the accuracy drop should be relative or absolute to baseline</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">higher_is_better</span></code>: Indicate if a larger value of metric means better accuracy</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">max_trials</span></code>: Maximum trails on the search, if the algorithm can’t find a satisfying model, it will exit and raise the error.</p></li>
+</ul>
+<p><strong>Accuracy Control with INC</strong>
+There are a few arguments that require only by INC, and you should not specify or modify any of them if you use <code class="docutils literal notranslate"><span class="pre">accelerator='openvino'</span></code>.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">tuning_strategy</span></code>(optional): it specifies the algorithm to search the tuning space. In most cases, you don’t need to change it.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">timeout</span></code>: Timeout of your tuning. Defaults 0 means endless time for tuning.</p></li>
+</ul>
+<p>Here is an example to use INC with accuracy control as below. It will search for a model within 1% accuracy drop with 10 trials.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torchmetrics.classification</span> <span class="kn">import</span> <span class="n">Accuracy</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">quantize</span><span class="p">(</span><span class="n">model</span><span class="p">,</span>
+                 <span class="n">precision</span><span class="o">=</span><span class="s1">&#39;int8&#39;</span><span class="p">,</span>
+                 <span class="n">accelerator</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">calib_dataloader</span><span class="o">=</span> <span class="n">dataloader</span><span class="p">,</span>
+                 <span class="n">metric</span><span class="o">=</span><span class="n">Accuracy</span><span class="p">()</span>
+                 <span class="n">accuracy_criterion</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;relative&#39;</span><span class="p">:</span> <span class="mf">0.01</span><span class="p">,</span> <span class="s1">&#39;higher_is_better&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">},</span>
+                 <span class="n">approach</span><span class="o">=</span><span class="s1">&#39;static&#39;</span><span class="p">,</span>
+                 <span class="n">method</span><span class="o">=</span><span class="s1">&#39;fx&#39;</span><span class="p">,</span>
+                 <span class="n">tuning_strategy</span><span class="o">=</span><span class="s1">&#39;bayesian&#39;</span><span class="p">,</span>
+                 <span class="n">timeout</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                 <span class="n">max_trials</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                <span class="p">):</span>
+</pre></div>
+</div>
+<p><strong>Accuracy Control with POT</strong>
+Similar to INC, we can run quantization like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torchmetrics.classification</span> <span class="kn">import</span> <span class="n">Accuracy</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">quantize</span><span class="p">(</span><span class="n">model</span><span class="p">,</span>
+                 <span class="n">precision</span><span class="o">=</span><span class="s1">&#39;int8&#39;</span><span class="p">,</span>
+                 <span class="n">accelerator</span><span class="o">=</span><span class="sb">`openvino`</span><span class="p">,</span>
+                 <span class="n">calib_dataloader</span><span class="o">=</span> <span class="n">dataloader</span><span class="p">,</span>
+                 <span class="n">metric</span><span class="o">=</span><span class="n">Accuracy</span><span class="p">()</span>
+                 <span class="n">accuracy_criterion</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;relative&#39;</span><span class="p">:</span> <span class="mf">0.01</span><span class="p">,</span> <span class="s1">&#39;higher_is_better&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">},</span>
+                 <span class="n">approach</span><span class="o">=</span><span class="s1">&#39;static&#39;</span><span class="p">,</span>
+                 <span class="n">max_trials</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                <span class="p">):</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pytorch_train.html" class="btn btn-neutral float-left" title="BigDL-Nano PyTorch Training Overview" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tensorflow_train.html" class="btn btn-neutral float-right" title="BigDL-Nano TensorFlow Training Overview" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

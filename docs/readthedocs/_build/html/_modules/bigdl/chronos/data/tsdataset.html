@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bigdl.chronos.data.tsdataset &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/clipboard.min.js"></script>
+        <script src="../../../../_static/copybutton.js"></script>
+        <script src="../../../../_static/tabs.js"></script>
+        <script src="../../../../_static/design-tabs.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Chronos/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../doc/Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>bigdl.chronos.data.tsdataset</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bigdl.chronos.data.tsdataset</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright 2016 The BigDL Authors.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+
+<span class="kn">from</span> <span class="nn">bigdl.chronos.data.utils.feature</span> <span class="k">import</span> <span class="n">generate_dt_features</span><span class="p">,</span> <span class="n">generate_global_features</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.data.utils.impute</span> <span class="k">import</span> <span class="n">impute_timeseries_dataframe</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.data.utils.deduplicate</span> <span class="k">import</span> <span class="n">deduplicate_timeseries_dataframe</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.data.utils.roll</span> <span class="k">import</span> <span class="n">roll_timeseries_dataframe</span><span class="p">,</span> <span class="n">_roll_timeseries_ndarray</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.data.utils.time_feature</span> <span class="k">import</span> <span class="n">time_features</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.data.utils.scale</span> <span class="k">import</span> <span class="n">unscale_timeseries_numpy</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.data.utils.resample</span> <span class="k">import</span> <span class="n">resample_timeseries_dataframe</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.data.utils.split</span> <span class="k">import</span> <span class="n">split_timeseries_dataframe</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.data.utils.cycle_detection</span> <span class="k">import</span> <span class="n">cycle_length_est</span>
+<span class="kn">from</span> <span class="nn">bigdl.chronos.data.utils.utils</span> <span class="k">import</span> <span class="n">_to_list</span><span class="p">,</span> <span class="n">_check_type</span><span class="p">,</span>\
+    <span class="n">_check_col_within</span><span class="p">,</span> <span class="n">_check_col_no_na</span><span class="p">,</span> <span class="n">_check_is_aligned</span><span class="p">,</span> <span class="n">_check_dt_is_sorted</span>
+
+
+<span class="n">_DEFAULT_ID_COL_NAME</span> <span class="o">=</span> <span class="s2">&quot;id&quot;</span>
+<span class="n">_DEFAULT_ID_PLACEHOLDER</span> <span class="o">=</span> <span class="s2">&quot;0&quot;</span>
+
+
+<div class="viewcode-block" id="TSDataset"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset">[docs]</a><span class="k">class</span> <span class="nc">TSDataset</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">schema</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        TSDataset is an abstract of time series dataset.</span>
+<span class="sd">        Cascade call is supported for most of the transform methods.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id_col</span> <span class="o">=</span> <span class="n">schema</span><span class="p">[</span><span class="s2">&quot;id_col&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span> <span class="o">=</span> <span class="n">schema</span><span class="p">[</span><span class="s2">&quot;dt_col&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">feature_col</span> <span class="o">=</span> <span class="n">schema</span><span class="p">[</span><span class="s2">&quot;feature_col&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_col</span> <span class="o">=</span> <span class="n">schema</span><span class="p">[</span><span class="s2">&quot;target_col&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">numpy_x</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">numpy_y</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lookback</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># lookback stated by users if they called roll, to_torch_data_loader</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">horizon</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># horizon stated by users if they called roll, to_torch_data_loader</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">roll_feature</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># contains feature_col requested by roll/to_torch_data_loader</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">roll_target</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># contains target_col requested by roll/to_torch_data_loader</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">roll_feature_df</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">roll_additional_feature</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scaler_index</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_col</span><span class="p">))]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id_sensitive</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_has_generate_agg_feature</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_basic_invariants</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_id_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">id_col</span><span class="p">]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_freq_certainty</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_freq</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_pd_datetime</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">is_datetime64_any_dtype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span><span class="p">]</span><span class="o">.</span><span class="n">dtypes</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_pd_datetime</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_freq</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_freq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<div class="viewcode-block" id="TSDataset.from_pandas"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.from_pandas">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">from_pandas</span><span class="p">(</span><span class="n">df</span><span class="p">,</span>
+                    <span class="n">dt_col</span><span class="p">,</span>
+                    <span class="n">target_col</span><span class="p">,</span>
+                    <span class="n">id_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">extra_feature_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">with_split</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">val_ratio</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                    <span class="n">test_ratio</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                    <span class="n">largest_look_back</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                    <span class="n">largest_horizon</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Initialize tsdataset(s) from pandas dataframe.</span>
+
+<span class="sd">        :param df: a pandas dataframe for your raw time series data.</span>
+<span class="sd">        :param dt_col: a str indicates the col name of datetime</span>
+<span class="sd">               column in the input data frame, the dt_col must be sorted</span>
+<span class="sd">               from past to latest respectively for each id.</span>
+<span class="sd">        :param target_col: a str or list indicates the col name of target column</span>
+<span class="sd">               in the input data frame.</span>
+<span class="sd">        :param id_col: (optional) a str indicates the col name of dataframe id. If</span>
+<span class="sd">               it is not explicitly stated, then the data is interpreted as only</span>
+<span class="sd">               containing a single id.</span>
+<span class="sd">        :param extra_feature_col: (optional) a str or list indicates the col name</span>
+<span class="sd">               of extra feature columns that needs to predict the target column.</span>
+<span class="sd">        :param with_split: (optional) bool, states if we need to split the dataframe</span>
+<span class="sd">               to train, validation and test set. The value defaults to False.</span>
+<span class="sd">        :param val_ratio: (optional) float, validation ratio. Only effective when</span>
+<span class="sd">               with_split is set to True. The value defaults to 0.</span>
+<span class="sd">        :param test_ratio: (optional) float, test ratio. Only effective when with_split</span>
+<span class="sd">               is set to True. The value defaults to 0.1.</span>
+<span class="sd">        :param largest_look_back: (optional) int, the largest length to look back.</span>
+<span class="sd">               Only effective when with_split is set to True. The value defaults to 0.</span>
+<span class="sd">        :param largest_horizon: (optional) int, the largest num of steps to look</span>
+<span class="sd">               forward. Only effective when with_split is set to True. The value defaults</span>
+<span class="sd">               to 1.</span>
+
+<span class="sd">        :return: a TSDataset instance when with_split is set to False,</span>
+<span class="sd">                 three TSDataset instances when with_split is set to True.</span>
+
+<span class="sd">        Create a tsdataset instance by:</span>
+
+<span class="sd">        &gt;&gt;&gt; # Here is a df example:</span>
+<span class="sd">        &gt;&gt;&gt; # id        datetime      value   &quot;extra feature 1&quot;   &quot;extra feature 2&quot;</span>
+<span class="sd">        &gt;&gt;&gt; # 00        2019-01-01    1.9     1                   2</span>
+<span class="sd">        &gt;&gt;&gt; # 01        2019-01-01    2.3     0                   9</span>
+<span class="sd">        &gt;&gt;&gt; # 00        2019-01-02    2.4     3                   4</span>
+<span class="sd">        &gt;&gt;&gt; # 01        2019-01-02    2.6     0                   2</span>
+<span class="sd">        &gt;&gt;&gt; tsdataset = TSDataset.from_pandas(df, dt_col=&quot;datetime&quot;,</span>
+<span class="sd">        &gt;&gt;&gt;                                   target_col=&quot;value&quot;, id_col=&quot;id&quot;,</span>
+<span class="sd">        &gt;&gt;&gt;                                   extra_feature_col=[&quot;extra feature 1&quot;,</span>
+<span class="sd">        &gt;&gt;&gt;                                                      &quot;extra feature 2&quot;])</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">_check_type</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="s2">&quot;df&quot;</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span>
+
+        <span class="n">tsdataset_df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">target_col</span> <span class="o">=</span> <span class="n">_to_list</span><span class="p">(</span><span class="n">target_col</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;target_col&quot;</span><span class="p">)</span>
+        <span class="n">feature_col</span> <span class="o">=</span> <span class="n">_to_list</span><span class="p">(</span><span class="n">extra_feature_col</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;extra_feature_col&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">id_col</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">tsdataset_df</span><span class="p">[</span><span class="n">_DEFAULT_ID_COL_NAME</span><span class="p">]</span> <span class="o">=</span> <span class="n">_DEFAULT_ID_PLACEHOLDER</span>
+            <span class="n">id_col</span> <span class="o">=</span> <span class="n">_DEFAULT_ID_COL_NAME</span>
+
+        <span class="k">if</span> <span class="n">with_split</span><span class="p">:</span>
+            <span class="n">tsdataset_dfs</span> <span class="o">=</span> <span class="n">split_timeseries_dataframe</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">tsdataset_df</span><span class="p">,</span>
+                                                       <span class="n">id_col</span><span class="o">=</span><span class="n">id_col</span><span class="p">,</span>
+                                                       <span class="n">val_ratio</span><span class="o">=</span><span class="n">val_ratio</span><span class="p">,</span>
+                                                       <span class="n">test_ratio</span><span class="o">=</span><span class="n">test_ratio</span><span class="p">,</span>
+                                                       <span class="n">look_back</span><span class="o">=</span><span class="n">largest_look_back</span><span class="p">,</span>
+                                                       <span class="n">horizon</span><span class="o">=</span><span class="n">largest_horizon</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">TSDataset</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">tsdataset_dfs</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                              <span class="n">id_col</span><span class="o">=</span><span class="n">id_col</span><span class="p">,</span>
+                              <span class="n">dt_col</span><span class="o">=</span><span class="n">dt_col</span><span class="p">,</span>
+                              <span class="n">target_col</span><span class="o">=</span><span class="n">target_col</span><span class="p">,</span>
+                              <span class="n">feature_col</span><span class="o">=</span><span class="n">feature_col</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)]</span>
+
+        <span class="k">return</span> <span class="n">TSDataset</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">tsdataset_df</span><span class="p">,</span>
+                         <span class="n">id_col</span><span class="o">=</span><span class="n">id_col</span><span class="p">,</span>
+                         <span class="n">dt_col</span><span class="o">=</span><span class="n">dt_col</span><span class="p">,</span>
+                         <span class="n">target_col</span><span class="o">=</span><span class="n">target_col</span><span class="p">,</span>
+                         <span class="n">feature_col</span><span class="o">=</span><span class="n">feature_col</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TSDataset.from_parquet"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.from_parquet">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">from_parquet</span><span class="p">(</span><span class="n">path</span><span class="p">,</span>
+                     <span class="n">dt_col</span><span class="p">,</span>
+                     <span class="n">target_col</span><span class="p">,</span>
+                     <span class="n">id_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">extra_feature_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">with_split</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                     <span class="n">val_ratio</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                     <span class="n">test_ratio</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                     <span class="n">largest_look_back</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                     <span class="n">largest_horizon</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                     <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize tsdataset(s) from path of parquet file.</span>
+
+<span class="sd">        :param path: A string path to parquet file. The string could be a URL.</span>
+<span class="sd">               Valid URL schemes include hdfs, http, ftp, s3, gs, and file. For file URLs, a host</span>
+<span class="sd">               is expected. A local file could be: file://localhost/path/to/table.parquet.</span>
+<span class="sd">               A file URL can also be a path to a directory that contains multiple partitioned</span>
+<span class="sd">               parquet files.</span>
+<span class="sd">        :param dt_col: a str indicates the col name of datetime</span>
+<span class="sd">               column in the input data frame.</span>
+<span class="sd">        :param target_col: a str or list indicates the col name of target column</span>
+<span class="sd">               in the input data frame.</span>
+<span class="sd">        :param id_col: (optional) a str indicates the col name of dataframe id. If</span>
+<span class="sd">               it is not explicitly stated, then the data is interpreted as only</span>
+<span class="sd">               containing a single id.</span>
+<span class="sd">        :param extra_feature_col: (optional) a str or list indicates the col name</span>
+<span class="sd">               of extra feature columns that needs to predict the target column.</span>
+<span class="sd">        :param with_split: (optional) bool, states if we need to split the dataframe</span>
+<span class="sd">               to train, validation and test set. The value defaults to False.</span>
+<span class="sd">        :param val_ratio: (optional) float, validation ratio. Only effective when</span>
+<span class="sd">               with_split is set to True. The value defaults to 0.</span>
+<span class="sd">        :param test_ratio: (optional) float, test ratio. Only effective when with_split</span>
+<span class="sd">               is set to True. The value defaults to 0.1.</span>
+<span class="sd">        :param largest_look_back: (optional) int, the largest length to look back.</span>
+<span class="sd">               Only effective when with_split is set to True. The value defaults to 0.</span>
+<span class="sd">        :param largest_horizon: (optional) int, the largest num of steps to look</span>
+<span class="sd">               forward. Only effective when with_split is set to True. The value defaults</span>
+<span class="sd">               to 1.</span>
+<span class="sd">        :param kwargs: Any additional kwargs are passed to the pd.read_parquet</span>
+<span class="sd">               and pyarrow.parquet.read_table.</span>
+
+<span class="sd">        :return: a TSDataset instance when with_split is set to False,</span>
+<span class="sd">                 three TSDataset instances when with_split is set to True.</span>
+
+<span class="sd">        Create a tsdataset instance by:</span>
+
+<span class="sd">        &gt;&gt;&gt; # Here is a df example:</span>
+<span class="sd">        &gt;&gt;&gt; # id        datetime      value   &quot;extra feature 1&quot;   &quot;extra feature 2&quot;</span>
+<span class="sd">        &gt;&gt;&gt; # 00        2019-01-01    1.9     1                   2</span>
+<span class="sd">        &gt;&gt;&gt; # 01        2019-01-01    2.3     0                   9</span>
+<span class="sd">        &gt;&gt;&gt; # 00        2019-01-02    2.4     3                   4</span>
+<span class="sd">        &gt;&gt;&gt; # 01        2019-01-02    2.6     0                   2</span>
+<span class="sd">        &gt;&gt;&gt; tsdataset = TSDataset.from_parquet(&quot;hdfs://path/to/table.parquet&quot;, dt_col=&quot;datetime&quot;,</span>
+<span class="sd">        &gt;&gt;&gt;                                   target_col=&quot;value&quot;, id_col=&quot;id&quot;,</span>
+<span class="sd">        &gt;&gt;&gt;                                   extra_feature_col=[&quot;extra feature 1&quot;,</span>
+<span class="sd">        &gt;&gt;&gt;                                                      &quot;extra feature 2&quot;])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">bigdl.chronos.data.utils.file</span> <span class="k">import</span> <span class="n">parquet2pd</span>
+        <span class="n">columns</span> <span class="o">=</span> <span class="n">_to_list</span><span class="p">(</span><span class="n">dt_col</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;dt_col&quot;</span><span class="p">)</span> <span class="o">+</span> \
+            <span class="n">_to_list</span><span class="p">(</span><span class="n">target_col</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;target_col&quot;</span><span class="p">)</span> <span class="o">+</span> \
+            <span class="n">_to_list</span><span class="p">(</span><span class="n">id_col</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;id_col&quot;</span><span class="p">)</span> <span class="o">+</span> \
+            <span class="n">_to_list</span><span class="p">(</span><span class="n">extra_feature_col</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;extra_feature_col&quot;</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">parquet2pd</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">TSDataset</span><span class="o">.</span><span class="n">from_pandas</span><span class="p">(</span><span class="n">df</span><span class="p">,</span>
+                                     <span class="n">dt_col</span><span class="o">=</span><span class="n">dt_col</span><span class="p">,</span>
+                                     <span class="n">target_col</span><span class="o">=</span><span class="n">target_col</span><span class="p">,</span>
+                                     <span class="n">id_col</span><span class="o">=</span><span class="n">id_col</span><span class="p">,</span>
+                                     <span class="n">extra_feature_col</span><span class="o">=</span><span class="n">extra_feature_col</span><span class="p">,</span>
+                                     <span class="n">with_split</span><span class="o">=</span><span class="n">with_split</span><span class="p">,</span>
+                                     <span class="n">val_ratio</span><span class="o">=</span><span class="n">val_ratio</span><span class="p">,</span>
+                                     <span class="n">test_ratio</span><span class="o">=</span><span class="n">test_ratio</span><span class="p">,</span>
+                                     <span class="n">largest_look_back</span><span class="o">=</span><span class="n">largest_look_back</span><span class="p">,</span>
+                                     <span class="n">largest_horizon</span><span class="o">=</span><span class="n">largest_horizon</span><span class="p">,</span>
+                                     <span class="p">)</span></div>
+
+<div class="viewcode-block" id="TSDataset.impute"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.impute">[docs]</a>    <span class="k">def</span> <span class="nf">impute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;last&quot;</span><span class="p">,</span> <span class="n">const_num</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Impute the tsdataset by imputing each univariate time series</span>
+<span class="sd">        distinguished by id_col and feature_col.</span>
+
+<span class="sd">        :param mode: imputation mode, select from &quot;last&quot;, &quot;const&quot; or &quot;linear&quot;.</span>
+
+<span class="sd">            &quot;last&quot;: impute by propagating the last non N/A number to its following N/A.</span>
+<span class="sd">            if there is no non N/A number ahead, 0 is filled instead.</span>
+
+<span class="sd">            &quot;const&quot;: impute by a const value input by user.</span>
+
+<span class="sd">            &quot;linear&quot;: impute by linear interpolation.</span>
+<span class="sd">        :param const_num:  indicates the const number to fill, which is only effective when mode</span>
+<span class="sd">            is set to &quot;const&quot;.</span>
+
+<span class="sd">        :return: the tsdataset instance.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">id_col</span><span class="p">])</span> \
+            <span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">df</span><span class="p">:</span> <span class="n">impute_timeseries_dataframe</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+                                                          <span class="n">dt_col</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span><span class="p">,</span>
+                                                          <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
+                                                          <span class="n">const_num</span><span class="o">=</span><span class="n">const_num</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="TSDataset.deduplicate"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.deduplicate">[docs]</a>    <span class="k">def</span> <span class="nf">deduplicate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Remove those duplicated records which has exactly the same values in each feature_col</span>
+<span class="sd">        for each multivariate timeseries distinguished by id_col.</span>
+
+<span class="sd">        :return: the tsdataset instance.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">deduplicate_timeseries_dataframe</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">,</span> <span class="n">dt_col</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="TSDataset.resample"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.resample">[docs]</a>    <span class="k">def</span> <span class="nf">resample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interval</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">merge_mode</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Resample on a new interval for each univariate time series distinguished</span>
+<span class="sd">        by id_col and feature_col.</span>
+
+<span class="sd">        :param interval: pandas offset aliases, indicating time interval of the output dataframe.</span>
+<span class="sd">        :param start_time: start time of the output dataframe.</span>
+<span class="sd">        :param end_time: end time of the output dataframe.</span>
+<span class="sd">        :param merge_mode: if current interval is smaller than output interval,</span>
+<span class="sd">            we need to merge the values in a mode. &quot;max&quot;, &quot;min&quot;, &quot;mean&quot;</span>
+<span class="sd">            or &quot;sum&quot; are supported for now.</span>
+
+<span class="sd">        :return: the tsdataset instance.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_is_pd_datetime</span><span class="p">,</span>
+                          <span class="s2">&quot;The time series data does not have a Pandas datetime format &quot;</span>
+                          <span class="s2">&quot;(you can use pandas.to_datetime to convert a string&quot;</span>
+                          <span class="s2">&quot; into a datetime format).&quot;</span><span class="p">)</span>
+        <span class="kn">from</span> <span class="nn">pandas.api.types</span> <span class="k">import</span> <span class="n">is_numeric_dtype</span>
+        <span class="n">type_error_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">val</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_col</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_col</span>
+                           <span class="k">if</span> <span class="ow">not</span> <span class="n">is_numeric_dtype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">val</span><span class="p">])]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">type_error_list</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">val</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">val</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;All the columns of target_col &quot;</span>
+                              <span class="s2">&quot;and extra_feature_col should be of numeric type.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">id_col</span><span class="p">])</span> \
+            <span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">df</span><span class="p">:</span> <span class="n">resample_timeseries_dataframe</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+                                                            <span class="n">dt_col</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span><span class="p">,</span>
+                                                            <span class="n">interval</span><span class="o">=</span><span class="n">interval</span><span class="p">,</span>
+                                                            <span class="n">start_time</span><span class="o">=</span><span class="n">start_time</span><span class="p">,</span>
+                                                            <span class="n">end_time</span><span class="o">=</span><span class="n">end_time</span><span class="p">,</span>
+                                                            <span class="n">id_col</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">id_col</span><span class="p">,</span>
+                                                            <span class="n">merge_mode</span><span class="o">=</span><span class="n">merge_mode</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_freq</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">interval</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_freq_certainty</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="TSDataset.gen_dt_feature"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.gen_dt_feature">[docs]</a>    <span class="k">def</span> <span class="nf">gen_dt_feature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">features</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="n">one_hot_features</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Generate datetime feature(s) for each record.</span>
+
+<span class="sd">        :param features: str or list, states which feature(s) will be generated. If the value</span>
+<span class="sd">               is set to be a str, it should be one of &quot;auto&quot; or &quot;all&quot;. For &quot;auto&quot;, a subset</span>
+<span class="sd">               of datetime features will be generated under the consideration of the sampling</span>
+<span class="sd">               frequency of your data. For &quot;all&quot;, the whole set of datetime features will be</span>
+<span class="sd">               generated. If the value is set to be a list, the list should contain the features</span>
+<span class="sd">               you want to generate. A table of all datatime features and their description is</span>
+<span class="sd">               listed below. The value defaults to &quot;auto&quot;.</span>
+<span class="sd">        :param one_hot_features: list, states which feature(s) will be generated as one-hot-encoded</span>
+<span class="sd">               feature. The value defaults to None, which means no features will be generated with\</span>
+<span class="sd">               one-hot-encoded.</span>
+
+<span class="sd">        | &quot;MINUTE&quot;: The minute of the time stamp.</span>
+<span class="sd">        | &quot;DAY&quot;: The day of the time stamp.</span>
+<span class="sd">        | &quot;DAYOFYEAR&quot;: The ordinal day of the year of the time stamp.</span>
+<span class="sd">        | &quot;HOUR&quot;: The hour of the time stamp.</span>
+<span class="sd">        | &quot;WEEKDAY&quot;: The day of the week of the time stamp, Monday=0, Sunday=6.</span>
+<span class="sd">        | &quot;WEEKOFYEAR&quot;: The ordinal week of the year of the time stamp.</span>
+<span class="sd">        | &quot;MONTH&quot;: The month of the time stamp.</span>
+<span class="sd">        | &quot;YEAR&quot;: The year of the time stamp.</span>
+<span class="sd">        | &quot;IS_AWAKE&quot;: Bool value indicating whether it belongs to awake hours for the time stamp,</span>
+<span class="sd">        | True for hours between 6A.M. and 1A.M.</span>
+<span class="sd">        | &quot;IS_BUSY_HOURS&quot;: Bool value indicating whether it belongs to busy hours for the time</span>
+<span class="sd">        | stamp, True for hours between 7A.M. and 10A.M. and hours between 4P.M. and 8P.M.</span>
+<span class="sd">        | &quot;IS_WEEKEND&quot;: Bool value indicating whether it belongs to weekends for the time stamp,</span>
+<span class="sd">        | True for Saturdays and Sundays.</span>
+
+<span class="sd">        :return: the tsdataset instance.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_is_pd_datetime</span><span class="p">,</span>
+                          <span class="s2">&quot;The time series data does not have a Pandas datetime format&quot;</span>
+                          <span class="s2">&quot;(you can use pandas.to_datetime to convert a string into&quot;</span>
+                          <span class="s2">&quot; a datetime format.)&quot;</span><span class="p">)</span>
+        <span class="n">features_generated</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">generate_dt_features</span><span class="p">(</span><span class="n">input_df</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">,</span>
+                                       <span class="n">dt_col</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span><span class="p">,</span>
+                                       <span class="n">features</span><span class="o">=</span><span class="n">features</span><span class="p">,</span>
+                                       <span class="n">one_hot_features</span><span class="o">=</span><span class="n">one_hot_features</span><span class="p">,</span>
+                                       <span class="n">freq</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_freq</span><span class="p">,</span>
+                                       <span class="n">features_generated</span><span class="o">=</span><span class="n">features_generated</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">feature_col</span> <span class="o">+=</span> <span class="n">features_generated</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="TSDataset.gen_global_feature"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.gen_global_feature">[docs]</a>    <span class="k">def</span> <span class="nf">gen_global_feature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="s2">&quot;comprehensive&quot;</span><span class="p">,</span> <span class="n">full_settings</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Generate per-time-series feature for each time series.</span>
+<span class="sd">        This method will be implemented by tsfresh.</span>
+<span class="sd">        Make sure that the specified column name does not contain &#39;__&#39;.</span>
+
+<span class="sd">        TODO: relationship with scale should be figured out.</span>
+
+<span class="sd">        :param settings: str or dict. If a string is set, then it must be one of &quot;comprehensive&quot;</span>
+<span class="sd">               &quot;minimal&quot; and &quot;efficient&quot;. If a dict is set, then it should follow the instruction</span>
+<span class="sd">               for default_fc_parameters in tsfresh. The value is defaulted to &quot;comprehensive&quot;.</span>
+<span class="sd">        :param full_settings: dict. It should follow the instruction for kind_to_fc_parameters in</span>
+<span class="sd">               tsfresh. The value is defaulted to None.</span>
+<span class="sd">        :param n_jobs: int. The number of processes to use for parallelization.</span>
+
+<span class="sd">        :return: the tsdataset instance.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">tsfresh</span> <span class="k">import</span> <span class="n">extract_features</span>
+            <span class="kn">from</span> <span class="nn">tsfresh.feature_extraction</span> <span class="k">import</span> <span class="n">ComprehensiveFCParameters</span><span class="p">,</span> \
+                <span class="n">MinimalFCParameters</span><span class="p">,</span> <span class="n">EfficientFCParameters</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;Please install tsfresh by `pip install tsfresh` to use &quot;</span>
+                              <span class="s2">&quot;`gen_global_feature` method.&quot;</span><span class="p">)</span>
+
+        <span class="n">DEFAULT_PARAMS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;comprehensive&quot;</span><span class="p">:</span> <span class="n">ComprehensiveFCParameters</span><span class="p">(),</span>
+                          <span class="s2">&quot;minimal&quot;</span><span class="p">:</span> <span class="n">MinimalFCParameters</span><span class="p">(),</span>
+                          <span class="s2">&quot;efficient&quot;</span><span class="p">:</span> <span class="n">EfficientFCParameters</span><span class="p">()}</span>
+
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_generate_agg_feature</span><span class="p">,</span>
+                          <span class="s2">&quot;Only one of gen_global_feature and gen_rolling_feature&quot;</span>
+                          <span class="s2">&quot; should be called.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">full_settings</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">,</span>\
+                <span class="n">addtional_feature</span> <span class="o">=</span>\
+                <span class="n">generate_global_features</span><span class="p">(</span><span class="n">input_df</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">,</span>
+                                         <span class="n">column_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">id_col</span><span class="p">,</span>
+                                         <span class="n">column_sort</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span><span class="p">,</span>
+                                         <span class="n">kind_to_fc_parameters</span><span class="o">=</span><span class="n">full_settings</span><span class="p">,</span>
+                                         <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">feature_col</span> <span class="o">+=</span> <span class="n">addtional_feature</span>
+            <span class="k">return</span> <span class="bp">self</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="n">settings</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;comprehensive&#39;</span><span class="p">,</span> <span class="s1">&#39;minimal&#39;</span><span class="p">,</span> <span class="s1">&#39;efficient&#39;</span><span class="p">],</span>
+                              <span class="s2">&quot;settings str should be one of &#39;comprehensive&#39;, &#39;minimal&#39;,&quot;</span>
+                              <span class="s2">&quot; &#39;efficient&#39;, but found </span><span class="si">{settings}</span><span class="s2">.&quot;</span><span class="p">)</span>
+            <span class="n">default_fc_parameters</span> <span class="o">=</span> <span class="n">DEFAULT_PARAMS</span><span class="p">[</span><span class="n">settings</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">default_fc_parameters</span> <span class="o">=</span> <span class="n">settings</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">,</span>\
+            <span class="n">addtional_feature</span> <span class="o">=</span>\
+            <span class="n">generate_global_features</span><span class="p">(</span><span class="n">input_df</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">,</span>
+                                     <span class="n">column_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">id_col</span><span class="p">,</span>
+                                     <span class="n">column_sort</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span><span class="p">,</span>
+                                     <span class="n">default_fc_parameters</span><span class="o">=</span><span class="n">default_fc_parameters</span><span class="p">,</span>
+                                     <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">feature_col</span> <span class="o">+=</span> <span class="n">addtional_feature</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_has_generate_agg_feature</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="TSDataset.gen_rolling_feature"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.gen_rolling_feature">[docs]</a>    <span class="k">def</span> <span class="nf">gen_rolling_feature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                            <span class="n">window_size</span><span class="p">,</span>
+                            <span class="n">settings</span><span class="o">=</span><span class="s2">&quot;comprehensive&quot;</span><span class="p">,</span>
+                            <span class="n">full_settings</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                            <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Generate aggregation feature for each sample.</span>
+<span class="sd">        This method will be implemented by tsfresh.</span>
+<span class="sd">        Make sure that the specified column name does not contain &#39;__&#39;.</span>
+
+<span class="sd">        TODO: relationship with scale should be figured out.</span>
+
+<span class="sd">        :param window_size: int, generate feature according to the rolling result.</span>
+<span class="sd">        :param settings: str or dict. If a string is set, then it must be one of &quot;comprehensive&quot;</span>
+<span class="sd">               &quot;minimal&quot; and &quot;efficient&quot;. If a dict is set, then it should follow the instruction</span>
+<span class="sd">               for default_fc_parameters in tsfresh. The value is defaulted to &quot;comprehensive&quot;.</span>
+<span class="sd">        :param full_settings: dict. It should follow the instruction for kind_to_fc_parameters in</span>
+<span class="sd">               tsfresh. The value is defaulted to None.</span>
+<span class="sd">        :param n_jobs: int. The number of processes to use for parallelization.</span>
+
+<span class="sd">        :return: the tsdataset instance.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">tsfresh.utilities.dataframe_functions</span> <span class="k">import</span> <span class="n">roll_time_series</span>
+            <span class="kn">from</span> <span class="nn">tsfresh.utilities.dataframe_functions</span> <span class="k">import</span> <span class="n">impute</span> <span class="k">as</span> <span class="n">impute_tsfresh</span>
+            <span class="kn">from</span> <span class="nn">tsfresh</span> <span class="k">import</span> <span class="n">extract_features</span>
+            <span class="kn">from</span> <span class="nn">tsfresh.feature_extraction</span> <span class="k">import</span> <span class="n">ComprehensiveFCParameters</span><span class="p">,</span> \
+                <span class="n">MinimalFCParameters</span><span class="p">,</span> <span class="n">EfficientFCParameters</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;Please install tsfresh by `pip install tsfresh` to use &quot;</span>
+                              <span class="s2">&quot;`gen_rolling_feature` method.&quot;</span><span class="p">)</span>
+
+        <span class="n">DEFAULT_PARAMS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;comprehensive&quot;</span><span class="p">:</span> <span class="n">ComprehensiveFCParameters</span><span class="p">(),</span>
+                          <span class="s2">&quot;minimal&quot;</span><span class="p">:</span> <span class="n">MinimalFCParameters</span><span class="p">(),</span>
+                          <span class="s2">&quot;efficient&quot;</span><span class="p">:</span> <span class="n">EfficientFCParameters</span><span class="p">()}</span>
+
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_generate_agg_feature</span><span class="p">,</span>
+                          <span class="s2">&quot;Only one of gen_global_feature and gen_rolling_feature&quot;</span>
+                          <span class="s2">&quot; should be called.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="n">settings</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;comprehensive&#39;</span><span class="p">,</span> <span class="s1">&#39;minimal&#39;</span><span class="p">,</span> <span class="s1">&#39;efficient&#39;</span><span class="p">],</span>
+                              <span class="s2">&quot;settings str should be one of &#39;comprehensive&#39;, &#39;minimal&#39;,&quot;</span>
+                              <span class="s2">&quot; &#39;efficient&#39;, but found </span><span class="si">{settings}</span><span class="s2">.&quot;</span><span class="p">)</span>
+            <span class="n">default_fc_parameters</span> <span class="o">=</span> <span class="n">DEFAULT_PARAMS</span><span class="p">[</span><span class="n">settings</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">default_fc_parameters</span> <span class="o">=</span> <span class="n">settings</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="n">window_size</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id_col</span><span class="p">)</span><span class="o">.</span><span class="n">size</span><span class="p">()</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                          <span class="s2">&quot;gen_rolling_feature should have a window_size smaller&quot;</span>
+                          <span class="s2">&quot; than shortest time series length.&quot;</span><span class="p">)</span>
+        <span class="n">df_rolled</span> <span class="o">=</span> <span class="n">roll_time_series</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">,</span>
+                                     <span class="n">column_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">id_col</span><span class="p">,</span>
+                                     <span class="n">column_sort</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span><span class="p">,</span>
+                                     <span class="n">max_timeshift</span><span class="o">=</span><span class="n">window_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
+                                     <span class="n">min_timeshift</span><span class="o">=</span><span class="n">window_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
+                                     <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">full_settings</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">roll_feature_df</span> <span class="o">=</span> <span class="n">extract_features</span><span class="p">(</span><span class="n">df_rolled</span><span class="p">,</span>
+                                                    <span class="n">column_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">id_col</span><span class="p">,</span>
+                                                    <span class="n">column_sort</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span><span class="p">,</span>
+                                                    <span class="n">default_fc_parameters</span><span class="o">=</span><span class="n">default_fc_parameters</span><span class="p">,</span>
+                                                    <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">roll_feature_df</span> <span class="o">=</span> <span class="n">extract_features</span><span class="p">(</span><span class="n">df_rolled</span><span class="p">,</span>
+                                                    <span class="n">column_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">id_col</span><span class="p">,</span>
+                                                    <span class="n">column_sort</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span><span class="p">,</span>
+                                                    <span class="n">kind_to_fc_parameters</span><span class="o">=</span><span class="n">full_settings</span><span class="p">,</span>
+                                                    <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">)</span>
+        <span class="n">impute_tsfresh</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">roll_feature_df</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">feature_col</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">roll_feature_df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">roll_additional_feature</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">roll_feature_df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_has_generate_agg_feature</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="TSDataset.roll"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.roll">[docs]</a>    <span class="k">def</span> <span class="nf">roll</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+             <span class="n">horizon</span><span class="p">,</span>
+             <span class="n">lookback</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span>
+             <span class="n">feature_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">target_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">id_sensitive</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+             <span class="n">time_enc</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+             <span class="n">label_len</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+             <span class="n">is_predict</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Sampling by rolling for machine learning/deep learning models.</span>
+
+<span class="sd">        :param lookback: int, lookback value. Default to &#39;auto&#39;,</span>
+<span class="sd">               if &#39;auto&#39;, the mode of time series&#39; cycle length will be taken as the lookback.</span>
+<span class="sd">        :param horizon: int or list,</span>
+<span class="sd">               if `horizon` is an int, we will sample `horizon` step</span>
+<span class="sd">               continuously after the forecasting point.</span>
+<span class="sd">               if `horizon` is a list, we will sample discretely according</span>
+<span class="sd">               to the input list. 1 means the timestamp just after the observed data.</span>
+<span class="sd">               specially, when `horizon` is set to 0, ground truth will be generated as None.</span>
+
+<span class="sd">               WARNING: The usage of setting `horizon` to will be deprecated later, please</span>
+<span class="sd">               use `is_predict` in future.</span>
+<span class="sd">        :param feature_col: str or list, indicates the feature col name. Default to None,</span>
+<span class="sd">               where we will take all available feature in rolling.</span>
+<span class="sd">        :param target_col: str or list, indicates the target col name. Default to None,</span>
+<span class="sd">               where we will take all target in rolling. it should be a subset of target_col</span>
+<span class="sd">               you used to initialize the tsdataset.</span>
+<span class="sd">        :param id_sensitive: bool,</span>
+<span class="sd">               if `id_sensitive` is False, we will rolling on each id&#39;s sub dataframe</span>
+<span class="sd">               and fuse the sampings.</span>
+<span class="sd">               The shape of rolling will be</span>
+<span class="sd">               x: (num_sample, lookback, num_feature_col + num_target_col)</span>
+<span class="sd">               y: (num_sample, horizon+label_len, num_target_col)</span>
+<span class="sd">               where num_sample is the summation of sample number of each dataframe</span>
+
+<span class="sd">               if `id_sensitive` is True, we will rolling on the wide dataframe whose</span>
+<span class="sd">               columns are cartesian product of id_col and feature_col</span>
+<span class="sd">               The shape of rolling will be</span>
+<span class="sd">               x: (num_sample, lookback, new_num_feature_col + new_num_target_col)</span>
+<span class="sd">               y: (num_sample, horizon+label_len, new_num_target_col)</span>
+<span class="sd">               where num_sample is the sample number of the wide dataframe,</span>
+<span class="sd">               new_num_feature_col is the product of the number of id and the number of feature_col.</span>
+<span class="sd">               new_num_target_col is the product of the number of id and the number of target_col.</span>
+<span class="sd">        :param time_enc: bool,</span>
+<span class="sd">               This parameter should be set to True only when you are using Autoformer model. With</span>
+<span class="sd">               time_enc to be true, 2 additional numpy ndarray will be returned when you call</span>
+<span class="sd">               `.to_numpy()`. Be sure to have a time type for dt_col if you set time_enc to True.</span>
+<span class="sd">        :param label_len: int,</span>
+<span class="sd">               This parameter should be set to True only when you are using Autoformer model. This</span>
+<span class="sd">               indicates the length of overlap area of output(y) and input(x) on time axis.</span>
+<span class="sd">        :param is_predict: bool,</span>
+<span class="sd">               This parameter should be set to True only when you are using Autoformer model. This</span>
+<span class="sd">               indicates if the dataset will be sampled as a prediction dataset(without groud</span>
+<span class="sd">               truth).</span>
+
+<span class="sd">        :return: the tsdataset instance.</span>
+
+<span class="sd">        roll() can be called by:</span>
+
+<span class="sd">        &gt;&gt;&gt; # Here is a df example:</span>
+<span class="sd">        &gt;&gt;&gt; # id        datetime      value   &quot;extra feature 1&quot;   &quot;extra feature 2&quot;</span>
+<span class="sd">        &gt;&gt;&gt; # 00        2019-01-01    1.9     1                   2</span>
+<span class="sd">        &gt;&gt;&gt; # 01        2019-01-01    2.3     0                   9</span>
+<span class="sd">        &gt;&gt;&gt; # 00        2019-01-02    2.4     3                   4</span>
+<span class="sd">        &gt;&gt;&gt; # 01        2019-01-02    2.6     0                   2</span>
+<span class="sd">        &gt;&gt;&gt; tsdataset = TSDataset.from_pandas(df, dt_col=&quot;datetime&quot;,</span>
+<span class="sd">        &gt;&gt;&gt;                                   target_col=&quot;value&quot;, id_col=&quot;id&quot;,</span>
+<span class="sd">        &gt;&gt;&gt;                                   extra_feature_col=[&quot;extra feature 1&quot;,</span>
+<span class="sd">        &gt;&gt;&gt;                                                      &quot;extra feature 2&quot;])</span>
+<span class="sd">        &gt;&gt;&gt; horizon, lookback = 1, 1</span>
+<span class="sd">        &gt;&gt;&gt; tsdataset.roll(lookback=lookback, horizon=horizon, id_sensitive=False)</span>
+<span class="sd">        &gt;&gt;&gt; x, y = tsdataset.to_numpy()</span>
+<span class="sd">        &gt;&gt;&gt; print(x, y) # x = [[[1.9, 1, 2 ]], [[2.3, 0, 9 ]]] y = [[[ 2.4 ]], [[ 2.6 ]]]</span>
+<span class="sd">        &gt;&gt;&gt; print(x.shape, y.shape) # x.shape = (2, 1, 3) y.shape = (2, 1, 1)</span>
+<span class="sd">        &gt;&gt;&gt; tsdataset.roll(lookback=lookback, horizon=horizon, id_sensitive=True)</span>
+<span class="sd">        &gt;&gt;&gt; x, y = tsdataset.to_numpy()</span>
+<span class="sd">        &gt;&gt;&gt; print(x, y) # x = [[[ 1.9, 2.3, 1, 2, 0, 9 ]]] y = [[[ 2.4, 2.6]]]</span>
+<span class="sd">        &gt;&gt;&gt; print(x.shape, y.shape) # x.shape = (1, 1, 6) y.shape = (1, 1, 2)</span>
+
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span>
+        <span class="k">if</span> <span class="n">id_sensitive</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_check_is_aligned</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id_col</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span><span class="p">):</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;The time series data should be &quot;</span>
+                              <span class="s2">&quot;aligned if id_sensitive is set to True.&quot;</span><span class="p">)</span>
+        <span class="n">feature_col</span> <span class="o">=</span> <span class="n">_to_list</span><span class="p">(</span><span class="n">feature_col</span><span class="p">,</span> <span class="s2">&quot;feature_col&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">feature_col</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> \
+            <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_col</span>
+        <span class="n">target_col</span> <span class="o">=</span> <span class="n">_to_list</span><span class="p">(</span><span class="n">target_col</span><span class="p">,</span> <span class="s2">&quot;target_col&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">target_col</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> \
+            <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_col</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">roll_additional_feature</span><span class="p">:</span>
+            <span class="n">additional_feature_col</span> <span class="o">=</span>\
+                <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">feature_col</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">roll_additional_feature</span><span class="p">)))</span>
+            <span class="n">feature_col</span> <span class="o">=</span>\
+                <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">feature_col</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">roll_additional_feature</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">roll_feature</span> <span class="o">=</span> <span class="n">feature_col</span> <span class="o">+</span> <span class="n">additional_feature_col</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">additional_feature_col</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">roll_feature</span> <span class="o">=</span> <span class="n">feature_col</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">roll_target</span> <span class="o">=</span> <span class="n">target_col</span>
+        <span class="n">num_id</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id_list</span><span class="p">)</span>
+        <span class="n">num_feature_col</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">roll_feature</span><span class="p">)</span>
+        <span class="n">num_target_col</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">roll_target</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id_sensitive</span> <span class="o">=</span> <span class="n">id_sensitive</span>
+        <span class="n">roll_feature_df</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">roll_feature_df</span> <span class="ow">is</span> <span class="kc">None</span> \
+            <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">roll_feature_df</span><span class="p">[</span><span class="n">additional_feature_col</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lookback</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">horizon</span> <span class="o">=</span> <span class="n">lookback</span><span class="p">,</span> <span class="n">horizon</span>
+        <span class="c1"># horizon_time is only for time_enc, the time_enc numpy ndarray won&#39;t have any</span>
+        <span class="c1"># shape change when the dataset is for prediction.</span>
+        <span class="n">horizon_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">horizon</span>
+        <span class="k">if</span> <span class="n">is_predict</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">horizon</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookback</span> <span class="o">==</span> <span class="s1">&#39;auto&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lookback</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cycle_length</span><span class="p">(</span><span class="s1">&#39;mode&#39;</span><span class="p">,</span> <span class="n">top_k</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">rolling_result</span> <span class="o">=</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">id_col</span><span class="p">])</span> \
+                <span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">df</span><span class="p">:</span> <span class="n">roll_timeseries_dataframe</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+                                                            <span class="n">roll_feature_df</span><span class="o">=</span><span class="n">roll_feature_df</span><span class="p">,</span>
+                                                            <span class="n">lookback</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lookback</span><span class="p">,</span>
+                                                            <span class="n">horizon</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">horizon</span><span class="p">,</span>
+                                                            <span class="n">feature_col</span><span class="o">=</span><span class="n">feature_col</span><span class="p">,</span>
+                                                            <span class="n">target_col</span><span class="o">=</span><span class="n">target_col</span><span class="p">,</span>
+                                                            <span class="n">label_len</span><span class="o">=</span><span class="n">label_len</span><span class="p">))</span>
+
+        <span class="c1"># concat the result on required axis</span>
+        <span class="n">concat_axis</span> <span class="o">=</span> <span class="mi">2</span> <span class="k">if</span> <span class="n">id_sensitive</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">numpy_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">rolling_result</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                                       <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id_list</span><span class="p">],</span>
+                                      <span class="n">axis</span><span class="o">=</span><span class="n">concat_axis</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">horizon</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">time_enc</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">numpy_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">rolling_result</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+                                           <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id_list</span><span class="p">],</span>
+                                          <span class="n">axis</span><span class="o">=</span><span class="n">concat_axis</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">numpy_y</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># time_enc</span>
+        <span class="k">if</span> <span class="n">time_enc</span><span class="p">:</span>
+            <span class="n">df_stamp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">is_predict</span><span class="p">:</span>
+                <span class="n">pred_dates</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                                           <span class="n">periods</span><span class="o">=</span><span class="n">horizon_time</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_freq</span><span class="p">)</span>
+                <span class="n">df_stamp</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span><span class="p">]</span> <span class="o">=</span>\
+                    <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">pred_dates</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">df_stamp</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+            <span class="n">data_stamp</span> <span class="o">=</span> <span class="n">time_features</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df_stamp</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+                                       <span class="n">freq</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_freq</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_stamp</span> <span class="o">=</span> <span class="n">data_stamp</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">max_horizon</span> <span class="o">=</span> <span class="n">horizon_time</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">horizon_time</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="nb">max</span><span class="p">(</span><span class="n">horizon_time</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">numpy_x_timeenc</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_roll_timeseries_ndarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_stamp</span><span class="p">[:</span><span class="o">-</span><span class="n">max_horizon</span><span class="p">],</span>
+                                                               <span class="n">lookback</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">numpy_y_timeenc</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_roll_timeseries_ndarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_stamp</span><span class="p">[</span><span class="n">lookback</span><span class="o">-</span><span class="n">label_len</span><span class="p">:],</span>
+                                                               <span class="n">horizon_time</span><span class="o">+</span><span class="n">label_len</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">numpy_x_timeenc</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">numpy_y_timeenc</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># target first</span>
+        <span class="c1"># TODO: check id_sensitive effectiveness for the time_enc=True cases.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">id_sensitive</span><span class="p">:</span>
+            <span class="n">feature_start_idx</span> <span class="o">=</span> <span class="n">num_target_col</span> <span class="o">*</span> <span class="n">num_id</span>
+            <span class="n">reindex_list</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">num_target_col</span><span class="p">,</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">num_target_col</span><span class="p">))</span> <span class="o">+</span>
+                            <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">feature_start_idx</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="n">num_feature_col</span><span class="p">,</span>
+                                       <span class="n">feature_start_idx</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">num_feature_col</span><span class="p">))</span>
+                            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_id</span><span class="p">)]</span>
+            <span class="n">reindex_list</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">,</span> <span class="n">reindex_list</span><span class="p">)</span>
+            <span class="n">sorted_index</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">reindex_list</span><span class="p">)),</span> <span class="n">key</span><span class="o">=</span><span class="n">reindex_list</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">numpy_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numpy_x</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">sorted_index</span><span class="p">]</span>
+
+        <span class="c1"># scaler index</span>
+        <span class="n">num_roll_target</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">roll_target</span><span class="p">)</span>
+        <span class="n">repeat_factor</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id_list</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">id_sensitive</span> <span class="k">else</span> <span class="mi">1</span>
+        <span class="n">scaler_index</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_col</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">roll_target</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_roll_target</span><span class="p">)]</span> <span class="o">*</span> <span class="n">repeat_factor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scaler_index</span> <span class="o">=</span> <span class="n">scaler_index</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="TSDataset.to_torch_data_loader"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.to_torch_data_loader">[docs]</a>    <span class="k">def</span> <span class="nf">to_torch_data_loader</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                             <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+                             <span class="n">roll</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                             <span class="n">lookback</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span>
+                             <span class="n">horizon</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                             <span class="n">feature_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                             <span class="n">target_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                             <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                             <span class="n">time_enc</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                             <span class="n">label_len</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                             <span class="n">is_predict</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert TSDataset to a PyTorch DataLoader with or without rolling. We recommend to use</span>
+<span class="sd">        to_torch_data_loader(roll=True) if you don&#39;t need to output the rolled numpy array. It is</span>
+<span class="sd">        much more efficient than rolling separately, especially when the dataframe or lookback</span>
+<span class="sd">        is large.</span>
+
+<span class="sd">        :param batch_size: int, the batch_size for a Pytorch DataLoader. It defaults to 32.</span>
+<span class="sd">        :param roll: Boolean. Whether to roll the dataframe before converting to DataLoader.</span>
+<span class="sd">               If True, you must also specify lookback and horizon for rolling. If False, you must</span>
+<span class="sd">               have called tsdataset.roll() before calling to_torch_data_loader(). Default to False.</span>
+<span class="sd">        :param lookback: int, lookback value. Default to &#39;auto&#39;,</span>
+<span class="sd">               the mode of time series&#39; cycle length will be taken as the lookback.</span>
+<span class="sd">        :param horizon: int or list,</span>
+<span class="sd">               if `horizon` is an int, we will sample `horizon` step</span>
+<span class="sd">               continuously after the forecasting point.</span>
+<span class="sd">               if `horizon` is a list, we will sample discretely according</span>
+<span class="sd">               to the input list.</span>
+<span class="sd">               specially, when `horizon` is set to 0, ground truth will be generated as None.</span>
+<span class="sd">        :param feature_col: str or list, indicates the feature col name. Default to None,</span>
+<span class="sd">               where we will take all available feature in rolling.</span>
+<span class="sd">        :param target_col: str or list, indicates the target col name. Default to None,</span>
+<span class="sd">               where we will take all target in rolling. it should be a subset of target_col</span>
+<span class="sd">               you used to initialize the tsdataset.</span>
+<span class="sd">        :param shuffle: if the dataloader is shuffled. default to True.</span>
+<span class="sd">        :param time_enc: bool,</span>
+<span class="sd">               This parameter should be set to True only when you are using Autoformer model. With</span>
+<span class="sd">               time_enc to be true, 2 additional numpy ndarray will be returned when you call</span>
+<span class="sd">               `.to_numpy()`. Be sure to have a time type for dt_col if you set time_enc to True.</span>
+<span class="sd">        :param label_len: int,</span>
+<span class="sd">               This parameter should be set to True only when you are using Autoformer model. This</span>
+<span class="sd">               indicates the length of overlap area of output(y) and input(x) on time axis.</span>
+<span class="sd">        :param is_predict: bool,</span>
+<span class="sd">               This parameter should be set to True only when you are using Autoformer model. This</span>
+<span class="sd">               indicates if the dataset will be sampled as a prediction dataset(without groud</span>
+<span class="sd">               truth).</span>
+
+<span class="sd">        :return: A pytorch DataLoader instance.</span>
+
+<span class="sd">        to_torch_data_loader() can be called by:</span>
+
+<span class="sd">        &gt;&gt;&gt; # Here is a df example:</span>
+<span class="sd">        &gt;&gt;&gt; # id        datetime      value   &quot;extra feature 1&quot;   &quot;extra feature 2&quot;</span>
+<span class="sd">        &gt;&gt;&gt; # 00        2019-01-01    1.9     1                   2</span>
+<span class="sd">        &gt;&gt;&gt; # 01        2019-01-01    2.3     0                   9</span>
+<span class="sd">        &gt;&gt;&gt; # 00        2019-01-02    2.4     3                   4</span>
+<span class="sd">        &gt;&gt;&gt; # 01        2019-01-02    2.6     0                   2</span>
+<span class="sd">        &gt;&gt;&gt; tsdataset = TSDataset.from_pandas(df, dt_col=&quot;datetime&quot;,</span>
+<span class="sd">        &gt;&gt;&gt;                                   target_col=&quot;value&quot;, id_col=&quot;id&quot;,</span>
+<span class="sd">        &gt;&gt;&gt;                                   extra_feature_col=[&quot;extra feature 1&quot;,</span>
+<span class="sd">        &gt;&gt;&gt;                                                      &quot;extra feature 2&quot;])</span>
+<span class="sd">        &gt;&gt;&gt; horizon, lookback = 1, 1</span>
+<span class="sd">        &gt;&gt;&gt; data_loader = tsdataset.to_torch_data_loader(batch_size=32,</span>
+<span class="sd">        &gt;&gt;&gt;                                              roll=True,</span>
+<span class="sd">        &gt;&gt;&gt;                                              lookback=lookback,</span>
+<span class="sd">        &gt;&gt;&gt;                                              horizon=horizon)</span>
+<span class="sd">        &gt;&gt;&gt; # or roll outside. That might be less efficient than the way above.</span>
+<span class="sd">        &gt;&gt;&gt; tsdataset.roll(lookback=lookback, horizon=horizon, id_sensitive=False)</span>
+<span class="sd">        &gt;&gt;&gt; x, y = tsdataset.to_numpy()</span>
+<span class="sd">        &gt;&gt;&gt; print(x, y) # x = [[[1.9, 1, 2 ]], [[2.3, 0, 9 ]]] y = [[[ 2.4 ]], [[ 2.6 ]]]</span>
+<span class="sd">        &gt;&gt;&gt; data_loader = tsdataset.to_torch_data_loader(batch_size=32)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="k">import</span> <span class="n">TensorDataset</span><span class="p">,</span> <span class="n">DataLoader</span>
+        <span class="kn">import</span> <span class="nn">torch</span>
+        <span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span>
+        <span class="k">if</span> <span class="n">roll</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">horizon</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                                  <span class="s2">&quot;You must input horizon if roll is True&quot;</span><span class="p">)</span>
+            <span class="kn">from</span> <span class="nn">bigdl.chronos.data.utils.roll_dataset</span> <span class="k">import</span> <span class="n">RollDataset</span>
+            <span class="n">feature_col</span> <span class="o">=</span> <span class="n">_to_list</span><span class="p">(</span><span class="n">feature_col</span><span class="p">,</span> <span class="s2">&quot;feature_col&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">feature_col</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> \
+                <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_col</span>
+            <span class="n">target_col</span> <span class="o">=</span> <span class="n">_to_list</span><span class="p">(</span><span class="n">target_col</span><span class="p">,</span> <span class="s2">&quot;target_col&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">target_col</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> \
+                <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_col</span>
+
+            <span class="c1"># set scaler index for unscale_numpy</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scaler_index</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_col</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">target_col</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lookback</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">horizon</span> <span class="o">=</span> <span class="n">lookback</span><span class="p">,</span> <span class="n">horizon</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookback</span> <span class="o">==</span> <span class="s1">&#39;auto&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">lookback</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cycle_length</span><span class="p">(</span><span class="s1">&#39;mode&#39;</span><span class="p">,</span> <span class="n">top_k</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_generate_agg_feature</span><span class="p">,</span>
+                              <span class="s2">&quot;Currently to_torch_data_loader does not support &quot;</span>
+                              <span class="s2">&quot;&#39;gen_global_feature&#39; and &#39;gen_rolling_feature&#39; methods.&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">horizon</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+                <span class="n">need_dflen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookback</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">horizon</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">need_dflen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookback</span> <span class="o">+</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">horizon</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">need_dflen</span><span class="p">:</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                                  <span class="s2">&quot;The length of the dataset must be larger than the sum &quot;</span>
+                                  <span class="s2">&quot;of lookback and horizon, while get lookback+horizon=&quot;</span>
+                                  <span class="n">f</span><span class="s2">&quot;</span><span class="si">{need_dflen}</span><span class="s2"> and the length of dataset is {len(self.df)}.&quot;</span><span class="p">)</span>
+
+            <span class="n">torch_dataset</span> <span class="o">=</span> <span class="n">RollDataset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">,</span>
+                                        <span class="n">dt_col</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span><span class="p">,</span>
+                                        <span class="n">freq</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_freq</span><span class="p">,</span>
+                                        <span class="n">lookback</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lookback</span><span class="p">,</span>
+                                        <span class="n">horizon</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">horizon</span><span class="p">,</span>
+                                        <span class="n">feature_col</span><span class="o">=</span><span class="n">feature_col</span><span class="p">,</span>
+                                        <span class="n">target_col</span><span class="o">=</span><span class="n">target_col</span><span class="p">,</span>
+                                        <span class="n">id_col</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">id_col</span><span class="p">,</span>
+                                        <span class="n">time_enc</span><span class="o">=</span><span class="n">time_enc</span><span class="p">,</span>
+                                        <span class="n">label_len</span><span class="o">=</span><span class="n">label_len</span><span class="p">,</span>
+                                        <span class="n">is_predict</span><span class="o">=</span><span class="n">is_predict</span><span class="p">)</span>
+            <span class="c1"># TODO gen_rolling_feature and gen_global_feature will be support later</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">roll_target</span> <span class="o">=</span> <span class="n">target_col</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">roll_feature</span> <span class="o">=</span> <span class="n">feature_col</span>
+
+            <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">32</span> <span class="k">if</span> <span class="n">batch_size</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">batch_size</span>  <span class="c1"># _pytorch_fashion_inference</span>
+            <span class="k">return</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">torch_dataset</span><span class="p">,</span>
+                              <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+                              <span class="n">shuffle</span><span class="o">=</span><span class="n">shuffle</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">numpy_x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                                  <span class="s2">&quot;Please call &#39;roll&#39; method before transforming a TSDataset to &quot;</span>
+                                  <span class="s2">&quot;torch DataLoader without rolling (default roll=False)!&quot;</span><span class="p">)</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">TensorDataset</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">(),</span>
+                                            <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()),</span>
+                              <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+                              <span class="n">shuffle</span><span class="o">=</span><span class="n">shuffle</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TSDataset.to_tf_dataset"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.to_tf_dataset">[docs]</a>    <span class="k">def</span> <span class="nf">to_tf_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Export a Dataset whose elements are slices of the given tensors.</span>
+
+<span class="sd">        :param batch_size: Number of samples per batch of computation.</span>
+<span class="sd">               If unspecified, batch_size will default to 32.</span>
+
+<span class="sd">        :return: a tf.data dataset, including x and y.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO Requires a tf dataset creator method and can be use less memory.</span>
+        <span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+        <span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">numpy_x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;Please call &#39;roll&#39; method &quot;</span>
+                              <span class="s2">&quot;before transform a TSDataset to tf dataset!&quot;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensor_slices</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">numpy_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">numpy_y</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">shuffle</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">cache</span><span class="p">()</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">numpy_x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span><span class="o">.</span><span class="n">cache</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">prefetch</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">AUTOTUNE</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TSDataset.to_numpy"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.to_numpy">[docs]</a>    <span class="k">def</span> <span class="nf">to_numpy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Export rolling result in form of a tuple of numpy ndarray (x, y).</span>
+
+<span class="sd">        :return: a 2-dim tuple. each item is a 3d numpy ndarray. The ndarray</span>
+<span class="sd">                 is casted to float32.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">numpy_x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;Please call &#39;roll&#39; method &quot;</span>
+                              <span class="s2">&quot;before transform a TSDataset to numpy ndarray!&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">numpy_x_timeenc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">numpy_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">numpy_y</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">numpy_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">numpy_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">numpy_x_timeenc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">numpy_y_timeenc</span></div>
+
+<div class="viewcode-block" id="TSDataset.to_pandas"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.to_pandas">[docs]</a>    <span class="k">def</span> <span class="nf">to_pandas</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Export the pandas dataframe.</span>
+
+<span class="sd">        :return: the internal dataframe.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="TSDataset.scale"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.scale">[docs]</a>    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scaler</span><span class="p">,</span> <span class="n">fit</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Scale the time series dataset&#39;s feature column and target column.</span>
+
+<span class="sd">        :param scaler: sklearn scaler instance, StandardScaler, MaxAbsScaler,</span>
+<span class="sd">               MinMaxScaler and RobustScaler are supported.</span>
+<span class="sd">        :param fit: if we need to fit the scaler. Typically, the value should</span>
+<span class="sd">               be set to True for training set, while False for validation and</span>
+<span class="sd">               test set. The value is defaulted to True.</span>
+
+<span class="sd">        :return: the tsdataset instance.</span>
+
+<span class="sd">        Assume there is a training set tsdata and a test set tsdata_test.</span>
+<span class="sd">        scale() should be called first on training set with default value fit=True,</span>
+<span class="sd">        then be called on test set with the same scaler and fit=False.</span>
+
+<span class="sd">        &gt;&gt;&gt; from sklearn.preprocessing import StandardScaler</span>
+<span class="sd">        &gt;&gt;&gt; scaler = StandardScaler()</span>
+<span class="sd">        &gt;&gt;&gt; tsdata.scale(scaler, fit=True)</span>
+<span class="sd">        &gt;&gt;&gt; tsdata_test.scale(scaler, fit=False)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">feature_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_col</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">roll_additional_feature</span><span class="p">:</span>
+            <span class="n">feature_col</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_col</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">feature</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">roll_additional_feature</span><span class="p">:</span>
+                    <span class="n">feature_col</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">fit</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_col</span> <span class="o">+</span> <span class="n">feature_col</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="n">scaler</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_col</span> <span class="o">+</span> <span class="n">feature_col</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">sklearn.utils.validation</span> <span class="k">import</span> <span class="n">check_is_fitted</span>
+            <span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="ow">not</span> <span class="n">check_is_fitted</span><span class="p">(</span><span class="n">scaler</span><span class="p">),</span> <span class="s2">&quot;scaler is not fittedd&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                                  <span class="s2">&quot;When calling scale for the first time, &quot;</span>
+                                  <span class="s2">&quot;you need to set fit=True.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_col</span> <span class="o">+</span> <span class="n">feature_col</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="n">scaler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_col</span> <span class="o">+</span> <span class="n">feature_col</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span> <span class="o">=</span> <span class="n">scaler</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="TSDataset.unscale"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.unscale">[docs]</a>    <span class="k">def</span> <span class="nf">unscale</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Unscale the time series dataset&#39;s feature column and target column.</span>
+
+<span class="sd">        :return: the tsdataset instance.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">feature_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_col</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">roll_additional_feature</span><span class="p">:</span>
+            <span class="n">feature_col</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_col</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">feature</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">roll_additional_feature</span><span class="p">:</span>
+                    <span class="n">feature_col</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_col</span> <span class="o">+</span> <span class="n">feature_col</span><span class="p">]</span> <span class="o">=</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_col</span> <span class="o">+</span> <span class="n">feature_col</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="TSDataset.unscale_numpy"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.unscale_numpy">[docs]</a>    <span class="k">def</span> <span class="nf">unscale_numpy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Unscale the time series forecaster&#39;s numpy prediction result/ground truth.</span>
+
+<span class="sd">        :param data: a numpy ndarray with 3 dim whose shape should be exactly the</span>
+<span class="sd">               same with self.numpy_y.</span>
+
+<span class="sd">        :return: the unscaled numpy ndarray.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="n">unscale_timeseries_numpy</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaler_index</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_check_basic_invariants</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">strict_check</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        This function contains a bunch of assertions to make sure strict rules(the invariants)</span>
+<span class="sd">        for the internal dataframe(self.df) must stands. If not, clear and user-friendly error</span>
+<span class="sd">        or warning message should be provided to the users.</span>
+<span class="sd">        This function will be called after each method(e.g. impute, deduplicate ...).</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="c1"># check type</span>
+        <span class="n">_check_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">,</span> <span class="s2">&quot;df&quot;</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span>
+        <span class="n">_check_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id_col</span><span class="p">,</span> <span class="s2">&quot;id_col&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="n">_check_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span><span class="p">,</span> <span class="s2">&quot;dt_col&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="n">_check_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_col</span><span class="p">,</span> <span class="s2">&quot;target_col&quot;</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+        <span class="n">_check_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">feature_col</span><span class="p">,</span> <span class="s2">&quot;feature_col&quot;</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+
+        <span class="c1"># check valid name</span>
+        <span class="n">_check_col_within</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id_col</span><span class="p">)</span>
+        <span class="n">_check_col_within</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">target_col_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_col</span><span class="p">:</span>
+            <span class="n">_check_col_within</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">,</span> <span class="n">target_col_name</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">feature_col_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_col</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">roll_additional_feature</span> <span class="ow">and</span> <span class="n">feature_col_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">roll_additional_feature</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">_check_col_within</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">,</span> <span class="n">feature_col_name</span><span class="p">)</span>
+
+        <span class="c1"># check no n/a in critical col</span>
+        <span class="n">_check_col_no_na</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span><span class="p">)</span>
+        <span class="n">_check_col_no_na</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id_col</span><span class="p">)</span>
+
+        <span class="c1"># check dt sorted</span>
+        <span class="k">if</span> <span class="n">strict_check</span><span class="p">:</span>
+            <span class="n">_check_dt_is_sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt_col</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TSDataset.get_cycle_length"><a class="viewcode-back" href="../../../../doc/PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.get_cycle_length">[docs]</a>    <span class="k">def</span> <span class="nf">get_cycle_length</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aggregate</span><span class="o">=</span><span class="s1">&#39;mode&#39;</span><span class="p">,</span> <span class="n">top_k</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the cycle length of the time series in this TSDataset.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            top_k (int): The freq with top top_k power after fft will be</span>
+<span class="sd">                used to check the autocorrelation. Higher top_k might be time-consuming.</span>
+<span class="sd">                The value is default to 3.</span>
+<span class="sd">            aggregate (str): Select the mode of calculation time period,</span>
+<span class="sd">                We only support &#39;min&#39;, &#39;max&#39;, &#39;mode&#39;, &#39;median&#39;, &#39;mean&#39;.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Describe the value of the time period distribution.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">top_k</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span>
+                          <span class="n">f</span><span class="s2">&quot;top_k type must be int, but found {type(top_k)}.&quot;</span><span class="p">)</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">aggregate</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span>
+                          <span class="n">f</span><span class="s2">&quot;aggregate type must be str, but found {type(aggregate)}.&quot;</span><span class="p">)</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="n">aggregate</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">,</span> <span class="s1">&#39;mode&#39;</span><span class="p">,</span> <span class="s1">&#39;median&#39;</span><span class="p">,</span> <span class="s1">&#39;mean&#39;</span><span class="p">],</span>
+                          <span class="n">f</span><span class="s2">&quot;We Only support &#39;min&#39; &#39;max&#39; &#39;mode&#39; &#39;median&#39; &#39;mean&#39;,&quot;</span>
+                          <span class="n">f</span><span class="s2">&quot; but found </span><span class="si">{aggregate}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_col</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id_col</span><span class="p">)</span>\
+                         <span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">cycle_length_est</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_col</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">top_k</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id_col</span><span class="p">)</span>\
+                         <span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;cycle_length&#39;</span><span class="p">:</span>
+                                <span class="p">[</span><span class="n">cycle_length_est</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                                                  <span class="n">top_k</span><span class="p">)</span><span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_col</span><span class="p">]}))</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">cycle_length</span>
+
+        <span class="k">if</span> <span class="n">aggregate</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;mode&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">best_cycle_length</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">aggregate</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;mean&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">best_cycle_length</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="n">aggregate</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;median&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">best_cycle_length</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">median</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="n">aggregate</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;min&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">best_cycle_length</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="n">aggregate</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;max&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">best_cycle_length</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">best_cycle_length</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Secure Your Services &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/design-tabs.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Building Linux Kernel from Source with SGX Enabled" href="build_kernel_with_sgx.html" />
+    <link rel="prev" title="Trusted FL (Federated Learning)" href="../Overview/trusted_fl.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Secure Your Services</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#security-in-data-lifecycle">Security in data lifecycle</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#secure-network-in-transit">Secure Network (in transit)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#secure-storage-in-storage">Secure Storage (in storage)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#secure-computation-in-use">Secure Computation (in use)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#example-spark-on-kubernetes-with-data-stored-on-hdfs">Example: Spark on Kubernetes with data stored on HDFS</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#hdfs-security">HDFS Security</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#spark-security">Spark Security</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#kubernetes-security">Kubernetes Security</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Secure Your Services</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/doc/PPML/QuickStart/secure_your_services.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="secure-your-services">
+<h1>Secure Your Services<a class="headerlink" href="#secure-your-services" title="Permalink to this headline">¶</a></h1>
+<p>This document is a gentle remainder for enabling security &amp; privacy features for your services. To avoid privacy &amp; security issues during deployment, we recommend Developer/Admin to go through this document. It apples for user/customer who want to apply BigDL into their production environment (not just for PPML).</p>
+<section id="security-in-data-lifecycle">
+<h2>Security in data lifecycle<a class="headerlink" href="#security-in-data-lifecycle" title="Permalink to this headline">¶</a></h2>
+<p>Almost all Big Data &amp; AI applications are built upon large scale dataset, we can simply go through security key steps in data lifecycle. That is data protection in transit, in storage, and in use.</p>
+<section id="secure-network-in-transit">
+<h3>Secure Network (in transit)<a class="headerlink" href="#secure-network-in-transit" title="Permalink to this headline">¶</a></h3>
+<p>Big Data &amp; AI applications are mainly distributed applications. That means we need to use lots of nodes to run our applications and get jobs done. During that period, not just control flows (command used to control applications running on different nodes), data partitions (a division of data) may also go through different nodes. So, we need to ensure all network traffic are fully protected.</p>
+</section>
+<section id="secure-storage-in-storage">
+<h3>Secure Storage (in storage)<a class="headerlink" href="#secure-storage-in-storage" title="Permalink to this headline">¶</a></h3>
+<p>Beside network traffic, we also need to ensure data is safely stored in hard disk. In Big Data &amp; AI applications, data is mainly stored in distributed storage or cloud storage, e.g., HDFS, Ceph and AWS S3 etc. That makes storage security a bit different node. We need to ensure each storage node is secured by correct settings, meanwhile we need to ensure the whole storage system is secured (network, access control, authentication etc).</p>
+</section>
+<section id="secure-computation-in-use">
+<h3>Secure Computation (in use)<a class="headerlink" href="#secure-computation-in-use" title="Permalink to this headline">¶</a></h3>
+<p>Even if data are fully encrypted in transit and storage, we still need to decrypt it when we make some computation. If this stage is not safe, then security &amp; secret never exists. That’s why TEE (SGX/TDX) is so important. In Big Data &amp; AI, applications and data are distributed into different nodes. If any of these nodes are controlled by an adversary, he can simply dump sensitive data from memory or crash your applications. There are lots of security technologies to ensure computation safety. Please check if they are correctly enabled.</p>
+</section>
+</section>
+<section id="example-spark-on-kubernetes-with-data-stored-on-hdfs">
+<h2>Example: Spark on Kubernetes with data stored on HDFS<a class="headerlink" href="#example-spark-on-kubernetes-with-data-stored-on-hdfs" title="Permalink to this headline">¶</a></h2>
+<p>WARNING: This example lists minimum security features that should be enabled for your applications. In production, please confirm with your cluster admin or security reviewer.</p>
+<section id="hdfs-security">
+<h3><a class="reference external" href="https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/SecureMode.html">HDFS Security</a><a class="headerlink" href="#hdfs-security" title="Permalink to this headline">¶</a></h3>
+<p>Please ensure authentication and <a class="reference external" href="https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/HdfsPermissionsGuide.html">access control</a> is correctly configured. Note that HDFS authentication relay on <a class="reference external" href="http://web.mit.edu/kerberos/krb5-1.12/doc/user/user_commands/kinit.html">Kerberos</a>.</p>
+<p>Enable <a class="reference external" href="https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/SecureMode.html#Data_confidentiality">Data_confidentiality</a> for network. This will protect PRC, block transfer and http.</p>
+<p>When storing sensitive data in HDFS, please enable <a class="reference external" href="https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/TransparentEncryption.html">Transparent Encryption</a> in HDFS. This feature ensured all data blocks are encrypted on data nodes.</p>
+</section>
+<section id="spark-security">
+<h3><a class="reference external" href="https://spark.apache.org/docs/latest/security.html">Spark Security</a><a class="headerlink" href="#spark-security" title="Permalink to this headline">¶</a></h3>
+<p>Please ensure <a class="reference external" href="https://spark.apache.org/docs/latest/security.html#encryption">network crypto</a> and <a class="reference external" href="https://spark.apache.org/docs/latest/security.html#spark-rpc-communication-protocol-between-spark-processes">spark.authenticate</a> are enabled.</p>
+<p>Enable <a class="reference external" href="https://spark.apache.org/docs/latest/security.html#local-storage-encryption">Local Storage Encryption</a> to protect local temp data.</p>
+<p>Enable <a class="reference external" href="https://spark.apache.org/docs/latest/security.html#ssl-configuration">SSL</a> to secure Spark Webui.</p>
+<p>You can enable <a class="reference external" href="https://spark.apache.org/docs/latest/security.html#kerberos">Kerberos related settings</a> if your have Kerberos service.</p>
+</section>
+<section id="kubernetes-security">
+<h3><a class="reference external" href="https://kubernetes.io/docs/concepts/security/">Kubernetes Security</a><a class="headerlink" href="#kubernetes-security" title="Permalink to this headline">¶</a></h3>
+<p>As a huge resource management service, Kubernetes has lots of security features.</p>
+<p>Enable <a class="reference external" href="https://kubernetes.io/docs/concepts/security/rbac-good-practices/">RBAC</a> to ensure that cluster users and workloads have only the access to resources required to execute their roles.</p>
+<p>Enable <a class="reference external" href="https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/">Encrypting Secret Data at Rest</a> to protect data in rest API.</p>
+<p>When mount key &amp; sensitive configurations into pod, use <a class="reference external" href="https://kubernetes.io/docs/concepts/configuration/secret/">Kubernetes Secret</a>.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../Overview/trusted_fl.html" class="btn btn-neutral float-left" title="Trusted FL (Federated Learning)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="build_kernel_with_sgx.html" class="btn btn-neutral float-right" title="Building Linux Kernel from Source with SGX Enabled" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trusted FL (Federated Learning) &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/design-tabs.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Secure Your Services" href="../QuickStart/secure_your_services.html" />
+    <link rel="prev" title="Trusted Big Data Analytics and ML" href="trusted_big_data_analytics_and_ml.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Trusted FL (Federated Learning)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#prerequisite">Prerequisite</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#prepare-keys-dataset">Prepare Keys &amp; Dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#prepare-docker-image">Prepare Docker Image</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#start-flserver">Start FLServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hfl-logistic-regression">HFL Logistic Regression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#vfl-logistic-regression">VFL Logistic Regression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Trusted FL (Federated Learning)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/doc/PPML/Overview/trusted_fl.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="trusted-fl-federated-learning">
+<h1>Trusted FL (Federated Learning)<a class="headerlink" href="#trusted-fl-federated-learning" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Federated_learning">Federated Learning</a> is a new tool in PPML (Privacy Preserving Machine Learning), which empowers multi-parities to build united model across different parties without compromising privacy, even if these parities have different datasets or features. In FL training stage, sensitive data will be kept locally, only temp gradients or weights will be safely aggregated by a trusted third-parity. In our design, this trusted third-parity is fully protected by Intel SGX.</p>
+<p>A number of FL tools or frameworks have been proposed to enable FL in different areas, i.e., OpenFL, TensorFlow Federated, FATE, Flower and PySyft etc. However, none of them is designed for Big Data scenario. To enable FL in big data ecosystem, BigDL PPML provides a SGX-based End-to-end Trusted FL platform. With this platform, data scientist and developers can easily setup FL applications upon distributed large scale datasets with a few clicks. To achieve this goal, we provides following features:</p>
+<ul class="simple">
+<li><p>ID &amp; feature align: figure out portions of local data that will participate in training stage</p></li>
+<li><p>Horizontal FL: training across multi-parties with same features and different entities</p></li>
+<li><p>Vertical FL: training across multi-parties with same entries and different features.</p></li>
+</ul>
+<p>To ensure sensitive data are fully protected in training and inference stages, we make sure:</p>
+<ul class="simple">
+<li><p>Sensitive data and weights are kept local, only temp gradients or weights will be safely aggregated by a trusted third-parity</p></li>
+<li><p>Trusted third-parity, i.e., FL Server, is protected by SGX Enclaves</p></li>
+<li><p>Local training environment is protected by SGX Enclaves (recommended but not enforced)</p></li>
+<li><p>Network communication and Storage (e.g., data and model) protected by encryption and Transport Layer Security (TLS)](https://en.wikipedia.org/wiki/Transport_Layer_Security)</p></li>
+</ul>
+<p>That is, even when the program runs in an untrusted cloud environment, all the data and models are protected (e.g., using encryption) on disk and network, and the compute and memory are also protected using SGX Enclaves.</p>
+<section id="prerequisite">
+<h2>Prerequisite<a class="headerlink" href="#prerequisite" title="Permalink to this headline">¶</a></h2>
+<p>Please ensure SGX is properly enabled, and SGX driver is installed. If not, please refer to the <a class="reference external" href="https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html#prerequisite">Install SGX Driver</a>.</p>
+<section id="prepare-keys-dataset">
+<h3>Prepare Keys &amp; Dataset<a class="headerlink" href="#prepare-keys-dataset" title="Permalink to this headline">¶</a></h3>
+<ol>
+<li><p>Generate the signing key for SGX Enclaves</p>
+<p>Generate the enclave key using the command below, keep it safely for future remote attestations and to start SGX Enclaves more securely. It will generate a file <code class="docutils literal notranslate"><span class="pre">enclave-key.pem</span></code> in the current working directory, which will be the  enclave key. To store the key elsewhere, modify the output file path.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> scripts/
+openssl genrsa -3 -out enclave-key.pem <span class="m">3072</span>
+<span class="nb">cd</span> ..
+</pre></div>
+</div>
+<p>Then modify <code class="docutils literal notranslate"><span class="pre">ENCLAVE_KEY_PATH</span></code> in <code class="docutils literal notranslate"><span class="pre">deploy_fl_container.sh</span></code> with your path to <code class="docutils literal notranslate"><span class="pre">enclave-key.pem</span></code>.</p>
+</li>
+<li><p>Prepare keys for TLS with root permission (test only, need input security password for keys). Please also install JDK/OpenJDK and set the environment path of the java path to get <code class="docutils literal notranslate"><span class="pre">keytool</span></code>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> scripts/
+./generate-keys.sh
+<span class="nb">cd</span> ..
+</pre></div>
+</div>
+<p>When entering the passphrase or password, you could input the same password by yourself; and these passwords could also be used for the next step of generating other passwords. Password should be longer than 6 bits and contain numbers and letters, and one sample password is “3456abcd”. These passwords would be used for future remote attestations and to start SGX enclaves more securely. And This script will generate 6 files in <code class="docutils literal notranslate"><span class="pre">./ppml/scripts/keys</span></code> dir (you can replace them with your own TLS keys).</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>keystore.jks
+keystore.pkcs12
+server.crt
+server.csr
+server.key
+server.pem
+</pre></div>
+</div>
+<p>If run in container, please modify <code class="docutils literal notranslate"><span class="pre">KEYS_PATH</span></code> to <code class="docutils literal notranslate"><span class="pre">keys/</span></code> you generated in last step in <code class="docutils literal notranslate"><span class="pre">deploy_fl_container.sh</span></code>. This dir will mount to container’s <code class="docutils literal notranslate"><span class="pre">/ppml/trusted-big-data-ml/work/keys</span></code>, then modify the <code class="docutils literal notranslate"><span class="pre">privateKeyFilePath</span></code> and <code class="docutils literal notranslate"><span class="pre">certChainFilePath</span></code> in <code class="docutils literal notranslate"><span class="pre">ppml-conf.yaml</span></code> with container’s absolute path. If not in container, just modify the <code class="docutils literal notranslate"><span class="pre">privateKeyFilePath</span></code> and <code class="docutils literal notranslate"><span class="pre">certChainFilePath</span></code> in <code class="docutils literal notranslate"><span class="pre">ppml-conf.yaml</span></code> with your local path. If you don’t want to build tls channel with certificate, just delete the <code class="docutils literal notranslate"><span class="pre">privateKeyFilePath</span></code> and <code class="docutils literal notranslate"><span class="pre">certChainFilePath</span></code> in <code class="docutils literal notranslate"><span class="pre">ppml-conf.yaml</span></code>.</p>
+</li>
+<li><p>Prepare dataset for FL training. For demo purposes, we have added a public dataset in <a class="reference external" href="https://github.com/intel-analytics/BigDL/tree/main/scala/ppml/demo/data">BigDL PPML Demo data</a>. Please download these data into your local machine. Then modify <code class="docutils literal notranslate"><span class="pre">DATA_PATH</span></code> to <code class="docutils literal notranslate"><span class="pre">./data</span></code> with absolute path in your machine and your local ip in <code class="docutils literal notranslate"><span class="pre">deploy_fl_container.sh</span></code>. The <code class="docutils literal notranslate"><span class="pre">./data</span></code> path will mount to container’s <code class="docutils literal notranslate"><span class="pre">/ppml/trusted-big-data-ml/work/data</span></code>, so if you don’t run in container, you need to modify the data path in <code class="docutils literal notranslate"><span class="pre">runH_VflClient1_2.sh</span></code>.</p></li>
+</ol>
+</section>
+<section id="prepare-docker-image">
+<h3>Prepare Docker Image<a class="headerlink" href="#prepare-docker-image" title="Permalink to this headline">¶</a></h3>
+<p>Pull image from Dockerhub</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker pull intelanalytics/bigdl-ppml-trusted-fl-graphene:2.1.0-SNAPSHOT
+</pre></div>
+</div>
+<p>If Dockerhub is not accessible, you can build docker image. Modify your <code class="docutils literal notranslate"><span class="pre">http_proxy</span></code> in <code class="docutils literal notranslate"><span class="pre">build-image.sh</span></code> then run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./build-image.sh
+</pre></div>
+</div>
+</section>
+</section>
+<section id="start-flserver">
+<h2>Start FLServer<a class="headerlink" href="#start-flserver" title="Permalink to this headline">¶</a></h2>
+<p>Before starting any local training client or worker, we need to start a Trusted third-parity, i.e., FL Server, for secure aggregation. In current design, this FL Server is running in SGX with help of Graphene or Occlum. Local workers/Clients can verify its integrity with SGX Remote Attestation.</p>
+<p>Running this command will start a docker container and initialize the SGX environment.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash deploy_fl_container.sh
+sudo docker <span class="nb">exec</span> -it flDemo bash
+./init.sh
+</pre></div>
+</div>
+<p>In container, run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./runFlServer.sh
+</pre></div>
+</div>
+<p>The fl-server will start and listen on 8980 port. Both horizontal fl-demo and vertical fl-demo need two clients. You can change the listening port and client number by editing <code class="docutils literal notranslate"><span class="pre">BigDL/scala/ppml/demo/ppml-conf.yaml</span></code>’s <code class="docutils literal notranslate"><span class="pre">serverPort</span></code> and <code class="docutils literal notranslate"><span class="pre">clientNum</span></code>.</p>
+<p>Note that we skip ID &amp; Feature for simplify demo. In practice, before we start Federated Learning, we need to align ID &amp; Feature, and figure out portions of local data that will participate in later training stage. In horizontal FL, feature align is required to ensure each party is training on the same features. In vertical FL, both ID and feature align are required to ensure each party training on different features of the same record.</p>
+</section>
+<section id="hfl-logistic-regression">
+<h2>HFL Logistic Regression<a class="headerlink" href="#hfl-logistic-regression" title="Permalink to this headline">¶</a></h2>
+<p>Open two new terminals, run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo docker <span class="nb">exec</span> -it flDemo bash
+</pre></div>
+</div>
+<p>to enter the container, then in a terminal run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./runHflClient1.sh
+</pre></div>
+</div>
+<p>in another terminal run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./runHflClient2.sh
+</pre></div>
+</div>
+<p>Then we start two horizontal fl-clients to cooperate in training a model.</p>
+</section>
+<section id="vfl-logistic-regression">
+<h2>VFL Logistic Regression<a class="headerlink" href="#vfl-logistic-regression" title="Permalink to this headline">¶</a></h2>
+<p>Open two new terminals, run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo docker <span class="nb">exec</span> -it flDemo bash
+</pre></div>
+</div>
+<p>to enter the container, then in a terminal run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./runVflClient1.sh
+</pre></div>
+</div>
+<p>in another terminal run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./runVflClient2.sh
+</pre></div>
+</div>
+<p>Then we start two vertical fl-clients to cooperate in training a model.</p>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<ol class="simple">
+<li><p><a class="reference external" href="https://software.intel.com/content/www/us/en/develop/topics/software-guard-extensions.html">Intel SGX</a></p></li>
+<li><p>Qiang Yang, Yang Liu, Tianjian Chen, and Yongxin Tong. 2019. Federated Machine Learning: Concept and Applications. ACM Trans. Intell. Syst. Technol. 10, 2, Article 12 (February 2019), 19 pages. DOI:https://doi.org/10.1145/3298981</p></li>
+<li><p><a class="reference external" href="https://en.wikipedia.org/wiki/Federated_learning">Federated Learning</a></p></li>
+<li><p><a class="reference external" href="https://www.tensorflow.org/federated">TensorFlow Federated</a></p></li>
+<li><p><a class="reference external" href="https://github.com/FederatedAI/FATE">FATE</a></p></li>
+<li><p><a class="reference external" href="https://github.com/OpenMined/PySyft">PySyft</a></p></li>
+<li><p><a class="reference external" href="https://github.com/mc2-project/federated-xgboost">Federated XGBoost</a></p></li>
+</ol>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="trusted_big_data_analytics_and_ml.html" class="btn btn-neutral float-left" title="Trusted Big Data Analytics and ML" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../QuickStart/secure_your_services.html" class="btn btn-neutral float-right" title="Secure Your Services" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

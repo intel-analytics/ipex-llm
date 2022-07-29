@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Docker User Guide &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/clipboard.min.js"></script>
+        <script src="../../_static/copybutton.js"></script>
+        <script src="../../_static/design-tabs.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Hadoop/YARN User Guide" href="hadoop.html" />
+    <link rel="prev" title="Colab User Guide" href="colab.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="colab.html">Colab User Guide</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Docker User Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#pull-docker-image"><strong>1. Pull Docker Image</strong></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#launch-docker-container"><strong>2. Launch Docker Container</strong></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#run-jupyter-notebook-examples-in-the-container"><strong>3. Run Jupyter Notebook Examples in the Container</strong></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#start-the-jupyter-notebook-services"><strong>3.1 Start the Jupyter Notebook services</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#connect-to-jupyter-notebook-service-from-a-browser"><strong>3.2 Connect to Jupyter Notebook service from a browser</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#run-bigdl-jupyter-notebooks"><strong>3.3 Run BigDL Jupyter Notebooks</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#shut-down-docker-container"><strong>4. Shut Down Docker Container</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chronos/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Docker User Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/doc/UserGuide/docker.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="docker-user-guide">
+<h1>Docker User Guide<a class="headerlink" href="#docker-user-guide" title="Permalink to this headline">¶</a></h1>
+<hr class="docutils" />
+<section id="pull-docker-image">
+<h2><strong>1. Pull Docker Image</strong><a class="headerlink" href="#pull-docker-image" title="Permalink to this headline">¶</a></h2>
+<p>You may pull a Docker image from the  <a class="reference external" href="https://hub.docker.com/r/intelanalytics/bigdl/tags">Docker Hub</a>.</p>
+<p>To pull the nightly build version, use</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo docker pull intelanalytics/bigdl:2.1.0-SNAPSHOT
+</pre></div>
+</div>
+<p>To pull other versions, please refer to <a class="reference external" href="https://hub.docker.com/r/intelanalytics/bigdl/tags?page=1&amp;ordering=last_updated">BigDL Docker Hub Tags</a>, select a tag and use</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo docker pull intelanalytics/bigdl:tag_name
+</pre></div>
+</div>
+<p><strong>Configuring resources</strong></p>
+<p>For Docker Desktop users, the default resources (2 CPUs and 2GB memory) are relatively small, and you may want to change them to larger values (8GB memory and 4 CPUs should be a good estimate for most examples, and the exact memory requirements vary for different applications). For more information, view the Docker documentation for <a class="reference external" href="https://docs.docker.com/docker-for-mac/#resources">MacOS</a> and <a class="reference external" href="https://docs.docker.com/docker-for-windows/#resources">Windows</a>.</p>
+<p><strong>Speed up pulling image by adding mirrors</strong></p>
+<p>To speed up pulling the image from DockerHub, you may add the registry-mirrors key and value by editing <code class="docutils literal notranslate"><span class="pre">daemon.json</span></code> (located in <code class="docutils literal notranslate"><span class="pre">/etc/docker/</span></code> folder on Linux):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;registry-mirrors&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;https://&lt;my-docker-mirror-host&gt;&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>For instance, users in China may add the USTC mirror as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;registry-mirrors&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;https://docker.mirrors.ustc.edu.cn&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>After that, flush changes and restart docker：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">daemon</span><span class="o">-</span><span class="n">reload</span>
+<span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">restart</span> <span class="n">docker</span>
+</pre></div>
+</div>
+</section>
+<section id="launch-docker-container">
+<h2><strong>2. Launch Docker Container</strong><a class="headerlink" href="#launch-docker-container" title="Permalink to this headline">¶</a></h2>
+<p>After pulling the BigDL Docker image, you can launch an BigDL Docker container:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">it</span> <span class="o">--</span><span class="n">rm</span> <span class="o">--</span><span class="n">net</span><span class="o">=</span><span class="n">host</span> \
+    <span class="o">-</span><span class="n">e</span> <span class="n">NOTEBOOK_PORT</span><span class="o">=</span><span class="mi">12345</span> \
+    <span class="o">-</span><span class="n">e</span> <span class="n">NOTEBOOK_TOKEN</span><span class="o">=</span><span class="s2">&quot;your-token&quot;</span> \
+    <span class="o">-</span><span class="n">e</span> <span class="n">http_proxy</span><span class="o">=</span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">your</span><span class="o">-</span><span class="n">proxy</span><span class="o">-</span><span class="n">host</span><span class="p">:</span><span class="n">your</span><span class="o">-</span><span class="n">proxy</span><span class="o">-</span><span class="n">port</span> \
+    <span class="o">-</span><span class="n">e</span> <span class="n">https_proxy</span><span class="o">=</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">your</span><span class="o">-</span><span class="n">proxy</span><span class="o">-</span><span class="n">host</span><span class="p">:</span><span class="n">your</span><span class="o">-</span><span class="n">proxy</span><span class="o">-</span><span class="n">port</span> \
+    <span class="n">intelanalytics</span><span class="o">/</span><span class="n">bigdl</span><span class="p">:</span><span class="mf">2.1</span><span class="o">.</span><span class="mi">0</span><span class="o">-</span><span class="n">SNAPSHOT</span> <span class="n">bash</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>The value 12345 is a user specified port number.</p></li>
+<li><p>The value “your-token” is a user specified string.</p></li>
+<li><p>If you need to use http/https proxy, please use -e http_proxy/https_proxy</p></li>
+</ul>
+<p>Once the container is successfully launched, you will automatically login into the container and see this as the output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">root</span><span class="o">@</span><span class="p">[</span><span class="n">hostname</span><span class="p">]:</span><span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">work</span><span class="c1">#</span>
+</pre></div>
+</div>
+<p>The /opt/work directory contains:</p>
+<ul class="simple">
+<li><p>start-notebook.sh is used for starting the jupyter notebook. You can specify the environment settings and spark settings to start a specified jupyter notebook.</p></li>
+<li><p>bigdl-${BigDL_VERSION} is the BigDL home of BigDL distribution.</p></li>
+<li><p>spark-${SPARK_VERSION} is the Spark home.</p></li>
+<li><p>BigDL is cloned from https://github.com/intel-analytics/BigDL.git, contains apps, examples using BigDL.</p></li>
+<li><p>opt/download-bigdl.sh is used for downloading BigDL distributions.</p></li>
+</ul>
+</section>
+<section id="run-jupyter-notebook-examples-in-the-container">
+<h2><strong>3. Run Jupyter Notebook Examples in the Container</strong><a class="headerlink" href="#run-jupyter-notebook-examples-in-the-container" title="Permalink to this headline">¶</a></h2>
+<p>After a Docker container is launched and user login into the container, you can start the Jupyter Notebook service inside the container.</p>
+<section id="start-the-jupyter-notebook-services">
+<h3><strong>3.1 Start the Jupyter Notebook services</strong><a class="headerlink" href="#start-the-jupyter-notebook-services" title="Permalink to this headline">¶</a></h3>
+<p>In the <code class="docutils literal notranslate"><span class="pre">/opt/work</span></code> directory, run this command line to start the Jupyter Notebook service:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">start</span><span class="o">-</span><span class="n">notebook</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+<p>You will see the output message like below. This means the Jupyter Notebook service has started successfully within the container.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[I 07:40:39.354 NotebookApp] Serving notebooks from local directory: /opt/work/bigdl-2.1.0-SNAPSHOT/apps
+[I 07:40:39.355 NotebookApp] Jupyter Notebook 6.4.6 is running at:
+[I 07:40:39.355 NotebookApp] http://(the-host-name):12345/?token=...
+[I 07:40:39.355 NotebookApp]  or http://127.0.0.1:12345/?token=...
+[I 07:40:39.355 NotebookApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+</pre></div>
+</div>
+</section>
+<section id="connect-to-jupyter-notebook-service-from-a-browser">
+<h3><strong>3.2 Connect to Jupyter Notebook service from a browser</strong><a class="headerlink" href="#connect-to-jupyter-notebook-service-from-a-browser" title="Permalink to this headline">¶</a></h3>
+<p>After the Jupyter Notebook service is successfully started, you can connect to the Jupyter Notebook service from a browser.</p>
+<ol class="simple">
+<li><p>Get the IP address of the container</p></li>
+<li><p>Launch a browser, and connect to the Jupyter Notebook service with the URL: https://container-ip-address:port-number/?token=your-token
+As a result, you will see the Jupyter Notebook like this:</p></li>
+</ol>
+<p><img alt="../../_images/notebook1.jpg" src="../../_images/notebook1.jpg" /></p>
+</section>
+<section id="run-bigdl-jupyter-notebooks">
+<h3><strong>3.3 Run BigDL Jupyter Notebooks</strong><a class="headerlink" href="#run-bigdl-jupyter-notebooks" title="Permalink to this headline">¶</a></h3>
+<p>After connecting to the Jupyter Notebook in the browser, you can run multiple BigDL Jupyter Notebook examples. The example shown below is the “dogs-vs-cats”.</p>
+<ul class="simple">
+<li><p>Click into the “dogs-vs-cats” folder:</p></li>
+</ul>
+<p><img alt="../../_images/notebook2.jpg" src="../../_images/notebook2.jpg" /></p>
+<ul class="simple">
+<li><p>Open the notebook file:</p></li>
+</ul>
+<p><img alt="../../_images/notebook3.jpg" src="../../_images/notebook3.jpg" /></p>
+<ul class="simple">
+<li><p>Start to run the “dogs-vs-cats” notebook:</p></li>
+</ul>
+<p><img alt="../../_images/notebook4.jpg" src="../../_images/notebook4.jpg" /></p>
+<ul class="simple">
+<li><p>Run through the example and check the prediction:</p></li>
+</ul>
+<p><img alt="../../_images/notebook5.jpg" src="../../_images/notebook5.jpg" /></p>
+</section>
+</section>
+<section id="shut-down-docker-container">
+<h2><strong>4. Shut Down Docker Container</strong><a class="headerlink" href="#shut-down-docker-container" title="Permalink to this headline">¶</a></h2>
+<p>You should shut down the BigDL Docker container after using it.</p>
+<ol class="simple">
+<li><p>You can list all the active Docker containers by command line:</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">docker</span> <span class="n">ps</span>
+</pre></div>
+</div>
+<ol class="simple">
+<li><p>You will see your docker containers:</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">CONTAINER</span> <span class="n">ID</span>        <span class="n">IMAGE</span>                                        <span class="n">COMMAND</span>                  <span class="n">CREATED</span>             <span class="n">STATUS</span>              <span class="n">PORTS</span>               <span class="n">NAMES</span>
+<span class="mi">40</span><span class="n">de2cdad025</span>        <span class="n">intelanalytics</span><span class="o">/</span><span class="n">bigdl</span><span class="p">:</span><span class="mf">2.1</span><span class="o">.</span><span class="mi">0</span><span class="o">-</span><span class="n">SNAPSHOT</span>         <span class="s2">&quot;/opt/work/start-n...&quot;</span>   <span class="mi">3</span> <span class="n">hours</span> <span class="n">ago</span>         <span class="n">Up</span> <span class="mi">3</span> <span class="n">hours</span>                              <span class="n">upbeat_al</span>
+</pre></div>
+</div>
+<ol class="simple">
+<li><p>Shut down the corresponding docker container by its ID:</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$sudo docker rm -f 40de2cdad025
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="colab.html" class="btn btn-neutral float-left" title="Colab User Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="hadoop.html" class="btn btn-neutral float-right" title="Hadoop/YARN User Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

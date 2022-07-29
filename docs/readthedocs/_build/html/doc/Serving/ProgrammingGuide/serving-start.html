@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Start Cluster Serving &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/design-tabs.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Inference by Cluster Serving" href="serving-inference.html" />
+    <link rel="prev" title="Install Cluster Serving" href="serving-installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Start Cluster Serving</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#launching-service-of-serving">Launching Service of Serving</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#start">Start</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#stop">Stop</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#shut-down">Shut Down</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#start-multiple-serving">Start Multiple Serving</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#http-server">HTTP Server</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#prepare">Prepare</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#start-the-http-server">Start the HTTP Server</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#start-options">Start options</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Start Cluster Serving</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/doc/Serving/ProgrammingGuide/serving-start.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="start-cluster-serving">
+<h1>Start Cluster Serving<a class="headerlink" href="#start-cluster-serving" title="Permalink to this headline">¶</a></h1>
+<section id="launching-service-of-serving">
+<h2>Launching Service of Serving<a class="headerlink" href="#launching-service-of-serving" title="Permalink to this headline">¶</a></h2>
+<p>Before do inference (predict), you have to start serving service. This section shows how to start/stop the service.</p>
+<section id="start">
+<h3>Start<a class="headerlink" href="#start" title="Permalink to this headline">¶</a></h3>
+<p>You can use following command to start Cluster Serving.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cluster</span><span class="o">-</span><span class="n">serving</span><span class="o">-</span><span class="n">start</span>
+</pre></div>
+</div>
+<p>Normally, when calling <code class="docutils literal notranslate"><span class="pre">cluster-serving-start</span></code>, your <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> should be in current directory. You can also use <code class="docutils literal notranslate"><span class="pre">cluster-serving-start</span> <span class="pre">-c</span> <span class="pre">config_path</span></code> to pass config path <code class="docutils literal notranslate"><span class="pre">config_path</span></code> to Cluster Serving manually.</p>
+</section>
+<section id="stop">
+<h3>Stop<a class="headerlink" href="#stop" title="Permalink to this headline">¶</a></h3>
+<p>You can use Flink UI in <code class="docutils literal notranslate"><span class="pre">localhost:8081</span></code> by default, to cancel your Cluster Serving job.</p>
+<p>Or you can use <code class="docutils literal notranslate"><span class="pre">${FLINK_HOME}/bin/flink</span> <span class="pre">list</span></code> to get serving job ID and call <code class="docutils literal notranslate"><span class="pre">${FLINK_HOME|/bin/flink</span> <span class="pre">cancel</span> <span class="pre">$ID</span></code>.</p>
+</section>
+<section id="shut-down">
+<h3>Shut Down<a class="headerlink" href="#shut-down" title="Permalink to this headline">¶</a></h3>
+<p>You can use following command to shutdown Cluster Serving. This operation will stop all Cluster Serving jobs and Redis server. Note that your data in Redis will be removed when you shutdown.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cluster</span><span class="o">-</span><span class="n">serving</span><span class="o">-</span><span class="n">shutdown</span>
+</pre></div>
+</div>
+<p>If you are using Docker, you could also run <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">rm</span></code> to shutdown Cluster Serving.</p>
+</section>
+<section id="start-multiple-serving">
+<h3>Start Multiple Serving<a class="headerlink" href="#start-multiple-serving" title="Permalink to this headline">¶</a></h3>
+<p>To run multiple Cluster Serving job, e.g. the second job name is <code class="docutils literal notranslate"><span class="pre">serving2</span></code>, then use following configuration</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># model path must be provided</span>
+<span class="c1"># modelPath: /path/to/model</span>
+
+<span class="c1"># name, default is serving_stream, you need to specify if running multiple servings</span>
+<span class="c1"># jobName: serving2</span>
+</pre></div>
+</div>
+<p>then call <code class="docutils literal notranslate"><span class="pre">cluster-serving-start</span></code> in this directory would start another Cluster Serving job with this new configuration.</p>
+<p>Then, in Python API, pass <code class="docutils literal notranslate"><span class="pre">name=serving2</span></code> argument during creating object, e.g.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">input_queue</span><span class="o">=</span><span class="n">InputQueue</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">serving2</span><span class="p">)</span>
+<span class="n">output_queue</span><span class="o">=</span><span class="n">OutputQueue</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">serving2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Then the Python API would interact with job <code class="docutils literal notranslate"><span class="pre">serving2</span></code>.</p>
+</section>
+<section id="http-server">
+<h3>HTTP Server<a class="headerlink" href="#http-server" title="Permalink to this headline">¶</a></h3>
+<p>If you want to use sync API for inference, you should start a provided HTTP server first. User can submit HTTP requests to the HTTP server through RESTful APIs. The HTTP server will parse the input requests and pub them to Redis input queues, then retrieve the output results and render them as json results in HTTP responses.</p>
+<section id="prepare">
+<h4>Prepare<a class="headerlink" href="#prepare" title="Permalink to this headline">¶</a></h4>
+<p>User can download a bigdl-${VERSION}-http.jar from the Nexus Repository with GAVP:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;groupId&gt;com.intel.analytics.bigdl&lt;/groupId&gt;
+&lt;artifactId&gt;bigdl-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}&lt;/artifactId&gt;
+&lt;version&gt;${BIGDL_VERSION}&lt;/version&gt;
+</pre></div>
+</div>
+<p>User can also build from the source code:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mvn</span> <span class="n">clean</span> <span class="n">package</span> <span class="o">-</span><span class="n">P</span> <span class="n">spark_2</span><span class="o">.</span><span class="mi">4</span><span class="o">+</span> <span class="o">-</span><span class="n">Dmaven</span><span class="o">.</span><span class="n">test</span><span class="o">.</span><span class="n">skip</span><span class="o">=</span><span class="n">true</span>
+</pre></div>
+</div>
+</section>
+<section id="start-the-http-server">
+<h4>Start the HTTP Server<a class="headerlink" href="#start-the-http-server" title="Permalink to this headline">¶</a></h4>
+<p>User can start the HTTP server with following command.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>java -jar bigdl-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${BIGDL_VERSION}-http.jar
+</pre></div>
+</div>
+<p>And check the status of the HTTP server with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>curl  http://${BINDED_HOST_IP}:${BINDED_HOST_PORT}/
+</pre></div>
+</div>
+<p>If you get a response like “welcome to BigDL web serving frontend”, that means the HTTP server is started successfully.</p>
+</section>
+<section id="start-options">
+<h4>Start options<a class="headerlink" href="#start-options" title="Permalink to this headline">¶</a></h4>
+<p>User can pass options to the HTTP server when start it:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>java -jar bigdl-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${BIGDL_VERSION}-http.jar --redisHost=&quot;172.16.0.109&quot;
+</pre></div>
+</div>
+<p>All the supported parameter are listed here:</p>
+<ul class="simple">
+<li><p><strong>interface</strong>: the binded server interface, default is “0.0.0.0”</p></li>
+<li><p><strong>port</strong>: the binded server port, default is 10020</p></li>
+<li><p><strong>redisHost</strong>: the host IP of redis server, default is “localhost”</p></li>
+<li><p><strong>redisPort</strong>: the host port of redis server, default is 6379</p></li>
+<li><p><strong>redisInputQueue</strong>: the input queue of redis server, default is “serving_stream”</p></li>
+<li><p><strong>redisOutputQueue</strong>: the output queue of redis server, default is “result:”</p></li>
+<li><p><strong>parallelism</strong>: the parallelism of requests processing, default is 1000</p></li>
+<li><p><strong>timeWindow</strong>: the timeWindow wait to pub inputs to redis, default is 0</p></li>
+<li><p><strong>countWindow</strong>: the timeWindow wait to ub inputs to redis, default is 56</p></li>
+<li><p><strong>tokenBucketEnabled</strong>: the switch to enable/disable RateLimiter, default is false</p></li>
+<li><p><strong>tokensPerSecond</strong>: the rate of permits per second, default is 100</p></li>
+<li><p><strong>tokenAcquireTimeout</strong>: acquires a permit from this RateLimiter if it can be obtained without exceeding the specified timeout(ms), default is 100</p></li>
+</ul>
+<p><strong>User can adjust these options to tune the performance of the HTTP server.</strong></p>
+</section>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="serving-installation.html" class="btn btn-neutral float-left" title="Install Cluster Serving" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="serving-inference.html" class="btn btn-neutral float-right" title="Inference by Cluster Serving" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

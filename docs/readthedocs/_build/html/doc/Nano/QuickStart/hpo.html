@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AutoML Overview &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/tabs.js"></script>
+        <script src="../../../_static/design-tabs.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Nano Known Issues" href="../Overview/known_issues.html" />
+    <link rel="prev" title="BigDL-Nano TensorFlow Inference Overview" href="tensorflow_inference.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">AutoML Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#install">Install</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#search-spaces">Search Spaces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#for-tensorflow-users">For Tensorflow Users</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#enable-disable-hpo-for-tensorflow">Enable/Disable HPO for tensorflow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#search-the-model-architecture">Search the Model Architecture</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#using-sequential-api">using Sequential API</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#using-functional-api">using Functional API</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#by-subclassing-tf-keras-model">by Subclassing tf.keras.Model</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#search-the-learning-rate">Search the Learning Rate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#search-the-batch-size">Search the Batch Size</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#launch-hyperparameter-search-and-review-the-results">Launch Hyperparameter Search and Review the Results</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#for-pytorch-users">For PyTorch Users</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Search the Model Architecture</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">Search the Learning Rate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">Search the Batch Size</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id4">Launch Hyperparameter Search and Review the Results</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#resume-search">Resume Search</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#use-a-persistent-storage">Use a Persistent Storage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#example">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#parallel-search">Parallel Search</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#setup-mysql-database">Setup MySQL database</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#install-mysql-client-for-python">Install MySQL client for python</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id5">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#analysis-and-visualization">Analysis and Visualization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#get-trial-statistics-as-dataframe">Get trial statistics as dataframe</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#plot-hyperparamter-optimization-history">Plot Hyperparamter Optimization History</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#plot-intermediate-values">Plot Intermediate Values</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#plot-the-hyperparameters-in-parallel-coordinates">Plot the Hyperparameters in Parallel Coordinates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#plot-the-hyperparameter-contour">Plot the Hyperparameter Contour</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#inspect-hyperparameter-importance-by-accuracy">Inspect Hyperparameter Importance by accuracy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#inspect-hyperparameter-importance-by-latency">Inspect Hyperparameter Importance by latency</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>AutoML Overview</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/doc/Nano/QuickStart/hpo.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="automl-overview">
+<h1>AutoML Overview<a class="headerlink" href="#automl-overview" title="Permalink to this headline">¶</a></h1>
+<p>Nano provides built-in AutoML support through hyperparameter optimization.</p>
+<p>By simply changing imports, you are able to search the model architecture (e.g. by specifying search spaces in layer/activation/function arguments when defining the model), or the training procedure (e.g. by specifying search spaces in <code class="docutils literal notranslate"><span class="pre">learning_rate</span></code> or <code class="docutils literal notranslate"><span class="pre">batch_size</span></code>). You can simply use <code class="docutils literal notranslate"><span class="pre">search</span></code> on Model (for tensorflow) or on Trainier (for pytorch) to launch search trials, and <code class="docutils literal notranslate"><span class="pre">search_summary</span></code> to review the search results.</p>
+<p>Under the hood, the objects (layers, activations, model, etc.) are implicitly turned into searchable objects at creation, which allows search spaces to be specified in their init arguments. Nano HPO collects those search spaces and passes them to the underlying HPO engine (i.e. Optuna) which generates hyperparameter suggestions accordingly. The instantiation and execution of the corresponding objects are delayed until the hyperparameter values are available in each trial.</p>
+<section id="install">
+<h2>Install<a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h2>
+<p>If you have not installed BigDL-Nano, follow <span class="xref std std-doc">Nano Install Guide</span> to install it according to your system and framework (i.e. tensorflow or pytorch).</p>
+<p>Next, install a few dependencies required for Nano HPO using below commands.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pip install ConfigSpace</span>
+<span class="go">pip install optuna</span>
+</pre></div>
+</div>
+</section>
+<section id="search-spaces">
+<h2>Search Spaces<a class="headerlink" href="#search-spaces" title="Permalink to this headline">¶</a></h2>
+<p>Search spaces are value range specifications that the search engine uses for sampling hyperparameters. The available search spaces in Nano HPO is defined in <code class="docutils literal notranslate"><span class="pre">bigdl.nano.automl.hpo.space</span></code>. Refer to [Search Space API doc]() for more details.</p>
+</section>
+<section id="for-tensorflow-users">
+<h2>For Tensorflow Users<a class="headerlink" href="#for-tensorflow-users" title="Permalink to this headline">¶</a></h2>
+<section id="enable-disable-hpo-for-tensorflow">
+<h3>Enable/Disable HPO for tensorflow<a class="headerlink" href="#enable-disable-hpo-for-tensorflow" title="Permalink to this headline">¶</a></h3>
+<p>For tensorflow training, you should call <code class="docutils literal notranslate"><span class="pre">hpo_config.enable_hpo_tf</span></code> before using Nano HPO.</p>
+<p><code class="docutils literal notranslate"><span class="pre">hpo_config.enable_hpo_tf</span></code> will dynamically add searchable layers, activations, functions, optimizers, etc into the <code class="docutils literal notranslate"><span class="pre">bigdl.nano.tf</span></code> module. When importing layers, you need to change the imports from <code class="docutils literal notranslate"><span class="pre">tf.keras.layers</span></code> to <code class="docutils literal notranslate"><span class="pre">bigdl.nano.tf.keras.layers</span></code>, so that you can specify search spaces in their init arguments. Note even if you don’t need to search the model architecture, you still need to change the imports to use HPO.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="lineno">1 </span><span class="kn">import</span> <span class="nn">bigdl.nano.automl</span> <span class="kn">as</span> <span class="nn">nano_automl</span>
+<span class="lineno">2 </span><span class="n">nano_automl</span><span class="o">.</span><span class="n">hpo_config</span><span class="o">.</span><span class="n">enable_hpo_tf</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>To disable HPO, use <code class="docutils literal notranslate"><span class="pre">hpo_config.disable_hpo_tf</span></code>. This will remove the searchable objects from <code class="docutils literal notranslate"><span class="pre">bigdl.nano.tf</span></code> module.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="lineno">1 </span><span class="kn">import</span> <span class="nn">bigdl.nano.automl</span> <span class="kn">as</span> <span class="nn">nano_automl</span>
+<span class="lineno">2 </span><span class="n">nano_automl</span><span class="o">.</span><span class="n">hpo_config</span><span class="o">.</span><span class="n">disable_hpo_tf</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="search-the-model-architecture">
+<h3>Search the Model Architecture<a class="headerlink" href="#search-the-model-architecture" title="Permalink to this headline">¶</a></h3>
+<p>To search different versions of your model, you can specify search spaces when defining the model using either sequential API, functional API or by subclassing <code class="docutils literal notranslate"><span class="pre">tf.keras.Model</span></code>.</p>
+<section id="using-sequential-api">
+<h4>using Sequential API<a class="headerlink" href="#using-sequential-api" title="Permalink to this headline">¶</a></h4>
+<p>You can specify search spaces in layer arguments. Note that search spaces can only be specified in key-word argument (which means <code class="docutils literal notranslate"><span class="pre">Dense(space.Int(...))</span></code> should be changed to <code class="docutils literal notranslate"><span class="pre">Dense(units=space.Int(...))</span></code>). Remember to import <code class="docutils literal notranslate"><span class="pre">Sequential</span></code> from <code class="docutils literal notranslate"><span class="pre">bigdl.nano.automl.tf.keras</span></code> instead of <code class="docutils literal notranslate"><span class="pre">tensorflow.keras</span></code></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="lineno"> 1 </span><span class="kn">from</span> <span class="nn">bigdl.nano.tf.keras.layers</span> <span class="kn">import</span> <span class="n">Dense</span><span class="p">,</span> <span class="n">Conv2D</span><span class="p">,</span> <span class="n">Flatten</span>
+<span class="lineno"> 2 </span><span class="kn">from</span> <span class="nn">bigdl.nano.automl.tf.keras</span> <span class="kn">import</span> <span class="n">Sequential</span>
+<span class="lineno"> 3 </span><span class="n">model</span> <span class="o">=</span> <span class="n">Sequential</span><span class="p">()</span>
+<span class="lineno"> 4 </span><span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Conv2D</span><span class="p">(</span>
+<span class="lineno"> 5 </span>    <span class="n">filters</span><span class="o">=</span><span class="n">space</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span>
+<span class="lineno"> 6 </span>    <span class="n">kernel_size</span><span class="o">=</span><span class="n">space</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
+<span class="lineno"> 7 </span>    <span class="n">strides</span><span class="o">=</span><span class="n">space</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+<span class="lineno"> 8 </span>    <span class="n">activation</span><span class="o">=</span><span class="n">space</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="s2">&quot;relu&quot;</span><span class="p">,</span> <span class="s2">&quot;linear&quot;</span><span class="p">),</span>
+<span class="lineno"> 9 </span>    <span class="n">input_shape</span><span class="o">=</span><span class="n">input_shape</span><span class="p">))</span>
+<span class="lineno">10 </span><span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Flatten</span><span class="p">())</span>
+<span class="lineno">11 </span><span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;softmax&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</section>
+<section id="using-functional-api">
+<h4>using Functional API<a class="headerlink" href="#using-functional-api" title="Permalink to this headline">¶</a></h4>
+<p>You can specify search spaces in layer arguments. Note that if a layer is used more than once in the model, we strongly suggest you specify a <code class="docutils literal notranslate"><span class="pre">prefix</span></code> for each search space in such layers to distinguish them, or they will share the same search space (the last space will override all previous definition), as shown in the below example. Remember to import <code class="docutils literal notranslate"><span class="pre">Model</span></code> from <code class="docutils literal notranslate"><span class="pre">bigdl.nano.automl.tf.keras</span></code> instead of <code class="docutils literal notranslate"><span class="pre">tensorflow.keras</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="lineno"> 1 </span><span class="kn">import</span> <span class="nn">bigdl.nano.automl.hpo.space</span> <span class="kn">as</span> <span class="nn">space</span>
+<span class="lineno"> 2 </span><span class="kn">from</span> <span class="nn">bigdl.nano.tf.keras</span> <span class="kn">import</span> <span class="n">Input</span>
+<span class="lineno"> 3 </span><span class="kn">from</span> <span class="nn">bigdl.nano.tf.keras.layers</span> <span class="kn">import</span> <span class="n">Dense</span><span class="p">,</span> <span class="n">Dropout</span>
+<span class="lineno"> 4 </span><span class="kn">from</span> <span class="nn">bigdl.nano.automl.tf.keras</span> <span class="kn">import</span> <span class="n">Model</span>
+<span class="lineno"> 5 </span>
+<span class="lineno"> 6 </span><span class="n">inputs</span> <span class="o">=</span> <span class="n">Input</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">784</span><span class="p">,))</span>
+<span class="lineno"> 7 </span><span class="n">x</span> <span class="o">=</span> <span class="n">Dense</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="n">space</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="mi">16</span><span class="p">,</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;dense_1&#39;</span><span class="p">),</span> <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">)(</span><span class="n">inputs</span><span class="p">)</span>
+<span class="lineno"> 8 </span><span class="n">x</span> <span class="o">=</span> <span class="n">Dense</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="n">space</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span><span class="mi">64</span><span class="p">,</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;dense_2&#39;</span><span class="p">),</span> <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;tanh&quot;</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+<span class="lineno"> 9 </span><span class="n">x</span> <span class="o">=</span> <span class="n">Dropout</span><span class="p">(</span><span class="n">rate</span><span class="o">=</span><span class="n">space</span><span class="o">.</span><span class="n">Real</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;dropout&#39;</span><span class="p">))(</span><span class="n">x</span><span class="p">)</span>
+<span class="lineno">10 </span><span class="n">outputs</span> <span class="o">=</span> <span class="n">Dense</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="mi">10</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+<span class="lineno">11 </span><span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="n">outputs</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;mnist_model&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="by-subclassing-tf-keras-model">
+<h4>by Subclassing tf.keras.Model<a class="headerlink" href="#by-subclassing-tf-keras-model" title="Permalink to this headline">¶</a></h4>
+<p>For models defined by subclassing tf.keras.Model, use the decorator <code class="docutils literal notranslate"><span class="pre">&#64;hpo.tfmodel</span></code> to turn the model into a searchable object. Then you will able to specify either search spaces or normal values in the model init arguments.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="lineno"> 1 </span><span class="kn">import</span> <span class="nn">bigdl.nano.automl.hpo.space</span> <span class="kn">as</span> <span class="nn">space</span>
+<span class="lineno"> 2 </span><span class="kn">import</span> <span class="nn">bigdl.nano.automl.hpo</span> <span class="kn">as</span> <span class="nn">hpo</span>
+<span class="lineno"> 3 </span><span class="nd">@hpo.tfmodel</span><span class="p">()</span>
+<span class="lineno"> 4 </span><span class="k">class</span> <span class="nc">MyModel</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<span class="lineno"> 5 </span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filters</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">strides</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+<span class="lineno"> 6 </span>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+<span class="lineno"> 7 </span>        <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Conv2D</span><span class="p">(</span><span class="n">filters</span><span class="o">=</span><span class="n">filters</span><span class="p">,</span>
+<span class="lineno"> 8 </span>                            <span class="n">kernel_size</span><span class="o">=</span><span class="n">kernel_size</span><span class="p">,</span>
+<span class="lineno"> 9 </span>                            <span class="n">strides</span><span class="o">=</span><span class="n">strides</span><span class="p">,</span>
+<span class="lineno">10 </span>                            <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;relu&quot;</span><span class="p">)</span>
+<span class="lineno">11 </span>        <span class="bp">self</span><span class="o">.</span><span class="n">max1</span>  <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">MaxPooling2D</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="lineno">12 </span>        <span class="bp">self</span><span class="o">.</span><span class="n">bn1</span>   <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">BatchNormalization</span><span class="p">()</span>
+<span class="lineno">13 </span>
+<span class="lineno">14 </span>        <span class="bp">self</span><span class="o">.</span><span class="n">gap</span>   <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">GlobalAveragePooling2D</span><span class="p">()</span>
+<span class="lineno">15 </span>        <span class="bp">self</span><span class="o">.</span><span class="n">dense</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">num_classes</span><span class="p">)</span>
+<span class="lineno">16 </span>
+<span class="lineno">17 </span>    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<span class="lineno">18 </span>        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+<span class="lineno">19 </span>        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="lineno">20 </span>        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bn1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="lineno">21 </span>        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gap</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="lineno">22 </span>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dense</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="lineno">23 </span>
+<span class="lineno">24 </span><span class="n">model</span> <span class="o">=</span> <span class="n">MyModel</span><span class="p">(</span>
+<span class="lineno">25 </span>    <span class="n">filters</span><span class="o">=</span><span class="n">hpo</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span>
+<span class="lineno">26 </span>    <span class="n">kernel_size</span><span class="o">=</span><span class="n">hpo</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
+<span class="lineno">27 </span>    <span class="n">strides</span><span class="o">=</span><span class="n">hpo</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="lineno">28 </span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="search-the-learning-rate">
+<h3>Search the Learning Rate<a class="headerlink" href="#search-the-learning-rate" title="Permalink to this headline">¶</a></h3>
+<p>To search the learning rate, specify search space in <code class="docutils literal notranslate"><span class="pre">learning_rate</span></code> argument in the optimizer argument in <code class="docutils literal notranslate"><span class="pre">model.compile</span></code>. Remember to import the optimizer from <code class="docutils literal notranslate"><span class="pre">bigdl.nano.tf.optimizers</span></code> instead of <code class="docutils literal notranslate"><span class="pre">tf.keras.optimizers</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="lineno">1 </span><span class="kn">import</span> <span class="nn">bigdl.nano.automl.hpo.space</span> <span class="kn">as</span> <span class="nn">space</span>
+<span class="lineno">2 </span><span class="kn">from</span> <span class="nn">bigdl.nano.tf.optimizers</span> <span class="kn">import</span> <span class="n">RMSprop</span>
+<span class="lineno">3 </span><span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+<span class="lineno">4 </span>    <span class="n">loss</span><span class="o">=</span><span class="n">keras</span><span class="o">.</span><span class="n">losses</span><span class="o">.</span><span class="n">SparseCategoricalCrossentropy</span><span class="p">(</span><span class="n">from_logits</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+<span class="lineno">5 </span>    <span class="n">optimizer</span><span class="o">=</span><span class="n">RMSprop</span><span class="p">(</span><span class="n">learning_rate</span><span class="o">=</span><span class="n">space</span><span class="o">.</span><span class="n">Real</span><span class="p">(</span><span class="mf">0.0001</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="bp">True</span><span class="p">)),</span>
+<span class="lineno">6 </span>    <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;accuracy&quot;</span><span class="p">],</span>
+<span class="lineno">7 </span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="search-the-batch-size">
+<h3>Search the Batch Size<a class="headerlink" href="#search-the-batch-size" title="Permalink to this headline">¶</a></h3>
+<p>To search the batch size, specify search space in <code class="docutils literal notranslate"><span class="pre">batch_size</span></code> argument in <code class="docutils literal notranslate"><span class="pre">model.search</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="lineno">1 </span><span class="kn">import</span> <span class="nn">bigdl.nano.automl.hpo.space</span> <span class="kn">as</span> <span class="nn">space</span>
+<span class="lineno">2 </span><span class="n">model</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">n_trials</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">target_metric</span><span class="o">=</span><span class="s1">&#39;accuracy&#39;</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;maximize&quot;</span><span class="p">,</span>
+<span class="lineno">3 </span>    <span class="n">x</span><span class="o">=</span><span class="n">x_train</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y_train</span><span class="p">,</span><span class="n">validation_data</span><span class="o">=</span><span class="p">(</span><span class="n">x_valid</span><span class="p">,</span> <span class="n">y_valid</span><span class="p">),</span>
+<span class="lineno">4 </span>    <span class="n">batch_size</span><span class="o">=</span><span class="n">space</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span><span class="mi">64</span><span class="p">))</span>
+</pre></div>
+</div>
+</section>
+<section id="launch-hyperparameter-search-and-review-the-results">
+<h3>Launch Hyperparameter Search and Review the Results<a class="headerlink" href="#launch-hyperparameter-search-and-review-the-results" title="Permalink to this headline">¶</a></h3>
+<p>To launch hyperparameter search, call <code class="docutils literal notranslate"><span class="pre">model.search</span></code> after compile, as shown below. <code class="docutils literal notranslate"><span class="pre">model.search</span></code> runs the <code class="docutils literal notranslate"><span class="pre">n_trials</span></code> number of trials (meaning <code class="docutils literal notranslate"><span class="pre">n_trials</span></code> set of hyperparameter combinations are searched), and optimizes the <code class="docutils literal notranslate"><span class="pre">target_metric</span></code> in the specified <code class="docutils literal notranslate"><span class="pre">direction</span></code>. Besides search arguments, you also need to specify fit arguments in <code class="docutils literal notranslate"><span class="pre">model.search</span></code> which will be used in the fitting process in each trial. Refer to [API docs]() for details.</p>
+<p>Call <code class="docutils literal notranslate"><span class="pre">model.search_summary</span></code> to retrieve the search results, which you can use to get all trial statistics in pandas dataframe format, pick the best trial, or do visualizations.  Examples of search results analysis and visualization can be found [here](#analysis-and-visualization).</p>
+<p>Finally, <code class="docutils literal notranslate"><span class="pre">model.fit</span></code> will automatically fit the model using the best set of hyper parameters found in the search. You can also use the hyperparameters from a particular trial other than the best one. Refer to [API docs]() for details.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="lineno">1 </span><span class="n">model</span> <span class="o">=</span> <span class="o">...</span> <span class="c1"># define the model</span>
+<span class="lineno">2 </span><span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="lineno">3 </span><span class="n">model</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">n_trials</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">target_metric</span><span class="o">=</span><span class="s1">&#39;accuracy&#39;</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;maximize&quot;</span><span class="p">,</span>
+<span class="lineno">4 </span>    <span class="n">x</span><span class="o">=</span><span class="n">x_train</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y_train</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">validation_split</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+<span class="lineno">5 </span><span class="n">study</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">search_summary</span><span class="p">()</span>
+<span class="lineno">6 </span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="for-pytorch-users">
+<h2>For PyTorch Users<a class="headerlink" href="#for-pytorch-users" title="Permalink to this headline">¶</a></h2>
+<p>Nano-HPO now only supports hyperparameter search for [pytorch-lightning]() modules.</p>
+<section id="id1">
+<h3>Search the Model Architecture<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>To search the model architecture, use the decorator <code class="docutils literal notranslate"><span class="pre">&#64;hpo.plmodel()</span></code> to turn the model into a searchable object. Put the arguments that you want to search in the init arguments and use the arguments to construct the model. The arguments can be either space or non-space values, as shown below.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="lineno"> 1 </span><span class="kn">import</span> <span class="nn">bigdl.nano.automl.hpo.space</span> <span class="kn">as</span> <span class="nn">space</span>
+<span class="lineno"> 2 </span><span class="kn">import</span> <span class="nn">bigdl.nano.automl.hpo</span> <span class="kn">as</span> <span class="nn">hpo</span>
+<span class="lineno"> 3 </span>
+<span class="lineno"> 4 </span><span class="nd">@hpo.plmodel</span><span class="p">()</span>
+<span class="lineno"> 5 </span><span class="k">class</span> <span class="nc">MyModel</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">LightningModule</span><span class="p">):</span>
+<span class="lineno"> 6 </span>    <span class="sd">&quot;&quot;&quot;Customized Model.&quot;&quot;&quot;</span>
+<span class="lineno"> 7 </span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">out_dim1</span><span class="p">,</span><span class="n">out_dim2</span><span class="p">,</span><span class="n">dropout_1</span><span class="p">,</span><span class="n">dropout_2</span><span class="p">):</span>
+<span class="lineno"> 8 </span>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+<span class="lineno"> 9 </span>        <span class="n">layers</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="lineno">10 </span>        <span class="n">input_dim</span> <span class="o">=</span> <span class="mi">32</span>
+<span class="lineno">11 </span>        <span class="k">for</span> <span class="n">out_dim</span><span class="p">,</span> <span class="n">dropout</span> <span class="ow">in</span> <span class="p">[(</span><span class="n">out_dim1</span><span class="p">,</span> <span class="n">dropout_1</span><span class="p">),(</span><span class="n">out_dim2</span><span class="p">,</span><span class="n">dropout_2</span><span class="p">)]:</span>
+<span class="lineno">12 </span>            <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">input_dim</span><span class="p">,</span> <span class="n">out_dim</span><span class="p">))</span>
+<span class="lineno">13 </span>            <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Tanh</span><span class="p">())</span>
+<span class="lineno">14 </span>            <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout</span><span class="p">))</span>
+<span class="lineno">15 </span>            <span class="n">input_dim</span> <span class="o">=</span> <span class="n">out_dim</span>
+<span class="lineno">16 </span>        <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">input_dim</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="lineno">17 </span>        <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">layers</span><span class="p">)</span>
+<span class="lineno">18 </span>        <span class="bp">self</span><span class="o">.</span><span class="n">save_hyperparameters</span><span class="p">()</span>
+<span class="lineno">19 </span>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="lineno">20 </span>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="lineno">21 </span>
+<span class="lineno">22 </span><span class="n">model</span> <span class="o">=</span> <span class="n">MyModel</span><span class="p">(</span>
+<span class="lineno">23 </span>    <span class="n">out_dim1</span><span class="o">=</span><span class="n">space</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span><span class="mi">32</span><span class="p">),</span>
+<span class="lineno">24 </span>    <span class="n">out_dim2</span><span class="o">=</span><span class="n">space</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span><span class="mi">32</span><span class="p">),</span>
+<span class="lineno">25 </span>    <span class="n">dropout_1</span><span class="o">=</span><span class="n">space</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span>
+<span class="lineno">26 </span>    <span class="n">dropout_2</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="id2">
+<h3>Search the Learning Rate<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">learning_rate</span></code> can be specified in the init arguments of your model. You can use <code class="docutils literal notranslate"><span class="pre">learning_rate</span></code> to construct the optimizer in <code class="docutils literal notranslate"><span class="pre">configure_optimizers()</span></code>, as shown below.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="lineno"> 1 </span><span class="kn">import</span> <span class="nn">bigdl.nano.automl.hpo.space</span> <span class="kn">as</span> <span class="nn">space</span>
+<span class="lineno"> 2 </span><span class="kn">import</span> <span class="nn">bigdl.nano.automl.hpo</span> <span class="kn">as</span> <span class="nn">hpo</span>
+<span class="lineno"> 3 </span>
+<span class="lineno"> 4 </span><span class="nd">@hpo.plmodel</span><span class="p">()</span>
+<span class="lineno"> 5 </span><span class="k">class</span> <span class="nc">MyModel</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">LightningModule</span><span class="p">):</span>
+<span class="lineno"> 6 </span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+<span class="lineno"> 7 </span>        <span class="o">...</span>
+<span class="lineno"> 8 </span>        <span class="bp">self</span><span class="o">.</span><span class="n">save_hyperparameters</span><span class="p">()</span>
+<span class="lineno"> 9 </span>    <span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="lineno">10 </span>        <span class="c1"># set learning rate in the optimizer</span>
+<span class="lineno">11 </span>        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span>
+<span class="lineno">12 </span>                                        <span class="n">lr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hparams</span><span class="o">.</span><span class="n">learning_rate</span><span class="p">)</span>
+<span class="lineno">13 </span>        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">],</span> <span class="p">[]</span>
+<span class="lineno">14 </span><span class="n">model</span> <span class="o">=</span> <span class="n">MyModel</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="n">space</span><span class="o">.</span><span class="n">Real</span><span class="p">(</span><span class="mf">0.001</span><span class="p">,</span><span class="mf">0.01</span><span class="p">,</span><span class="n">log</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+</pre></div>
+</div>
+</section>
+<section id="id3">
+<h3>Search the Batch Size<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">batch_size</span></code> can be specified in the init arguments of your model. You can use the <code class="docutils literal notranslate"><span class="pre">batch_size</span></code> to construct the <code class="docutils literal notranslate"><span class="pre">DataLoader</span></code> in <code class="docutils literal notranslate"><span class="pre">train_dataloader()</span></code>, as shown below.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="lineno"> 1 </span><span class="kn">import</span> <span class="nn">bigdl.nano.automl.hpo.space</span> <span class="kn">as</span> <span class="nn">space</span>
+<span class="lineno"> 2 </span><span class="kn">import</span> <span class="nn">bigdl.nano.automl.hpo</span> <span class="kn">as</span> <span class="nn">hpo</span>
+<span class="lineno"> 3 </span><span class="nd">@hpo.plmodel</span><span class="p">()</span>
+<span class="lineno"> 4 </span><span class="k">class</span> <span class="nc">MyModel</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">LightningModule</span><span class="p">):</span>
+<span class="lineno"> 5 </span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">16</span><span class="p">):</span>
+<span class="lineno"> 6 </span>        <span class="o">...</span>
+<span class="lineno"> 7 </span>        <span class="bp">self</span><span class="o">.</span><span class="n">save_hyperparameters</span><span class="p">()</span>
+<span class="lineno"> 8 </span>    <span class="k">def</span> <span class="nf">train_dataloader</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="lineno"> 9 </span>        <span class="c1"># set the batch size in train dataloader</span>
+<span class="lineno">10 </span>        <span class="k">return</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">RandomDataset</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span>
+<span class="lineno">11 </span>                        <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hparams</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)</span>
+<span class="lineno">12 </span><span class="n">model</span> <span class="o">=</span> <span class="n">MyModel</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">batch_size</span> <span class="o">=</span> <span class="n">space</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span><span class="mi">64</span><span class="p">))</span>
+</pre></div>
+</div>
+</section>
+<section id="id4">
+<h3>Launch Hyperparameter Search and Review the Results<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<p>First of all, import <code class="docutils literal notranslate"><span class="pre">Trainer</span></code> from <code class="docutils literal notranslate"><span class="pre">bigdl.nano.pytorch</span></code> instead of <code class="docutils literal notranslate"><span class="pre">pytorch_lightning</span></code>. Remember to set <code class="docutils literal notranslate"><span class="pre">use_hpo=True</span></code> when initializing the <code class="docutils literal notranslate"><span class="pre">Trainer</span></code>.</p>
+<p>To launch hyperparameter search, call <code class="docutils literal notranslate"><span class="pre">Trainer.search</span></code> after model is defined. <code class="docutils literal notranslate"><span class="pre">Trainer.search</span></code> takes the decorated model as input. Similar to tensorflow, <code class="docutils literal notranslate"><span class="pre">trainer.search</span></code> runs the <code class="docutils literal notranslate"><span class="pre">n_trials</span></code> number of trials (meaning <code class="docutils literal notranslate"><span class="pre">n_trials</span></code> set of hyperparameter combinations are searched), and optimizes the <code class="docutils literal notranslate"><span class="pre">target_metric</span></code> in the specified <code class="docutils literal notranslate"><span class="pre">direction</span></code>. There’s an extra argument <code class="docutils literal notranslate"><span class="pre">max_epochs</span></code> which is used only in the fitting process in search trials without affecting <code class="docutils literal notranslate"><span class="pre">Trainer.fit</span></code>. <code class="docutils literal notranslate"><span class="pre">Trainer.search</span></code> returns a model configured with the best set of hyper parameters.</p>
+<p>Call <code class="docutils literal notranslate"><span class="pre">Trainer.search_summary</span></code> to retrieve the search results, which you can use to get all trial statistics in pandas dataframe format, pick the best trial, or do visualizations.  Examples of search results analysis and visualization can be found [here](#analysis-and-visualization).</p>
+<p>Finally you can use <code class="docutils literal notranslate"><span class="pre">Trainer.fit()</span></code> to fit the best model. You can also get a model constructed with hyperparameters from a particular trial other than the best one. Refer to [Trainer.search API doc]() for more details.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="lineno"> 1 </span><span class="kn">from</span> <span class="nn">bigdl.nano.pytorch</span> <span class="kn">import</span> <span class="n">Trainer</span>
+<span class="lineno"> 2 </span><span class="n">model</span> <span class="o">=</span> <span class="n">MyModel</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="lineno"> 3 </span><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="o">...</span><span class="p">,</span><span class="n">use_hpo</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="lineno"> 4 </span><span class="n">best_model</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">search</span><span class="p">(</span>
+<span class="lineno"> 5 </span>    <span class="n">model</span><span class="p">,</span>
+<span class="lineno"> 6 </span>    <span class="n">target_metric</span><span class="o">=</span><span class="s1">&#39;val_loss&#39;</span><span class="p">,</span>
+<span class="lineno"> 7 </span>    <span class="n">direction</span><span class="o">=</span><span class="s1">&#39;minimize&#39;</span><span class="p">,</span>
+<span class="lineno"> 8 </span>    <span class="n">n_trials</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+<span class="lineno"> 9 </span>    <span class="n">max_epochs</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+<span class="lineno">10 </span><span class="p">)</span>
+<span class="lineno">11 </span><span class="n">study</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">search_summary</span><span class="p">()</span>
+<span class="lineno">12 </span><span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">best_model</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="resume-search">
+<h2>Resume Search<a class="headerlink" href="#resume-search" title="Permalink to this headline">¶</a></h2>
+<p>You can call <code class="docutils literal notranslate"><span class="pre">search</span></code> more than once with flag <code class="docutils literal notranslate"><span class="pre">resume=True</span></code> to resume from a previous search instead of starting a new one.</p>
+<p>The _resumed_ search will take into consideration all trials in the previous search when sampling hyperparameters. The trials in the resumed search will be stored in the same repo as the first search, and all trials will be retrieved as a whole by <code class="docutils literal notranslate"><span class="pre">search_summary</span></code>.</p>
+<p>Note that the flag <code class="docutils literal notranslate"><span class="pre">resume</span></code> is by default set to <code class="docutils literal notranslate"><span class="pre">False</span></code>, which means each search will by default start from scratch and any previous search results will be overridden and can no longer be retrieved.</p>
+<section id="use-a-persistent-storage">
+<h3>Use a Persistent Storage<a class="headerlink" href="#use-a-persistent-storage" title="Permalink to this headline">¶</a></h3>
+<p>By default, the storage used for storing trial info is created in-memory, so once the process is stopped the trial statistics can not be retrieved anymore. If you are expecting to run search for a long time and may resume search several times, it is highly recommended to use a persistent storage instead of the default in-memory storage.</p>
+<p>To use a persistent storage, specify <code class="docutils literal notranslate"><span class="pre">storage</span></code> with an RDB url (e.g SQLlite, MySQL, etc.) in <code class="docutils literal notranslate"><span class="pre">search</span></code>. The simplest way is to specify a sqllite url, as shown in the example below. It will automatically create a db file in the specified path. Also specify <code class="docutils literal notranslate"><span class="pre">study_name</span></code> so that all the search with the same name will be gathered into the same repo.</p>
+</section>
+<section id="example">
+<h3>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h3>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-0-0-0" aria-selected="true" class="sphinx-tabs-tab" id="tab-0-0-0" name="0-0" role="tab" tabindex="0">Tensorflow</button><button aria-controls="panel-0-0-1" aria-selected="false" class="sphinx-tabs-tab" id="tab-0-0-1" name="0-1" role="tab" tabindex="-1">PyTorch</button></div><div aria-labelledby="tab-0-0-0" class="sphinx-tabs-panel" id="panel-0-0-0" name="0-0" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;resume-example&quot;</span>
+<span class="n">storage</span> <span class="o">=</span> <span class="s2">&quot;sqlite:///example.db&quot;</span>
+<span class="c1">#the first search from scratch</span>
+<span class="n">model</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">study_name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">storage</span><span class="o">=</span><span class="n">storage</span><span class="p">,</span><span class="o">...</span><span class="p">)</span>
+<span class="c1"># the resumed search</span>
+<span class="n">model</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">study_name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">storage</span><span class="o">=</span><span class="n">storage</span><span class="p">,</span> <span class="n">resume</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+</div><div aria-labelledby="tab-0-0-1" class="sphinx-tabs-panel" hidden="true" id="panel-0-0-1" name="0-1" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;resume-example&quot;</span>
+<span class="n">storage</span> <span class="o">=</span> <span class="s2">&quot;sqlite:///example.db&quot;</span>
+<span class="c1">#the first search from scratch</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">study_name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">storage</span><span class="o">=</span><span class="n">storage</span><span class="p">,</span><span class="o">...</span><span class="p">)</span>
+<span class="c1"># the resumed search</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">study_name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">storage</span><span class="o">=</span><span class="n">storage</span><span class="p">,</span> <span class="n">resume</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></div>
+<p>If the model/trainer object is still accessible along the searches (e.g. in a running jupyter notebook), the specification of <code class="docutils literal notranslate"><span class="pre">storage</span></code> and <code class="docutils literal notranslate"><span class="pre">study_name</span></code> can be omitted. Simply call <code class="docutils literal notranslate"><span class="pre">search</span></code> with <code class="docutils literal notranslate"><span class="pre">resume=True</span></code> to resume search.</p>
+</section>
+</section>
+<section id="parallel-search">
+<h2>Parallel Search<a class="headerlink" href="#parallel-search" title="Permalink to this headline">¶</a></h2>
+<p>Parallel search allows trials to be run in multiple processes simultaneously. To use parallel search, you need to prepare an RDB database as storage. Then in <code class="docutils literal notranslate"><span class="pre">search</span></code>, specify the database url for <code class="docutils literal notranslate"><span class="pre">storage</span></code>, specify <code class="docutils literal notranslate"><span class="pre">study_name</span></code>, and set <code class="docutils literal notranslate"><span class="pre">n_parallels</span></code> to the number of parallel processes you want to run.</p>
+<p>We do not recommend SQLite as storage for parallel search as it may cause deadlocks and performance issues. Here we provide an example using MySQL.</p>
+<section id="setup-mysql-database">
+<h3>Setup MySQL database<a class="headerlink" href="#setup-mysql-database" title="Permalink to this headline">¶</a></h3>
+<p>If you already know how to create a database in MySQL, you can skip this step. We assume MySQL service is already installed and started in your local machine.</p>
+<p>Create a new file with name <code class="docutils literal notranslate"><span class="pre">setup_db.sql</span></code>, paste the below contents.</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="lineno">1 </span><span class="k">CREATE</span> <span class="k">DATABASE</span> <span class="k">IF</span> <span class="k">NOT</span> <span class="k">EXISTS</span> <span class="n">example</span><span class="p">;</span>
+<span class="lineno">2 </span><span class="k">CREATE</span> <span class="k">USER</span> <span class="k">IF</span> <span class="k">NOT</span> <span class="k">EXISTS</span> <span class="n">bigdlhpo</span> <span class="p">;</span>
+<span class="lineno">3 </span><span class="k">GRANT</span> <span class="k">ALL</span> <span class="k">PRIVILEGEs</span> <span class="k">ON</span> <span class="n">example</span><span class="p">.</span><span class="o">*</span> <span class="k">TO</span> <span class="n">bigdlhpo</span><span class="p">;</span>
+<span class="lineno">4 </span><span class="n">FLUSH</span> <span class="k">PRIVILEGES</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>Run below command</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$</span> sudo mysql -u root &lt; setup_db.sql
+</pre></div>
+</div>
+<p>The above command creates a new user <code class="docutils literal notranslate"><span class="pre">bigdlhpo</span></code> and a new database <code class="docutils literal notranslate"><span class="pre">example</span></code>, and grants all access privileges on the <code class="docutils literal notranslate"><span class="pre">example</span></code> database to <code class="docutils literal notranslate"><span class="pre">bigdlhpo</span></code>.</p>
+</section>
+<section id="install-mysql-client-for-python">
+<h3>Install MySQL client for python<a class="headerlink" href="#install-mysql-client-for-python" title="Permalink to this headline">¶</a></h3>
+<p>Install <code class="docutils literal notranslate"><span class="pre">mysqlclient</span></code> so that search can access MySQL databases from python.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pip install mysqlclient</span>
+</pre></div>
+</div>
+</section>
+<section id="id5">
+<h3>Example<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<p>In search, specify <code class="docutils literal notranslate"><span class="pre">storage</span></code> to the MySQL database <code class="docutils literal notranslate"><span class="pre">example</span></code> we just created as user <code class="docutils literal notranslate"><span class="pre">bigdlhpo</span></code>, specify <code class="docutils literal notranslate"><span class="pre">study_name</span></code> and also set <code class="docutils literal notranslate"><span class="pre">n_parallels=8</span></code>.</p>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-1-1-0" aria-selected="true" class="sphinx-tabs-tab" id="tab-1-1-0" name="1-0" role="tab" tabindex="0">Tensorflow</button><button aria-controls="panel-1-1-1" aria-selected="false" class="sphinx-tabs-tab" id="tab-1-1-1" name="1-1" role="tab" tabindex="-1">PyTorch</button></div><div aria-labelledby="tab-1-1-0" class="sphinx-tabs-panel" id="panel-1-1-0" name="1-0" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;parallel-example-tf&quot;</span>
+<span class="n">storage</span> <span class="o">=</span> <span class="s2">&quot;mysql://bigdlhpo@localhost/example&quot;</span>
+<span class="c1"># the first search from scratch</span>
+<span class="n">model</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">study_name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+           <span class="n">storage</span><span class="o">=</span><span class="n">storage</span><span class="p">,</span>
+           <span class="n">n_parallels</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+           <span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+</div><div aria-labelledby="tab-1-1-1" class="sphinx-tabs-panel" hidden="true" id="panel-1-1-1" name="1-1" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;parallel-example-torch&quot;</span>
+<span class="n">storage</span> <span class="o">=</span> <span class="s2">&quot;mysql://bigdlhpo@localhost/example&quot;</span>
+<span class="c1">#the first search from scratch</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">study_name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+           <span class="n">storage</span><span class="o">=</span><span class="n">storage</span><span class="p">,</span>
+           <span class="n">n_parallels</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+           <span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></div>
+</section>
+</section>
+<section id="analysis-and-visualization">
+<h2>Analysis and Visualization<a class="headerlink" href="#analysis-and-visualization" title="Permalink to this headline">¶</a></h2>
+<p>The result of <code class="docutils literal notranslate"><span class="pre">search_summary</span></code> can be used for further analysis and visualization.</p>
+<section id="get-trial-statistics-as-dataframe">
+<h3>Get trial statistics as dataframe<a class="headerlink" href="#get-trial-statistics-as-dataframe" title="Permalink to this headline">¶</a></h3>
+<p>You can export the trial statistics as pandas dataframe, as shown below.</p>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-2-2-0" aria-selected="true" class="sphinx-tabs-tab" id="tab-2-2-0" name="2-0" role="tab" tabindex="0">Tensorflow</button><button aria-controls="panel-2-2-1" aria-selected="false" class="sphinx-tabs-tab" id="tab-2-2-1" name="2-1" role="tab" tabindex="-1">PyTorch</button></div><div aria-labelledby="tab-2-2-0" class="sphinx-tabs-panel" id="panel-2-2-0" name="2-0" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="n">study</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">search_summary</span><span class="p">()</span>
+<span class="n">trials_df</span> <span class="o">=</span> <span class="n">study</span><span class="o">.</span><span class="n">trials_dataframe</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;number&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="s2">&quot;params&quot;</span><span class="p">,</span> <span class="s2">&quot;state&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div><div aria-labelledby="tab-2-2-1" class="sphinx-tabs-panel" hidden="true" id="panel-2-2-1" name="2-1" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="n">study</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">search_summary</span><span class="p">()</span>
+<span class="n">trials_df</span> <span class="o">=</span> <span class="n">study</span><span class="o">.</span><span class="n">trials_dataframe</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;number&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="s2">&quot;params&quot;</span><span class="p">,</span> <span class="s2">&quot;state&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div></div>
+<p>Below an example of the trials history we have exported as below.</p>
+<a class="reference internal image-reference" href="../../../_images/trial_dataframe.png"><img alt="../../../_images/trial_dataframe.png" src="../../../_images/trial_dataframe.png" style="width: 600px;" /></a>
+</section>
+<section id="plot-hyperparamter-optimization-history">
+<h3>Plot Hyperparamter Optimization History<a class="headerlink" href="#plot-hyperparamter-optimization-history" title="Permalink to this headline">¶</a></h3>
+<p>You can also plot the optimization history as shown below.</p>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-3-3-0" aria-selected="true" class="sphinx-tabs-tab" id="tab-3-3-0" name="3-0" role="tab" tabindex="0">Tensorflow</button><button aria-controls="panel-3-3-1" aria-selected="false" class="sphinx-tabs-tab" id="tab-3-3-1" name="3-1" role="tab" tabindex="-1">PyTorch</button></div><div aria-labelledby="tab-3-3-0" class="sphinx-tabs-panel" id="panel-3-3-0" name="3-0" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="n">study</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">search_summary</span><span class="p">()</span>
+
+<span class="kn">from</span> <span class="nn">bigdl.nano.automl.hpo.visualization</span> <span class="kn">import</span> <span class="n">plot_optimization_history</span>
+<span class="n">plot1</span><span class="o">=</span><span class="n">plot_optimization_history</span><span class="p">(</span><span class="n">study</span><span class="p">)</span>
+</pre></div>
+</div>
+</div><div aria-labelledby="tab-3-3-1" class="sphinx-tabs-panel" hidden="true" id="panel-3-3-1" name="3-1" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="n">study</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">search_summary</span><span class="p">()</span>
+
+<span class="kn">from</span> <span class="nn">bigdl.nano.automl.hpo.visualization</span> <span class="kn">import</span> <span class="n">plot_optimization_history</span>
+<span class="n">plot_optimization_history</span><span class="p">(</span><span class="n">study</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></div>
+<p>Example plot as below. It is an interactive chart which you can zoom-in and zoom-out and select data points.</p>
+<iframe src='../../../_static/hpovis/optimization_history.html' height="400px" width="100%" scrolling='no'></iframe></section>
+<section id="plot-intermediate-values">
+<h3>Plot Intermediate Values<a class="headerlink" href="#plot-intermediate-values" title="Permalink to this headline">¶</a></h3>
+<p>You can also plot the intermediate values as shown below. This plot shows the metric result on each epoch/step of each trial, including pruned trials.</p>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-4-4-0" aria-selected="true" class="sphinx-tabs-tab" id="tab-4-4-0" name="4-0" role="tab" tabindex="0">Tensorflow</button><button aria-controls="panel-4-4-1" aria-selected="false" class="sphinx-tabs-tab" id="tab-4-4-1" name="4-1" role="tab" tabindex="-1">PyTorch</button></div><div aria-labelledby="tab-4-4-0" class="sphinx-tabs-panel" id="panel-4-4-0" name="4-0" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="n">study</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">search_summary</span><span class="p">()</span>
+
+<span class="kn">from</span> <span class="nn">bigdl.nano.automl.hpo.visualization</span> <span class="kn">import</span> <span class="n">plot_intermediate_values</span>
+<span class="n">plot_intermediate_values</span><span class="p">(</span><span class="n">study</span><span class="p">)</span>
+</pre></div>
+</div>
+</div><div aria-labelledby="tab-4-4-1" class="sphinx-tabs-panel" hidden="true" id="panel-4-4-1" name="4-1" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="n">study</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">search_summary</span><span class="p">()</span>
+
+<span class="kn">from</span> <span class="nn">bigdl.nano.automl.hpo.visualization</span> <span class="kn">import</span> <span class="n">plot_intermediate_values</span>
+<span class="n">plot_intermediate_values</span><span class="p">(</span><span class="n">study</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></div>
+<p>Example plot as below. It is an interactive chart which you can zoom-in and zoom-out and select data points.</p>
+<iframe src='../../../_static/hpovis/intermediate_values.html' height="400px" width="100%" scrolling='no'></iframe></section>
+<section id="plot-the-hyperparameters-in-parallel-coordinates">
+<h3>Plot the Hyperparameters in Parallel Coordinates<a class="headerlink" href="#plot-the-hyperparameters-in-parallel-coordinates" title="Permalink to this headline">¶</a></h3>
+<p>You can plot the hyperparamters in parallel coordinates chart.</p>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-5-5-0" aria-selected="true" class="sphinx-tabs-tab" id="tab-5-5-0" name="5-0" role="tab" tabindex="0">Tensorflow</button><button aria-controls="panel-5-5-1" aria-selected="false" class="sphinx-tabs-tab" id="tab-5-5-1" name="5-1" role="tab" tabindex="-1">PyTorch</button></div><div aria-labelledby="tab-5-5-0" class="sphinx-tabs-panel" id="panel-5-5-0" name="5-0" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="n">study</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">search_summary</span><span class="p">()</span>
+
+<span class="kn">from</span> <span class="nn">bigdl.nano.automl.hpo.visualization</span> <span class="kn">import</span> <span class="n">plot_parallel_coordinate</span>
+<span class="n">plot_parallel_coordinate</span><span class="p">(</span><span class="n">study</span><span class="p">)</span>
+</pre></div>
+</div>
+</div><div aria-labelledby="tab-5-5-1" class="sphinx-tabs-panel" hidden="true" id="panel-5-5-1" name="5-1" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="n">study</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">search_summary</span><span class="p">()</span>
+
+<span class="kn">from</span> <span class="nn">bigdl.nano.automl.hpo.visualization</span> <span class="kn">import</span> <span class="n">plot_parallel_coordinate</span>
+<span class="n">plot_parallel_coordinate</span><span class="p">(</span><span class="n">study</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></div>
+<p>Example plot as below. It is an interactive chart which you can zoom-in and zoom-out and select data points.</p>
+<iframe src='../../../_static/hpovis/parallel_coordinate.html' height="400px" width="100%" scrolling='no'></iframe></section>
+<section id="plot-the-hyperparameter-contour">
+<h3>Plot the Hyperparameter Contour<a class="headerlink" href="#plot-the-hyperparameter-contour" title="Permalink to this headline">¶</a></h3>
+<p>You can plot the hyperparameter contour chart.</p>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-6-6-0" aria-selected="true" class="sphinx-tabs-tab" id="tab-6-6-0" name="6-0" role="tab" tabindex="0">Tensorflow</button><button aria-controls="panel-6-6-1" aria-selected="false" class="sphinx-tabs-tab" id="tab-6-6-1" name="6-1" role="tab" tabindex="-1">PyTorch</button></div><div aria-labelledby="tab-6-6-0" class="sphinx-tabs-panel" id="panel-6-6-0" name="6-0" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="n">study</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">search_summary</span><span class="p">()</span>
+
+<span class="kn">from</span> <span class="nn">bigdl.nano.automl.hpo.visualization</span> <span class="kn">import</span> <span class="n">plot_contour</span>
+<span class="n">plot_contour</span><span class="p">(</span><span class="n">study</span><span class="p">)</span>
+</pre></div>
+</div>
+</div><div aria-labelledby="tab-6-6-1" class="sphinx-tabs-panel" hidden="true" id="panel-6-6-1" name="6-1" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="n">study</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">search_summary</span><span class="p">()</span>
+
+<span class="kn">from</span> <span class="nn">bigdl.nano.automl.hpo.visualization</span> <span class="kn">import</span> <span class="n">plot_contour</span>
+<span class="n">plot_contour</span><span class="p">(</span><span class="n">study</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></div>
+<p>Example plot as below. It is an interactive chart which you can zoom-in and zoom-out and select data points.</p>
+<iframe src='../../../_static/hpovis/contour.html' height="400px" width="100%" scrolling='no'></iframe></section>
+<section id="inspect-hyperparameter-importance-by-accuracy">
+<h3>Inspect Hyperparameter Importance by accuracy<a class="headerlink" href="#inspect-hyperparameter-importance-by-accuracy" title="Permalink to this headline">¶</a></h3>
+<p>You can plot the hyperparameter importance according to their relationship to accuracy.</p>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-7-7-0" aria-selected="true" class="sphinx-tabs-tab" id="tab-7-7-0" name="7-0" role="tab" tabindex="0">Tensorflow</button><button aria-controls="panel-7-7-1" aria-selected="false" class="sphinx-tabs-tab" id="tab-7-7-1" name="7-1" role="tab" tabindex="-1">PyTorch</button></div><div aria-labelledby="tab-7-7-0" class="sphinx-tabs-panel" id="panel-7-7-0" name="7-0" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="n">study</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">search_summary</span><span class="p">()</span>
+
+<span class="kn">from</span> <span class="nn">bigdl.nano.automl.hpo.visualization</span> <span class="kn">import</span> <span class="n">plot_param_importances</span>
+<span class="n">plot_param_importances</span><span class="p">(</span><span class="n">study</span><span class="p">)</span>
+</pre></div>
+</div>
+</div><div aria-labelledby="tab-7-7-1" class="sphinx-tabs-panel" hidden="true" id="panel-7-7-1" name="7-1" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="n">study</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">search_summary</span><span class="p">()</span>
+
+<span class="kn">from</span> <span class="nn">bigdl.nano.automl.hpo.visualization</span> <span class="kn">import</span> <span class="n">plot_param_importances</span>
+<span class="n">plot_param_importances</span><span class="p">(</span><span class="n">study</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></div>
+<p>Example plot as below. It is an interactive chart which you can zoom-in and zoom-out and select data points.</p>
+<iframe src='../../../_static/hpovis/param_importance.html' height="400px" width="100%" scrolling='no'></iframe></section>
+<section id="inspect-hyperparameter-importance-by-latency">
+<h3>Inspect Hyperparameter Importance by latency<a class="headerlink" href="#inspect-hyperparameter-importance-by-latency" title="Permalink to this headline">¶</a></h3>
+<p>You can plot the hyperparameter importance according to their relationship to latency.</p>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-8-8-0" aria-selected="true" class="sphinx-tabs-tab" id="tab-8-8-0" name="8-0" role="tab" tabindex="0">Tensorflow</button><button aria-controls="panel-8-8-1" aria-selected="false" class="sphinx-tabs-tab" id="tab-8-8-1" name="8-1" role="tab" tabindex="-1">PyTorch</button></div><div aria-labelledby="tab-8-8-0" class="sphinx-tabs-panel" id="panel-8-8-0" name="8-0" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="n">study</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">search_summary</span><span class="p">()</span>
+
+<span class="kn">from</span> <span class="nn">bigdl.nano.automl.hpo.visualization</span> <span class="kn">import</span> <span class="n">plot_param_importances</span>
+<span class="n">plot_param_importances</span><span class="p">(</span><span class="n">study</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">(),</span> <span class="n">target_name</span><span class="o">=</span><span class="s2">&quot;duration&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div><div aria-labelledby="tab-8-8-1" class="sphinx-tabs-panel" hidden="true" id="panel-8-8-1" name="8-1" role="tabpanel" tabindex="0"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="n">study</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">search_summary</span><span class="p">()</span>
+
+<span class="kn">from</span> <span class="nn">bigdl.nano.automl.hpo.visualization</span> <span class="kn">import</span> <span class="n">plot_param_importances</span>
+<span class="n">plot_param_importances</span><span class="p">(</span><span class="n">study</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">(),</span> <span class="n">target_name</span><span class="o">=</span><span class="s2">&quot;duration&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></div>
+<p>Example plot as below. It is an interactive chart which you can zoom-in and zoom-out and select data points.</p>
+<iframe src='../../../_static/hpovis/param_importance_latency.html' height="400px" width="100%" scrolling='no'></iframe></section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tensorflow_inference.html" class="btn btn-neutral float-left" title="BigDL-Nano TensorFlow Inference Overview" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../Overview/known_issues.html" class="btn btn-neutral float-right" title="Nano Known Issues" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

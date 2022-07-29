@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Poly &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/design-tabs.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Poly</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/doc/DLlib/Overview/learningrate-Scheduler.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="poly">
+<h1>Poly<a class="headerlink" href="#poly" title="Permalink to this headline">¶</a></h1>
+<p><strong>Scala:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">lrScheduler</span> <span class="k">=</span> <span class="nc">Poly</span><span class="o">(</span><span class="n">power</span><span class="k">=</span><span class="mf">0.5</span><span class="o">,</span> <span class="n">maxIteration</span><span class="k">=</span><span class="mi">1000</span><span class="o">)</span>
+</pre></div>
+</div>
+<p><strong>Python:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">lr_scheduler</span> <span class="o">=</span> <span class="n">Poly</span><span class="p">(</span><span class="n">power</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">max_iteration</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">bigdl_type</span><span class="o">=</span><span class="s2">&quot;float&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A learning rate decay policy, where the effective learning rate follows a polynomial decay, to be zero by the max_iteration. Calculation: base_lr (1 - iter/maxIteration) <code class="docutils literal notranslate"><span class="pre">^</span></code> (power)</p>
+<p><code class="docutils literal notranslate"><span class="pre">power</span></code> coeffient of decay, refer to calculation formula</p>
+<p><code class="docutils literal notranslate"><span class="pre">maxIteration</span></code> max iteration when lr becomes zero</p>
+<p><strong>Scala example:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">import</span> <span class="nn">com.intel.analytics.bigdl.dllib.optim.SGD._</span>
+<span class="k">import</span> <span class="nn">com.intel.analytics.bigdl.dllib.optim._</span>
+<span class="k">import</span> <span class="nn">com.intel.analytics.bigdl.dllib.tensor.</span><span class="o">{</span><span class="nc">Storage</span><span class="o">,</span> <span class="nc">Tensor</span><span class="o">}</span>
+<span class="k">import</span> <span class="nn">com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat</span>
+<span class="k">import</span> <span class="nn">com.intel.analytics.bigdl.dllib.utils.T</span>
+
+<span class="k">val</span> <span class="n">optimMethod</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">SGD</span><span class="o">[</span><span class="kt">Double</span><span class="o">](</span><span class="mf">0.1</span><span class="o">)</span>
+<span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span> <span class="k">=</span> <span class="nc">Poly</span><span class="o">(</span><span class="mi">3</span><span class="o">,</span> <span class="mi">100</span><span class="o">)</span>
+<span class="k">def</span> <span class="n">feval</span><span class="o">(</span><span class="n">x</span><span class="k">:</span> <span class="kt">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">])</span><span class="k">:</span> <span class="o">(</span><span class="kt">Double</span><span class="o">,</span> <span class="kt">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">])</span> <span class="k">=</span> <span class="o">{</span>
+  <span class="k">return</span> <span class="o">(</span><span class="mf">0.1</span><span class="o">,</span> <span class="nc">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">](</span><span class="nc">Storage</span><span class="o">(</span><span class="nc">Array</span><span class="o">(</span><span class="mf">1.0</span><span class="o">,</span> <span class="mf">1.0</span><span class="o">))))</span>
+<span class="o">}</span>
+<span class="k">val</span> <span class="n">x</span> <span class="k">=</span> <span class="nc">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">](</span><span class="nc">Storage</span><span class="o">(</span><span class="nc">Array</span><span class="o">(</span><span class="mf">10.0</span><span class="o">,</span> <span class="mf">10.0</span><span class="o">)))</span>
+<span class="n">optimMethod</span><span class="o">.</span><span class="n">optimize</span><span class="o">(</span><span class="n">feval</span><span class="o">,</span> <span class="n">x</span><span class="o">)</span>
+<span class="o">&gt;</span> <span class="n">print</span><span class="o">(</span><span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span><span class="o">.</span><span class="n">currentRate</span><span class="o">)</span>
+<span class="o">-</span><span class="mf">0.1</span>
+<span class="n">optimMethod</span><span class="o">.</span><span class="n">optimize</span><span class="o">(</span><span class="n">feval</span><span class="o">,</span> <span class="n">x</span><span class="o">)</span>
+<span class="o">&gt;</span> <span class="n">print</span><span class="o">(</span><span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span><span class="o">.</span><span class="n">currentRate</span><span class="o">)</span>
+<span class="o">-</span><span class="mf">0.0970299</span>
+</pre></div>
+</div>
+<p><strong>Python example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">optim_method</span> <span class="o">=</span> <span class="n">SGD</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span> <span class="o">=</span> <span class="n">Poly</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="default">
+<h1>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h1>
+<p>It is the default learning rate schedule. For each iteration, the learning rate would update with the following formula:
+l_{n + 1} = l / (1 + n * learning_rate_decay) where <code class="docutils literal notranslate"><span class="pre">l</span></code> is the initial learning rate</p>
+<p><strong>Scala:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">lrScheduler</span> <span class="k">=</span> <span class="nc">Default</span><span class="o">()</span>
+</pre></div>
+</div>
+<p><strong>Python:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">lr_scheduler</span> <span class="o">=</span> <span class="n">Default</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><strong>Scala example:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">optimMethod</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">SGD</span><span class="o">[</span><span class="kt">Double</span><span class="o">](</span><span class="mf">0.1</span><span class="o">,</span> <span class="mf">0.1</span><span class="o">)</span>
+<span class="k">def</span> <span class="n">feval</span><span class="o">(</span><span class="n">x</span><span class="k">:</span> <span class="kt">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">])</span><span class="k">:</span> <span class="o">(</span><span class="kt">Double</span><span class="o">,</span> <span class="kt">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">])</span> <span class="k">=</span> <span class="o">{</span>
+  <span class="k">return</span> <span class="o">(</span><span class="mf">0.1</span><span class="o">,</span> <span class="nc">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">](</span><span class="nc">Storage</span><span class="o">(</span><span class="nc">Array</span><span class="o">(</span><span class="mf">1.0</span><span class="o">,</span> <span class="mf">1.0</span><span class="o">))))</span>
+<span class="o">}</span>
+<span class="k">val</span> <span class="n">x</span> <span class="k">=</span> <span class="nc">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">](</span><span class="nc">Storage</span><span class="o">(</span><span class="nc">Array</span><span class="o">(</span><span class="mf">10.0</span><span class="o">,</span> <span class="mf">10.0</span><span class="o">)))</span>
+<span class="n">optimMethod</span><span class="o">.</span><span class="n">optimize</span><span class="o">(</span><span class="n">feval</span><span class="o">,</span> <span class="n">x</span><span class="o">)</span>
+<span class="o">&gt;</span> <span class="n">print</span><span class="o">(</span><span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span><span class="o">.</span><span class="n">currentRate</span><span class="o">)</span>
+<span class="o">-</span><span class="mf">0.1</span>
+<span class="n">optimMethod</span><span class="o">.</span><span class="n">optimize</span><span class="o">(</span><span class="n">feval</span><span class="o">,</span> <span class="n">x</span><span class="o">)</span>
+<span class="o">&gt;</span> <span class="n">print</span><span class="o">(</span><span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span><span class="o">.</span><span class="n">currentRate</span><span class="o">)</span>
+<span class="o">-</span><span class="mf">0.09090909090909091</span>
+<span class="n">optimMethod</span><span class="o">.</span><span class="n">optimize</span><span class="o">(</span><span class="n">feval</span><span class="o">,</span> <span class="n">x</span><span class="o">)</span>
+<span class="o">&gt;</span> <span class="n">print</span><span class="o">(</span><span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span><span class="o">.</span><span class="n">currentRate</span><span class="o">)</span>
+<span class="o">-</span><span class="mf">0.08333333333333334</span>
+</pre></div>
+</div>
+<p><strong>Python example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">optimMethod</span> <span class="o">=</span> <span class="n">SGD</span><span class="p">(</span><span class="n">leaningrate_schedule</span><span class="o">=</span><span class="n">Default</span><span class="p">())</span>
+</pre></div>
+</div>
+</section>
+<section id="naturalexp">
+<h1>NaturalExp<a class="headerlink" href="#naturalexp" title="Permalink to this headline">¶</a></h1>
+<p>A learning rate schedule, which rescale the learning rate by exp ( -decay_rate * iter / decay_step ) referring to tensorflow’s learning rate decay # natural_exp_decay</p>
+<p><code class="docutils literal notranslate"><span class="pre">decay_step</span></code> how often to apply decay</p>
+<p><code class="docutils literal notranslate"><span class="pre">gamma</span></code> the decay rate. e.g. 0.96</p>
+<p><strong>Scala:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">learningRateScheduler</span> <span class="k">=</span> <span class="nc">NaturalExp</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">1</span><span class="o">)</span>
+</pre></div>
+</div>
+<p><strong>Scala example:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">optimMethod</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">SGD</span><span class="o">[</span><span class="kt">Double</span><span class="o">](</span><span class="mf">0.1</span><span class="o">)</span>
+<span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span> <span class="k">=</span> <span class="nc">NaturalExp</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">1</span><span class="o">)</span>
+<span class="k">def</span> <span class="n">feval</span><span class="o">(</span><span class="n">x</span><span class="k">:</span> <span class="kt">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">])</span><span class="k">:</span> <span class="o">(</span><span class="kt">Double</span><span class="o">,</span> <span class="kt">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">])</span> <span class="k">=</span> <span class="o">{</span>
+  <span class="o">(</span><span class="mf">0.1</span><span class="o">,</span> <span class="nc">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">](</span><span class="nc">Storage</span><span class="o">(</span><span class="nc">Array</span><span class="o">(</span><span class="mf">1.0</span><span class="o">,</span> <span class="mf">1.0</span><span class="o">))))</span>
+<span class="o">}</span>
+<span class="k">val</span> <span class="n">x</span> <span class="k">=</span> <span class="nc">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">](</span><span class="nc">Storage</span><span class="o">(</span><span class="nc">Array</span><span class="o">(</span><span class="mf">10.0</span><span class="o">,</span> <span class="mf">10.0</span><span class="o">)))</span>
+<span class="k">val</span> <span class="n">state</span> <span class="k">=</span> <span class="n">T</span><span class="o">(</span><span class="s">&quot;epoch&quot;</span> <span class="o">-&gt;</span> <span class="mi">0</span><span class="o">,</span> <span class="s">&quot;evalCounter&quot;</span> <span class="o">-&gt;</span> <span class="mi">0</span><span class="o">)</span>
+<span class="n">optimMethod</span><span class="o">.</span><span class="n">state</span> <span class="k">=</span> <span class="n">state</span>
+<span class="n">optimMethod</span><span class="o">.</span><span class="n">optimize</span><span class="o">(</span><span class="n">feval</span><span class="o">,</span> <span class="n">x</span><span class="o">)</span>
+<span class="o">&gt;</span> <span class="n">print</span><span class="o">(</span><span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span><span class="o">.</span><span class="n">currentRate</span><span class="o">)</span>
+<span class="o">-</span><span class="mf">0.1</span>
+
+<span class="n">optimMethod</span><span class="o">.</span><span class="n">optimize</span><span class="o">(</span><span class="n">feval</span><span class="o">,</span> <span class="n">x</span><span class="o">)</span>
+<span class="o">&gt;</span> <span class="n">print</span><span class="o">(</span><span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span><span class="o">.</span><span class="n">currentRate</span><span class="o">)</span>
+<span class="o">-</span><span class="mf">0.036787944117144235</span>
+
+<span class="n">optimMethod</span><span class="o">.</span><span class="n">optimize</span><span class="o">(</span><span class="n">feval</span><span class="o">,</span> <span class="n">x</span><span class="o">)</span>
+<span class="o">&gt;</span> <span class="n">print</span><span class="o">(</span><span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span><span class="o">.</span><span class="n">currentRate</span><span class="o">)</span>
+<span class="o">-</span><span class="mf">0.013533528323661271</span>
+</pre></div>
+</div>
+</section>
+<section id="exponential">
+<h1>Exponential<a class="headerlink" href="#exponential" title="Permalink to this headline">¶</a></h1>
+<p>A learning rate schedule, which rescale the learning rate by lr_{n + 1} = lr * decayRate <code class="docutils literal notranslate"><span class="pre">^</span></code> (iter / decayStep)</p>
+<p><code class="docutils literal notranslate"><span class="pre">decayStep</span></code> the inteval for lr decay</p>
+<p><code class="docutils literal notranslate"><span class="pre">decayRate</span></code> decay rate</p>
+<p><code class="docutils literal notranslate"><span class="pre">stairCase</span></code> if true, iter / decayStep is an integer division and the decayed learning rate follows a staircase function.</p>
+<p><strong>Scala:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">learningRateSchedule</span> <span class="k">=</span> <span class="nc">Exponential</span><span class="o">(</span><span class="mi">10</span><span class="o">,</span> <span class="mf">0.96</span><span class="o">)</span>
+</pre></div>
+</div>
+<p><strong>Python:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">exponential</span> <span class="o">=</span> <span class="n">Exponential</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Scala example:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">optimMethod</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">SGD</span><span class="o">[</span><span class="kt">Double</span><span class="o">](</span><span class="mf">0.05</span><span class="o">)</span>
+<span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span> <span class="k">=</span> <span class="nc">Exponential</span><span class="o">(</span><span class="mi">10</span><span class="o">,</span> <span class="mf">0.96</span><span class="o">)</span>
+<span class="k">def</span> <span class="n">feval</span><span class="o">(</span><span class="n">x</span><span class="k">:</span> <span class="kt">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">])</span><span class="k">:</span> <span class="o">(</span><span class="kt">Double</span><span class="o">,</span> <span class="kt">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">])</span> <span class="k">=</span> <span class="o">{</span>
+  <span class="o">(</span><span class="mf">0.1</span><span class="o">,</span> <span class="nc">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">](</span><span class="nc">Storage</span><span class="o">(</span><span class="nc">Array</span><span class="o">(</span><span class="mf">1.0</span><span class="o">,</span> <span class="mf">1.0</span><span class="o">))))</span>
+<span class="o">}</span>
+<span class="k">val</span> <span class="n">x</span> <span class="k">=</span> <span class="nc">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">](</span><span class="nc">Storage</span><span class="o">(</span><span class="nc">Array</span><span class="o">(</span><span class="mf">10.0</span><span class="o">,</span> <span class="mf">10.0</span><span class="o">)))</span>
+<span class="k">val</span> <span class="n">state</span> <span class="k">=</span> <span class="n">T</span><span class="o">(</span><span class="s">&quot;epoch&quot;</span> <span class="o">-&gt;</span> <span class="mi">0</span><span class="o">,</span> <span class="s">&quot;evalCounter&quot;</span> <span class="o">-&gt;</span> <span class="mi">0</span><span class="o">)</span>
+<span class="n">optimMethod</span><span class="o">.</span><span class="n">state</span> <span class="k">=</span> <span class="n">state</span>
+<span class="n">optimMethod</span><span class="o">.</span><span class="n">optimize</span><span class="o">(</span><span class="n">feval</span><span class="o">,</span> <span class="n">x</span><span class="o">)</span>
+<span class="o">&gt;</span> <span class="n">print</span><span class="o">(</span><span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span><span class="o">.</span><span class="n">currentRate</span><span class="o">)</span>
+<span class="o">-</span><span class="mf">0.05</span>
+
+<span class="n">optimMethod</span><span class="o">.</span><span class="n">optimize</span><span class="o">(</span><span class="n">feval</span><span class="o">,</span> <span class="n">x</span><span class="o">)</span>
+<span class="o">&gt;</span> <span class="n">print</span><span class="o">(</span><span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span><span class="o">.</span><span class="n">currentRate</span><span class="o">)</span>
+<span class="o">-</span><span class="mf">0.049796306069892535</span>
+</pre></div>
+</div>
+<p><strong>Python example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">optimMethod</span> <span class="o">=</span> <span class="n">SGD</span><span class="p">(</span><span class="n">leaningrate_schedule</span><span class="o">=</span><span class="n">Exponential</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">))</span>
+</pre></div>
+</div>
+</section>
+<section id="plateau">
+<h1>Plateau<a class="headerlink" href="#plateau" title="Permalink to this headline">¶</a></h1>
+<p>Plateau is the learning rate schedule when a metric has stopped improving. Models often benefit from reducing the learning rate by a factor of 2-10 once learning stagnates. It monitors a quantity and if no improvement is seen for a ‘patience’ number of epochs, the learning rate is reduced.</p>
+<p><code class="docutils literal notranslate"><span class="pre">monitor</span></code> quantity to be monitored, can be Loss or score</p>
+<p><code class="docutils literal notranslate"><span class="pre">factor</span></code> factor by which the learning rate will be reduced. new_lr = lr * factor</p>
+<p><code class="docutils literal notranslate"><span class="pre">patience</span></code> number of epochs with no improvement after which learning rate will be reduced.</p>
+<p><code class="docutils literal notranslate"><span class="pre">mode</span></code> one of {min, max}. In min mode, lr will be reduced when the quantity monitored has stopped decreasing;
+in max mode it will be reduced when the quantity monitored has stopped increasing</p>
+<p><code class="docutils literal notranslate"><span class="pre">epsilon</span></code> threshold for measuring the new optimum, to only focus on significant changes.</p>
+<p><code class="docutils literal notranslate"><span class="pre">cooldown</span></code> number of epochs to wait before resuming normal operation after lr has been reduced.</p>
+<p><code class="docutils literal notranslate"><span class="pre">minLr</span></code> lower bound on the learning rate.</p>
+<p><strong>Scala:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">learningRateSchedule</span> <span class="k">=</span> <span class="nc">Plateau</span><span class="o">(</span><span class="n">monitor</span><span class="o">=</span><span class="s">&quot;score&quot;</span><span class="o">,</span> <span class="n">factor</span><span class="k">=</span><span class="mf">0.1</span><span class="o">,</span> <span class="n">patience</span><span class="k">=</span><span class="mi">10</span><span class="o">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&quot;min&quot;</span><span class="o">,</span> <span class="n">epsilon</span><span class="k">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">4</span><span class="n">f</span><span class="o">,</span> <span class="n">cooldown</span><span class="k">=</span><span class="mi">0</span><span class="o">,</span> <span class="n">minLr</span><span class="k">=</span><span class="mi">0</span><span class="o">)</span>
+</pre></div>
+</div>
+<p><strong>Python:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">plateau</span> <span class="o">=</span> <span class="n">Plateau</span><span class="p">(</span><span class="s2">&quot;score&quot;</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">patience</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">cooldown</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">minLr</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Scala example:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">optimMethod</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">SGD</span><span class="o">[</span><span class="kt">Double</span><span class="o">](</span><span class="mf">0.05</span><span class="o">)</span>
+<span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span> <span class="k">=</span> <span class="nc">Plateau</span><span class="o">(</span><span class="n">monitor</span><span class="o">=</span><span class="s">&quot;score&quot;</span><span class="o">,</span> <span class="n">factor</span><span class="k">=</span><span class="mf">0.1</span><span class="o">,</span> <span class="n">patience</span><span class="k">=</span><span class="mi">10</span><span class="o">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&quot;min&quot;</span><span class="o">,</span> <span class="n">epsilon</span><span class="k">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">4</span><span class="n">f</span><span class="o">,</span> <span class="n">cooldown</span><span class="k">=</span><span class="mi">0</span><span class="o">,</span> <span class="n">minLr</span><span class="k">=</span><span class="mi">0</span><span class="o">)</span>
+<span class="k">def</span> <span class="n">feval</span><span class="o">(</span><span class="n">x</span><span class="k">:</span> <span class="kt">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">])</span><span class="k">:</span> <span class="o">(</span><span class="kt">Double</span><span class="o">,</span> <span class="kt">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">])</span> <span class="k">=</span> <span class="o">{</span>
+  <span class="o">(</span><span class="mf">0.1</span><span class="o">,</span> <span class="nc">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">](</span><span class="nc">Storage</span><span class="o">(</span><span class="nc">Array</span><span class="o">(</span><span class="mf">1.0</span><span class="o">,</span> <span class="mf">1.0</span><span class="o">))))</span>
+<span class="o">}</span>
+<span class="k">val</span> <span class="n">x</span> <span class="k">=</span> <span class="nc">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">](</span><span class="nc">Storage</span><span class="o">(</span><span class="nc">Array</span><span class="o">(</span><span class="mf">10.0</span><span class="o">,</span> <span class="mf">10.0</span><span class="o">)))</span>
+<span class="k">val</span> <span class="n">state</span> <span class="k">=</span> <span class="n">T</span><span class="o">(</span><span class="s">&quot;epoch&quot;</span> <span class="o">-&gt;</span> <span class="mi">0</span><span class="o">,</span> <span class="s">&quot;evalCounter&quot;</span> <span class="o">-&gt;</span> <span class="mi">0</span><span class="o">)</span>
+<span class="n">optimMethod</span><span class="o">.</span><span class="n">state</span> <span class="k">=</span> <span class="n">state</span>
+<span class="n">optimMethod</span><span class="o">.</span><span class="n">optimize</span><span class="o">(</span><span class="n">feval</span><span class="o">,</span> <span class="n">x</span><span class="o">)</span>
+<span class="o">&gt;</span> <span class="n">print</span><span class="o">(</span><span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span><span class="o">.</span><span class="n">currentRate</span><span class="o">)</span>
+
+
+<span class="n">optimMethod</span><span class="o">.</span><span class="n">optimize</span><span class="o">(</span><span class="n">feval</span><span class="o">,</span> <span class="n">x</span><span class="o">)</span>
+<span class="o">&gt;</span> <span class="n">print</span><span class="o">(</span><span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span><span class="o">.</span><span class="n">currentRate</span><span class="o">)</span>
+</pre></div>
+</div>
+<p><strong>Python example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">optimMethod</span> <span class="o">=</span> <span class="n">SGD</span><span class="p">(</span><span class="n">leaningrate_schedule</span><span class="o">=</span><span class="n">Plateau</span><span class="p">(</span><span class="s2">&quot;score&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</section>
+<section id="warmup">
+<h1>Warmup<a class="headerlink" href="#warmup" title="Permalink to this headline">¶</a></h1>
+<p>A learning rate gradual increase policy, where the effective learning rate increase delta after each iteration. Calculation: base_lr + delta * iteration</p>
+<p><code class="docutils literal notranslate"><span class="pre">delta</span></code> increase amount after each iteration</p>
+<p><strong>Scala:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">learningRateSchedule</span> <span class="k">=</span> <span class="nc">Warmup</span><span class="o">(</span><span class="n">delta</span> <span class="k">=</span> <span class="mf">0.05</span><span class="o">)</span>
+</pre></div>
+</div>
+<p><strong>Python:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">warmup</span> <span class="o">=</span> <span class="n">Warmup</span><span class="p">(</span><span class="n">delta</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Scala example:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">lrSchedules</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">SequentialSchedule</span><span class="o">(</span><span class="mi">100</span><span class="o">)</span>
+<span class="n">lrSchedules</span><span class="o">.</span><span class="n">add</span><span class="o">(</span><span class="nc">Warmup</span><span class="o">(</span><span class="mf">0.3</span><span class="o">),</span> <span class="mi">3</span><span class="o">).</span><span class="n">add</span><span class="o">(</span><span class="nc">Poly</span><span class="o">(</span><span class="mi">3</span><span class="o">,</span> <span class="mi">100</span><span class="o">),</span> <span class="mi">100</span><span class="o">)</span>
+<span class="k">val</span> <span class="n">optimMethod</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">SGD</span><span class="o">[</span><span class="kt">Double</span><span class="o">](</span><span class="n">learningRate</span> <span class="k">=</span> <span class="mf">0.1</span><span class="o">,</span> <span class="n">learningRateSchedule</span> <span class="k">=</span> <span class="n">lrSchedules</span><span class="o">)</span>
+
+<span class="k">def</span> <span class="n">feval</span><span class="o">(</span><span class="n">x</span><span class="k">:</span> <span class="kt">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">])</span><span class="k">:</span> <span class="o">(</span><span class="kt">Double</span><span class="o">,</span> <span class="kt">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">])</span> <span class="k">=</span> <span class="o">{</span>
+  <span class="k">return</span> <span class="o">(</span><span class="mf">0.1</span><span class="o">,</span> <span class="nc">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">](</span><span class="nc">Storage</span><span class="o">(</span><span class="nc">Array</span><span class="o">(</span><span class="mf">1.0</span><span class="o">,</span> <span class="mf">1.0</span><span class="o">))))</span>
+<span class="o">}</span>
+<span class="k">val</span> <span class="n">x</span> <span class="k">=</span> <span class="nc">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">](</span><span class="nc">Storage</span><span class="o">(</span><span class="nc">Array</span><span class="o">(</span><span class="mf">10.0</span><span class="o">,</span> <span class="mf">10.0</span><span class="o">)))</span>
+<span class="n">optimMethod</span><span class="o">.</span><span class="n">optimize</span><span class="o">(</span><span class="n">feval</span><span class="o">,</span> <span class="n">x</span><span class="o">)</span>
+<span class="o">&gt;</span> <span class="n">print</span><span class="o">(</span><span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span><span class="o">.</span><span class="n">currentRate</span><span class="o">)</span>
+<span class="o">-</span><span class="mf">0.1</span>
+
+<span class="n">optimMethod</span><span class="o">.</span><span class="n">optimize</span><span class="o">(</span><span class="n">feval</span><span class="o">,</span> <span class="n">x</span><span class="o">)</span>
+<span class="o">&gt;</span> <span class="n">print</span><span class="o">(</span><span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span><span class="o">.</span><span class="n">currentRate</span><span class="o">)</span>
+<span class="o">-</span><span class="mf">0.4</span>
+</pre></div>
+</div>
+<p><strong>Python example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">optimMethod</span> <span class="o">=</span> <span class="n">SGD</span><span class="p">(</span><span class="n">leaningrate_schedule</span><span class="o">=</span><span class="n">Warmup</span><span class="p">(</span><span class="mf">0.05</span><span class="p">))</span>
+</pre></div>
+</div>
+</section>
+<section id="sequentialschedule">
+<h1>SequentialSchedule<a class="headerlink" href="#sequentialschedule" title="Permalink to this headline">¶</a></h1>
+<p>A learning rate scheduler which can stack several learning rate schedulers.</p>
+<p><code class="docutils literal notranslate"><span class="pre">iterationPerEpoch</span></code> iteration numbers per epoch</p>
+<p><strong>Scala:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">learningRateSchedule</span> <span class="k">=</span> <span class="nc">SequentialSchedule</span><span class="o">(</span><span class="n">iterationPerEpoch</span><span class="k">=</span><span class="mi">100</span><span class="o">)</span>
+</pre></div>
+</div>
+<p><strong>Python:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sequentialSchedule</span> <span class="o">=</span> <span class="n">SequentialSchedule</span><span class="p">(</span><span class="n">iteration_per_epoch</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Scala example:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">lrSchedules</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">SequentialSchedule</span><span class="o">(</span><span class="mi">100</span><span class="o">)</span>
+<span class="n">lrSchedules</span><span class="o">.</span><span class="n">add</span><span class="o">(</span><span class="nc">Warmup</span><span class="o">(</span><span class="mf">0.3</span><span class="o">),</span> <span class="mi">3</span><span class="o">).</span><span class="n">add</span><span class="o">(</span><span class="nc">Poly</span><span class="o">(</span><span class="mi">3</span><span class="o">,</span> <span class="mi">100</span><span class="o">),</span> <span class="mi">100</span><span class="o">)</span>
+<span class="k">val</span> <span class="n">optimMethod</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">SGD</span><span class="o">[</span><span class="kt">Double</span><span class="o">](</span><span class="n">learningRate</span> <span class="k">=</span> <span class="mf">0.1</span><span class="o">,</span> <span class="n">learningRateSchedule</span> <span class="k">=</span> <span class="n">lrSchedules</span><span class="o">)</span>
+
+<span class="k">def</span> <span class="n">feval</span><span class="o">(</span><span class="n">x</span><span class="k">:</span> <span class="kt">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">])</span><span class="k">:</span> <span class="o">(</span><span class="kt">Double</span><span class="o">,</span> <span class="kt">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">])</span> <span class="k">=</span> <span class="o">{</span>
+  <span class="k">return</span> <span class="o">(</span><span class="mf">0.1</span><span class="o">,</span> <span class="nc">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">](</span><span class="nc">Storage</span><span class="o">(</span><span class="nc">Array</span><span class="o">(</span><span class="mf">1.0</span><span class="o">,</span> <span class="mf">1.0</span><span class="o">))))</span>
+<span class="o">}</span>
+<span class="k">val</span> <span class="n">x</span> <span class="k">=</span> <span class="nc">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">](</span><span class="nc">Storage</span><span class="o">(</span><span class="nc">Array</span><span class="o">(</span><span class="mf">10.0</span><span class="o">,</span> <span class="mf">10.0</span><span class="o">)))</span>
+<span class="n">optimMethod</span><span class="o">.</span><span class="n">optimize</span><span class="o">(</span><span class="n">feval</span><span class="o">,</span> <span class="n">x</span><span class="o">)</span>
+<span class="o">&gt;</span> <span class="n">print</span><span class="o">(</span><span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span><span class="o">.</span><span class="n">currentRate</span><span class="o">)</span>
+<span class="o">-</span><span class="mf">0.1</span>
+
+<span class="n">optimMethod</span><span class="o">.</span><span class="n">optimize</span><span class="o">(</span><span class="n">feval</span><span class="o">,</span> <span class="n">x</span><span class="o">)</span>
+<span class="o">&gt;</span> <span class="n">print</span><span class="o">(</span><span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span><span class="o">.</span><span class="n">currentRate</span><span class="o">)</span>
+<span class="o">-</span><span class="mf">0.4</span>
+
+<span class="n">optimMethod</span><span class="o">.</span><span class="n">optimize</span><span class="o">(</span><span class="n">feval</span><span class="o">,</span> <span class="n">x</span><span class="o">)</span>
+<span class="o">&gt;</span> <span class="n">print</span><span class="o">(</span><span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span><span class="o">.</span><span class="n">currentRate</span><span class="o">)</span>
+<span class="o">-</span><span class="mf">0.7</span>
+
+<span class="n">optimMethod</span><span class="o">.</span><span class="n">optimize</span><span class="o">(</span><span class="n">feval</span><span class="o">,</span> <span class="n">x</span><span class="o">)</span>
+<span class="o">&gt;</span> <span class="n">print</span><span class="o">(</span><span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span><span class="o">.</span><span class="n">currentRate</span><span class="o">)</span>
+<span class="o">-</span><span class="mf">1.0</span>
+
+<span class="n">optimMethod</span><span class="o">.</span><span class="n">optimize</span><span class="o">(</span><span class="n">feval</span><span class="o">,</span> <span class="n">x</span><span class="o">)</span>
+<span class="o">&gt;</span> <span class="n">print</span><span class="o">(</span><span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span><span class="o">.</span><span class="n">currentRate</span><span class="o">)</span>
+<span class="o">-</span><span class="mf">0.9702989999999999</span>
+</pre></div>
+</div>
+<p><strong>Python example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sequentialSchedule</span> <span class="o">=</span> <span class="n">SequentialSchedule</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">poly</span> <span class="o">=</span> <span class="n">Poly</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">sequentialSchedule</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">poly</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="epochdecay">
+<h1>EpochDecay<a class="headerlink" href="#epochdecay" title="Permalink to this headline">¶</a></h1>
+<p><strong>Scala:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="n">decay</span><span class="o">(</span><span class="n">epoch</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span><span class="k">:</span> <span class="kt">Double</span> <span class="o">=</span>
+  <span class="k">if</span> <span class="o">(</span><span class="n">epoch</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="o">)</span> <span class="mf">2.0</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">epoch</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="o">)</span> <span class="mf">1.0</span> <span class="k">else</span> <span class="mf">0.0</span>
+
+<span class="k">val</span> <span class="n">learningRateSchedule</span> <span class="k">=</span> <span class="nc">EpochDecay</span><span class="o">(</span><span class="n">decay</span><span class="o">)</span>
+</pre></div>
+</div>
+<p>It is an epoch decay learning rate schedule. The learning rate decays through a function argument on number of run epochs l_{n + 1} = l_{n} * 0.1 <code class="docutils literal notranslate"><span class="pre">^</span></code> decayType(epoch)</p>
+<p><code class="docutils literal notranslate"><span class="pre">decayType</span></code> is a function with number of run epochs as the argument</p>
+<p><strong>Scala example:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="n">decay</span><span class="o">(</span><span class="n">epoch</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span><span class="k">:</span> <span class="kt">Double</span> <span class="o">=</span>
+  <span class="k">if</span> <span class="o">(</span><span class="n">epoch</span> <span class="o">==</span> <span class="mi">1</span><span class="o">)</span> <span class="mf">2.0</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">epoch</span> <span class="o">==</span> <span class="mi">2</span><span class="o">)</span> <span class="mf">1.0</span> <span class="k">else</span> <span class="mf">0.0</span>
+
+<span class="k">val</span> <span class="n">optimMethod</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">SGD</span><span class="o">[</span><span class="kt">Double</span><span class="o">](</span><span class="mi">1000</span><span class="o">)</span>
+<span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span> <span class="k">=</span> <span class="nc">EpochDecay</span><span class="o">(</span><span class="n">decay</span><span class="o">)</span>
+<span class="k">def</span> <span class="n">feval</span><span class="o">(</span><span class="n">x</span><span class="k">:</span> <span class="kt">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">])</span><span class="k">:</span> <span class="o">(</span><span class="kt">Double</span><span class="o">,</span> <span class="kt">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">])</span> <span class="k">=</span> <span class="o">{</span>
+  <span class="k">return</span> <span class="o">(</span><span class="mf">0.1</span><span class="o">,</span> <span class="nc">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">](</span><span class="nc">Storage</span><span class="o">(</span><span class="nc">Array</span><span class="o">(</span><span class="mf">1.0</span><span class="o">,</span> <span class="mf">1.0</span><span class="o">))))</span>
+<span class="o">}</span>
+<span class="k">val</span> <span class="n">x</span> <span class="k">=</span> <span class="nc">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">](</span><span class="nc">Storage</span><span class="o">(</span><span class="nc">Array</span><span class="o">(</span><span class="mf">10.0</span><span class="o">,</span> <span class="mf">10.0</span><span class="o">)))</span>
+<span class="k">val</span> <span class="n">state</span> <span class="k">=</span> <span class="n">T</span><span class="o">(</span><span class="s">&quot;epoch&quot;</span> <span class="o">-&gt;</span> <span class="mi">0</span><span class="o">)</span>
+<span class="k">for</span><span class="o">(</span><span class="n">e</span> <span class="k">&lt;-</span> <span class="mi">1</span> <span class="n">to</span> <span class="mi">3</span><span class="o">)</span> <span class="o">{</span>
+  <span class="n">state</span><span class="o">(</span><span class="s">&quot;epoch&quot;</span><span class="o">)</span> <span class="k">=</span> <span class="n">e</span>
+  <span class="n">optimMethod</span><span class="o">.</span><span class="n">state</span> <span class="k">=</span> <span class="n">state</span>
+  <span class="n">optimMethod</span><span class="o">.</span><span class="n">optimize</span><span class="o">(</span><span class="n">feval</span><span class="o">,</span> <span class="n">x</span><span class="o">)</span>
+  <span class="k">if</span><span class="o">(</span><span class="n">e</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">assert</span><span class="o">(</span><span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span><span class="o">.</span><span class="n">currentRate</span><span class="o">==</span><span class="mi">10</span><span class="o">)</span>
+  <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">e</span> <span class="o">&lt;=</span> <span class="mi">2</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">assert</span><span class="o">(</span><span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span><span class="o">.</span><span class="n">currentRate</span><span class="o">==</span><span class="mi">100</span><span class="o">)</span>
+  <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+    <span class="n">assert</span><span class="o">(</span><span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span><span class="o">.</span><span class="n">currentRate</span><span class="o">==</span><span class="mi">1000</span><span class="o">)</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+</div>
+</section>
+<section id="regime">
+<h1>Regime<a class="headerlink" href="#regime" title="Permalink to this headline">¶</a></h1>
+<p>A structure to specify hyper parameters by start epoch and end epoch. Usually work with [[EpochSchedule]].</p>
+<p><code class="docutils literal notranslate"><span class="pre">startEpoch</span></code> start epoch</p>
+<p><code class="docutils literal notranslate"><span class="pre">endEpoch</span></code> end epoch</p>
+<p><code class="docutils literal notranslate"><span class="pre">config</span></code> config table contains hyper parameters</p>
+</section>
+<section id="epochschedule">
+<h1>EpochSchedule<a class="headerlink" href="#epochschedule" title="Permalink to this headline">¶</a></h1>
+<p>A learning rate schedule which configure the learning rate according to some pre-defined [[Regime]]. If the running epoch is within the interval of a regime <code class="docutils literal notranslate"><span class="pre">r</span></code> [r.startEpoch, r.endEpoch], then the learning
+rate will take the “learningRate” in r.config.</p>
+<p><code class="docutils literal notranslate"><span class="pre">regimes</span></code> an array of pre-defined [[Regime]].</p>
+<p><strong>Scala:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">regimes</span><span class="k">:</span> <span class="kt">Array</span><span class="o">[</span><span class="kt">Regime</span><span class="o">]</span> <span class="k">=</span> <span class="nc">Array</span><span class="o">(</span>
+  <span class="nc">Regime</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">3</span><span class="o">,</span> <span class="n">T</span><span class="o">(</span><span class="s">&quot;learningRate&quot;</span> <span class="o">-&gt;</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">2</span><span class="o">,</span> <span class="s">&quot;weightDecay&quot;</span> <span class="o">-&gt;</span> <span class="mi">2</span><span class="n">e</span><span class="o">-</span><span class="mi">4</span><span class="o">)),</span>
+  <span class="nc">Regime</span><span class="o">(</span><span class="mi">4</span><span class="o">,</span> <span class="mi">7</span><span class="o">,</span> <span class="n">T</span><span class="o">(</span><span class="s">&quot;learningRate&quot;</span> <span class="o">-&gt;</span> <span class="mi">5</span><span class="n">e</span><span class="o">-</span><span class="mi">3</span><span class="o">,</span> <span class="s">&quot;weightDecay&quot;</span> <span class="o">-&gt;</span> <span class="mi">2</span><span class="n">e</span><span class="o">-</span><span class="mi">4</span><span class="o">)),</span>
+  <span class="nc">Regime</span><span class="o">(</span><span class="mi">8</span><span class="o">,</span> <span class="mi">10</span><span class="o">,</span> <span class="n">T</span><span class="o">(</span><span class="s">&quot;learningRate&quot;</span> <span class="o">-&gt;</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">3</span><span class="o">,</span> <span class="s">&quot;weightDecay&quot;</span> <span class="o">-&gt;</span> <span class="mf">0.0</span><span class="o">))</span>
+<span class="o">)</span>
+<span class="k">val</span> <span class="n">learningRateScheduler</span> <span class="k">=</span> <span class="nc">EpochSchedule</span><span class="o">(</span><span class="n">regimes</span><span class="o">)</span>
+</pre></div>
+</div>
+<p><strong>Scala example:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">regimes</span><span class="k">:</span> <span class="kt">Array</span><span class="o">[</span><span class="kt">Regime</span><span class="o">]</span> <span class="k">=</span> <span class="nc">Array</span><span class="o">(</span>
+  <span class="nc">Regime</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">3</span><span class="o">,</span> <span class="n">T</span><span class="o">(</span><span class="s">&quot;learningRate&quot;</span> <span class="o">-&gt;</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">2</span><span class="o">,</span> <span class="s">&quot;weightDecay&quot;</span> <span class="o">-&gt;</span> <span class="mi">2</span><span class="n">e</span><span class="o">-</span><span class="mi">4</span><span class="o">)),</span>
+  <span class="nc">Regime</span><span class="o">(</span><span class="mi">4</span><span class="o">,</span> <span class="mi">7</span><span class="o">,</span> <span class="n">T</span><span class="o">(</span><span class="s">&quot;learningRate&quot;</span> <span class="o">-&gt;</span> <span class="mi">5</span><span class="n">e</span><span class="o">-</span><span class="mi">3</span><span class="o">,</span> <span class="s">&quot;weightDecay&quot;</span> <span class="o">-&gt;</span> <span class="mi">2</span><span class="n">e</span><span class="o">-</span><span class="mi">4</span><span class="o">)),</span>
+  <span class="nc">Regime</span><span class="o">(</span><span class="mi">8</span><span class="o">,</span> <span class="mi">10</span><span class="o">,</span> <span class="n">T</span><span class="o">(</span><span class="s">&quot;learningRate&quot;</span> <span class="o">-&gt;</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">3</span><span class="o">,</span> <span class="s">&quot;weightDecay&quot;</span> <span class="o">-&gt;</span> <span class="mf">0.0</span><span class="o">))</span>
+<span class="o">)</span>
+
+<span class="k">val</span> <span class="n">state</span> <span class="k">=</span> <span class="n">T</span><span class="o">(</span><span class="s">&quot;epoch&quot;</span> <span class="o">-&gt;</span> <span class="mi">0</span><span class="o">)</span>
+<span class="k">val</span> <span class="n">optimMethod</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">SGD</span><span class="o">[</span><span class="kt">Double</span><span class="o">](</span><span class="mf">0.1</span><span class="o">)</span>
+<span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span> <span class="k">=</span> <span class="nc">EpochSchedule</span><span class="o">(</span><span class="n">regimes</span><span class="o">)</span>
+<span class="k">def</span> <span class="n">feval</span><span class="o">(</span><span class="n">x</span><span class="k">:</span> <span class="kt">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">])</span><span class="k">:</span> <span class="o">(</span><span class="kt">Double</span><span class="o">,</span> <span class="kt">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">])</span> <span class="k">=</span> <span class="o">{</span>
+  <span class="k">return</span> <span class="o">(</span><span class="mf">0.1</span><span class="o">,</span> <span class="nc">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">](</span><span class="nc">Storage</span><span class="o">(</span><span class="nc">Array</span><span class="o">(</span><span class="mf">1.0</span><span class="o">,</span> <span class="mf">1.0</span><span class="o">))))</span>
+<span class="o">}</span>
+<span class="k">val</span> <span class="n">x</span> <span class="k">=</span> <span class="nc">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">](</span><span class="nc">Storage</span><span class="o">(</span><span class="nc">Array</span><span class="o">(</span><span class="mf">10.0</span><span class="o">,</span> <span class="mf">10.0</span><span class="o">)))</span>
+<span class="k">for</span><span class="o">(</span><span class="n">e</span> <span class="k">&lt;-</span> <span class="mi">1</span> <span class="n">to</span> <span class="mi">10</span><span class="o">)</span> <span class="o">{</span>
+  <span class="n">state</span><span class="o">(</span><span class="s">&quot;epoch&quot;</span><span class="o">)</span> <span class="k">=</span> <span class="n">e</span>
+  <span class="n">optimMethod</span><span class="o">.</span><span class="n">state</span> <span class="k">=</span> <span class="n">state</span>
+  <span class="n">optimMethod</span><span class="o">.</span><span class="n">optimize</span><span class="o">(</span><span class="n">feval</span><span class="o">,</span> <span class="n">x</span><span class="o">)</span>
+  <span class="k">if</span><span class="o">(</span><span class="n">e</span> <span class="o">&lt;=</span> <span class="mi">3</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">assert</span><span class="o">(</span><span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span><span class="o">.</span><span class="n">currentRate</span><span class="o">==-</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">2</span><span class="o">)</span>
+    <span class="n">assert</span><span class="o">(</span><span class="n">optimMethod</span><span class="o">.</span><span class="n">weightDecay</span><span class="o">==</span><span class="mi">2</span><span class="n">e</span><span class="o">-</span><span class="mi">4</span><span class="o">)</span>
+  <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">e</span> <span class="o">&lt;=</span> <span class="mi">7</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">assert</span><span class="o">(</span><span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span><span class="o">.</span><span class="n">currentRate</span><span class="o">==-</span><span class="mi">5</span><span class="n">e</span><span class="o">-</span><span class="mi">3</span><span class="o">)</span>
+    <span class="n">assert</span><span class="o">(</span><span class="n">optimMethod</span><span class="o">.</span><span class="n">weightDecay</span><span class="o">==</span><span class="mi">2</span><span class="n">e</span><span class="o">-</span><span class="mi">4</span><span class="o">)</span>
+  <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">e</span> <span class="o">&lt;=</span> <span class="mi">10</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">assert</span><span class="o">(</span><span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span><span class="o">.</span><span class="n">currentRate</span><span class="o">==-</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">3</span><span class="o">)</span>
+    <span class="n">assert</span><span class="o">(</span><span class="n">optimMethod</span><span class="o">.</span><span class="n">weightDecay</span><span class="o">==</span><span class="mf">0.0</span><span class="o">)</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+</div>
+</section>
+<section id="epochstep">
+<h1>EpochStep<a class="headerlink" href="#epochstep" title="Permalink to this headline">¶</a></h1>
+<p>A learning rate schedule which rescale the learning rate by <code class="docutils literal notranslate"><span class="pre">gamma</span></code> for each <code class="docutils literal notranslate"><span class="pre">stepSize</span></code> epochs.</p>
+<p><code class="docutils literal notranslate"><span class="pre">stepSize</span></code> For how many epochs to update the learning rate once</p>
+<p><code class="docutils literal notranslate"><span class="pre">gamma</span></code> the rescale factor</p>
+<p><strong>Scala:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">learningRateScheduler</span> <span class="k">=</span> <span class="nc">EpochStep</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mf">0.5</span><span class="o">)</span>
+</pre></div>
+</div>
+<p><strong>Scala example:</strong></p>
+<div class="highlight-scala notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">optimMethod</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">SGD</span><span class="o">[</span><span class="kt">Double</span><span class="o">](</span><span class="mf">0.1</span><span class="o">)</span>
+<span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span> <span class="k">=</span> <span class="nc">EpochStep</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mf">0.5</span><span class="o">)</span>
+<span class="k">def</span> <span class="n">feval</span><span class="o">(</span><span class="n">x</span><span class="k">:</span> <span class="kt">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">])</span><span class="k">:</span> <span class="o">(</span><span class="kt">Double</span><span class="o">,</span> <span class="kt">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">])</span> <span class="k">=</span> <span class="o">{</span>
+  <span class="o">(</span><span class="mf">0.1</span><span class="o">,</span> <span class="nc">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">](</span><span class="nc">Storage</span><span class="o">(</span><span class="nc">Array</span><span class="o">(</span><span class="mf">1.0</span><span class="o">,</span> <span class="mf">1.0</span><span class="o">))))</span>
+<span class="o">}</span>
+<span class="k">val</span> <span class="n">x</span> <span class="k">=</span> <span class="nc">Tensor</span><span class="o">[</span><span class="kt">Double</span><span class="o">](</span><span class="nc">Storage</span><span class="o">(</span><span class="nc">Array</span><span class="o">(</span><span class="mf">10.0</span><span class="o">,</span> <span class="mf">10.0</span><span class="o">)))</span>
+<span class="k">val</span> <span class="n">state</span> <span class="k">=</span> <span class="n">T</span><span class="o">(</span><span class="s">&quot;epoch&quot;</span> <span class="o">-&gt;</span> <span class="mi">0</span><span class="o">)</span>
+<span class="k">for</span><span class="o">(</span><span class="n">e</span> <span class="k">&lt;-</span> <span class="mi">1</span> <span class="n">to</span> <span class="mi">10</span><span class="o">)</span> <span class="o">{</span>
+  <span class="n">state</span><span class="o">(</span><span class="s">&quot;epoch&quot;</span><span class="o">)</span> <span class="k">=</span> <span class="n">e</span>
+  <span class="n">optimMethod</span><span class="o">.</span><span class="n">state</span> <span class="k">=</span> <span class="n">state</span>
+  <span class="n">optimMethod</span><span class="o">.</span><span class="n">optimize</span><span class="o">(</span><span class="n">feval</span><span class="o">,</span> <span class="n">x</span><span class="o">)</span>
+  <span class="n">assert</span><span class="o">(</span><span class="n">optimMethod</span><span class="o">.</span><span class="n">learningRateSchedule</span><span class="o">.</span><span class="n">currentRate</span><span class="o">==(-</span><span class="mf">0.1</span> <span class="o">*</span> <span class="nc">Math</span><span class="o">.</span><span class="n">pow</span><span class="o">(</span><span class="mf">0.5</span><span class="o">,</span> <span class="n">e</span><span class="o">)))</span>
+<span class="o">}</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

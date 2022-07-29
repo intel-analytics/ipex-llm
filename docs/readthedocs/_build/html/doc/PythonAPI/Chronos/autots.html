@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AutoTS (deprecated) &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/design-tabs.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Nano API" href="../Nano/index.html" />
+    <link rel="prev" title="Evaluator" href="evaluator.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Chronos API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="autotsestimator.html">AutoTS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="automodels.html">Auto Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="forecasters.html">Forecasters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="anomaly_detectors.html">Anomaly Detectors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tsdataset.html">TSDataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="simulator.html">Simulator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="evaluator.html">Evaluator</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">AutoTS (deprecated)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#autotstrainer">AutoTSTrainer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tspipeline">TSPipeline</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#recipe">Recipe</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Chronos API</a> &raquo;</li>
+      <li>AutoTS (deprecated)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/doc/PythonAPI/Chronos/autots.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="autots-deprecated">
+<h1>AutoTS (deprecated)<a class="headerlink" href="#autots-deprecated" title="Permalink to this headline">¶</a></h1>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The API in this page will be deprecated soon. Please refer to our new AutoTS API.</p>
+</div>
+<section id="autotstrainer">
+<h2>AutoTSTrainer<a class="headerlink" href="#autotstrainer" title="Permalink to this headline">¶</a></h2>
+<p>AutoTSTrainer trains a time series pipeline (including data processing, feature engineering, and model) with AutoML.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.deprecated.forecast.AutoTSTrainer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bigdl.chronos.autots.deprecated.forecast.</span></span><span class="sig-name descname"><span class="pre">AutoTSTrainer</span></span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/deprecated/forecast.html#AutoTSTrainer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.deprecated.forecast.AutoTSTrainer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases:</p>
+<p>The Automated Time Series Forecast Trainer</p>
+<p>Initialize the AutoTS Trainer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>horizon</strong> – steps to look forward</p></li>
+<li><p><strong>dt_col</strong> – the datetime column</p></li>
+<li><p><strong>target_col</strong> – the target column to forecast</p></li>
+<li><p><strong>extra_features_col</strong> – extra feature columns</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.deprecated.forecast.AutoTSTrainer.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/deprecated/forecast.html#AutoTSTrainer.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.deprecated.forecast.AutoTSTrainer.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit a time series forecasting pipeline w/ automl</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>train_df</strong> – the input dataframe (as pandas.dataframe)</p></li>
+<li><p><strong>validation_df</strong> – the validation dataframe (as pandas.dataframe)</p></li>
+<li><p><strong>recipe</strong> – the configuration of searching</p></li>
+<li><p><strong>metric</strong> – the evaluation metric to optimize</p></li>
+<li><p><strong>uncertainty</strong> – whether to enable uncertainty calculation
+(will output an uncertainty sigma)</p></li>
+<li><p><strong>upload_dir</strong> – Optional URI to sync training results and checkpoints. We only support
+hdfs URI for now.</p></li>
+</ul>
+</dd>
+</dl>
+<p>:return a TSPipeline</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="tspipeline">
+<h2>TSPipeline<a class="headerlink" href="#tspipeline" title="Permalink to this headline">¶</a></h2>
+<p>A pipeline for time series forecasting.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.deprecated.forecast.TSPipeline">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bigdl.chronos.autots.deprecated.forecast.</span></span><span class="sig-name descname"><span class="pre">TSPipeline</span></span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/deprecated/forecast.html#TSPipeline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.deprecated.forecast.TSPipeline" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A pipeline for time series forecasting.</p>
+<p>Initialize an emtpy TSPipeline.
+Usually it is not called by user directly.
+A TSPipeline is either obtained from AutoTrainer.fit or TSPipeline.load</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.deprecated.forecast.TSPipeline.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pipeline_file</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/deprecated/forecast.html#TSPipeline.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.deprecated.forecast.TSPipeline.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the pipeline to a file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>pipeline_file</strong> – the file path</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.deprecated.forecast.TSPipeline.load">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pipeline_file</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/deprecated/forecast.html#TSPipeline.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.deprecated.forecast.TSPipeline.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load pipeline from a file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>pipeline_file</strong> – the pipeline file</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a TSPipeline object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.deprecated.forecast.TSPipeline.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validation_df</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uncertainty</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">user_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/deprecated/forecast.html#TSPipeline.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.deprecated.forecast.TSPipeline.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Incremental Fitting</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_df</strong> – the input dataframe</p></li>
+<li><p><strong>validation_df</strong> – the validation dataframe</p></li>
+<li><p><strong>uncertainty</strong> – whether to calculate uncertainty</p></li>
+<li><p><strong>epochs</strong> – number of epochs to train</p></li>
+<li><p><strong>user_config</strong> – user configurations</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.deprecated.forecast.TSPipeline.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/deprecated/forecast.html#TSPipeline.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.deprecated.forecast.TSPipeline.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prediction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>input_df</strong> – the input dataframe</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the forecast results</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.deprecated.forecast.TSPipeline.evaluate">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['mse']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multioutput</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raw_values'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/deprecated/forecast.html#TSPipeline.evaluate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.deprecated.forecast.TSPipeline.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_df</strong> – the input dataframe</p></li>
+<li><p><strong>metrics</strong> – the evaluation metrics</p></li>
+<li><p><strong>multioutput</strong> – output mode of multiple output, whether to aggregate</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the evaluation results</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="recipe">
+<h2>Recipe<a class="headerlink" href="#recipe" title="Permalink to this headline">¶</a></h2>
+<p>Recipe is used for search configuration for AutoTSTrainer.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.deprecated.config.recipe.SmokeRecipe">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bigdl.chronos.autots.deprecated.config.recipe.</span></span><span class="sig-name descname"><span class="pre">SmokeRecipe</span></span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/deprecated/config/recipe.html#SmokeRecipe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.deprecated.config.recipe.SmokeRecipe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases:</p>
+<p>A very simple Recipe for smoke test that runs one epoch and one iteration
+with only 1 random sample.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.deprecated.config.recipe.MTNetSmokeRecipe">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bigdl.chronos.autots.deprecated.config.recipe.</span></span><span class="sig-name descname"><span class="pre">MTNetSmokeRecipe</span></span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/deprecated/config/recipe.html#MTNetSmokeRecipe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.deprecated.config.recipe.MTNetSmokeRecipe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases:</p>
+<p>A very simple Recipe for smoke test that runs one epoch and one iteration
+with only 1 random sample.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.deprecated.config.recipe.TCNSmokeRecipe">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bigdl.chronos.autots.deprecated.config.recipe.</span></span><span class="sig-name descname"><span class="pre">TCNSmokeRecipe</span></span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/deprecated/config/recipe.html#TCNSmokeRecipe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.deprecated.config.recipe.TCNSmokeRecipe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases:</p>
+<p>A very simple Recipe for smoke test that runs one epoch and one iteration
+with only 1 random sample.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.deprecated.config.recipe.PastSeqParamHandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bigdl.chronos.autots.deprecated.config.recipe.</span></span><span class="sig-name descname"><span class="pre">PastSeqParamHandler</span></span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/deprecated/config/recipe.html#PastSeqParamHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.deprecated.config.recipe.PastSeqParamHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Utility to handle PastSeq Param</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.deprecated.config.recipe.PastSeqParamHandler.get_past_seq_config">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_past_seq_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">look_back</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/deprecated/config/recipe.html#PastSeqParamHandler.get_past_seq_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.deprecated.config.recipe.PastSeqParamHandler.get_past_seq_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate pass sequence config based on look_back.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>look_back</strong> – look_back configuration</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>search configuration for past sequence</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.deprecated.config.recipe.GridRandomRecipe">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bigdl.chronos.autots.deprecated.config.recipe.</span></span><span class="sig-name descname"><span class="pre">GridRandomRecipe</span></span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/deprecated/config/recipe.html#GridRandomRecipe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.deprecated.config.recipe.GridRandomRecipe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases:</p>
+<p>A recipe involves both grid search and random search.</p>
+<p>Constructor.
+:param num_rand_samples: number of hyper-param configurations sampled randomly
+:param look_back: the length to look back, either a tuple with 2 int values,</p>
+<blockquote>
+<div><p>which is in format is (min len, max len), or a single int, which is
+a fixed length to look back.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>training_iteration</strong> – no. of iterations for training (n epochs) in trials</p></li>
+<li><p><strong>epochs</strong> – no. of epochs to train in each iteration</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.deprecated.config.recipe.LSTMSeq2SeqRandomRecipe">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bigdl.chronos.autots.deprecated.config.recipe.</span></span><span class="sig-name descname"><span class="pre">LSTMSeq2SeqRandomRecipe</span></span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/deprecated/config/recipe.html#LSTMSeq2SeqRandomRecipe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.deprecated.config.recipe.LSTMSeq2SeqRandomRecipe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases:</p>
+<p>A recipe involves both grid search and random search, only for Seq2SeqPytorch.
+Note: This recipe is specifically designed for third-party model searching, rather
+than TimeSequencePredictor.</p>
+<p>Constructor.
+set the param to a list for grid search.
+set the param to a tuple with length = 2 for random search.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_feature_num</strong> – (int) no. of input feature</p></li>
+<li><p><strong>output_feature_num</strong> – (int) no. of ouput feature</p></li>
+<li><p><strong>future_seq_len</strong> – (int) no. of steps to be predicted (i.e. horizon)</p></li>
+<li><p><strong>num_rand_samples</strong> – (int) number of hyper-param configurations sampled randomly</p></li>
+<li><p><strong>epochs</strong> – (int) no. of epochs to train in each iteration</p></li>
+<li><p><strong>training_iteration</strong> – (int) no. of iterations for training (n epochs) in trials</p></li>
+<li><p><strong>batch_size</strong> – (tuple|list) grid search candidates for batch size</p></li>
+<li><p><strong>lr</strong> – (tuple|list) learning rate</p></li>
+<li><p><strong>lstm_hidden_dim</strong> – (tuple|list) lstm hidden dim for both encoder and decoder</p></li>
+<li><p><strong>lstm_layer_num</strong> – (tuple|list) no. of lstm layer for both encoder and decoder</p></li>
+<li><p><strong>dropout</strong> – (tuple|list) dropout for lstm layer</p></li>
+<li><p><strong>teacher_forcing</strong> – (list) if to use teacher forcing machanism during training</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.deprecated.config.recipe.LSTMGridRandomRecipe">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bigdl.chronos.autots.deprecated.config.recipe.</span></span><span class="sig-name descname"><span class="pre">LSTMGridRandomRecipe</span></span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/deprecated/config/recipe.html#LSTMGridRandomRecipe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.deprecated.config.recipe.LSTMGridRandomRecipe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases:</p>
+<p>A recipe involves both grid search and random search, only for LSTM.</p>
+<p>Constructor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lstm_1_units</strong> – random search candidates for num of lstm_1_units</p></li>
+<li><p><strong>lstm_2_units</strong> – grid search candidates for num of lstm_1_units</p></li>
+<li><p><strong>batch_size</strong> – grid search candidates for batch size</p></li>
+<li><p><strong>num_rand_samples</strong> – number of hyper-param configurations sampled randomly</p></li>
+<li><p><strong>look_back</strong> – the length to look back, either a tuple with 2 int values,
+which is in format is (min len, max len), or a single int, which is
+a fixed length to look back.</p></li>
+<li><p><strong>training_iteration</strong> – no. of iterations for training (n epochs) in trials</p></li>
+<li><p><strong>epochs</strong> – no. of epochs to train in each iteration</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.deprecated.config.recipe.Seq2SeqRandomRecipe">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bigdl.chronos.autots.deprecated.config.recipe.</span></span><span class="sig-name descname"><span class="pre">Seq2SeqRandomRecipe</span></span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/deprecated/config/recipe.html#Seq2SeqRandomRecipe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.deprecated.config.recipe.Seq2SeqRandomRecipe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases:</p>
+<p>A recipe involves both grid search and random search, only for LSTM.</p>
+<p>Constructor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lstm_1_units</strong> – random search candidates for num of lstm_1_units</p></li>
+<li><p><strong>lstm_2_units</strong> – grid search candidates for num of lstm_1_units</p></li>
+<li><p><strong>batch_size</strong> – grid search candidates for batch size</p></li>
+<li><p><strong>num_rand_samples</strong> – number of hyper-param configurations sampled randomly</p></li>
+<li><p><strong>look_back</strong> – the length to look back, either a tuple with 2 int values,
+which is in format is (min len, max len), or a single int, which is
+a fixed length to look back.</p></li>
+<li><p><strong>training_iteration</strong> – no. of iterations for training (n epochs) in trials</p></li>
+<li><p><strong>epochs</strong> – no. of epochs to train in each iteration</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.deprecated.config.recipe.MTNetGridRandomRecipe">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bigdl.chronos.autots.deprecated.config.recipe.</span></span><span class="sig-name descname"><span class="pre">MTNetGridRandomRecipe</span></span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/deprecated/config/recipe.html#MTNetGridRandomRecipe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.deprecated.config.recipe.MTNetGridRandomRecipe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases:</p>
+<p>Grid+Random Recipe for MTNet</p>
+<p>Constructor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_rand_samples</strong> – number of hyper-param configurations sampled randomly</p></li>
+<li><p><strong>training_iteration</strong> – no. of iterations for training (n epochs) in trials</p></li>
+<li><p><strong>epochs</strong> – no. of epochs to train in each iteration</p></li>
+<li><p><strong>time_step</strong> – random search candidates for model param “time_step”</p></li>
+<li><p><strong>long_num</strong> – random search candidates for model param “long_num”</p></li>
+<li><p><strong>ar_size</strong> – random search candidates for model param “ar_size”</p></li>
+<li><p><strong>batch_size</strong> – grid search candidates for batch size</p></li>
+<li><p><strong>cnn_height</strong> – random search candidates for model param “cnn_height”</p></li>
+<li><p><strong>cnn_hid_size</strong> – random search candidates for model param “cnn_hid_size”</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.deprecated.config.recipe.TCNGridRandomRecipe">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bigdl.chronos.autots.deprecated.config.recipe.</span></span><span class="sig-name descname"><span class="pre">TCNGridRandomRecipe</span></span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/deprecated/config/recipe.html#TCNGridRandomRecipe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.deprecated.config.recipe.TCNGridRandomRecipe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases:</p>
+<p>Grid+Random Recipe for TCN</p>
+<p>Constructor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_rand_samples</strong> – number of hyper-param configurations sampled randomly</p></li>
+<li><p><strong>training_iteration</strong> – no. of iterations for training (n epochs) in trials</p></li>
+<li><p><strong>batch_size</strong> – grid search candidates for batch size</p></li>
+<li><p><strong>hidden_size</strong> – grid search candidates for hidden size of each layer</p></li>
+<li><p><strong>levels</strong> – the number of layers</p></li>
+<li><p><strong>kernel_size</strong> – the kernel size of each layer</p></li>
+<li><p><strong>dropout</strong> – dropout rate (1 - keep probability)</p></li>
+<li><p><strong>lr</strong> – learning rate</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.deprecated.config.recipe.RandomRecipe">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bigdl.chronos.autots.deprecated.config.recipe.</span></span><span class="sig-name descname"><span class="pre">RandomRecipe</span></span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/deprecated/config/recipe.html#RandomRecipe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.deprecated.config.recipe.RandomRecipe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases:</p>
+<p>Pure random sample Recipe. Often used as baseline.</p>
+<p>Constructor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>num_rand_samples</strong> – number of hyper-param configurations sampled randomly</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>:param look_back:the length to look back, either a tuple with 2 int values,</dt><dd><p>which is in format is (min len, max len), or a single int, which is
+a fixed length to look back.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reward_metric</strong> – the rewarding metric value, when reached, stop trial</p></li>
+<li><p><strong>training_iteration</strong> – no. of iterations for training (n epochs) in trials</p></li>
+<li><p><strong>epochs</strong> – no. of epochs to train in each iteration</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.deprecated.config.recipe.BayesRecipe">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bigdl.chronos.autots.deprecated.config.recipe.</span></span><span class="sig-name descname"><span class="pre">BayesRecipe</span></span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/deprecated/config/recipe.html#BayesRecipe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.deprecated.config.recipe.BayesRecipe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases:</p>
+<p>A Bayes search Recipe. (Experimental)</p>
+<p>Constructor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_samples</strong> – number of hyper-param configurations sampled</p></li>
+<li><p><strong>look_back</strong> – the length to look back, either a tuple with 2 int values,
+which is in format is (min len, max len), or a single int, which is
+a fixed length to look back.</p></li>
+<li><p><strong>reward_metric</strong> – the rewarding metric value, when reached, stop trial</p></li>
+<li><p><strong>training_iteration</strong> – no. of iterations for training (n epochs) in trials</p></li>
+<li><p><strong>epochs</strong> – no. of epochs to train in each iteration</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.deprecated.config.recipe.XgbRegressorGridRandomRecipe">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bigdl.chronos.autots.deprecated.config.recipe.</span></span><span class="sig-name descname"><span class="pre">XgbRegressorGridRandomRecipe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_rand_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_estimators</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[8,</span> <span class="pre">15]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[10,</span> <span class="pre">15]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'hist'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.0001,</span> <span class="pre">0.1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subsample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colsample_bytree</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_child_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1,</span> <span class="pre">2,</span> <span class="pre">3]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reg_alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reg_lambda</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/deprecated/config/recipe.html#XgbRegressorGridRandomRecipe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.deprecated.config.recipe.XgbRegressorGridRandomRecipe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">bigdl.chronos.autots.deprecated.config.base.Recipe</span></code></p>
+<p>Grid + Random Recipe for XGBoost Regressor.</p>
+<p>Constructor. For XGBoost hyper parameters, refer to
+<a class="reference external" href="https://xgboost.readthedocs.io/en/latest/python/python_api.html">https://xgboost.readthedocs.io/en/latest/python/python_api.html</a> for
+details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_rand_samples</strong> – number of hyper-param configurations sampled
+randomly</p></li>
+<li><p><strong>n_estimators</strong> – number of gradient boosted trees.</p></li>
+<li><p><strong>max_depth</strong> – max tree depth</p></li>
+<li><p><strong>n_jobs</strong> – number of parallel threads used to run xgboost.</p></li>
+<li><p><strong>tree_method</strong> – specify which tree method to use.</p></li>
+<li><p><strong>random_state</strong> – random number seed.</p></li>
+<li><p><strong>seed</strong> – seed used to generate the folds</p></li>
+<li><p><strong>lr</strong> – learning rate</p></li>
+<li><p><strong>subsample</strong> – subsample ratio of the training instance</p></li>
+<li><p><strong>colsample_bytree</strong> – subsample ratio of columns when constructing
+each tree.</p></li>
+<li><p><strong>min_child_weight</strong> – minimum sum of instance weight(hessian)
+needed in a child.</p></li>
+<li><p><strong>gamma</strong> – minimum loss reduction required to make a further
+partition on a leaf node of the tree.</p></li>
+<li><p><strong>reg_alpha</strong> – L1 regularization term on weights (xgb’s alpha).</p></li>
+<li><p><strong>reg_lambda</strong> – L2 regularization term on weights (xgb’s lambda).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bigdl.chronos.autots.deprecated.config.recipe.XgbRegressorSkOptRecipe">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bigdl.chronos.autots.deprecated.config.recipe.</span></span><span class="sig-name descname"><span class="pre">XgbRegressorSkOptRecipe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_rand_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_estimators_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(50,</span> <span class="pre">1000)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_depth_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(2,</span> <span class="pre">15)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.0001,</span> <span class="pre">0.1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_child_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1,</span> <span class="pre">2,</span> <span class="pre">3]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bigdl/chronos/autots/deprecated/config/recipe.html#XgbRegressorSkOptRecipe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bigdl.chronos.autots.deprecated.config.recipe.XgbRegressorSkOptRecipe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">bigdl.chronos.autots.deprecated.config.base.Recipe</span></code></p>
+<p>A recipe using SkOpt search algorithm for XGBoost Regressor.</p>
+<p>Constructor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_rand_samples</strong> – number of hyper-param configurations sampled
+randomly</p></li>
+<li><p><strong>n_estimators_range</strong> – range of number of gradient boosted trees.</p></li>
+<li><p><strong>max_depth_range</strong> – range of max tree depth</p></li>
+<li><p><strong>lr</strong> – learning rate</p></li>
+<li><p><strong>min_child_weight</strong> – minimum sum of instance weight(hessian)
+needed in a child.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="evaluator.html" class="btn btn-neutral float-left" title="Evaluator" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../Nano/index.html" class="btn btn-neutral float-right" title="Nano API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

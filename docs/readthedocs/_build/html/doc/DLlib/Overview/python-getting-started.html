@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Python DLLib Getting Start Guide &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/design-tabs.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Python DLLib Getting Start Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/doc/DLlib/Overview/python-getting-started.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="python-dllib-getting-start-guide">
+<h1>Python DLLib Getting Start Guide<a class="headerlink" href="#python-dllib-getting-start-guide" title="Permalink to this headline">¶</a></h1>
+<section id="code-initialization">
+<h2>1. Code initialization<a class="headerlink" href="#code-initialization" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">nncontext</span></code> is the main entry for provisioning the dllib program on the underlying cluster (such as K8s or Hadoop cluster), or just on a single laptop.</p>
+<p>It is recommended to initialize <code class="docutils literal notranslate"><span class="pre">nncontext</span></code> at the beginning of your program:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bigdl.dllib.nncontext</span> <span class="k">import</span> <span class="o">*</span>
+<span class="n">sc</span> <span class="o">=</span> <span class="n">init_nncontext</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>For more information about <code class="docutils literal notranslate"><span class="pre">nncontext</span></code>, please refer to <a class="reference external" href="https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/dllib.html#nn-context">nncontext</a></p>
+</section>
+<section id="distributed-data-loading">
+<h2>3. Distributed Data Loading<a class="headerlink" href="#distributed-data-loading" title="Permalink to this headline">¶</a></h2>
+<section id="using-spark-dataframe-apis">
+<h3>Using Spark Dataframe APIs<a class="headerlink" href="#using-spark-dataframe-apis" title="Permalink to this headline">¶</a></h3>
+<p>DLlib supports Spark Dataframes as the input to the distributed training, and as
+the input/output of the distributed inference. Consequently, the user can easily
+process large-scale dataset using Apache Spark, and directly apply AI models on
+the distributed (and possibly in-memory) Dataframes without data conversion or serialization</p>
+<p>We create Spark session so we can use Spark API to load and process the data</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">spark</span> <span class="o">=</span> <span class="n">SQLContext</span><span class="p">(</span><span class="n">sc</span><span class="p">)</span>
+</pre></div>
+</div>
+<ol class="simple">
+<li><p>We can use Spark API to load the data into Spark DataFrame, eg. read csv file into Spark DataFrame</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="s2">&quot;pima-indians-diabetes.data.csv&quot;</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">csv</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If the feature column for the model is a Spark ML Vector. Please assemble related columns into a Vector and pass it to the model. eg.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyspark.ml.feature</span> <span class="k">import</span> <span class="n">VectorAssembler</span>
+<span class="n">vecAssembler</span> <span class="o">=</span> <span class="n">VectorAssembler</span><span class="p">(</span><span class="n">outputCol</span><span class="o">=</span><span class="s2">&quot;features&quot;</span><span class="p">)</span>
+<span class="n">vecAssembler</span><span class="o">.</span><span class="n">setInputCols</span><span class="p">([</span><span class="s2">&quot;num_times_pregrant&quot;</span><span class="p">,</span> <span class="s2">&quot;plasma_glucose&quot;</span><span class="p">,</span> <span class="s2">&quot;blood_pressure&quot;</span><span class="p">,</span> <span class="s2">&quot;skin_fold_thickness&quot;</span><span class="p">,</span> <span class="s2">&quot;2-hour_insulin&quot;</span><span class="p">,</span> <span class="s2">&quot;body_mass_index&quot;</span><span class="p">,</span> <span class="s2">&quot;diabetes_pedigree_function&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">])</span>
+<span class="n">assemble_df</span> <span class="o">=</span> <span class="n">vecAssembler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">assemble_df</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;class&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">DoubleType</span><span class="p">)</span> <span class="o">+</span> <span class="n">lit</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+</pre></div>
+</div>
+<ol class="simple">
+<li><p>If the training data is image, we can use DLLib api to load image into Spark DataFrame. Eg.</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">imgPath</span> <span class="o">=</span> <span class="s2">&quot;cats_dogs/&quot;</span>
+<span class="n">imageDF</span> <span class="o">=</span> <span class="n">NNImageReader</span><span class="o">.</span><span class="n">readImages</span><span class="p">(</span><span class="n">imgPath</span><span class="p">,</span> <span class="n">sc</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>It will load the images and generate feature tensors automatically. Also we need generate labels ourselves. eg:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">labelDF</span> <span class="o">=</span> <span class="n">imageDF</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">getName</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;image&quot;</span><span class="p">)))</span> \
+        <span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="n">getLabel</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)))</span>
+</pre></div>
+</div>
+<p>Then split the Spark DataFrame into traing part and validation part</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">trainingDF</span><span class="p">,</span> <span class="n">validationDF</span><span class="p">)</span> <span class="o">=</span> <span class="n">labelDF</span><span class="o">.</span><span class="n">randomSplit</span><span class="p">([</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">])</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="model-definition">
+<h2>4. Model Definition<a class="headerlink" href="#model-definition" title="Permalink to this headline">¶</a></h2>
+<section id="using-keras-like-apis">
+<h3>Using Keras-like APIs<a class="headerlink" href="#using-keras-like-apis" title="Permalink to this headline">¶</a></h3>
+<p>To define a model, you can use the <a class="reference external" href="https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/keras-api.html">Keras Style API</a>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x1</span> <span class="o">=</span> <span class="n">Input</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="mi">8</span><span class="p">])</span>
+<span class="n">dense1</span> <span class="o">=</span> <span class="n">Dense</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;relu&quot;</span><span class="p">)(</span><span class="n">x1</span><span class="p">)</span>
+<span class="n">dense2</span> <span class="o">=</span> <span class="n">Dense</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;relu&quot;</span><span class="p">)(</span><span class="n">dense1</span><span class="p">)</span>
+<span class="n">dense3</span> <span class="o">=</span> <span class="n">Dense</span><span class="p">(</span><span class="mi">2</span><span class="p">)(</span><span class="n">dense2</span><span class="p">)</span>
+<span class="n">dmodel</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">x1</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="n">dense3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>After creating the model, you will have to decide which loss function to use in training.</p>
+<p>Now you can use <code class="docutils literal notranslate"><span class="pre">compile</span></code> function of the model to set the loss function, optimization method.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dmodel</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">optimizer</span> <span class="o">=</span> <span class="s2">&quot;adam&quot;</span><span class="p">,</span> <span class="n">loss</span> <span class="o">=</span> <span class="s2">&quot;sparse_categorical_crossentropy&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now the model is built and ready to train.</p>
+</section>
+</section>
+<section id="distributed-model-training">
+<h2>5. Distributed Model Training<a class="headerlink" href="#distributed-model-training" title="Permalink to this headline">¶</a></h2>
+<p>Now you can use ‘fit’ begin the training, please set the label columns. Model Evaluation can be performed periodically during a training.</p>
+<ol class="simple">
+<li><p>If the dataframe is generated using Spark apis, you also need set the feature columns. eg.</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">feature_cols</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;features&quot;</span><span class="p">],</span> <span class="n">label_cols</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">],</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">nb_epoch</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note: Above model accepts single input(column <code class="docutils literal notranslate"><span class="pre">features</span></code>) and single output(column <code class="docutils literal notranslate"><span class="pre">label</span></code>).</p>
+<p>If your model accepts multiple inputs(eg. column <code class="docutils literal notranslate"><span class="pre">f1</span></code>, <code class="docutils literal notranslate"><span class="pre">f2</span></code>, <code class="docutils literal notranslate"><span class="pre">f3</span></code>), please set the features as below:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">feature_cols</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;f1&quot;</span><span class="p">,</span> <span class="s2">&quot;f2&quot;</span><span class="p">],</span> <span class="n">label_cols</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">],</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">nb_epoch</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Similarly, if the model accepts multiple outputs(eg. column <code class="docutils literal notranslate"><span class="pre">label1</span></code>, <code class="docutils literal notranslate"><span class="pre">label2</span></code>), please set the label columns as below:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">feature_cols</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;features&quot;</span><span class="p">],</span> <span class="n">label_cols</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;l1&quot;</span><span class="p">,</span> <span class="s2">&quot;l2&quot;</span><span class="p">],</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">nb_epoch</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<ol class="simple">
+<li><p>If the dataframe is generated using DLLib <code class="docutils literal notranslate"><span class="pre">NNImageReader</span></code>, we don’t need set <code class="docutils literal notranslate"><span class="pre">feature_cols</span></code>, we can set <code class="docutils literal notranslate"><span class="pre">transform</span></code> to config how to process the images before training. Eg.</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bigdl.dllib.feature.image</span> <span class="k">import</span> <span class="n">transforms</span>
+<span class="n">transformers</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span><span class="n">ImageResize</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span> <span class="n">ImageMirror</span><span class="p">()])</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">image_df</span><span class="p">,</span> <span class="n">label_cols</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">],</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">nb_epoch</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transformers</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For more details about how to use DLLib keras api to train image data, you may want to refer <a class="reference external" href="https://github.com/intel-analytics/BigDL/tree/main/python/dllib/examples/keras/image_classification.py">ImageClassification</a></p>
+</section>
+<section id="model-saving-and-loading">
+<h2>6. Model saving and loading<a class="headerlink" href="#model-saving-and-loading" title="Permalink to this headline">¶</a></h2>
+<p>When training is finished, you may need to save the final model for later use.</p>
+<p>BigDL allows you to save your BigDL model on local filesystem, HDFS, or Amazon s3.</p>
+<ul class="simple">
+<li><p><strong>save</strong></p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">modelPath</span> <span class="o">=</span> <span class="s2">&quot;/tmp/demo/keras.model&quot;</span>
+<span class="n">dmodel</span><span class="o">.</span><span class="n">saveModel</span><span class="p">(</span><span class="n">modelPath</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>load</strong></p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">loadModel</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">loadModel</span><span class="p">(</span><span class="n">modelPath</span><span class="p">)</span>
+<span class="n">preDF</span> <span class="o">=</span> <span class="n">loadModel</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">feature_cols</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;features&quot;</span><span class="p">],</span> <span class="n">prediction_col</span><span class="o">=</span><span class="s2">&quot;predict&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You may want to refer <a class="reference external" href="https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/keras-api.html#save">Save/Load</a></p>
+</section>
+<section id="distributed-evaluation-and-inference">
+<h2>7. Distributed evaluation and inference<a class="headerlink" href="#distributed-evaluation-and-inference" title="Permalink to this headline">¶</a></h2>
+<p>After training finishes, you can then use the trained model for prediction or evaluation.</p>
+<ul class="simple">
+<li><p><strong>inference</strong></p></li>
+</ul>
+<ol class="simple">
+<li><p>For dataframe generated by Spark API, please set <code class="docutils literal notranslate"><span class="pre">feature_cols</span></code> and <code class="docutils literal notranslate"><span class="pre">prediction_col</span></code></p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dmodel</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">feature_cols</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;features&quot;</span><span class="p">],</span> <span class="n">prediction_col</span><span class="o">=</span><span class="s2">&quot;predict&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<ol class="simple">
+<li><p>For dataframe generated by <code class="docutils literal notranslate"><span class="pre">NNImageReader</span></code>, please set <code class="docutils literal notranslate"><span class="pre">prediction_col</span></code> and you can set <code class="docutils literal notranslate"><span class="pre">transform</span></code> if needed</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">prediction_col</span><span class="o">=</span><span class="s2">&quot;predict&quot;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transformers</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>evaluation</strong>
+Similary for dataframe generated by Spark API, the code is as below:</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dmodel</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">feature_cols</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;features&quot;</span><span class="p">],</span> <span class="n">label_cols</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>For dataframe generated by <code class="docutils literal notranslate"><span class="pre">NNImageReader</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">image_df</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label_cols</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">],</span> <span class="n">transform</span><span class="o">=</span><span class="n">transformers</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="checkpointing-and-resuming-training">
+<h2>8. Checkpointing and resuming training<a class="headerlink" href="#checkpointing-and-resuming-training" title="Permalink to this headline">¶</a></h2>
+<p>You can configure periodically taking snapshots of the model.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cpPath</span> <span class="o">=</span> <span class="s2">&quot;/tmp/demo/cp&quot;</span>
+<span class="n">dmodel</span><span class="o">.</span><span class="n">set_checkpoint</span><span class="p">(</span><span class="n">cpPath</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can also set <code class="docutils literal notranslate"><span class="pre">over_write</span></code> to <code class="docutils literal notranslate"><span class="pre">true</span></code> to enable overwriting any existing snapshot files</p>
+<p>After training stops, you can resume from any saved point. Choose one of the model snapshots to resume (saved in checkpoint path, details see Checkpointing). Use Models.loadModel to load the model snapshot into an model object.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">loadModel</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">loadModel</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="monitor-your-training">
+<h2>9. Monitor your training<a class="headerlink" href="#monitor-your-training" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><strong>Tensorboard</strong></p></li>
+</ul>
+<p>BigDL provides a convenient way to monitor/visualize your training progress. It writes the statistics collected during training/validation. Saved summary can be viewed via TensorBoard.</p>
+<p>In order to take effect, it needs to be called before fit.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dmodel</span><span class="o">.</span><span class="n">set_tensorboard</span><span class="p">(</span><span class="s2">&quot;./&quot;</span><span class="p">,</span> <span class="s2">&quot;dllib_demo&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For more details, please refer <a class="reference internal" href="visualization.html"><span class="doc">visulization</span></a></p>
+</section>
+<section id="transfer-learning-and-finetuning">
+<h2>10. Transfer learning and finetuning<a class="headerlink" href="#transfer-learning-and-finetuning" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><strong>freeze and trainable</strong>
+BigDL DLLib supports exclude some layers of model from training.</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dmodel</span><span class="o">.</span><span class="n">freeze</span><span class="p">(</span><span class="n">layer_names</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Layers that match the given names will be freezed. If a layer is freezed, its parameters(weight/bias, if exists) are not changed in training process.</p>
+<p>BigDL DLLib also support unFreeze operations. The parameters for the layers that match the given names will be trained(updated) in training process</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dmodel</span><span class="o">.</span><span class="n">unFreeze</span><span class="p">(</span><span class="n">layer_names</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For more information, you may refer <a class="reference internal" href="freeze.html"><span class="doc">freeze</span></a></p>
+</section>
+<section id="hyperparameter-tuning">
+<h2>11. Hyperparameter tuning<a class="headerlink" href="#hyperparameter-tuning" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><strong>optimizer</strong></p></li>
+</ul>
+<p>DLLib supports a list of optimization methods.
+For more details, please refer <a class="reference internal" href="optim-Methods.html"><span class="doc">optimization</span></a></p>
+<ul class="simple">
+<li><p><strong>learning rate scheduler</strong></p></li>
+</ul>
+<p>DLLib supports a list of learning rate scheduler.
+For more details, please refer <a class="reference internal" href="learningrate-Scheduler.html"><span class="doc">lr_scheduler</span></a></p>
+<ul class="simple">
+<li><p><strong>batch size</strong></p></li>
+</ul>
+<p>DLLib supports set batch size during training and prediction. We can adjust the batch size to tune the model’s accuracy.</p>
+<ul class="simple">
+<li><p><strong>regularizer</strong></p></li>
+</ul>
+<p>DLLib supports a list of regularizers.
+For more details, please refer <a class="reference internal" href="regularizers.html"><span class="doc">regularizer</span></a></p>
+<ul class="simple">
+<li><p><strong>clipping</strong></p></li>
+</ul>
+<p>DLLib supports gradient clipping operations.
+For more details, please refer <a class="reference internal" href="clipping.html"><span class="doc">gradient_clip</span></a></p>
+</section>
+<section id="running-program">
+<h2>12. Running program<a class="headerlink" href="#running-program" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">you_app_code</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

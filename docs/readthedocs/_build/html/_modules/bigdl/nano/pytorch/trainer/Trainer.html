@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bigdl.nano.pytorch.trainer.Trainer &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+        <script src="../../../../../_static/clipboard.min.js"></script>
+        <script src="../../../../../_static/copybutton.js"></script>
+        <script src="../../../../../_static/tabs.js"></script>
+        <script src="../../../../../_static/design-tabs.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../index.html">Module code</a> &raquo;</li>
+      <li>bigdl.nano.pytorch.trainer.Trainer</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bigdl.nano.pytorch.trainer.Trainer</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright 2016 The BigDL Authors.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">from</span> <span class="nn">logging</span> <span class="k">import</span> <span class="n">warning</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="k">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">import</span> <span class="nn">pytorch_lightning</span> <span class="k">as</span> <span class="nn">pl</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="k">import</span> <span class="n">nn</span>
+<span class="kn">from</span> <span class="nn">torch.nn.modules.loss</span> <span class="k">import</span> <span class="n">_Loss</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="k">import</span> <span class="n">DataLoader</span>
+<span class="kn">from</span> <span class="nn">torchmetrics.metric</span> <span class="k">import</span> <span class="n">Metric</span>
+<span class="kn">from</span> <span class="nn">torch.optim.lr_scheduler</span> <span class="k">import</span> <span class="n">_LRScheduler</span>
+<span class="kn">import</span> <span class="nn">yaml</span>
+<span class="kn">from</span> <span class="nn">bigdl.nano.pytorch.utils</span> <span class="k">import</span> <span class="n">TORCH_VERSION_LESS_1_10</span><span class="p">,</span> <span class="n">TORCH_VERSION_LESS_1_11</span>
+<span class="kn">from</span> <span class="nn">bigdl.nano.pytorch.utils</span> <span class="k">import</span> <span class="n">ChannelsLastCallback</span>
+<span class="kn">from</span> <span class="nn">bigdl.nano.pytorch.algorithms</span> <span class="k">import</span> <span class="n">SelectiveBackprop</span>
+<span class="kn">from</span> <span class="nn">bigdl.nano.pytorch.amp</span> <span class="k">import</span> <span class="n">BF16Model</span>
+<span class="kn">from</span> <span class="nn">bigdl.nano.pytorch.lightning</span> <span class="k">import</span> <span class="n">LightningModule</span>
+<span class="kn">from</span> <span class="nn">bigdl.nano.pytorch.plugins.ddp_spawn</span> <span class="k">import</span> <span class="n">DDPSpawnPlugin</span>
+<span class="kn">from</span> <span class="nn">bigdl.nano.pytorch.plugins.ddp_subprocess</span> <span class="k">import</span> <span class="n">DDPSubprocessPlugin</span>
+
+<span class="kn">from</span> <span class="nn">bigdl.nano.deps.automl.hpo_api</span> <span class="k">import</span> <span class="n">create_hpo_searcher</span><span class="p">,</span> <span class="n">check_hpo_status</span>
+<span class="kn">from</span> <span class="nn">bigdl.nano.deps.ray.ray_api</span> <span class="k">import</span> <span class="n">distributed_ray</span>
+<span class="kn">from</span> <span class="nn">bigdl.nano.deps.openvino.openvino_api</span> <span class="k">import</span> <span class="n">PytorchOpenVINOModel</span><span class="p">,</span> <span class="n">load_openvino_model</span>
+<span class="kn">from</span> <span class="nn">bigdl.nano.deps.ipex.ipex_api</span> <span class="k">import</span> <span class="n">create_IPEXAccelerator</span><span class="p">,</span> <span class="n">create_IPEXAccelerator_1_9</span><span class="p">,</span> \
+    <span class="n">PytorchIPEXJITModel</span><span class="p">,</span> <span class="n">load_ipexjit_model</span>
+<span class="kn">from</span> <span class="nn">bigdl.nano.deps.onnxruntime.onnxruntime_api</span> <span class="k">import</span> <span class="n">PytorchONNXRuntimeModel</span><span class="p">,</span> \
+    <span class="n">load_onnxruntime_model</span>
+<span class="kn">from</span> <span class="nn">bigdl.nano.deps.neural_compressor.inc_api</span> <span class="k">import</span> <span class="n">load_inc_model</span><span class="p">,</span> <span class="n">quantize</span> <span class="k">as</span> <span class="n">inc_quantize</span>
+<span class="kn">from</span> <span class="nn">bigdl.nano.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span>
+<span class="kn">from</span> <span class="nn">bigdl.nano.utils.inference.pytorch.model</span> <span class="k">import</span> <span class="n">AcceleratedLightningModule</span>
+<span class="kn">from</span> <span class="nn">bigdl.nano.common</span> <span class="k">import</span> <span class="n">check_avx512</span>
+<span class="n">distributed_backends</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;spawn&quot;</span><span class="p">,</span> <span class="s2">&quot;ray&quot;</span><span class="p">,</span> <span class="s2">&quot;subprocess&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="Trainer"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Nano/pytorch.html#bigdl.nano.pytorch.Trainer">[docs]</a><span class="k">class</span> <span class="nc">Trainer</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">Trainer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Trainer for BigDL-Nano pytorch.</span>
+
+<span class="sd">    This Trainer extends PyTorch Lightning Trainer by adding</span>
+<span class="sd">    various options to accelerate pytorch training.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_processes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                 <span class="n">use_ipex</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                 <span class="n">enable_bf16</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">distributed_backend</span><span class="o">=</span><span class="s2">&quot;subprocess&quot;</span><span class="p">,</span>
+                 <span class="n">cpu_for_each_process</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">use_hpo</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">channels_last</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                 <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A pytorch lightning trainer that uses bigdl-nano optimization.</span>
+
+<span class="sd">        :param num_processes: number of processes in distributed training. default: 4.</span>
+<span class="sd">        :param use_ipex: whether we use ipex as accelerator for trainer. default: False.</span>
+<span class="sd">        :param cpu_for_each_process: A list of length `num_processes`, each containing a list of</span>
+<span class="sd">            indices of cpus each process will be using. default: None, and the cpu will be</span>
+<span class="sd">            automatically and evenly distributed among processes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check keyword arguments</span>
+        <span class="k">if</span> <span class="s2">&quot;accelerator&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">warning</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;&quot;&quot;Accelerator will be specified by bigdl-nano,</span>
+<span class="s2">            accelerator entered </span><span class="si">{kwargs[&#39;accelerator&#39;]}</span><span class="s2"> will be ignored. &quot;&quot;&quot;</span><span class="p">)</span>
+
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;accelerator&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;plugins&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">warning</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;&quot;&quot;Plugins will be specified by bigdl-nano,</span>
+<span class="s2">             plugines entered </span><span class="si">{kwargs[&#39;plugins&#39;]}</span><span class="s2"> will be ignored. &quot;&quot;&quot;</span><span class="p">)</span>
+
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;plugins&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cpu_for_each_process</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cpu_for_each_process</span><span class="p">)</span> <span class="o">!=</span> <span class="n">num_processes</span><span class="p">:</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                                  <span class="n">f</span><span class="s2">&quot;The length of `cpu_for_each_process` (&quot;</span>
+                                  <span class="n">f</span><span class="s2">&quot;{len(cpu_for_each_process)}) is not equal to the number of&quot;</span>
+                                  <span class="n">f</span><span class="s2">&quot; processes </span><span class="si">{num_processes}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+        <span class="n">accelerator</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="s2">&quot;algorithms&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_algorithms</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">channels_last</span><span class="p">:</span>
+            <span class="n">callbacks</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;callbacks&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">callbacks</span><span class="p">:</span>
+                <span class="n">callbacks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ChannelsLastCallback</span><span class="p">())</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;callbacks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">ChannelsLastCallback</span><span class="p">()]</span>
+
+        <span class="k">if</span> <span class="n">TORCH_VERSION_LESS_1_11</span> <span class="ow">and</span> <span class="n">use_ipex</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">check_avx512</span><span class="p">():</span>
+            <span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Enable ipex&lt;=1.10 in a cpu instruction set&quot;</span>
+                    <span class="s2">&quot; without avx512 will crash.&quot;</span>
+                    <span class="s2">&quot;Fall back to regular pytorch.&quot;</span><span class="p">)</span>
+            <span class="n">use_ipex</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_ipex</span> <span class="o">=</span> <span class="n">use_ipex</span>
+
+        <span class="k">if</span> <span class="n">num_processes</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">bigdl.nano.pytorch.strategies</span> <span class="k">import</span> <span class="n">create_IPEXStrategy</span>
+            <span class="n">strategy</span> <span class="o">=</span> <span class="n">create_IPEXStrategy</span><span class="p">(</span><span class="n">enable_bf16</span><span class="o">=</span><span class="n">enable_bf16</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_ipex</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;strategy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">strategy</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">plugin</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="n">distributed_backend</span> <span class="ow">in</span> <span class="n">distributed_backends</span><span class="p">,</span>
+                              <span class="n">f</span><span class="s2">&quot;Distributed backends supported now are </span><span class="si">{distributed_backends}</span><span class="s2">,&quot;</span>
+                              <span class="n">f</span><span class="s2">&quot; but get </span><span class="si">{distributed_backend}</span><span class="s2">.&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">&quot;checkpoint_callback&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;checkpoint_callback&quot;</span><span class="p">]:</span>
+                    <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                                      <span class="n">f</span><span class="s2">&quot;`checkpoint_callback` set to False. &quot;</span>
+                                      <span class="n">f</span><span class="s2">&quot;Currently, disable checkpoint callback make &quot;</span>
+                                      <span class="n">f</span><span class="s2">&quot;distributed training backend work incorrect&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">distributed_backend</span> <span class="o">==</span> <span class="s2">&quot;spawn&quot;</span><span class="p">:</span>
+                <span class="kn">from</span> <span class="nn">bigdl.nano.pytorch.strategies</span> <span class="k">import</span> <span class="n">DDPSpawnStrategy</span>
+                <span class="n">strategy</span> <span class="o">=</span> <span class="n">DDPSpawnStrategy</span><span class="p">(</span><span class="n">num_processes</span><span class="o">=</span><span class="n">num_processes</span><span class="p">,</span>
+                                            <span class="n">cpu_for_each_process</span><span class="o">=</span><span class="n">cpu_for_each_process</span><span class="p">,</span>
+                                            <span class="n">use_ipex</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">use_ipex</span><span class="p">,</span>
+                                            <span class="n">enable_bf16</span><span class="o">=</span><span class="n">enable_bf16</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">distributed_backend</span> <span class="o">==</span> <span class="s2">&quot;subprocess&quot;</span><span class="p">:</span>
+                <span class="kn">from</span> <span class="nn">bigdl.nano.pytorch.strategies</span> <span class="k">import</span> <span class="n">DDPSubprocessStrategy</span>
+                <span class="n">strategy</span> <span class="o">=</span> <span class="n">DDPSubprocessStrategy</span><span class="p">(</span><span class="n">num_processes</span><span class="o">=</span><span class="n">num_processes</span><span class="p">,</span>
+                                                 <span class="n">cpu_for_each_process</span><span class="o">=</span><span class="n">cpu_for_each_process</span><span class="p">,</span>
+                                                 <span class="n">use_ipex</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">use_ipex</span><span class="p">,</span>
+                                                 <span class="n">enable_bf16</span><span class="o">=</span><span class="n">enable_bf16</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">distributed_backend</span> <span class="o">==</span> <span class="s2">&quot;ray&quot;</span><span class="p">:</span>
+                <span class="kn">from</span> <span class="nn">bigdl.nano.pytorch.strategies</span> <span class="k">import</span> <span class="n">create_RayStrategy</span>
+                <span class="n">strategy</span> <span class="o">=</span> <span class="n">create_RayStrategy</span><span class="p">(</span><span class="n">num_workers</span><span class="o">=</span><span class="n">num_processes</span><span class="p">,</span>
+                                              <span class="n">use_ipex</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">use_ipex</span><span class="p">,</span>
+                                              <span class="n">enable_bf16</span><span class="o">=</span><span class="n">enable_bf16</span><span class="p">)</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;strategy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">strategy</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">use_hpo</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hposearcher</span> <span class="o">=</span> <span class="n">create_hpo_searcher</span><span class="p">(</span><span class="n">trainer</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_processes</span><span class="o">=</span><span class="n">num_processes</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hposearcher</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_add_algorithms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">callbacks</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;callbacks&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">algorithm</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;algorithms&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">algorithm</span><span class="p">,</span> <span class="n">SelectiveBackprop</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">callbacks</span><span class="p">:</span>
+                    <span class="n">callbacks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">algorithm</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;callbacks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">algorithm</span><span class="p">]</span>
+        <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;algorithms&#39;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">kwargs</span>
+
+<div class="viewcode-block" id="Trainer.compile"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Nano/pytorch.html#bigdl.nano.pytorch.Trainer.compile">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">compile</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
+                <span class="n">loss</span><span class="p">:</span> <span class="n">_Loss</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">optimizer</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">scheduler</span><span class="p">:</span> <span class="n">_LRScheduler</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">metrics</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Metric</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct a pytorch-lightning model.</span>
+
+<span class="sd">        If model is already a pytorch-lightning model,</span>
+<span class="sd">        return model. If model is pytorch model, construct a new pytorch-lightning module</span>
+<span class="sd">        with model, loss and optimizer.</span>
+
+<span class="sd">        :param model:       A model instance.</span>
+<span class="sd">        :param loss:        Loss to construct pytorch-lightning model.</span>
+<span class="sd">                            Should be None if model is instance of pl.LightningModule.</span>
+<span class="sd">        :param optimizer:   Optimizer to construct pytorch-lightning model Should be None.</span>
+<span class="sd">                            if model is instance of pl.LightningModule.</span>
+<span class="sd">        :param metrics:     A list of torchmetrics to validate/test performance.</span>
+<span class="sd">        :return:            A LightningModule object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">),</span>
+                          <span class="s2">&quot;Model must be instance of nn.Module but got </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="vm">__class__</span><span class="p">))</span>
+
+        <span class="n">pl_model</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">LightningModule</span><span class="p">):</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="ow">not</span> <span class="p">(</span><span class="n">loss</span> <span class="ow">or</span> <span class="n">optimizer</span><span class="p">),</span>
+                              <span class="s2">&quot;Loss and optimizer should be None if model&quot;</span>
+                              <span class="s2">&quot; is a pytorch-lightning model.&quot;</span><span class="p">)</span>
+            <span class="n">pl_model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pl_model</span> <span class="o">=</span> <span class="n">LightningModule</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">scheduler</span><span class="p">,</span> <span class="n">metrics</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">pl_model</span></div>
+
+<div class="viewcode-block" id="Trainer.search"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Nano/pytorch.html#bigdl.nano.pytorch.Trainer.search">[docs]</a>    <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+               <span class="n">model</span><span class="p">,</span>
+               <span class="n">resume</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+               <span class="n">target_metric</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+               <span class="n">n_parallels</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+               <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run HPO search. It will be called in Trainer.search().</span>
+
+<span class="sd">        :param model: The model to be searched. It should be an auto model.</span>
+<span class="sd">        :param resume: whether to resume the previous or start a new one,</span>
+<span class="sd">            defaults to False.</span>
+<span class="sd">        :param target_metric: the object metric to optimize,</span>
+<span class="sd">            defaults to None.</span>
+<span class="sd">        :param n_parallels: the number of parallel processes for running trials.</span>
+<span class="sd">        :return: the model with study meta info attached.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">check_hpo_status</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hposearcher</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">Trainer</span><span class="o">.</span><span class="n">_log_api_event</span><span class="p">(</span><span class="s2">&quot;search&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">hposearcher</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">model</span><span class="p">,</span>
+                                       <span class="n">resume</span><span class="o">=</span><span class="n">resume</span><span class="p">,</span>
+                                       <span class="n">target_metric</span><span class="o">=</span><span class="n">target_metric</span><span class="p">,</span>
+                                       <span class="n">n_parallels</span><span class="o">=</span><span class="n">n_parallels</span><span class="p">,</span>
+                                       <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Trainer.search_summary"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Nano/pytorch.html#bigdl.nano.pytorch.Trainer.search_summary">[docs]</a>    <span class="k">def</span> <span class="nf">search_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrive a summary of trials.</span>
+
+<span class="sd">        :return: A summary of all the trials. Currently the entire study is</span>
+<span class="sd">            returned to allow more flexibility for further analysis and visualization.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">check_hpo_status</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hposearcher</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">hposearcher</span><span class="o">.</span><span class="n">search_summary</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Trainer.quantize"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Nano/pytorch.html#bigdl.nano.pytorch.Trainer.quantize">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">quantize</span><span class="p">(</span><span class="n">model</span><span class="p">,</span>  <span class="c1"># remove the type requirement for type checking</span>
+                 <span class="n">precision</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;int8&#39;</span><span class="p">,</span>
+                 <span class="n">accelerator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">calib_dataloader</span><span class="p">:</span> <span class="n">DataLoader</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">metric</span><span class="p">:</span> <span class="n">Metric</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">accuracy_criterion</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">approach</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;static&#39;</span><span class="p">,</span>
+                 <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">conf</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">tuning_strategy</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">max_trials</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">input_sample</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">onnxruntime_session_options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">export_kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calibrate a Pytorch-Lightning model for post-training quantization.</span>
+
+<span class="sd">        :param model:           A model to be quantized. Model type should be an instance of</span>
+<span class="sd">                                nn.Module.</span>
+<span class="sd">        :param precision:       Global precision of quantized model,</span>
+<span class="sd">                                supported type: &#39;int8&#39;, &#39;bf16&#39;, &#39;fp16&#39;, defaults to &#39;int8&#39;.</span>
+<span class="sd">        :param accelerator:     Use accelerator &#39;None&#39;, &#39;onnxruntime&#39;, &#39;openvino&#39;, defaults to None.</span>
+<span class="sd">                                None means staying in pytorch.</span>
+<span class="sd">        :param calib_dataloader:    A torch.utils.data.dataloader.DataLoader object for calibration.</span>
+<span class="sd">                                    Required for static quantization.</span>
+<span class="sd">                                    It&#39;s also used as validation dataloader.</span>
+<span class="sd">        :param metric:              A torchmetrics.metric.Metric object for evaluation.</span>
+<span class="sd">        :param accuracy_criterion:  Tolerable accuracy drop, defaults to None meaning no</span>
+<span class="sd">                                    accuracy control.</span>
+<span class="sd">                                    accuracy_criterion = {&#39;relative&#39;: 0.1, &#39;higher_is_better&#39;: True}</span>
+<span class="sd">                                    allows relative accuracy loss: 1%. accuracy_criterion =</span>
+<span class="sd">                                    {&#39;absolute&#39;: 0.99, &#39;higher_is_better&#39;:False} means accuracy</span>
+<span class="sd">                                    must be smaller than 0.99.</span>
+<span class="sd">        :param approach:    &#39;static&#39; or &#39;dynamic&#39;.</span>
+<span class="sd">                            &#39;static&#39;: post_training_static_quant,</span>
+<span class="sd">                            &#39;dynamic&#39;: post_training_dynamic_quant.</span>
+<span class="sd">                            Default: &#39;static&#39;. OpenVINO supports static mode only.</span>
+<span class="sd">        :param method:          Method to do quantization. When accelerator=None, supported</span>
+<span class="sd">            methods: &#39;fx&#39;, &#39;eager&#39;, &#39;ipex&#39;, defaults to &#39;fx&#39;. If you don&#39;t use ipex, suggest using</span>
+<span class="sd">            &#39;fx&#39; which executes automatic optimizations like fusion. For more information, please</span>
+<span class="sd">            refer to https://pytorch.org/docs/stable/quantization.html#eager-mode-quantization.</span>
+<span class="sd">            When accelerator=&#39;onnxruntime&#39;, supported methods: &#39;qlinear&#39;, &#39;integer&#39;, defaults</span>
+<span class="sd">            to &#39;qlinear&#39;. Suggest &#39;qlinear&#39; for lower accuracy drop if using static quantization.</span>
+<span class="sd">            More details in https://onnxruntime.ai/docs/performance/quantization.html.</span>
+<span class="sd">            This argument doesn&#39;t take effect for OpenVINO, don&#39;t change it for OpenVINO.</span>
+<span class="sd">        :param conf:        A path to conf yaml file for quantization.</span>
+<span class="sd">                            Default: None, using default config.</span>
+<span class="sd">        :param tuning_strategy:    &#39;bayesian&#39;, &#39;basic&#39;, &#39;mse&#39;, &#39;sigopt&#39;. Default: &#39;bayesian&#39;.</span>
+<span class="sd">        :param timeout:     Tuning timeout (seconds). Default: None,  which means early stop.</span>
+<span class="sd">                            Combine with max_trials field to decide when to exit.</span>
+<span class="sd">        :param max_trials:  Max tune times. Default: None, which means no tuning.</span>
+<span class="sd">                            Combine with timeout field to decide when to exit.</span>
+<span class="sd">                            &quot;timeout=0, max_trials=1&quot; means it will try quantization only once and</span>
+<span class="sd">                            return satisfying best model.</span>
+<span class="sd">        :param input_sample:      An input example to convert pytorch model into ONNX/OpenVINO.</span>
+<span class="sd">        :param onnxruntime_session_options: The session option for onnxruntime, only valid when</span>
+<span class="sd">                                            accelerator=&#39;onnxruntime&#39;, otherwise will be ignored.</span>
+<span class="sd">        :param **export_kwargs: will be passed to torch.onnx.export function.</span>
+<span class="sd">        :return:            A accelerated Pytorch-Lightning Model if quantization is sucessful.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">precision</span> <span class="o">==</span> <span class="s1">&#39;bf16&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">accelerator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">bf16_model</span> <span class="o">=</span> <span class="n">BF16Model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">bf16_model</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                                  <span class="s2">&quot;Accelerator </span><span class="si">{}</span><span class="s2"> is invalid for BF16.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">accelerator</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">precision</span> <span class="o">==</span> <span class="s1">&#39;int8&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">accelerator</span> <span class="ow">or</span> <span class="n">accelerator</span> <span class="o">==</span> <span class="s1">&#39;onnxruntime&#39;</span><span class="p">:</span>
+                <span class="n">method_map</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="kc">None</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s1">&#39;fx&#39;</span><span class="p">:</span> <span class="s1">&#39;pytorch_fx&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;eager&#39;</span><span class="p">:</span> <span class="s1">&#39;pytorch&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;ipex&#39;</span><span class="p">:</span> <span class="s1">&#39;pytorch_ipex&#39;</span><span class="p">,</span>
+                        <span class="kc">None</span><span class="p">:</span> <span class="s1">&#39;pytorch_fx&#39;</span>  <span class="c1"># default</span>
+                    <span class="p">},</span>
+                    <span class="s1">&#39;onnxruntime&#39;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s1">&#39;qlinear&#39;</span><span class="p">:</span> <span class="s1">&#39;onnxrt_qlinearops&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;integer&#39;</span><span class="p">:</span> <span class="s1">&#39;onnxrt_integerops&#39;</span><span class="p">,</span>
+                        <span class="kc">None</span><span class="p">:</span> <span class="s1">&#39;onnxrt_qlinearops&#39;</span>  <span class="c1"># default</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+                <span class="n">framework</span> <span class="o">=</span> <span class="n">method_map</span><span class="p">[</span><span class="n">accelerator</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">accelerator</span> <span class="o">==</span> <span class="s2">&quot;onnxruntime&quot;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="n">model</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;PytorchONNXRuntimeModel&#39;</span><span class="p">:</span>
+                        <span class="c1"># try to establish onnx model</span>
+                        <span class="k">if</span> <span class="n">input_sample</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="c1"># input_sample can be a dataloader</span>
+                            <span class="n">input_sample</span> <span class="o">=</span> <span class="n">calib_dataloader</span>
+                        <span class="n">model</span> <span class="o">=</span> <span class="n">Trainer</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span>
+                            <span class="n">model</span><span class="p">,</span>
+                            <span class="n">input_sample</span><span class="o">=</span><span class="n">input_sample</span><span class="p">,</span>
+                            <span class="n">accelerator</span><span class="o">=</span><span class="s1">&#39;onnxruntime&#39;</span><span class="p">,</span>
+                            <span class="o">**</span><span class="n">export_kwargs</span><span class="p">)</span>
+                <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                If accelerator==None, quantized model returned should be an object of PytorchModel</span>
+<span class="sd">                which is defined by neural-compressor containing a `GraphModule` for inference.</span>
+<span class="sd">                Otherwise accelerator==&#39;onnxruntime&#39;, it returns an ONNXModel object. A supported</span>
+<span class="sd">                model which is able to run on Pytorch or ONNXRuntime can be fetched by</span>
+<span class="sd">                `quantized_model.model`.</span>
+<span class="sd">                &quot;&quot;&quot;</span>
+                <span class="k">return</span> <span class="n">inc_quantize</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">calib_dataloader</span><span class="p">,</span> <span class="n">metric</span><span class="p">,</span>
+                                    <span class="n">framework</span><span class="o">=</span><span class="n">framework</span><span class="p">,</span>
+                                    <span class="n">conf</span><span class="o">=</span><span class="n">conf</span><span class="p">,</span>
+                                    <span class="n">approach</span><span class="o">=</span><span class="n">approach</span><span class="p">,</span>
+                                    <span class="n">tuning_strategy</span><span class="o">=</span><span class="n">tuning_strategy</span><span class="p">,</span>
+                                    <span class="n">accuracy_criterion</span><span class="o">=</span><span class="n">accuracy_criterion</span><span class="p">,</span>
+                                    <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
+                                    <span class="n">max_trials</span><span class="o">=</span><span class="n">max_trials</span><span class="p">,</span>
+                                    <span class="n">onnxruntime_session_options</span><span class="o">=</span><span class="n">onnxruntime_session_options</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">accelerator</span> <span class="o">==</span> <span class="s1">&#39;openvino&#39;</span><span class="p">:</span>
+                <span class="n">model_type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">model</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">model_type</span> <span class="o">==</span> <span class="s1">&#39;PytorchOpenVINOModel&#39;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">input_sample</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="c1"># input_sample can be a dataloader</span>
+                        <span class="n">input_sample</span> <span class="o">=</span> <span class="n">calib_dataloader</span>
+                    <span class="n">model</span> <span class="o">=</span> <span class="n">Trainer</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">model</span><span class="p">,</span>
+                                          <span class="n">input_sample</span><span class="o">=</span><span class="n">input_sample</span><span class="p">,</span>
+                                          <span class="n">accelerator</span><span class="o">=</span><span class="s1">&#39;openvino&#39;</span><span class="p">,</span>
+                                          <span class="o">**</span><span class="n">export_kwargs</span><span class="p">)</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">model</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;PytorchOpenVINOModel&#39;</span><span class="p">,</span>
+                                  <span class="s2">&quot;Invalid model to quantize. Please use a nn.Module or a model &quot;</span>
+                                  <span class="s2">&quot;from trainer.trance(accelerator==&#39;openvino&#39;)&quot;</span><span class="p">)</span>
+                <span class="n">drop_type</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">higher_is_better</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">maximal_drop</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="n">metric</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">accuracy_criterion</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                        <span class="n">accuracy_criterion</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;relative&#39;</span><span class="p">:</span> <span class="mf">0.99</span><span class="p">,</span> <span class="s1">&#39;higher_is_better&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+
+                    <span class="n">drop_type</span> <span class="o">=</span> <span class="s1">&#39;relative&#39;</span> <span class="k">if</span> <span class="s1">&#39;relative&#39;</span> <span class="ow">in</span> <span class="n">accuracy_criterion</span> <span class="k">else</span> <span class="s1">&#39;absolute&#39;</span>
+                    <span class="n">higher_is_better</span> <span class="o">=</span> <span class="n">accuracy_criterion</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;higher_is_better&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                    <span class="n">maximal_drop</span> <span class="o">=</span> <span class="n">accuracy_criterion</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">drop_type</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+                <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;metric&quot;</span><span class="p">:</span> <span class="n">metric</span><span class="p">,</span>
+                    <span class="s2">&quot;higher_better&quot;</span><span class="p">:</span> <span class="n">higher_is_better</span><span class="p">,</span>
+                    <span class="s2">&quot;drop_type&quot;</span><span class="p">:</span> <span class="n">drop_type</span><span class="p">,</span>
+                    <span class="s2">&quot;maximal_drop&quot;</span><span class="p">:</span> <span class="n">maximal_drop</span><span class="p">,</span>
+                    <span class="s2">&quot;max_iter_num&quot;</span><span class="p">:</span> <span class="n">max_trials</span><span class="p">,</span>
+                    <span class="c1"># TODO following two keys are optional, if there is need, we can add them</span>
+                    <span class="c1"># &quot;n_requests&quot;: None,</span>
+                    <span class="c1"># &quot;sample_size&quot;: 300</span>
+                <span class="p">}</span>
+                <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">pot</span><span class="p">(</span><span class="n">calib_dataloader</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                                  <span class="s2">&quot;Accelerator </span><span class="si">{}</span><span class="s2"> is invalid.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">accelerator</span><span class="p">))</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                          <span class="s2">&quot;Precision </span><span class="si">{}</span><span class="s2"> is invalid.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">precision</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Trainer.trace"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Nano/pytorch.html#bigdl.nano.pytorch.Trainer.trace">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">trace</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
+              <span class="n">input_sample</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+              <span class="n">accelerator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+              <span class="n">use_ipex</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+              <span class="n">onnxruntime_session_options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+              <span class="o">**</span><span class="n">export_kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Trace a pytorch model and convert it into an accelerated module for inference.</span>
+
+<span class="sd">        For example, this function returns a PytorchOpenVINOModel when accelerator==&#39;openvino&#39;.</span>
+
+<span class="sd">        :param model: An torch.nn.Module model, including pl.LightningModule.</span>
+<span class="sd">        :param input_sample: A set of inputs for trace, defaults to None if you have trace before or</span>
+<span class="sd">                             model is a LightningModule with any dataloader attached.</span>
+<span class="sd">        :param accelerator: The accelerator to use, defaults to None meaning staying in Pytorch</span>
+<span class="sd">                            backend. &#39;openvino&#39;, &#39;onnxruntime&#39; and &#39;jit&#39; are supported for now.</span>
+<span class="sd">        :param use_ipex: whether we use ipex as accelerator for inferencing. default: False.</span>
+<span class="sd">        :param onnxruntime_session_options: The session option for onnxruntime, only valid when</span>
+<span class="sd">                                            accelerator=&#39;onnxruntime&#39;, otherwise will be ignored.</span>
+<span class="sd">        :param **kwargs: other extra advanced settings include</span>
+<span class="sd">                         1. those be passed to torch.onnx.export function, only valid when</span>
+<span class="sd">                         accelerator=&#39;onnxruntime&#39;/&#39;openvino&#39;, otherwise will be ignored.</span>
+<span class="sd">                         2. if channels_last is set and use_ipex=True, we will transform the</span>
+<span class="sd">                         data to be channels last according to the setting. Defaultly, channels_last</span>
+<span class="sd">                         will be set to True if use_ipex=True.</span>
+<span class="sd">        :return: Model with different acceleration.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalidInputError</span><span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">AcceleratedLightningModule</span><span class="p">),</span>
+            <span class="s2">&quot;Expect a nn.Module instance that is not traced or quantized&quot;</span>
+            <span class="s2">&quot;but got type </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">model</span><span class="p">))</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">accelerator</span> <span class="o">==</span> <span class="s1">&#39;openvino&#39;</span><span class="p">:</span>  <span class="c1"># openvino backend will not care about ipex usage</span>
+            <span class="k">return</span> <span class="n">PytorchOpenVINOModel</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">input_sample</span><span class="p">,</span> <span class="o">**</span><span class="n">export_kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">accelerator</span> <span class="o">==</span> <span class="s1">&#39;onnxruntime&#39;</span><span class="p">:</span>  <span class="c1"># onnxruntime backend will not care about ipex usage</span>
+            <span class="k">return</span> <span class="n">PytorchONNXRuntimeModel</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">input_sample</span><span class="p">,</span> <span class="n">onnxruntime_session_options</span><span class="p">,</span>
+                                           <span class="o">**</span><span class="n">export_kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">accelerator</span> <span class="o">==</span> <span class="s1">&#39;jit&#39;</span> <span class="ow">or</span> <span class="n">use_ipex</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">use_ipex</span><span class="p">:</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="ow">not</span> <span class="n">TORCH_VERSION_LESS_1_10</span><span class="p">,</span>
+                                  <span class="s2">&quot;torch version should &gt;=1.10 to use ipex&quot;</span><span class="p">)</span>
+            <span class="n">use_jit</span> <span class="o">=</span> <span class="p">(</span><span class="n">accelerator</span> <span class="o">==</span> <span class="s2">&quot;jit&quot;</span><span class="p">)</span>
+            <span class="n">channels_last</span> <span class="o">=</span> <span class="n">export_kwargs</span><span class="p">[</span><span class="s2">&quot;channels_last&quot;</span><span class="p">]</span>\
+                <span class="k">if</span> <span class="s2">&quot;channels_last&quot;</span> <span class="ow">in</span> <span class="n">export_kwargs</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="n">PytorchIPEXJITModel</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">input_sample</span><span class="o">=</span><span class="n">input_sample</span><span class="p">,</span> <span class="n">use_ipex</span><span class="o">=</span><span class="n">use_ipex</span><span class="p">,</span>
+                                       <span class="n">use_jit</span><span class="o">=</span><span class="n">use_jit</span><span class="p">,</span> <span class="n">channels_last</span><span class="o">=</span><span class="n">channels_last</span><span class="p">)</span>
+        <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;Accelerator </span><span class="si">{}</span><span class="s2"> is invalid.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">accelerator</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Trainer.save"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Nano/pytorch.html#bigdl.nano.pytorch.Trainer.save">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">LightningModule</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save the model to local file.</span>
+
+<span class="sd">        :param model: Any model of torch.nn.Module, including all models accelareted by</span>
+<span class="sd">               Trainer.trace/Trainer.quantize.</span>
+<span class="sd">        :param path: Path to saved model. Path should be a directory.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">Path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;_save&#39;</span><span class="p">):</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">_save</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># typically for models of nn.Module, pl.LightningModule type</span>
+            <span class="n">meta_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;nano_model_meta.yml&quot;</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">meta_path</span><span class="p">,</span> <span class="s1">&#39;w+&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s1">&#39;ModelType&#39;</span><span class="p">:</span> <span class="s1">&#39;PytorchModel&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;checkpoint&#39;</span><span class="p">:</span> <span class="s1">&#39;saved_weight.pt&#39;</span>
+                <span class="p">}</span>
+                <span class="n">yaml</span><span class="o">.</span><span class="n">safe_dump</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+            <span class="n">checkpoint_path</span> <span class="o">=</span> <span class="n">path</span> <span class="o">/</span> <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;checkpoint&#39;</span><span class="p">]</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="n">checkpoint_path</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Trainer.load"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Nano/pytorch.html#bigdl.nano.pytorch.Trainer.load">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">LightningModule</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load a model from local.</span>
+
+<span class="sd">        :param path: Path to model to be loaded. Path should be a directory.</span>
+<span class="sd">        :param model: Required FP32 model to load pytorch model, it is needed if you accelerated</span>
+<span class="sd">               the model with accelerator=None by Trainer.trace/Trainer.quantize. model</span>
+<span class="sd">               should be set to None if you choose accelerator=&quot;onnxruntime&quot;/&quot;openvino&quot;/&quot;jit&quot;.</span>
+<span class="sd">        :return: Model with different acceleration(None/OpenVINO/ONNX Runtime/JIT) or</span>
+<span class="sd">                 precision(FP32/FP16/BF16/INT8).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> doesn&#39;t exist.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+        <span class="n">meta_path</span> <span class="o">=</span> <span class="n">path</span> <span class="o">/</span> <span class="s2">&quot;nano_model_meta.yml&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">meta_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;File </span><span class="si">{}</span><span class="s2"> is required to load model.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">meta_path</span><span class="p">)))</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">meta_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">metadata</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="n">model_type</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ModelType&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">model_type</span> <span class="o">==</span> <span class="s1">&#39;PytorchOpenVINOModel&#39;</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="n">model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="s2">&quot;Argument &#39;model&#39; must be None for OpenVINO loading.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">load_openvino_model</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">model_type</span> <span class="o">==</span> <span class="s1">&#39;PytorchONNXRuntimeModel&#39;</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="n">model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="s2">&quot;Argument &#39;model&#39; must be None for ONNX Runtime loading.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">load_onnxruntime_model</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">model_type</span> <span class="o">==</span> <span class="s1">&#39;PytorchQuantizedModel&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">load_inc_model</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="s1">&#39;pytorch&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">model_type</span> <span class="o">==</span> <span class="s1">&#39;PytorchIPEXJITModel&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">load_ipexjit_model</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+            <span class="c1"># typically for models of nn.Module, pl.LightningModule type</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+            <span class="n">checkpoint_path</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;checkpoint&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">checkpoint_path</span><span class="p">:</span>
+                <span class="n">checkpoint_path</span> <span class="o">=</span> <span class="n">path</span> <span class="o">/</span> <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;checkpoint&#39;</span><span class="p">]</span>
+                <span class="n">state_dict</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state_dict</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">model</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;Key &#39;checkpoint&#39; must be specified.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;ModelType </span><span class="si">{}</span><span class="s2"> or argument &#39;model=</span><span class="si">{}</span><span class="s2">&#39; is not acceptable for pytorch&quot;</span>
+                              <span class="s2">&quot; loading.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">model_type</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">model</span><span class="p">)))</span></div>
+
+<div class="viewcode-block" id="Trainer.save_checkpoint"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Nano/pytorch.html#bigdl.nano.pytorch.Trainer.save_checkpoint">[docs]</a>    <span class="k">def</span> <span class="nf">save_checkpoint</span><span class="p">(</span>    <span class="c1"># type: ignore[override]</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">weights_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">storage_options</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Save checkpoint after one train epoch.&quot;&quot;&quot;</span>
+        <span class="c1"># When using ipex==1.9 and custom lr_schedulers for training, if set `weights_only` to</span>
+        <span class="c1"># False,`save_checkpoint` method will report an error of &#39;Unsupport storage type&#39;</span>
+        <span class="c1"># because the model is in &#39;xpu&#39;, so we temporarily move it to &#39;cpu&#39;,</span>
+        <span class="c1"># then move it back after `save_checkpoint`.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_ipex</span> <span class="ow">and</span> <span class="n">TORCH_VERSION_LESS_1_10</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">weights_only</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">save_checkpoint</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">weights_only</span><span class="p">,</span> <span class="n">storage_options</span><span class="p">)</span>    <span class="c1"># type: ignore</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_ipex</span> <span class="ow">and</span> <span class="n">TORCH_VERSION_LESS_1_10</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">weights_only</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">root_device</span><span class="p">)</span>    <span class="c1"># type: ignore</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bigdl.orca.learn.tf2.pyspark_estimator &mdash; BigDL  documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+        <script src="../../../../../_static/clipboard.min.js"></script>
+        <script src="../../../../../_static/copybutton.js"></script>
+        <script src="../../../../../_static/tabs.js"></script>
+        <script src="../../../../../_static/design-tabs.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../index.html" class="icon icon-home"> BigDL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-tf-quickstart.html">TensorFlow 1.15 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-keras-quickstart.html">Keras 2.3 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-tf2keras-quickstart.html">TensorFlow 2 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-pytorch-quickstart.html">PyTorch Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Ray/QuickStart/ray-quickstart.html">RayOnSpark Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/python.html">Python User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/scala.html">Scala User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/colab.html">Colab User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/docker.html">Docker User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/hadoop.html">Hadoop/YARN User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/k8s.html">K8s User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/databricks.html">Databricks User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/develop.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UserGuide/known_issues.html">BigDL Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Nano</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/Overview/nano.html">Nano User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/pytorch_train.html">BigDL-Nano PyTorch Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/pytorch_inference.html">BigDL-Nano PyTorch Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/tensorflow_train.html">BigDL-Nano TensorFlow Training Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/tensorflow_inference.html">BigDL-Nano TensorFlow Inference Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/hpo.html">AutoML Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/Overview/known_issues.html">Nano Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Nano/QuickStart/index.html">Nano Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DLlib</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/DLlib/Overview/dllib.html">DLlib User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/DLlib/Overview/keras-api.html">Keras-Like API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/DLlib/Overview/nnframes.html">Spark ML Pipeline Support</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Orca</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/orca.html">Orca User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/orca-context.html">Orca Context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/data-parallel-processing.html">Distributed Data Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/distributed-training-inference.html">Distributed Training and Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/distributed-tuning.html">Distributed Hyper-Parameter Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Ray/Overview/ray.html">RayOnSpark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/Overview/known_issues.html">Orca Known Issues</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Chronos</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/Overview/chronos.html">Chronos User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/Overview/windows_guide.html">Windows User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/Overview/deep_dive.html">Chronos Deep Dive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/QuickStart/index.html">Chronos Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Chronos/Overview/chronos_known_issue.html">Chronos Known Issue</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">PPML</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/Overview/ppml.html">Privacy Preserving Machine Learning (PPML) User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/Overview/trusted_big_data_analytics_and_ml.html">Trusted Big Data Analytics and ML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/Overview/trusted_fl.html">Trusted FL (Federated Learning)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/secure_your_services.html">Secure Your Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/build_kernel_with_sgx.html">Building Linux Kernel from Source with SGX Enabled</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html">Deploy the Intel SGX Device Plugin for Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/trusted-serving-on-k8s-guide.html">Trusted Cluster Serving with Graphene on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/tpc-h_with_sparksql_on_k8s.html">TPC-H with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.html">TPC-DS with Trusted SparkSQL on Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PPML/Overview/azure_ppml.html">Privacy Preserving Machine Learning (PPML) on Azure User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Serving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/Overview/serving.html">Cluster Serving User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/QuickStart/serving-quickstart.html">Cluster Serving Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/ProgrammingGuide/serving-installation.html">Install Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/ProgrammingGuide/serving-start.html">Start Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/ProgrammingGuide/serving-inference.html">Inference by Cluster Serving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/Example/example.html">Cluster Serving Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/FAQ/faq.html">Cluster Serving FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Serving/FAQ/contribute-guide.html">Contribute to Cluster Serving</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Use Case</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-pytorch-distributed-quickstart.html">Use <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> in Orca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UseCase/spark-dataframe.html">Use Spark Dataframe for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/UseCase/xshards-pandas.html">Use Distributed Pandas for Deep Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart.html">Enable AutoML for PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Orca/QuickStart/orca-autoxgboost-quickstart.html">Use AutoXGBoost to auto-tune XGBoost parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PythonAPI/Orca/orca.html">Orca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PythonAPI/Friesian/feature.html">Friesian Feature API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PythonAPI/Chronos/index.html">Chronos API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/PythonAPI/Nano/index.html">Nano API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Real-World Application</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Application/presentations.html">Presentations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Application/blogs.html">Blogs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../doc/Application/powered-by.html">Powered By</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">BigDL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../index.html">Module code</a> &raquo;</li>
+      <li>bigdl.orca.learn.tf2.pyspark_estimator</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bigdl.orca.learn.tf2.pyspark_estimator</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright 2016 The BigDL Authors.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">from</span> <span class="nn">pyspark.sql.dataframe</span> <span class="k">import</span> <span class="n">DataFrame</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+
+<span class="kn">import</span> <span class="nn">pickle</span>
+
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+
+<span class="kn">from</span> <span class="nn">bigdl.dllib.utils.common</span> <span class="k">import</span> <span class="n">get_node_and_core_number</span>
+<span class="kn">from</span> <span class="nn">bigdl.dllib.utils.file_utils</span> <span class="k">import</span> <span class="n">enable_multi_fs_load</span><span class="p">,</span> <span class="n">enable_multi_fs_save</span><span class="p">,</span> \
+    <span class="n">get_remote_file_to_local</span><span class="p">,</span> <span class="n">is_local_path</span><span class="p">,</span> <span class="n">get_remote_files_with_prefix_to_local</span><span class="p">,</span> \
+    <span class="n">append_suffix</span><span class="p">,</span> <span class="n">put_local_file_to_remote</span><span class="p">,</span> <span class="n">put_local_files_with_prefix_to_remote</span>
+
+<span class="kn">from</span> <span class="nn">bigdl.dllib.utils.utils</span> <span class="k">import</span> <span class="n">get_node_ip</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca.data.file</span> <span class="k">import</span> <span class="n">is_file</span><span class="p">,</span> <span class="n">exists</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca.learn.tf2.spark_runner</span> <span class="k">import</span> <span class="n">SparkRunner</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca.learn.utils</span> <span class="k">import</span> <span class="n">find_free_port</span><span class="p">,</span> <span class="n">find_ip_and_free_port</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca.learn.utils</span> <span class="k">import</span> <span class="n">maybe_dataframe_to_xshards</span><span class="p">,</span> <span class="n">dataframe_to_xshards</span><span class="p">,</span> \
+    <span class="n">convert_predict_xshards_to_dataframe</span><span class="p">,</span> <span class="n">make_data_creator</span><span class="p">,</span> <span class="n">load_model</span><span class="p">,</span> \
+    <span class="n">save_model</span><span class="p">,</span> <span class="n">process_xshards_of_pandas_dataframe</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca.learn.log_monitor</span> <span class="k">import</span> <span class="n">start_log_server</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca.data.shard</span> <span class="k">import</span> <span class="n">SparkXShards</span>
+<span class="kn">from</span> <span class="nn">bigdl.orca</span> <span class="k">import</span> <span class="n">OrcaContext</span>
+<span class="kn">from</span> <span class="nn">bigdl.dllib.utils.log4Error</span> <span class="k">import</span> <span class="n">invalidInputError</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="SparkTFEstimator"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf2.pyspark_estimator.SparkTFEstimator">[docs]</a><span class="k">class</span> <span class="nc">SparkTFEstimator</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">model_creator</span><span class="p">,</span>
+                 <span class="n">config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">compile_args_creator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">workers_per_node</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">model_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">log_to_driver</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_creator</span> <span class="o">=</span> <span class="n">model_creator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">compile_args_creator</span> <span class="o">=</span> <span class="n">compile_args_creator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">config</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+
+        <span class="n">sc</span> <span class="o">=</span> <span class="n">OrcaContext</span><span class="o">.</span><span class="n">get_spark_context</span><span class="p">()</span>
+
+        <span class="n">num_node</span><span class="p">,</span> <span class="n">num_core</span> <span class="o">=</span> <span class="n">get_node_and_core_number</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span> <span class="o">=</span> <span class="n">num_node</span> <span class="o">*</span> <span class="n">workers_per_node</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total_cores</span> <span class="o">=</span> <span class="n">num_node</span> <span class="o">*</span> <span class="n">num_core</span>
+
+        <span class="c1"># over partition to cover tasks all over the cluster</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">workerRDD</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">parallelize</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">total_cores</span> <span class="o">*</span> <span class="mi">4</span><span class="p">)),</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">total_cores</span> <span class="o">*</span> <span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">repartition</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;inter_op_parallelism&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;inter_op_parallelism&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="s2">&quot;intra_op_parallelism&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;intra_op_parallelism&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">num_core</span> <span class="o">//</span> <span class="n">workers_per_node</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_weights</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="s2">&quot;batch_size&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;Please do not specify batch_size in config. Input batch_size in the&quot;</span>
+                              <span class="s2">&quot; fit/evaluate function of the estimator instead.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_dir</span> <span class="o">=</span> <span class="n">model_dir</span>
+        <span class="n">master</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">getConf</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;spark.master&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">master</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;local&quot;</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;For cluster mode, make sure to use shared filesystem path &quot;</span>
+                        <span class="s2">&quot;as model directory.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">application_id</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">applicationId</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ip</span> <span class="o">=</span> <span class="n">get_node_ip</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">find_free_port</span><span class="p">()</span>
+        <span class="n">is_local</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;local&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">need_to_log_to_driver</span> <span class="o">=</span> <span class="p">(</span><span class="ow">not</span> <span class="n">is_local</span><span class="p">)</span> <span class="ow">and</span> <span class="n">log_to_driver</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">need_to_log_to_driver</span><span class="p">:</span>
+            <span class="n">start_log_server</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ip</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_cluster_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sc</span><span class="p">):</span>
+        <span class="n">cluster_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">workerRDD</span><span class="o">.</span><span class="n">barrier</span><span class="p">()</span><span class="o">.</span><span class="n">mapPartitions</span><span class="p">(</span><span class="n">find_ip_and_free_port</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">cluster_info</span>
+
+<div class="viewcode-block" id="SparkTFEstimator.fit"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf2.pyspark_estimator.SparkTFEstimator.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">callbacks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">validation_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">class_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">initial_epoch</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">steps_per_epoch</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">validation_steps</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">validation_freq</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">data_config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">feature_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">label_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Train this tensorflow model with train data.</span>
+<span class="sd">        :param data: train data. It can be XShards, Spark DataFrame or creator function which</span>
+<span class="sd">               returns Iter or DataLoader.</span>
+<span class="sd">               If data is XShards, each partition can be a Pandas DataFrame or a dictionary of</span>
+<span class="sd">               {&#39;x&#39;: feature, &#39;y&#39;: label}, where feature(label) is a numpy array or a tuple of</span>
+<span class="sd">               numpy arrays.</span>
+<span class="sd">        :param epochs: Number of epochs to train the model. Default: 1.</span>
+<span class="sd">        :param batch_size: Batch size used for training. Default: 32.</span>
+<span class="sd">        :param verbose: Prints output of one model if true.</span>
+<span class="sd">        :param callbacks: List of Keras compatible callbacks to apply during training.</span>
+<span class="sd">        :param validation_data: validation data. Validation data type should be the same</span>
+<span class="sd">               as train data.</span>
+<span class="sd">        :param class_weight: Optional dictionary mapping class indices (integers) to a weight</span>
+<span class="sd">               (float) value, used for weighting the loss function. This can be useful to tell</span>
+<span class="sd">               the model to &quot;pay more attention&quot; to samples from an under-represented class.</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sc</span> <span class="o">=</span> <span class="n">OrcaContext</span><span class="o">.</span><span class="n">get_spark_context</span><span class="p">()</span>
+
+        <span class="c1"># dataframe change to xshard, num_partition &gt;= num_workers</span>
+        <span class="n">data</span><span class="p">,</span> <span class="n">validation_data</span> <span class="o">=</span> <span class="n">maybe_dataframe_to_xshards</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">validation_data</span><span class="p">,</span>
+                                                           <span class="n">feature_cols</span><span class="p">,</span> <span class="n">label_cols</span><span class="p">,</span>
+                                                           <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;fit&quot;</span><span class="p">,</span>
+                                                           <span class="n">num_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">,</span>
+                                                           <span class="n">accept_str_col</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># for continuous training</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_weights</span><span class="p">:</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_weights</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">init_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">model_creator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_creator</span><span class="p">,</span>
+            <span class="n">compile_args_creator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">compile_args_creator</span><span class="p">,</span>
+            <span class="n">config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">,</span>
+            <span class="n">size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">,</span>
+            <span class="n">model_weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;fit&quot;</span><span class="p">,</span>
+            <span class="n">cluster_info</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_cluster_info</span><span class="p">(</span><span class="n">sc</span><span class="p">),</span>
+            <span class="n">model_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_dir</span><span class="p">,</span>
+            <span class="n">application_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">application_id</span><span class="p">,</span>
+            <span class="n">need_to_log_to_driver</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">need_to_log_to_driver</span><span class="p">,</span>
+            <span class="n">driver_ip</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ip</span><span class="p">,</span>
+            <span class="n">driver_port</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span>
+        <span class="p">)</span>
+
+        <span class="n">params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">epochs</span><span class="o">=</span><span class="n">epochs</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+            <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span>
+            <span class="n">class_weight</span><span class="o">=</span><span class="n">class_weight</span><span class="p">,</span>
+            <span class="n">initial_epoch</span><span class="o">=</span><span class="n">initial_epoch</span><span class="p">,</span>
+            <span class="n">steps_per_epoch</span><span class="o">=</span><span class="n">steps_per_epoch</span><span class="p">,</span>
+            <span class="n">validation_steps</span><span class="o">=</span><span class="n">validation_steps</span><span class="p">,</span>
+            <span class="n">validation_freq</span><span class="o">=</span><span class="n">validation_freq</span><span class="p">,</span>
+            <span class="n">data_config</span><span class="o">=</span><span class="n">data_config</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">SparkXShards</span><span class="p">):</span>
+            <span class="c1"># set train/validation data</span>
+            <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">_get_class_name</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;pandas.core.frame.DataFrame&#39;</span><span class="p">:</span>
+                <span class="n">data</span><span class="p">,</span> <span class="n">validation_data</span> <span class="o">=</span> <span class="n">process_xshards_of_pandas_dataframe</span><span class="p">(</span><span class="n">data</span><span class="p">,</span>
+                                                                            <span class="n">feature_cols</span><span class="p">,</span>
+                                                                            <span class="n">label_cols</span><span class="p">,</span>
+                                                                            <span class="n">validation_data</span><span class="p">,</span>
+                                                                            <span class="s2">&quot;fit&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">validation_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">def</span> <span class="nf">transform_func</span><span class="p">(</span><span class="nb">iter</span><span class="p">,</span> <span class="n">init_param</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
+                    <span class="n">partition_data</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">iter</span><span class="p">)</span>
+                    <span class="n">param</span><span class="p">[</span><span class="s2">&quot;data_creator&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">make_data_creator</span><span class="p">(</span><span class="n">partition_data</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">SparkRunner</span><span class="p">(</span><span class="o">**</span><span class="n">init_param</span><span class="p">)</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="o">**</span><span class="n">param</span><span class="p">)</span>
+
+                <span class="n">res</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">rdd</span><span class="o">.</span><span class="n">repartition</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">)</span><span class="o">.</span><span class="n">barrier</span><span class="p">()</span> \
+                    <span class="o">.</span><span class="n">mapPartitions</span><span class="p">(</span>
+                    <span class="k">lambda</span> <span class="nb">iter</span><span class="p">:</span> <span class="n">transform_func</span><span class="p">(</span><span class="nb">iter</span><span class="p">,</span> <span class="n">init_params</span><span class="p">,</span> <span class="n">params</span><span class="p">))</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">def</span> <span class="nf">transform_func</span><span class="p">(</span><span class="nb">iter</span><span class="p">,</span> <span class="n">init_param</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
+                    <span class="n">data_tuple_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">iter</span><span class="p">)</span>
+                    <span class="n">data_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">data_tuple</span> <span class="ow">in</span> <span class="n">data_tuple_list</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data_tuple</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+                    <span class="n">valid_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">data_tuple</span> <span class="ow">in</span> <span class="n">data_tuple_list</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data_tuple</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+                    <span class="n">param</span><span class="p">[</span><span class="s2">&quot;data_creator&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">make_data_creator</span><span class="p">(</span><span class="n">data_list</span><span class="p">)</span>
+                    <span class="n">param</span><span class="p">[</span><span class="s2">&quot;validation_data_creator&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">make_data_creator</span><span class="p">(</span><span class="n">valid_list</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">SparkRunner</span><span class="p">(</span><span class="o">**</span><span class="n">init_param</span><span class="p">)</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="o">**</span><span class="n">param</span><span class="p">)</span>
+
+                <span class="n">train_rdd</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">rdd</span><span class="o">.</span><span class="n">mapPartitions</span><span class="p">(</span><span class="k">lambda</span> <span class="nb">iter</span><span class="p">:</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="nb">iter</span><span class="p">)])</span>
+                <span class="n">val_rdd</span> <span class="o">=</span> <span class="n">validation_data</span><span class="o">.</span><span class="n">rdd</span><span class="o">.</span><span class="n">mapPartitions</span><span class="p">(</span><span class="k">lambda</span> <span class="nb">iter</span><span class="p">:</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="nb">iter</span><span class="p">)])</span>
+                <span class="n">res</span> <span class="o">=</span> <span class="n">train_rdd</span><span class="o">.</span><span class="n">zip</span><span class="p">(</span><span class="n">val_rdd</span><span class="p">)</span><span class="o">.</span><span class="n">repartition</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">)</span><span class="o">.</span><span class="n">barrier</span><span class="p">()</span>\
+                    <span class="o">.</span><span class="n">mapPartitions</span><span class="p">(</span>
+                    <span class="k">lambda</span> <span class="nb">iter</span><span class="p">:</span> <span class="n">transform_func</span><span class="p">(</span><span class="nb">iter</span><span class="p">,</span> <span class="n">init_params</span><span class="p">,</span> <span class="n">params</span><span class="p">))</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;data_creator&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;validation_data_creator&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">validation_data</span>
+
+            <span class="k">def</span> <span class="nf">transform_func</span><span class="p">(</span><span class="nb">iter</span><span class="p">,</span> <span class="n">init_param</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">SparkRunner</span><span class="p">(</span><span class="o">**</span><span class="n">init_param</span><span class="p">)</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="o">**</span><span class="n">param</span><span class="p">)</span>
+
+            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">workerRDD</span><span class="o">.</span><span class="n">barrier</span><span class="p">()</span><span class="o">.</span><span class="n">mapPartitions</span><span class="p">(</span>
+                <span class="k">lambda</span> <span class="nb">iter</span><span class="p">:</span> <span class="n">transform_func</span><span class="p">(</span><span class="nb">iter</span><span class="p">,</span> <span class="n">init_params</span><span class="p">,</span> <span class="n">params</span><span class="p">))</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_dir</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">temp_dir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">()</span>
+                <span class="n">get_remote_file_to_local</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_dir</span><span class="p">,</span> <span class="s2">&quot;state.pkl&quot;</span><span class="p">),</span>
+                                         <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">temp_dir</span><span class="p">,</span> <span class="s2">&quot;state.pkl&quot;</span><span class="p">),</span>
+                                         <span class="n">over_write</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="kn">import</span> <span class="nn">pickle</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">temp_dir</span><span class="p">,</span> <span class="s2">&quot;state.pkl&quot;</span><span class="p">),</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">state</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">model_weights</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s1">&#39;weights&#39;</span><span class="p">]</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">temp_dir</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="SparkTFEstimator.evaluate"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf2.pyspark_estimator.SparkTFEstimator.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">num_steps</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">sample_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data_config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">feature_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Evaluates the model on the validation data set.</span>
+<span class="sd">        :param data: evaluate data. It can be XShards, Spark DataFrame or creator function which</span>
+<span class="sd">               returns Iter or DataLoader.</span>
+<span class="sd">               If data is XShards, each partition can be a Pandas DataFrame or a dictionary of</span>
+<span class="sd">               {&#39;x&#39;: feature, &#39;y&#39;: label}, where feature(label) is a numpy array or a tuple of</span>
+<span class="sd">               numpy arrays.</span>
+<span class="sd">        :param validation_data: validation data. Validation data type should be the same</span>
+<span class="sd">               as train data.</span>
+<span class="sd">        :param batch_size: Batch size used for evaluation. Default: 32.</span>
+<span class="sd">        :param verbose: Prints output of one model if true.</span>
+<span class="sd">        :param callbacks: List of Keras compatible callbacks to apply during evaluation.</span>
+<span class="sd">        :param class_weight: Optional dictionary mapping class indices (integers) to a weight</span>
+<span class="sd">               (float) value, used for weighting the loss function. This can be useful to tell</span>
+<span class="sd">               the model to &quot;pay more attention&quot; to samples from an under-represented class.</span>
+<span class="sd">        :return: validation result</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sc</span> <span class="o">=</span> <span class="n">OrcaContext</span><span class="o">.</span><span class="n">get_spark_context</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Starting validation step.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># dataframe change to xshard, num_partition &gt;= num_workers</span>
+        <span class="n">data</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">maybe_dataframe_to_xshards</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">validation_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                             <span class="n">feature_cols</span><span class="o">=</span><span class="n">feature_cols</span><span class="p">,</span>
+                                             <span class="n">label_cols</span><span class="o">=</span><span class="n">label_cols</span><span class="p">,</span>
+                                             <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;evaluate&quot;</span><span class="p">,</span>
+                                             <span class="n">num_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">,</span>
+                                             <span class="n">accept_str_col</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_weights</span><span class="p">:</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_weights</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">init_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">model_creator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_creator</span><span class="p">,</span>
+            <span class="n">compile_args_creator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">compile_args_creator</span><span class="p">,</span>
+            <span class="n">config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">,</span>
+            <span class="n">size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">,</span>
+            <span class="n">model_weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;evaluate&quot;</span><span class="p">,</span>
+            <span class="n">cluster_info</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_cluster_info</span><span class="p">(</span><span class="n">sc</span><span class="p">),</span>
+            <span class="n">model_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_dir</span><span class="p">,</span>
+            <span class="n">application_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">application_id</span><span class="p">,</span>
+            <span class="n">need_to_log_to_driver</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">need_to_log_to_driver</span><span class="p">,</span>
+            <span class="n">driver_ip</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ip</span><span class="p">,</span>
+            <span class="n">driver_port</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span>
+        <span class="p">)</span>
+
+        <span class="n">params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+            <span class="n">sample_weight</span><span class="o">=</span><span class="n">sample_weight</span><span class="p">,</span>
+            <span class="n">steps</span><span class="o">=</span><span class="n">num_steps</span><span class="p">,</span>
+            <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span>
+            <span class="n">data_config</span><span class="o">=</span><span class="n">data_config</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">SparkXShards</span><span class="p">):</span>
+            <span class="c1"># set train/validation data</span>
+            <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">_get_class_name</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;pandas.core.frame.DataFrame&#39;</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">process_xshards_of_pandas_dataframe</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">feature_cols</span><span class="p">,</span> <span class="n">label_cols</span><span class="p">)</span>
+
+            <span class="k">def</span> <span class="nf">transform_func</span><span class="p">(</span><span class="nb">iter</span><span class="p">,</span> <span class="n">init_param</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
+                <span class="n">partition_data</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">iter</span><span class="p">)</span>
+                <span class="n">param</span><span class="p">[</span><span class="s2">&quot;data_creator&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">make_data_creator</span><span class="p">(</span><span class="n">partition_data</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">SparkRunner</span><span class="p">(</span><span class="o">**</span><span class="n">init_param</span><span class="p">)</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="o">**</span><span class="n">param</span><span class="p">)</span>
+
+            <span class="n">res</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">rdd</span><span class="o">.</span><span class="n">repartition</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">)</span><span class="o">.</span><span class="n">barrier</span><span class="p">()</span> \
+                <span class="o">.</span><span class="n">mapPartitions</span><span class="p">(</span><span class="k">lambda</span> <span class="nb">iter</span><span class="p">:</span> <span class="n">transform_func</span><span class="p">(</span><span class="nb">iter</span><span class="p">,</span> <span class="n">init_params</span><span class="p">,</span> <span class="n">params</span><span class="p">))</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;data_creator&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+
+            <span class="k">def</span> <span class="nf">transform_func</span><span class="p">(</span><span class="nb">iter</span><span class="p">,</span> <span class="n">init_param</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">SparkRunner</span><span class="p">(</span><span class="o">**</span><span class="n">init_param</span><span class="p">)</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="o">**</span><span class="n">param</span><span class="p">)</span>
+
+            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">workerRDD</span><span class="o">.</span><span class="n">barrier</span><span class="p">()</span><span class="o">.</span><span class="n">mapPartitions</span><span class="p">(</span>
+                <span class="k">lambda</span> <span class="nb">iter</span><span class="p">:</span> <span class="n">transform_func</span><span class="p">(</span><span class="nb">iter</span><span class="p">,</span> <span class="n">init_params</span><span class="p">,</span> <span class="n">params</span><span class="p">))</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="SparkTFEstimator.predict"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf2.pyspark_estimator.SparkTFEstimator.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">steps</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data_config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">feature_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Predict the input data</span>
+<span class="sd">        :param data: predict input data.  It can be XShards or Spark DataFrame.</span>
+<span class="sd">               If data is XShards, each partition can be a Pandas DataFrame or a dictionary of</span>
+<span class="sd">               {&#39;x&#39;: feature}, where feature is a numpy array or a tuple of numpy arrays.</span>
+<span class="sd">        :param batch_size: Batch size used for inference. Default: None.</span>
+<span class="sd">        :param verbose: Prints output of one model if true.</span>
+<span class="sd">        :param steps: Total number of steps (batches of samples) before declaring the prediction</span>
+<span class="sd">               round finished. Ignored with the default value of None.</span>
+<span class="sd">        :param callbacks: List of Keras compatible callbacks to apply during prediction.</span>
+<span class="sd">        :param data_config: An optional dictionary that can be passed to data creator function.</span>
+<span class="sd">        :param feature_cols: Feature column name(s) of data. Only used when data is a Spark</span>
+<span class="sd">               DataFrame or an XShards of Pandas DataFrame. Default: None.</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Starting predict step.&quot;</span><span class="p">)</span>
+        <span class="n">sc</span> <span class="o">=</span> <span class="n">OrcaContext</span><span class="o">.</span><span class="n">get_spark_context</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_weights</span><span class="p">:</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_weights</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">init_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">model_creator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_creator</span><span class="p">,</span>
+            <span class="n">compile_args_creator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">compile_args_creator</span><span class="p">,</span>
+            <span class="n">config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">,</span>
+            <span class="n">size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">,</span>
+            <span class="n">model_weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;predict&quot;</span><span class="p">,</span>
+            <span class="n">cluster_info</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_cluster_info</span><span class="p">(</span><span class="n">sc</span><span class="p">),</span>
+            <span class="n">model_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_dir</span><span class="p">,</span>
+            <span class="n">application_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">application_id</span><span class="p">,</span>
+            <span class="n">need_to_log_to_driver</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">need_to_log_to_driver</span><span class="p">,</span>
+            <span class="n">driver_ip</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ip</span><span class="p">,</span>
+            <span class="n">driver_port</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span>
+        <span class="p">)</span>
+
+        <span class="n">params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="n">steps</span><span class="o">=</span><span class="n">steps</span><span class="p">,</span>
+            <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span>
+            <span class="n">data_config</span><span class="o">=</span><span class="n">data_config</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">):</span>
+            <span class="n">pre_predict_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">repartition</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">)</span>
+            <span class="n">xshards</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">dataframe_to_xshards</span><span class="p">(</span><span class="n">pre_predict_data</span><span class="p">,</span>
+                                              <span class="n">validation_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                              <span class="n">feature_cols</span><span class="o">=</span><span class="n">feature_cols</span><span class="p">,</span>
+                                              <span class="n">label_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                              <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;predict&quot;</span><span class="p">,</span>
+                                              <span class="n">accept_str_col</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="k">def</span> <span class="nf">transform_func</span><span class="p">(</span><span class="nb">iter</span><span class="p">,</span> <span class="n">init_param</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
+                <span class="n">partition_data</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">iter</span><span class="p">)</span>
+                <span class="c1"># res = combine_in_partition(partition_data)</span>
+                <span class="n">param</span><span class="p">[</span><span class="s2">&quot;data_creator&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">make_data_creator</span><span class="p">(</span><span class="n">partition_data</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">SparkRunner</span><span class="p">(</span><span class="o">**</span><span class="n">init_param</span><span class="p">)</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="o">**</span><span class="n">param</span><span class="p">)</span>
+
+            <span class="n">pred_shards</span> <span class="o">=</span> <span class="n">SparkXShards</span><span class="p">(</span><span class="n">xshards</span><span class="o">.</span><span class="n">rdd</span><span class="o">.</span><span class="n">mapPartitions</span><span class="p">(</span>
+                <span class="k">lambda</span> <span class="nb">iter</span><span class="p">:</span> <span class="n">transform_func</span><span class="p">(</span><span class="nb">iter</span><span class="p">,</span> <span class="n">init_params</span><span class="p">,</span> <span class="n">params</span><span class="p">)))</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">convert_predict_xshards_to_dataframe</span><span class="p">(</span><span class="n">pre_predict_data</span><span class="p">,</span> <span class="n">pred_shards</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">invalidInputError</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="s2">&quot;Only xshards or Spark DataFrame is supported for predict&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="SparkTFEstimator.save_weights"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf2.pyspark_estimator.SparkTFEstimator.save_weights">[docs]</a>    <span class="k">def</span> <span class="nf">save_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">save_format</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save model weights at the provided path.</span>
+<span class="sd">        :param filepath: String or PathLike, path to the file to save the weights to.</span>
+<span class="sd">        When saving in TensorFlow format, this is the prefix used for checkpoint files</span>
+<span class="sd">        (multiple files are generated). Note that the &#39;.h5&#39; suffix causes weights to be</span>
+<span class="sd">        saved in HDF5 format. It can be local, hdfs, or s3 filepath.</span>
+<span class="sd">        :param overwrite: Whether to silently overwrite any existing file at the target location,</span>
+<span class="sd">        or provide the user with a manual prompt.</span>
+<span class="sd">        :param save_format: Either &#39;tf&#39; or &#39;h5&#39;.</span>
+<span class="sd">        A filepath ending in &#39;.h5&#39; or &#39;.keras&#39; will default to HDF5 if save_format is None.</span>
+<span class="sd">        Otherwise None defaults to &#39;tf&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Some model might need to aggregate variables during checkpointing</span>
+        <span class="c1"># which requires both the chief and workers to participate in the</span>
+        <span class="c1"># allreduce communication protocol.</span>
+        <span class="c1"># So we need to call get_state on every remote workers, otherwise</span>
+        <span class="c1"># it might get stuck</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_creator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">set_weights</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_weights</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_local_path</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">save_weights</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">overwrite</span><span class="p">,</span> <span class="n">save_format</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+            <span class="n">temp_dir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">()</span>
+            <span class="n">temp_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">temp_dir</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">save_weights</span><span class="p">(</span><span class="n">temp_path</span><span class="p">,</span> <span class="n">overwrite</span><span class="p">,</span> <span class="n">save_format</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">save_format</span> <span class="o">==</span> <span class="s1">&#39;h5&#39;</span> <span class="ow">or</span> <span class="n">filepath</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.h5&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">filepath</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.keras&#39;</span><span class="p">):</span>
+                    <span class="c1"># hdf5 format</span>
+                    <span class="n">put_local_file_to_remote</span><span class="p">(</span><span class="n">temp_path</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">over_write</span><span class="o">=</span><span class="n">overwrite</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># tf format</span>
+                    <span class="n">remote_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+                    <span class="n">put_local_files_with_prefix_to_remote</span><span class="p">(</span><span class="n">temp_path</span><span class="p">,</span> <span class="n">remote_dir</span><span class="p">,</span>
+                                                          <span class="n">over_write</span><span class="o">=</span><span class="n">overwrite</span><span class="p">)</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">temp_dir</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SparkTFEstimator.load_weights"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf2.pyspark_estimator.SparkTFEstimator.load_weights">[docs]</a>    <span class="k">def</span> <span class="nf">load_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">by_name</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load tensorflow keras model weights in this estimator.</span>
+
+<span class="sd">        :param filepath: keras model weights save path.</span>
+<span class="sd">        :param by_name: Boolean, whether to load weights by name or by topological</span>
+<span class="sd">               order. Only topological loading is supported for weight files in</span>
+<span class="sd">               TensorFlow format.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_creator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_file</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
+            <span class="c1"># h5 format</span>
+            <span class="k">if</span> <span class="n">is_local_path</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">load_weights</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">by_name</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+                <span class="n">temp_dir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">()</span>
+                <span class="n">temp_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">temp_dir</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">get_remote_file_to_local</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">temp_path</span><span class="p">)</span>
+                    <span class="n">model</span><span class="o">.</span><span class="n">load_weights</span><span class="p">(</span><span class="n">temp_path</span><span class="p">,</span> <span class="n">by_name</span><span class="p">)</span>
+                <span class="k">finally</span><span class="p">:</span>
+                    <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">temp_dir</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># tensorflow format</span>
+            <span class="k">if</span> <span class="n">is_local_path</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">load_weights</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">by_name</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">temp_dir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">()</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">prefix</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+                    <span class="n">get_remote_files_with_prefix_to_local</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">temp_dir</span><span class="p">)</span>
+                    <span class="n">model</span><span class="o">.</span><span class="n">load_weights</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">temp_dir</span><span class="p">,</span> <span class="n">prefix</span><span class="p">),</span> <span class="n">by_name</span><span class="p">)</span>
+                <span class="k">finally</span><span class="p">:</span>
+                    <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">temp_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_weights</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_weights</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="SparkTFEstimator.save"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf2.pyspark_estimator.SparkTFEstimator.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+             <span class="n">filepath</span><span class="p">,</span>
+             <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+             <span class="n">include_optimizer</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+             <span class="n">save_format</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">signatures</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Saves the model to Tensorflow SavedModel or a single HDF5 file.</span>
+
+<span class="sd">        :param filepath: String, PathLike, path to SavedModel or H5 file to save the</span>
+<span class="sd">            model. It can be local/hdfs/s3 filepath</span>
+<span class="sd">        :param overwrite: Whether to silently overwrite any existing file at the</span>
+<span class="sd">            target location, or provide the user with a manual prompt.</span>
+<span class="sd">        :param include_optimizer: If True, save optimizer&#39;s state together.</span>
+<span class="sd">        :param save_format: Either `&#39;tf&#39;` or `&#39;h5&#39;`, indicating whether to save the</span>
+<span class="sd">            model to Tensorflow SavedModel or HDF5. Defaults to &#39;tf&#39; in TF 2.X,</span>
+<span class="sd">            and &#39;h5&#39; in TF 1.X.</span>
+<span class="sd">        :param signatures: Signatures to save with the SavedModel. Applicable to the</span>
+<span class="sd">            &#39;tf&#39; format only. Please see the `signatures` argument in</span>
+<span class="sd">            `tf.saved_model.save` for details.</span>
+<span class="sd">        :param options: (only applies to SavedModel format)</span>
+<span class="sd">            `tf.saved_model.SaveOptions` object that specifies options for</span>
+<span class="sd">            saving to SavedModel.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># get current model</span>
+        <span class="k">if</span> <span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_model_saved_path</span><span class="p">):</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_model_saved_path</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_creator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+        <span class="c1"># save model</span>
+        <span class="n">save_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="n">overwrite</span><span class="p">,</span> <span class="n">include_optimizer</span><span class="o">=</span><span class="n">include_optimizer</span><span class="p">,</span>
+                   <span class="n">save_format</span><span class="o">=</span><span class="n">save_format</span><span class="p">,</span> <span class="n">signatures</span><span class="o">=</span><span class="n">signatures</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SparkTFEstimator.load"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf2.pyspark_estimator.SparkTFEstimator.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">custom_objects</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">compile</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loads a model saved via `estimator.save()</span>
+
+<span class="sd">        :param filepath: (str) Path of saved model.</span>
+<span class="sd">        :param custom_objects: Optional dictionary mapping names</span>
+<span class="sd">          (strings) to custom classes or functions to be</span>
+<span class="sd">          considered during deserialization.</span>
+<span class="sd">        :param compile: Boolean, whether to compile the model after loading.</span>
+<span class="sd">        :param options: Optional `tf.saved_model.LoadOptions` object that specifies</span>
+<span class="sd">        options for loading from SavedModel.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">custom_objects</span><span class="o">=</span><span class="n">custom_objects</span><span class="p">,</span> <span class="nb">compile</span><span class="o">=</span><span class="nb">compile</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_weights</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_weights</span><span class="p">()</span>
+        <span class="c1"># update remote model</span>
+        <span class="n">save_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model_saved_path</span><span class="p">,</span> <span class="n">save_format</span><span class="o">=</span><span class="s2">&quot;h5&quot;</span><span class="p">,</span> <span class="n">filemode</span><span class="o">=</span><span class="mo">0o666</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SparkTFEstimator.get_model"><a class="viewcode-back" href="../../../../../doc/PythonAPI/Orca/orca.html#bigdl.orca.learn.tf2.pyspark_estimator.SparkTFEstimator.get_model">[docs]</a>    <span class="k">def</span> <span class="nf">get_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the learned model.</span>
+
+<span class="sd">        :return: the learned model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_creator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">set_weights</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_weights</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">model</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_model_saved_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_dir</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">_model.h5&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">application_id</span><span class="p">))</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, BigDL Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
