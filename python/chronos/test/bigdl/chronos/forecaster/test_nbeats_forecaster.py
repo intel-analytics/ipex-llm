@@ -458,6 +458,27 @@ class TestChronosNBeatsForecaster(TestCase):
         onnx_res = nbeats.evaluate_with_onnx(test_loader)
         q_onnx_res = nbeats.evaluate_with_onnx(test_loader, quantize=True)
 
+    def test_nbeats_forecaster_fit_earlystop(self):
+        train_data, val_data, _ = create_data()
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      stack_types=('generic', 'generic'),
+                                      nb_blocks_per_stack=3,
+                                      hidden_layer_units=256,
+                                      metrics=['mae'],
+                                      lr=0.01)
+        val_loss = forecaster.fit((train_data[0], train_data[1]), val_data,
+                                  validation_mode='earlystop', epochs=50)
 
-if __name__ == '__main__':
-    pytest.main([__file__])
+    def test_nbeats_forecaster_fit_earlystop_patience(self):
+        train_data, val_data, _ = create_data()
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      stack_types=('generic', 'generic'),
+                                      nb_blocks_per_stack=3,
+                                      hidden_layer_units=256,
+                                      metrics=['mae'],
+                                      lr=0.01)
+        val_loss = forecaster.fit((train_data[0], train_data[1]), val_data,
+                                  validation_mode='earlystop', earlystop_patience=6,
+                                  epochs=50)

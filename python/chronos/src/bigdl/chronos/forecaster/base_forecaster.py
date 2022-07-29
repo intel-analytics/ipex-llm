@@ -20,8 +20,12 @@ from bigdl.chronos.metric.forecast_metrics import Evaluator
 
 import numpy as np
 import warnings
+# Filter out useless Userwarnings
+warnings.filterwarnings('ignore', category=UserWarning, module='pytorch_lightning')
+warnings.filterwarnings('ignore', category=UserWarning, module='torch')
 import torch
-import math
+import logging
+
 from functools import partial
 from torch.utils.data import TensorDataset, DataLoader
 from bigdl.nano.automl.hpo.space import Space
@@ -51,7 +55,7 @@ class BasePytorchForecaster(Forecaster):
                                                  loss=self.loss_creator,
                                                  metrics=[ORCA_METRICS[name]()
                                                           for name in self.metrics],
-                                                 backend=self.distributed_backend,
+                                                 backend=self.remote_distributed_backend,
                                                  use_tqdm=True,
                                                  config={"lr": self.lr},
                                                  workers_per_node=self.workers_per_node)
@@ -196,7 +200,8 @@ class BasePytorchForecaster(Forecaster):
         # reset train and validation datasets
         self.tune_trainer.reset_train_val_dataloaders(self.internal)
 
-    def fit(self, data, validation_data=None, epochs=1, batch_size=32, validation_mode='output'):
+    def fit(self, data, validation_data=None, epochs=1, batch_size=32, validation_mode='output',
+            earlystop_patience=1):
         # TODO: give an option to close validation during fit to save time.
         """
         Fit(Train) the forecaster.
@@ -249,8 +254,20 @@ class BasePytorchForecaster(Forecaster):
                If you input a pytorch dataloader for `data`, the batch_size will follow the
                batch_size setted in `data`.if the forecaster is distributed, the batch_size will be
                evenly distributed to all workers.
-        :param validation_mode: Operation mode while having 'validation_data'. Defaults to 'output'.
-        :return: A dict that records the average validation loss of each epoch.
+        :param validation_mode:  A str represent the operation mode while having 'validation_data'.
+               Defaults to 'output'. The validation_mode includes the following types:
+
+               | 1. output:
+               | If you choose 'output' for validation_mode, it will return a dict that records the
+               | average validation loss of each epoch.
+               |
+               | 2. earlystop:
+               | Monitor the val_loss and stop training when it stops improving.
+
+        :param earlystop_patience: Number of checks with no improvement after which training will
+               be stopped. It takes effect when 'validation_mode' is 'earlystop'. Under the default
+               configuration, one check happens after every training epoch.
+        :return: Validation loss if 'validation_data' is not None.
         """
         # input transform
         if isinstance(data, TSDataset):
@@ -301,6 +318,7 @@ class BasePytorchForecaster(Forecaster):
                                      batch_size=batch_size)
         else:
             from bigdl.chronos.pytorch import TSTrainer as Trainer
+            from bigdl.nano.utils.log4Error import invalidInputError
 
             # numpy data shape checking
             if isinstance(data, tuple):
@@ -314,12 +332,25 @@ class BasePytorchForecaster(Forecaster):
             from pytorch_lightning.loggers import CSVLogger
             logger = False if validation_data is None else CSVLogger(".",
                                                                      name="forecaster_tmp_log")
+            from pytorch_lightning.callbacks import EarlyStopping
+            early_stopping = EarlyStopping('val/loss', patience=earlystop_patience)
+            callbacks = [early_stopping] if validation_mode == 'earlystop' else None
             # Trainer init
-            self.trainer = Trainer(logger=logger, max_epochs=epochs,
+            self.trainer = Trainer(logger=logger, max_epochs=epochs, callbacks=callbacks,
                                    checkpoint_callback=self.checkpoint_callback,
                                    num_processes=self.num_processes, use_ipex=self.use_ipex,
                                    flush_logs_every_n_steps=10, log_every_n_steps=10,
-                                   distributed_backend="spawn")
+                                   distributed_backend=self.local_distributed_backend)
+
+            # This error is only triggered when the python interpreter starts additional processes.
+            # num_process=1 and subprocess will be safely started in the main process,
+            # so this error will not be triggered.
+            invalidInputError(is_main_process(),
+                              "Make sure new Python interpreters can "
+                              "safely import the main module. ",
+                              fixMsg="you should use if __name__ == '__main__':, "
+                              "otherwise performance will be degraded.")
+
             # fitting
             if not validation_data:
                 self.trainer.fit(self.internal, data)
@@ -396,13 +427,15 @@ class BasePytorchForecaster(Forecaster):
 
         if self.distributed:
             yhat = self.internal.predict(data, batch_size=batch_size)
+            expand_dim = []
+            if self.data_config["future_seq_len"] == 1:
+                expand_dim.append(1)
+            if self.data_config["output_feature_num"] == 1:
+                expand_dim.append(2)
             if is_local_data:
-                expand_dim = []
-                if self.data_config["future_seq_len"] == 1:
-                    expand_dim.append(1)
-                if self.data_config["output_feature_num"] == 1:
-                    expand_dim.append(2)
                 yhat = xshard_to_np(yhat, mode="yhat", expand_dim=expand_dim)
+            else:
+                yhat = yhat.transform_shard(xshard_expand_dim, expand_dim)
             return yhat
         else:
             if not self.fitted:
@@ -856,6 +889,7 @@ class BasePytorchForecaster(Forecaster):
             sess_options = onnxruntime.SessionOptions()
             if thread_num is not None:
                 sess_options.intra_op_num_threads = thread_num
+                sess_options.inter_op_num_threads = thread_num
         if self.distributed:
             invalidInputError(False,
                               "build_onnx has not been supported for distributed "
@@ -919,7 +953,8 @@ class BasePytorchForecaster(Forecaster):
                  relative_drop=None,
                  absolute_drop=None,
                  timeout=0,
-                 max_trials=1):
+                 max_trials=1,
+                 sess_options=None):
         """
         Quantize the forecaster.
 
@@ -944,6 +979,9 @@ class BasePytorchForecaster(Forecaster):
         :param max_trials: Max tune times. Default to 1. Combine with timeout field to
                decide when to exit. "timeout=0, max_trials=1" means it will try quantization
                only once and return satisfying best model.
+        :param sess_options: The session option for onnxruntime, only valid when
+                             framework contains 'onnxrt_integerops' or 'onnxrt_qlinearops',
+                             otherwise will be ignored.
         """
         # check model support for quantization
         from bigdl.nano.utils.log4Error import invalidInputError
@@ -1004,7 +1042,8 @@ class BasePytorchForecaster(Forecaster):
                                             tuning_strategy=tuning_strategy,
                                             accuracy_criterion=accuracy_criterion,
                                             timeout=timeout,
-                                            max_trials=max_trials)
+                                            max_trials=max_trials,
+                                            onnxruntime_session_options=sess_options)
             if accelerator == 'onnxruntime':
                 self.onnxruntime_int8 = q_model
             if accelerator is None:

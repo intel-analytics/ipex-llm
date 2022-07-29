@@ -410,6 +410,23 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         res = s2s.evaluate(test_loader)
         onnx_res = s2s.evaluate_with_onnx(test_loader)
 
+    def test_s2s_forecaster_fit_earlystop(self):
+        train_data, val_data, _ = create_data()
+        forecaster = Seq2SeqForecaster(past_seq_len=24,
+                                       future_seq_len=5,
+                                       input_feature_num=1,
+                                       output_feature_num=1,
+                                       loss="mae",
+                                       lr=0.01)
+        val_loss = forecaster.fit(train_data, val_data, validation_mode='earlystop', epochs=50)
 
-if __name__ == '__main__':
-    pytest.main([__file__])
+    def test_s2s_forecaster_fit_earlystop_patience(self):
+        train_data, val_data, _ = create_data()
+        forecaster = Seq2SeqForecaster(past_seq_len=24,
+                                       future_seq_len=5,
+                                       input_feature_num=1,
+                                       output_feature_num=1,
+                                       loss="mae",
+                                       lr=0.01)
+        val_loss = forecaster.fit(train_data, val_data, validation_mode='earlystop',
+                                  earlystop_patience=6, epochs=50)

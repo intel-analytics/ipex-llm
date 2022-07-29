@@ -30,8 +30,14 @@ import org.apache.logging.log4j.LogManager
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
+import com.intel.analytics.bigdl.ppml.fl.FLConfig
+import org.json4s.FileInput
 
-class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null)
+import java.io.{File, FileInputStream, FileOutputStream, ObjectInputStream, ObjectOutputStream}
+import java.nio.file.Files
+
+class FGBoostAggregator(config: FLConfig,
+                        validationMethods: Array[ValidationMethod[Float]] = null)
   extends Aggregator {
 
   val logger = LogManager.getLogger(this.getClass)
@@ -39,7 +45,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
   var obj: TreeObjective = new RMSEObjective
   var nLabel = 1
 
-  val serverTreeLeaf = new ArrayBuffer[Map[Int, Float]]()
+  var serverTreeLeaf = new ArrayBuffer[Map[Int, Float]]()
   var validationSize = -1
   var basePrediction: Array[Float] = null
   val bestSplit = new java.util.HashMap[String, DataSplit]()
@@ -58,6 +64,30 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
     aggregateTypeMap.get(FLPhase.PREDICT).getTreeEvalStorage()
   def getResultStorage(): Storage[TensorMap] =
     aggregateTypeMap.get(FLPhase.RESULT).getTensorMapStorage()
+
+  loadConfig()
+
+  def loadConfig(): Unit = {
+    if (config.modelPath != null) {
+      logger.info(s"Loading FGBoostAggregator model from ${config.modelPath}")
+      if (new File(config.modelPath).exists()) {
+        val is = new ObjectInputStream(new FileInputStream(config.modelPath))
+        serverTreeLeaf = is.readObject().asInstanceOf[ArrayBuffer[Map[Int, Float]]]
+      } else {
+        logger.warn(s"${config.modelPath} does not exist, will create new model")
+      }
+
+    }
+  }
+
+  def saveModel(): Unit = {
+    if (config.modelPath != null) {
+      logger.info(s"Saving FGBoostAggregator model to ${config.modelPath}")
+      val os = new ObjectOutputStream(new FileOutputStream(config.modelPath))
+      os.writeObject(serverTreeLeaf)
+      os.close()
+    }
+  }
 
   override def initStorage(): Unit = {
     aggregateTypeMap.put(FLPhase.LABEL, new StorageHolder(FLDataType.TENSOR_MAP))
@@ -209,6 +239,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
     serverTreeLeaf += treeLeaf
     leafMap.clear()
     getEvalStorage().version += 1
+    saveModel()
   }
 
   def updateGradient(newPredict: Array[Float]): Unit = {

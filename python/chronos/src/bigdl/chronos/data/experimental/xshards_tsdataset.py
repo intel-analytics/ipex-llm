@@ -307,10 +307,10 @@ class XShardsTSDataset:
 
             Note: this function will not transform the shard.
             '''
-            scaler_for_this_id = scaler[df[id_col][0]]
+            scaler_for_this_id = scaler[df[id_col].iloc[0]]
             df[target_col + feature_col] = scaler_for_this_id.fit(df[target_col + feature_col])
 
-            return {id_col: df[id_col][0], "scaler": scaler_for_this_id}
+            return {id_col: df[id_col].iloc[0], "scaler": scaler_for_this_id}
 
         def _transform(df, id_col, scaler, feature_col, target_col):
             '''
@@ -321,7 +321,7 @@ class XShardsTSDataset:
             from sklearn.utils.validation import check_is_fitted
             from bigdl.nano.utils.log4Error import invalidInputError
 
-            scaler_for_this_id = scaler[df[id_col][0]]
+            scaler_for_this_id = scaler[df[id_col].iloc[0]]
             invalidInputError(not check_is_fitted(scaler_for_this_id),
                               "scaler is not fitted. When calling scale for the first time, "
                               "you need to set fit=True.")
@@ -355,7 +355,7 @@ class XShardsTSDataset:
             from sklearn.utils.validation import check_is_fitted
             from bigdl.nano.utils.log4Error import invalidInputError
 
-            scaler_for_this_id = scaler[df[id_col][0]]
+            scaler_for_this_id = scaler[df[id_col].iloc[0]]
             invalidInputError(not check_is_fitted(scaler_for_this_id),
                               "scaler is not fitted. When calling scale for the first time, "
                               "you need to set fit=True.")

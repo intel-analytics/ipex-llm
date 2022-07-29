@@ -128,6 +128,7 @@ class _RayLauncher(_SpawnLauncher):
         ]
 
         results = ray.get(futures)  # type: ignore
+        ray.shutdown()  # release the resources occupied by ray
 
         # when using pytorch lightning's trainer, the `trainer` cannot be None,
         # when using pytorch lightning's LightningLite, the `trainer` should be None

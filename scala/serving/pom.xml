@@ -44,7 +44,7 @@
         <dependency>
             <groupId>org.json4s</groupId>
             <artifactId>json4s-jackson_${scala.major.version}</artifactId>
-            <version>3.5.3</version>
+            <version>3.7.0-M5</version>
         </dependency>
         <dependency>
             <groupId>com.google.protobuf</groupId>

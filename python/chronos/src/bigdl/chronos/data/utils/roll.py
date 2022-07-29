@@ -113,7 +113,7 @@ def _roll_timeseries_dataframe_test(df,
     x = _append_rolling_feature_df(output_x[mask], roll_feature_df)
 
     if contain_id:
-        return x, None, df.loc[:, [id_col]].values.astype(np.float32)
+        return x, None, df.loc[:, [id_col]].values
     else:
         return x, None
 
@@ -148,7 +148,7 @@ def _roll_timeseries_dataframe_train(df,
     x = _append_rolling_feature_df(output_x[mask], roll_feature_df)
 
     if contain_id:
-        return x, output_y[mask], df.loc[:, [id_col]].values.astype(np.float32)
+        return x, output_y[mask], df.loc[:, [id_col]].values
     else:
         return x, output_y[mask]
 

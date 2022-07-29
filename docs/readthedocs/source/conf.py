@@ -90,6 +90,8 @@ extensions = [
     'recommonmark',
     'sphinx_markdown_tables',
     'sphinx_tabs.tabs',
+    'sphinx_design',
+    'sphinx_external_toc',
 ]
 
 
@@ -151,6 +153,14 @@ html_static_path = ['_static']
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'BigDL Documentation'
 
+
+
+# -- Options for external TOC tree ---
+external_toc_exclude_missing = False
+external_toc_path = "_toc.yml"
+
+# this is to surpresswarnings about explicit "toctree" directives
+suppress_warnings = ["etoc.toctree"]
 
 # -- Options for LaTeX output ------------------------------------------------
 

@@ -134,7 +134,8 @@ class TCNForecaster(BasePytorchForecaster):
 
         # distributed settings
         self.distributed = distributed
-        self.distributed_backend = distributed_backend
+        self.remote_distributed_backend = distributed_backend
+        self.local_distributed_backend = "subprocess"
         self.workers_per_node = workers_per_node
 
         # other settings

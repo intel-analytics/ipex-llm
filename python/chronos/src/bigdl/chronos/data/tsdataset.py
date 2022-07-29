@@ -774,6 +774,17 @@ class TSDataset:
             invalidInputError(not self._has_generate_agg_feature,
                               "Currently to_torch_data_loader does not support "
                               "'gen_global_feature' and 'gen_rolling_feature' methods.")
+
+            if isinstance(self.horizon, int):
+                need_dflen = self.lookback + self.horizon
+            else:
+                need_dflen = self.lookback + max(self.horizon)
+            if len(self.df) < need_dflen:
+                invalidInputError(False,
+                                  "The length of the dataset must be larger than the sum "
+                                  "of lookback and horizon, while get lookback+horizon="
+                                  f"{need_dflen} and the length of dataset is {len(self.df)}.")
+
             torch_dataset = RollDataset(self.df,
                                         dt_col=self.dt_col,
                                         freq=self._freq,

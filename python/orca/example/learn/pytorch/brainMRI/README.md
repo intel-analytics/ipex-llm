@@ -16,6 +16,7 @@ pip install scikit-learn
 pip install opencv-python
 pip install matplotlib
 pip install tqdm
+pip install pyarrow
 
 # For ray backend:
 pip install --pre --upgrade bigdl-orca[ray]
@@ -39,6 +40,10 @@ cd ../
 
 
 ## Run on local after pip install
+Note: You should add the current directory into the `PYTHONPATH` first.
+```
+export PYTHONPATH=./:$PYTHONPATH
+```
 
 ```commandline
 python brainMRI.py
@@ -46,6 +51,10 @@ python brainMRI.py
 The default backend is `ray`. You can run with `spark` backend via:
 ```
 python brainMRI.py --backend spark 
+```
+You can run with `bigdl` backend via:
+```
+python brainMRI.py --backend bigdl
 ```
 
 ## Run on yarn cluster for yarn-client mode after pip install
@@ -64,7 +73,7 @@ python brainMRI.py --cluster_mode yarn-client --backend spark --model_dir hdfs_p
 Options
 
 - `--cluster_mode` The cluster mode, such as local, yarn-client, spark-submit. Default is `local`.
-- `--backend` The backend of PyTorch Estimator; ray and spark are supported. Default is `ray`.
+- `--backend` The backend of PyTorch Estimator; bigdl, ray, and spark are supported. Default is `ray`.
 - `--epochs` The number of epochs to train for. Default is 2.
 - `--batch_size` The number of samples per gradient update. Default is 64.
 - `--data_dir` The path to the dataset. Default is `./kaggle_3m`.
@@ -72,7 +81,6 @@ Options
 - `--model_dir` The model save dir when use spark backend. Default is the current working directory.
 
 ## Results
-**For "ray" and "spark" backends**
 
 Final test results will be printed at the end:
 ```
