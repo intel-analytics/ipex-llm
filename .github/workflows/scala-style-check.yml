@@ -1,10 +1,13 @@
-name: Scala Style check
+name: Scala Style Check
 
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'scala/**'
+      - '.github/workflows/scala-style-check.yml'
   schedule:
     - cron: '0 15 * * *'
   # Allows you to run this workflow manually from the Actions tab
@@ -13,7 +16,7 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-20.04
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
     permissions:
       contents: read
       packages: write
@@ -27,12 +30,12 @@ jobs:
         distribution: 'temurin'
         #server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         settings-path: ${{ github.workspace }} # location for the settings.xml file
-
-    - uses: actions/cache@v2
-      with:
-        path: ~/.m2/repository
-        key: maven-${{ hashFiles('**/pom.xml') }}
-        restore-keys: maven-
+    #pls use cache only on github owned runners 
+    #- uses: actions/cache@v2
+       #with:
+        #path: ~/.m2/repository
+        #key: maven-${{ hashFiles('**/pom.xml') }}
+        #restore-keys: maven-
 
     - name: Set up Maven
       uses: stCarolas/setup-maven@v4.4
@@ -56,10 +59,11 @@ jobs:
                 }
               }
           }]
-        # mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${{ secrets.ARDA_NEXUS }}" }]'
+        mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${NEXUS_URL}" }]'
 
 
     - name: Run tests
       run: |
           cd scala
           mvn clean verify -DskipTests -U
+
