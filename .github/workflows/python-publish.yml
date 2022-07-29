@@ -9,8 +9,6 @@
 name: Nightly Build PyPI Publish Python
 
 on:
-  pull_request:
-    branches: [ main ]
   #release:
    # types: [published]
   schedule:
@@ -75,7 +73,7 @@ jobs:
       run: |
         export TIMESTAMP=`date '+%Y%m%d'`
         export PYPI_VERSION=2.1.0
-        nb_version=${PYPI_VERSION}b${TIMESTAMP}1
+        nb_version=${PYPI_VERSION}b${TIMESTAMP}
         echo ${nb_version}
 
         ## windows ##
