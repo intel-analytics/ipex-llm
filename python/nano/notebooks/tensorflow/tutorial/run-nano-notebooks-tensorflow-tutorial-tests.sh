@@ -11,7 +11,7 @@ set -e
 echo "# Start testing"
 start=$(date "+%s")
 
-python -m pytest -s --nbmake --nbmake-timeout=300 --nbmake-kernel=python3 ${NANO_TUTORIAL_TEST_DIR} -k 'not quantization'
+python -m pytest -s --nbmake --nbmake-timeout=180 --nbmake-kernel=python3 ${NANO_TUTORIAL_TEST_DIR} -k 'not quantization'
 
 # meet error using nbmake
 jupyter nbconvert --ExecutePreprocessor.timeout=300 --to notebook --exectue ${NANO_TUTORIAL_TEST_DIR}/tensorflow_quantization.ipynb
