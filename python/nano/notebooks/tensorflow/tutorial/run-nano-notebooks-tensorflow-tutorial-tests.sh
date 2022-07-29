@@ -14,7 +14,7 @@ start=$(date "+%s")
 python -m pytest -s --nbmake --nbmake-timeout=180 --nbmake-kernel=python3 ${NANO_TUTORIAL_TEST_DIR} -k 'not quantization'
 
 # meet error using nbmake
-jupyter nbconvert --ExecutePreprocessor.timeout=300 --to notebook --exectue ${NANO_TUTORIAL_TEST_DIR}/tensorflow_quantization.ipynb
+jupyter nbconvert --ExecutePreprocessor.timeout=300 --to notebook --execute ${NANO_TUTORIAL_TEST_DIR}/tensorflow_quantization.ipynb
 
 now=$(date "+%s")
 time=$((now-start))
