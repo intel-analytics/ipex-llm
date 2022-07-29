@@ -63,8 +63,7 @@ def PytorchIPEXJITBF16Model(model, input_sample=None, use_ipex=False,
     '''
     from .ipex_inference_bf16_model import PytorchIPEXJITBF16Model
     return PytorchIPEXJITBF16Model(model, input_sample=input_sample, use_ipex=use_ipex,
-                                   dtype=torch.bfloat16, use_jit=use_jit,
-                                   channels_last=channels_last)
+                                   use_jit=use_jit, channels_last=channels_last)
 
 
 def load_ipexjit_model(path, model):

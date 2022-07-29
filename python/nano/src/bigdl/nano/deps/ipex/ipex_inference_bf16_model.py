@@ -20,7 +20,7 @@ import torch
 
 
 class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
-    def __init__(self, model, input_sample=None, use_ipex=False, dtype=None,
+    def __init__(self, model, input_sample=None, use_ipex=False,
                  use_jit=False, channels_last=None, from_load=False):
         '''
         This is the accelerated model for pytorch and ipex/jit.
@@ -39,8 +39,8 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
         :param from_load: this will only be set by _load method.
         '''
         PytorchIPEXJITModel.__init__(self, model, input_sample=input_sample, use_ipex=use_ipex,
-                                     dtype=dtype, use_jit=use_jit, channels_last=channels_last,
-                                     from_load=from_load)
+                                     dtype=torch.bfloat16, use_jit=use_jit,
+                                     channels_last=channels_last, from_load=from_load)
 
     @autocast()
     def forward_step(self, *inputs):
