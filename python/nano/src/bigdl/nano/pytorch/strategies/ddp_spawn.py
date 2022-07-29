@@ -42,6 +42,7 @@ from torch import nn
 from torch import Tensor
 from torch.multiprocessing.spawn import _wrap, ProcessContext
 from torch.nn.parallel.distributed import DistributedDataParallel
+from torch.optim.lr_scheduler import _LRScheduler
 
 import pytorch_lightning as pl
 from pytorch_lightning.trainer.states import TrainerFn
@@ -242,7 +243,10 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
             lr_scheduler_configs = self.lr_scheduler_configs
             for config in lr_scheduler_configs:
                 scheduler = config.scheduler
-                scheduler.base_lrs = [lr * self.world_size for lr in scheduler.base_lrs]
+                if isinstance(scheduler, _LRScheduler):
+                    scheduler.base_lrs = [  # type: ignore
+                        lr * self.world_size for lr in scheduler.base_lrs  # type: ignore
+                    ]
 
         if self.use_ipex and not TORCH_VERSION_LESS_1_10:
             dtype = torch.bfloat16 if self.enable_bf16 else None
