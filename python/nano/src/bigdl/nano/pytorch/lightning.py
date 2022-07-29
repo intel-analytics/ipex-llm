@@ -36,9 +36,14 @@ class LightningModule(pl.LightningModule):
     a LightningModule.
     """
 
-    def __init__(self, model: nn.Module, loss: _Loss = None, optimizer: Optimizer = None,
+    def __init__(self, model: nn.Module,
+                 loss: _Loss = None,
+                 optimizer: Optimizer = None,
                  scheduler: _LRScheduler = None,
                  metrics: List[Metric] = None,
+                 channel_last = False,
+                 ipex=False,
+                 dtype=None,
                  jit=None,
                  example_input_array=None):
         """
@@ -60,6 +65,16 @@ class LightningModule(pl.LightningModule):
         self.scheduler = scheduler
         self.metrics = metrics
         self.example_input_array = example_input_array
+        self._status = {
+            "ModelType": type(self).__name__,
+            "use_ipex": False,
+            "channel_last": False,
+            "use_jit": False,
+            "dtype": "FP32"
+        }
+        self.channel_last(channel_last)
+        if ipex:
+            self.ipex(dtype)
         self._jit = None
         self.jit(jit, example_input_array)
         self._forward_args_ = None
@@ -99,18 +114,28 @@ class LightningModule(pl.LightningModule):
         if metrics is not None:
             self.metrics = metrics
 
-    def forward(self, *args):
-        """Same as torch.nn.Module.forward()."""
+    def on_forward_start(self, inputs):
+        return inputs
+
+    def forward_step(self, *args):
         if isinstance(args, fx.Proxy):
             args = [args[i] for i in range(self._nargs)]
         else:
             args = args[:self._nargs]
         return self.model(*args)
 
+    def on_forward_end(self, outputs):
+        return outputs
+
+    def forward(self, *args):
+        """Same as torch.nn.Module.forward()."""
+        inputs = self.on_forward_start(args)
+        outputs = self.forward_step(*inputs)
+        return self.on_forward_end(outputs)
+
     def on_train_start(self) -> None:
         """Called at the beginning of training after sanity check."""
         invalidInputError(self.loss, "Loss must not be None for training.")
-        return super().on_train_start()
 
     def training_step(self, batch, batch_idx):
         """Define a single training step, return a loss tensor."""
@@ -176,3 +201,20 @@ class LightningModule(pl.LightningModule):
             )
             self.model = torch.jit.script(self.model, input_sample)
         self._jit = mode
+
+    def ipex(self, dtype):
+        import intel_extension_for_pytorch as ipex
+        self._status['use_ipex'] = True
+        self._status['precision'] = str(dtype)
+        self.model = ipex.optimize(self.model, dtype=dtype)
+
+    def channel_last(self, mode=True):
+        self._status['channel_last'] = mode
+        if mode:
+            self.model = self.model.to(memory_format=torch.channels_last)
+        else:
+            self.model = self.model.to(memory_format=torch.preserve_format)
+
+    @property
+    def status(self):
+        return self._status
