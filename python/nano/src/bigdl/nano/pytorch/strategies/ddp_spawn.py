@@ -276,7 +276,7 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
                     train_loader = trainer._data_connector._train_dataloader_source.instance
                     if isinstance(train_loader, pl.LightningModule):
                         warnings.warn("It seems like train_dataloaders is None and max_epochs < 10."
-                                      "Inferring warmup_epochs failed"
+                                      " Inferring warmup_epochs failed"
                                       "Hint: Set warmup_epochs manually")
                     elif trainer.max_epochs < 10:
                         train_dataset = train_loader.dataset
