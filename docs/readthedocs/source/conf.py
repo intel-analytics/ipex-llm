@@ -245,3 +245,6 @@ def setup(app):
         'enable_auto_doc_ref': True,
     }, True)
     app.add_transform(AutoStructify)
+
+# disable notebook execution
+nbsphinx_execute = 'never'
