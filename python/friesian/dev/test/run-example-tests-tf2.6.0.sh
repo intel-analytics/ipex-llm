@@ -92,6 +92,12 @@ python ../../example/ncf/ncf_train.py\
     --model_dir ./result \
     --epochs 1
 
+python ../../example/ncf/ncf_train.py\
+    --data_dir ./data/movielens \
+    --model_dir ./result \
+    --epochs 1 \
+    --backend spark
+
 now=$(date "+%s")
 time4=$((now - start))
 
