@@ -76,4 +76,3 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
 
     def _save_model(self, path):
         super()._save_model(path)
-
