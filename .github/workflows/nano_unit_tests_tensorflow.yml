@@ -39,7 +39,7 @@ jobs:
       - name: test
         run: |
           echo $CONDA
-          ls /usr/share/miniconda
+          ls /usr/share/
   
       - name: Install dependencies
         run: |
