@@ -282,17 +282,7 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
                         max_steps = len(train_dataset) * trainer.max_epochs // batch_size
                         warmup_params['warmup_epochs'] = max_steps // 10
                         warmup_params['interval'] = 'step'
-                # if type(self.auto_lr) is bool:
-                #     self.auto_lr = trainer.max_epochs // 5 + 1
                 for opt_idx, opt in enumerate(self.optimizers):
-                    # if not TORCH_VERSION_LESS_1_10:
-                    #     from torch.optim.lr_scheduler import LinearLR
-                    #     scheduler = LinearLR(optimizer=opt,
-                    #                          # set initial lr as user lr
-                    #                          start_factor=warmup_params['start_factor'],
-                    #                          end_factor=warmup_params['end_factor'],
-                    #                          total_iters=warmup_params['warmup_epochs'])
-                    # else:
                     from torch.optim.lr_scheduler import LambdaLR
 
                     def lr_func(epoch):

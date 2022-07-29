@@ -218,7 +218,7 @@ class TestScaleLr(TestCase):
                           distributed_backend='spawn',
                           auto_lr=True,
                           max_epochs=2,
-                          callbacks=[CheckLinearLRScaleCallback(2, [0.01, 0.02])]
+                          callbacks=[CheckLinearLRScaleCallback(4, [0.01, 0.02])]
                           )
         trainer.fit(model, train_dataloaders=self.data_loader,
                     val_dataloaders=self.test_data_loader)
