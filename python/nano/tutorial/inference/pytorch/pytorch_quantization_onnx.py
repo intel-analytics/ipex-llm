@@ -40,7 +40,8 @@ def finetune_pet_dataset(model_ft):
                                           transforms.ToTensor(),
                                           transforms.Normalize([0.485, 0.456, 0.406],
                                                                [0.229, 0.224, 0.225])])
-    val_transform = transforms.Compose([transforms.Resize([224, 224]),
+    val_transform = transforms.Compose([transforms.Resize(256),
+                                        transforms.CenterCrop(224),
                                         transforms.ToTensor(),
                                         transforms.Normalize([0.485, 0.456, 0.406],
                                                              [0.229, 0.224, 0.225])])
@@ -48,14 +49,9 @@ def finetune_pet_dataset(model_ft):
     # Apply data augmentation to the tarin_dataset
     train_dataset = OxfordIIITPet(root="/tmp/data",
                                   transform=train_transform,
-                                  target_transform=transforms.Lambda(
-                                      lambda label: torch.tensor(label, dtype=torch.long)),
                                   download=True)
     val_dataset = OxfordIIITPet(root="/tmp/data",
-                                transform=val_transform,
-                                target_transform=transforms.Lambda(
-                                    lambda label: torch.tensor(label, dtype=torch.long)),
-                                )
+                                transform=val_transform)
 
     # obtain training indices that will be used for validation
     indices = torch.randperm(len(train_dataset))
