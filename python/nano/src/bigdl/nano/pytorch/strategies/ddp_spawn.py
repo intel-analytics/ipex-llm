@@ -273,12 +273,14 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
                     else:
                         warmup_params['warmup_epochs'] = self.auto_lr['warmup_epochs']
                 if type(self.auto_lr) is bool:
-                    if trainer.max_epochs < 10:
-                        train_dataset = (
-                            trainer._data_connector._train_dataloader_source.instance.dataset)
-                        batch_size = (
-                            trainer._data_connector._train_dataloader_source.instance.batch_size
-                        )
+                    train_loader = trainer._data_connector._train_dataloader_source.instance
+                    if isinstance(train_loader, pl.LightningModule):
+                        warnings.warn("It seems like train_dataloaders is None and max_epochs < 10."
+                                      "Inferring warmup_epochs failed"
+                                      "Hint: Set warmup_epochs manually")
+                    elif trainer.max_epochs < 10:
+                        train_dataset = train_loader.dataset
+                        batch_size = train_loader.batch_size
                         max_steps = len(train_dataset) * trainer.max_epochs // batch_size
                         warmup_params['warmup_epochs'] = max_steps // 10
                         warmup_params['interval'] = 'step'
