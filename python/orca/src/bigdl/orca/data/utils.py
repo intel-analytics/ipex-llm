@@ -467,7 +467,15 @@ def check_col_exists(df, columns):
                           str(col_not_exist) + " do not exist in this Table")
 
 
-def transform_to_shard_dict(data, featureCols, labelCol):
+def shardsPreprocessing(data, featureCols, labelCol):
+    """
+    This api is used to process SparkXShards of pandas dataframe to SparkXShards of
+    dictionary, x is feature, y is label
+    :param data: SparkXShards of pandas dataframe.
+    :param featureCols: a list of featurecols.
+    :param labelCol: label col.
+    :return: SparkXShards of dictionary
+    """
     def to_shard_dict(df):
         featureLists = [df[feature_col].to_numpy() for feature_col in featureCols]
         result = {

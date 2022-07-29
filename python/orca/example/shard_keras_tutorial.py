@@ -37,7 +37,7 @@ model.add(Dense(1, activation='sigmoid'))
 # compile the keras model
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-data_shard = transform_to_shard_dict(data_shard,
+data_shard = shardsPreprocessing(data_shard,
                                      featureCols=['f1', 'f2', 'f3',
                                                   'f4', 'f5', 'f6', 'f7', 'f8'],
                                      labelCol='label')

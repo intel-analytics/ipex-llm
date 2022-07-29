@@ -67,11 +67,7 @@ init_orca_context(memory="4g")
 path = 'new_ionosphere.csv'
 data_shard = bigdl.orca.data.pandas.read_csv(path)
 
-def getSchema(iter):
-    for pdf in iter:
-        return [pdf.columns.values]
-
-column = data_shard.rdd.mapPartitions(getSchema).first()
+column = data_shard.get_schema()['columns']
 
 label_encoder = StringIndexer(inputCol=column[-1])
 data_shard = label_encoder.fit_transform(data_shard)
@@ -86,7 +82,7 @@ orca_estimator = Estimator.from_torch(model=model,
                                       metrics=[Accuracy()],
                                       backend="bigdl")
 
-data_shard = transform_to_shard_dict(data_shard,
+data_shard = shardsPreprocessing(data_shard,
                                      featureCols=list(column[:-1]),
                                      labelCol=column[-1])
 
