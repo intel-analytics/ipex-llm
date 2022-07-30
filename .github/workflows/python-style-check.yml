@@ -4,8 +4,14 @@ name: Python Style Check
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'python/**'
+      - '.github/workflows/python-style-check.yml'
   pull_request:
     branches: [ main ]
+    paths:
+      - 'python/**'
+      - '.github/workflows/python-style-check.yml'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
