@@ -110,16 +110,22 @@ In Chronos, we provide a ``TSDataset`` (and a ``XShardsTSDataset`` to handle lar
 
     .. grid-item-card::
 
+        Our tutorial provides you with in-depth information about how to use Chronos and some key concepts in time series data.
+
         .. button-ref:: ./data_processing_feature_engineering
             :color: primary
+            :expand:
             :outline:
 
             Tutorial
 
     .. grid-item-card::
 
+        Our API document provides you with detailed method and parameter definition for ``TSDataset`` and ``XShardsTSDataset``. It assumes you are familiar with time series data processing basic concepts and designs in Chronos.
+
         .. button-ref:: ../../PythonAPI/Chronos/tsdataset
             :color: primary
+            :expand:
             :outline:
 
             API Document
