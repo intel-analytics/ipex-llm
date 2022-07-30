@@ -109,7 +109,6 @@ In Chronos, we provide a ``TSDataset`` (and a ``XShardsTSDataset`` to handle lar
     :gutter: 1
 
     .. grid-item-card::
-
         :class-footer: sd-bg-light
 
         Our tutorial provides you with in-depth information about how to use Chronos and some key concepts in time series data.
@@ -123,7 +122,6 @@ In Chronos, we provide a ``TSDataset`` (and a ``XShardsTSDataset`` to handle lar
             Tutorial
 
     .. grid-item-card::
-
         :class-footer: sd-bg-light
 
         Our API document provides you with detailed method and parameter definition for ``TSDataset`` and ``XShardsTSDataset``. It assumes you are familiar with time series data processing basic concepts and designs in Chronos.
@@ -207,28 +205,26 @@ For time series forecasting, we also provide an ``AutoTSEstimator`` for distribu
     :gutter: 1
 
     .. grid-item-card::
-
         :class-footer: sd-bg-light
 
         Try using Chronos in a practical and runnable notebook in Colab or any environment you like time series forecasting.
         +++
 
-        .. button-ref:: ../QuickStart/Chronos/chronos-tsdataset-forecaster-quickstart
+        .. button-ref:: ../QuickStart/chronos-tsdataset-forecaster-quickstart
             :color: primary
             :expand:
             :outline:
 
-            Quick Start (forecasting)
+            Quick Start 1
         
-        .. button-ref:: ../QuickStart/Chronos/chronos-autotsest-quickstart
+        .. button-ref:: ../QuickStart/chronos-autotsest-quickstart
             :color: primary
             :expand:
             :outline:
 
-            Quick Start (auto tunning)
+            Quick Start 2
 
     .. grid-item-card::
-
         :class-footer: sd-bg-light
 
         Our tutorial provides you with in-depth information about how to use Chronos and some key concepts in time series forecasting.
@@ -242,7 +238,6 @@ For time series forecasting, we also provide an ``AutoTSEstimator`` for distribu
             Tutorial
 
     .. grid-item-card::
-
         :class-footer: sd-bg-light
 
         Our API document provides you with detailed method and parameter definition for ``TSDataset`` and ``AutoTSEstimator``. It assumes you are familiar with time series forecasting basic concepts and designs in Chronos.
@@ -283,13 +278,12 @@ To import a specific detector, you may use {algorithm name} + "Detector", and ca
     :gutter: 1
 
     .. grid-item-card::
-
         :class-footer: sd-bg-light
 
         Try using Chronos in a practical and runnable notebook in Colab or any environment you like for time series anomaly detection.
         +++
 
-        .. button-ref:: ../QuickStart/Chronos/chronos-anomaly-detector
+        .. button-ref:: ../QuickStart/chronos-anomaly-detector
             :color: primary
             :expand:
             :outline:
@@ -297,7 +291,6 @@ To import a specific detector, you may use {algorithm name} + "Detector", and ca
             Quick Start
 
     .. grid-item-card::
-
         :class-footer: sd-bg-light
 
         Our tutorial provides you with in-depth information about how to use Chronos and some key concepts in time series anomaly detection.
@@ -311,7 +304,6 @@ To import a specific detector, you may use {algorithm name} + "Detector", and ca
             Tutorial
 
     .. grid-item-card::
-
         :class-footer: sd-bg-light
 
         Our API document provides you with detailed method and parameter definition for ``Detector``. It assumes you are familiar with time series anomaly detection basic concepts and designs in Chronos.
@@ -332,7 +324,6 @@ Simulator is still under activate development with unstable API.
     :gutter: 1
 
     .. grid-item-card::
-
         :class-footer: sd-bg-light
 
         Our tutorial provides you with in-depth information about how to use Chronos and some key concepts in time series simulation.
@@ -346,7 +337,6 @@ Simulator is still under activate development with unstable API.
             Tutorial
 
     .. grid-item-card::
-
         :class-footer: sd-bg-light
 
         Our API document provides you with detailed method and parameter definition for ``Simulator``. It assumes you are familiar with time series simulation basic concepts and designs in Chronos.

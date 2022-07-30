@@ -1,6 +1,9 @@
 # Chronos Tutorial
 
 - [**Predict Number of Taxi Passengers with Chronos Forecaster**](./chronos-tsdataset-forecaster-quickstart.html)
+```eval_rst
+:bdg-primary:`Forecast` ::bdg-primary-line:`Auto Tuning` :bdg-secondary:`Data Processing`
+```
 
     > ![](../../../../image/colab_logo_32px.png)[Run in Google Colab][chronos_nyc_taxi_tsdataset_forecaster_colab] &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][chronos_nyc_taxi_tsdataset_forecaster]
 
