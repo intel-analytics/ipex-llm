@@ -22,7 +22,7 @@ on:
 
 
 jobs:
-  docker login:
+  docker-login:
     runs-on: [self-hosted, Shire]
     permissions:
       contents: read
