@@ -24,11 +24,8 @@ import warnings
 warnings.filterwarnings('ignore', category=UserWarning, module='pytorch_lightning')
 warnings.filterwarnings('ignore', category=UserWarning, module='torch')
 import torch
-import logging
 
-from functools import partial
 from torch.utils.data import TensorDataset, DataLoader
-from bigdl.nano.automl.hpo.space import Space
 from .utils_hpo import GenericLightningModule, _format_metric_str, _config_has_search_space
 from bigdl.nano.utils.log4Error import invalidOperationError, invalidInputError
 from bigdl.chronos.data.tsdataset import TSDataset
@@ -209,8 +206,7 @@ class BasePytorchForecaster(Forecaster):
             # reset train and validation datasets
             self.tune_trainer.reset_train_val_dataloaders(self.internal)
 
-    def fit(self, data, validation_data=None, epochs=1, batch_size=32, validation_mode='output',
-            earlystop_patience=1):
+    def fit(self, data, validation_data=None, epochs=1, batch_size=32, validation_mode='output', use_trial_id=None):
         # TODO: give an option to close validation during fit to save time.
         """
         Fit(Train) the forecaster.
@@ -359,6 +355,15 @@ class BasePytorchForecaster(Forecaster):
                               "safely import the main module. ",
                               fixMsg="you should use if __name__ == '__main__':, "
                               "otherwise performance will be degraded.")
+
+            # build internal according to use_trail_id for multi-objective HPO
+            if self.tune_trainer.hposearcher.objective.mo_hpo:
+                invalidOperationError(self.tune_trainer.hposearcher.study,
+                                      "You must tune before fit the model.")
+                invalidInputError(use_trial_id is not None,
+                                  "For multibojective HPO, you must specify a trial id for fit.")
+                trial = self.tune_trainer.hposearcher.study.trials[use_trial_id]
+                self.internal = self.tune_internal._model_build(trial)
 
             # fitting
             if not validation_data:
