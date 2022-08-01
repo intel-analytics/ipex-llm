@@ -269,9 +269,6 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
         """Setup warmup lr_schedulers after resetting the train dataloaders."""
         # LightnigModule.train_dataloader() generate the training dataloaders after setup,
         # so config the warmup lr_schedulers in on_train_start hook to infer warmup_steps.
-        invalidInputError(isinstance(self.auto_lr, dict) or isinstance(self.auto_lr, bool),
-                          errMsg=f"auto_lr is {type(self.auto_lr)}",
-                          fixMsg="expect auto_lr is a bool or dict")
         if not self.auto_lr:
             return
         if self.lr_scheduler_configs:
@@ -294,7 +291,7 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
                 if 'warmup_epochs' not in self.auto_lr:
                     self.auto_lr = True
                     warnings.warn("Not found \"warmup_epochs\" in the auto_lr dict"
-                                  " warmup_epochs will be set by default")
+                                  " warmup_epochs is set by default")
                 else:
                     invalidInputError(type(self.auto_lr['warmup_epochs']) is int,
                                       f"\"warmup_epochs\" is {type(self.auto_lr['warmup_epochs'])}",

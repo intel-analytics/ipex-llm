@@ -16,7 +16,7 @@
 import copy
 from logging import warning
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Union
 import pytorch_lightning as pl
 import torch
 from torch import nn
@@ -62,7 +62,7 @@ class Trainer(pl.Trainer):
                  cpu_for_each_process: Optional[List[List[int]]] = None,
                  use_hpo=False,
                  channels_last: bool = False,
-                 auto_lr=True,
+                 auto_lr: Union[int, bool] = True,
                  *args: Any, **kwargs: Any) -> None:
         """
         A pytorch lightning trainer that uses bigdl-nano optimization.
@@ -145,7 +145,8 @@ class Trainer(pl.Trainer):
                 from bigdl.nano.pytorch.strategies import create_RayStrategy
                 strategy = create_RayStrategy(num_workers=num_processes,
                                               use_ipex=self.use_ipex,
-                                              enable_bf16=enable_bf16)
+                                              enable_bf16=enable_bf16,
+                                              auto_lr=auto_lr)
             kwargs["strategy"] = strategy
             super().__init__(*args, **kwargs)
 

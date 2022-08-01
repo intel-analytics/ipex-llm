@@ -14,12 +14,9 @@
 # limitations under the License.
 #
 
-
-from gc import callbacks
 import os
 
 import pytest
-import math
 from unittest import TestCase
 
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
@@ -28,7 +25,6 @@ from bigdl.nano.pytorch.vision.models import vision
 from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import LearningRateMonitor
 import torch
 from torch import nn
 import torch.nn.functional as F
@@ -40,11 +36,10 @@ num_workers = 0
 data_dir = os.path.join(os.path.dirname(__file__), "../data")
 
 
-class ResNetWith2Optimzers(pl.LightningModule):
-    def __init__(self, learning_rate1=0.01, learning_rate2=0.05) -> None:
+class ResNetBase(pl.LightningModule):
+    def __init__(self) -> None:
         super().__init__()
 
-        self.save_hyperparameters()
         self.backbone = vision.resnet18(pretrained=False, include_top=False, freeze=False)
         output_size = self.backbone.get_output_size()
         self.head = nn.Linear(output_size, num_classes)
@@ -72,6 +67,13 @@ class ResNetWith2Optimzers(pl.LightningModule):
         logits = self(x)
         test_loss = F.nll_loss(logits, y)
         self.log("test_loss", test_loss)
+
+
+class ResNetWith2Optimizers(ResNetBase):
+    def __init__(self, learning_rate1=0.01, learning_rate2=0.05) -> None:
+        super().__init__()
+
+        self.save_hyperparameters()
 
     def configure_optimizers(self):
         optimizer1 = torch.optim.SGD(
@@ -85,38 +87,11 @@ class ResNetWith2Optimzers(pl.LightningModule):
         return [optimizer1, optimizer2]
 
 
-class ResNetWithScheduler(pl.LightningModule):
-    def __init__(self, learning_rate1=0.01, learning_rate2=0.02):
+class ResNetWithScheduler(ResNetBase):
+    def __init__(self, learning_rate1=0.01, learning_rate2=0.02) -> None:
         super().__init__()
 
         self.save_hyperparameters()
-        self.backbone = vision.resnet18(pretrained=False, include_top=False, freeze=False)
-        output_size = self.backbone.get_output_size()
-        self.head = nn.Linear(output_size, num_classes)
-
-    def forward(self, x):
-        x = self.backbone(x)
-        x = self.head(x)
-        return F.log_softmax(x, dim=1)
-
-    def training_step(self, batch, batch_idx, optimizer_idx):
-        x, y = batch
-        logits = self(x)
-        loss = F.nll_loss(logits, y)
-        self.log("train_loss", loss)
-        return loss
-
-    def validation_step(self, batch, batch_idx):
-        x, y = batch
-        logits = self(x)
-        val_loss = F.nll_loss(logits, y)
-        self.log("val_loss", val_loss)
-
-    def test_step(self, batch, batch_idx):
-        x, y = batch
-        logits = self(x)
-        test_loss = F.nll_loss(logits, y)
-        self.log("test_loss", test_loss)
 
     def configure_optimizers(self):
         optimizer1 = torch.optim.SGD(
@@ -223,8 +198,18 @@ class TestScaleLr(TestCase):
         trainer.fit(model, train_dataloaders=self.data_loader,
                     val_dataloaders=self.test_data_loader)
 
+    def test_scale_lr_ray(self):
+        model = ResNetWithScheduler()
+        trainer = Trainer(num_processes=4,
+                          distributed_backend='ray',
+                          auto_lr=True,
+                          max_epochs=2,
+                          callbacks=[CheckLinearLRScaleCallback(4, [0.01, 0.02])])
+        trainer.fit(model, train_dataloaders=self.data_loader,
+                    val_dataloaders=self.test_data_loader)
+
     def test_warmup_subprocess(self):
-        model = ResNetWith2Optimzers()
+        model = ResNetWith2Optimizers()
         trainer = Trainer(num_processes=2,
                           distributed_backend='subprocess',
                           auto_lr=True,
@@ -234,12 +219,22 @@ class TestScaleLr(TestCase):
                     val_dataloaders=self.test_data_loader)
 
     def test_warmup_spawn(self):
-        model = ResNetWith2Optimzers()
+        model = ResNetWith2Optimizers()
         trainer = Trainer(num_processes=4,
                           distributed_backend='spawn',
                           auto_lr={'warmup_epochs': 4},
                           max_epochs=10,
                           callbacks=[CheckWarmupCallback(4, [0.01, 0.05], 10, 4, 4)])
+        trainer.fit(model, train_dataloaders=self.data_loader,
+                    val_dataloaders=self.test_data_loader)
+
+    def test_warmup_ray(self):
+        model = ResNetWith2Optimizers()
+        trainer = Trainer(num_processes=2,
+                          distributed_backend='ray',
+                          auto_lr=True,
+                          max_epochs=4,
+                          callbacks=[CheckWarmupCallback(2, [0.01, 0.05], 4, 4)])
         trainer.fit(model, train_dataloaders=self.data_loader,
                     val_dataloaders=self.test_data_loader)
 
