@@ -1,11 +1,6 @@
 name: Nightly Build UT Scala Dllib
 
 on:
-  pull_request:
-    branches: [ "main" ]
-    paths:
-      - 'scala/**'
-      - '.github/workflows/scalatest-spark3.yml'
   schedule:
     - cron: '0 15 * * *'
   # Allows you to run this workflow manually from the Actions tab
