@@ -1,0 +1,121 @@
+name: Nightly Build Docker Publish BigDL-PPML
+
+on:
+  schedule:
+    - cron: '0 17 * * *'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      ARTIFACT:
+        description: 'select which job to run("ALL" will make all jobs run)'
+        required: true
+        default: 'latest'
+        type: choice
+        options:
+        - ALL
+        - bigdl-ppml-trusted-big-data-ml-python-gramine
+        - bigdl-ppml-trusted-big-data-ml-python-graphene
+        - bigdl-ppml-trusted-realtime-ml-scala-graphene
+        - bigdl-ppml-trusted-big-data-ml-scala-occlum
+        - bigdl-ppml-trusted-realtime-ml-scala-occlum
+
+
+jobs:
+  docker login:
+    runs-on: [self-hosted, Shire]
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: docker login
+      run: |
+        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+
+
+
+  big-data-ml-python-gramine:
+    if: ${{inputs.ARTIFACT}} == "bigdl-ppml-trusted-big-data-ml-python-gramine" || ${{inputs.ARTIFACT}} == "ALL"
+    runs-on: [self-hosted, Shire]
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: docker build bigdl-ppml-trusted-big-data-ml-python-gramine
+      run: |
+        echo "########################################"
+        echo "####### big-data-ml-python-gramine ####"
+        echo "########################################"
+        export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine
+        echo ${image}
+
+
+
+  big-data-ml-python-graphene:
+    if: ${{inputs.ARTIFACT}} == "bigdl-ppml-trusted-big-data-ml-python-graphene" || ${{inputs.ARTIFACT}} == "ALL"
+    runs-on: [self-hosted, Shire]
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: docker build bigdl-ppml-trusted-big-data-ml-python-graphene
+      run: |
+        echo "########################################"
+        echo "####### big-data-ml-python-graphene ####"
+        echo "########################################"
+        export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene
+        echo ${image}
+
+
+
+  realtime-ml-scala-graphene:
+    if: ${{inputs.ARTIFACT}} == "bigdl-ppml-trusted-realtime-ml-scala-graphene" || ${{inputs.ARTIFACT}} == "ALL"
+    runs-on: [self-hosted, Shire]
+    permissions:
+      contents: read
+      packages: write
+    steps:
+    - name: docker build bigdl-ppml-trusted-big-data-ml-python-graphene
+      run: |
+        echo "########################################"
+        echo "####### realtime-ml-scala-graphene #####"
+        echo "########################################"
+        export image=intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-graphene
+        echo ${image}
+
+
+
+  big-data-ml-scala-occlum:
+    if: ${{inputs.ARTIFACT}} == "bigdl-ppml-trusted-big-data-ml-scala-occlum" || ${{inputs.ARTIFACT}} == "ALL"
+    runs-on: [self-hosted, Shire]
+    permissions:
+      contents: read
+      packages: write
+    steps:
+    - name: docker build bigdl-ppml-trusted-big-data-ml-scala-occlum
+      run: |
+        echo "########################################"
+        echo "####### big-data-ml-scala-occlum  ######"
+        echo "########################################"
+        export image=intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-graphene
+        echo ${image}
+  
+  trusted-realtime-ml-scala-occlum:
+    if: ${{inputs.ARTIFACT}} == "bigdl-ppml-trusted-realtime-ml-scala-occlum" || ${{inputs.ARTIFACT}} == "ALL"
+    runs-on: [self-hosted, Shire]
+    permissions:
+      contents: read
+      packages: write
+    steps:
+    - name: bigdl-ppml-trusted-realtime-ml-scala-occlum
+      run: |
+        echo "########################################"
+        echo "####### realtime-ml-scala-occlum  ######"
+        echo "########################################"
+        export image=intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-occlum
+        echo ${image}
+
