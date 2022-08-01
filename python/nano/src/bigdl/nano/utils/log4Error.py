@@ -15,8 +15,15 @@
 #
 
 import logging
+import sys
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+stderr_handler = logging.StreamHandler(sys.stderr)
+stderr_handler.setLevel(logging.INFO)
+
+logger.addHandler(stderr_handler)
 
 
 def outputUserMessage(errMsg, fixMsg=None):
@@ -39,3 +46,11 @@ def invalidOperationError(condition, errMsg, fixMsg=None, cause=None):
             raise cause
         else:
             raise RuntimeError(errMsg)
+
+
+def info(msg):
+    logger.info(msg)
+
+
+def warning(msg):
+    logger.warning(msg)
