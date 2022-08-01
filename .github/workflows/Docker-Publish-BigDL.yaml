@@ -14,10 +14,10 @@ on:
         description: 'e.g. 2.1.0-SNAPSHOT'
         required: false
         default: 'latest'
-        type: choice
-        options:
-          - latest
-          - 2.1.0-SNAPSHOT
+        type: string
+#         options:
+#           - latest
+#           - 2.1.0-SNAPSHOT
 #   workflow_call:
 #     inputs:
 #       tag:
