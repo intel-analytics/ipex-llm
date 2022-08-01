@@ -8,7 +8,7 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   pull_request:
     branches: [ main ]
-  workflow_dispatch:
+  # workflow_dispatch:
   workflow_call:
     inputs:
       tag:
