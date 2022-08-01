@@ -5,7 +5,7 @@
 </div>
 
 <h3 align="center" style="display: block; font-size: 2.5em; font-weight: bold; margin-block-start: 1em; margin-block-end: 1em;">
-Seamless Scaling of AI Pipelines from Laptops to Distributed Cluster
+For Building Fast, Scalable, and Secure AI 
 </h3>
 
 <div align="center">
