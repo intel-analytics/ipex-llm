@@ -475,11 +475,11 @@ def shards_pd_df_to_shards_dic(data, featureCols, labelCol):
     :param featureCols: a list of featurecols.
     :param labelCol: single label col.
     :return: SparkXShards of dictionary
-    
+
     eg:
-    shards: SparkXShards of pandas dataframe with 2 cols ['f1', 'lable'], 
+    shards: SparkXShards of pandas dataframe with 2 cols ['f1', 'lable'],
     transform_shards = shards_pd_df_to_shards_dic(shards, featureCols=[''], labelCol='')
-    
+
     transform_shards will be SparkXShards of dictionary. x will be a stacked numpy array
     (stack feature columns), y will be a numpy array
     """
