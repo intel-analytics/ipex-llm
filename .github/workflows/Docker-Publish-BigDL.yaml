@@ -36,7 +36,6 @@ jobs:
         pwd
     - name: docker deploy bigdl-k8s
       run: |
-        cd -
         cd docker/bigdl-k8s
         pwd
         echo "########################################"
