@@ -209,7 +209,11 @@ jobs:
 
       - name: Run benchmark sanity check
         shell: bash
-        run: bash python/nano/benchmark/resnet50/run.sh
+        run: |
+          for script in python/nano/benchmark/*/run.sh
+          do
+            bash $script
+          done
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
           SANITY_CHECK: "1"
