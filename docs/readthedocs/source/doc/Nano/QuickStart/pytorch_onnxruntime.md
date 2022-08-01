@@ -6,7 +6,7 @@
 We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../../UserGuide/python.md) for more details.
 
 ```bash
-conda create py37 python==3.7.10 setuptools==58.0.4
+conda create -n py37 python==3.7.10 setuptools==58.0.4
 conda activate py37
 # nightly bulit version
 pip install --pre --upgrade bigdl-nano[pytorch]
@@ -14,7 +14,7 @@ pip install --pre --upgrade bigdl-nano[pytorch]
 source bigdl-nano-init
 ```
 
-Before you start with onnxruntime accelerator, you need to install some onnx packages as follows to set up your environment with ONNXRuntime acceleration.
+Before you start with ONNXRuntime accelerator, you need to install some ONNX packages as follows to set up your environment with ONNXRuntime acceleration.
 ```bash
 pip install onnx onnxruntime
 ```
@@ -86,4 +86,4 @@ y_hat = ort_model(x)
 y_hat.argmax(dim=1)
 ```
 - Note
-    `ort_model` is not trainable any more, so you can't use like trainer.fit(ort_model, dataloader)
+    `ort_model` is not trainable any more, so you can't use a code like `trainer.fit(ort_model, dataloader)`
