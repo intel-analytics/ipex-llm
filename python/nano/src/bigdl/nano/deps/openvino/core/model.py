@@ -22,13 +22,22 @@ from .utils import save
 
 
 class OpenVINOModel:
-    def __init__(self, ie_network: str, device='CPU'):
+    def __init__(self, ie_network: str, device='CPU', *extensions):
         self._ie = Core()
+        self.extensions = []
+        self.add_extensions(*extensions)
         self._device = device
         self.ie_network = ie_network
 
     def forward_step(self, *inputs):
         return self._infer_request.infer(list(inputs))
+
+    def add_extensions(self, *extensions):
+        """
+        Add extensions to Core.
+        """
+        self._ie.add_extension(*extensions)
+        self.extensions += list(extensions)
 
     @property
     def forward_args(self):
