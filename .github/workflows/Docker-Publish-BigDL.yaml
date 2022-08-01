@@ -1,0 +1,66 @@
+name: Nightly Build Docker Publish BigDL/BigDL-K8S
+
+on:
+  schedule:
+    - cron: '0 17 * * *'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      TAG:
+        description: 'e.g. 2.1.0-SNAPSHOT'
+        required: true
+        default: 'latest'
+        type: string
+        
+jobs:
+  deploy-docker:
+
+    runs-on: [self-hosted, Shire]
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: docker login
+      run: |
+        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+    - name: docker deploy bigdl
+      run: |
+        export IMAGE=intelanalytics/bigdl
+        cd docker/bigdl
+        echo "########################################"
+        echo "################# bigdl 3.1.2 #######"
+        echo "########################################"
+        docker build \
+          --build-arg http_proxy=${HTTP_PROXY} \
+          --build-arg https_proxy=${HTTPS_PROXY} \
+          --build-arg SPARK_VERSION=3.1.2 \
+          --build-arg JDK_VERSION=8u192 \
+          --build-arg JDK_URL=${JDK_URL} \
+          --build-arg no_proxy=${NO_PROXY} \
+          --rm -t $IMAGE-spark-3.1.2:${TAG} .
+        docker push ${IMAGE}-spark-3.1.2:${{inputs.TAG}}
+        docker tag ${IMAGE}-spark-3.1.2:${{inputs.TAG}} 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${{inputs.TAG}}
+        docker push 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${{inputs.TAG}}
+        docker rmi -f ${IMAGE}-spark-3.1.2:${{inputs.TAG}} 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${{inputs.TAG}}
+    - name: docker deploy bigdl-k8s
+      run: |
+        cd docker/bigdl-k8s
+        export IMAGE=intelanalytics/bigdl-k8s
+        echo "########################################"
+        echo "################# bigdl-k8s 3.1.2 #######"
+        echo "########################################"
+        docker build \
+        --build-arg http_proxy=${HTTP_PROXY} \
+        --build-arg https_proxy=${HTTPS_PROXY} \
+        --build-arg SPARK_VERSION=3.1.2 \
+        --build-arg JDK_VERSION=8u192 \
+        --build-arg JDK_URL=${JDK_URL} \
+        --build-arg no_proxy=${NO_PROXY} \
+        --rm --no-cache -t ${IMAGE}-spark-3.1.2:${{inputs.TAG}} .
+        docker tag ${IMAGE}-spark-3.1.2:${{inputs.TAG}} ${IMAGE}-spark-3.1.2:latest
+        docker push ${IMAGE}-spark-3.1.2:latest
+        docker tag ${IMAGE}-spark-3.1.2:${{inputs.TAG}} 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${{inputs.TAG}}
+        docker push 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${{inputs.TAG}}
+        docker rmi -f ${IMAGE}-spark-3.1.2:${{inputs.TAG}}
