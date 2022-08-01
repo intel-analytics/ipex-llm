@@ -22,6 +22,7 @@ jobs:
       packages: write
 
     steps:
+    - uses: actions/checkout@v3
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
