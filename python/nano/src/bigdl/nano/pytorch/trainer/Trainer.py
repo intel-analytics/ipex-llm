@@ -315,6 +315,8 @@ class Trainer(pl.Trainer):
         if precision == 'bf16':
             if accelerator is None:
                 if use_ipex:
+                    invalidInputError(not TORCH_VERSION_LESS_1_10,
+                                      "torch version should >=1.10 to use ipex")
                     use_jit = (accelerator == "jit")
                     channels_last = export_kwargs["channels_last"] \
                         if "channels_last" in export_kwargs else None

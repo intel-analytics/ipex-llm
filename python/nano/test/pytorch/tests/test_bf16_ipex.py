@@ -30,7 +30,7 @@ class Pytorch1_9:
 
         with pytest.raises(
             RuntimeError,
-            match="Require torch>=1.10 to convert type as bfloat16."
+            match="torch version should >=1.10 to use ipex"
         ):
             trainer.quantize(model, precision='bf16', use_ipex=True)
 
