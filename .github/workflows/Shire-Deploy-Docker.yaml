@@ -9,11 +9,14 @@ on:
   pull_request:
     branches: [ main ]
   workflow_dispatch:
-inputs:
-  tag:
-    description: 'Number of Tag'
-    required: false
-    default: 'latest'
+  workflow_call:
+    inputs:
+      tag:
+        description: 'Number of Tag'
+        required: false
+        default: 'latest'
+        type: string
+  
 
 jobs:
   deploy-docker:
