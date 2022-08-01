@@ -24,7 +24,7 @@ export BIGDL_HOME="$(cd ${SCRIPT_DIR}/../../..; pwd)"
 echo "DLLIB_PYTHON_HOME": $DL_PYTHON_HOME
 echo "PPML_PYTHON_HOME": $PPML_PYTHON_HOME
 
-export PYTHONPATH=$PYTHONPATH:$DLLIB_PYTHON_HOME:$PPML_PYTHON_HOME
+export PYTHONPATH=$PYTHONPATH:$DLLIB_PYTHON_HOME:$PPML_PYTHON_HOME:$PPML_PYTHON_HOME/bigdl/ppml/fl/nn/generated
 echo "PYTHONPATH": $PYTHONPATH
 
 export BIGDL_CLASSPATH=$(find $BIGDL_HOME/dist/lib/ -name "bigdl-ppml*with-dependencies.jar" | head -n 1)
