@@ -71,8 +71,10 @@ class OpenVINOModel:
     def ie_network(self, model):
         if isinstance(model, (str, Path)):
             self._ie_network = self._ie.read_model(model=str(model))
+            logging.info("XML File : {}".format(str(model)))
         else:
             self._ie_network = model
+            logging.info("Model is loaded from existing instance.")
         self.to(self._device, inplace=True)
 
     def _save_model(self, path):
@@ -87,6 +89,7 @@ class OpenVINOModel:
                           "self.ie_network shouldn't be None.")
         xml_path = path / self.status['xml_path']
         save(self.ie_network, xml_path)
+        logging.info("Model is saved in {}".format(xml_path))
 
     def pot(self,
             dataloader,
