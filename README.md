@@ -30,9 +30,8 @@ For Building Fast, Scalable, and Secure AI
 
 ---
 
-## What is BigDL 
 
-As of **BigDL 2.0** release, we combine the [original BigDL](https://github.com/intel-analytics/BigDL/tree/branch-0.14) and [Analytics Zoo](https://github.com/intel-analytics/analytics-zoo) projects into a single project. **Now BigDL is a suite of libraries which can help data scientists and engineers to easily build end-to-end, fast, and scalable AI applications in various aspects.** Each library in BigDL can be installed and used alone or in combinition:
+**BigDL is a suite of libraries which can help data scientists and engineers to easily build end-to-end, fast, and scalable AI applications in various aspects.** Each library in BigDL can be installed and used alone or in combinition:
 
 * [_Nano_]() - transparent acceleration of PyTorch/Tensorflow.
 * [_Orca_]() - seamless scaling local AI to cluster.
@@ -280,6 +279,9 @@ See the [PPML user guide](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overvi
 - [Github Issues](https://github.com/intel-analytics/BigDL/issues)
 
 ---
+
+## Note
+As of **BigDL 2.0** release, we combine the [original BigDL](https://github.com/intel-analytics/BigDL/tree/branch-0.14) and [Analytics Zoo](https://github.com/intel-analytics/analytics-zoo) projects into a single project.  
 
 ## Citation
 
