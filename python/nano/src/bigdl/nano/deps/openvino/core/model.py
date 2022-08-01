@@ -15,11 +15,10 @@
 #
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from bigdl.nano.utils.log4Error import invalidInputError, info, warning
 from openvino.runtime import Core
-from bigdl.nano.utils.log4Error import invalidInputError
 from openvino.runtime import Model
 from .utils import save
-import logging
 
 
 class OpenVINOModel:
@@ -45,16 +44,16 @@ class OpenVINOModel:
 
     def to(self, device, inplace=False):
         if inplace:
-            if device != self._device:
+            if device != self._device or self._compiled_model is None:
                 del self._compiled_model
                 del self._infer_request
                 self._compiled_model = self._ie.compile_model(model=self.ie_network,
                                                               device_name=device)
                 self._infer_request = self._compiled_model.create_infer_request()
                 self._device = device
-                logging.info("Model is loaded on Device: {}".format(self._device))
+                info("Model is loaded on Device: {}".format(self._device))
             else:
-                logging.warning("Model is already loaded on Device: {}".format(self._device))
+                warning("Model is already loaded on Device: {}".format(self._device))
             return self
         else:
             return OpenVINOModel(self.ie_network, device=device, *self.extensions)
@@ -72,10 +71,10 @@ class OpenVINOModel:
     def ie_network(self, model):
         if isinstance(model, (str, Path)):
             self._ie_network = self._ie.read_model(model=str(model))
-            logging.info("XML File : {}".format(str(model)))
+            info("XML File : {}".format(str(model)))
         else:
             self._ie_network = model
-            logging.info("Model is loaded from existing instance.")
+            info("Model is loaded from existing instance.",)
         self.to(self._device, inplace=True)
 
     def _save_model(self, path):
@@ -90,7 +89,7 @@ class OpenVINOModel:
                           "self.ie_network shouldn't be None.")
         xml_path = path / self.status['xml_path']
         save(self.ie_network, xml_path)
-        logging.info("Model is saved in {}".format(xml_path))
+        info("Model is saved in {}".format(xml_path))
 
     def pot(self,
             dataloader,

@@ -22,7 +22,6 @@ logger.setLevel(logging.INFO)
 
 stderr_handler = logging.StreamHandler(sys.stderr)
 stderr_handler.setLevel(logging.INFO)
-
 logger.addHandler(stderr_handler)
 
 

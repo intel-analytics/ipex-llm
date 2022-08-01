@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from tempfile import TemporaryDirectory
 from unittest import TestCase
-import os
 from bigdl.nano.openvino import OpenVINOModel
 import numpy as np
 
