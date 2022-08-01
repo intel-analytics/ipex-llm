@@ -51,6 +51,7 @@ jobs:
         echo "########################################"
         export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine
         echo ${image}
+        echo ${{inputs.ARTIFACT}}
 
 
 
@@ -69,6 +70,7 @@ jobs:
         echo "########################################"
         export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene
         echo ${image}
+        echo ${{inputs.ARTIFACT}}
 
 
 
@@ -86,6 +88,7 @@ jobs:
         echo "########################################"
         export image=intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-graphene
         echo ${image}
+        echo ${{inputs.ARTIFACT}}
 
 
 
@@ -103,6 +106,9 @@ jobs:
         echo "########################################"
         export image=intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-graphene
         echo ${image}
+        echo ${{inputs.ARTIFACT}}
+        
+        
   
   trusted-realtime-ml-scala-occlum:
     if: ${{inputs.ARTIFACT}} == "bigdl-ppml-trusted-realtime-ml-scala-occlum" || ${{inputs.ARTIFACT}} == "ALL"
@@ -118,4 +124,5 @@ jobs:
         echo "########################################"
         export image=intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-occlum
         echo ${image}
+        echo ${{inputs.ARTIFACT}}
 
