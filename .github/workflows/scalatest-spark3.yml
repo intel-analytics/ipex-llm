@@ -1,8 +1,6 @@
-name: Scala Test with spark3
+name: Scala Test With Spark3
 
 on:
-  push:
-    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
     paths:
@@ -65,7 +63,7 @@ jobs:
           #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.estimator" test -P spark_3.x -Dspark.version=3.1.2  
           #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.nnframes" test -P spark_3.x -Dspark.version=3.1.2 
           mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.keras" test -P spark_3.x -Dspark.version=3.1.2 
-          mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.nn.mkldnn" test -P spark_3.x -Dspark.version=3.1.2 
+          #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.nn.mkldnn" test -P spark_3.x -Dspark.version=3.1.2 
           #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.feature" test -P spark_3.x -Dspark.version=3.1.2 
           #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.utils.intermediate" test -P spark_3.x -Dspark.version=3.1.2 
           #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.utils.tf" test -P spark_3.x -Dspark.version=3.1.2 
