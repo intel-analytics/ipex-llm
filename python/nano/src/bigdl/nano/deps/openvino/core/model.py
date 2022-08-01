@@ -19,6 +19,7 @@ from openvino.runtime import Core
 from bigdl.nano.utils.log4Error import invalidInputError
 from openvino.runtime import Model
 from .utils import save
+import logging
 
 
 class OpenVINOModel:
@@ -27,6 +28,8 @@ class OpenVINOModel:
         self.extensions = []
         self.add_extensions(*extensions)
         self._device = device
+        self._compiled_model = None
+        self._infer_request = None
         self.ie_network = ie_network
 
     def forward_step(self, *inputs):
@@ -39,9 +42,26 @@ class OpenVINOModel:
         self._ie.add_extension(*extensions)
         self.extensions += list(extensions)
 
+    def to(self, device, inplace=False):
+        if inplace:
+            if device != self._device:
+                del self._compiled_model
+                del self._infer_request
+                self._compiled_model = self._ie.compile_model(model=self.ie_network,
+                                                              device_name=device)
+                self._infer_request = self._compiled_model.create_infer_request()
+                self._device = device
+                logging.info("Model is loaded on Device: {}".format(self._device))
+            else:
+                logging.warning("Model is already loaded on Device: {}".format(self._device))
+            return self
+        else:
+            return OpenVINOModel(self.ie_network, device=device, *self.extensions)
+
     @property
     def forward_args(self):
-        return self._forward_args
+        input_names = [t.any_name for t in self._ie_network.inputs]
+        return input_names
 
     @property
     def ie_network(self):
@@ -53,11 +73,7 @@ class OpenVINOModel:
             self._ie_network = self._ie.read_model(model=str(model))
         else:
             self._ie_network = model
-        self._compiled_model = self._ie.compile_model(model=self.ie_network,
-                                                      device_name=self._device)
-        self._infer_request = self._compiled_model.create_infer_request()
-        input_names = [t.any_name for t in self._ie_network.inputs]
-        self._forward_args = input_names
+        self.to(self._device, inplace=True)
 
     def _save_model(self, path):
         """
