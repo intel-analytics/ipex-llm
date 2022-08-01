@@ -36,10 +36,6 @@ class Pytorch1_9:
 
 
 class Pytorch1_12:
-    """
-    Pytorch version >= 1.10 and <1.12, bfloat16 precision is supported.
-    But there is no optimization on bfloat16.
-    """
     def test_bf16_common(self):
         """
         Debug mode. Allow run bf16 forward without bf16 instruction support.
