@@ -39,7 +39,8 @@ class OpenVINOModel:
         """
         Add extensions to Core.
         """
-        self._ie.add_extension(*extensions)
+        for et in extensions:
+            self._ie.add_extension(et)
         self.extensions += list(extensions)
 
     def to(self, device, inplace=False):
