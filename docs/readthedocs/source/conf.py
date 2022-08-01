@@ -92,6 +92,7 @@ extensions = [
     'sphinx_tabs.tabs',
     'sphinx_design',
     'sphinx_external_toc',
+    'nbsphinx'
 ]
 
 
@@ -244,3 +245,6 @@ def setup(app):
         'enable_auto_doc_ref': True,
     }, True)
     app.add_transform(AutoStructify)
+
+# disable notebook execution
+nbsphinx_execute = 'never'

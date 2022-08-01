@@ -48,9 +48,7 @@
 
 ---------------------------
 
-
-- [**BigDL-Nano Hyperparameter Tuning (Tensorflow Sequential/Functional API) Quickstart**](./pytorch_quantization_openvino.html)
-
+- [**BigDL-Nano Hyperparameter Tuning (Tensorflow Sequential/Functional API) Quickstart**](../Tutorials/seq_and_func.html)
 
     > ![](../../../../image/colab_logo_32px.png)[Run in Google Colab][Nano_hpo_tf_seq_func_colab] &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][Nano_hpo_tf_seq_func]
 
@@ -60,7 +58,7 @@
 
 ---------------------------
 
-- [**BigDL-Nano Hyperparameter Tuning (Tensorflow Subclassing Model) Quickstart**](./pytorch_quantization_openvino.html)
+- [**BigDL-Nano Hyperparameter Tuning (Tensorflow Subclassing Model) Quickstart**](../Tutorials/custom.html)
 
     > ![](../../../../image/colab_logo_32px.png)[Run in Google Colab][Nano_hpo_tf_subclassing_colab] &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][Nano_hpo_tf_subclassing]
 
