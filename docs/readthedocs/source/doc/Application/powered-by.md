@@ -29,6 +29,7 @@
 Learning on Apache Spark and Analytics Zoo](https://www.dellemc.com/resources/en-us/asset/white-papers/solutions/h17686_hornet_wp.pdf)
 <br>• [Using Deep Learning on Apache Spark to Diagnose Thoracic Pathology from Chest X-rays](https://databricks.com/session/using-deep-learning-on-apache-spark-to-diagnose-thoracic-pathology-from-chest-x-rays)
 * __GoldWind__
+<br>• [Goldwind SE: Intelligent Power Prediction Solution](https://www.intel.com/content/www/us/en/customer-spotlight/stories/goldwind-customer-story.html)
 <br>• [Intel big data analysis + AI platform helps GoldWind to build a new energy intelligent power prediction solution](https://www.intel.cn/content/www/cn/zh/analytics/artificial-intelligence/create-power-forecasting-solutions.html)
 * __Inspur__
 <br>• [Inspur E2E Smart Transportation CV application](https://jason-dai.github.io/cvpr2021/slides/Inspur%20E2E%20Smart%20Transportation%20CV%20application%20-CVPR21.pdf)
