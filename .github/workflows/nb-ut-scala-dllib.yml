@@ -1,16 +1,11 @@
-name: Scala Style Check
+name: Nightly Build UT Scala Dllib
 
 on:
-  push:
-    branches: [ "main" ]
-    paths:
-      - 'scala/**'
-      - '.github/workflows/scala-style-check.yml'
   pull_request:
     branches: [ "main" ]
     paths:
       - 'scala/**'
-      - '.github/workflows/scala-style-check.yml'
+      - '.github/workflows/scalatest-spark3.yml'
   schedule:
     - cron: '0 15 * * *'
   # Allows you to run this workflow manually from the Actions tab
@@ -33,12 +28,6 @@ jobs:
         distribution: 'temurin'
         #server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         settings-path: ${{ github.workspace }} # location for the settings.xml file
-    #pls use cache only on github owned runners 
-    #- uses: actions/cache@v2
-       #with:
-        #path: ~/.m2/repository
-        #key: maven-${{ hashFiles('**/pom.xml') }}
-        #restore-keys: maven-
 
     - name: Set up Maven
       uses: stCarolas/setup-maven@v4.4
@@ -67,6 +56,17 @@ jobs:
 
     - name: Run tests
       run: |
+          export SPARK_LOCAL_HOSTNAME=localhost
+          export KERAS_BACKEND=tensorflow
           cd scala
-          mvn clean verify -DskipTests -U
-
+          mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.optim" test -P spark_3.x -Dspark.version=3.1.2 
+          mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.models" test -P spark_3.x -Dspark.version=3.1.2 
+          mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.estimator" test -P spark_3.x -Dspark.version=3.1.2  
+          mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.nnframes" test -P spark_3.x -Dspark.version=3.1.2 
+          mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.feature" test -P spark_3.x -Dspark.version=3.1.2
+          mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.utils.intermediate" test -P spark_3.x -Dspark.version=3.1.2
+          mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.utils.tf" test -P spark_3.x -Dspark.version=3.1.2
+          mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.utils.python.api" test -P spark_3.x -Dspark.version=3.1.2
+          #need python requirements
+          #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.keras" test -P spark_3.x -Dspark.version=3.1.2 
+          #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.nn.mkldnn" test -P spark_3.x -Dspark.version=3.1.2 
