@@ -8,14 +8,20 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   pull_request:
     branches: [ main ]
-  # workflow_dispatch:
-  workflow_call:
+  workflow_dispatch:
     inputs:
       tag:
         description: 'Number of Tag'
         required: false
         default: 'latest'
         type: string
+#   workflow_call:
+#     inputs:
+#       tag:
+#         description: 'Number of Tag'
+#         required: false
+#         default: 'latest'
+#         type: string
   
 
 jobs:
