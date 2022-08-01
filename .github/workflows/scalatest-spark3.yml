@@ -30,12 +30,6 @@ jobs:
         distribution: 'temurin'
         #server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         settings-path: ${{ github.workspace }} # location for the settings.xml file
-    #pls use cache only on github owned runners 
-    #- uses: actions/cache@v2
-       #with:
-        #path: ~/.m2/repository
-        #key: maven-${{ hashFiles('**/pom.xml') }}
-        #restore-keys: maven-
 
     - name: Set up Maven
       uses: stCarolas/setup-maven@v4.4
@@ -66,13 +60,13 @@ jobs:
       run: |
           export SPARK_LOCAL_HOSTNAME=localhost
           cd scala
-          #mvn -Dhttp.proxyHost=${{ secrets.HTTP_PROXY_HOST_2 }} -Dhttp.proxyPort=${{ secrets.HTTP_PROXY_PORT_2 }} -Dhttps.proxyHost=${{ secrets.HTTP_PROXY_HOST_2 }} -Dhttps.proxyPort=${{ secrets.HTTP_PROXY_PORT_3 }} -DwildcardSuites=com.intel.analytics.bigdl.dllib.optim test -P spark_3.x -Dspark.version=3.1.2 
-          mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.models" test -P spark_3.x -Dspark.version=3.1.2 
-          #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.estimator" test -P spark_3.x -Dspark.version=3.1.2  
-          #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.nnframes" test -P spark_3.x -Dspark.version=3.1.2 -U 
-          #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.keras" test -P spark_3.x -Dspark.version=3.1.2 -U
-          #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.nn.mkldnn" test -P spark_3.x -Dspark.version=3.1.2 -U
-          #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.feature" test -P spark_3.x -Dspark.version=3.1.2 -U
-          #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.utils.intermediate" test -P spark_3.x -Dspark.version=3.1.2 -U
-          #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.utils.tf" test -P spark_3.x -Dspark.version=3.1.2 -U
-          mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.utils.python.api" test -P spark_3.x -Dspark.version=3.1.2 -U
+          #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.optim" test -P spark_3.x -Dspark.version=3.1.2 
+          #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.models" test -P spark_3.x -Dspark.version=3.1.2 
+          mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.estimator" test -P spark_3.x -Dspark.version=3.1.2  
+          mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.nnframes" test -P spark_3.x -Dspark.version=3.1.2 
+          #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.keras" test -P spark_3.x -Dspark.version=3.1.2 
+          #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.nn.mkldnn" test -P spark_3.x -Dspark.version=3.1.2 
+          #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.feature" test -P spark_3.x -Dspark.version=3.1.2 
+          #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.utils.intermediate" test -P spark_3.x -Dspark.version=3.1.2 
+          #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.utils.tf" test -P spark_3.x -Dspark.version=3.1.2 
+          #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.utils.python.api" test -P spark_3.x -Dspark.version=3.1.2 
