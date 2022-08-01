@@ -3,18 +3,21 @@ name: Nightly Build Docker Publish BigDL/BigDL-K8S
 on:
   #release:
   #  types: [created]
-  # schedule:
-  #   - cron: '0 15 * * *'
+#   schedule:
+#     - cron: '0 15 * * *'
   # Allows you to run this workflow manually from the Actions tab
   pull_request:
     branches: [ main ]
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Number of Tag'
+        description: 'e.g. 2.1.0-SNAPSHOT'
         required: false
         default: 'latest'
-        type: string
+        type: choice
+        options:
+          - latest
+          - 2.1.0-SNAPSHOT
 #   workflow_call:
 #     inputs:
 #       tag:
