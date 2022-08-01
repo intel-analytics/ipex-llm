@@ -37,7 +37,7 @@ jobs:
 
 
   big-data-ml-python-gramine:
-    if: ${{inputs.ARTIFACT}} == "bigdl-ppml-trusted-big-data-ml-python-gramine" || ${{inputs.ARTIFACT}} == "ALL"
+    if: inputs.ARTIFACT == "bigdl-ppml-trusted-big-data-ml-python-gramine" || inputs.ARTIFACT == "ALL"
     runs-on: [self-hosted, Shire]
     permissions:
       contents: read
@@ -55,7 +55,7 @@ jobs:
 
 
   big-data-ml-python-graphene:
-    if: ${{inputs.ARTIFACT}} == "bigdl-ppml-trusted-big-data-ml-python-graphene" || ${{inputs.ARTIFACT}} == "ALL"
+    if: inputs.ARTIFACT == "bigdl-ppml-trusted-big-data-ml-python-graphene" || inputs.ARTIFACT == "ALL"
     runs-on: [self-hosted, Shire]
     permissions:
       contents: read
@@ -73,7 +73,7 @@ jobs:
 
 
   realtime-ml-scala-graphene:
-    if: ${{inputs.ARTIFACT}} == "bigdl-ppml-trusted-realtime-ml-scala-graphene" || ${{inputs.ARTIFACT}} == "ALL"
+    if: inputs.ARTIFACT == "bigdl-ppml-trusted-realtime-ml-scala-graphene" || inputs.ARTIFACT == "ALL"
     runs-on: [self-hosted, Shire]
     permissions:
       contents: read
@@ -90,7 +90,7 @@ jobs:
 
 
   big-data-ml-scala-occlum:
-    if: ${{inputs.ARTIFACT}} == "bigdl-ppml-trusted-big-data-ml-scala-occlum" || ${{inputs.ARTIFACT}} == "ALL"
+    if: inputs.ARTIFACT == "bigdl-ppml-trusted-big-data-ml-scala-occlum" || inputs.ARTIFACT == "ALL"
     runs-on: [self-hosted, Shire]
     permissions:
       contents: read
@@ -105,7 +105,7 @@ jobs:
         echo ${image}
   
   trusted-realtime-ml-scala-occlum:
-    if: ${{inputs.ARTIFACT}} == "bigdl-ppml-trusted-realtime-ml-scala-occlum" || ${{inputs.ARTIFACT}} == "ALL"
+    if: inputs.ARTIFACT == "bigdl-ppml-trusted-realtime-ml-scala-occlum" || inputs.ARTIFACT == "ALL"
     runs-on: [self-hosted, Shire]
     permissions:
       contents: read
