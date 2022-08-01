@@ -62,10 +62,10 @@ jobs:
           cd scala
           #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.optim" test -P spark_3.x -Dspark.version=3.1.2 
           #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.models" test -P spark_3.x -Dspark.version=3.1.2 
-          mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.estimator" test -P spark_3.x -Dspark.version=3.1.2  
-          mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.nnframes" test -P spark_3.x -Dspark.version=3.1.2 
-          #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.keras" test -P spark_3.x -Dspark.version=3.1.2 
-          #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.nn.mkldnn" test -P spark_3.x -Dspark.version=3.1.2 
+          #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.estimator" test -P spark_3.x -Dspark.version=3.1.2  
+          #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.nnframes" test -P spark_3.x -Dspark.version=3.1.2 
+          mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.keras" test -P spark_3.x -Dspark.version=3.1.2 
+          mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.nn.mkldnn" test -P spark_3.x -Dspark.version=3.1.2 
           #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.feature" test -P spark_3.x -Dspark.version=3.1.2 
           #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.utils.intermediate" test -P spark_3.x -Dspark.version=3.1.2 
           #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.utils.tf" test -P spark_3.x -Dspark.version=3.1.2 
