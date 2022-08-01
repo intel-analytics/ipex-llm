@@ -24,7 +24,7 @@ jobs:
     steps:
     - name: docker login
       run: |
-        echo ${inputs.TAG}
+        echo ${{inputs.TAG}}
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
     - name: docker deploy bigdl
       run: |
