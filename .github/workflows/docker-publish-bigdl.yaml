@@ -40,7 +40,7 @@ jobs:
           --build-arg JDK_VERSION=8u192 \
           --build-arg JDK_URL=${JDK_URL} \
           --build-arg no_proxy=${NO_PROXY} \
-          --rm -t $IMAGE-spark-3.1.2:${{input.TAG}} .
+          --rm -t $IMAGE-spark-3.1.2:${{inputs.TAG}} .
         docker push ${IMAGE}-spark-3.1.2:${{inputs.TAG}}
         docker tag ${IMAGE}-spark-3.1.2:${{inputs.TAG}} 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${{inputs.TAG}}
         docker push 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${{inputs.TAG}}
