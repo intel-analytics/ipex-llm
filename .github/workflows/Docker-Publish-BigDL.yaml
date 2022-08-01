@@ -7,9 +7,9 @@ on:
     branches: [main]
   workflow_dispatch:
     inputs:
-      TAG1:
+      TAG:
         description: 'e.g. 2.1.0-SNAPSHOT'
-        required: false
+        required: true
         default: 'latest'
         type: string
         
@@ -24,7 +24,7 @@ jobs:
     steps:
     - name: docker login
       run: |
-        echo ${TAG1}
+        echo ${inputs.TAG}
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
     - name: docker deploy bigdl
       run: |
