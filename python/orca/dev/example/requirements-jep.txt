@@ -1,5 +1,6 @@
 torch==1.7.1
 torchvision==0.8.2
+torchtext==0.8.1
 jep==3.9.1
 absl-py==0.11.0
 aiohttp==3.6.2
@@ -48,6 +49,12 @@ fsspec==2021.9.0
 funcsigs==1.0.2
 future==0.18.2
 google==2.0.3
+google-api-core==1.26.1
+google-auth==1.27.1
+google-auth-oauthlib==0.4.6
+google-pasta==0.2.0
+googleapis-common-protos==1.51.0
+matplotlib==3.2.1
 gpustat==0.6.0
 graphviz==0.8.4
 grpcio==1.36.1
@@ -72,7 +79,8 @@ locket==0.2.1
 LunarCalendar==0.0.9
 lunr==0.5.6
 lz4==3.0.2
-matplotlib==3.3.3
+protobuf==3.12.0
+wheel==0.34.2
 mkdocs==1.1
 more-itertools==8.4.0
 msgpack==1.0.0
