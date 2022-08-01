@@ -16,9 +16,6 @@ attrs==19.3.0
 backcall==0.2.0
 bayesian-optimization==1.1.0
 beautifulsoup4==4.9.0
-BigDL==0.13.0
-bigdl-math==0.14.0.dev0
-bigdl-tf==0.14.0.dev0
 bleach==3.1.5
 blessings==1.7
 boto3==1.12.39
