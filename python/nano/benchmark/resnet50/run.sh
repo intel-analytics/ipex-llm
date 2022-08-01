@@ -36,7 +36,7 @@ start=$(date "+%s")
 
 # Boot-up commands 
 # e.g. python benchmark_program.py 
-bash $NANO_BENCHMARK_DIR/pytorch_resnet50_finetune.sh
+bash $NANO_BENCHMARK_DIR/resnet50/pytorch_resnet50_finetune.sh
 #
 
 now=$(date "+%s")
