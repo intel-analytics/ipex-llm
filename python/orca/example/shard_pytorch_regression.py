@@ -82,8 +82,8 @@ orca_estimator = Estimator.from_torch(model=model,
                                       metrics=[Accuracy()],
                                       backend="bigdl")
 
-data_shard = shardsPreprocessing(data_shard,
-                                     featureCols=list(column[:-1]),
-                                     labelCol=column[-1])
+data_shard = shards_pd_df_to_shards_dic(data_shard,
+                                        featureCols=list(column[:-1]),
+                                        labelCol=column[-1])
 
 orca_estimator.fit(data=data_shard, epochs=8, batch_size=4)
