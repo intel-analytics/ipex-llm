@@ -6,8 +6,8 @@ on:
   schedule:
     - cron: '0 17 * * *'
   # Allows you to run this workflow manually from the Actions tab
-  pull_request:
-    branches: [ main ]
+#   pull_request:
+#     branches: [ main ]
   workflow_dispatch:
     inputs:
       tag:
@@ -36,10 +36,6 @@ jobs:
       packages: write
 
     steps:
-    - name: debug
-      run: |
-        echo $DOCKERHUB_USERNAME && echo $DOCKERHUB_PASSWORD
-        ls
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
