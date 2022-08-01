@@ -10,18 +10,18 @@ Seamless Scaling of AI Pipelines from Laptops to Distributed Cluster
 
 <div align="center">
 
-[![Latest release][release-badge]][release-link] [![Latest release date][release-date-badge]][release-link] [![PyPI][pypi-badge]][pypi-link] ![GitHub last commit](https://img.shields.io/github/last-commit/intel-analytics/BigDL)
+[![Latest release][release-badge]][release-link] [![Latest release date][release-date-badge]][release-link] [![PyPI][pypi-badge]][pypi-link] 
 
 </div>
 
 <p align="center">
 	<strong>
-		<a href="https://www.intel.com/content/www/us/en/developer/tools/bigdl/overview.html">Website</a>
-		•
 		<a href="https://bigdl.readthedocs.io/">Docs</a>
 		•
+		<a href="https://arxiv.org/ftp/arxiv/papers/2204/2204.01715.pdf/">Paper</a>
+		•
 		<a href="https://huggingface.co/spaces/BigDL/bigdl_nano_demo">Demo</a>
-    •
+    		•
 		<a href="https://bigdl.readthedocs.io/en/latest/doc/UserGuide/docker.html">Docker</a>
 	</strong>
 </p>
@@ -34,12 +34,12 @@ Seamless Scaling of AI Pipelines from Laptops to Distributed Cluster
 
 As of **BigDL 2.0** release, we combine the [original BigDL](https://github.com/intel-analytics/BigDL/tree/branch-0.14) and [Analytics Zoo](https://github.com/intel-analytics/analytics-zoo) projects into a single project. **Now BigDL is a suite of libraries which can help data scientists and engineers to easily build end-to-end, fast, and scalable AI applications in various aspects.** Each library in BigDL can be installed and used alone or in combinition:
 
-* [_BigDL-Nano_]() - a python library for transparent acceleration of Tensorflow and PyTorch programs on single node.
-* [_BigDL-Orca_]() - a python library to scale local Tensorflow or PyTorch programs to a large cluster.
-* [_BigDL-DLLib_]() - a deep learning library for Apache Spark in both **Scala** and **Python** 
-* [_BigDL-Chronos_]() - a python application framework for developing accurate, fast and scalable time series analysis applications.
-* [_BigDL-Friesian_]() - a python application framwork for developing large-scale recommendation systems.
-* [_BigDL-PPML_]() - a _trusted cluster environment_ for securely running large scale AI applications without modification.
+* [_Nano_]() - transparent acceleration of PyTorch/Tensorflow.
+* [_Orca_]() - seamless scaling local AI to cluster.
+* [_DLLib_]() - deep learning for Apache Spark
+* [_BigDL-Chronos_]() - fast and scalable time series analysis.
+* [_BigDL-Friesian_]() - large-scale recommendation systems.
+* [_BigDL-PPML_]() - secure and privacy preserved AI
  
 
 
