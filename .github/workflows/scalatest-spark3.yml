@@ -1,4 +1,4 @@
-name: Scala Test With Spark3
+name: Nightly Build UT Scala Dllib
 
 on:
   pull_request:
