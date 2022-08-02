@@ -8,8 +8,8 @@ set -e
 
 python $NANO_TUTORIAL_TEST_DIR/pytorch_inference_onnx.py
 
-sed -i s/Trainer\(max_epochs=1\)/Trainer\(max_epochs=1,\ fast_dev_run=True\)/ pytorch_quantization.py
+sed -i s/Trainer\(max_epochs=1\)/Trainer\(max_epochs=1,\ fast_dev_run=True\)/ $NANO_TUTORIAL_TEST_DIR/pytorch_quantization.py
 python $NANO_TUTORIAL_TEST_DIR/pytorch_quantization.py
 
-sed -i s/Trainer\(max_epochs=1\)/Trainer\(max_epochs=1,\ fast_dev_run=True\)/ pytorch_quantization_onnx.py
+sed -i s/Trainer\(max_epochs=1\)/Trainer\(max_epochs=1,\ fast_dev_run=True\)/ $NANO_TUTORIAL_TEST_DIR/pytorch_quantization_onnx.py
 python $NANO_TUTORIAL_TEST_DIR/pytorch_quantization_onnx.py
