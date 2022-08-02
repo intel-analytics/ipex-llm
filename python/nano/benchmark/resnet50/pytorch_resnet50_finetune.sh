@@ -22,7 +22,7 @@ source $CONDA/bin/activate benchmark-resnet-50
 
 bash $ANALYTICS_ZOO_ROOT/python/nano/dev/build_and_install.sh linux default false pytorch
 
-cd $ANALYTICS_ZOO_ROOT/python/nano/benchmark/pytorch/
+cd $ANALYTICS_ZOO_ROOT/python/nano/benchmark/resnet50/
 
 echo "Nano_Perf: Running PyTorch Baseline"
 python pytorch-cat-dog.py --batch_size 32 --name "PyTorch Baseline"
