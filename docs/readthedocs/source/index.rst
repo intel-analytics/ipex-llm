@@ -1,7 +1,10 @@
 BigDL Documentation
 ===========================
 
-### **What can you do with BigDL?**
+What can you do with BigDL?
+----------------------------
+
+-----------
 
 .. grid:: 1 1 3 3
 
@@ -12,11 +15,11 @@ BigDL Documentation
         :class-footer: sd-bg-light
         :class-card: sd-mb-2
 
-        **Chronos**
+        **Build Scalable AI with DLLib**
         ^^^
         Chronos is an application framework for building large-scale time series analysis applications. (`TSDataset <data_processing_feature_engineering.html>`_)
         +++
-        .. button-ref:: ../../PPML/Overview/ppml
+        .. button-ref:: ../../DLLib/Overview/dllib
             :color: primary
             :expand:
             :outline:
@@ -30,11 +33,11 @@ BigDL Documentation
         :class-footer: sd-bg-light
         :class-card: sd-mb-2
 
-        **Chronos**
+        **Accelerate TF/PyTorch programs with Nano**
         ^^^
         Chronos is an application framework for building large-scale time series analysis applications.
         +++
-        .. button-ref:: ../../PPML/Overview/ppml
+        .. button-ref:: ../../Nano/Overview/nano
             :color: primary
             :expand:
             :outline:
@@ -48,11 +51,11 @@ BigDL Documentation
         :class-footer: sd-bg-light
         :class-card: sd-mb-2
 
-        **Chronos**
+        **Make TF/PyTorch programs distributed with Orca**
         ^^^
         Chronos is an application framework for building large-scale time series analysis applications.
         +++
-        .. button-ref:: ../../PPML/Overview/ppml
+        .. button-ref:: ../../Orca/Overview/Orca
             :color: primary
             :expand:
             :outline:
@@ -68,7 +71,25 @@ BigDL Documentation
         :class-footer: sd-bg-light
         :class-card: sd-mb-2
 
-        **Chronos**
+        **Build Time Series Applications with Chronos**
+        ^^^
+        Chronos is an application framework for building large-scale time series analysis applications.
+        +++
+        .. button-ref:: ../../Chronos/Overview/chronos
+            :color: primary
+            :expand:
+            :outline:
+
+            Get Started
+
+    .. grid-item-card::
+        :text-align: center
+        :shadow: none
+        :class-header: sd-bg-light
+        :class-footer: sd-bg-light
+        :class-card: sd-mb-2
+
+        **Build Large-scale Recommendation System with Friesian**
         ^^^
         Chronos is an application framework for building large-scale time series analysis applications.
         +++
@@ -86,25 +107,7 @@ BigDL Documentation
         :class-footer: sd-bg-light
         :class-card: sd-mb-2
 
-        **Chronos**
-        ^^^
-        Chronos is an application framework for building large-scale time series analysis applications.
-        +++
-        .. button-ref:: ../../PPML/Overview/ppml
-            :color: primary
-            :expand:
-            :outline:
-
-            Get Started
-
-    .. grid-item-card::
-        :text-align: center
-        :shadow: none
-        :class-header: sd-bg-light
-        :class-footer: sd-bg-light
-        :class-card: sd-mb-2
-
-        **Chronos**
+        **Protect and Secure with PPML**
         ^^^
         Chronos is an application framework for building large-scale time series analysis applications.
         +++
