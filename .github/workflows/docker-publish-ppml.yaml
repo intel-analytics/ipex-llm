@@ -45,7 +45,7 @@ jobs:
 
 
   big-data-ml-python-gramine:
-    if: ${${{inputs.ARTIFACT}}} == 1 || ${${{inputs.ARTIFACT}}} == 0
+    if: ${${{inputs.ARTIFACT}}} == 1
     runs-on: [self-hosted, Shire]
     permissions:
       contents: read
@@ -59,12 +59,13 @@ jobs:
         echo "########################################"
         export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine
         echo ${image}
+        echo ${${{inputs.ARTIFACT}}}
 
 
 
 
   big-data-ml-python-graphene:
-    if: ${${{inputs.ARTIFACT}}} ==2 || ${${{inputs.ARTIFACT}}} == 0
+    if: ${${{inputs.ARTIFACT}}} == 2
     runs-on: [self-hosted, Shire]
     permissions:
       contents: read
@@ -82,7 +83,7 @@ jobs:
 
 
   realtime-ml-scala-graphene:
-    if: ${${{inputs.ARTIFACT}}} ==3 || ${${{inputs.ARTIFACT}}} == 0
+    if: ${${{inputs.ARTIFACT}}} ==3
     runs-on: [self-hosted, Shire]
     permissions:
       contents: read
@@ -99,7 +100,7 @@ jobs:
 
 
   big-data-ml-scala-occlum:
-    if: ${${{inputs.ARTIFACT}}} ==4 || ${${{inputs.ARTIFACT}}} == 0
+    if: ${${{inputs.ARTIFACT}}} ==4
     runs-on: [self-hosted, Shire]
     permissions:
       contents: read
@@ -116,7 +117,7 @@ jobs:
         
   
   trusted-realtime-ml-scala-occlum:
-    if: ${${{inputs.ARTIFACT}}} == 5 || ${${{inputs.ARTIFACT}}} == 0
+    if: ${${{inputs.ARTIFACT}}} == 5
     runs-on: [self-hosted, Shire]
     permissions:
       contents: read
