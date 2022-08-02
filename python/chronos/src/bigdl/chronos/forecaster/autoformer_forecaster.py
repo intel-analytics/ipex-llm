@@ -280,16 +280,17 @@ class AutoformerForecaster(Forecaster):
             n_trials=n_trials,
             target_metric=formated_target_metric,
             direction=direction,
+            directions=directions,
             n_parallels=n_parallels,
             acceleration=acceleration,
             input_sample=input_sample,
             **kwargs)
 
-        if self.tune_trainer.hposearcher.objective.mo_hpo:
+        if self.trainer.hposearcher.objective.mo_hpo:
             return self.internal
         else:
             # reset train and validation datasets
-            self.tune_trainer.reset_train_val_dataloaders(self.internal)
+            self.trainer.reset_train_val_dataloaders(self.internal)
 
     def search_summary(self):
         # add tuning check

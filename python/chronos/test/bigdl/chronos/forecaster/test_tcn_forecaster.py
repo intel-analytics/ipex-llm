@@ -632,3 +632,8 @@ class TestChronosModelTCNForecaster(TestCase):
                                    lr=0.01)
         train_loss = forecaster.fit(train_data, val_data, validation_mode='earlystop',
                                     earlystop_patience=6, epochs=50)
+
+
+tcn = TestChronosModelTCNForecaster()
+tcn.test_tcn_forecaster_mo_tune_acceleration_fit_input()
+tcn.test_tcn_forecaster_mo_tune_acceleration_fit()
