@@ -2,7 +2,7 @@ name: Nightly Build Docker Publish BigDL/BigDL-K8S
 
 on:
   schedule:
-    - cron: '[0, 10, 20, 30, 40, 50] [6, 7, 8] * * *'
+    - cron: '0 6 * * *'
     inputs:
       TAG:
         description: 'e.g. 2.1.0-SNAPSHOT'
