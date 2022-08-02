@@ -1,9 +1,17 @@
 # Nano Tutorial
-- [**BigDL-Nano PyTorch Training Quickstart**](./pytorch_train_quickstart.html)
+- [**BigDL-Nano PyTorch Trainer Quickstart**](./pytorch_train_quickstart.html)
 
     > ![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][Nano_pytorch_training]
 
-    In this guide we will describe how to scale out PyTorch programs using Nano
+    In this guide we will describe how to scale out PyTorch programs using Nano Trainer
+
+---------------------------
+
+- [**BigDL-Nano PyTorch TorchNano Quickstart**](./pytorch_nano.html)
+
+    > ![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][Nano_pytorch_nano]
+
+    In this guide we'll describe how to use BigDL-Nano to accelerate custom training loop easily with very few changes
 
 ---------------------------
 
@@ -66,6 +74,7 @@
 
 
 [Nano_pytorch_training]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/tutorial/pytorch_train.ipynb>
+[Nano_pytorch_nano]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/tutorial/pytorch_nano.ipynb>
 [Nano_pytorch_onnxruntime]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/tutorial/pytorch_inference_onnx.ipynb>
 [Nano_pytorch_openvino]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/tutorial/pytorch_inference_openvino.ipynb>
 [Nano_pytorch_Quantization_inc]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/tutorial/pytorch_quantization_inc.ipynb>

@@ -238,7 +238,7 @@ class SparkXShards(XShards):
                              .values.tolist())\
                     .partitionBy(num_partitions)
 
-                schema = self._get_schema()
+                schema = self.get_schema()
 
                 def merge_rows(iter):
                     data = [value[1] for value in list(iter)]
@@ -352,7 +352,7 @@ class SparkXShards(XShards):
         """
         if self._get_class_name() == 'pandas.core.frame.DataFrame':
             import pandas as pd
-            schema = self._get_schema()
+            schema = self.get_schema()
             # if partition by a column
             if isinstance(cols, str):
                 if cols not in schema['columns']:
@@ -531,7 +531,7 @@ class SparkXShards(XShards):
         result_rdd = self.rdd.map(lambda x: utility_func(x, func, *args, **kwargs))
         return result_rdd
 
-    def _get_schema(self):
+    def get_schema(self):
         if 'schema' in self.type:
             return self.type['schema']
         else:

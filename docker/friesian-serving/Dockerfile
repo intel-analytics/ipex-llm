@@ -41,8 +41,8 @@ RUN apt-get update --fix-missing && \
     # remove conflict jars
     rm -f ${SPARK_HOME}/jars/guava* && \
     rm -f ${SPARK_HOME}/jars/metrics-core* && \
-    rm -f ${SPARK_HOME}/jars/jackson-annotations* ${SPARK_HOME}/jars/jackson-core-2.* ${SPARK_HOME}/jars/jackson-databind* ${SPARK_HOME}/jars/jackson-module-scala*
-
+    rm -f ${SPARK_HOME}/jars/jackson-annotations* ${SPARK_HOME}/jars/jackson-core-2.* ${SPARK_HOME}/jars/jackson-databind* ${SPARK_HOME}/jars/jackson-module-scala* && \
+    rm -f ${SPARK_HOME}/jars/hk2-* ${SPARK_HOME}/jars/jersey-client* ${SPARK_HOME}/jars/jersey-server* ${SPARK_HOME}/jars/jersey-common*
 
 # stage.2 friesian-serving-docker
 FROM ubuntu:20.04
@@ -70,6 +70,7 @@ RUN /opt/work/download-friesian-serving.sh
 
 ADD lib/* /opt/work/lib/
 ADD start_service.sh /opt/work/
+ADD jersey/* /opt/work/jersey/
 RUN chmod a+x /opt/work/start_service.sh
 
 ENTRYPOINT ["/opt/work/start_service.sh"]
