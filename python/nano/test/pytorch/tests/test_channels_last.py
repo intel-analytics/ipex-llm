@@ -17,13 +17,16 @@
 import os
 import pytest
 import torch
-import torchmetrics
 from unittest import TestCase
 from bigdl.nano.pytorch import Trainer
-from torchvision.models.resnet import ResNet, BasicBlock
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_12
+from torchvision.models.resnet import ResNet, BasicBlock
+from torchmetrics.functional import accuracy
+import pytorch_lightning as pl
+import torch.nn.functional as F
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
 from test.pytorch.utils._train_torch_lightning import create_test_data_loader
+
 
 num_classes = 10
 batch_size = 32
@@ -31,37 +34,67 @@ dataset_size = 256
 num_workers = 0
 data_dir = os.path.join(os.path.dirname(__file__), "../data")
 
-class customResNet(ResNet):
+
+class customResNet(pl.LightningModule):
     def __init__(self):
-        super(customResNet, self).__init__(BasicBlock, [2, 2, 2, 2])
-        self.head = torch.nn.Linear(self.fc.out_features, num_classes)
+        super().__init__()
+        self.model = ResNet(BasicBlock, [2, 2, 2, 2])
+        self.head = torch.nn.Linear(self.model.fc.out_features, num_classes)
 
     def forward(self, x):
-        x = self.conv1(x)
-        x = self.bn1(x)
-        x = self.relu(x)
-        x = self.maxpool(x)
+        x = self.model.conv1(x)
+        x = self.model.bn1(x)
+        x = self.model.relu(x)
+        x = self.model.maxpool(x)
 
-        x = self.layer1(x)
-        x = self.layer2(x)
-        x = self.layer3(x)
-        x = self.layer4(x)
+        x = self.model.layer1(x)
+        x = self.model.layer2(x)
+        x = self.model.layer3(x)
+        x = self.model.layer4(x)
         if not TORCH_VERSION_LESS_1_12:
             assert x.is_contiguous(memory_format=torch.channels_last)
-        
-        x = self.avgpool(x)
+
+        x = self.model.avgpool(x)
         x = torch.flatten(x, 1)
-        x = self.fc(x)
+        x = self.model.fc(x)
         x = self.head(x)
 
         return x
+
+    def training_step(self, batch, batch_idx):
+        x, y = batch
+        logits = self(x)
+        loss = F.nll_loss(logits, y)
+        self.log("train_loss", loss)
+        return loss
+
+    def evaluate(self, batch, stage=None):
+        x, y = batch
+        logits = self(x)
+        loss = F.nll_loss(logits, y)
+        preds = torch.argmax(logits, dim=1)
+        acc = accuracy(preds, y)
+
+        if stage:
+            self.log(f"{stage}_loss", loss, prog_bar=True)
+            self.log(f"{stage}_acc", acc, prog_bar=True)
+
+    def validation_step(self, batch, batch_idx):
+        self.evaluate(batch, "val")
+
+    def test_step(self, batch, batch_idx):
+        self.evaluate(batch, "test")
+
+    def configure_optimizers(self):
+        return torch.optim.Adam(params=self.parameters(), lr=0.05)
+
 
 class ConvModel(torch.nn.Module):
     def __init__(self):
         super().__init__()
         self.conv1 = torch.nn.Conv2d(2, 1, (1, 2), bias=False)
         self.conv1.weight.data.fill_(1.0)
-    
+   
     def forward(self, input):
         x = self.conv1(input)
         if not TORCH_VERSION_LESS_1_12:
@@ -69,10 +102,8 @@ class ConvModel(torch.nn.Module):
         output = torch.flatten(x, 1)
         return output
 
+
 class TestChannelsLast(TestCase):
-    model = customResNet()
-    loss = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
     data_loader = create_data_loader(data_dir, batch_size, num_workers,
                                         data_transform, subset=dataset_size)
     test_data_loader = create_test_data_loader(data_dir, batch_size, num_workers,
@@ -85,14 +116,11 @@ class TestChannelsLast(TestCase):
         )
         os.environ['PYTHONPATH'] = project_test_dir
 
-    def test_trainer_channels_last(self):
-        pl_model = Trainer.compile(
-            self.model, self.loss, self.optimizer,
-            metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
-        )
+    def test_trainer_lightning_channels_last(self):
+        model = customResNet()
         trainer = Trainer(max_epochs=1, channels_last=True)
-        trainer.fit(pl_model, self.data_loader, self.test_data_loader)
-        trainer.test(pl_model, self.test_data_loader)
+        trainer.fit(model, self.data_loader, self.test_data_loader)
+        trainer.test(model, self.test_data_loader)
 
     def test_trainer_channels_last_correctness(self):
         # dataset: features: [[[[1, 0]] [[1, 0]] [[0, 3]] [[1, 1]]    
@@ -124,7 +152,7 @@ class TestChannelsLast(TestCase):
             [[[1, 0]], [[2, 0]]],
             [[[0, 3]], [[1, 0]]],
             [[[1, 1]], [[2, 1]]]
-                            ])
+                        ])
         y = torch.Tensor([[0.0], [1.0], [0.0], [1.0]])
         dataset = torch.utils.data.TensorDataset(x, y)
         data_loader = torch.utils.data.DataLoader(dataset, batch_size=4, shuffle=False)
@@ -132,6 +160,15 @@ class TestChannelsLast(TestCase):
         trainer.fit(pl_module, data_loader)
         result = torch.tensor([[[[0.0, -1.0]], [[-1.25, 0.5]]]])
         assert pl_module.model.conv1.weight.equal(result)
+
+    def test_trainer_lightning_channels_last_subprocess(self):
+        model = customResNet()
+        trainer = Trainer(max_epochs=1,
+                          num_processes=2,
+                          distributed_backend="subprocess", 
+                          channels_last=True)
+        trainer.fit(model, self.data_loader, self.test_data_loader)
+        trainer.test(model, self.test_data_loader)
 
     def test_trainer_channels_last_correctness_subprocess(self):
         model = ConvModel()
@@ -159,18 +196,6 @@ class TestChannelsLast(TestCase):
         result = torch.tensor([[[[0.0, -1.0]], [[-1.25, 0.5]]]])
         assert pl_module.model.conv1.weight.equal(result)
 
-    def test_trainer_channels_last_subprocess(self):
-        pl_model = Trainer.compile(
-            self.model, self.loss, self.optimizer,
-            metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
-        )
-        trainer = Trainer(max_epochs=1,
-                          num_processes=2,
-                          distributed_backend="subprocess", 
-                          channels_last=True)
-        trainer.fit(pl_model, self.data_loader, self.test_data_loader)
-        trainer.test(pl_model, self.test_data_loader)
-
 
 class TestChannelsLastSpawn(TestCase):
     model = customResNet()
@@ -181,17 +206,14 @@ class TestChannelsLastSpawn(TestCase):
     test_data_loader = create_test_data_loader(data_dir, batch_size, num_workers,
                                                 data_transform, subset=dataset_size)
 
-    def test_trainer_channels_last_spawn(self):
-        pl_model = Trainer.compile(
-            self.model, self.loss, self.optimizer,
-            metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
-        )
+    def test_lightning_channels_last_spawn(self):
+        model = customResNet()
         trainer = Trainer(max_epochs=1,
                           num_processes=2,
-                          distributed_backend="spawn", 
+                          distributed_backend="spawn",
                           channels_last=True)
-        trainer.fit(pl_model, self.data_loader, self.test_data_loader)
-        trainer.test(pl_model, self.data_loader)
+        trainer.fit(model, self.data_loader, self.test_data_loader)
+        trainer.test(model, self.test_data_loader)
 
     def test_trainer_channels_last_correctness_spawn(self):
         model = ConvModel()
