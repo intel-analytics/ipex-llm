@@ -6,7 +6,11 @@ torchmetrics==0.5.1
 tensorboard==2.6.0
 pytest==5.4.1
 tqdm
-albumentations
+google-api-core==1.26.1
+google-auth==1.27.1
+google-auth-oauthlib==0.4.6
+google-pasta==0.2.0
+googleapis-common-protos==1.51.0
 scikit-learn==0.24.2
 jep==3.9.1
 torch==1.7.1
