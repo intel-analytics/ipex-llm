@@ -2,7 +2,7 @@ name: Nightly Build Docker Publish BigDL/BigDL-K8S
 
 on:
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '0 17 * * *'
 
   workflow_dispatch:
     inputs:
