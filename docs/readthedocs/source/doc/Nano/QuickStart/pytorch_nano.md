@@ -108,7 +108,7 @@ The `TorchNano` (`bigdl.nano.pytorch.TorchNano`) class is what we use to acceler
 We only need the following steps:
 
 - define a class `MyNano` derived from our `TorchNano`
-- copy all codes into the `train` method of `MyNano`
+- copy all lines of code into the `train` method of `MyNano`
 - add one line to setup model, optimizer and dataloader
 - replace the `loss.backward()` with `self.backward(loss)`
 
@@ -120,7 +120,7 @@ from bigdl.nano.pytorch import TorchNano
 
 class MyNano(TorchNano):
     def train(self):
-        # copy all codes into this method
+        # copy all lines of code into this method
         data_path = os.environ.get("DATA_PATH", ".")
         batch_size = 256
         max_epochs = 10
