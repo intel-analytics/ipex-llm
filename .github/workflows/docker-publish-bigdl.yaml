@@ -6,12 +6,12 @@ on:
 
   workflow_dispatch:
     inputs:
-      TAG:
+      tag:
         description: 'e.g. 2.1.0-SNAPSHOT'
         required: true
         default: 'latest'
         type: string
-        
+
 jobs:
   deploy-docker:
 
@@ -22,6 +22,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - name: debug
+      run: echo ${{inputs.abc}}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
