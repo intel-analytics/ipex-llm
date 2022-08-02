@@ -35,7 +35,7 @@ num_workers = 0
 data_dir = os.path.join(os.path.dirname(__file__), "../data")
 
 
-class customResNet(pl.LightningModule):
+class CustomResNet(pl.LightningModule):
     def __init__(self):
         super().__init__()
         self.model = ResNet(BasicBlock, [2, 2, 2, 2])
@@ -117,7 +117,7 @@ class TestChannelsLast(TestCase):
         os.environ['PYTHONPATH'] = project_test_dir
 
     def test_trainer_lightning_channels_last(self):
-        model = customResNet()
+        model = CustomResNet()
         trainer = Trainer(max_epochs=1, channels_last=True)
         trainer.fit(model, self.data_loader, self.test_data_loader)
         trainer.test(model, self.test_data_loader)
@@ -162,7 +162,7 @@ class TestChannelsLast(TestCase):
         assert pl_module.model.conv1.weight.equal(result)
 
     def test_trainer_lightning_channels_last_subprocess(self):
-        model = customResNet()
+        model = CustomResNet()
         trainer = Trainer(max_epochs=1,
                           num_processes=2,
                           distributed_backend="subprocess",
@@ -197,16 +197,13 @@ class TestChannelsLast(TestCase):
 
 
 class TestChannelsLastSpawn(TestCase):
-    model = customResNet()
-    loss = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
     data_loader = create_data_loader(data_dir, batch_size, num_workers,
                                      data_transform, subset=dataset_size)
     test_data_loader = create_test_data_loader(data_dir, batch_size, num_workers,
                                                data_transform, subset=dataset_size)
 
     def test_lightning_channels_last_spawn(self):
-        model = customResNet()
+        model = CustomResNet()
         trainer = Trainer(max_epochs=1,
                           num_processes=2,
                           distributed_backend="spawn",
