@@ -19,7 +19,14 @@ on:
         - bigdl-ppml-trusted-realtime-ml-scala-graphene
         - bigdl-ppml-trusted-big-data-ml-scala-occlum
         - bigdl-ppml-trusted-realtime-ml-scala-occlum
-
+env:
+  ALL: 0
+  bigdl-ppml-trusted-big-data-ml-python-gramine: 1
+  bigdl-ppml-trusted-big-data-ml-python-graphene: 2
+  bigdl-ppml-trusted-realtime-ml-scala-graphene: 3
+  bigdl-ppml-trusted-big-data-ml-scala-occlum: 4
+  bigdl-ppml-trusted-realtime-ml-scala-occlum: 5
+  
 
 jobs:
   docker-login:
@@ -33,6 +40,7 @@ jobs:
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+        echo${${{inputs.ARTIFACT}}}
 
 
 
