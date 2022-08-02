@@ -420,6 +420,20 @@
                             <goal>single</goal>
                         </goals>
                     </execution>
+                    <execution>
+                        <id>assembly</id>
+                        <inherited>false</inherited>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>${project.basedir}/src/assembly/ppml-assembly.xml
+                                </descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>
