@@ -14,8 +14,6 @@ You can use _Chronos_ to do:
 ---
 ### **2. Install**
 
-</br>
-
 ```eval_rst
 .. raw:: html
 
@@ -59,8 +57,8 @@ You can use _Chronos_ to do:
 
                 <tr>
                     <td>Release</td>
-                    <td colspan="2"><button id="pypi" title="For users use laptop/single node server.">Pip</button></td>
-                    <td colspan="2"><button id="docker" title="For users use K8S/Yarn Cluster.">Docker</button></td>
+                    <td colspan="2"><button id="pypi" title="For users use pip to install chronos.">Pip</button></td>
+                    <td colspan="2"><button id="docker" title="For users use docker image.">Docker</button></td>
                 </tr>
 
                 <tr>
@@ -95,7 +93,7 @@ conda activate my_env
 pip install bigdl-chronos[pytorch]  # or other options you may want to use
 source bigdl-nano-init
 ```
-### **2.2 Tensorflow backend**
+#### **2.2 Tensorflow backend**
 Tensorflow is one of the supported backend of Chronos in nightly release version, while it can not work alone without pytorch in Chronos for now. We will fix it soon. If you want to use tensorflow backend, please
 ```bash
 pip install --pre --upgrade bigdl-nano[tensorflow]
