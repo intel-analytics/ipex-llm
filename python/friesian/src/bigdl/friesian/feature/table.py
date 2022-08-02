@@ -2240,7 +2240,8 @@ class FeatureTable(Table):
 
         return FeatureTable(df)
 
-    def string_embed(self, columns, bert_model='distilbert-base-uncased', reduce_dim=None, replace=True):
+    def string_embed(self, columns, bert_model='distilbert-base-uncased', reduce_dim=None,
+                     replace=True):
         """
         Convert the columns of string to bert embeddings in FeatureTable. The columns should be of
         string type.
