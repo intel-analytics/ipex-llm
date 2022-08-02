@@ -365,7 +365,7 @@ class BasePytorchForecaster(Forecaster):
                               "otherwise performance will be degraded.")
 
             # build internal according to use_trail_id for multi-objective HPO
-            if self.tune_trainer.hposearcher.objective.mo_hpo:
+            if hasattr(self, "tune_trainer") and self.tune_trainer.hposearcher.objective.mo_hpo:
                 invalidOperationError(self.tune_trainer.hposearcher.study,
                                       "You must tune before fit the model.")
                 invalidInputError(use_trial_id is not None,
