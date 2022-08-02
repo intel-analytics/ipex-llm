@@ -4,7 +4,6 @@ opencv-python==4.2.0.34
 pandas==1.1.0
 torchmetrics==0.5.1
 tensorboard==2.6.0
-jupyter
 pytest==5.4.1
 tqdm
 albumentations
