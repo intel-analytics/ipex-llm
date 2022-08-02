@@ -18,7 +18,6 @@ from typing import Any
 import pytorch_lightning as pl
 import copy
 import math
-from bigdl.nano.pytorch.utils import LIGHTNING_VERSION_LESS_1_6
 from pytorch_lightning.trainer.states import TrainerFn, TrainerStatus
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.automl.hpo.backend import create_hpo_backend, SamplerType

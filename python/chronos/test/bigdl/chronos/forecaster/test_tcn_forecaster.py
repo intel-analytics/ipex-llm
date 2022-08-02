@@ -182,6 +182,45 @@ class TestChronosModelTCNForecaster(TestCase):
                         n_trials=2, target_metric=['mse', 'latency'], 
                         directions=["minimize", "minimize"],
                         acceleration=True, direction=None)
+    
+    def test_tcn_forecaster_mo_tune_acceleration_fit_input(self):
+        import bigdl.nano.automl.hpo.space as space
+        train_data, val_data, _ = create_data(loader=False)
+        forecaster = TCNForecaster(past_seq_len=24,
+                                future_seq_len=5,
+                                input_feature_num=1,
+                                output_feature_num=1,
+                                kernel_size=4,
+                                num_channels=[16, 16],
+                                loss="mae",
+                                metrics=['mae', 'mse', 'mape'],
+                                lr=space.Real(0.001, 0.01, log=True))
+        forecaster.num_processes = 1
+        forecaster.tune(train_data, validation_data=val_data,
+                        n_trials=2, target_metric=['mse', 'latency'], 
+                        directions=["minimize", "minimize"],
+                        acceleration=True, direction=None)
+        with self.assertRaises(Exception):
+            forecaster.fit(train_data, epochs=2)
+
+    def test_tcn_forecaster_mo_tune_acceleration_fit(self):
+        import bigdl.nano.automl.hpo.space as space
+        train_data, val_data, _ = create_data(loader=False)
+        forecaster = TCNForecaster(past_seq_len=24,
+                                future_seq_len=5,
+                                input_feature_num=1,
+                                output_feature_num=1,
+                                kernel_size=4,
+                                num_channels=[16, 16],
+                                loss="mae",
+                                metrics=['mae', 'mse', 'mape'],
+                                lr=space.Real(0.001, 0.01, log=True))
+        forecaster.num_processes = 1
+        forecaster.tune(train_data, validation_data=val_data,
+                        n_trials=2, target_metric=['mse', 'latency'], 
+                        directions=["minimize", "minimize"],
+                        acceleration=True, direction=None)
+        forecaster.fit(train_data, epochs=2, use_trial_id=0)
 
     @skip_onnxrt
     def test_tcn_forecaster_onnx_methods(self):

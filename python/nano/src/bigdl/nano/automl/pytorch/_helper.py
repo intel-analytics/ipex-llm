@@ -17,7 +17,6 @@
 from typing import Any
 import torch
 import time
-from bigdl.nano.pytorch.utils import LIGHTNING_VERSION_LESS_1_6
 from pytorch_lightning.callbacks import Callback
 from pytorch_lightning.loops.dataloader.evaluation_loop import EvaluationLoop
 from bigdl.nano.utils.log4Error import invalidInputError
@@ -29,10 +28,7 @@ class ResetCallback(Callback):
     def on_train_end(self, trainer, pl_module) -> None:
         # reset current epoch = 0 after each run
         super().on_train_end(trainer, pl_module)
-        if LIGHTNING_VERSION_LESS_1_6:
-            trainer.fit_loop.current_epoch = 0
-        else:
-            trainer.fit_loop.epoch_progress.current.processed = 0
+        trainer.fit_loop.epoch_progress.current.processed = 0
 
 
 class LatencyAggregate(Metric):

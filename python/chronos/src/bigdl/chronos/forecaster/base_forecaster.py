@@ -206,6 +206,11 @@ class BasePytorchForecaster(Forecaster):
             # reset train and validation datasets
             self.tune_trainer.reset_train_val_dataloaders(self.internal)
 
+    def search_summary(self):
+        # add tuning check
+        invalidOperationError(self.use_hpo, "No search summary when HPO is disabled.")
+        return self.trainer.search_summary()
+
     def fit(self, data, validation_data=None, epochs=1, batch_size=32, validation_mode='output', use_trial_id=None):
         # TODO: give an option to close validation during fit to save time.
         """
@@ -272,6 +277,8 @@ class BasePytorchForecaster(Forecaster):
         :param earlystop_patience: Number of checks with no improvement after which training will
                be stopped. It takes effect when 'validation_mode' is 'earlystop'. Under the default
                configuration, one check happens after every training epoch.
+        :param use_trail_id: choose a internal according to trial_id, which is used only
+               in multi-objective search.
         :return: Validation loss if 'validation_data' is not None.
         """
         # input transform
