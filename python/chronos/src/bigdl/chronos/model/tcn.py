@@ -45,6 +45,7 @@ import torch.nn as nn
 from .utils import PYTORCH_REGRESSION_LOSS_MAP
 from pytorch_lightning import seed_everything
 
+
 class Chomp1d(nn.Module):
     def __init__(self, chomp_size):
         super(Chomp1d, self).__init__()

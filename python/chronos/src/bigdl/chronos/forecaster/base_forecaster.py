@@ -211,7 +211,7 @@ class BasePytorchForecaster(Forecaster):
         invalidOperationError(self.use_hpo, "No search summary when HPO is disabled.")
         return self.trainer.search_summary()
 
-    def fit(self, data, validation_data=None, epochs=1, batch_size=32, validation_mode='output', 
+    def fit(self, data, validation_data=None, epochs=1, batch_size=32, validation_mode='output',
             earlystop_patience=1, use_trial_id=None):
         # TODO: give an option to close validation during fit to save time.
         """

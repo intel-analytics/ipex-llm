@@ -256,8 +256,10 @@ class AutoformerForecaster(Forecaster):
             invalidInputError(False, "HPO only supports numpy train input data.")
 
         if input_sample is None:
-            input_sample = (torch.from_numpy(data[0][:1, :, :]), torch.from_numpy(data[1][:1, :, :]),
-                            torch.from_numpy(data[2][:1, :, :]), torch.from_numpy(data[3][:1, :, :]))
+            input_sample = (torch.from_numpy(data[0][:1, :, :]), 
+                            torch.from_numpy(data[1][:1, :, :]),
+                            torch.from_numpy(data[2][:1, :, :]), 
+                            torch.from_numpy(data[3][:1, :, :]))
 
         # prepare target metric
         if validation_data is not None:
@@ -338,7 +340,8 @@ class AutoformerForecaster(Forecaster):
             # check whether the user called the tune function
             invalidOperationError(hasattr(self, "trainer"), "There is no trainer, and you "
                                   "should call .tune() before .fit()")
-                        # build internal according to use_trail_id for multi-objective HPO
+            
+            # build internal according to use_trail_id for multi-objective HPO
             if self.trainer.hposearcher.objective.mo_hpo:
                 invalidOperationError(self.trainer.hposearcher.study,
                                       "You must tune before fit the model.")

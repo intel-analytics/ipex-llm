@@ -199,6 +199,3 @@ class TestChronosModelAutoformerForecaster(TestCase):
             forecaster.load(ckpt_name)
             evaluate2 = forecaster.evaluate(val_loader)
         assert evaluate[0]['val_loss'] == evaluate2[0]['val_loss']
-
-auto = TestChronosModelAutoformerForecaster()
-auto.test_autoformer_forecaster_multi_objective_tune()
