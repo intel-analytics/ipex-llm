@@ -18,6 +18,21 @@ For example, the `resnet50` subdirectory means a workload named `resnet50`, and 
 
 2. **implement your workload code in `<workload>` directory**
 
+    Your workload code should print benchmark result to the standard output,
+    and use '>>>' and '<<<' to enclose it.
+
+    The benchmark result itself should be a JSON string, which contains a field named 'config' meaning the configuration of this test, you can define any other fields to store the metrics which you are intrested in.
+
+    For example
+    ```python
+    output = json.dumps({
+        "config": "Running Nano default with ipex 4 processes",
+        "train time": train_time,
+        "other metrics": other_metrics,
+    })
+    print(f'>>>{output}<<<')
+    ```
+
 3. **create `run.sh` under the subdirectory `<workload>`**
 
     The `run.sh` is used to run workload, the environment variables which can be used in it directly are:
