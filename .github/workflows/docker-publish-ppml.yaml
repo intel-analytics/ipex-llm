@@ -45,7 +45,7 @@ jobs:
 
 
   big-data-ml-python-gramine:
-    if: ${${{inputs.ARTIFACT}}} == 1
+    if: ${${{inputs.ARTIFACT}}} == 0
     runs-on: [self-hosted, Shire]
     permissions:
       contents: read
