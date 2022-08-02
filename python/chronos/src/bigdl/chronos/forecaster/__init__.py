@@ -16,6 +16,7 @@
 
 import warnings
 import logging
+from bigdl.chronos.utils import LazyImport
 # unset the KMP_INIT_AT_FORK
 # which will cause significant slow down in multiprocessing training
 import os
@@ -64,16 +65,18 @@ except:
     warnings.warn("Please install `bigdl-orca` to use full collection of forecasters.")
 
 # import forecasters
+PREFIX_PATH = 'bigdl.chronos.forecaster'
 if torch_available:
-    from .lstm_forecaster import LSTMForecaster
-    from .tcn_forecaster import TCNForecaster
-    from .seq2seq_forecaster import Seq2SeqForecaster
-    from .nbeats_forecaster import NBeatsForecaster
-    if orca_available:
-        from .tcmf_forecaster import TCMFForecaster
+    LSTMForecaster = LazyImport('..LSTMForecaster', pkg=PREFIX_PATH+'.lstm_forecaster')
+    TCNForecaster = LazyImport('..TCNForecaster', pkg=PREFIX_PATH+'.tcn_forecaster')
+    Seq2SeqForecaster = LazyImport('..Seq2SeqForecaster', pkg=PREFIX_PATH+'.seq2seq_forecaster')
+    NBeatsForecaster = LazyImport('..NBeatsForecaster', pkg=PREFIX_PATH+'.nbeats_forecaster')
 if tf_available and orca_available:
     from .tf.mtnet_forecaster import MTNetForecaster
+    TCMFForecaster = LazyImport('..TCMFForecaster', pkg=PREFIX_PATH+'.tcmf_forecaster')
+if tf_available:
+    MTNetForecaster = LazyImport('..MTNetForecaster', pkg=PREFIX_PATH+'.tf.mtnet_forecaster')
 if prophet_available:
-    from .prophet_forecaster import ProphetForecaster
+    ProphetForecaster = LazyImport('..ProphetForecaster', pkg=PREFIX_PATH+'.ProphetForecaster')
 if arima_available:
-    from .arima_forecaster import ARIMAForecaster
+    ARIMAForecaster = LazyImport('..ARIMAForecaster', pkg=PREFIX_PATH+'.ARIMAForecaster')

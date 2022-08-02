@@ -16,6 +16,7 @@
 
 import warnings
 from functools import wraps
+import importlib
 
 
 def deprecated(message=""):
@@ -30,3 +31,30 @@ def deprecated(message=""):
             return function(*args, **kwargs)
         return wrapped
     return deprecated_decorator
+
+
+class LazyImport:
+    """
+        :param module_name: The name of module imported later
+        :param pkg: prefix path.
+    """
+    def __init__(self, module_name, pkg=None):
+        self.module_name = module_name
+        self.pkg = pkg
+
+    def __getattr__(self, name):
+        try:
+            module = importlib.import_module(self.module_name, package=self.pkg)
+            mod = getattr(module, name)
+        except:
+            spec = importlib.util.find_spec(str(self.module_name + '.' + name))
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+        return mod
+
+    def __call__(self, *args, **kwargs):
+        function_name = self.module_name.split('.')[-1]
+        module_name = self.module_name.split(f'.{function_name}')[0]
+        module = importlib.import_module(module_name, package=self.pkg)
+        function = getattr(module, function_name)
+        return function(*args, **kwargs)

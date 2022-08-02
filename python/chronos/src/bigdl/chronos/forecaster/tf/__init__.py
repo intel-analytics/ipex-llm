@@ -14,7 +14,13 @@
 # limitations under the License.
 #
 
-from .lstm_forecaster import LSTMForecaster
-from .mtnet_forecaster import MTNetForecaster
-from .seq2seq_forecaster import Seq2SeqForecaster
-from .tcn_forecaster import TCNForecaster
+import importlib
+from bigdl.chronos.utils import LazyImport
+
+tf_spec = importlib.util.from_spec('tensorflow')
+PREFIXPATH_TF2 = 'bigdl.chronos.forecaster.tf'
+if tf_spec:
+    LSTMForecaster = LazyImport('..LSTMForecaster', pkg=PREFIXPATH_TF2+'.LSTMForecaster')
+    MTNetForecaster = LazyImport('..MTNetForecaster', pkg=PREFIXPATH_TF2+'.MTNetForecaster')
+    Seq2SeqForecaster = LazyImport('..Seq2SeqForecaster', pkg=PREFIXPATH_TF2+'.Seq2SeqForecaster')
+    TCNForecaster = LazyImport('..TCNForecaster', pkg=PREFIXPATH_TF2+'.TCNForecaster')
