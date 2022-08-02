@@ -1,6 +1,12 @@
 BigDL Documentation
 ===========================
 
+
+BigDL Architecture
+----------------------------
+
+
+
 What can you do with BigDL?
 ----------------------------
 
@@ -37,7 +43,8 @@ What can you do with BigDL?
 
         **Accelerate TF/PyTorch programs with Nano**
         ^^^
-        Chronos is an application framework for building large-scale time series analysis applications.
+        - Accelerate Tensorflow Training  (`link <dummy.html>`_) and Inference  (`link <dummy.html>`_) with Nano
+        - Accelerate PyTorch Training  (`link <dummy.html>`_) and Inference  (`link <dummy.html>`_) with Nano
         +++
         .. button-ref:: doc/Nano/Overview/nano
             :color: primary
@@ -55,7 +62,10 @@ What can you do with BigDL?
 
         **Make TF/PyTorch programs distributed with Orca**
         ^^^
-        Chronos is an application framework for building large-scale time series analysis applications.
+        - distributed data processing using XShards  (`link <dummy.html>`_)
+        - make local tensorflow or pytorch training distributed  (`link <dummy.html>`_)
+        - make local tensorlfow or pytroch inference distributed  (`link <dummy.html>`_)
+        - use distributed hyper paramter tuning (`link <dummy.html>`_)
         +++
         .. button-ref:: doc/Orca/Overview/Orca
             :color: primary
@@ -75,7 +85,9 @@ What can you do with BigDL?
 
         **Build Time Series Applications with Chronos**
         ^^^
-        Chronos is an application framework for building large-scale time series analysis applications.
+        - use built-in models and/or built-in AutoML to do time series Forecasting, and anomaly detection (`link <dummy.html>`_)
+        - use TSDataset to do process time series data (`link <dummy.html>`_)
+        - accelerate and tune 3rd party time series models (`link <dummy.html>`_)
         +++
         .. button-ref:: doc/Chronos/Overview/chronos
             :color: primary
@@ -93,7 +105,9 @@ What can you do with BigDL?
 
         **Build Large-scale Recommendation System with Friesian**
         ^^^
-        Chronos is an application framework for building large-scale time series analysis applications.
+        - use built-in models to build recommendation Systems(`link <dummy.html>`_)
+        - use built-in feature engineering tool to prepare features (`link <dummy.html>`_)
+
         +++
         .. button-ref:: doc/PPML/Overview/ppml
             :color: primary
@@ -109,9 +123,9 @@ What can you do with BigDL?
         :class-footer: sd-bg-light
         :class-card: sd-mb-2
 
-        **Protect and Secure with PPML**
+        **Build protected and Secured AI with PPML**
         ^^^
-        Chronos is an application framework for building large-scale time series analysis applications.
+        - run DL applications unmodified in trustred cluster environment (`link <dummy.html>`_)
         +++
         .. button-ref:: doc/PPML/Overview/ppml
             :color: primary
