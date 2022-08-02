@@ -14,41 +14,103 @@ You can use _Chronos_ to do:
 ---
 ### **2. Install**
 
-Install `bigdl-chronos` from PyPI. We recommend to install with a conda virtual environment. To install Conda, please refer to https://docs.conda.io/en/latest/miniconda.html#.
+```eval_rst
+.. raw:: html
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/chronos_installation_guide.css" />
+
+    <div class="displayed">
+        <table id="table-1" style="margin:auto">
+            <thead>
+                <th>AI Framework</th>
+                <th colspan="1"><button id="pytorch"
+                        title="Use PyTorch as deep learning models' backend. Most of the model support and works better under PyTorch.">PyTorch</br>(Recommended)</button>
+                </th>
+                <th colspan="1"><button id="tensorflow"
+                        title="Use Tensorflow as deep learning models' backend.">Tensorflow</button></th>
+                <th colspan="1"><button id="prophet" title="For Prophet model.">Prophet</button></th>
+                <th colspan="1"><button id="pmdarima" title="For ARIMA model.">pmdarima</button></th>
+            </thead>
+            <tbody>
+
+                <tr>
+                    <td>OS</td>
+                    <td colspan="2"><button id="linux" title="Ubuntu/CentOS is recommended">Linux</button></td>
+                    <td colspan="2"><button id="win" title="WSL is needed for Windows users">Windows</button></td>
+                </tr>
+
+                <tr>
+                    <td>Auto Tuning</td>
+                    <td colspan="2" title="I don't need any hyperparameter auto tuning feature."><button
+                            id="automlno">No need</button></td>
+                    <td colspan="2" title="I need chronos to help me tune the hyperparameters."><button
+                            id="automlyes">Needed</button></td>
+                </tr>
+
+
+                <tr>
+                    <td>Hardware</td>
+                    <td colspan="2"><button id="singlenode" title="For users use laptop/single node server.">Single
+                            node</button></td>
+                    <td colspan="2"><button id="cluster" title="For users use K8S/Yarn Cluster.">Cluster</button></td>
+                </tr>
+
+                <tr>
+                    <td>Release</td>
+                    <td colspan="2"><button id="pypi" title="For users use laptop/single node server.">Pip</button></td>
+                    <td colspan="2"><button id="docker" title="For users use K8S/Yarn Cluster.">Docker</button></td>
+                </tr>
+
+                <tr>
+                    <td>Build</td>
+                    <td colspan="2"><button id="stable"
+                            title="For users would like to deploy chronos in their production">Stable (2.0.0)</button>
+                    </td>
+                    <td colspan="2"><button id="nightly"
+                            title="For users would like to try chronos's latest feature">Nightly (2.1.0b)</button></td>
+                </tr>
+
+                <tr>
+                    <td>Install CMD</td>
+                    <td colspan="4">
+                        <div id="cmd" style="text-align: left;">NA</div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script src="../../../_static/js/chronos_installation_guide.js"></script> 
+```
+
+### Pypi
+When you install `bigdl-chronos` from PyPI. We recommend to install with a conda virtual environment. To install Conda, please refer to https://docs.conda.io/en/latest/miniconda.html#.
 ```bash
 conda create -n my_env python=3.7 setuptools=58.0.4
 conda activate my_env
-pip install bigdl-chronos
-```
-You may also install `bigdl-chronos` with target `[all]` to install the additional dependencies for _Chronos_. This will enable distributed tuning with AutoTS.
-```bash
-# stable version
-pip install bigdl-chronos[all]
-# nightly built version
-pip install --pre --upgrade bigdl-chronos[all]
-# set env variables for your conda environment
+pip install bigdl-chronos[pytorch]  # or other options you may want to use
 source bigdl-nano-init
 ```
-Some dependencies are optional and not included in `bigdl-chronos[all]`. You may install them when you want to use corresponding functionalities. This includes:
+### Tensorflow backend
+Tensorflow is one of the supported backend of Chronos in nightly release version, while it can not work alone without pytorch in Chronos for now. We will fix it soon. If you want to use tensorflow backend, please
 ```bash
-pip install tsfresh==0.17.0
-pip install bigdl-nano[tensorflow]
-pip install pmdarima==1.8.2
-pip install prophet==1.0.1
-pip install neural-compressor==1.8.1
-pip install pyarrow==6.0.1
+pip install --pre --upgrade bigdl-nano[tensorflow]
 ```
+after you install the pytorch backend chronos.
+
+### OS and Python version requirement
+
 ```eval_rst
 .. note:: 
     **Supported OS**:
 
-     Chronos is thoroughly tested on Ubuntu (16.04/18.04/20.04). If you are a Windows user, the most convenient way to use Chronos on a windows laptop might be using WSL2, you may refer to https://docs.microsoft.com/en-us/windows/wsl/setup/environment or just install a ubuntu virtual machine.
+     Chronos is thoroughly tested on Ubuntu (16.04/18.04/20.04), and should works fine on CentOS. If you are a Windows user, the most convenient way to use Chronos on a windows laptop might be using WSL2, you may refer to https://docs.microsoft.com/en-us/windows/wsl/setup/environment or just install a ubuntu virtual machine.
 ```
 ```eval_rst
 .. note:: 
     **Supported Python Version**:
 
-     Chronos only supports Python 3.7.2 ~ latest 3.7.x.
+     Chronos only supports Python 3.7.2 ~ latest 3.7.x. We are validating more Python versions.
 ```
 ---
 ### **3. Run**
