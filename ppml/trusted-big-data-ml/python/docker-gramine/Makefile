@@ -2,9 +2,9 @@ SGX_SIGNER_KEY ?= /root/.config/gramine/enclave-key.pem
 ARCH_LIBDIR ?= /lib/$(shell $(CC) -dumpmachine)
 
 G_JAVA_XMX ?= "2G"
-G_SGX_SIZE ?= "8G"
+G_SGX_SIZE ?= "16G"
 G_LOG_LEVEL ?= all
-G_SGX_THREAD_NUM ?= 256
+G_SGX_THREAD_NUM ?= 1024
 
 THIS_DIR ?= /ppml/trusted-big-data-ml
 WORK_DIR ?= $(THIS_DIR)/work
