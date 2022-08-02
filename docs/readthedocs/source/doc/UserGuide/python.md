@@ -57,7 +57,7 @@ Or you can add the option `-i https://pypi.python.org/simple` when pip install t
 You could uninstall all the packages of BigDL as follows:
 
 ```bash
-pip uninstall bigdl-dllib bigdl-tf bigdl-math bigdl-orca bigdl-chronos bigdl-friesian bigdl-nano bigdl-serving bigdl
+pip uninstall bigdl-dllib bigdl-core bigdl-tf bigdl-math bigdl-orca bigdl-chronos bigdl-friesian bigdl-nano bigdl-serving bigdl
 ```
 
 #### **1.3 BigDL on Spark 3**
@@ -69,6 +69,11 @@ pip install --pre --upgrade bigdl-spark3  # Install the latest nightly build ver
 ```
 You can find the list of the nightly build versions built on top of Spark 3.1.2 [here](https://pypi.org/project/bigdl-spark3/#history).
 
+You could uninstall all the packages of BigDL on Spark3 as follows:
+
+```bash
+pip uninstall bigdl-dllib-spark3 bigdl-core bigdl-tf bigdl-math bigdl-orca-spark3 bigdl-chronos-spark3 bigdl-friesian-spark3 bigdl-nano bigdl-serving bigdl
+```
 
 ---
 ### **2. Run**
