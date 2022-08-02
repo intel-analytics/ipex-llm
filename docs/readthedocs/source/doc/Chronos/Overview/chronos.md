@@ -87,7 +87,7 @@ You can use _Chronos_ to do:
 
 </br>
 
-### Pypi
+#### **2.1 Pypi**
 When you install `bigdl-chronos` from PyPI. We recommend to install with a conda virtual environment. To install Conda, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
 ```bash
 conda create -n my_env python=3.7 setuptools=58.0.4
@@ -95,14 +95,14 @@ conda activate my_env
 pip install bigdl-chronos[pytorch]  # or other options you may want to use
 source bigdl-nano-init
 ```
-### Tensorflow backend
+### **2.2 Tensorflow backend**
 Tensorflow is one of the supported backend of Chronos in nightly release version, while it can not work alone without pytorch in Chronos for now. We will fix it soon. If you want to use tensorflow backend, please
 ```bash
 pip install --pre --upgrade bigdl-nano[tensorflow]
 ```
 after you install the pytorch backend chronos.
 
-### OS and Python version requirement
+#### OS and Python version requirement
 
 ```eval_rst
 .. note:: 
