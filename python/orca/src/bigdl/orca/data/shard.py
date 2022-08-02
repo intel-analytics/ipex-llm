@@ -485,12 +485,8 @@ class SparkXShards(XShards):
                 np_records = pdf.to_records(index=False)
                 return [r.tolist() for r in np_records]
 
-        def getSchema(iter):
-            for pdf in iter:
-                return [pdf.columns.values]
-
         rdd = self.rdd.mapPartitions(f)
-        column = self.rdd.mapPartitions(getSchema).first()
+        column = self.get_schema()['columns']
         df = rdd.toDF(list(column))
         return df
 
