@@ -73,7 +73,7 @@ There are a few arguments required only by INC.
 - `timeout`: Timeout of your tuning. Defaults `0` means endless time for tuning.
 - `inputs`:      A list of input names. Default: None, automatically get names from the graph.
 - `outputs`:     A list of output names. Default: None, automatically get names from the graph.
-Here is an example to use INC with accuracy control as below. It will search for a model within 1% accuracy drop within 10 trials.
+Here is an example to use INC with accuracy control as below. It will search for a model within 1% accuracy drop with 10 trials.
 ```python
 from torchmetrics.classification import Accuracy
 

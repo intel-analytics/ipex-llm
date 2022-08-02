@@ -37,7 +37,7 @@ trainer.test(ort_model, dataloader)
 trainer.predict(ort_model, dataloader)
 ```
 ### ONNXRuntime Acceleration
-Before you start with ONNXruntime accelerator, you are required to install some ONNX packages as follows to set up your environment with ONNXRuntime acceleration.
+Before you start with ONNXRuntime accelerator, you are required to install some ONNX packages as follows to set up your environment with ONNXRuntime acceleration.
 ```shell
 pip install onnx onnxruntime
 ```
@@ -183,7 +183,7 @@ There are a few arguments required only by INC, and you should not specify or mo
 - `tuning_strategy` (optional): it specifies the algorithm to search the tuning space. In most cases, you don't need to change it.
 - `timeout`: Timeout of your tuning. Defaults `0` means endless time for tuning.
 
-Here is an example to use INC with accuracy control as below. It will search for a model within 1% accuracy drop within 10 trials.
+Here is an example to use INC with accuracy control as below. It will search for a model within 1% accuracy drop with 10 trials.
 ```python
 from torchmetrics.classification import Accuracy
 trainer.quantize(model,
