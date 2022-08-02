@@ -14,6 +14,8 @@ You can use _Chronos_ to do:
 ---
 ### **2. Install**
 
+</br>
+
 ```eval_rst
 .. raw:: html
 
@@ -83,8 +85,10 @@ You can use _Chronos_ to do:
     <script src="../../../_static/js/chronos_installation_guide.js"></script> 
 ```
 
+</br>
+
 ### Pypi
-When you install `bigdl-chronos` from PyPI. We recommend to install with a conda virtual environment. To install Conda, please refer to https://docs.conda.io/en/latest/miniconda.html#.
+When you install `bigdl-chronos` from PyPI. We recommend to install with a conda virtual environment. To install Conda, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
 ```bash
 conda create -n my_env python=3.7 setuptools=58.0.4
 conda activate my_env
