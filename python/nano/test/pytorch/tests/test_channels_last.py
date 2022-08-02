@@ -94,7 +94,7 @@ class ConvModel(torch.nn.Module):
         super().__init__()
         self.conv1 = torch.nn.Conv2d(2, 1, (1, 2), bias=False)
         self.conv1.weight.data.fill_(1.0)
-   
+
     def forward(self, input):
         x = self.conv1(input)
         if not TORCH_VERSION_LESS_1_12:
@@ -105,9 +105,9 @@ class ConvModel(torch.nn.Module):
 
 class TestChannelsLast(TestCase):
     data_loader = create_data_loader(data_dir, batch_size, num_workers,
-                                        data_transform, subset=dataset_size)
+                                     data_transform, subset=dataset_size)
     test_data_loader = create_test_data_loader(data_dir, batch_size, num_workers,
-                                                data_transform, subset=dataset_size)
+                                               data_transform, subset=dataset_size)
 
     def setUp(self):
         test_dir = os.path.dirname(__file__)
@@ -123,7 +123,7 @@ class TestChannelsLast(TestCase):
         trainer.test(model, self.test_data_loader)
 
     def test_trainer_channels_last_correctness(self):
-        # dataset: features: [[[[1, 0]] [[1, 0]] [[0, 3]] [[1, 1]]    
+        # dataset: features: [[[[1, 0]] [[1, 0]] [[0, 3]] [[1, 1]]
         #                      [[1, 0]] [[2, 0]] [[1, 0]] [[2, 1]]]]    feature.shape=(4,2,1,2)
         # dataset: labels: [[0], [1], [0], [1]]                         label.shape=(4,1)
         # model: y = I * C = I1 * C1 + I2 * C2 = I11 * C11 + I12 * C12 + I21 * C21 + I22 * C22
@@ -152,7 +152,7 @@ class TestChannelsLast(TestCase):
             [[[1, 0]], [[2, 0]]],
             [[[0, 3]], [[1, 0]]],
             [[[1, 1]], [[2, 1]]]
-                        ])
+        ])
         y = torch.Tensor([[0.0], [1.0], [0.0], [1.0]])
         dataset = torch.utils.data.TensorDataset(x, y)
         data_loader = torch.utils.data.DataLoader(dataset, batch_size=4, shuffle=False)
@@ -165,7 +165,7 @@ class TestChannelsLast(TestCase):
         model = customResNet()
         trainer = Trainer(max_epochs=1,
                           num_processes=2,
-                          distributed_backend="subprocess", 
+                          distributed_backend="subprocess",
                           channels_last=True)
         trainer.fit(model, self.data_loader, self.test_data_loader)
         trainer.test(model, self.test_data_loader)
@@ -181,13 +181,12 @@ class TestChannelsLast(TestCase):
                           channels_last=True,
                           distributed_backend="subprocess",
                           num_processes=2)
-
         x = torch.Tensor([
             [[[1, 0]], [[1, 0]]],
             [[[1, 0]], [[2, 0]]],
             [[[0, 3]], [[1, 0]]],
             [[[1, 1]], [[2, 1]]]
-                            ])
+        ])
         y = torch.Tensor([[0], [1], [0], [1]])
         dataset = torch.utils.data.TensorDataset(x, y)
         data_loader = torch.utils.data.DataLoader(dataset, batch_size=4, shuffle=False)
@@ -202,9 +201,9 @@ class TestChannelsLastSpawn(TestCase):
     loss = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
     data_loader = create_data_loader(data_dir, batch_size, num_workers,
-                                        data_transform, subset=dataset_size)
+                                     data_transform, subset=dataset_size)
     test_data_loader = create_test_data_loader(data_dir, batch_size, num_workers,
-                                                data_transform, subset=dataset_size)
+                                               data_transform, subset=dataset_size)
 
     def test_lightning_channels_last_spawn(self):
         model = customResNet()
@@ -232,7 +231,7 @@ class TestChannelsLastSpawn(TestCase):
             [[[1, 0]], [[2, 0]]],
             [[[0, 3]], [[1, 0]]],
             [[[1, 1]], [[2, 1]]]
-                            ])
+        ])
         y = torch.Tensor([[0], [1], [0], [1]])
         dataset = torch.utils.data.TensorDataset(x, y)
         data_loader = torch.utils.data.DataLoader(dataset, batch_size=4, shuffle=False)
@@ -241,6 +240,6 @@ class TestChannelsLastSpawn(TestCase):
         result = torch.tensor([[[[0.0, -1.0]], [[-1.25, 0.5]]]])
         assert pl_module.model.conv1.weight.equal(result)
 
-    
+
 if __name__ == '__main__':
     pytest.main([__file__])
