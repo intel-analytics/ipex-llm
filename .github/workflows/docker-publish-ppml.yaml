@@ -79,11 +79,11 @@ jobs:
         echo "########################################"
         export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene
         echo ${image}
-
+        echo ${${{inputs.ARTIFACT}}}
 
 
   realtime-ml-scala-graphene:
-    if: ${${{inputs.ARTIFACT}}} ==3
+    if: ${${{inputs.ARTIFACT}}} == 3
     runs-on: [self-hosted, Shire]
     permissions:
       contents: read
@@ -96,11 +96,12 @@ jobs:
         echo "########################################"
         export image=intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-graphene
         echo ${image}
+        echo ${${{inputs.ARTIFACT}}}
 
 
 
   big-data-ml-scala-occlum:
-    if: ${${{inputs.ARTIFACT}}} ==4
+    if: ${${{inputs.ARTIFACT}}} == 4
     runs-on: [self-hosted, Shire]
     permissions:
       contents: read
@@ -113,7 +114,7 @@ jobs:
         echo "########################################"
         export image=intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-graphene
         echo ${image}
-        
+        echo ${${{inputs.ARTIFACT}}}
         
   
   trusted-realtime-ml-scala-occlum:
@@ -130,4 +131,5 @@ jobs:
         echo "########################################"
         export image=intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-occlum
         echo ${image}
+        echo ${${{inputs.ARTIFACT}}}
 
