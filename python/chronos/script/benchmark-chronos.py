@@ -60,7 +60,7 @@ def CPU_info():
     abled_logo = "\033[0;32m\u2714\033[0m"
 
     for flag in ["avx512f", "avx512_bf16", "avx512_vnni"]:
-        flag_enabled = int(subprocess.getoutput('lscpu | grep -c flag '))
+        flag_enabled = int(subprocess.getoutput(f'lscpu | grep -c {flag} '))
         if flag_enabled:
             print("Support", flag, ":", abled_logo)
         else:
