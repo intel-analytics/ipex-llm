@@ -11,8 +11,6 @@ jep==3.9.1
 torch==1.7.1
 torchtext==0.8.1
 torchvision==0.8.2
-protobuf==3.12.0
-wheel==0.34.2
 nbformat==5.0.7
 networkx==2.4
 nltk==3.4.4
