@@ -14,18 +14,18 @@ on:
         type: choice
         options:
         - ALL
-        - bigdl-ppml-trusted-big-data-ml-python-gramine
-        - bigdl-ppml-trusted-big-data-ml-python-graphene
-        - bigdl-ppml-trusted-realtime-ml-scala-graphene
-        - bigdl-ppml-trusted-big-data-ml-scala-occlum
-        - bigdl-ppml-trusted-realtime-ml-scala-occlum
+        - pythonGramine
+        - pythonGraphene
+        - scalaGraphene
+        - bigdataScalaOcclum
+        - realtimeScalaOcclum
 env:
   ALL: 0
-  bigdl-ppml-trusted-big-data-ml-python-gramine: 1
-  bigdl-ppml-trusted-big-data-ml-python-graphene: 2
-  bigdl-ppml-trusted-realtime-ml-scala-graphene: 3
-  bigdl-ppml-trusted-big-data-ml-scala-occlum: 4
-  bigdl-ppml-trusted-realtime-ml-scala-occlum: 5
+  pythonGramine: 1
+  pythonGraphene: 2
+  scalaGraphene: 3
+  bigdataScalaOcclum: 4
+  realtimeScalaOcclum: 5
   
 
 jobs:
@@ -45,7 +45,7 @@ jobs:
 
 
   big-data-ml-python-gramine:
-    if: ${${{inputs.ARTIFACT}}} == 0
+    if: ${${{inputs.ARTIFACT}}} == 1
     runs-on: [self-hosted, Shire]
     permissions:
       contents: read
