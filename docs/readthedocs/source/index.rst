@@ -15,11 +15,13 @@ What can you do with BigDL?
         :class-footer: sd-bg-light
         :class-card: sd-mb-2
 
-        **Build Scalable AI with DLLib**
+        **Build Distributed AI on Spark with DLLib**
         ^^^
-        Chronos is an application framework for building large-scale time series analysis applications. (`TSDataset <data_processing_feature_engineering.html>`_)
+        - Build Deep Learning programs with Scala and run on Spark (`link <dummy.html>`_)
+        - Build Deep Learning programs in **Python** and run on Spark (`link <dummy.html>`_)
+
         +++
-        .. button-ref:: ../../DLLib/Overview/dllib
+        .. button-ref:: doc/DLLib/Overview/dllib
             :color: primary
             :expand:
             :outline:
@@ -37,7 +39,7 @@ What can you do with BigDL?
         ^^^
         Chronos is an application framework for building large-scale time series analysis applications.
         +++
-        .. button-ref:: ../../Nano/Overview/nano
+        .. button-ref:: doc/Nano/Overview/nano
             :color: primary
             :expand:
             :outline:
@@ -55,7 +57,7 @@ What can you do with BigDL?
         ^^^
         Chronos is an application framework for building large-scale time series analysis applications.
         +++
-        .. button-ref:: ../../Orca/Overview/Orca
+        .. button-ref:: doc/Orca/Overview/Orca
             :color: primary
             :expand:
             :outline:
@@ -75,7 +77,7 @@ What can you do with BigDL?
         ^^^
         Chronos is an application framework for building large-scale time series analysis applications.
         +++
-        .. button-ref:: ../../Chronos/Overview/chronos
+        .. button-ref:: doc/Chronos/Overview/chronos
             :color: primary
             :expand:
             :outline:
@@ -93,7 +95,7 @@ What can you do with BigDL?
         ^^^
         Chronos is an application framework for building large-scale time series analysis applications.
         +++
-        .. button-ref:: ../../PPML/Overview/ppml
+        .. button-ref:: doc/PPML/Overview/ppml
             :color: primary
             :expand:
             :outline:
@@ -111,7 +113,7 @@ What can you do with BigDL?
         ^^^
         Chronos is an application framework for building large-scale time series analysis applications.
         +++
-        .. button-ref:: ../../PPML/Overview/ppml
+        .. button-ref:: doc/PPML/Overview/ppml
             :color: primary
             :expand:
             :outline:
