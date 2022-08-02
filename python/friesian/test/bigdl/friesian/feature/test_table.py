@@ -1493,9 +1493,7 @@ class TestTable(TestCase):
         self.assertTrue("must be no less than k=1000" in str(context.exception))
         with self.assertRaises(Exception) as context:
             text_embeds = tbl.string_embed(["text1"], bert_model="hello", reduce_dim=5)
-        self.assertTrue("hello is not a local folder and is not a valid model identifier " +
-                        "listed on 'https://huggingface.co/models'" in str(context.exception))
-
+        self.assertTrue("Not Found for url" in str(context.exception))
 
 if __name__ == "__main__":
     pytest.main([__file__])

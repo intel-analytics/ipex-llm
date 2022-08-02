@@ -2240,7 +2240,7 @@ class FeatureTable(Table):
 
         return FeatureTable(df)
 
-    def string_embed(self, columns, bert_model='bert-base-uncased', reduce_dim=None, replace=True):
+    def string_embed(self, columns, bert_model='distilbert-base-uncased', reduce_dim=None, replace=True):
         """
         Convert the columns of string to bert embeddings in FeatureTable. The columns should be of
         string type.
@@ -2262,6 +2262,7 @@ class FeatureTable(Table):
         :param columns: str or a list of str. Columns to convert to sampled list. Each column
                 should be of string type.
         :param bert_model: str. The pretrained bert model to be used.
+               from https://huggingface.co/sentence-transformers
         :param reduce_dim: int. PCA will be called to reduce the embedding dimension it's not None.
                Default: None.
         :param replace: bool. Indicates whether to replace the original columns. If replace=False,
@@ -2279,46 +2280,17 @@ class FeatureTable(Table):
                               "Each column should be of string type, but the type of column '" + c +
                               "' is " + c_type.simpleString())
 
-        from transformers import BertTokenizer, BertModel
-        import torch
-
-        model = BertModel.from_pretrained(bert_model,
-                                          output_hidden_states=True)
-        model.eval()
-        tokenizer = BertTokenizer.from_pretrained(bert_model)
+        from sentence_transformers import SentenceTransformer
 
         sc = OrcaContext.get_spark_context()
-        tokenizer_br = sc.broadcast(tokenizer)
+        model = SentenceTransformer(bert_model)
         model_br = sc.broadcast(model)
-
-        def str2id(string, tokenizer):
-            marked = "[CLS] " + string + " [SEP]"
-            tokenized = tokenizer.tokenize(marked)
-            ids = tokenizer.convert_tokens_to_ids(tokenized)
-            return ids
-
-        def ids2emb(ids, model):
-            segments_ids = [1] * len(ids)
-            tokens_tensor = torch.tensor([ids])
-            segments_tensors = torch.tensor([segments_ids])
-
-            with torch.no_grad():
-                outputs = model(tokens_tensor, segments_tensors)
-                hidden_states = outputs[2]
-
-            token_vecs = hidden_states[-1][0]
-            embedding = torch.mean(token_vecs, dim=0)
-            out = embedding.detach().numpy().tolist()
-            return out
-
-        str2id_udf = udf(lambda x: str2id(x, tokenizer_br.value), ArrayType(IntegerType()))
-        ids2embd_udf = udf(lambda x: ids2emb(x, model_br.value), ArrayType(DoubleType()))
+        sentence2embd_udf = udf(lambda x: model_br.value.encode(x).tolist(),
+                                ArrayType(DoubleType()))
 
         df = self.df
         for c in cols:
-            df = df.withColumn(c + "_ids", str2id_udf(pyspark_col(c))) \
-                .withColumn(c + "_embds", ids2embd_udf(pyspark_col(c + "_ids")))\
-                .drop(c + "_ids")
+            df = df.withColumn(c + "_embds", sentence2embd_udf(pyspark_col(c)))
 
         if reduce_dim:
             from pyspark.ml.feature import PCA
@@ -2336,7 +2308,6 @@ class FeatureTable(Table):
 
         if replace:
             df = df.drop(c).withColumnRenamed(c + "_embds", c)
-
         return FeatureTable(df)
 
 
