@@ -23,7 +23,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: debug
-      run: if [ -n "${{inputs.tag}}" ]; then  export TAG=${{inputs.tag}};  else export TAG=latest; fi
+      run: |
+        if [ -n "${{inputs.tag}}" ]; then  export TAG=${{inputs.tag}};  else export TAG=latest; fi
+        echo ${TAG}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
