@@ -37,7 +37,7 @@ jobs:
 
 
   big-data-ml-python-gramine:
-    if: ${{inputs.ARTIFACT}} == "bigdl-ppml-trusted-big-data-ml-python-gramine"
+    if: inputs.ARTIFACT == "bigdl-ppml-trusted-big-data-ml-python-gramine"
     runs-on: [self-hosted, Shire]
     permissions:
       contents: read
@@ -75,7 +75,7 @@ jobs:
 
 
   realtime-ml-scala-graphene:
-    if: ${{inputs.ARTIFACT}} == "bigdl-ppml-trusted-realtime-ml-scala-graphene"
+    if: 1 == 0
     runs-on: [self-hosted, Shire]
     permissions:
       contents: read
@@ -93,7 +93,7 @@ jobs:
 
 
   big-data-ml-scala-occlum:
-    if: ${{inputs.ARTIFACT}} == "bigdl-ppml-trusted-big-data-ml-scala-occlum"
+    if: bigdl == bigdl
     runs-on: [self-hosted, Shire]
     permissions:
       contents: read
@@ -111,7 +111,7 @@ jobs:
         
   
   trusted-realtime-ml-scala-occlum:
-    if: ${{inputs.ARTIFACT}} == "bigdl-ppml-trusted-realtime-ml-scala-occlum"
+    if: bigdl == "bigdl"
     runs-on: [self-hosted, Shire]
     permissions:
       contents: read
