@@ -23,7 +23,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: debug
-      run: echo ${{inputs.abc}}
+      run: if [ -n "${{inputs.tag}}" ]; then  export TAG=${{inputs.tag}};  else export TAG=latest; fi
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -41,11 +41,11 @@ jobs:
           --build-arg JDK_VERSION=8u192 \
           --build-arg JDK_URL=${JDK_URL} \
           --build-arg no_proxy=${NO_PROXY} \
-          --rm --no-cache -t $IMAGE-spark-3.1.2:${{inputs.TAG}} .
-        docker push ${IMAGE}-spark-3.1.2:${{inputs.TAG}}
-        docker tag ${IMAGE}-spark-3.1.2:${{inputs.TAG}} 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${{inputs.TAG}}
-        docker push 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${{inputs.TAG}}
-        docker rmi -f ${IMAGE}-spark-3.1.2:${{inputs.TAG}} 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${{inputs.TAG}}
+          --rm --no-cache -t $IMAGE-spark-3.1.2:${TAG} .
+        docker push ${IMAGE}-spark-3.1.2:${TAG}
+        docker tag ${IMAGE}-spark-3.1.2:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${TAG}
+        docker push 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${TAG}
+        docker rmi -f ${IMAGE}-spark-3.1.2:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${TAG}
     - name: docker deploy bigdl-k8s
       run: |
         cd docker/bigdl-k8s
@@ -60,8 +60,8 @@ jobs:
         --build-arg JDK_VERSION=8u192 \
         --build-arg JDK_URL=${JDK_URL} \
         --build-arg no_proxy=${NO_PROXY} \
-        --rm --no-cache -t ${IMAGE}-spark-3.1.2:${{inputs.TAG}} .
-        docker push ${IMAGE}-spark-3.1.2:${{inputs.TAG}}
-        docker tag ${IMAGE}-spark-3.1.2:${{inputs.TAG}} 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${{inputs.TAG}}
-        docker push 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${{inputs.TAG}}
-        docker rmi -f ${IMAGE}-spark-3.1.2:${{inputs.TAG}}
+        --rm --no-cache -t ${IMAGE}-spark-3.1.2:${TAG} .
+        docker push ${IMAGE}-spark-3.1.2:${TAG}
+        docker tag ${IMAGE}-spark-3.1.2:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${TAG}
+        docker push 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${TAG}
+        docker rmi -f ${IMAGE}-spark-3.1.2:${TAG}
