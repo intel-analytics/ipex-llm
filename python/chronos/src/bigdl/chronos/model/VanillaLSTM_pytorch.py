@@ -73,7 +73,7 @@ def model_creator(config):
                      layer_num=layer_num,
                      dropout=dropout,
                      output_dim=config["output_feature_num"],
-                     seed=config["seed"])
+                     seed=config.get("seed", None))
 
 
 def optimizer_creator(model, config):
