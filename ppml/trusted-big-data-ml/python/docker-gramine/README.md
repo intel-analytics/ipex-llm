@@ -65,4 +65,4 @@ The result should be like:
 sudo docker exec -it gramine-test bash work/start-scripts/start-spark-local-pi-sgx.sh
 ```
 The result should be like:
-> pi os roughly 3.135360
+> pi is roughly 3.135360
