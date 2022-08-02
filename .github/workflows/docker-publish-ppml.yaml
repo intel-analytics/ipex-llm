@@ -37,7 +37,7 @@ jobs:
 
 
   big-data-ml-python-gramine:
-    if: inputs.ARTIFACT == "bigdl-ppml-trusted-big-data-ml-python-gramine"
+    if: ${{inputs.ARTIFACT}} == "bigdl-ppml-trusted-big-data-ml-python-gramine"
     runs-on: [self-hosted, Shire]
     permissions:
       contents: read
