@@ -71,7 +71,7 @@ if torch_available:
     from .nbeats_forecaster import NBeatsForecaster
     if orca_available:
         from .tcmf_forecaster import TCMFForecaster
-if tf_available:
+if tf_available and orca_available:
     from .tf.mtnet_forecaster import MTNetForecaster
 if prophet_available:
     from .prophet_forecaster import ProphetForecaster
