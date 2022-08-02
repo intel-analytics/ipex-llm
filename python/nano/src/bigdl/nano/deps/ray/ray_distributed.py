@@ -449,7 +449,7 @@ class RayStrategy(DDPSpawnStrategy):
                 else _configure_schedulers_manual_opt(lr_schedulers)
             )
             _set_scheduler_opt_idx(self.optimizers, lr_scheduler_configs)
-            _validate_scheduler_api(lr_scheduler_configs, self.model)
+            _validate_scheduler_api(lr_scheduler_configs, self.lightning_module)
             self.lr_scheduler_configs = lr_scheduler_configs
 
     def training_step_end(self, output: _STEP_OUTPUT_TYPE) -> _STEP_OUTPUT_TYPE:
