@@ -268,7 +268,7 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
     def on_train_start(self):
         """Setup warmup lr_schedulers after resetting the train dataloaders."""
         # LightnigModule.train_dataloader() generate the training dataloaders after setup,
-        # so config the warmup lr_schedulers in on_train_start hook to infer warmup_steps.
+        # so attach the warmup lr_schedulers in on_train_start hook to infer warmup_steps.
         if not self.auto_lr:
             return
         if self.lr_scheduler_configs:
