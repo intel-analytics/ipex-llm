@@ -1,8 +1,8 @@
 import com.intel.analytics.bigdl.friesian.nearline.feature.FeatureInitializer;
-import com.intel.analytics.bigdl.friesian.nearline.feature.FeatureNearlineUtils;
 import com.intel.analytics.bigdl.friesian.nearline.utils.NearlineUtils;
 import com.intel.analytics.bigdl.friesian.serving.feature.utils.LettuceUtils;
 import com.intel.analytics.bigdl.friesian.serving.feature.utils.RedisType;
+import com.intel.analytics.bigdl.friesian.serving.utils.EncodeUtils;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
@@ -12,9 +12,10 @@ import scala.collection.Seq;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Base64;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class FeatureInitializerTest {
 
@@ -38,9 +39,21 @@ public class FeatureInitializerTest {
         }
     }
 
+    void checkRedisRecord(LettuceUtils redis, String keyPrefix, Dataset<Row> dataset) {
+        dataset.collectAsList().forEach((row) -> {
+            Object[] rowData = (Object[]) EncodeUtils.bytesToObj(
+                    Base64.getDecoder().decode(
+                            redis.getSync().getdel(generateID(keyPrefix, row.get(0).toString()))));
+            for (int i = 0; i < Objects.requireNonNull(rowData).length; i++) {
+                assertEquals(rowData[i].toString(), row.get(1 + i).toString());
+            }
+//            assertNotEquals(redis.getSync().getdel(generateID(keyPrefix, row.get(0).toString())), null);
+        });
+    }
+
     @Test
     void testInitialization() throws IOException, InterruptedException {
-        String configPath = "/home/xingyuan/projects/serving/BigDL/scala/friesian/src/test/resources/nearlineConfig/config_feature.yaml";
+        String configPath = "/home/xingyuan/projects/serving/BigDL/scala/friesian/src/test/resources/nearlineConfig/config_feature_vec.yaml";
         FeatureInitializer.main(new String[]{"-c", configPath});
         // you can get initialDataPath file from friesian-serving.tar.gz
 
@@ -55,11 +68,7 @@ public class FeatureInitializerTest {
             Dataset<Row> dataset = sparkSession.read().parquet(NearlineUtils.helper().initialUserDataPath());
             dataset = dataset.select(NearlineUtils.helper().userIDColumn(),
                     convertListToSeq(NearlineUtils.helper().userFeatureColArr()));
-            dataset.collectAsList().forEach((row) -> {
-                assertEquals(redis.get(generateID("user", row.get(0).toString())),
-                        FeatureNearlineUtils.encodeRow(row)[1]);
-                assertNotEquals(redis.getSync().getdel(generateID("user", row.get(0).toString())), null);
-            });
+            checkRedisRecord(redis, "user", dataset);
         }
 
         if (NearlineUtils.helper().initialItemDataPath() != null) {
@@ -68,11 +77,7 @@ public class FeatureInitializerTest {
             Dataset<Row> dataset = sparkSession.read().parquet(NearlineUtils.helper().initialItemDataPath());
             dataset = dataset.select(NearlineUtils.helper().itemIDColumn(),
                     convertListToSeq(NearlineUtils.helper().itemFeatureColArr()));
-            dataset.collectAsList().forEach((row) -> {
-                assertEquals(redis.get(generateID("item", row.get(0).toString())),
-                        FeatureNearlineUtils.encodeRow(row)[1]);
-                assertNotEquals(redis.getSync().getdel(generateID("item", row.get(0).toString())), null);
-            });
+            checkRedisRecord(redis, "item", dataset);
         }
         System.out.println("Finish Test");
     }
