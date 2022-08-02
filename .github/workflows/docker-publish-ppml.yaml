@@ -93,7 +93,7 @@ jobs:
 
 
   big-data-ml-scala-occlum:
-    if: bigdl == "bigdl"
+    if: ${{inputs.ARTIFACT}} == "bigdl-ppml-trusted-big-data-ml-python-gramine"
     runs-on: [self-hosted, Shire]
     permissions:
       contents: read
@@ -111,7 +111,7 @@ jobs:
         
   
   trusted-realtime-ml-scala-occlum:
-    if: bigdl == "bigdl"
+    if: ${{inputs.ARTIFACT}} == "bigdl-ppml-trusted-big-data-ml-python-gramine"
     runs-on: [self-hosted, Shire]
     permissions:
       contents: read
