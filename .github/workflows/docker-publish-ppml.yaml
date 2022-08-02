@@ -93,7 +93,7 @@ jobs:
 
 
   big-data-ml-scala-occlum:
-    if: bigdl == bigdl
+    if: bigdl == "bigdl"
     runs-on: [self-hosted, Shire]
     permissions:
       contents: read
