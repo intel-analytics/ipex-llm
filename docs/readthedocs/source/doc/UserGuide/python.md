@@ -72,7 +72,7 @@ You can find the list of the nightly build versions built on top of Spark 3.1.2 
 You could uninstall all the packages of BigDL on Spark3 as follows:
 
 ```bash
-pip uninstall bigdl-dllib-spark3 bigdl-core bigdl-tf bigdl-math bigdl-orca-spark3 bigdl-chronos-spark3 bigdl-friesian-spark3 bigdl-nano bigdl-serving bigdl
+pip uninstall bigdl-dllib-spark3 bigdl-core bigdl-tf bigdl-math bigdl-orca-spark3 bigdl-chronos-spark3 bigdl-friesian-spark3 bigdl-nano bigdl-serving bigdl-spark3
 ```
 
 ---
