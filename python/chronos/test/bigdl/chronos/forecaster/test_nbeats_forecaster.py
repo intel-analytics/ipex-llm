@@ -493,4 +493,4 @@ class TestChronosNBeatsForecaster(TestCase):
                                       metrics=['mae'],
                                       lr=0.01)
         val_loss = forecaster.fit((train_data[0], train_data[1]), val_data,
-                                  validation_mode='best validation', epochs=10)
+                                  validation_mode='best_epoch', epochs=10)

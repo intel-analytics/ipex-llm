@@ -264,7 +264,7 @@ class BasePytorchForecaster(Forecaster):
                | 2. earlystop:
                | Monitor the val_loss and stop training when it stops improving.
                |
-               | 3. best validation:
+               | 3. best_epoch:
                | Monitor the val_loss. And load the checkpoint of the epoch with the smallest
                | val_loss after the training.
 
@@ -343,9 +343,10 @@ class BasePytorchForecaster(Forecaster):
                                                   filename='best', save_on_train_epoch_end=True)
             if validation_mode == 'earlystop':
                 callbacks = [early_stopping]
-            elif validation_mode == 'best validation':
+            elif validation_mode == 'best_epoch':
                 callbacks = [checkpoint_callback]
-            else: callbacks = None
+            else:
+                callbacks = None
             # Trainer init
             self.trainer = Trainer(logger=logger, max_epochs=epochs, callbacks=callbacks,
                                    checkpoint_callback=self.checkpoint_callback,
@@ -374,7 +375,7 @@ class BasePytorchForecaster(Forecaster):
                 self.fitted = True
                 fit_out = read_csv('./forecaster_tmp_log/version_0/metrics.csv')
                 delete_folder("./forecaster_tmp_log")
-                if validation_mode == 'best validation':
+                if validation_mode == 'best_epoch':
                     self.load('validation/best.ckpt')
                     delete_folder("./validation")
                 return fit_out

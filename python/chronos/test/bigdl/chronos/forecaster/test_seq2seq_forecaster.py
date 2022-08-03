@@ -441,4 +441,4 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        loss="mae",
                                        lr=0.01)
         val_loss = forecaster.fit(train_data, val_data,
-                                  validation_mode='best validation', epochs=10)
+                                  validation_mode='best_epoch', epochs=10)
