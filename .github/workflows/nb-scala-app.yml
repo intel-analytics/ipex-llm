@@ -70,6 +70,7 @@ jobs:
         pip install numpy
         pip install tensorflow==1.15.0
         pip install jupyter
+        apt-get update
         apt-get install wget 
 
         wget https://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz
