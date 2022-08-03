@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.ppml.PPMLContext
 import com.intel.analytics.bigdl.ppml.kms.{EHSMKeyManagementService, KMS_CONVENTION, SimpleKeyManagementService}
 import com.intel.analytics.bigdl.ppml.utils.{EncryptIOArguments, Supportive}
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.functions.desc
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.slf4j.LoggerFactory
@@ -39,38 +40,44 @@ object SimpleQuerySparkExample extends Supportive {
 
     val sc = PPMLContext.initPPMLContext("SimpleQuery", arguments.ppmlArgs())
 
-    // read kms args from spark-defaults.conf
-    // val sc = PPMLContext.initPPMLContext("SimpleQuery")
-
+    // next, we will count how many people in each kind of job and their average age
     timing("processing") {
       // load csv file to data frame with ppmlcontext.
-      val df = timing("1/3 loadInputs") {
+      val csvDF = timing("1/4 loadCsv") {
         sc.read(cryptoMode = arguments.inputEncryptMode).option("header", "true")
           .csv(arguments.inputPath + "/people.csv")
       }
-
-      val developers = timing("2/3 doSQLOperations") {
-        // Select only the "name" column
-        df.select("name").count()
-
-        // Select everybody, but increment the age by 1
-        df.select(df("name"), df("age") + 1).show()
-
-      // Select Developer and records count
-        val developers = df.filter(df("job") === "Developer" and df("age").between(20, 40)).toDF()
-        developers.count()
-
-        developers
+      // load parquet file to data frame with ppmlcontext.
+      val parquetDF = timing("2/4 loadParquet") {
+        sc.read(cryptoMode = arguments.inputEncryptMode)
+          .parquet(arguments.inputPath + "/people.parquet")
       }
 
-      // Map[String, DataFrame]({
-      //  "developers" -> developers
-      // })
+      val result = timing("3/4 doSQLOperations") {
+        // union
+        val unionDF = csvDF.unionByName(parquetDF)
+        // filter
+        val filterDF = unionDF.filter(unionDF("age").between(20, 40))
+        // count people in each job
+        val countDF = filterDF.groupBy("job")
+          .count()
+          .sort(desc("count"))
+        // calculate average age in each job
+        val avgDF = filterDF.groupBy("job")
+          .avg("age")
+          .withColumnRenamed("avg(age)", "average_age")
+        // join
+        countDF.join(avgDF, "job")
+      }
 
-      timing("3/3 encryptAndSaveOutputs") {
+      result.show()
+
+      // save as a json file
+      timing("4/4 encryptAndSaveOutputs") {
         // save data frame using spark kms context
-        sc.write(developers, cryptoMode = arguments.outputEncryptMode).mode("overwrite")
-          .option("header", true).csv(arguments.outputPath)
+        sc.write(result, cryptoMode = arguments.outputEncryptMode)
+          .mode("overwrite")
+          .json(arguments.outputPath)
       }
     }
   }
