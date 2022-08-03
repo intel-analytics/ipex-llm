@@ -59,15 +59,13 @@ object SimpleQuerySparkExample extends Supportive {
         // filter
         val filterDF = unionDF.filter(unionDF("age").between(20, 40))
         // count people in each job
-        val countDF = filterDF.groupBy("job")
-          .count()
-          .sort(desc("count"))
+        val countDF = filterDF.groupBy("job").count()
         // calculate average age in each job
         val avgDF = filterDF.groupBy("job")
           .avg("age")
           .withColumnRenamed("avg(age)", "average_age")
-        // join
-        countDF.join(avgDF, "job")
+        // join and sort
+        countDF.join(avgDF, "job").sort(desc("age"))
       }
 
       result.show()
