@@ -84,7 +84,7 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
 
     val tBeforePreprocess = System.nanoTime()
     var elapsed = (tBeforePreprocess - tStart) / 1000000000.0f // second
-    log.info("--reading data time is " + elapsed + "s")
+    log.info("--reading data time is " + elapsed + " s")
     // preprocess data
     val processedRdd = df.rdd.map(task.rowToLibsvm)
 
@@ -125,9 +125,13 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
     // randomly split dataset to (train, eval1, eval2, test) in proportion 6:2:1:1
     val Array(train, eval1, eval2, test) = xgbInput.randomSplit(Array(0.6, 0.2, 0.1, 0.1))
 
+    train.cache().count()
+    eval1.cache().count()
+    eval2.cache().count()
+
     val tBeforeTraining = System.nanoTime()
     elapsed = (tBeforeTraining - tBeforePreprocess) / 1000000000.0f // second
-    log.info("--preprocess time is " + elapsed + "s")
+    log.info("--preprocess time is " + elapsed + " s")
     // use scala tracker
     val xgbParam = Map("tracker_conf" -> TrackerConf(0L, "scala"),
       "eval_sets" -> Map("eval1" -> eval1, "eval2" -> eval2)
@@ -150,13 +154,15 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
 
     val tAfterTraining = System.nanoTime()
     elapsed = (tAfterTraining - tBeforeTraining) / 1000000000.0f // second
-    log.info("--training time is " + elapsed + "s")
+    log.info("--training time is " + elapsed + " s")
 
     xgbClassificationModel.save(modelSavePath)
 
     val tAfterSave = System.nanoTime()
     elapsed = (tAfterSave - tAfterTraining) / 1000000000.0f // second
-    log.info("--model save time is " + elapsed + "s")
+    log.info("--model save time is " + elapsed + " s")
+    elapsed = (tAfterSave - tStart) / 1000000000.0f // second
+    log.info("--end-to-end time is " + elapsed + " s")
     sc.stop()
   }
 
