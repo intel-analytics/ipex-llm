@@ -544,7 +544,7 @@ class TestChronosModelTCNForecaster(TestCase):
                                    num_channels=[16, 16],
                                    loss="mae",
                                    lr=0.01)
-        train_loss = forecaster.fit(train_data, val_data, validation_mode='earlystop', epochs=50)
+        train_loss = forecaster.fit(train_data, val_data, validation_mode='earlystop', epochs=10)
 
     def test_tcn_forecaster_fit_earlystop_patience(self):
         train_data, val_data, test_data = create_data()
@@ -557,4 +557,16 @@ class TestChronosModelTCNForecaster(TestCase):
                                    loss="mae",
                                    lr=0.01)
         train_loss = forecaster.fit(train_data, val_data, validation_mode='earlystop',
-                                    earlystop_patience=6, epochs=50)
+                                    earlystop_patience=6, epochs=10)
+
+    def test_tcn_forecaster_fit_best_val(self):
+        train_data, val_data, _ = create_data()
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=4,
+                                   num_channels=[16, 16],
+                                   loss="mae",
+                                   lr=0.01)
+        val_loss = forecaster.fit(train_data, val_data, validation_mode='best validation', epochs=10)

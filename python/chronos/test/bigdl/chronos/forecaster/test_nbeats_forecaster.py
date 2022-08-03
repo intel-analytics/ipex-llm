@@ -468,7 +468,7 @@ class TestChronosNBeatsForecaster(TestCase):
                                       metrics=['mae'],
                                       lr=0.01)
         val_loss = forecaster.fit((train_data[0], train_data[1]), val_data,
-                                  validation_mode='earlystop', epochs=50)
+                                  validation_mode='earlystop', epochs=10)
 
     def test_nbeats_forecaster_fit_earlystop_patience(self):
         train_data, val_data, _ = create_data()
@@ -481,4 +481,16 @@ class TestChronosNBeatsForecaster(TestCase):
                                       lr=0.01)
         val_loss = forecaster.fit((train_data[0], train_data[1]), val_data,
                                   validation_mode='earlystop', earlystop_patience=6,
-                                  epochs=50)
+                                  epochs=10)
+
+    def test_nbeats_forecaster_fit_best_val(self):
+        train_data, val_data, _ = create_data()
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      stack_types=('generic', 'generic'),
+                                      nb_blocks_per_stack=3,
+                                      hidden_layer_units=256,
+                                      metrics=['mae'],
+                                      lr=0.01)
+        val_loss = forecaster.fit((train_data[0], train_data[1]), val_data,
+                                  validation_mode='best validation', epochs=10)
