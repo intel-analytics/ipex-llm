@@ -59,7 +59,7 @@ class ChannelsLastCallback(pl.Callback):
         """Override hook setup to convert model to channels_last and wrap DataHook."""
         # TODO: Add check for module_states
         try:
-            pl_module.model = pl_module.model.to(memory_format=torch.channels_last)
+            pl_module = pl_module.to(memory_format=torch.channels_last)
         except Exception as e:
             warning(f"Convert model to channels last failed, \
                     fall back to origin memory format. Exception msg: {e}")
