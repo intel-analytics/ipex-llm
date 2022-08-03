@@ -521,7 +521,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
         state_id = ray.put(state)
         ray.get([worker.set_state.remote(state_id, **kwargs) for worker in self.remote_workers])
-    
+
     def save(self,
              filepath,
              overwrite=True,
@@ -557,7 +557,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             temp_dir = tempfile.mkdtemp()
             temp_path = os.path.join(temp_dir, file_name)
             try:
-                model.save(temp_path, overwrite, include_optimizer, save_format, signatures, options)
+                model.save(temp_path, overwrite, include_optimizer, save_format, signatures,
+                           options)
                 if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
                     # hdf5 format
                     put_local_file_to_remote(temp_path, filepath, over_write=overwrite)
@@ -566,7 +567,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                     put_local_dir_tree_to_remote(temp_path, filepath)
             finally:
                 shutil.rmtree(temp_dir)
-    
+
     def load(self, filepath, custom_objects=None, compile=True):
         """
         Loads a model saved via `estimator.save()
@@ -586,10 +587,10 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                 custom_objects=custom_objects,
                 compile=compile
             )
-            results = [
+            model_refs = [
                 worker.load_model.remote(**params) for worker in self.remote_workers
-                ]
-            ray.get(results)
+            ]
+            ray.get(model_refs)
         else:
             file_name = os.path.basename(filepath)
             temp_dir = tempfile.mkdtemp()
@@ -604,10 +605,10 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                     get_remote_file_to_local(filepath, temp_path)
                 else:
                     get_remote_dir_tree_to_local(filepath, temp_path)
-                results = [
+                model_refs = [
                     worker.load_model.remote(**params) for worker in self.remote_workers
-                    ]
-                ray.get(results)
+                ]
+                ray.get(model_refs)
             finally:
                 shutil.rmtree(temp_dir)
 
