@@ -1,0 +1,30 @@
+name: Performance Regression Test
+
+on:
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: '0 16 * * *'
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  performace-regression-test:
+
+    runs-on: [Rohan, ubuntu-20.04-lts]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+
+      - name: Run tests
+        run: |
+          python python/nano/benchmark/run.py resnet50
+        env: 
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
