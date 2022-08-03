@@ -80,7 +80,6 @@ jobs:
       #run: python -m build
       run: |
           export SCALA_HOME=/opt/scala
-	  export PATH=$SCALA_HOME/bin::$PATH
 
           chmod a+x apps/run-scala-app-test.sh
           apps/run-scala-app-test.sh
