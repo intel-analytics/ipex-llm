@@ -112,7 +112,8 @@ class TCNForecaster(BasePytorchForecaster):
             "num_channels": num_channels,
             "kernel_size": kernel_size,
             "repo_initialization": repo_initialization,
-            "dropout": dropout
+            "dropout": dropout,
+            "seed": seed
         }
         self.loss_config = {
             "loss": loss

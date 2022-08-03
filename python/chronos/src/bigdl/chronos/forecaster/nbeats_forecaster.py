@@ -121,7 +121,8 @@ class NBeatsForecaster(BasePytorchForecaster):
             "thetas_dim": thetas_dim,
             "share_weights_in_stack": share_weights_in_stack,
             "hidden_layer_units": hidden_layer_units,
-            "nb_harmonics": nb_harmonics
+            "nb_harmonics": nb_harmonics,
+            "seed": seed,
         }
 
         self.loss_config = {
