@@ -34,7 +34,6 @@ from pyspark.sql.functions import col as pyspark_col, concat, udf, array, broadc
     lit, rank, monotonically_increasing_id, row_number, desc
 from pyspark.sql.types import ArrayType, DataType, StructType, StringType, StructField
 
-
 JAVA_INT_MIN = -2147483648
 JAVA_INT_MAX = 2147483647
 
@@ -256,21 +255,19 @@ class Table:
 
     def random_split(self, weights, seed=None):
         """
-        Randomly splits with the provided weights.
+        Randomly split Table into multiple Tables with the provided weights for train, validation
+        and test.
 
-        :param weights: list of doubles as weights with which to split the table.
-            Weights will be normalized if they don't sum up to 1.0.
+        :param weights: list of doubles as weights with which to split the Table.
+               Weights will be normalized if they don't sum up to 1.0.
         :param seed: The seed for sampling.
 
-        :return A list of Tables
+        :return: A list of Tables split by the provided weights.
         """
-        for w in weights:
-            if w < 0.0:
-                invalidInputError(False,
-                                  "Weights must be positive. Found weight value: %s" % w)
-        seed = seed if seed is not None else random.randint(0, sys.maxsize)
         df_array = self.df.randomSplit(weights, seed)
         return [self._clone(df) for df in df_array]
+
+    split = random_split
 
     def clip(self, columns, min=None, max=None):
         """
@@ -1004,31 +1001,63 @@ class FeatureTable(Table):
             hash_df = hash_df.withColumn(col_name, hash_int(pyspark_col(col_name)))
         return FeatureTable(hash_df)
 
-    def cross_hash_encode(self, columns, bins, cross_col_name=None, method='md5'):
+    def cross_hash_encode(self, cross_columns, bin_sizes, cross_col_names=None, method='md5'):
         """
-        Hash encode for cross column(s).
+        Cross columns and hashed to specified bin size.
 
-        :param columns: a list of str, the categorical columns to be encoded as cross features.
+        :param cross_columns: nested list of str, nested list of categorical column names to be
+               encoded as cross features. e.g. [['a', 'b'], ['c', 'd']].
                For dense features, you need to cut them into discrete intervals beforehand.
-        :param bins: int, defined the number of equal-width bins in the range of column(s) values.
-        :param cross_col_name: str, the column name for output cross column. Default is None, and
-               in this case the default cross column name will be 'crossed_col1_col2'
-               for ['col1', 'col2'].
+        :param bin_sizes: list of int, defined the numbers of equal-width bins in the range
+               of columns values. e.g. [100, 200].
+        :param cross_col_names: list of str, the column names for output cross columns.
+               Default is None, and in this case the default cross column name will
+               be 'col1_col2' for ['col1', 'col2']. e.g. ['cross_1', 'cross_2'].
         :param method: hashlib supported method, like md5, sha256 etc.
 
-        :return: A new FeatureTable with the target cross column.
+        :return: A new FeatureTable with the target cross columns.
         """
+        # For compatibility with previous versions
+        if isinstance(cross_columns, list) and all(isinstance(x, str) for x in cross_columns):
+            cross_columns = [cross_columns]
+            bin_sizes = [bin_sizes]
+            if cross_col_names:
+                cross_col_names = [cross_col_names]
+
+        # check input params
+        invalidInputError(
+            isinstance(cross_columns, list) and all(isinstance(x, list) for x in cross_columns),
+            "cross_columns should be a nested list of string")
+        invalidInputError(
+            isinstance(bin_sizes, list) and all(isinstance(x, int) for x in bin_sizes),
+            "bin_sizes should be a list of int")
+        invalidInputError(len(cross_columns) == len(bin_sizes),
+                          "cross_columns and bin_sizes should have the same length")
+        if cross_col_names is not None:
+            invalidInputError(isinstance(cross_col_names, list),
+                              "cross_col_names should be None or a list of string")
+            invalidInputError(len(bin_sizes) == len(cross_col_names),
+                              "cross_columns, bin_sizes and cross_col_names should have the same "
+                              "length")
+
         cross_hash_df = self.df
-        invalidInputError(isinstance(columns, list), "columns should be a list of column names")
-        invalidInputError(len(columns) >= 2, "cross_hash_encode should have >= 2 columns")
-        if cross_col_name is None:
-            cross_string = ''
-            for column in columns:
-                cross_string = cross_string + '_' + column
-            cross_col_name = 'crossed' + cross_string
-        cross_hash_df = cross_hash_df.withColumn(cross_col_name, concat(*columns))
-        cross_hash_df = FeatureTable(cross_hash_df).hash_encode([cross_col_name], bins, method)
-        return cross_hash_df
+        for i in range(len(cross_columns)):
+            invalidInputError(len(cross_columns[i]) >= 2,
+                              "each element in cross_columns should have >= 2 columns")
+            if cross_col_names is None or cross_col_names[i] is None:
+                cross_col_name = '_'.join(cross_columns[i])
+            else:
+                invalidInputError(isinstance(cross_col_names[i], str),
+                                  "each element in cross_col_names should be None or string")
+                cross_col_name = cross_col_names[i]
+            cross_hash_df = cross_hash_df.withColumn(
+                cross_col_name, concat(*cross_columns[i]))
+
+            cross_hash_df = FeatureTable(cross_hash_df).hash_encode(
+                cross_col_name, bin_sizes[i], method).df
+        return FeatureTable(cross_hash_df)
+
+    cross_columns = cross_hash_encode
 
     def category_encode(self, columns, freq_limit=None, order_by_freq=False,
                         do_split=False, sep=',', sort_for_array=False, keep_most_frequent=False,
@@ -1262,19 +1291,6 @@ class FeatureTable(Table):
             return string_idx_list
 
     def _clone(self, df):
-        return FeatureTable(df)
-
-    def cross_columns(self, crossed_columns, bucket_sizes):
-        """
-        Cross columns and hashed to specified bucket size
-
-        :param crossed_columns: list of column name pairs to be crossed.
-               i.e. [['a', 'b'], ['c', 'd']]
-        :param bucket_sizes: hash bucket size for crossed pairs. i.e. [1000, 300]
-
-        :return: A new FeatureTable with crossed columns.
-        """
-        df = cross_columns(self.df, crossed_columns, bucket_sizes)
         return FeatureTable(df)
 
     def min_max_scale(self, columns, min=0.0, max=1.0):
@@ -1689,20 +1705,6 @@ class FeatureTable(Table):
         else:
             return FeatureTable(agg_df)
 
-    def split(self, ratio, seed=None):
-        """
-        Split the FeatureTable into multiple FeatureTables for train, validation and test.
-
-        :param ratio: a list of portions as weights with which to split the FeatureTable.
-                      Weights will be normalized if they don't sum up to 1.0.
-        :param seed: The seed for sampling.
-
-        :return: A tuple of FeatureTables split by the given ratio.
-        """
-        df_list = self.df.randomSplit(ratio, seed)
-        tbl_list = [FeatureTable(df) for df in df_list]
-        return tuple(tbl_list)
-
     def target_encode(self, cat_cols, target_cols, target_mean=None, smooth=20, kfold=2,
                       fold_seed=None, fold_col="__fold__", drop_cat=False, drop_fold=True,
                       out_cols=None):
@@ -1887,7 +1889,7 @@ class FeatureTable(Table):
                     )
                     fold_df = fold_df.drop(cat_col_name + "_sum_" + target_col,
                                            cat_col_name + "_all_sum_" + target_col)
-                fold_df = fold_df.drop(cat_col_name + "_count")\
+                fold_df = fold_df.drop(cat_col_name + "_count") \
                     .withColumnRenamed(cat_col_name + "_all_count", "target_encode_count")
 
             out_target_mean_dict = {
@@ -2126,7 +2128,7 @@ class FeatureTable(Table):
         columns = str_to_list(columns, "columns")
         vocabularies = {}
         for col in columns:
-            vocabularies[col] = self.df.select(col)\
+            vocabularies[col] = self.df.select(col) \
                 .distinct().rdd.map(lambda row: row[col]).collect()
         return vocabularies
 
@@ -2238,6 +2240,77 @@ class FeatureTable(Table):
         df = spark.createDataFrame(self.df.rdd.flatMap(lambda x:
                                                        sample_features(x, random_state)), schema)
 
+        return FeatureTable(df)
+
+    def string_embed(self, columns, bert_model='distilbert-base-uncased', reduce_dim=None,
+                     replace=True):
+        """
+        Convert the columns of string to bert embeddings in FeatureTable. The columns should be of
+        string type.
+
+        >>> tbl
+        +------------------------+
+        |sentence                |
+        +------------------------+
+        |hello BigDL, how are you|
+        |Thanks for visiting     |
+        +------------------------+
+        >>> tbl.string_embed("sentence", reduce_dim=4)
+        +----------------------------------------------------------------------------------+
+        |sentence                                                                          |
+        +----------------------------------------------------------------------------------+
+        |[6.552382655553642, 0.4968299244945677, 0.2790670453414006, -0.2955769430562254]  |
+        |[-4.4477494247704845, 0.4968299244945722, 0.2790670453414017, -0.2955769430562234]|
+        +----------------------------------------------------------------------------------+
+        :param columns: str or a list of str. Columns to convert to sampled list. Each column
+                should be of string type.
+        :param bert_model: str. The pretrained bert model to be used.
+               from https://huggingface.co/sentence-transformers
+        :param reduce_dim: int. PCA will be called to reduce the embedding dimension it's not None.
+               Default: None.
+        :param replace: bool. Indicates whether to replace the original columns. If replace=False,
+                 a corresponding column columname + "_embds" will be generated for each column.
+
+        :return: A FeatureTable with desired columns transformed to embeddings.
+        """
+        cols = str_to_list(columns, "cols")
+        schema = self.schema
+        for c in cols:
+            invalidInputError(c in self.df.columns, "Column '" + c +
+                              "' does not exist in this FeatureTable.")
+            c_type = schema[c].dataType
+            invalidInputError(isinstance(c_type, StringType),
+                              "Each column should be of string type, but the type of column '" + c +
+                              "' is " + c_type.simpleString())
+
+        from sentence_transformers import SentenceTransformer
+
+        sc = OrcaContext.get_spark_context()
+        model = SentenceTransformer(bert_model)
+        model_br = sc.broadcast(model)
+        sentence2embd_udf = udf(lambda x: model_br.value.encode(x).tolist(),
+                                ArrayType(DoubleType()))
+
+        df = self.df
+        for c in cols:
+            df = df.withColumn(c + "_embds", sentence2embd_udf(pyspark_col(c)))
+
+        if reduce_dim:
+            from pyspark.ml.feature import PCA
+            from pyspark.ml.linalg import Vectors, VectorUDT
+            tolist = udf(lambda x: x.toArray().tolist(), ArrayType(DoubleType()))
+            tovec = udf(lambda x: Vectors.dense(x), VectorUDT())
+            for c in cols:
+                df = df.withColumn(c + "_embds", tovec(c + "_embds"))
+                pca = PCA(k=reduce_dim, inputCol=c + "_embds", outputCol=c + "_pcaFeatures")
+                pca_model = pca.fit(df)
+                result = pca_model.transform(df)
+                df = result.drop(c + "_embds")\
+                    .withColumnRenamed(c + "_pcaFeatures", c + "_embds")\
+                    .withColumn(c + "_embds", tolist(c + "_embds"))
+
+        if replace:
+            df = df.drop(c).withColumnRenamed(c + "_embds", c)
         return FeatureTable(df)
 
 

@@ -48,7 +48,7 @@ parameters:
 - num_round : Int 
 - path_to_model_to_be_saved : String
 
-**note: make sure num_threads is larger than spark.task.cpus.**
+**note: make sure num_threads is no larger than spark.task.cpus.**
 
 # XGBoostClassifier Predict Example
 ## Run:

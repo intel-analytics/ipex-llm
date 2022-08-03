@@ -51,7 +51,7 @@ class OptunaBackend(object):
     @staticmethod
     def get_other_args(kwargs, kwspaces):
         """Get key-word arguments which are not search spaces."""
-        return{k: kwargs[k] for k in set(kwargs) - set(kwspaces)}
+        return {k: kwargs[k] for k in set(kwargs) - set(kwspaces)}
 
     @staticmethod
     def _sample_space(trial, hp_name, hp_obj):

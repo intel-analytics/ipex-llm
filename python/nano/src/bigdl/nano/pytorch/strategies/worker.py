@@ -27,9 +27,14 @@ if __name__ == '__main__':
     process_idx = int(os.environ["PROCESS_IDX"])
 
     # set the same `multiprocessing.current_process().authkey` as the main process
-    # so that we can load the `args.pkl`
+    # so that we can load the `sys_path.pkl` and `args.pkl`
     authkey = bytes(os.environ['AUTHKEY'], encoding='utf-8')
     multiprocessing.current_process().authkey = authkey
+
+    # restore main process's sys.path to avoid potential bugs when loading `args.pkl`
+    # i.e. cannot find some modules located in main process's sys.path
+    with open(os.path.join(temp_dir, "sys_path.pkl"), "rb") as f:
+        sys.path = cloudpickle.load(f)
 
     with open(os.path.join(temp_dir, "args.pkl"), "rb") as f:
         (fn, args, error_queue) = cloudpickle.load(f)

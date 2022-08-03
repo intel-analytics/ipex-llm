@@ -30,6 +30,10 @@ object FLContext {
   var flClient: FLClient = null
   var sparkSession: SparkSession = null
 
+  def resetFLContext(): Unit = {
+    flClient = null
+  }
+
   def initFLContext(id: String, target: String = null): Unit = {
     createSparkSession()
     Engine.init

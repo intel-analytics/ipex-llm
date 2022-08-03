@@ -1,0 +1,72 @@
+name: Scala Style Check
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'scala/**'
+      - '.github/workflows/scala-style-check.yml'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'scala/**'
+      - '.github/workflows/scala-style-check.yml'
+  schedule:
+    - cron: '0 15 * * *'
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK 8
+      uses: actions/setup-java@v3
+      with:
+        java-version: '8'
+        distribution: 'temurin'
+        #server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
+        settings-path: ${{ github.workspace }} # location for the settings.xml file
+    #pls use cache only on github owned runners 
+    #- uses: actions/cache@v2
+       #with:
+        #path: ~/.m2/repository
+        #key: maven-${{ hashFiles('**/pom.xml') }}
+        #restore-keys: maven-
+
+    - name: Set up Maven
+      uses: stCarolas/setup-maven@v4.4
+      with:
+        maven-version: 3.8.2
+
+    - name: Set up Maven Settings
+      uses: s4u/maven-settings-action@v2.6.0
+      with:
+        sonatypeSnapshots: true
+        apacheSnapshots: true
+        servers: |
+          [{
+            "id": "central",
+            "configuration": {
+              "httpConfiguration": {
+                "all": {
+                  "connectionTimeout": "3600000",
+                  "readTimeout": "3600000"
+                  }
+                }
+              }
+          }]
+        mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${NEXUS_URL}" }]'
+
+
+    - name: Run tests
+      run: |
+          cd scala
+          mvn clean verify -DskipTests -U
+

@@ -6,7 +6,7 @@ We will briefly describe here the major features in BigDL-Nano for PyTorch train
 
 ### Best Known Configurations
 
-When you run `source bigdl-nano-init`, BigDL-Nano will export a few environment variables, such as OMP_NUM_THREADS and KMP_AFFINITY, according to your current hardware. Empirically, these environment variables work best for most PyTorch applications. After setting these environment variables, you can just run your applications as usual (`python app.py`) and no additional changes are required.
+When you run `source bigdl-nano-init`, BigDL-Nano will export a few environment variables, such as `OMP_NUM_THREADS` and `KMP_AFFINITY`, according to your current hardware. Empirically, these environment variables work best for most PyTorch applications. After setting these environment variables, you can just run your applications as usual (`python app.py`) and no additional changes are required.
 
 ### BigDL-Nano PyTorch Trainer
 
@@ -40,7 +40,7 @@ trainer.fit(lightning_module, train_loader)
 
 #### Intel® Extension for PyTorch
 
-Intel Extension for Pytorch (a.k.a. IPEX) [link](https://github.com/intel/intel-extension-for-pytorch) extends PyTorch with optimizations for an extra performance boost on Intel hardware. BigDL-Nano integrates IPEX through the `Trainer`. Users can turn on IPEX by setting `use_ipex=True`.
+[Intel Extension for PyTorch](https://github.com/intel/intel-extension-for-pytorch) (a.k.a. IPEX) extends PyTorch with optimizations for an extra performance boost on Intel hardware. BigDL-Nano integrates IPEX through the `Trainer`. Users can turn on IPEX by setting `use_ipex=True`.
 
 ```python
 from bigdl.nano.pytorch import Trainer
@@ -58,9 +58,41 @@ from bigdl.nano.pytorch import Trainer
 trainer = Trainer(max_epoch=10, num_processes=4)
 ```
 
-Note that the effective batch size multi-instance training is the `batch_size` in your `dataloader` times `num_processes` so the number of iterations of each epoch will be reduced `num_processes` fold. A common practice to compensate for that is to gradually increase the learning rate to `num_processes` times. You can find more details of this trick in the [Facebook paper](https://arxiv.org/abs/1706.02677).
+Note that the effective batch size in multi-instance training is the `batch_size` in your `dataloader` times `num_processes` so the number of iterations of each epoch will be reduced `num_processes` fold. A common practice to compensate for that is to gradually increase the learning rate to `num_processes` times. You can find more details of this trick in this [paper](https://arxiv.org/abs/1706.02677) published by Facebook.
 
-### Optimized Data pipeline
+### BigDL-Nano PyTorch TorchNano
+
+The `TorchNano` (`bigdl.nano.pytorch.TorchNano`) class is what we use to accelerate raw pytorch code. By using it, we only need to make very few changes to accelerate custom training loop. For example,
+
+```python
+from bigdl.nano.pytorch import TorchNano
+
+class MyNano(TorchNano) :
+    def train(self, ...):
+        # copy your train loop here and make a few changes
+
+MyNano().train(...)
+```
+
+- note: see [this tutorial](./pytorch_nano.html) for details about our `TorchNano`.
+
+Our `TorchNano` also integrates IPEX and distributed training optimizations. For example,
+
+```python
+from bigdl.nano.pytorch import TorchNano
+
+class MyNano(TorchNano):
+    def train(self, ...):
+        # define train loop
+
+# enable IPEX optimizaiton
+MyNano(use_ipex=True).train(...)
+
+# enable IPEX and distributed training, using subprocess strategy
+MyNano(use_ipex=True, num_processes=2, strategy="subprocess").train(...)
+```
+
+### Optimized Data Pipeline
 
 Computer Vision task often needs a data processing pipeline that sometimes constitutes a non-trivial part of the whole training pipeline. Leveraging OpenCV and libjpeg-turbo, BigDL-Nano can accelerate computer vision data pipelines by providing a drop-in replacement of torch_vision's `datasets` and `transforms`.
 

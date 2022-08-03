@@ -15,11 +15,18 @@
 #
 
 import warnings
+import logging
 # unset the KMP_INIT_AT_FORK
 # which will cause significant slow down in multiprocessing training
 import os
 os.unsetenv('KMP_INIT_AT_FORK')
 
+class Disablelogging:
+    def __enter__(self):
+        logging.disable(logging.CRITICAL)
+
+    def __exit__(self, *args, **opts):
+        logging.disable(logging.NOTSET)
 
 # dependencies check
 torch_available = False
@@ -40,7 +47,8 @@ try:
 except:
     warnings.warn("Please install `tensorflow>2.0.0` to use MTNetForecaster.")
 try:
-    import prophet
+    with Disablelogging():
+        import prophet
     prophet_available = True
 except:
     warnings.warn("Please install `prophet` to use ProphetForecaster.")

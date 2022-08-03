@@ -64,7 +64,7 @@ class CorrectnessSpec extends FlatSpec with Matchers {
   def getBase64FromPath(path: String): String = {
 
     val b = FileUtils.readFileToByteArray(new File(path))
-    val img = OpenCVMethod.fromImageBytes(b, Imgcodecs.IMREAD_UNCHANGED)
+    val img = OpenCVMethod.fromImageBytes(b, Imgcodecs.IMREAD_COLOR)
     Imgproc.resize(img, img, new Size(224, 224))
     val matOfByte = new MatOfByte()
     Imgcodecs.imencode(".jpg", img, matOfByte)
@@ -230,7 +230,7 @@ val helper = ClusterServing.helper
     }
     val acc = cN / tN
     logger.info(s"Top 1 Accuracy of serving, Openvino ResNet50 Model on ImageNet is ${acc}")
-    AssertUtils.conditionFailTest(acc > 0.71)
+    AssertUtils.conditionFailTest(acc > 0.70)
 
   }
 }

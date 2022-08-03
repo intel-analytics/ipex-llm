@@ -465,3 +465,30 @@ def check_col_exists(df, columns):
     if len(col_not_exist) > 0:
         invalidInputError(False,
                           str(col_not_exist) + " do not exist in this Table")
+
+
+def shards_pd_df_to_shards_dic(data, featureCols, labelCol):
+    """
+    This api is used to process SparkXShards of pandas dataframe to SparkXShards of
+    dictionary, x is feature, y is label
+    :param data: SparkXShards of pandas dataframe.
+    :param featureCols: a list of featurecols.
+    :param labelCol: single label col.
+    :return: SparkXShards of dictionary
+
+    eg:
+    shards: SparkXShards of pandas dataframe with 2 cols ['f1', 'lable'],
+    transform_shards = shards_pd_df_to_shards_dic(shards, featureCols=[''], labelCol='')
+
+    transform_shards will be SparkXShards of dictionary. x will be a stacked numpy array
+    (stack feature columns), y will be a numpy array
+    """
+    def to_shard_dict(df):
+        featureLists = [df[feature_col].to_numpy() for feature_col in featureCols]
+        result = {
+            "x": np.stack(featureLists, axis=1),
+            "y": df[labelCol].to_numpy().reshape((-1, 1))}
+        return result
+
+    data = data.transform_shard(to_shard_dict)
+    return data
