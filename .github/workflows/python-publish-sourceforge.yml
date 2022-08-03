@@ -77,7 +77,7 @@ jobs:
         export PYPI_VERSION=2.1.0
         nb_version=${PYPI_VERSION}b${TIMESTAMP}
         echo ${nb_version}
-
+        apt-get install sshpass
         ## linux ##
         bash python/dev/release_default_linux_spark246.sh ${nb_version} false false
  
