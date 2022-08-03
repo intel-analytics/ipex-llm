@@ -1,10 +1,10 @@
-# Privacy Preserving Machine Learning (PPML) on Azure User Guide
+# Privacy Preserving Machine Learning (PPML) on TDX Confidential Container Guide
 
 TDX-based Trusted Big Data ML allows the user to run end-to-end big data analytics application and BigDL model training with spark local and distributed cluster on Intel Trust Domain Extensions (Intel TDX).
 
-## Befor running the  code
+## Before running the code
 #### 1. Prepare the key
-The ppml in bigdl needs secured keys to enable spark security such as Authentication, RPC Encryption, Local Storage Encryption and TLS, you need to prepare the secure keys and keystores. In this tutorial, you can generate keys and keystores with root permission (test only, need input security password for keys).
+BigDL PPML needs secured keys to enable spark security such as Authentication, RPC Encryption, Local Storage Encryption and TLS. You need to prepare the secure keys and keystores. In this tutorial, you can generate keys and keystores with root permission (test only, need input security password for keys).
 
 ```bash
 git clone https://github.com/intel-analytics/BigDL.git
@@ -35,7 +35,7 @@ spark-submit-with-ppml.sh
 ## Run as Spark on Kubernetes Mode
 ### 1. Start the client container to run applications in spark K8s mode
 #### 1.1 Prepare the keys and password
-Please refer to the previous section about [prepare keys](#Prepare the key) and [prepare password](#Prepare the password).
+Please refer to the [previous section](#before-running-the-code) about preparing keys and password.
 
 ```bash
 bash ../../../scripts/generate-keys.sh
