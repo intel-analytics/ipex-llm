@@ -1,3 +1,5 @@
+package com.intel.analytics.bigdl.friesian;
+
 import com.intel.analytics.bigdl.friesian.nearline.recall.RecallInitializer;
 import com.intel.analytics.bigdl.friesian.nearline.utils.NearlineUtils;
 import com.intel.analytics.bigdl.friesian.serving.recall.IndexService;
@@ -18,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class RecallInitializerTest {
 
     @Test
-    void testInitialization() throws IOException, InterruptedException {
+    public void testInitialization() throws IOException, InterruptedException {
         String configPath = "/home/xingyuan/projects/serving/BigDL/scala/friesian/src/test/resources/nearlineConfig/config_recall.yaml";
         RecallInitializer.main(new String[]{"-c", configPath});
         // you can get initialDataPath file from friesian-serving.tar.gz

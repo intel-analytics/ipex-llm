@@ -1,3 +1,5 @@
+package com.intel.analytics.bigdl.friesian;
+
 import com.intel.analytics.bigdl.friesian.nearline.feature.FeatureInitializer;
 import com.intel.analytics.bigdl.friesian.nearline.utils.NearlineUtils;
 import com.intel.analytics.bigdl.friesian.serving.feature.utils.LettuceUtils;
@@ -24,7 +26,7 @@ public class FeatureInitializerTest {
         return JavaConverters.asScalaIteratorConverter(Arrays.asList(inputArray).iterator()).asScala().toSeq();
     }
 
-    String generateID(String keyPrefix, String ID) {
+    private String generateID(String keyPrefix, String ID) {
         String redisKeyPrefix = NearlineUtils.helper().redisKeyPrefix();
         RedisType redisType = NearlineUtils.helper().redisTypeEnum();
         int itemSlotType = NearlineUtils.helper().itemSlotType();
@@ -39,7 +41,7 @@ public class FeatureInitializerTest {
         }
     }
 
-    void checkRedisRecord(LettuceUtils redis, String keyPrefix, Dataset<Row> dataset) {
+    private void checkRedisRecord(LettuceUtils redis, String keyPrefix, Dataset<Row> dataset) {
         dataset.collectAsList().forEach((row) -> {
             Object[] rowData = (Object[]) EncodeUtils.bytesToObj(
                     Base64.getDecoder().decode(
@@ -52,7 +54,7 @@ public class FeatureInitializerTest {
     }
 
     @Test
-    void testInitialization() throws IOException, InterruptedException {
+    public void testInitialization() throws IOException, InterruptedException {
         String configPath = "/home/xingyuan/projects/serving/BigDL/scala/friesian/src/test/resources/nearlineConfig/config_feature_vec.yaml";
         FeatureInitializer.main(new String[]{"-c", configPath});
         // you can get initialDataPath file from friesian-serving.tar.gz
