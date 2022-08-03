@@ -17,7 +17,7 @@
 import importlib
 from bigdl.chronos.utils import LazyImport
 
-tf_spec = importlib.util.from_spec('tensorflow')
+tf_spec = importlib.util.find_spec('tensorflow')
 PREFIXPATH_TF2 = 'bigdl.chronos.forecaster.tf'
 if tf_spec:
     LSTMForecaster = LazyImport('..LSTMForecaster', pkg=PREFIXPATH_TF2+'.LSTMForecaster')
