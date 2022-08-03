@@ -55,6 +55,9 @@ python -m pytest -v test/bigdl/chronos/autots/test_autotsestimator.py::TestAutoT
                     test/bigdl/chronos/forecaster/test_tcn_forecaster.py::TestChronosModelTCNForecaster::test_tcn_forecaster_distributed \
                     test/bigdl/chronos/forecaster/test_tcn_forecaster.py::TestChronosModelTCNForecaster::test_tcn_forecaster_fit_loader \
                     test/bigdl/chronos/forecaster/test_tcn_forecaster.py::TestChronosModelTCNForecaster::test_forecaster_from_tsdataset_data_loader_onnx \
+                    test/bigdl/chronos/forecaster/test_tcn_forecaster.py::TestChronosModelTCNForecaster::test_tcn_forecaster_multi_objective_tune_acceleration \
+                    test/bigdl/chronos/forecaster/test_tcn_forecaster.py::TestChronosModelTCNForecaster::test_tcn_forecaster_mo_tune_acceleration_fit_input \
+                    test/bigdl/chronos/forecaster/test_tcn_forecaster.py::TestChronosModelTCNForecaster::test_tcn_forecaster_mo_tune_acceleration_fit \
                     test/bigdl/chronos/forecaster/test_nbeats_forecaster.py::TestChronosNBeatsForecaster::test_nbeats_forecaster_onnx_methods \
                     test/bigdl/chronos/forecaster/test_nbeats_forecaster.py::TestChronosNBeatsForecaster::test_nbeats_forecaster_quantization_onnx \
                     test/bigdl/chronos/forecaster/test_nbeats_forecaster.py::TestChronosNBeatsForecaster::test_nbeats_forecaster_quantization_onnx_tuning \

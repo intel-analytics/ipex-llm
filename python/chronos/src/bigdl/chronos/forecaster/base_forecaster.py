@@ -24,11 +24,8 @@ import warnings
 warnings.filterwarnings('ignore', category=UserWarning, module='pytorch_lightning')
 warnings.filterwarnings('ignore', category=UserWarning, module='torch')
 import torch
-import logging
 
-from functools import partial
 from torch.utils.data import TensorDataset, DataLoader
-from bigdl.nano.automl.hpo.space import Space
 from .utils_hpo import GenericLightningModule, _format_metric_str, _config_has_search_space
 from bigdl.nano.utils.log4Error import invalidOperationError, invalidInputError
 from bigdl.chronos.data.tsdataset import TSDataset
@@ -120,10 +117,13 @@ class BasePytorchForecaster(Forecaster):
              validation_data,
              target_metric,
              direction,
+             directions=None,
              n_trials=2,
              n_parallels=1,
              epochs=1,
              batch_size=32,
+             acceleration=False,
+             input_sample=None,
              **kwargs):
         """
         Search the hyper parameter.
@@ -141,6 +141,11 @@ class BasePytorchForecaster(Forecaster):
                For more information, refer to Nano AutoML user guide.
         :param epochs: the number of epochs to run in each trial fit, defaults to 1
         :param batch_size: number of batch size for each trial fit, defaults to 32
+        :param acceleration: Whether to automatically consider the model after
+            inference acceleration in the search process. It will only take
+            effect if target_metric contains "latency". Default value is False.
+        :param input_sample: A set of inputs for trace, defaults to None if you have
+            trace before or model is a LightningModule with any dataloader attached.
         """
         invalidInputError(not self.distributed,
                           "HPO is not supported in distributed mode."
@@ -164,6 +169,9 @@ class BasePytorchForecaster(Forecaster):
         else:
             invalidInputError(False, "HPO only supports numpy train input data.")
 
+        if input_sample is None:
+            input_sample = torch.from_numpy(data[0][:1, :, :])
+
         # prepare target metric
         if validation_data is not None:
             formated_target_metric = _format_metric_str('val', target_metric)
@@ -174,34 +182,37 @@ class BasePytorchForecaster(Forecaster):
         # build auto model
         self.tune_internal = self._build_automodel(data, validation_data, batch_size, epochs)
 
-        from pytorch_lightning.callbacks import Callback
-
-        # reset current epoch = 0 after each run
-        class ResetCallback(Callback):
-            def on_train_end(self, trainer, pl_module):
-                trainer.fit_loop.current_epoch = 0
-
         # shall we use the same trainier
         self.tune_trainer = Trainer(logger=False, max_epochs=epochs,
                                     checkpoint_callback=self.checkpoint_callback,
                                     num_processes=self.num_processes, use_ipex=self.use_ipex,
-                                    use_hpo=True,
-                                    callbacks=[ResetCallback()] if self.num_processes == 1
-                                    else None)
+                                    use_hpo=True)
+
         # run hyper parameter search
         self.internal = self.tune_trainer.search(
             self.tune_internal,
             n_trials=n_trials,
             target_metric=formated_target_metric,
             direction=direction,
+            directions=directions,
             n_parallels=n_parallels,
+            acceleration=acceleration,
+            input_sample=input_sample,
             **kwargs)
 
-        # reset train and validation datasets
-        self.tune_trainer.reset_train_val_dataloaders(self.internal)
+        if self.tune_trainer.hposearcher.objective.mo_hpo:
+            return self.internal
+        else:
+            # reset train and validation datasets
+            self.tune_trainer.reset_train_val_dataloaders(self.internal)
+
+    def search_summary(self):
+        # add tuning check
+        invalidOperationError(self.use_hpo, "No search summary when HPO is disabled.")
+        return self.trainer.search_summary()
 
     def fit(self, data, validation_data=None, epochs=1, batch_size=32, validation_mode='output',
-            earlystop_patience=1):
+            earlystop_patience=1, use_trial_id=None):
         # TODO: give an option to close validation during fit to save time.
         """
         Fit(Train) the forecaster.
@@ -267,6 +278,8 @@ class BasePytorchForecaster(Forecaster):
         :param earlystop_patience: Number of checks with no improvement after which training will
                be stopped. It takes effect when 'validation_mode' is 'earlystop'. Under the default
                configuration, one check happens after every training epoch.
+        :param use_trail_id: choose a internal according to trial_id, which is used only
+               in multi-objective search.
         :return: Validation loss if 'validation_data' is not None.
         """
         # input transform
@@ -350,6 +363,15 @@ class BasePytorchForecaster(Forecaster):
                               "safely import the main module. ",
                               fixMsg="you should use if __name__ == '__main__':, "
                               "otherwise performance will be degraded.")
+
+            # build internal according to use_trail_id for multi-objective HPO
+            if hasattr(self, "tune_trainer") and self.tune_trainer.hposearcher.objective.mo_hpo:
+                invalidOperationError(self.tune_trainer.hposearcher.study,
+                                      "You must tune before fit the model.")
+                invalidInputError(use_trial_id is not None,
+                                  "For multibojective HPO, you must specify a trial id for fit.")
+                trial = self.tune_trainer.hposearcher.study.trials[use_trial_id]
+                self.internal = self.tune_internal._model_build(trial)
 
             # fitting
             if not validation_data:
