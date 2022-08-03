@@ -167,6 +167,7 @@ class SparkTFEstimator():
             data_config=data_config
         )
 
+        # In this case, data partitions must be >= num_workers
         if isinstance(data, SparkXShards):
             # set train/validation data
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
@@ -183,7 +184,7 @@ class SparkTFEstimator():
 
                 rdd = data.rdd
                 if rdd.getNumPartitions() > self.num_workers:
-                    rdd = rdd.coalesce(self.num_workers)
+                    rdd = rdd.coalesce(self.num_workers)  # Use coalesce to avoid repartition
                 res = rdd.barrier().mapPartitions(
                     lambda iter: transform_func(iter, init_params, params)).collect()
             else:
@@ -288,7 +289,7 @@ class SparkTFEstimator():
             data_config=data_config,
         )
 
-        if isinstance(data, SparkXShards):  # In this case, data partitions must be >= num_workers
+        if isinstance(data, SparkXShards):
             # set train/validation data
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
@@ -300,7 +301,7 @@ class SparkTFEstimator():
 
             rdd = data.rdd
             if rdd.getNumPartitions() > self.num_workers:
-                rdd = rdd.coalesce(self.num_workers)  # Use coalesce to avoid repartition
+                rdd = rdd.coalesce(self.num_workers)
             res = rdd.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
         else:
