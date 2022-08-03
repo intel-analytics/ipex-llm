@@ -72,6 +72,11 @@ column = data_shard.get_schema()['columns']
 label_encoder = StringIndexer(inputCol=column[-1])
 data_shard = label_encoder.fit_transform(data_shard)
 
+def update_label_to_zero_base(df):
+    df['_c34'] = df['_c34'] - 1
+    return df
+data_shard = data_shard.transform_shard(update_label_to_zero_base)
+
 model = MLP(34)
 criterion = BCELoss()
 optimizer = SGD(model.parameters(), lr=0.01, momentum=0.9)
@@ -82,8 +87,8 @@ orca_estimator = Estimator.from_torch(model=model,
                                       metrics=[Accuracy()],
                                       backend="bigdl")
 
-data_shard = shards_pd_df_to_shards_dic(data_shard,
-                                        featureCols=list(column[:-1]),
-                                        labelCol=column[-1])
+data_shard = assembleFeatureLabelCols(data_shard,
+                                      featureCols=list(column[:-1]),
+                                      labelCols=[column[-1]])
 
-orca_estimator.fit(data=data_shard, epochs=8, batch_size=4)
+orca_estimator.fit(data=data_shard, epochs=100, batch_size=32)

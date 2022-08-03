@@ -75,6 +75,7 @@ def check_type_and_convert(data, allow_tuple=True, allow_list=True):
     :param allow_list: boolean, if the model accepts a list as input. Default: True
     :return:
     """
+
     def check_and_convert(convert_data):
         if isinstance(convert_data, np.ndarray):
             return [convert_data]
@@ -108,6 +109,7 @@ def get_spec(allow_tuple=True, allow_list=True):
     :param allow_list: boolean, if the model accepts a list as input. Default: True
     :return:
     """
+
     def _get_spec(data):
         data = check_type_and_convert(data, allow_tuple, allow_list)
         feature_spec = [(feat.dtype, feat.shape[1:])
@@ -118,6 +120,7 @@ def get_spec(allow_tuple=True, allow_list=True):
         else:
             label_spec = None
         return feature_spec, label_spec
+
     return _get_spec
 
 
@@ -128,6 +131,7 @@ def flatten_xy(allow_tuple=True, allow_list=True):
     :param allow_list: boolean, if the model accepts a list as input. Default: True
     :return:
     """
+
     def _flatten_xy(data):
         data = check_type_and_convert(data, allow_tuple, allow_list)
         features = data["x"]
@@ -143,6 +147,7 @@ def flatten_xy(allow_tuple=True, allow_list=True):
                 yield (fs, ls)
             else:
                 yield (fs,)
+
     return _flatten_xy
 
 
@@ -398,7 +403,6 @@ def spark_df_to_pd_sparkxshards(df, squeeze=False, index_col=None,
 
 def to_pandas(columns, squeeze=False, index_col=None, dtype=None, index_map=None,
               batch_size=None):
-
     def postprocess(pd_df):
         if dtype is not None:
             if isinstance(dtype, dict):
@@ -467,28 +471,52 @@ def check_col_exists(df, columns):
                           str(col_not_exist) + " do not exist in this Table")
 
 
-def shards_pd_df_to_shards_dic(data, featureCols, labelCol):
+def assembleFeatureLabelCols(data, featureCols, labelCols):
     """
-    This api is used to process SparkXShards of pandas dataframe to SparkXShards of
-    dictionary, x is feature, y is label
-    :param data: SparkXShards of pandas dataframe.
-    :param featureCols: a list of featurecols.
-    :param labelCol: single label col.
-    :return: SparkXShards of dictionary
+    The api is used to merge/convert one or multiple feature columns into a numpy array,
+     merge/convert one or multiple label columns into a numpy array.
+    :param data: SparkXShards of pandas data frame.
+    :param featureCols: a list of feature columns.
+    :param labelCols: a list of label columns.
+    :return: SparkXShards of dictionary, key is assembled feature numpy array, value is
+     assembled lable numpy array
 
     eg:
-    shards: SparkXShards of pandas dataframe with 2 cols ['f1', 'lable'],
-    transform_shards = shards_pd_df_to_shards_dic(shards, featureCols=[''], labelCol='')
+    shards: SparkXShards of pandas data frame with 9 cols ['f1', 'f2', 'f3', 'f4', 'f5', 'f6',
+     'f7', 'f8', 'lable']
+        f1   f2  f3  f4   f5    f6     f7  f8  label
+         6  148  72  35    0  33.6  0.627  50      1
+         1   85  66  29    0  26.6  0.351  31      0
+         8  183  64   0    0  23.3  0.672  32      1
+         1   89  66  23   94  28.1  0.167  21      0
+         0  137  40  35  168  43.1  2.288  33      1
 
-    transform_shards will be SparkXShards of dictionary. x will be a stacked numpy array
-    (stack feature columns), y will be a numpy array
+    transform_shards =
+      assembleFeatureLabelCols(shards, featureCols=['f1', 'f2', 'f3', 'f4', 'f5', 'f6',
+       'f7', 'f8'], labelCols=['label'])
+
+    transform_shards will be SparkXShards of dictionary. key will be a stacked numpy array
+    (stack feature columns), value will be a numpy array
+    {'x': array([[  6.   , 148.   ,  72.   , ...,  33.6  ,   0.627,  50.   ],
+       [  1.   ,  85.   ,  66.   , ...,  26.6  ,   0.351,  31.   ],
+       [  8.   , 183.   ,  64.   , ...,  23.3  ,   0.672,  32.   ],
+       [  1.   , 89.   ,  66.   , ...,  28.1  ,   0.167,  21.   ],
+       [  0.   , 137.   ,  40.   , ...,  43.1  ,  2.288, 33.   ]]), 'y': array([[1],
+       [0],
+       [1],
+       [0],
+       [1]
     """
+
     def to_shard_dict(df):
         featureLists = [df[feature_col].to_numpy() for feature_col in featureCols]
+        labelLists = [df[label_col].to_numpy() for label_col in labelCols]
         result = {
             "x": np.stack(featureLists, axis=1),
-            "y": df[labelCol].to_numpy().reshape((-1, 1))}
+            "y": np.stack(labelLists, axis=1)}
         return result
 
+    invalidInputError(type(featureCols) == list, "expect featureCols is a list")
+    invalidInputError(type(labelCols) == list, "expect labelCols is a list")
     data = data.transform_shard(to_shard_dict)
     return data

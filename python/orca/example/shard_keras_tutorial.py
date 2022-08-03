@@ -37,10 +37,10 @@ model.add(Dense(1, activation='sigmoid'))
 # compile the keras model
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-data_shard = shards_pd_df_to_shards_dic(data_shard,
-                                        featureCols=['f1', 'f2', 'f3',
-                                                     'f4', 'f5', 'f6', 'f7', 'f8'],
-                                        labelCol='label')
+data_shard = assembleFeatureLabelCols(data_shard,
+                                      featureCols=['f1', 'f2', 'f3',
+                                                   'f4', 'f5', 'f6', 'f7', 'f8'],
+                                      labelCols=['label'])
 
 est = Estimator.from_keras(keras_model=model)
 est.fit(data=data_shard,
