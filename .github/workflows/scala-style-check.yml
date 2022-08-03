@@ -3,6 +3,9 @@ name: Scala Style Check
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'scala/**'
+      - '.github/workflows/scala-style-check.yml'
   pull_request:
     branches: [ "main" ]
     paths:

@@ -16,7 +16,7 @@
 import copy
 from logging import warning
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Union
 import pytorch_lightning as pl
 import torch
 from torch import nn
@@ -62,6 +62,7 @@ class Trainer(pl.Trainer):
                  cpu_for_each_process: Optional[List[List[int]]] = None,
                  use_hpo=False,
                  channels_last: bool = False,
+                 auto_lr: Union[int, bool] = True,
                  *args: Any, **kwargs: Any) -> None:
         """
         A pytorch lightning trainer that uses bigdl-nano optimization.
@@ -131,18 +132,21 @@ class Trainer(pl.Trainer):
                 strategy = DDPSpawnStrategy(num_processes=num_processes,
                                             cpu_for_each_process=cpu_for_each_process,
                                             use_ipex=self.use_ipex,
-                                            enable_bf16=enable_bf16)
+                                            enable_bf16=enable_bf16,
+                                            auto_lr=auto_lr)
             elif distributed_backend == "subprocess":
                 from bigdl.nano.pytorch.strategies import DDPSubprocessStrategy
                 strategy = DDPSubprocessStrategy(num_processes=num_processes,
                                                  cpu_for_each_process=cpu_for_each_process,
                                                  use_ipex=self.use_ipex,
-                                                 enable_bf16=enable_bf16)
+                                                 enable_bf16=enable_bf16,
+                                                 auto_lr=auto_lr)
             elif distributed_backend == "ray":
                 from bigdl.nano.pytorch.strategies import create_RayStrategy
                 strategy = create_RayStrategy(num_workers=num_processes,
                                               use_ipex=self.use_ipex,
-                                              enable_bf16=enable_bf16)
+                                              enable_bf16=enable_bf16,
+                                              auto_lr=auto_lr)
             kwargs["strategy"] = strategy
             super().__init__(*args, **kwargs)
 
@@ -203,6 +207,8 @@ class Trainer(pl.Trainer):
                resume: bool = False,
                target_metric=None,
                n_parallels=1,
+               acceleration=False,
+               input_sample=None,
                **kwargs):
         """
         Run HPO search. It will be called in Trainer.search().
@@ -213,6 +219,11 @@ class Trainer(pl.Trainer):
         :param target_metric: the object metric to optimize,
             defaults to None.
         :param n_parallels: the number of parallel processes for running trials.
+        :param acceleration: Whether to automatically consider the model after
+            inference acceleration in the search process. It will only take
+            effect if target_metric contains "latency". Default value is False.
+        :param input_sample: A set of inputs for trace, defaults to None if you have
+            trace before or model is a LightningModule with any dataloader attached.
         :return: the model with study meta info attached.
         """
         if not check_hpo_status(self.hposearcher):
@@ -223,6 +234,8 @@ class Trainer(pl.Trainer):
                                        resume=resume,
                                        target_metric=target_metric,
                                        n_parallels=n_parallels,
+                                       acceleration=acceleration,
+                                       input_sample=input_sample,
                                        **kwargs)
 
     def search_summary(self):

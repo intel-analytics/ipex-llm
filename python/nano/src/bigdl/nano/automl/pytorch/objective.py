@@ -14,8 +14,8 @@
 # limitations under the License.
 #
 
-import collections
-from typing import Any, Dict, Optional, Union
+from collections import namedtuple
+from typing import Optional, Tuple, Union
 
 import pytorch_lightning as pl
 
@@ -23,14 +23,13 @@ from pytorch_lightning.utilities.exceptions import MisconfigurationException
 from pytorch_lightning.utilities.types import EVAL_DATALOADERS, TRAIN_DATALOADERS
 from pytorch_lightning.utilities import rank_zero_deprecation
 from pytorch_lightning.core.datamodule import LightningDataModule
-from pytorch_lightning.callbacks import Callback
 
+from bigdl.nano.pytorch.trainer import Trainer
 from bigdl.nano.automl.hpo.backend import create_pl_pruning_callback
 from bigdl.nano.utils.log4Error import invalidInputError
+from ._helper import LatencyCallback, _remove_metric_prefix
 import inspect
 import copy
-import time
-import torch
 
 
 def _is_creator(model):
@@ -45,6 +44,8 @@ class Objective(object):
                  model=None,
                  target_metric=None,
                  pruning=False,
+                 acceleration=False,
+                 input_sample=None,
                  **fit_kwargs):
         """
         Init the objective.
@@ -56,61 +57,25 @@ class Objective(object):
             Defaults to None.
         :param: pruning: bool (optional): whether to enable pruning.
             Defaults to False.
+        :param acceleration: Whether to automatically consider the model after
+            inference acceleration in the search process. It will only take
+            effect if target_metric contains "latency". Default value is False.
         throw: ValueError: _description_
         """
         self.searcher = searcher
         self.model_ = model
         self.target_metric = target_metric
-        self.mo_hpo = isinstance(self.target_metric, list) and len(self.target_metric) > 1
+        self.mo_hpo = isinstance(target_metric, (list, tuple)) \
+            and len(self.target_metric) > 1
         # add automatic support for latency
         if self.mo_hpo and "latency" in self.target_metric:
-            from torchmetrics import Metric
-
-            class LatencyAggregate(Metric):
-                def __init__(self):
-                    super().__init__(compute_on_step=False)
-                    self.add_state("times", default=[])
-
-                def update(self, latency):
-                    self.times.append(torch.Tensor([latency * 1000]).double())
-
-                def compute(self):
-                    # achieve the core logic of how to average latency
-                    self.times.sort()
-                    count = len(self.times)
-                    if count >= 3:
-                        threshold = max(int(0.1 * count), 1)
-                        infer_times_mid = self.times[threshold:-threshold]
-                    else:
-                        infer_times_mid = self.times[:]
-                    latency = sum(infer_times_mid) / len(infer_times_mid)
-                    return latency
-
-            class LatencyCallback(Callback):
-                def __init__(self) -> None:
-                    super().__init__()
-                    self.time_avg = LatencyAggregate()
-
-                def on_validation_start(self, trainer, pl_module) -> None:
-                    super().on_validation_start(trainer, pl_module)
-                    if not hasattr(pl_module, "time_avg"):
-                        pl_module.time_avg = self.time_avg
-
-                def on_validation_epoch_end(self, trainer, pl_module) -> None:
-                    pl_module.log('latency', pl_module.time_avg)
-
-                def on_validation_batch_start(self, trainer, pl_module, batch: Any,
-                                              batch_idx: int, dataloader_idx: int) -> None:
-                    self.batch_latency = time.perf_counter()
-
-                def on_validation_batch_end(self, trainer, pl_module, outputs, batch: Any,
-                                            batch_idx: int, dataloader_idx: int) -> None:
-                    batch_latency = time.perf_counter() - self.batch_latency
-                    pl_module.time_avg(batch_latency)
-
             callbacks = self.searcher.trainer.callbacks or []
             callbacks.append(LatencyCallback())
             self.searcher.trainer.callbacks = callbacks
+            self.acceleration = acceleration
+            self.input_sample = input_sample
+        else:
+            self.acceleration = False
 
         self.pruning = pruning
         self.fit_kwargs = fit_kwargs
@@ -171,6 +136,57 @@ class Objective(object):
                               "or `val_dataloaders` to `trainer.search(datamodule=...)`")
         return train_dataloaders, val_dataloaders, datamodule
 
+    def _auto_acceleration(self, model, scores):
+        # for compatibility with metric of Chronos, remove the prefix before '/'
+        format_target_metric = _remove_metric_prefix(self.target_metric)
+        Score = namedtuple("Score", format_target_metric)
+        best_score = Score(*scores)
+        optim_model_type = "original"
+        model.eval()
+
+        # here we suppose nn.model is attached to plmodel by attribute "model"
+        original_model = model.model
+        # may define a default_range later
+        for optimization in ['openvino', 'onnxruntime', 'jit']:
+            # may enable more optimizations later
+            try:
+                if optimization == 'jit':
+                    optim_model = Trainer.trace(original_model, input_sample=self.input_sample,
+                                                accelerator=optimization,
+                                                use_ipex=True, channels_last=False)
+                else:
+                    optim_model = Trainer.trace(original_model, input_sample=self.input_sample,
+                                                accelerator=optimization)
+            except Exception:
+                # some optimizations may fail, just skip and try next
+                continue
+            model.model = optim_model
+            model.forward_args = optim_model.forward_args
+            self.searcher._validate(model, self.val_dataloaders)
+            optim_score = []
+            for metric in self.target_metric:
+                score = self.searcher.trainer.callback_metrics[metric].item()
+                optim_score.append(score)
+            optim_score = Score(*optim_score)
+            # Here, we use usable to represent whether the optimized model can get smaller latency
+            # with other performance indicators basically unchanged
+            usable = True
+            for metric in format_target_metric:
+                if metric != "latency":
+                    if abs(getattr(optim_score, metric) - getattr(best_score, metric)) >= \
+                            0.01 * getattr(best_score, metric):
+                        usable = False
+                        break
+                else:
+                    if optim_score.latency > best_score.latency:
+                        usable = False
+                        break
+            if usable:
+                best_score = optim_score
+                optim_model_type = optimization
+        scores = tuple(best_score)
+        return scores, optim_model_type
+
     def __call__(self, trial):
         """
         Execute Training and return target metric in each trial.
@@ -178,12 +194,6 @@ class Objective(object):
         :param: trial: a trial object which provides the hyperparameter combinition.
         :return: the target metric value.
         """
-        # fit
-        # hyperparameters = dict(n_layers=n_layers, dropout=dropout, output_dims=output_dims)
-        # trainer.logger.log_hyperparams(hyperparameters)
-        # trainer.fit(self.model, datamodule=datamodule)
-        # return trainer.callback_metrics["val_acc"].item()
-
         if _is_creator(self.model):
             model = self.model(trial)
         else:
@@ -195,12 +205,15 @@ class Objective(object):
         self.searcher._run(model)
         if self.mo_hpo:
             scores = []
-            # print(self.searcher.trainer.callback_metrics)
             for metric in self.target_metric:
                 score = self.searcher.trainer.callback_metrics[metric].item()
                 scores.append(score)
         else:
             scores = self.searcher.trainer.callback_metrics[self.target_metric].item()
+        if self.acceleration:
+            scores, optimization = self._auto_acceleration(model, scores)
+            # via user_attr returns the choosed optimization corresponding
+            # to the minimum latency
+            trial.set_user_attr("optimization", optimization)
         self._post_train(model)
-
         return scores

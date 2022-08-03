@@ -26,6 +26,7 @@
         <core.scope>compile</core.scope>
         <serving.scope>compile</serving.scope>
         <spark-scope>provided</spark-scope>
+        <jersey.version>2.36</jersey.version>
         <bigdl.basedir>${project.parent.basedir}</bigdl.basedir>
     </properties>
 
@@ -42,6 +43,18 @@
             </snapshots>
         </repository>
     </repositories>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.glassfish.jersey</groupId>
+                <artifactId>jersey-bom</artifactId>
+                <version>${jersey.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
@@ -265,7 +278,16 @@
             <version>${grpc.version}</version>
             <scope>${serving.scope}</scope>
         </dependency>
-
+        <dependency>
+            <groupId>org.glassfish.jersey.containers</groupId>
+            <artifactId>jersey-container-grizzly2-http</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-hk2</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>
