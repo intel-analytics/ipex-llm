@@ -58,6 +58,11 @@ class IPEXJITModel:
             self.model = torch.jit.trace(self.model, input_sample)
             self.model = torch.jit.freeze(self.model)
 
+    @property
+    def forward_args(self):
+        return [input_value.debugName() for input_value in self.model.graph.inputs()
+                if not input_value.debugName().startswith('self')]
+
     def forward_step(self, *inputs):
         if self.channels_last:
             inputs = tuple(map(lambda x: x.to(memory_format=torch.channels_last), inputs))
@@ -91,7 +96,9 @@ class PytorchIPEXJITModel(IPEXJITModel, AcceleratedLightningModule):
         '''
         AcceleratedLightningModule.__init__(self, None)
         IPEXJITModel.__init__(self, model, input_sample=input_sample,
-                              use_ipex=use_ipex, use_jit=use_jit, from_load=from_load)
+                              use_ipex=use_ipex, use_jit=use_jit,
+                              channels_last=channels_last,
+                              from_load=from_load)
 
     def on_forward_start(self, inputs):
         return inputs
