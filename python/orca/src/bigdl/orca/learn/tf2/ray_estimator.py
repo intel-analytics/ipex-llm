@@ -568,7 +568,10 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             finally:
                 shutil.rmtree(temp_dir)
 
-    def load(self, filepath, custom_objects=None, compile=True):
+    def load(self,
+             filepath,
+             custom_objects=None,
+             compile=True):
         """
         Loads a model saved via `estimator.save()
 
