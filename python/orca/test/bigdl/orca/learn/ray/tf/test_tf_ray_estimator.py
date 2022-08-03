@@ -610,37 +610,11 @@ class TestTFRayEstimator(TestCase):
             os.remove("/tmp/cifar10_keras.ckpt")
     
     def test_save_and_load_h5(self):
-        def model_creator(config):
-            import tensorflow as tf
-            model = tf.keras.Sequential([
-                tf.keras.layers.Conv2D(64, kernel_size=(3, 3), strides=(1, 1), activation='relu',
-                                       padding='valid'),
-                tf.keras.layers.BatchNormalization(),
-                tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid'),
-                tf.keras.layers.Conv2D(64, kernel_size=(3, 3), strides=(1, 1), activation='relu',
-                                       padding='valid'),
-                tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid'),
-                tf.keras.layers.Flatten(),
-                tf.keras.layers.Dense(10, activation='softmax')]
-            )
-            model.compile(optimizer=tf.keras.optimizers.RMSprop(),
-                          loss='sparse_categorical_crossentropy',
-                          metrics=['accuracy'])
-            return model
-
-        def train_data_creator(config, batch_size):
-            dataset = tf.data.Dataset.from_tensor_slices((np.random.randn(100, 28, 28, 3),
-                                                          np.random.randint(0, 10, (100, 1))))
-            dataset = dataset.repeat()
-            dataset = dataset.shuffle(1000)
-            dataset = dataset.batch(batch_size)
-            return dataset
-
         batch_size = 320
         try:
             est = Estimator.from_keras(model_creator=model_creator, workers_per_node=2)
 
-            history = est.fit(train_data_creator,
+            history = est.fit(create_train_datasets,
                               epochs=1,
                               batch_size=batch_size,
                               steps_per_epoch=5)
@@ -652,37 +626,11 @@ class TestTFRayEstimator(TestCase):
             os.remove("/tmp/cifar10_keras.h5")
 
     def test_save_and_load_tf(self):
-        def model_creator(config):
-            import tensorflow as tf
-            model = tf.keras.Sequential([
-                tf.keras.layers.Conv2D(64, kernel_size=(3, 3), strides=(1, 1), activation='relu',
-                                       padding='valid'),
-                tf.keras.layers.BatchNormalization(),
-                tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid'),
-                tf.keras.layers.Conv2D(64, kernel_size=(3, 3), strides=(1, 1), activation='relu',
-                                       padding='valid'),
-                tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid'),
-                tf.keras.layers.Flatten(),
-                tf.keras.layers.Dense(10, activation='softmax')]
-            )
-            model.compile(optimizer=tf.keras.optimizers.RMSprop(),
-                          loss='sparse_categorical_crossentropy',
-                          metrics=['accuracy'])
-            return model
-
-        def train_data_creator(config, batch_size):
-            dataset = tf.data.Dataset.from_tensor_slices((np.random.randn(100, 28, 28, 3),
-                                                          np.random.randint(0, 10, (100, 1))))
-            dataset = dataset.repeat()
-            dataset = dataset.shuffle(1000)
-            dataset = dataset.batch(batch_size)
-            return dataset
-
         batch_size = 320
         try:
             est = Estimator.from_keras(model_creator=model_creator, workers_per_node=2)
 
-            history = est.fit(train_data_creator,
+            history = est.fit(create_train_datasets,
                               epochs=1,
                               batch_size=batch_size,
                               steps_per_epoch=5)
