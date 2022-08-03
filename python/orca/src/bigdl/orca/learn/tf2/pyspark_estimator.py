@@ -181,7 +181,10 @@ class SparkTFEstimator():
                     param["data_creator"] = make_data_creator(partition_data)
                     return SparkRunner(**init_param).step(**param)
 
-                res = data.rdd.barrier().mapPartitions(
+                rdd = data.rdd
+                if rdd.getNumPartitions() > self.num_workers:
+                    rdd = rdd.coalesce(self.num_workers)
+                res = rdd.barrier().mapPartitions(
                     lambda iter: transform_func(iter, init_params, params)).collect()
             else:
                 def transform_func(iter, init_param, param):
@@ -194,7 +197,10 @@ class SparkTFEstimator():
 
                 train_rdd = data.rdd.mapPartitions(lambda iter: [list(iter)])
                 val_rdd = validation_data.rdd.mapPartitions(lambda iter: [list(iter)])
-                res = train_rdd.zip(val_rdd).barrier().mapPartitions(
+                zip_rdd = train_rdd.zip(val_rdd)
+                if zip_rdd.getNumPartitions() > self.num_workers:
+                    zip_rdd = zip_rdd.coalesce(self.num_workers)
+                res = zip_rdd.barrier().mapPartitions(
                     lambda iter: transform_func(iter, init_params, params)).collect()
         else:
             params["data_creator"] = data
@@ -292,7 +298,10 @@ class SparkTFEstimator():
                 param["data_creator"] = make_data_creator(partition_data)
                 return SparkRunner(**init_param).validate(**param)
 
-            res = data.rdd.barrier().mapPartitions(
+            rdd = data.rdd
+            if rdd.getNumPartitions() > self.num_workers:
+                rdd = rdd.coalesce(self.num_workers)
+            res = rdd.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
         else:
             params["data_creator"] = data
