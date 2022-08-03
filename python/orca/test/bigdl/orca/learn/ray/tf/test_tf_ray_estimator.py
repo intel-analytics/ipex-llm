@@ -639,7 +639,7 @@ class TestTFRayEstimator(TestCase):
             est.load("/tmp/cifar10_model")
             print("save success")
         finally:
-            os.remove("/tmp/cifar10_model")
+            shutil.rmtree("/tmp/cifar10_model")
 
     def test_string_input(self):
 
