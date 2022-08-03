@@ -56,7 +56,7 @@ public class HashingUtils {
     public static List<String> parallelToSHAHexString(
             List<String> ids,
             String salt) throws InterruptedException, ExecutionException {
-        return parallelToSHAHexString(ids, salt, 256, 32);
+        return parallelToSHAHexString(ids, salt, 384, 32);
     }
 
     public static List<String> parallelToSHAHexString(
@@ -73,7 +73,7 @@ public class HashingUtils {
     public static String[] parallelToSHAHexString(
             String[] ids,
             String salt) throws InterruptedException, ExecutionException {
-        return parallelToSHAHexString(ids, salt, 256, 32);
+        return parallelToSHAHexString(ids, salt, 384, 32);
     }
 
     public static String[] parallelToSHAHexString(
@@ -114,7 +114,7 @@ public class HashingUtils {
                 int start,
                 int length,
                 String[] dest) {
-            this(src, start, length, dest, "", 256, 32);
+            this(src, start, length, dest, "", 384, 32);
         }
 
         public StringToSHAHex(
@@ -163,7 +163,7 @@ public class HashingUtils {
     }
 
     public static byte[] getSHA(String input) throws NoSuchAlgorithmException {
-        return getSHA(input, 256);
+        return getSHA(input, 384);
     }
 
     public static byte[] int2Bytes(int value) {

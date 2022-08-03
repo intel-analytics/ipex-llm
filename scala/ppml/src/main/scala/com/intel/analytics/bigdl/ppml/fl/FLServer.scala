@@ -58,17 +58,19 @@ class FLServer private[ppml](val _args: Array[String] = null) extends GrpcServer
   override def parseConfig(): Unit = {
     val flHelper = getConfigFromYaml(classOf[FLHelper], configPath)
     // overwrite the current config if there exists in config file
+    val fgBoostConfig = new FLConfig()
     if (flHelper != null) {
       port = flHelper.serverPort
       clientNum = flHelper.clientNum
       certChainFilePath = flHelper.certChainFilePath
       privateKeyFilePath = flHelper.privateKeyFilePath
+      fgBoostConfig.setModelPath(flHelper.fgBoostServerModelPath)
     }
 
     // start all services without providing service list
     // start all services without providing service list
     serverServices.add(new PSIServiceImpl(clientNum))
     serverServices.add(new NNServiceImpl(clientNum))
-    serverServices.add(new FGBoostServiceImpl(clientNum))
+    serverServices.add(new FGBoostServiceImpl(clientNum, fgBoostConfig))
   }
 }

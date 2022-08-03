@@ -19,18 +19,10 @@ package com.intel.analytics.bigdl.friesian.serving.recommender;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.protobuf.Empty;
-import com.intel.analytics.bigdl.dllib.utils.Table;
-import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureGrpc;
-import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features;
-import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs;
-import com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingGrpc;
-import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallGrpc;
-import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderGrpc;
+import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.*;
 import com.intel.analytics.bigdl.friesian.serving.utils.Utils;
-import com.intel.analytics.bigdl.friesian.serving.utils.recommender.RecommenderUtils;
-import com.intel.analytics.bigdl.grpc.JacksonJsonSerializer;
 import com.intel.analytics.bigdl.grpc.GrpcServerBase;
 import io.grpc.*;
 import io.grpc.services.HealthStatusManager;
@@ -43,7 +35,6 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
-import scala.Tuple2;
 import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics;
 import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics$;
 import com.intel.analytics.bigdl.friesian.serving.utils.gRPCHelper;
@@ -103,31 +94,12 @@ public class RecommenderServer extends GrpcServerBase {
     }
 
     private static class RecommenderService extends RecommenderGrpc.RecommenderImplBase {
+        private RecommenderImpl impl;
         private MetricRegistry metrics = new MetricRegistry();
-        private RecallGrpc.RecallBlockingStub recallStub;
-        private FeatureGrpc.FeatureBlockingStub featureStub;
-        private RankingGrpc.RankingBlockingStub rankingStub;
-        Timer overallTimer = metrics.timer("recommend.overall");
-        Timer recallTimer = metrics.timer("recommend.recall");
-        Timer itemFeatureTimer = metrics.timer("recommend.feature.item");
-        Timer userFeatureTimer = metrics.timer("recommend.feature.user");
-        Timer preprocessTimer = metrics.timer("recommend.preprocess");
-        Timer rankingInferenceTimer = metrics.timer("recommend.rankingInference");
-        Timer topKTimer = metrics.timer("recommend.topK");
+        Timer overallTimer = metrics.timer("recommend.grpc.overall");
 
         RecommenderService() {
-            ManagedChannel recallChannel =
-                    ManagedChannelBuilder.forTarget(Utils.helper().getRecallServiceURL())
-                            .usePlaintext().build();
-            ManagedChannel featureChannel =
-                    ManagedChannelBuilder.forTarget(Utils.helper().getFeatureServiceURL())
-                            .usePlaintext().build();
-            ManagedChannel rankingChannel =
-                    ManagedChannelBuilder.forTarget(Utils.helper().getRankingServiceURL())
-                            .usePlaintext().build();
-            recallStub = RecallGrpc.newBlockingStub(recallChannel);
-            featureStub = FeatureGrpc.newBlockingStub(featureChannel);
-            rankingStub = RankingGrpc.newBlockingStub(rankingChannel);
+            impl = RecommenderImpl.getInstance();
         }
 
         @Override
@@ -144,59 +116,20 @@ public class RecommenderServer extends GrpcServerBase {
                 return;
             }
             for (Integer id: ids) {
-                RecallProto.Candidates candidates;
-                try {
-                    candidates = this.searchCandidates(id, canK);
-                } catch (StatusRuntimeException e) {
-                    responseObserver.onError(Status.UNAVAILABLE.withDescription("recall " +
-                            "service unavailable: " + e.getMessage()).asRuntimeException());
-                    return;
+                IDProbList candidates = impl.getRecommendIDs(id, canK, k);
+                if (candidates.isSuccess()) {
+                    RecommenderProto.IDProbs.Builder idProbBuilder =
+                            RecommenderProto.IDProbs.newBuilder();
+                    int[] topKIDs = candidates.getIds();
+                    float[] topKProbs = candidates.getProbs();
+                    for (int i = 0; i < topKIDs.length; i ++) {
+                        idProbBuilder.addID(topKIDs[i]);
+                        idProbBuilder.addProb(topKProbs[i]);
+                    }
+                    resultBuilder.addIDProbList(idProbBuilder.build());
+                } else{
+                    responseObserver.onError(candidates.getgRPCException());
                 }
-
-                Features userFeature;
-                try {
-                    userFeature = this.getUserFeature(id);
-                } catch (StatusRuntimeException e) {
-                    responseObserver.onError(Status.UNAVAILABLE.withDescription("feature " +
-                            "service unavailable: " + e.getMessage()).asRuntimeException());
-                    return;
-                }
-
-                Features itemFeature;
-                try {
-                    itemFeature = this.getItemFeatures(candidates);
-                } catch (StatusRuntimeException e) {
-                    e.printStackTrace();
-                    logger.warn("FeatureService unavailable: "+ e.getMessage());
-                    responseObserver.onError(Status.UNAVAILABLE.withDescription("feature " +
-                            "service unavailable: " + e.getMessage()).asRuntimeException());
-                    return;
-                }
-
-                Tuple2<int[], Table[]> itemInputTuple;
-                try {
-                    itemInputTuple = this.buildRankingInput(userFeature, itemFeature);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    logger.warn("FeaturesToRankingInputSet: "+ e.getMessage());
-                    responseObserver.onError(Status.FAILED_PRECONDITION
-                            .withDescription(e.getMessage()).asRuntimeException());
-                    return;
-                }
-
-                IDProbs idProb;
-                try {
-                    idProb = this.inferenceAndRanking(itemInputTuple, k);
-                } catch (StatusRuntimeException e) {
-                    responseObserver.onError(Status.UNAVAILABLE.withDescription("ranking " +
-                            "service unavailable: " + e.getMessage()).asRuntimeException());
-                    return;
-                } catch (Exception e) {
-                    responseObserver.onError(Status.UNAVAILABLE.withDescription(e.getMessage())
-                            .asRuntimeException());
-                    return;
-                }
-                resultBuilder.addIDProbList(idProb);
             }
             overallContext.stop();
             responseObserver.onNext(resultBuilder.build());
@@ -206,129 +139,23 @@ public class RecommenderServer extends GrpcServerBase {
         @Override
         public void getMetrics(Empty request,
                                StreamObserver<ServerMessage> responseObserver) {
-            responseObserver.onNext(getMetrics());
-            responseObserver.onCompleted();
-        }
-
-        private RecallProto.Candidates searchCandidates(Integer id, int canK) {
-            Timer.Context recallContext = recallTimer.time();
-            RecallProto.Query query = RecallProto.Query.newBuilder().setUserID(id).setK(canK).build();
-            RecallProto.Candidates candidates;
-            try {
-                candidates = recallStub.searchCandidates(query);
-            } catch (StatusRuntimeException e) {
-                e.printStackTrace();
-                logger.warn("Recall unavailable: "+ e.getMessage());
-                throw e;
-            }
-            recallContext.stop();
-            return candidates;
-        }
-
-        private Features getUserFeature(Integer id) {
-            Timer.Context userFeatureContext = userFeatureTimer.time();
-            IDs userIds = IDs.newBuilder().addID(id).build();
-            Features userFeature;
-            try {
-                userFeature = featureStub.getUserFeatures(userIds);
-            } catch (StatusRuntimeException e) {
-                e.printStackTrace();
-                logger.warn("FeatureService unavailable: "+ e.getMessage());
-                throw e;
-            }
-            userFeatureContext.stop();
-            return userFeature;
-        }
-
-        private Features getItemFeatures(RecallProto.Candidates candidates) {
-            Timer.Context itemFeatureContext = itemFeatureTimer.time();
-            IDs.Builder itemIDsBuilder = IDs.newBuilder();
-            for (Integer itemId: candidates.getCandidateList()) {
-                itemIDsBuilder.addID(itemId);
-            }
-            IDs itemIDs = itemIDsBuilder.build();
-            Features itemFeature;
-            try {
-                itemFeature = featureStub.getItemFeatures(itemIDs);
-            } catch (StatusRuntimeException e) {
-                e.printStackTrace();
-                logger.warn("FeatureService unavailable: "+ e.getMessage());
-                throw e;
-            }
-            itemFeatureContext.stop();
-            return itemFeature;
-        }
-
-        private Tuple2<int[], Table[]> buildRankingInput(Features userFeature, Features itemFeature) {
-            Timer.Context preprocessContext = preprocessTimer.time();
-            Tuple2<int[], Table[]> itemInputTuple;
-            try {
-                itemInputTuple = RecommenderUtils.featuresToRankingInputSet(userFeature,
-                        itemFeature, Utils.helper().getInferenceBatch());
-            } catch (Exception e) {
-                e.printStackTrace();
-                logger.warn("FeaturesToRankingInputSet: "+ e.getMessage());
-                throw e;
-            }
-            preprocessContext.stop();
-            return itemInputTuple;
-        }
-
-        private IDProbs inferenceAndRanking(Tuple2<int[], Table[]> itemInputTuple, int k) {
-            int[] itemIDArr = itemInputTuple._1;
-            Table[] input = itemInputTuple._2;
-            Timer.Context rankingContext = rankingInferenceTimer.time();
-            String[] result;
-            try {
-                result = RecommenderUtils.doPredictParallel(input, rankingStub);
-            } catch (StatusRuntimeException e) {
-                e.printStackTrace();
-                logger.warn("Ranking service unavailable: "+ e.getMessage());
-                throw e;
-            }
-            rankingContext.stop();
-            Timer.Context topKContext = topKTimer.time();
-            Tuple2<int[], float[]> topKIDProbsTuple;
-            try {
-                topKIDProbsTuple = RecommenderUtils.getTopK(result,
-                        itemIDArr, k);
-            } catch (Exception e) {
-                e.printStackTrace();
-                logger.warn("Ranking encounter an error: "+ e.getMessage());
-                throw e;
-            }
-            int[] topKIDs = topKIDProbsTuple._1;
-            float[] topKProbs = topKIDProbsTuple._2;
-            IDProbs.Builder idProbBuilder = IDProbs.newBuilder();
-            for (int i = 0; i < topKIDs.length; i ++) {
-                idProbBuilder.addID(topKIDs[i]);
-                idProbBuilder.addProb(topKProbs[i]);
-            }
-            topKContext.stop();
-            return idProbBuilder.build();
-        }
-
-        private ServerMessage getMetrics() {
-            JacksonJsonSerializer jacksonJsonSerializer = new JacksonJsonSerializer();
+            // grpc metrics
             Set<String> keys = metrics.getTimers().keySet();
-            List<TimerMetrics> timerMetrics = keys.stream()
+            List<TimerMetrics> grpcTimerMetrics = keys.stream()
                     .map(key ->
                             TimerMetrics$.MODULE$.apply(key, metrics.getTimers().get(key)))
                     .collect(Collectors.toList());
-            String jsonStr = jacksonJsonSerializer.serialize(timerMetrics);
-            return ServerMessage.newBuilder().setStr(jsonStr).build();
+            String metricsJson = impl.getMetrics(grpcTimerMetrics );
+            responseObserver.onNext(RecommenderProto.ServerMessage.newBuilder()
+                    .setStr(metricsJson).build());
+            responseObserver.onCompleted();
         }
 
         @Override
         public void resetMetrics(Empty request, StreamObserver<Empty> responseObserver) {
             metrics = new MetricRegistry();
-            overallTimer = metrics.timer("recommend.overall");
-            recallTimer = metrics.timer("recommend.recall");
-            itemFeatureTimer = metrics.timer("recommend.feature.item");
-            userFeatureTimer = metrics.timer("recommend.feature.user");
-            preprocessTimer = metrics.timer("recommend.preprocess");
-            rankingInferenceTimer = metrics.timer("recommend.rankingInference");
-            topKTimer = metrics.timer("recommend.topK");
+            overallTimer = metrics.timer("recommend.grpc.overall");
+            impl.resetMetrics();
             responseObserver.onNext(Empty.newBuilder().build());
             responseObserver.onCompleted();
         }
@@ -336,20 +163,8 @@ public class RecommenderServer extends GrpcServerBase {
         @Override
         public void getClientMetrics(Empty request,
                                      StreamObserver<ServerMessage> responseObserver) {
-            StringBuilder sb = new StringBuilder();
-            String vecMetrics = recallStub.getMetrics(request).getStr();
-            recallStub.resetMetrics(request);
-            sb.append("Recall Service backend metrics:\n");
-            sb.append(vecMetrics).append("\n\n");
-            String feaMetrics = featureStub.getMetrics(request).getStr();
-            featureStub.resetMetrics(request);
-            sb.append("Feature Service backend metrics:\n");
-            sb.append(feaMetrics).append("\n\n");
-            String infMetrics = rankingStub.getMetrics(request).getStr();
-            rankingStub.resetMetrics(request);
-            sb.append("Inference Service backend metrics:\n");
-            sb.append(infMetrics).append("\n\n");
-            responseObserver.onNext(ServerMessage.newBuilder().setStr(sb.toString()).build());
+            String metricsStr = impl.getClientMetrics();
+            responseObserver.onNext(ServerMessage.newBuilder().setStr(metricsStr).build());
             responseObserver.onCompleted();
         }
     }

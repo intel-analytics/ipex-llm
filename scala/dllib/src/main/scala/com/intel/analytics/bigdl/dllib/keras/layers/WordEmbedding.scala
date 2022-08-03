@@ -106,7 +106,7 @@ class WordEmbedding[T: ClassTag] private(
 object WordEmbedding {
 
   DataConverter.registerConverter(
-    "com.intel.analytics.zoo.pipeline.api.keras.layers.WordEmbedding.EmbeddingMatrixHolder[T]",
+    "com.intel.analytics.bigdl.dllib.keras.layers.WordEmbedding.EmbeddingMatrixHolder[T]",
     EmbeddingMatrixHolderConverter)
 
   val id = new AtomicInteger(0) // id in the registry map should be unique

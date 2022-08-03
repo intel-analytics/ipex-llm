@@ -20,12 +20,12 @@ from types import MethodType
 import pytorch_lightning as pl
 from typing import Optional
 import torch
+import copy
+from logging import warning
 
 TORCH_VERSION_LESS_1_10 = _compare_version("torch", operator.lt, "1.10")
 TORCH_VERSION_LESS_1_11 = _compare_version("torch", operator.lt, "1.11")
 TORCH_VERSION_LESS_1_12 = _compare_version("torch", operator.lt, "1.12")
-
-LIGHTNING_VERSION_LESS_1_6 = _compare_version("pytorch_lightning", operator.lt, "1.6")
 
 
 def batch_call(func):
@@ -33,7 +33,7 @@ def batch_call(func):
     Decorator to extending hook of pl_module.
 
     Extending behavior hook on_before_batch_transfer to convert data to channels_last
-    at each step.
+    for each batch.
     """
 
     def on_before_batch_transfer(self, batch, dataloader_idx):
@@ -58,15 +58,22 @@ class ChannelsLastCallback(pl.Callback):
     def setup(self, trainer, pl_module, stage: Optional[str] = None) -> None:
         """Override hook setup to convert model to channels_last and wrap DataHook."""
         # TODO: Add check for module_states
+        try:
+            pl_module = pl_module.to(memory_format=torch.channels_last)
+        except Exception as e:
+            warning(f"Convert model to channels last failed, \
+                    fall back to origin memory format. Exception msg: {e}")
+            return super().setup(trainer, pl_module, stage)
         fn_old = getattr(pl_module, "on_before_batch_transfer")
         fn = batch_call(fn_old)
         setattr(pl_module, "on_before_batch_transfer_origin", fn_old)
         pl_module.on_before_batch_transfer = MethodType(fn, pl_module)
-        trainer.model = trainer.model.to(memory_format=torch.channels_last)
         return super().setup(trainer, pl_module, stage)
 
     def teardown(self, trainer, pl_module, stage: Optional[str] = None) -> None:
         """Undo the changes to pl_module at end of fit, validate, tests, or predict."""
-        setattr(pl_module, "on_before_batch_transfer", pl_module.on_before_batch_transfer_origin)
-        delattr(pl_module, "on_before_batch_transfer_origin")
+        if hasattr(pl_module, "on_before_batch_transfer_origin"):
+            setattr(pl_module, "on_before_batch_transfer",
+                    pl_module.on_before_batch_transfer_origin)
+            delattr(pl_module, "on_before_batch_transfer_origin")
         return super().teardown(trainer, pl_module, stage)

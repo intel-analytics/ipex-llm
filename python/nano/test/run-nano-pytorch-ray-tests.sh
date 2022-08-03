@@ -10,7 +10,8 @@ set -e
 # ipex is not installed here. Any tests needs ipex should be moved to next pytest command.
 echo "# Start testing"
 start=$(date "+%s")
-python -m pytest -s ${NANO_RAY_TEST_DIR}/test_ray_trainer.py 
+python -m pytest -s ${NANO_RAY_TEST_DIR}/test_ray_trainer.py ${NANO_RAY_TEST_DIR}/test_torch_nano_ray.py
+python -m pytest -s ${ANALYTICS_ZOO_ROOT}/python/nano/test/pytorch/tests/test_scale_lr.py -k 'ray'
 
 now=$(date "+%s")
 time=$((now-start))

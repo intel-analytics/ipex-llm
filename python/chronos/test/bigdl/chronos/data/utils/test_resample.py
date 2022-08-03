@@ -18,7 +18,7 @@ import pytest
 import pandas as pd
 import numpy as np
 
-from bigdl.orca.test_zoo_utils import ZooTestCase
+from unittest import TestCase
 from bigdl.chronos.data.utils.resample import resample_timeseries_dataframe
 
 
@@ -36,7 +36,7 @@ def get_ugly_ts_df():
     return df
 
 
-class TestResampleTimeSeries(ZooTestCase):
+class TestResampleTimeSeries(TestCase):
     def setup_method(self, method):
         self.df = get_ugly_ts_df()
 

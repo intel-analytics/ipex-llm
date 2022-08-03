@@ -202,10 +202,13 @@ class AutoformerForecaster(Forecaster):
              validation_data,
              target_metric='mse',
              direction="minimize",
+             directions=None,
              n_trials=2,
              n_parallels=1,
              epochs=1,
              batch_size=32,
+             acceleration=False,
+             input_sample=None,
              **kwargs):
         """
         Search the hyper parameter.
@@ -224,6 +227,11 @@ class AutoformerForecaster(Forecaster):
                For more information, refer to Nano AutoML user guide.
         :param epochs: the number of epochs to run in each trial fit, defaults to 1
         :param batch_size: number of batch size for each trial fit, defaults to 32
+        :param acceleration: Whether to automatically consider the model after
+            inference acceleration in the search process. It will only take
+            effect if target_metric contains "latency". Default value is False.
+        :param input_sample: A set of inputs for trace, defaults to None if you have
+            trace before or model is a LightningModule with any dataloader attached.
         """
         invalidInputError(not self.distributed,
                           "HPO is not supported in distributed mode."
@@ -247,6 +255,12 @@ class AutoformerForecaster(Forecaster):
         else:
             invalidInputError(False, "HPO only supports numpy train input data.")
 
+        if input_sample is None:
+            input_sample = (torch.from_numpy(data[0][:1, :, :]),
+                            torch.from_numpy(data[1][:1, :, :]),
+                            torch.from_numpy(data[2][:1, :, :]),
+                            torch.from_numpy(data[3][:1, :, :]))
+
         # prepare target metric
         if validation_data is not None:
             formated_target_metric = _format_metric_str('val', target_metric)
@@ -257,18 +271,10 @@ class AutoformerForecaster(Forecaster):
         # build auto model
         self.tune_internal = self._build_automodel(data, validation_data, batch_size, epochs)
 
-        from pytorch_lightning.callbacks import Callback
-
-        # reset current epoch = 0 after each run
-        class ResetCallback(Callback):
-            def on_train_end(self, trainer, pl_module):
-                trainer.fit_loop.current_epoch = 0
-
         self.trainer = Trainer(logger=False, max_epochs=epochs,
                                checkpoint_callback=self.checkpoint_callback,
                                num_processes=self.num_processes, use_ipex=self.use_ipex,
-                               use_hpo=True,
-                               callbacks=[ResetCallback()] if self.num_processes == 1 else None)
+                               use_hpo=True)
 
         # run hyper parameter search
         self.internal = self.trainer.search(
@@ -276,18 +282,24 @@ class AutoformerForecaster(Forecaster):
             n_trials=n_trials,
             target_metric=formated_target_metric,
             direction=direction,
+            directions=directions,
             n_parallels=n_parallels,
+            acceleration=acceleration,
+            input_sample=input_sample,
             **kwargs)
 
-        # reset train and validation datasets
-        self.trainer.reset_train_val_dataloaders(self.internal)
+        if self.trainer.hposearcher.objective.mo_hpo:
+            return self.internal
+        else:
+            # reset train and validation datasets
+            self.trainer.reset_train_val_dataloaders(self.internal)
 
     def search_summary(self):
         # add tuning check
         invalidOperationError(self.use_hpo, "No search summary when HPO is disabled.")
         return self.trainer.search_summary()
 
-    def fit(self, data, epochs=1, batch_size=32):
+    def fit(self, data, epochs=1, batch_size=32, use_trial_id=None):
         """
         Fit(Train) the forecaster.
 
@@ -302,6 +314,8 @@ class AutoformerForecaster(Forecaster):
         :param batch_size: Number of batch size you want to train. The value defaults to 32.
                if you input a pytorch dataloader for `data`, the batch_size will follow the
                batch_size setted in `data`.
+        :param use_trail_id: choose a internal according to trial_id, which is used only
+               in multi-objective search.
         """
         # distributed is not supported.
         if self.distributed:
@@ -326,6 +340,15 @@ class AutoformerForecaster(Forecaster):
             # check whether the user called the tune function
             invalidOperationError(hasattr(self, "trainer"), "There is no trainer, and you "
                                   "should call .tune() before .fit()")
+
+            # build internal according to use_trail_id for multi-objective HPO
+            if self.trainer.hposearcher.objective.mo_hpo:
+                invalidOperationError(self.trainer.hposearcher.study,
+                                      "You must tune before fit the model.")
+                invalidInputError(use_trial_id is not None,
+                                  "For multibojective HPO, you must specify a trial id for fit.")
+                trial = self.trainer.hposearcher.study.trials[use_trial_id]
+                self.internal = self.tune_internal._model_build(trial)
 
         self.trainer.fit(self.internal, data)
 

@@ -15,4 +15,4 @@
 #
 
 # import public APIs of openvino
-from bigdl.nano.deps.openvino.openvino_api import *
+from bigdl.nano.deps.openvino.openvino_api import OpenVINOModel

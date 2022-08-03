@@ -47,7 +47,7 @@ import pytest
 
 from bigdl.chronos.simulator import DPGANSimulator
 from bigdl.chronos.simulator.doppelganger.output import Output, OutputType, Normalization
-from bigdl.orca.test_zoo_utils import ZooTestCase
+from unittest import TestCase
 
 
 def get_train_data():
@@ -64,7 +64,7 @@ def get_train_data():
     return df
 
 
-class TestDoppelganer(ZooTestCase):
+class TestDoppelganer(TestCase):
     def setup_method(self, method):
         pass
 

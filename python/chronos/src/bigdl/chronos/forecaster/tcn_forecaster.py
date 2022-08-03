@@ -23,12 +23,16 @@ class TCNForecaster(BasePytorchForecaster):
     """
         Example:
             >>> #The dataset is split into x_train, x_val, x_test, y_train, y_val, y_test
+            >>> # 1. Initialize Forecaster directly
             >>> forecaster = TCNForecaster(past_seq_len=24,
                                            future_seq_len=5,
                                            input_feature_num=1,
                                            output_feature_num=1,
                                            ...)
-            >>> forecaster.fit((x_train, y_train))
+            >>>
+            >>> # 2. Initialize Forecaster from from_tsdataset
+            >>> forecaster = TCNForecaster.from_tsdataset(tsdata, ...)
+            >>> forecaster.fit(tsdata, ...)
             >>> forecaster.to_local()  # if you set distributed=True
             >>> test_pred = forecaster.predict(x_test)
             >>> test_eval = forecaster.evaluate((x_test, y_test))
@@ -108,7 +112,8 @@ class TCNForecaster(BasePytorchForecaster):
             "num_channels": num_channels,
             "kernel_size": kernel_size,
             "repo_initialization": repo_initialization,
-            "dropout": dropout
+            "dropout": dropout,
+            "seed": seed
         }
         self.loss_config = {
             "loss": loss
@@ -130,7 +135,8 @@ class TCNForecaster(BasePytorchForecaster):
 
         # distributed settings
         self.distributed = distributed
-        self.distributed_backend = distributed_backend
+        self.remote_distributed_backend = distributed_backend
+        self.local_distributed_backend = "subprocess"
         self.workers_per_node = workers_per_node
 
         # other settings

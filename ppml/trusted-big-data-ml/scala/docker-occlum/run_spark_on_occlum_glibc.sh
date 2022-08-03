@@ -180,7 +180,7 @@ run_spark_pi() {
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
                 -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*" \
-                -Xmx10g org.apache.spark.deploy.SparkSubmit \
+                -Xmx512m org.apache.spark.deploy.SparkSubmit \
                 --jars $SPARK_HOME/examples/jars/spark-examples_2.12-3.1.2.jar,$SPARK_HOME/examples/jars/scopt_2.12-3.7.1.jar \
                 --class org.apache.spark.examples.SparkPi spark-internal
 }
@@ -333,7 +333,7 @@ run_spark_xgboost() {
                 --executor-memory 9G \
                 --driver-memory 2G \
                 /bin/jars/bigdl-dllib-spark_3.1.2-2.1.0-SNAPSHOT.jar \
-                /host/data /host/data/model 2 100 2
+                -i /host/data -s /host/data/model -t 2 -r 100 -d 2 -w 1
 }
 
 
