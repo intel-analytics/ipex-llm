@@ -24,6 +24,7 @@ from bigdl.chronos.data import TSDataset
 from unittest import TestCase
 import pytest
 
+
 def get_ts_df():
     sample_num = np.random.randint(1000, 1500)
     train_df = pd.DataFrame({"datetime": pd.date_range('1/1/2019', periods=sample_num, freq="1s"),
@@ -161,7 +162,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
         forecaster.tune(train_data, validation_data=val_data, 
                         target_metric=['mse', 'latency'],
                         directions=["minimize", "minimize"],
-                        acceleration=True, direction=None,
+                        direction=None,
                         n_trials=2)
         forecaster.fit(train_data, epochs=3, batch_size=32, use_trial_id=0)
         evaluate = forecaster.evaluate(val_data)

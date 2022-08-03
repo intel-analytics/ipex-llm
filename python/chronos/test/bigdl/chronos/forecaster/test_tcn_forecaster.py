@@ -160,11 +160,13 @@ class TestChronosModelTCNForecaster(TestCase):
                                 loss="mae",
                                 metrics=['mae', 'mse', 'mape'],
                                 lr=space.Real(0.001, 0.01, log=True))
+        forecaster.num_processes = 1
         forecaster.tune(train_data, validation_data=val_data,
                         n_trials=2, target_metric=['mse', 'latency'],
                         direction=None,
                         directions=["minimize", "minimize"])
 
+    @skip_onnxrt
     def test_tcn_forecaster_multi_objective_tune_acceleration(self):
         import bigdl.nano.automl.hpo.space as space
         train_data, val_data, _ = create_data(loader=False)
@@ -182,7 +184,8 @@ class TestChronosModelTCNForecaster(TestCase):
                         n_trials=2, target_metric=['mse', 'latency'], 
                         directions=["minimize", "minimize"],
                         acceleration=True, direction=None)
-    
+
+    @skip_onnxrt
     def test_tcn_forecaster_mo_tune_acceleration_fit_input(self):
         import bigdl.nano.automl.hpo.space as space
         train_data, val_data, _ = create_data(loader=False)
@@ -203,6 +206,7 @@ class TestChronosModelTCNForecaster(TestCase):
         with self.assertRaises(Exception):
             forecaster.fit(train_data, epochs=2)
 
+    @skip_onnxrt
     def test_tcn_forecaster_mo_tune_acceleration_fit(self):
         import bigdl.nano.automl.hpo.space as space
         train_data, val_data, _ = create_data(loader=False)
