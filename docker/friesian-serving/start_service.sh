@@ -56,12 +56,12 @@ elif [ "$service" == "recommender-http" ]; then
     java -cp $JERSEY_JAR_PATH:$SPARK_JAR_PATH:$SERVING_JAR_PATH com.intel.analytics.bigdl.friesian.serving.recommender.HTTP.RecommenderHTTP $params
 elif [ "$service" == "recall-init" ]; then
     echo "Starting initializing recall index......"
-    java -Dspark.master=local[*] -cp $SPARK_JAR_PATH:$SERVING_JAR_PATH com.intel.analytics.bigdl.friesian.nearline.recall.RecallInitializer $params
+    java -Dspark.master=local[*] -cp $JERSEY_JAR_PATH:$SPARK_JAR_PATH:$SERVING_JAR_PATH com.intel.analytics.bigdl.friesian.nearline.recall.RecallInitializer $params
 elif [ "$service" == "feature-init" ]; then
     echo "Starting loading initial features......"
-    java -Dspark.master=local[*] -cp $SPARK_JAR_PATH:$SERVING_JAR_PATH com.intel.analytics.bigdl.friesian.nearline.feature.FeatureInitializer $params
+    java -Dspark.master=local[*] -cp $JERSEY_JAR_PATH:$SPARK_JAR_PATH:$SERVING_JAR_PATH com.intel.analytics.bigdl.friesian.nearline.feature.FeatureInitializer $params
 elif [ "$service" == "client" ]; then
-    java -Dspark.master=local[*] -cp $SPARK_JAR_PATH:$SERVING_JAR_PATH com.intel.analytics.bigdl.friesian.serving.recommender.RecommenderMultiThreadClient $params
+    java -Dspark.master=local[*] -cp $JERSEY_JAR_PATH:$SPARK_JAR_PATH:$SERVING_JAR_PATH com.intel.analytics.bigdl.friesian.serving.recommender.RecommenderMultiThreadClient $params
 else
     echo "Unsupported service_type, service_type can be one of ranking, recall, recommender, recommender-http, feature, feature-init, recall-init and client."
 fi
