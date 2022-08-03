@@ -11,8 +11,6 @@ on:
         required: true
         default: 'latest'
         type: string
-  pull_request:
-    branches: [ main ]
 
 jobs:
   deploy-docker:
