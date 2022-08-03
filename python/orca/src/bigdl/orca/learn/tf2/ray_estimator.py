@@ -571,7 +571,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
     def load(self,
              filepath,
              custom_objects=None,
-             compile=True):
+             compile=True,
+             options=None):
         """
         Loads a model saved via `estimator.save()
 
@@ -588,7 +589,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             params = dict(
                 filepath=filepath,
                 custom_objects=custom_objects,
-                compile=compile
+                compile=compile,
+                options=options
             )
             model_refs = [
                 worker.load_model.remote(**params) for worker in self.remote_workers
@@ -601,7 +603,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             params = dict(
                 filepath=temp_path,
                 custom_objects=custom_objects,
-                compile=compile
+                compile=compile,
+                options=options
             )
             try:
                 if filepath.endswith('.h5') or filepath.endswith('.keras'):

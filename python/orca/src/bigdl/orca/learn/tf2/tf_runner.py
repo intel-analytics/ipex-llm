@@ -495,10 +495,10 @@ class TFRunner:
                                         "data (of the correct dtype) as sample_input in the load "
                                         "method.")
 
-    def load_model(self, filepath, custom_objects, compile):
+    def load_model(self, filepath, custom_objects, compile, options):
         """Load the model from provided filepath."""
         import tensorflow as tf
-        self.model = tf.keras.models.load_model(filepath, custom_objects, compile)
+        self.model = tf.keras.models.load_model(filepath, custom_objects, compile, options)
 
     def shutdown(self):
         """Attempts to shut down the worker."""
