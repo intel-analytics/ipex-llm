@@ -89,9 +89,11 @@ class TrainingOperator:
                  use_fp16=False,
                  use_tqdm=False,
                  sync_stats=False,
-                 dist_backend=None):
+                 dist_backend=None,
+                 models_ori=None):
         # You are not expected to override this method.
         self._models = models  # List of models
+        self._models_ori = models_ori  # List of models
         invalidInputError(isinstance(models, collections.Iterable),
                           "Components need to be iterable. Got: {}".format(type(models)))
         self._optimizers = optimizers  # List of optimizers
@@ -268,20 +270,23 @@ class TrainingOperator:
 
         """
         # unpack features into list to support multiple inputs model
-        *features, target = batch
+        *features, target = batch ###
         # If features is already a tuple, we don't give it an extra list dimension.
         already_list = (isinstance(features[0], tuple) or isinstance(features[0], list))
         if len(features) == 1 and already_list:
             features = features[0]
 
-        # Compute output.
-        with self.timers.record("fwd"):
-            output = self.model(*features)
-            if isinstance(output, tuple) or isinstance(output, list):
-                # Then target is also assumed to be a tuple or list.
-                loss = self.criterion(*output, *target)
-            else:
-                loss = self.criterion(output, target)
+        # # Compute output.
+        # with self.timers.record("fwd"):
+        #     output = self.model(*features) ###
+        #     if isinstance(output, tuple) or isinstance(output, list):
+        #         # Then target is also assumed to be a tuple or list.
+        #         loss = self.criterion(*output, *target) ###
+        #     else:
+        #         loss = self.criterion(output, target)
+
+        batch = *features, target
+        loss = self._models_ori[0].training_step(batch, batch_info['batch_idx'])
 
         # Compute gradients in a backward pass.
         with self.timers.record("grad"):
@@ -400,10 +405,14 @@ class TrainingOperator:
         if len(features) == 1 and already_list:
             features = features[0]
 
-        # compute output
-        with self.timers.record("eval_fwd"):
-            output = self.model(*features)
-            loss = self.criterion(output, target)
+        # # compute output
+        # with self.timers.record("eval_fwd"):
+        #     output = self.model(*features)
+        #     loss = self.criterion(output, target)
+
+        batch = *features, target
+        loss = self._models_ori[0].validation_step(batch, batch_info['batch_idx'])
+        output = self._models_ori[0](*features)
 
         return output, target, loss
 

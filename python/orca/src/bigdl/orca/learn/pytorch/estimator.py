@@ -22,7 +22,7 @@ class Estimator(object):
     @staticmethod
     def from_torch(*,
                    model,
-                   optimizer,
+                   optimizer=None,
                    loss=None,
                    metrics=None,
                    scheduler_creator=None,

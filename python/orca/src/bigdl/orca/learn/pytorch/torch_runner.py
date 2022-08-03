@@ -196,8 +196,9 @@ class TorchRunner:
                           ("All models must be PyTorch models: {}.".format(self.models)))
 
         self.logger.debug("Creating optimizer.")
-        self.optimizers = self.optimizer_creator(self.given_models,
-                                                 self.config)
+        # self.optimizers = self.optimizer_creator(self.given_models,
+        #                                          self.config)
+        self.optimizers = self.given_models.configure_optimizers()
         if not isinstance(self.optimizers, Iterable):
             self.optimizers = [self.optimizers]
 
@@ -221,7 +222,9 @@ class TorchRunner:
                 schedulers=self.schedulers,
                 use_tqdm=self.use_tqdm,
                 sync_stats=self.sync_stats,
-                dist_backend=self.dist_backend)
+                dist_backend=self.dist_backend,
+                models_ori=self.models
+            )
 
     def with_sampler(self, loader):
         self.logger.debug("Wrapping DistributedSampler on DataLoader")
