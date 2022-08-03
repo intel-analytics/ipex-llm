@@ -8,9 +8,8 @@
     text-align: center;
 }
 
-.card-header-custom > p{
-    font-size: 18px;
-    font-weight: 800;
+.card-header-custom > b, strong{
+    font-size: 17px;
 }
 
 .card-footer-custom  {

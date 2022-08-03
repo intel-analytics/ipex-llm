@@ -1,3 +1,11 @@
+.. |br| raw:: html
+
+   <br />
+
+.. |bigdl-logo| image:: ../image/bigdl_logo.png
+  :height: 17
+  :alt: BigDL
+
 BigDL Documentation
 ===========================
 
@@ -18,7 +26,8 @@ What can you do with BigDL?
         :class-header: card-header-custom 
         :class-footer: card-footer-custom 
 
-        **Build Distributed AI on Spark with DLLib**
+        **Build Distributed AI on Spark with** |br|
+        |bigdl-logo| **DLLib**
         ^^^
         - Build Deep Learning programs with Scala and run on Spark (`link <dummy.html>`_)
         - Build Deep Learning programs in **Python** and run on Spark (`link <dummy.html>`_)
@@ -37,7 +46,8 @@ What can you do with BigDL?
         :class-header: card-header-custom 
         :class-footer: card-footer-custom 
 
-        **Accelerate TF/PyTorch programs with Nano**
+        **Accelerate TF/PyTorch Programs with** |br|
+        |bigdl-logo| **Nano**
         ^^^
         - Accelerate Tensorflow Training  (`link <dummy.html>`_) and Inference  (`link <dummy.html>`_) with Nano
         - Accelerate PyTorch Training  (`link <dummy.html>`_) and Inference  (`link <dummy.html>`_) with Nano
@@ -55,7 +65,8 @@ What can you do with BigDL?
         :class-header: card-header-custom 
         :class-footer: card-footer-custom 
 
-        **Make TF/PyTorch programs distributed with Orca**
+        **Make TF/PyTorch Programs Distributed with** |br|
+        |bigdl-logo| **Orca**
         ^^^
         - distributed data processing using XShards  (`link <dummy.html>`_)
         - make local tensorflow or pytorch training distributed  (`link <dummy.html>`_)
@@ -77,7 +88,8 @@ What can you do with BigDL?
         :class-header: card-header-custom 
         :class-footer: card-footer-custom 
 
-        **Build Time Series Applications with Chronos**
+        **Build Time Series Applications with** |br|
+        |bigdl-logo| **Chronos**
         ^^^
         - use built-in models and/or built-in AutoML to do time series Forecasting, and anomaly detection (`link <dummy.html>`_)
         - use TSDataset to do process time series data (`link <dummy.html>`_)
@@ -96,7 +108,8 @@ What can you do with BigDL?
         :class-header: card-header-custom 
         :class-footer: card-footer-custom 
 
-        **Build Large-scale Recommendation System with Friesian**
+        **Build Large-scale Recommendation System with** |br|
+        |bigdl-logo| **Friesian**
         ^^^
         - use built-in models to build recommendation Systems(`link <dummy.html>`_)
         - use built-in feature engineering tool to prepare features (`link <dummy.html>`_)
@@ -115,7 +128,8 @@ What can you do with BigDL?
         :class-header: card-header-custom 
         :class-footer: card-footer-custom 
 
-        **Build protected and Secured AI with PPML**
+        **Build protected and Secured AI with** |br|
+        |bigdl-logo| **PPML**
         ^^^
         - run DL applications unmodified in trustred cluster environment (`link <dummy.html>`_)
         +++
