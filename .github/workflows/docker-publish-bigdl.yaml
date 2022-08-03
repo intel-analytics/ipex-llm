@@ -11,6 +11,8 @@ on:
         required: true
         default: 'latest'
         type: string
+  pull_request:
+    branches: [ main ]
 
 jobs:
   deploy-docker:
@@ -22,7 +24,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: debug
+    - name: set env
       run: |
         if [ -n "${{inputs.tag}}" ]; then  export TAG=${{inputs.tag}};  else export TAG=latest; fi
         echo ${TAG}
