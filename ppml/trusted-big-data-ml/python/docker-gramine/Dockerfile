@@ -159,7 +159,7 @@ ENV TINI_VERSION                        $TINI_VERSION
 ENV PYTHONPATH                          /usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages
 ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
-
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
 RUN mkdir -p /ppml/trusted-big-data-ml/work && \
     mkdir -p /ppml/trusted-big-data-ml/work/lib && \
@@ -191,26 +191,9 @@ ADD ./_dill.py.patch ./_dill.py.patch
 ADD ./python-uuid.patch ./python-uuid.patch
 ADD ./python-pslinux.patch ./python-pslinux.patch
 
-RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
-    env DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential autoconf bison gawk git ninja-build python3 python3-click python3-jinja2 wget pkg-config cmake libcurl4-openssl-dev libprotobuf-c-dev protobuf-c-compiler python3-cryptography python3-pip python3-protobuf nasm && \
-    git clone https://github.com/analytics-zoo/gramine.git /gramine && \
-    git clone https://github.com/intel/SGXDataCenterAttestationPrimitives.git /opt/intel/SGXDataCenterAttestationPrimitives && \
-    python3 -m pip install 'meson>=0.55' 'toml>=0.10' && \
-    cd /gramine && \
-    git checkout devel-2022-5-29 && \
-    meson setup build/ --buildtype=release  -Dsgx=enabled   -Dsgx_driver=dcap1.10 && \
-    ninja -C build/ && \
-    ninja -C build/ install && \
-    cd / && \
-    gramine-sgx-gen-private-key && \
-    apt-get update --fix-missing && \
-    env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y tzdata && \
-    apt-get install -y apt-utils vim curl nano wget unzip git tree zip && \
-    apt-get install -y libsm6 make build-essential && \
-    apt-get install -y autoconf gawk bison libcurl4-openssl-dev python3-protobuf libprotobuf-c-dev protobuf-c-compiler && \
-    apt-get install -y netcat net-tools && \
-    # python
-    apt install software-properties-common -y && \
+
+# python
+RUN apt install software-properties-common -y && \
     add-apt-repository ppa:deadsnakes/ppa -y && \
     apt-get install -y python3-minimal build-essential python3.7-distutils python3-apt python3.7 python3-setuptools python3-dev python3-pip libpython3.7 && \
     rm /usr/bin/python3 && \
@@ -222,7 +205,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     pip install --no-cache-dir scikit-learn matplotlib seaborn jupyter wordcloud moviepy requests h5py opencv-python tensorflow==1.15 protobuf==3.19.0 && \
     pip install --no-cache-dir torch==1.8.1 torchvision==0.9.1 -f https://download.pytorch.org/whl/torch_stable.html && \
     ln -s /usr/bin/python3 /usr/bin/python && \
-    #Fix tornado await process
+# Fix tornado await process
     pip uninstall -y -q tornado && \
     pip install --no-cache-dir tornado && \
     pip install --no-cache-dir filelock && \
@@ -233,7 +216,25 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     pip install --no-cache-dir dill==0.3.4 && \
     python3 -m pip install toml==0.10.2 click jinja2 && \
     python3 -m ipykernel.kernelspec && \
-    #
+# Gramine
+    env DEBIAN_FRONTEND=noninteractive apt-get update && \
+    env DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential autoconf bison gawk git ninja-build python3 python3-click python3-jinja2 wget pkg-config cmake libcurl4-openssl-dev libprotobuf-c-dev protobuf-c-compiler python3-cryptography python3-pip python3-protobuf nasm && \
+    git clone https://github.com/analytics-zoo/gramine.git /gramine && \
+    git clone https://github.com/intel/SGXDataCenterAttestationPrimitives.git /opt/intel/SGXDataCenterAttestationPrimitives && \
+    cd /gramine && \
+    git checkout devel-2022-5-29 && \
+    meson setup build/ --buildtype=release  -Dsgx=enabled   -Dsgx_driver=dcap1.10 && \
+    ninja -C build/ && \
+    ninja -C build/ install && \
+    cd / && \
+    gramine-sgx-gen-private-key && \
+#
+    apt-get update --fix-missing && \
+    env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y tzdata && \
+    apt-get install -y apt-utils vim curl nano wget unzip git tree zip && \
+    apt-get install -y libsm6 make build-essential && \
+    apt-get install -y autoconf gawk bison libcurl4-openssl-dev python3-protobuf libprotobuf-c-dev protobuf-c-compiler && \
+    apt-get install -y netcat net-tools && \
     zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ./tracker.py && \
     patch /usr/local/lib/python3.7/dist-packages/dill/_dill.py ./_dill.py.patch && \
     patch /usr/lib/python3.7/uuid.py ./python-uuid.patch && \
