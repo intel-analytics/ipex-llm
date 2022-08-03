@@ -112,7 +112,8 @@ class TestPlugin(TestCase):
             loss=torch.nn.MSELoss(),
             metrics=[torchmetrics.MeanSquaredError()]
         )
-        trainer = Trainer(num_processes=2, distributed_backend="subprocess", max_epochs=2)
+        trainer = Trainer(num_processes=2, distributed_backend="subprocess", max_epochs=2,
+                          auto_lr=False)
         features = torch.tensor([[0.0],[0.0],[1.0],[1.0]])
         labels = torch.tensor([[0.0],[0.0],[0.0],[0.0]])
 
@@ -133,7 +134,7 @@ class TestPlugin(TestCase):
             loss=torch.nn.MSELoss(),
             metrics=[torchmetrics.MeanSquaredError()]
         )
-        trainer = Trainer(num_processes=2, distributed_backend="spawn", max_epochs=2)
+        trainer = Trainer(num_processes=2, distributed_backend="spawn", max_epochs=2, auto_lr=False)
         features = torch.tensor([[0.0],[0.0],[1.0],[1.0]])
         labels = torch.tensor([[0.0],[0.0],[0.0],[0.0]])
 

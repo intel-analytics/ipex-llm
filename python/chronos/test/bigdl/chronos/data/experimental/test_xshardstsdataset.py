@@ -31,8 +31,9 @@ from numpy.testing import assert_array_almost_equal
 
 
 def generate_spark_df():
-    init_orca_context(cores=8)
     sc = OrcaContext.get_spark_context()
+    from pyspark.sql import SparkSession
+    spark = SparkSession(sc)
     rdd = sc.range(0, 100)
     from pyspark.ml.linalg import DenseVector
     df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
@@ -59,6 +60,9 @@ def get_ugly_ts_df():
 class TestXShardsTSDataset(TestCase):
 
     def setUp(self):
+        # In read_csv module, the initialized sc cannot be used normally
+        # Here, force initialize
+        init_orca_context(cores=8)
         self.resource_path = os.path.join(os.path.split(__file__)[0], "../../resources/")
 
     def tearDown(self):
