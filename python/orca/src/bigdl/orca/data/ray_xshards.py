@@ -152,7 +152,8 @@ def get_from_ray(idx, redis_address, redis_password, idx_to_store_name):
 
 class RayXShards(XShards):
 
-    def __init__(self, uuid: str, id_ip_store_rdd: "PipelinedRDD", partition_stores: Dict[str, "ActorHandle"]) -> None:
+    def __init__(self, uuid: str, id_ip_store_rdd: "PipelinedRDD", 
+                 partition_stores: Dict[str, "ActorHandle"]) -> None:
         self.uuid = uuid
         self.rdd = id_ip_store_rdd
         self.partition_stores = partition_stores
@@ -196,7 +197,7 @@ class RayXShards(XShards):
         part_refs = self.get_partition_refs()
         return [ray.get(part_ref) for part_ref in part_refs]
 
-    def to_spark_xshards(self) ->     "SparkXShards":
+    def to_spark_xshards(self) -> "SparkXShards":
         from bigdl.orca.data import SparkXShards
         ray_ctx = OrcaRayContext.get()
         sc = ray_ctx.sc
@@ -223,7 +224,8 @@ class RayXShards(XShards):
             refs.append(partition_ref)
         return refs
 
-    def transform_shards_with_actors(self, actors: List["ActorHandle"], func: Callable) -> "RayXShards":
+    def transform_shards_with_actors(self, actors: List["ActorHandle"], 
+                                     func: Callable) -> "RayXShards":
         """
         Assign each partition_ref (referencing a list of shards) to an actor,
         and run func for each actor and partition_ref pair.
@@ -302,7 +304,8 @@ class RayXShards(XShards):
         results = ray.get(result_refs)
         return results
 
-    def assign_partitions_to_actors(self, actors: List["ActorHandle"]) -> Tuple[List[List[int]], List[str], List["ActorHandle"]]:
+    def assign_partitions_to_actors(self, actors: List["ActorHandle"]) -> Tuple[List[List[int]],
+                                    List[str], List["ActorHandle"]]:
         num_parts = self.num_partitions()
         if num_parts < len(actors):
             logger.warning(f"this rdd has {num_parts} partitions, which is smaller "
@@ -325,16 +328,16 @@ class RayXShards(XShards):
         # todo extract this algorithm to other functions for unit tests.
         actor_ips = []
         for actor in actors:
-            invalidInputError(hasattr(actor, "get_node_ip"),
+            invalidInputError(hasattr(actor, "get_node_ip"), # type:ignore
                               "each actor should have a get_node_ip method")
             actor_ip = actor.get_node_ip.remote()
             actor_ips.append(actor_ip)
 
         actor_ips = ray.get(actor_ips)
 
-        actor2assignments = [[] for i in range(len(actors))]
+        actor2assignments = [[] for i in range(len(actors))] # type:ignore
 
-        ip2actors = {}
+        ip2actors = {} # type:ignore
         for idx, ip in enumerate(actor_ips):
             if ip not in ip2actors:
                 ip2actors[ip] = []
@@ -385,7 +388,9 @@ class RayXShards(XShards):
             return actor2assignments, actor_ips, actors
 
     @staticmethod
-    def from_partition_refs(ip2part_id: DefaultDict[str, List[int]], part_id2ref: Dict[int, "ObjectRef"], old_rdd: "PipelinedRDD") -> "RayXShards":
+    def from_partition_refs(ip2part_id: DefaultDict[str, List[int]],
+                            part_id2ref: Dict[int, "ObjectRef"],
+                            old_rdd: "PipelinedRDD") -> "RayXShards":
         ray_ctx = OrcaRayContext.get()
         uuid_str = str(uuid.uuid4())
         id2store_name = {}
