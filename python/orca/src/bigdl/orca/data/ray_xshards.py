@@ -27,6 +27,25 @@ from bigdl.orca.ray import OrcaRayContext
 import logging
 from bigdl.dllib.utils.log4Error import *
 
+from numpy import ndarray
+from typing import (
+    TYPE_CHECKING,
+    Callable,
+    DefaultDict,
+    Dict,
+    List,
+    Tuple,
+    Union,
+)
+
+
+if TYPE_CHECKING:
+    from bigdl.orca.data.shard import SparkXShards
+    from pyspark.rdd import PipelinedRDD
+    from ray._raylet import ObjectRef
+    from ray.actor import ActorHandle
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -133,7 +152,7 @@ def get_from_ray(idx, redis_address, redis_password, idx_to_store_name):
 
 class RayXShards(XShards):
 
-    def __init__(self, uuid, id_ip_store_rdd, partition_stores):
+    def __init__(self, uuid: str, id_ip_store_rdd: "PipelinedRDD", partition_stores: Dict[str, "ActorHandle"]) -> None:
         self.uuid = uuid
         self.rdd = id_ip_store_rdd
         self.partition_stores = partition_stores
@@ -144,16 +163,16 @@ class RayXShards(XShards):
     def transform_shard(self, func, *args):
         invalidInputError(False, "Transform is not supported for RayXShards")
 
-    def num_partitions(self):
+    def num_partitions(self) -> int:
         return len(self.partition2ip)
 
-    def collect(self):
+    def collect(self) -> List[Dict[str, ndarray]]:
         # return a list of shards
         partitions = self.collect_partitions()
         data = [item for part in partitions for item in part]
         return data
 
-    def get_partition_refs(self):
+    def get_partition_refs(self) -> List[Union["ObjectRef", List["ObjectRef"]]]:
         """
         Get a list of partition_refs, each partition_ref is a list of shard_refs or a partition_ref
         """
@@ -166,18 +185,18 @@ class RayXShards(XShards):
             result.update(part)
         return [result[idx] for idx in range(self.num_partitions())]
 
-    def get_refs(self):
+    def get_refs(self) -> List["ObjectRef"]:
         """
         Flatten get_partition_refs. Get a list of partition_refs or shard_refs
         """
         partition_refs = self.get_partition_refs()
         return [ref for partition_ref in partition_refs for ref in partition_ref]
 
-    def collect_partitions(self):
+    def collect_partitions(self) -> List[List[Dict[str, ndarray]]]:
         part_refs = self.get_partition_refs()
         return [ray.get(part_ref) for part_ref in part_refs]
 
-    def to_spark_xshards(self):
+    def to_spark_xshards(self) ->     "SparkXShards":
         from bigdl.orca.data import SparkXShards
         ray_ctx = OrcaRayContext.get()
         sc = ray_ctx.sc
@@ -196,7 +215,7 @@ class RayXShards(XShards):
         spark_xshards = SparkXShards(result_rdd)
         return spark_xshards
 
-    def _get_multiple_partition_refs(self, ids):
+    def _get_multiple_partition_refs(self, ids: List[int]) -> List["ObjectRef"]:
         refs = []
         for idx in ids:
             local_store_handle = self.partition_stores[self.partition2store_name[idx]]
@@ -204,7 +223,7 @@ class RayXShards(XShards):
             refs.append(partition_ref)
         return refs
 
-    def transform_shards_with_actors(self, actors, func):
+    def transform_shards_with_actors(self, actors: List["ActorHandle"], func: Callable) -> "RayXShards":
         """
         Assign each partition_ref (referencing a list of shards) to an actor,
         and run func for each actor and partition_ref pair.
@@ -283,7 +302,7 @@ class RayXShards(XShards):
         results = ray.get(result_refs)
         return results
 
-    def assign_partitions_to_actors(self, actors):
+    def assign_partitions_to_actors(self, actors: List["ActorHandle"]) -> Tuple[List[List[int]], List[str], List["ActorHandle"]]:
         num_parts = self.num_partitions()
         if num_parts < len(actors):
             logger.warning(f"this rdd has {num_parts} partitions, which is smaller "
@@ -366,7 +385,7 @@ class RayXShards(XShards):
             return actor2assignments, actor_ips, actors
 
     @staticmethod
-    def from_partition_refs(ip2part_id, part_id2ref, old_rdd):
+    def from_partition_refs(ip2part_id: DefaultDict[str, List[int]], part_id2ref: Dict[int, "ObjectRef"], old_rdd: "PipelinedRDD") -> "RayXShards":
         ray_ctx = OrcaRayContext.get()
         uuid_str = str(uuid.uuid4())
         id2store_name = {}
@@ -388,11 +407,11 @@ class RayXShards(XShards):
         return RayXShards(uuid_str, new_id_ip_store_rdd, partition_stores)
 
     @staticmethod
-    def from_spark_xshards(spark_xshards):
+    def from_spark_xshards(spark_xshards:     "SparkXShards") -> "RayXShards":
         return RayXShards._from_spark_xshards_ray_api(spark_xshards)
 
     @staticmethod
-    def _from_spark_xshards_ray_api(spark_xshards):
+    def _from_spark_xshards_ray_api(spark_xshards:     "SparkXShards") -> "RayXShards":
         ray_ctx = OrcaRayContext.get()
         address = ray_ctx.redis_address
         password = ray_ctx.redis_password

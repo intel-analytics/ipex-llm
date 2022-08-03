@@ -20,6 +20,30 @@ from bigdl.dllib.utils.file_utils import get_file_list
 from bigdl.dllib.utils.utils import convert_row_to_numpy
 from bigdl.dllib.utils.log4Error import *
 
+from typing import (
+    TYPE_CHECKING,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Type,
+    Union,
+)
+
+from numpy import (
+    float32,
+    int32,
+)
+
+if TYPE_CHECKING:
+    from bigdl.orca.data.shard import SparkXShards
+    from os import _Environ
+    from pyspark.rdd import PipelinedRDD
+    from pyspark.sql.dataframe import DataFrame
+    from ray.data.dataset import Dataset
+
+
+
 
 def list_s3_file(file_path, env):
     path_parts = file_path.split('/')
@@ -47,7 +71,7 @@ def list_s3_file(file_path, env):
         return file_paths
 
 
-def extract_one_path(file_path, env):
+def extract_one_path(file_path: str, env: "_Environ") -> List[str]:
     file_url_splits = file_path.split("://")
     prefix = file_url_splits[0]
     if prefix == "s3":
@@ -369,8 +393,8 @@ def get_size(x):
                           " or a list of ndarrays, please check your input")
 
 
-def spark_df_to_rdd_pd(df, squeeze=False, index_col=None,
-                       dtype=None, index_map=None):
+def spark_df_to_rdd_pd(df: "DataFrame", squeeze: bool=False, index_col: Optional[str]=None,
+                       dtype: Optional[Union[str, Dict[str, str], Dict[str, Type[float32]], Dict[int, Union[Type[float32], Type[int32]]]]]=None, index_map: Optional[Dict[int, str]]=None) -> "PipelinedRDD":
     from bigdl.orca.data import SparkXShards
     from bigdl.orca import OrcaContext
     columns = df.columns
@@ -388,16 +412,16 @@ def spark_df_to_rdd_pd(df, squeeze=False, index_col=None,
     return pd_rdd
 
 
-def spark_df_to_pd_sparkxshards(df, squeeze=False, index_col=None,
-                                dtype=None, index_map=None):
+def spark_df_to_pd_sparkxshards(df: "DataFrame", squeeze: bool=False, index_col: None=None,
+                                dtype: None=None, index_map: None=None) -> "SparkXShards":
     pd_rdd = spark_df_to_rdd_pd(df, squeeze, index_col, dtype, index_map)
     from bigdl.orca.data import SparkXShards
     spark_xshards = SparkXShards(pd_rdd)
     return spark_xshards
 
 
-def to_pandas(columns, squeeze=False, index_col=None, dtype=None, index_map=None,
-              batch_size=None):
+def to_pandas(columns: List[str], squeeze: bool=False, index_col: Optional[str]=None, dtype: Optional[Union[str, Dict[str, Type[float32]], Dict[int, Union[Type[float32], Type[int32]]], Dict[str, str]]]=None, index_map: Optional[Dict[int, str]]=None,
+              batch_size: None=None) -> Callable:
 
     def postprocess(pd_df):
         if dtype is not None:
@@ -443,7 +467,7 @@ def to_pandas(columns, squeeze=False, index_col=None, dtype=None, index_map=None
     return f
 
 
-def spark_xshards_to_ray_dataset(spark_xshards):
+def spark_xshards_to_ray_dataset(spark_xshards: "SparkXShards") -> "Dataset":
     from bigdl.orca.data.ray_xshards import RayXShards
     import ray
 
