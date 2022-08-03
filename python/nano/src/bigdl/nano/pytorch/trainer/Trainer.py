@@ -207,6 +207,8 @@ class Trainer(pl.Trainer):
                resume: bool = False,
                target_metric=None,
                n_parallels=1,
+               acceleration=False,
+               input_sample=None,
                **kwargs):
         """
         Run HPO search. It will be called in Trainer.search().
@@ -217,6 +219,11 @@ class Trainer(pl.Trainer):
         :param target_metric: the object metric to optimize,
             defaults to None.
         :param n_parallels: the number of parallel processes for running trials.
+        :param acceleration: Whether to automatically consider the model after
+            inference acceleration in the search process. It will only take
+            effect if target_metric contains "latency". Default value is False.
+        :param input_sample: A set of inputs for trace, defaults to None if you have
+            trace before or model is a LightningModule with any dataloader attached.
         :return: the model with study meta info attached.
         """
         if not check_hpo_status(self.hposearcher):
@@ -227,6 +234,8 @@ class Trainer(pl.Trainer):
                                        resume=resume,
                                        target_metric=target_metric,
                                        n_parallels=n_parallels,
+                                       acceleration=acceleration,
+                                       input_sample=input_sample,
                                        **kwargs)
 
     def search_summary(self):

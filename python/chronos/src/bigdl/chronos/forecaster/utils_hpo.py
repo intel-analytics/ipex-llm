@@ -294,6 +294,14 @@ def _format_metric(prefix, metric, id=-1):
 
 def _format_metric_str(prefix, metric):
     """Format the string metric."""
+    if isinstance(metric, (list, tuple)):
+        metrics = []
+        for target_metric in metric:
+            if target_metric == "latency":
+                metrics.append(target_metric)
+            else:
+                metrics.append(_format_metric_str(prefix, target_metric))
+        return metrics
     if isinstance(metric, str):
         from bigdl.chronos.metric.forecast_metrics import TORCHMETRICS_REGRESSION_MAP
         metric_func = TORCHMETRICS_REGRESSION_MAP.get(metric, None)
