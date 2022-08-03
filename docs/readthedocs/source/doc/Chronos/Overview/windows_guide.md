@@ -1,4 +1,4 @@
-# Windows User Guide
+# Chronos Windows User Guide
 
 ## Step 1: Install WSL2
 
@@ -43,13 +43,4 @@ You can install BigDL chronos from Pypi with `pip`. Please run:
 ```
 pip install bigdl-chronos
 ```
-
-You may also install `bigdl-chronos` with target `[all]` to install the additional dependencies for _Chronos_. This will enable distributed tuning with AutoTS.
-```bash
-# stable version
-pip install bigdl-chronos[all]
-# nightly built version
-pip install --pre --upgrade bigdl-chronos[all]
-# set env variables for your conda environment
-source bigdl-nano-init
-```
+For more installation options, please refer to [Chronos User Guide.](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html#install)
