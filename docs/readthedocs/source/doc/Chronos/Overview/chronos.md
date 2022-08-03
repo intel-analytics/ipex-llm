@@ -90,7 +90,7 @@ When you install `bigdl-chronos` from PyPI. We recommend to install with a conda
 ```bash
 conda create -n my_env python=3.7 setuptools=58.0.4
 conda activate my_env
-pip install bigdl-chronos[pytorch]  # or other options you may want to use
+pip install --pre --upgrade bigdl-chronos[pytorch]  # or other options you may want to use
 source bigdl-nano-init
 ```
 #### **2.2 Tensorflow backend**
