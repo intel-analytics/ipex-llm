@@ -112,16 +112,17 @@ object CryptoCodec {
     var headerVerified = false
 
     override def decompress(b: Array[Byte], off: Int, len: Int): Int = {
-      if (!headerVerified) {
-        bigdlEncrypt.verifyHeader(in)
-        headerVerified = true
-      }
-
       if (in.available() == 0) { // apparently the previous end-of-stream was also end-of-file:
         // return success, as if we had never called getCompressedData()
         eof = true
         return -1
       }
+
+      if (!headerVerified) {
+        bigdlEncrypt.verifyHeader(in)
+        headerVerified = true
+      }
+
       val decompressed = bigdlEncrypt.decryptPart(in, buffer)
 
       decompressed.copyToArray(b, 0)
