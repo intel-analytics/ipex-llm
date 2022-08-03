@@ -49,7 +49,7 @@ BigDL-Nano supports both PyTorch and PyTorch Lightning models and most optimizat
 
 BigDL-Nano uses a extended version of PyTorch Lightning trainer for integrating our optimizations.
 
-For example, if you are using a LightningModule, you can use the following codes to enable intel-extension-for-pytorch and multi-instance training.
+For example, if you are using a LightningModule, you can use the following code snippet to enable intel-extension-for-pytorch and multi-instance training.
 
 ```python
 from bigdl.nano.pytorch import Trainer
@@ -76,11 +76,11 @@ For more details on the BigDL-Nano's PyTorch usage, please refer to the [PyTorch
 
 ### **3.2 TensorFlow**
 
-BigDL-Nano supports `tensorflow.keras` API and most optimizations require only changing a few "import" lines in your codes and adding a few flags.
+BigDL-Nano supports `tensorflow.keras` API and most optimizations require only changing a few "import" lines in your code and adding a few flags.
 
 BigDL-Nano uses a extended version of `tf.keras.Model` or `tf.keras.Sequential` for integrating our optimizations.
 
-For example, you can conduct a multi-instance training using the following codes:
+For example, you can conduct a multi-instance training using the following lines of code:
 
 ```python
 import tensorflow as tf

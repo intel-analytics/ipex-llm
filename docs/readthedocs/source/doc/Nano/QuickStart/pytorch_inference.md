@@ -9,7 +9,7 @@ For quantization, BigDL-Nano provides only post-training quantization in `traine
 Before you go ahead with these APIs, you have to make sure BigDL-Nano is correctly installed for PyTorch. If not, please follow [this](../Overview/nano.md) to set up your environment.
 
 ##  Runtime Acceleration
-All available runtime accelerations are integrated in `Trainer.trace(accelerator='onnxruntime'/'openvino')` with different accelerator values. Before diving into BigDL-Nano and any optimizations on inference, you may have one script for training and inference like this, taking mobilenetv3 as an example model:
+All available runtime accelerations are integrated in `Trainer.trace(accelerator='onnxruntime'/'openvino')` with different accelerator values. Let's take mobilenetv3 as an example model and here is a short script that you might have before applying any BigDL-Nano's optimizations:
 ```python
 from torchvision.models.mobilenetv3 import mobilenet_v3_small
 import torch
@@ -154,7 +154,7 @@ trainer.validate(ov_q_model, dataloader)
 trainer.test(ov_q_model, dataloader)
 trainer.predict(ov_q_model, dataloader)
 ```
-Same as quantization using INC with ONNXRuntime, it equals to converting the model from PyTorch to OpenVINO firstly and then doing quantization on the converted OpenVINO model:
+Same as using ONNXRuntime accelerator, it equals to converting the model from PyTorch to OpenVINO firstly and then doing quantization on the converted OpenVINO model:
 ```python
 ov_model = Trainer.trace(model, accelerator='openvino', input_sample=x):
 ov_q_model = trainer.quantize(ov_model, accelerator='onnxruntime', calib_dataloader=dataloader)

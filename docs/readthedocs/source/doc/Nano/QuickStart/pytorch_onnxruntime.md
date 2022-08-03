@@ -85,5 +85,8 @@ ort_model = Trainer.trace(model_ft, accelerator="onnxruntime", input_sample=torc
 y_hat = ort_model(x)
 y_hat.argmax(dim=1)
 ```
-- Note
-    `ort_model` is not trainable any more, so you can't use a code like `trainer.fit(ort_model, dataloader)`
+
+```eval_rst
+.. note:: 
+     ``ort_model`` is not trainable any more, so you cannot use it in ``fit`` such as ``trainer.fit(ort_model, dataloader)``.
+```
