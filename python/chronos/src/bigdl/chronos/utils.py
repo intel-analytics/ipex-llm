@@ -35,6 +35,9 @@ def deprecated(message=""):
 
 class LazyImport:
     """
+        code adaptted from https://github.com/intel/neural-compressor
+        /blob/master/neural_compressor/utils/utility.py#L62
+
         :param module_name: The name of module imported later
         :param pkg: prefix path.
     """
