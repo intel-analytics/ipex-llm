@@ -1491,9 +1491,7 @@ class TestTable(TestCase):
         with self.assertRaises(Exception) as context:
             text_embeds = tbl.string_embed(["text1"], reduce_dim=1000)
         self.assertTrue("must be no less than k=1000" in str(context.exception))
-        with self.assertRaises(Exception) as context:
-            text_embeds = tbl.string_embed(["text1"], bert_model="hello", reduce_dim=5)
-        self.assertTrue("Not Found for url" in str(context.exception))
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
