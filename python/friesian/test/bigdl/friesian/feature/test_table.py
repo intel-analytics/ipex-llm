@@ -1498,6 +1498,24 @@ class TestTable(TestCase):
         invalidInputError(tbl5.filter("size(sampled_int_arr) = 2").size() == 4, "size error")
         invalidInputError(tbl5.filter("size(sampled_str_arr) = 2").size() == 4, "size error")
 
+    def test_string_embed(self):
+        spark = OrcaContext.get_spark_session()
+        texts = [("Here is the sentence I want embeddings for.", "haha", 1),
+                 ("After stealing money from the bank vault, the bank robber was seen "
+                 "fishing on the Mississippi river bank.", "how are you", 2),
+                 ("hello, how are you", "no so good, had a tough day", 3)]
+        df = spark.createDataFrame(texts, schema=["text1", "text2", "id"])
+        tbl = FeatureTable(df)
+
+        text_embeds = tbl.string_embed(["text1", "text2"], reduce_dim=5, replace=False)
+        invalidInputError("text1_embds" in text_embeds.columns, "text1_embds should exist")
+        invalidInputError(text_embeds.select("text1_embds").size() == 3, "size error")
+        invalidInputError(text_embeds.select("text2_embds").size() == 3, "size error")
+
+        with self.assertRaises(Exception) as context:
+            text_embeds = tbl.string_embed(["text1"], reduce_dim=1000)
+        self.assertTrue("must be no less than k=1000" in str(context.exception))
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
