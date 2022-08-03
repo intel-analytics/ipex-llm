@@ -10,15 +10,12 @@ BigDL Architecture
 What can you do with BigDL?
 ----------------------------
 
------------
-
 .. grid:: 1 1 3 3
 
     .. grid-item-card::
         :shadow: none
         :class-card: sd-mb-2 card-custom 
         :class-header: card-header-custom 
-        :class-body: card-body-custom 
         :class-footer: card-footer-custom 
 
         **Build Distributed AI on Spark with DLLib**
@@ -38,7 +35,6 @@ What can you do with BigDL?
         :shadow: none
         :class-card: sd-mb-2 card-custom 
         :class-header: card-header-custom 
-        :class-body: card-body-custom 
         :class-footer: card-footer-custom 
 
         **Accelerate TF/PyTorch programs with Nano**
@@ -57,7 +53,6 @@ What can you do with BigDL?
         :shadow: none
         :class-card: sd-mb-2 card-custom 
         :class-header: card-header-custom 
-        :class-body: card-body-custom 
         :class-footer: card-footer-custom 
 
         **Make TF/PyTorch programs distributed with Orca**
@@ -80,7 +75,6 @@ What can you do with BigDL?
         :shadow: none
         :class-card: sd-mb-2 card-custom 
         :class-header: card-header-custom 
-        :class-body: card-body-custom 
         :class-footer: card-footer-custom 
 
         **Build Time Series Applications with Chronos**
@@ -100,7 +94,6 @@ What can you do with BigDL?
         :shadow: none
         :class-card: sd-mb-2 card-custom 
         :class-header: card-header-custom 
-        :class-body: card-body-custom 
         :class-footer: card-footer-custom 
 
         **Build Large-scale Recommendation System with Friesian**
@@ -120,12 +113,96 @@ What can you do with BigDL?
         :shadow: none
         :class-card: sd-mb-2 card-custom 
         :class-header: card-header-custom 
-        :class-body: card-body-custom 
         :class-footer: card-footer-custom 
 
         **Build protected and Secured AI with PPML**
         ^^^
         - run DL applications unmodified in trustred cluster environment (`link <dummy.html>`_)
+        +++
+        .. button-ref:: doc/PPML/Overview/ppml
+            :expand:
+            :outline:
+            :class: card-button-custom 
+
+            Get Started
+
+
+Find the right document for you
+----------------------------
+.. grid:: 1 1 2 2
+
+    .. grid-item-card::
+        :text-align: center
+        :shadow: none
+        :class-card: card-custom 
+        :class-header: card-header-custom 
+        :class-footer: card-footer-custom 
+
+        **Getting Started**
+        ^^^
+        BigDL makes it easy for data scientists and data engineers to build end-to-end, distributed AI applications. 
+        The BigDL 2.0 release combines the original BigDL and Analytics Zoo projects.
+        +++
+        .. button-ref:: doc/Chronos/Overview/chronos
+            :expand:
+            :outline:
+            :class: card-button-custom 
+
+            Get Started
+
+    .. grid-item-card::
+        :text-align: center
+        :shadow: none
+        :class-card: card-custom 
+        :class-header: card-header-custom 
+        :class-footer: card-footer-custom 
+
+        **User Guides**
+
+        ^^^
+        BigDL makes it easy for data scientists and data engineers to build end-to-end, distributed AI applications. 
+        The BigDL 2.0 release combines the original BigDL and Analytics Zoo projects.
+
+        +++
+        .. button-ref:: doc/PPML/Overview/ppml
+            :expand:
+            :outline:
+            :class: card-button-custom 
+
+            Get Started
+.. grid:: 1 1 2 2
+
+    .. grid-item-card::
+        :text-align: center
+        :shadow: none
+        :class-card: card-custom 
+        :class-header: card-header-custom 
+        :class-footer: card-footer-custom 
+
+        **API reference**
+        ^^^
+        BigDL makes it easy for data scientists and data engineers to build end-to-end, distributed AI applications. 
+        The BigDL 2.0 release combines the original BigDL and Analytics Zoo projects.
+        +++
+        .. button-ref:: doc/Chronos/Overview/chronos
+            :expand:
+            :outline:
+            :class: card-button-custom 
+
+            Get Started
+
+    .. grid-item-card::
+        :text-align: center
+        :shadow: none
+        :class-card: card-custom 
+        :class-header: card-header-custom 
+        :class-footer: card-footer-custom
+
+        **Developer Guides**
+        ^^^
+        BigDL makes it easy for data scientists and data engineers to build end-to-end, distributed AI applications. 
+        The BigDL 2.0 release combines the original BigDL and Analytics Zoo projects.
+
         +++
         .. button-ref:: doc/PPML/Overview/ppml
             :expand:

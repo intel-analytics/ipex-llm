@@ -1,5 +1,5 @@
 .card-custom {
-    border: none;
+    border: 1px solid rgb(235, 235, 235);
 }
 
 .card-header-custom  {
@@ -15,11 +15,6 @@
 
 .card-footer-custom  {
     background-color: rgb(240, 240, 240);
-}
-
-.card-body-custom  {
-    border-left: 1px solid rgb(230, 230, 230);
-    border-right: 1px solid rgb(230, 230, 230);
 }
 
 .card-button-custom  {
