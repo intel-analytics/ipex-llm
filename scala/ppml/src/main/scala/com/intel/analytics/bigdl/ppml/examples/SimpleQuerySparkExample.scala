@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.ppml.PPMLContext
 import com.intel.analytics.bigdl.ppml.kms.{EHSMKeyManagementService, KMS_CONVENTION, SimpleKeyManagementService}
 import com.intel.analytics.bigdl.ppml.utils.{EncryptIOArguments, Supportive}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.functions.desc
+import org.apache.spark.sql.functions.{col, desc}
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.slf4j.LoggerFactory
@@ -56,6 +56,9 @@ object SimpleQuerySparkExample extends Supportive {
       val result = timing("3/4 doSQLOperations") {
         // union
         val unionDF = csvDF.unionByName(parquetDF)
+          .withColumnRenamed("age", "string_age")
+          .withColumn("age", col("string_age").cast("int"))
+          .drop("string_age")
         // filter
         val filterDF = unionDF.filter(unionDF("age").between(20, 40))
         // count people in each job
