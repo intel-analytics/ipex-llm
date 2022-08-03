@@ -68,7 +68,7 @@ object SimpleQuerySparkExample extends Supportive {
           .avg("age")
           .withColumnRenamed("avg(age)", "average_age")
         // join and sort
-        countDF.join(avgDF, "job").sort(desc("age"))
+        countDF.join(avgDF, "job").sort(desc("average_age"))
       }
 
       result.show()
