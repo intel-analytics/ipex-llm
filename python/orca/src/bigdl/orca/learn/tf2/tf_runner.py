@@ -496,6 +496,7 @@ class TFRunner:
                                         "method.")
 
     def load_model(self, filepath, custom_objects, compile):
+        """Load the model from provided filepath."""
         import tensorflow as tf
         self.model = tf.keras.models.load_model(filepath, custom_objects, compile)
 
