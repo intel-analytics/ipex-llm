@@ -78,7 +78,6 @@ jobs:
         tar -xf scala-2.11.8.tar -C /opt
         rm scala-2.11.8.tar
         ln -s /opt/scala-2.11.8 /opt/scala
-        export SCALA_HOME=/opt/scala
     - name: Run Test
       #run: python -m build
       run: |
