@@ -15,11 +15,11 @@ What can you do with BigDL?
 .. grid:: 1 1 3 3
 
     .. grid-item-card::
-        :text-align: center
         :shadow: none
-        :class-header: sd-bg-light
-        :class-footer: sd-bg-light
-        :class-card: sd-mb-2
+        :class-card: sd-mb-2 card-custom 
+        :class-header: card-header-custom 
+        :class-body: card-body-custom 
+        :class-footer: card-footer-custom 
 
         **Build Distributed AI on Spark with DLLib**
         ^^^
@@ -28,18 +28,18 @@ What can you do with BigDL?
 
         +++
         .. button-ref:: doc/DLLib/Overview/dllib
-            :color: primary
             :expand:
             :outline:
+            :class: card-button-custom 
 
             Get Started
 
     .. grid-item-card::
-        :text-align: center
         :shadow: none
-        :class-header: sd-bg-light
-        :class-footer: sd-bg-light
-        :class-card: sd-mb-2
+        :class-card: sd-mb-2 card-custom 
+        :class-header: card-header-custom 
+        :class-body: card-body-custom 
+        :class-footer: card-footer-custom 
 
         **Accelerate TF/PyTorch programs with Nano**
         ^^^
@@ -47,18 +47,18 @@ What can you do with BigDL?
         - Accelerate PyTorch Training  (`link <dummy.html>`_) and Inference  (`link <dummy.html>`_) with Nano
         +++
         .. button-ref:: doc/Nano/Overview/nano
-            :color: primary
             :expand:
             :outline:
+            :class: card-button-custom 
 
             Get Started
 
     .. grid-item-card::
-        :text-align: center
         :shadow: none
-        :class-header: sd-bg-light
-        :class-footer: sd-bg-light
-        :class-card: sd-mb-2
+        :class-card: sd-mb-2 card-custom 
+        :class-header: card-header-custom 
+        :class-body: card-body-custom 
+        :class-footer: card-footer-custom 
 
         **Make TF/PyTorch programs distributed with Orca**
         ^^^
@@ -68,20 +68,20 @@ What can you do with BigDL?
         - use distributed hyper paramter tuning (`link <dummy.html>`_)
         +++
         .. button-ref:: doc/Orca/Overview/Orca
-            :color: primary
             :expand:
             :outline:
+            :class: card-button-custom 
 
             Get Started
 
 .. grid:: 1 1 3 3
 
     .. grid-item-card::
-        :text-align: center
         :shadow: none
-        :class-header: sd-bg-light
-        :class-footer: sd-bg-light
-        :class-card: sd-mb-2
+        :class-card: sd-mb-2 card-custom 
+        :class-header: card-header-custom 
+        :class-body: card-body-custom 
+        :class-footer: card-footer-custom 
 
         **Build Time Series Applications with Chronos**
         ^^^
@@ -90,18 +90,18 @@ What can you do with BigDL?
         - accelerate and tune 3rd party time series models (`link <dummy.html>`_)
         +++
         .. button-ref:: doc/Chronos/Overview/chronos
-            :color: primary
             :expand:
             :outline:
+            :class: card-button-custom 
 
             Get Started
 
     .. grid-item-card::
-        :text-align: center
         :shadow: none
-        :class-header: sd-bg-light
-        :class-footer: sd-bg-light
-        :class-card: sd-mb-2
+        :class-card: sd-mb-2 card-custom 
+        :class-header: card-header-custom 
+        :class-body: card-body-custom 
+        :class-footer: card-footer-custom 
 
         **Build Large-scale Recommendation System with Friesian**
         ^^^
@@ -110,27 +110,27 @@ What can you do with BigDL?
 
         +++
         .. button-ref:: doc/PPML/Overview/ppml
-            :color: primary
             :expand:
             :outline:
+            :class: card-button-custom 
 
             Get Started
 
     .. grid-item-card::
-        :text-align: center
         :shadow: none
-        :class-header: sd-bg-light
-        :class-footer: sd-bg-light
-        :class-card: sd-mb-2
+        :class-card: sd-mb-2 card-custom 
+        :class-header: card-header-custom 
+        :class-body: card-body-custom 
+        :class-footer: card-footer-custom 
 
         **Build protected and Secured AI with PPML**
         ^^^
         - run DL applications unmodified in trustred cluster environment (`link <dummy.html>`_)
         +++
         .. button-ref:: doc/PPML/Overview/ppml
-            :color: primary
             :expand:
             :outline:
+            :class: card-button-custom 
 
             Get Started
 

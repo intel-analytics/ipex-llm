@@ -1,0 +1,33 @@
+.card-custom {
+    border: none;
+}
+
+.card-header-custom  {
+    background-color: rgb(230, 230, 230);
+    color: black;
+    text-align: center;
+}
+
+.card-header-custom > p{
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.card-footer-custom  {
+    background-color: rgb(240, 240, 240);
+}
+
+.card-body-custom  {
+    border-left: 1px solid rgb(230, 230, 230);
+    border-right: 1px solid rgb(230, 230, 230);
+}
+
+.card-button-custom  {
+    color: rgb(41, 128, 185) !important;
+    border: 1px solid rgb(41, 128, 185) !important;
+}
+
+.card-button-custom:hover {
+    color: white !important;
+    background-color: rgb(41, 128, 185) !important;
+}
