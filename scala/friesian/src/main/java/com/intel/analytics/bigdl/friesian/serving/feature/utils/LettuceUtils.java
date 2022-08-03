@@ -1,5 +1,6 @@
 package com.intel.analytics.bigdl.friesian.serving.feature.utils;
 
+import com.intel.analytics.bigdl.friesian.serving.utils.Utils;
 import io.lettuce.core.*;
 import io.lettuce.core.api.async.RedisStringAsyncCommands;
 import io.lettuce.core.api.sync.RedisStringCommands;
@@ -22,12 +23,13 @@ import org.apache.logging.log4j.Logger;
 import scala.Tuple2;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import com.intel.analytics.bigdl.friesian.serving.utils.Utils;
 
 public class LettuceUtils {
     private static final Logger logger = LogManager.getLogger(LettuceUtils.class.getName());
@@ -36,8 +38,8 @@ public class LettuceUtils {
     private static StatefulRedisClusterConnection<String, String> clusterConn = null;
     private static AbstractRedisClient redisClient;
     private final String redisKeyPrefix;
-    private RedisType redisType;
-    private int itemSlotType;
+    private final RedisType redisType;
+    private final int itemSlotType;
 
     private LettuceUtils(RedisType redisType, ArrayList<Tuple2<String, Integer>> redisHostPort,
                          String redisPrefix, String sentinelMasterUrl, String sentinelMasterName, int itemSlotType) {
@@ -93,7 +95,7 @@ public class LettuceUtils {
                                     ClusterTopologyRefreshOptions.RefreshTrigger.PERSISTENT_RECONNECTS)
                             .adaptiveRefreshTriggersTimeout(Duration.ofSeconds(30)).build();
             redisClusterClient.setOptions(ClusterClientOptions.builder()
-                            .topologyRefreshOptions(topologyRefreshOptions).build());
+                    .topologyRefreshOptions(topologyRefreshOptions).build());
             redisClient = redisClusterClient;
             clusterConn = redisClusterClient.connect();
         }
@@ -125,10 +127,9 @@ public class LettuceUtils {
     public static LettuceUtils getInstance(RedisType redisType, ArrayList<Tuple2<String, Integer>> redisHostPort,
                                            String redisPrefix, String sentinelMasterURL, String sentinelMasterName,
                                            int itemSlotType) {
-        if (instance == null) {
-            instance = new LettuceUtils(redisType, redisHostPort, redisPrefix, sentinelMasterURL,
-                    sentinelMasterName, itemSlotType);
-        }
+        // TODO: Thread-Safe
+        instance = new LettuceUtils(redisType, redisHostPort, redisPrefix, sentinelMasterURL,
+                sentinelMasterName, itemSlotType);
         return instance;
     }
 
@@ -178,6 +179,7 @@ public class LettuceUtils {
 
     public void MSet(String keyPrefix, String[][] dataArray) {
         Map<String, String> keyValue = new HashMap<>();
+        // TODO: duplicate code with MGET
         if (redisType == RedisType.CLUSTER && keyPrefix.equals("item") && itemSlotType != 0) {
             if (itemSlotType == 1) {
                 for (String[] data : dataArray) {
@@ -188,7 +190,7 @@ public class LettuceUtils {
                     }
                 }
             } else {
-                for (String[] data: dataArray) {
+                for (String[] data : dataArray) {
                     if (data.length != 2) {
                         logger.warn("Data size in dataArray should be 2, but got" + data.length);
                     } else {
@@ -213,7 +215,7 @@ public class LettuceUtils {
 
     public List<String> MGet(String keyPrefix, List<Integer> ids) {
         String[] keys = new String[ids.size()];
-        for (int i = 0; i < ids.size(); i ++) {
+        for (int i = 0; i < ids.size(); i++) {
             keys[i] = String.valueOf(ids.get(i));
         }
         return MGet(keyPrefix, keys);
@@ -223,18 +225,18 @@ public class LettuceUtils {
         String[] redisKeys = new String[keys.length];
         if (redisType == RedisType.CLUSTER && keyPrefix.equals("item") && itemSlotType != 0) {
             if (itemSlotType == 1) {
-                for (int i = 0; i < keys.length; i ++) {
+                for (int i = 0; i < keys.length; i++) {
                     redisKeys[i] = this.redisKeyPrefix + "{" + keyPrefix + "}:" + keys[i];
                 }
             } else {
-                for (int i = 0; i < keys.length; i ++) {
+                for (int i = 0; i < keys.length; i++) {
                     // TODO: keys[i] = ""
                     redisKeys[i] = "{" + this.redisKeyPrefix + keyPrefix + keys[i].charAt(keys[i].length() - 1) + "}:" +
                             keys[i];
                 }
             }
         } else {
-            for (int i = 0; i < keys.length; i ++) {
+            for (int i = 0; i < keys.length; i++) {
                 redisKeys[i] = this.redisKeyPrefix + keyPrefix + ":" + keys[i];
             }
         }
@@ -252,7 +254,7 @@ public class LettuceUtils {
         }
         List<String> values = new ArrayList<>(keys.length);
         if (result != null) {
-            for (KeyValue<String, String> kv: result) {
+            for (KeyValue<String, String> kv : result) {
                 if (kv.hasValue()) {
                     values.add(kv.getValue());
                 } else {

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 The BigDL Authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.intel.analytics.bigdl.friesian;
 
 import com.intel.analytics.bigdl.friesian.nearline.feature.FeatureInitializer;
@@ -13,8 +29,10 @@ import scala.collection.JavaConverters;
 import scala.collection.Seq;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.List;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -42,21 +60,45 @@ public class FeatureInitializerTest {
     }
 
     private void checkRedisRecord(LettuceUtils redis, String keyPrefix, Dataset<Row> dataset) {
-        dataset.collectAsList().forEach((row) -> {
+        List<Row> rawDataList = dataset.collectAsList();
+        List<String> redisDataList = redis.MGet(keyPrefix,
+                rawDataList.stream().map(row -> row.get(0).toString()).toArray(String[]::new));
+        for (int i = 0; i < rawDataList.size(); i++) {
+            Object[] redisData = (Object[]) EncodeUtils.bytesToObj(
+                    Base64.getDecoder().decode(redisDataList.get(i)));
+            // compare each column data between redis decoded row and row data row
+            for (int j = 0; j < Objects.requireNonNull(redisData).length; j++) {
+                assertEquals(redisData[j].toString(), rawDataList.get(i).get(1 + j).toString());
+            }
+        }
+
+        // test id generating code, del insert keys
+        rawDataList.forEach((row) -> {
             Object[] rowData = (Object[]) EncodeUtils.bytesToObj(
                     Base64.getDecoder().decode(
                             redis.getSync().getdel(generateID(keyPrefix, row.get(0).toString()))));
+            // compare each column data between redis decoded row and row data row
             for (int i = 0; i < Objects.requireNonNull(rowData).length; i++) {
                 assertEquals(rowData[i].toString(), row.get(1 + i).toString());
             }
-//            assertNotEquals(redis.getSync().getdel(generateID(keyPrefix, row.get(0).toString())), null);
+            // assertNotEquals(redis.getSync().getdel(generateID(keyPrefix, row.get(0).toString())), null);
         });
     }
 
     @Test
-    public void testInitialization() throws IOException, InterruptedException {
-        String configPath = "/home/xingyuan/projects/serving/BigDL/scala/friesian/src/test/resources/nearlineConfig/config_feature_vec.yaml";
-        FeatureInitializer.main(new String[]{"-c", configPath});
+    public void testFeatureInit() throws IOException, InterruptedException {
+        checkInit("testConfig/config_feature_init.yaml");
+    }
+
+    @Test
+    public void testFeatureVecInit() throws IOException, InterruptedException {
+        checkInit("testConfig/config_feature_vec_init.yaml");
+    }
+
+    public void checkInit(String configPath) throws IOException, InterruptedException {
+        URL resource = getClass().getClassLoader().getResource(configPath);
+        assert resource != null;
+        FeatureInitializer.main(new String[]{"-c", resource.getPath()});
         // you can get initialDataPath file from friesian-serving.tar.gz
 
         LettuceUtils redis = LettuceUtils.getInstance(NearlineUtils.helper().redisTypeEnum(),
@@ -65,7 +107,9 @@ public class FeatureInitializerTest {
                 NearlineUtils.helper().itemSlotType());
 
         if (NearlineUtils.helper().initialUserDataPath() != null) {
-            assertEquals(redis.getSchema("user"), String.join(",", NearlineUtils.helper().userFeatureColArr()));
+            // check user scheme
+            assertEquals(redis.getSync().getdel(NearlineUtils.helper().getRedisKeyPrefix() + "user"),
+                    String.join(",", NearlineUtils.helper().userFeatureColArr()));
             SparkSession sparkSession = SparkSession.builder().getOrCreate();
             Dataset<Row> dataset = sparkSession.read().parquet(NearlineUtils.helper().initialUserDataPath());
             dataset = dataset.select(NearlineUtils.helper().userIDColumn(),
@@ -74,7 +118,8 @@ public class FeatureInitializerTest {
         }
 
         if (NearlineUtils.helper().initialItemDataPath() != null) {
-            assertEquals(redis.getSchema("item"), String.join(",", NearlineUtils.helper().itemFeatureColArr()));
+            assertEquals(redis.getSync().getdel(NearlineUtils.helper().getRedisKeyPrefix() + "item"),
+                    String.join(",", NearlineUtils.helper().itemFeatureColArr()));
             SparkSession sparkSession = SparkSession.builder().getOrCreate();
             Dataset<Row> dataset = sparkSession.read().parquet(NearlineUtils.helper().initialItemDataPath());
             dataset = dataset.select(NearlineUtils.helper().itemIDColumn(),

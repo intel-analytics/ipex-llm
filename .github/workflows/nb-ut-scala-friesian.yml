@@ -2,7 +2,7 @@ name: Nightly Build UT Scala Friesian
 
 on:
   #pull_request:
-    #branches: [ "main" ]
+  #branches: [ "main" ]
   schedule:
     - cron: '0 15 * * *'
   # Allows you to run this workflow manually from the Actions tab
@@ -11,49 +11,60 @@ on:
 jobs:
   build:
 
-    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts, CLX, AVX512, Ettenmoors]
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts, CLX, AVX512, Ettenmoors ]
     permissions:
       contents: read
       packages: write
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK 8
-      uses: actions/setup-java@v3
-      with:
-        java-version: '8'
-        distribution: 'temurin'
-        #server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
-        settings-path: ${{ github.workspace }} # location for the settings.xml file
+      - uses: actions/checkout@v3
+      - name: Set up JDK 8
+        uses: actions/setup-java@v3
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+          #server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
+          settings-path: ${{ github.workspace }} # location for the settings.xml file
 
-    - name: Set up Maven
-      uses: stCarolas/setup-maven@v4.4
-      with:
-        maven-version: 3.8.2
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v4.4
+        with:
+          maven-version: 3.8.2
 
-    - name: Set up Maven Settings
-      uses: s4u/maven-settings-action@v2.6.0
-      with:
-        sonatypeSnapshots: true
-        apacheSnapshots: true
-        servers: |
-          [{
-            "id": "central",
-            "configuration": {
-              "httpConfiguration": {
-                "all": {
-                  "connectionTimeout": "3600000",
-                  "readTimeout": "3600000"
+      - name: Set up Redis
+        uses: superchargejs/redis-github-action@1.1.0
+        with:
+          redis-version: 7.0
+
+      - name: Set up Maven Settings
+        uses: s4u/maven-settings-action@v2.6.0
+        with:
+          sonatypeSnapshots: true
+          apacheSnapshots: true
+          servers: |
+            [{
+              "id": "central",
+              "configuration": {
+                "httpConfiguration": {
+                  "all": {
+                    "connectionTimeout": "3600000",
+                    "readTimeout": "3600000"
+                    }
                   }
                 }
-              }
-          }]
-        mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${NEXUS_URL}" }]'
+            }]
+          mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${NEXUS_URL}" }]'
 
+      - name: Prepare data
+        run: |
+          mkdir /tmp/friesian-unittest
+          cd /tmp/friesian-unittest
+          wget http://10.239.45.10:8081/repository/raw/analytics-zoo-data/friesian-serving-upload.tar.gz 
+          tar -zxf friesian-serving-upload.tar.gz
 
-    - name: Run tests
-      run: |
+      - name: Run tests
+        run: |
           export SPARK_LOCAL_HOSTNAME=localhost
           export KERAS_BACKEND=tensorflow
           cd scala
-          mvn "-DwildcardSuites=com.intel.analytics.bigdl.friesian" test -P spark_3.x -Dspark.version=3.1.2
+          mvn "-DwildcardSuites=com.intel.analytics.bigdl.friesian" "-Dtest=com.intel.analytics.bigdl.friesian" test -P spark_3.x -Dspark.version=3.1.2
