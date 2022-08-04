@@ -15,6 +15,7 @@
 #
 
 import argparse
+import os
 
 from bigdl.ppml.ppml_context import *
 from bigdl.ppml.utils.supportive import timing
@@ -39,12 +40,14 @@ python simple_query_example.py \
 
 @timing("1/4 load data from csv")
 def read_from_csv(context, mode, path):
-    return context.read(mode).option("header", "true").csv(path)
+    return context.read(mode)\
+        .option("header", "true")\
+        .csv(os.path.join(path, "people.csv"))
 
 
 @timing("2/4 load data from parquet")
 def read_from_parquet(context, mode, path):
-    return context.read(mode).parquet(path)
+    return context.read(mode).parquet(os.path.join(path, "people.parquet"))
 
 
 @timing("3/4 do sql operation")
