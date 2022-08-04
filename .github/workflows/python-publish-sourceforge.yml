@@ -109,19 +109,19 @@ jobs:
 
         # upload
         sshpass -p 'abcd1234!@#$QWER' \
- 	scp ./python/dllib/src/dist/bigdl_dllib*-py3-none-macosx_10_11_x86_64.whl \
+        scp ./python/dllib/src/dist/bigdl_dllib*-py3-none-macosx_10_11_x86_64.whl \
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/dllib-py
 
         sshpass -p 'abcd1234!@#$QWER' \
- 	scp ./python/orca/src/dist/bigdl_orca*-py3-none-macosx_10_11_x86_64.whl \
+        scp ./python/orca/src/dist/bigdl_orca*-py3-none-macosx_10_11_x86_64.whl \
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/orca-py
 
         sshpass -p 'abcd1234!@#$QWER' \
- 	scp ./python/friesian/src/dist/bigdl_friesian*-py3-none-macosx_10_11_x86_64.whl \
+        scp ./python/friesian/src/dist/bigdl_friesian*-py3-none-macosx_10_11_x86_64.whl \
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/friesian-py
 
         sshpass -p 'abcd1234!@#$QWER' \
- 	scp ./python/chronos/src/dist/bigdl_chronos*-py3-none-macosx_10_11_x86_64.whl \
+        scp ./python/chronos/src/dist/bigdl_chronos*-py3-none-macosx_10_11_x86_64.whl \
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/chronos-py
 
         #spark3
@@ -129,36 +129,36 @@ jobs:
         bash python/dev/release_default_linux_spark312.sh ${nb_version} false false
         # upload
         sshpass -p 'abcd1234!@#$QWER' \
- 	scp ./python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl \
+        scp ./python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl \
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/dllib-py-spark3
 
         sshpass -p 'abcd1234!@#$QWER' \
- 	scp ./python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl \
+        scp ./python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl \
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/orca-py-spark3
 
         sshpass -p 'abcd1234!@#$QWER' \
- 	scp ./python/friesian/src/dist/bigdl_friesian*-py3-none-manylinux1_x86_64.whl \
+        scp ./python/friesian/src/dist/bigdl_friesian*-py3-none-manylinux1_x86_64.whl \
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/friesian-py-spark3
 
         sshpass -p 'abcd1234!@#$QWER' \
- 	scp ./python/chronos/src/dist/bigdl_chronos*-py3-none-manylinux1_x86_64.whl \
+        scp ./python/chronos/src/dist/bigdl_chronos*-py3-none-manylinux1_x86_64.whl \
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/chronos-py-spark3
 
         ## mac ##
         bash python/dev/release_default_mac_spark312.sh ${nb_version} false false
         # upload
         sshpass -p 'abcd1234!@#$QWER' \
- 	scp ./python/dllib/src/dist/bigdl_dllib*-py3-none-macosx_10_11_x86_64.whl \
+        scp ./python/dllib/src/dist/bigdl_dllib*-py3-none-macosx_10_11_x86_64.whl \
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/dllib-py-spark3
 
         sshpass -p 'abcd1234!@#$QWER' \
- 	scp ./python/orca/src/dist/bigdl_orca*-py3-none-macosx_10_11_x86_64.whl \
+        scp ./python/orca/src/dist/bigdl_orca*-py3-none-macosx_10_11_x86_64.whl \
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/orca-py-spark3
 
         sshpass -p 'abcd1234!@#$QWER' \
- 	scp ./python/friesian/src/dist/bigdl_friesian*-py3-none-macosx_10_11_x86_64.whl \
+        scp ./python/friesian/src/dist/bigdl_friesian*-py3-none-macosx_10_11_x86_64.whl \
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/friesian-py-spark3
 
         sshpass -p 'abcd1234!@#$QWER' \
- 	scp ./python/chronos/src/dist/bigdl_chronos*-py3-none-macosx_10_11_x86_64.whl \
+        scp ./python/chronos/src/dist/bigdl_chronos*-py3-none-macosx_10_11_x86_64.whl \
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/chronos-py-spark3
