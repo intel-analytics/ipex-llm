@@ -17,15 +17,12 @@ class Workload:
             sys.exit(-1)
         else:
             output_msg = str(process.stdout, encoding='utf-8')
-            # print(output_msg)
-            print('extract logs begin')
+            print(output_msg)
             logs = self._extract_logs(output_msg)
-            print('extract logs end')
             self._save_logs(logs)
-            print('save logs end')
 
     @staticmethod
-    def _extract_log(output: str):
+    def _extract_logs(output: str):
         logs = [match.group(1) for match in re.finditer(">>>(.*?)<<<", output)]
         return logs
 
