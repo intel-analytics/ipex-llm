@@ -1,10 +1,10 @@
-# Privacy Preserving Machine Learning (PPML) on TDX Confidential Container Guide
+# Privacy Preserving Machine Learning (PPML) on Azure User Guide
 
 TDX-based Trusted Big Data ML allows the user to run end-to-end big data analytics application and BigDL model training with spark local and distributed cluster on Intel Trust Domain Extensions (Intel TDX).
 
-## Before running the code
+## Befor running the  code
 #### 1. Prepare the key
-BigDL PPML needs secured keys to enable spark security such as Authentication, RPC Encryption, Local Storage Encryption and TLS. You need to prepare the secure keys and keystores. In this tutorial, you can generate keys and keystores with root permission (test only, need input security password for keys).
+The ppml in bigdl needs secured keys to enable spark security such as Authentication, RPC Encryption, Local Storage Encryption and TLS, you need to prepare the secure keys and keystores. In this tutorial, you can generate keys and keystores with root permission (test only, need input security password for keys).
 
 ```bash
 git clone https://github.com/intel-analytics/BigDL.git
@@ -23,9 +23,19 @@ It will generate that in `./password`.
 ### 1. Start the client container to run applications in spark local mode
 ```bash
 ```bash
-docker run xxx or
-deploy-local-client-container.sh
+export KEYS_PATH=YOUR_LOCAL_KEYS_PATH
+export LOCAL_IP=YOUR_LOCAL_IP
+export DOCKER_IMAGE=intelanalytics/bigdl-k8s:latest
+
+sudo docker run -itd \
+    --privileged \
+    --net=host \
+    -v $KEYS_PATH:/opt/spark/work-dir/keys \
+    --name=spark-local-client \
+    -e LOCAL_IP=$LOCAL_IP \
+    $DOCKER_IMAGE bash
 ```
+Run `docker exec -it spark-local-client bash` to entry the container.
 ### 2. Run applications in spark local mode
 The example for run Spark Pi:
 ```bash
@@ -35,7 +45,7 @@ spark-submit-with-ppml.sh
 ## Run as Spark on Kubernetes Mode
 ### 1. Start the client container to run applications in spark K8s mode
 #### 1.1 Prepare the keys and password
-Please refer to the [previous section](#before-running-the-code) about preparing keys and password.
+Please refer to the previous section about [prepare keys](#Prepare the key) and [prepare password](#Prepare the password).
 
 ```bash
 bash ../../../scripts/generate-keys.sh
@@ -62,9 +72,28 @@ The secret created (YOUR_PASSWORD) should be the same as the password you specif
 #### 1.3 Start the client container
 
 ```bash
-docker run xxx or
-deploy-k8s-client-container.sh
+export K8S_MASTER=k8s://$(sudo kubectl cluster-info | grep 'https.*6443' -o -m 1)
+export KEYS_PATH=YOUR_LOCAL_KEYS_PATH
+export SECURE_PASSWORD_PATH=YOUR_LOCAL_PASSWORD_PATH
+export KUBECONFIG_PATH=KUBECONFIG_PATH
+export LOCAL_IP=YOUR_LOCAL_IP
+export DOCKER_IMAGE=intelanalytics/bigdl-k8s:latest
+
+sudo docker run -itd \
+    --privileged \
+    --net=host \
+    -v $KUBECONFIG_PATH:/root/.kube/config \
+    -v $KEYS_PATH:/opt/spark/work-dir/keys \
+    -v $SECURE_PASSWORD_PATH:/opt/spark/work-dir/password \
+    --name=spark-k8s-client \
+    -e LOCAL_IP=$LOCAL_IP \
+    -e RUNTIME_SPARK_MASTER=$K8S_MASTER \
+    -e RUNTIME_K8S_SERVICE_ACCOUNT=spark \
+    -e RUNTIME_K8S_SPARK_IMAGE=$DOCKER_IMAGE \
+    $DOCKER_IMAGE bash
 ```
+Run `docker exec -it spark-local-client bash` to entry the container.
+
 ### 2. Run application in spark K8S mode
 #### 2.1 Run application in K8S client mode
 The example for run Spark Pi:
