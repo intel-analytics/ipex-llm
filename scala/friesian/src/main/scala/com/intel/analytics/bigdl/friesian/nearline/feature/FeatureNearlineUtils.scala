@@ -81,10 +81,7 @@ object FeatureNearlineUtils {
       })
       featureRDD.foreachPartition { partition =>
         if (partition.nonEmpty) {
-          val redis = LettuceUtils.getInstance(NearlineUtils.helper.redisTypeEnum,
-            NearlineUtils.helper.redisHostPort, NearlineUtils.helper.redisKeyPrefix,
-            NearlineUtils.helper.redisSentinelMasterURL,
-            NearlineUtils.helper.redisSentinelMasterName, NearlineUtils.helper.itemSlotType)
+          val redis = LettuceUtils.getInstance()
           redis.MSet(keyPrefix, partition.toArray)
         }
       }

@@ -1,5 +1,7 @@
 package com.intel.analytics.bigdl.friesian.serving.feature.utils;
 
+import com.intel.analytics.bigdl.dllib.utils.Log4Error;
+import com.intel.analytics.bigdl.friesian.nearline.utils.NearlineUtils;
 import io.lettuce.core.*;
 import io.lettuce.core.api.async.RedisStringAsyncCommands;
 import io.lettuce.core.api.sync.RedisStringCommands;
@@ -136,7 +138,34 @@ public class LettuceUtils {
                             sentinelMasterURL, sentinelMasterName, itemSlotType);
                 }
             }
+        }
+        return instance;
+    }
 
+    public static LettuceUtils getInstance() {
+        if (instance == null) {
+            synchronized (LettuceUtils.class) {
+                if (instance == null) {
+                    if (NearlineUtils.helper() != null) {
+                        instance = new LettuceUtils(NearlineUtils.helper().redisTypeEnum(),
+                                NearlineUtils.helper().redisHostPort(),
+                                NearlineUtils.helper().getRedisKeyPrefix(),
+                                NearlineUtils.helper().redisSentinelMasterURL(),
+                                NearlineUtils.helper().redisSentinelMasterName(),
+                                NearlineUtils.helper().itemSlotType());
+                    } else if (Utils.helper() != null) {
+                        instance = new LettuceUtils(Utils.helper().redisTypeEnum(),
+                                Utils.helper().redisHostPort(),
+                                Utils.helper().getRedisKeyPrefix(),
+                                Utils.helper().redisSentinelMasterURL(),
+                                Utils.helper().redisSentinelMasterName(),
+                                Utils.helper().itemSlotType());
+                    } else {
+                        Log4Error.invalidInputError(false, "Please make sure " +
+                                "either of NearlineUtils or Utils is initialized.", null);
+                    }
+                }
+            }
         }
         return instance;
     }

@@ -13,11 +13,7 @@ public class FeatureInitializer {
     private LettuceUtils redis;
 
     FeatureInitializer() {
-        redis = LettuceUtils.getInstance(NearlineUtils.helper().redisTypeEnum(),
-                NearlineUtils.helper().redisHostPort(), NearlineUtils.helper().getRedisKeyPrefix(),
-                NearlineUtils.helper().redisSentinelMasterURL(),
-                NearlineUtils.helper().redisSentinelMasterName(),
-                NearlineUtils.helper().itemSlotType());
+        redis = LettuceUtils.getInstance();
     }
 
     public void init() {
