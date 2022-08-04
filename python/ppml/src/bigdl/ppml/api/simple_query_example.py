@@ -20,7 +20,7 @@ import os
 from bigdl.ppml.ppml_context import *
 from bigdl.ppml.utils.supportive import timing
 
-from pyspark.sql.functions import desc
+from pyspark.sql.functions import desc, col
 
 """
 execute the following command to run this example on local
@@ -53,7 +53,10 @@ def read_from_parquet(context, mode, path):
 @timing("3/4 do sql operation")
 def do_sql_operation(csv_df, parquet_df):
     # union
-    union_df = csv_df.unionByName(parquet_df)
+    union_df = csv_df.unionByName(parquet_df)\
+        .withColumnRenamed("age", "age_string")\
+        .withColumn("age", col("age_string").cast("int"))\
+        .drop("age_string")
     # filter
     filter_df = union_df.filter(union_df["age"].between(20, 40))
     # count people in each job
