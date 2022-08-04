@@ -25,16 +25,22 @@ jobs:
           distribution: 'temurin'
           #server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
           settings-path: ${{ github.workspace }} # location for the settings.xml file
+      
+      - name: Setup redis
+        uses: supercharge/redis-github-action@1.2.0
+        with: 
+          redis-version: 7
 
+      - name: Install redis cli # so we can test the server
+        run: sudo apt-get install -y redis-tools
+
+      - name: Verify that redis is up
+        run: redis-cli ping
+      
       - name: Set up Maven
         uses: stCarolas/setup-maven@v4.4
         with:
           maven-version: 3.8.2
-
-      - name: Set up Redis
-        uses: superchargejs/redis-github-action@1.1.0
-        with:
-          redis-version: 7.0
 
       - name: Set up Maven Settings
         uses: s4u/maven-settings-action@v2.6.0
