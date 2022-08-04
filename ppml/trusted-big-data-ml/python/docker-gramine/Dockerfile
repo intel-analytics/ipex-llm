@@ -193,7 +193,8 @@ ADD ./python-pslinux.patch ./python-pslinux.patch
 
 
 # python
-RUN apt install software-properties-common -y && \
+RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
+    apt install software-properties-common -y && \
     add-apt-repository ppa:deadsnakes/ppa -y && \
     apt-get install -y python3-minimal build-essential python3.7-distutils python3-apt python3.7 python3-setuptools python3-dev python3-pip libpython3.7 && \
     rm /usr/bin/python3 && \
@@ -217,7 +218,6 @@ RUN apt install software-properties-common -y && \
     python3 -m pip install toml==0.10.2 click jinja2 && \
     python3 -m ipykernel.kernelspec && \
 # Gramine
-    env DEBIAN_FRONTEND=noninteractive apt-get update && \
     env DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential autoconf bison gawk git ninja-build python3 python3-click python3-jinja2 wget pkg-config cmake libcurl4-openssl-dev libprotobuf-c-dev protobuf-c-compiler python3-cryptography python3-pip python3-protobuf nasm && \
     git clone https://github.com/analytics-zoo/gramine.git /gramine && \
     git clone https://github.com/intel/SGXDataCenterAttestationPrimitives.git /opt/intel/SGXDataCenterAttestationPrimitives && \
