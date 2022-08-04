@@ -37,20 +37,8 @@ For example, the `resnet50` subdirectory means a workload named `resnet50`, and 
 
     The `run.sh` is used to run workload, the environment variables which can be used in it directly are:
 
-    - `CONDA`: the install directory of conda
     - `ANALYTICS_ZOO_ROOT`: the root directory of BigDL repo
     - `$ANALYTICS_ZOO_ROOT/python/nano/benchmark`: this directory
-
-    The commands which can be used in it directly are:
-
-    - `git`
-    - `wget`
-    - `bash`
-    - `$CONDA/bin/conda`
-    - `source $CONDA/bin/activate <env_name>`: activate a conda environment
-    - `python`, `pip`: only can be used after activating conda environment
-
-    You can use `apt-get` to install what you want.
 
     Use this `run.sh` to install required environment and run your workload
 
