@@ -207,17 +207,6 @@ jobs:
           python -m pip install --upgrade setuptools==58.0.4
           python -m pip install --upgrade wheel
 
-      - name: Run benchmark sanity check
-        shell: bash
-        run: |
-          for script in python/nano/benchmark/*/run.sh
-          do
-            bash $script
-          done
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-          SANITY_CHECK: "1"
-
   nano-unit-test-ipex:
     # The type of runner that the job will run on
     runs-on: ${{ matrix.os }}
