@@ -25,12 +25,6 @@ jobs:
           distribution: 'temurin'
           #server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
           settings-path: ${{ github.workspace }} # location for the settings.xml file
-
-      - name: Install redis cli # so we can test the server
-        run: sudo apt-get install -y redis-tools
-
-      - name: Verify that redis is up
-        run: redis-cli ping
       
       - name: Set up Maven
         uses: stCarolas/setup-maven@v4.4
