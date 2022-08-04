@@ -93,7 +93,15 @@ if __name__ == "__main__":
     model = MyLightningModule()
     train_loader, val_loader = create_dataloaders()
 
-    # IPEX accelerated training by setting use_ipex=True
+    # IPEX Accelerated Training
+    #
+    # Intel Extension for PyTorch (a.k.a. IPEX) ecapsulates
+    # several optimizations for PyTorch and offers an extra
+    # performance boost on Intel hardware.
+    #
+    # In BigDL-Nano, you can easily use IPEX through the Trainer
+    # by setting use_ipex=True.
+    #
     trainer = Trainer(max_epochs=5, use_ipex=True)
     trainer.fit(model, train_dataloaders=train_loader)
     trainer.validate(model, dataloaders=val_loader)

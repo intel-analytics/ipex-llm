@@ -93,7 +93,16 @@ if __name__ == "__main__":
     model = MyLightningModule()
     train_loader, val_loader = create_dataloaders()
 
-    # Multi-instance training by setting num_processes=2
+    # Multi-instance Training
+    #
+    # It is often beneficial to use multiple instances
+    # for training if a server contains multiple sockets or
+    # many cores, so that the workload can make full use of
+    # all CPU cores.
+    #
+    # In BigDL-Nano, you can simply set the num_processes in
+    # Trainer to enable multi-instance training.
+    #
     trainer = Trainer(max_epochs=5, num_processes=2)
     trainer.fit(model, train_dataloaders=train_loader)
     trainer.validate(model, dataloaders=val_loader)
