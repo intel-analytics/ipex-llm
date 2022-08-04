@@ -82,7 +82,7 @@ jobs:
       run: |
           set -x 
           set -e
-          export BIGDL_ROOT=./
+          export BIGDL_ROOT=.
 
           chmod a+x apps/run-scala-app-test.sh
           apps/run-scala-app-test.sh
