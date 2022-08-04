@@ -80,9 +80,11 @@ jobs:
         #ln -s /opt/scala-2.11.8 /opt/scala
         export SCALA_HOME=/opt/scala-2.11.8
         if [ ! -d ${SCALA_HOME} ]; then
-	cd / && wget -c https://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz 
-        (cd / && gunzip < scala-2.11.8.tgz)|(cd /opt && tar -xvf -) 
-        rm /scala-2.11.8.tgz 
+	wget -c https://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz 
+        gunzip scala-2.11.8.tgz
+        tar -xf scala-2.11.8.tar -C /opt 
+        rm -rf scala-2.11.8.tgz 
+        fi
     - name: Run Test
       #run: python -m build
       run: |
