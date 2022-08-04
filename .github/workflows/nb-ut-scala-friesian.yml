@@ -11,7 +11,7 @@ on:
 jobs:
   build:
 
-    runs-on: [ self-hosted, ubuntu-20.04, CLX, AVX512, Ettenmoors ]
+    runs-on: [ self-hosted, ubuntu-20.04, CLX, AVX512, Ettenmoors, redis ]
     permissions:
       contents: read
       packages: write
@@ -25,11 +25,6 @@ jobs:
           distribution: 'temurin'
           #server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
           settings-path: ${{ github.workspace }} # location for the settings.xml file
-      
-      - name: Setup redis
-        uses: supercharge/redis-github-action@1.2.0
-        with: 
-          redis-version: 7
 
       - name: Install redis cli # so we can test the server
         run: sudo apt-get install -y redis-tools
