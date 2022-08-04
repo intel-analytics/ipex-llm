@@ -5,3 +5,4 @@ matplotlib==3.3.3
 opencv-python==4.2.0.34
 pandas==1.1.0
 matplotlib==3.3.3
+pytest==5.4.1
