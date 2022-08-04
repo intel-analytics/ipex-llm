@@ -80,9 +80,7 @@ jobs:
     - name: Run Test
       #run: python -m build
       run: |
-          set -x 
-          set -e
-
+          export FTP_URI=ftp://zoo:1234qwer@10.112.231.51
           chmod a+x apps/run-scala-app-test.sh
           apps/run-scala-app-test.sh
           
