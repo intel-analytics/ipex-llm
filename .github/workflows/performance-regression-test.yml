@@ -1,8 +1,8 @@
 name: Performance Regression Test
 
 on:
-  pull_request:
-    branches: [ "main" ]
+  # pull_request:
+    # branches: [ "main" ]
   schedule:
     - cron: '0 16 * * *'
   # Allows you to run this workflow manually from the Actions tab
@@ -26,7 +26,7 @@ jobs:
           pip install wheel
           pip install twine
 
-      - name: Run tests
+      - name: Run benchmark
         run: |
           python python/nano/benchmark/run.py resnet50
         env: 
