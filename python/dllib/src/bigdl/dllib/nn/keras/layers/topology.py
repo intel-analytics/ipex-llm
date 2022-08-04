@@ -26,7 +26,7 @@ from bigdl.dllib.nn.layer import SharedStaticUtils, Container
 
 class KerasModel(KerasLayer, Container, SharedStaticUtils):
     """
-    .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+    .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
 
@@ -209,13 +209,13 @@ class Sequential(KerasModel):
     >>> sequential = Sequential(name="seq1")
     creating: createKerasSequential
 
-    .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+    .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
 
     def __init__(self, jvalue=None, **kwargs):
-        warnings.warn("bigdl.dllib.keras is deprecated in 0.11. "
-                      "Recommend to use Analytics Zoo's Keras API.")
+        warnings.warn("bigdl.dllib.nn.keras is deprecated in 0.11. "
+                      "Recommend to use bigdl.dllib.keras.")
         super(Sequential, self).__init__(jvalue, **kwargs)
 
     @staticmethod
@@ -243,13 +243,13 @@ class Model(KerasModel):
     output: An output node or a list of output nodes.
     name: String to specify the name of the graph model. Default is None.
 
-    .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+    .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
 
     def __init__(self, input, output, jvalue=None, **kwargs):
-        warnings.warn("bigdl.dllib.keras is deprecated in BigDL 0.11."
-                      "Recommend to use Analytics Zoo's Keras API.")
+        warnings.warn("bigdl.dllib.nn.keras is deprecated in BigDL 0.11."
+                      "Recommend to use bigdl.dllib.keras.")
         super(Model, self).__init__(jvalue,
                                     to_list(input),
                                     to_list(output),
