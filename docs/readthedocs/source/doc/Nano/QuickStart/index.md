@@ -71,7 +71,7 @@
 
 ---------------------------
 
-- [**BigDL-Nano TensorFlow SparseEmbedding and SparseAdam**](./tensorflow_embedding.md)
+- [**BigDL-Nano TensorFlow SparseEmbedding and SparseAdam**](./tensorflow_embedding.html)
 
     > ![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][Nano_tensorflow_embedding]
 

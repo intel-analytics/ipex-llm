@@ -49,7 +49,7 @@ train_ds = train_ds.map(lambda img, label: (tf.image.resize(img, (img_size, img_
 test_ds = test_ds.map(lambda img, label: (tf.image.resize(img, (img_size, img_size)), tf.one_hot(label, num_classes))).batch(32)
 ```
 
-### Step 2: Build or Load Your Model
+### Step 2: Build Model
 Here we initialize the ResNet50 from `tf.keras.applications` with pre-trained ImageNet weights.
 ```python
 from tensorflow.keras.applications import ResNet50
@@ -70,7 +70,7 @@ model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=['accur
 model.fit(train_ds, epochs=1)
 ```
 
-### Step 3: Quantization using Intel Neural Compressor
+### Step 3: Quantization with Intel Neural Compressor
 [`Model.quantize()`](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Nano/tensorflow.html#bigdl.nano.tf.keras.Model) return a Keras module with desired precision and accuracy. Taking Resnet50 as an example, you can add quantization as below.
 
 ```python

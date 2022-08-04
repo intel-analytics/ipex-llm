@@ -47,7 +47,7 @@ ds_train = ds_train.cache().repeat().shuffle(1000).map(preprocessing).batch(batc
 ds_test = ds_test.map(preprocessing).batch(batch_size, drop_remainder=True).prefetch(AUTOTUNE)
 ```
 
-### **Step 3: Build Your Model**
+### **Step 3: Build Model**
 BigDL-Nano's `Model` (`bigdl.nano.tf.keras.Model`) and `Sequential` (`bigdl.nano.tf.keras.Sequential`) classes have identical APIs with `tf.keras.Model` and `tf.keras.Sequential`.
 Here we initialize the model with pre-trained ImageNet weights, and we fine-tune it on the Stanford Dogs dataset.
 ```python

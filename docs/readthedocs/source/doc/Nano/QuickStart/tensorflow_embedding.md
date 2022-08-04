@@ -35,7 +35,7 @@ import tensorflow_datasets as tfds
 )
 ```
 
-### **Step 3: Parepre the data**
+### **Step 3: Parepre the Data**
 In particular, we remove <br /> tags.
 ```python
 import tensorflow as tf
@@ -82,7 +82,7 @@ val_ds = val_ds.cache().prefetch(buffer_size=10)
 test_ds = test_ds.cache().prefetch(buffer_size=10)
 ```
 
-### **Step 4: Build model**
+### **Step 4: Build Model**
 `bigdl.nano.tf.keras.Embedding` is a slightly modified version of `tf.keras.Embedding` layer, this embedding layer only applies regularizer to the output of the embedding layer, so that the gradient to embeddings is sparse. `bigdl.nano.tf.optimzers.Adam` is a variant of the `Adam` optimizer that handles sparse updates more efficiently. 
 Here we create two models, one using normal Embedding layer and Adam optimizer, the other using `SparseEmbedding` and `SparseAdam`.
 ```python
@@ -119,7 +119,7 @@ model = Model(inputs, predictions)
 model.compile(loss="binary_crossentropy", optimizer=SparseAdam(), metrics=["accuracy"])
 ```
 
-### **Step 5: Train the model**
+### **Step 5: Training**
 ```python
 # Fit the model using the train and val datasets.
 model.fit(train_ds, validation_data=val_ds, epochs=3)
