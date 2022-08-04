@@ -22,12 +22,12 @@ What can you do with BigDL?
 
     .. grid-item-card::
         :shadow: none
-        :class-card: sd-mb-2 card-custom 
-        :class-header: card-header-custom 
-        :class-footer: card-footer-custom 
+        :class-card: sd-mb-2 doc-card 
+        :class-header: doc-card-header 
+        :class-footer: doc-card-footer 
 
         **Build Distributed AI on Spark with** |br|
-        |bigdl-logo| **DLLib**
+        |bigdl-logo| **DLlib**
         ^^^
         - Build Deep Learning programs with Scala and run on Spark (`link <dummy.html>`_)
         - Build Deep Learning programs in **Python** and run on Spark (`link <dummy.html>`_)
@@ -35,16 +35,15 @@ What can you do with BigDL?
         +++
         .. button-ref:: doc/DLLib/Overview/dllib
             :expand:
-            :outline:
-            :class: card-button-custom 
+            :class: doc-button doc-button-outlined
 
             Get Started
 
     .. grid-item-card::
         :shadow: none
-        :class-card: sd-mb-2 card-custom 
-        :class-header: card-header-custom 
-        :class-footer: card-footer-custom 
+        :class-card: sd-mb-2 doc-card 
+        :class-header: doc-card-header 
+        :class-footer: doc-card-footer 
 
         **Accelerate TF/PyTorch Programs with** |br|
         |bigdl-logo| **Nano**
@@ -54,16 +53,15 @@ What can you do with BigDL?
         +++
         .. button-ref:: doc/Nano/Overview/nano
             :expand:
-            :outline:
-            :class: card-button-custom 
+            :class: doc-button doc-button-outlined
 
             Get Started
 
     .. grid-item-card::
         :shadow: none
-        :class-card: sd-mb-2 card-custom 
-        :class-header: card-header-custom 
-        :class-footer: card-footer-custom 
+        :class-card: sd-mb-2 doc-card 
+        :class-header: doc-card-header 
+        :class-footer: doc-card-footer 
 
         **Make TF/PyTorch Programs Distributed with** |br|
         |bigdl-logo| **Orca**
@@ -75,8 +73,7 @@ What can you do with BigDL?
         +++
         .. button-ref:: doc/Orca/Overview/Orca
             :expand:
-            :outline:
-            :class: card-button-custom 
+            :class: doc-button doc-button-outlined
 
             Get Started
 
@@ -84,9 +81,9 @@ What can you do with BigDL?
 
     .. grid-item-card::
         :shadow: none
-        :class-card: sd-mb-2 card-custom 
-        :class-header: card-header-custom 
-        :class-footer: card-footer-custom 
+        :class-card: sd-mb-2 doc-card 
+        :class-header: doc-card-header 
+        :class-footer: doc-card-footer 
 
         **Build Time Series Applications with** |br|
         |bigdl-logo| **Chronos**
@@ -97,16 +94,15 @@ What can you do with BigDL?
         +++
         .. button-ref:: doc/Chronos/Overview/chronos
             :expand:
-            :outline:
-            :class: card-button-custom 
+            :class: doc-button doc-button-outlined
 
             Get Started
 
     .. grid-item-card::
         :shadow: none
-        :class-card: sd-mb-2 card-custom 
-        :class-header: card-header-custom 
-        :class-footer: card-footer-custom 
+        :class-card: sd-mb-2 doc-card 
+        :class-header: doc-card-header 
+        :class-footer: doc-card-footer 
 
         **Build Large-scale Recommendation System with** |br|
         |bigdl-logo| **Friesian**
@@ -117,26 +113,24 @@ What can you do with BigDL?
         +++
         .. button-ref:: doc/PPML/Overview/ppml
             :expand:
-            :outline:
-            :class: card-button-custom 
+            :class: doc-button doc-button-outlined
 
             Get Started
 
     .. grid-item-card::
         :shadow: none
-        :class-card: sd-mb-2 card-custom 
-        :class-header: card-header-custom 
-        :class-footer: card-footer-custom 
+        :class-card: sd-mb-2 doc-card 
+        :class-header: doc-card-header 
+        :class-footer: doc-card-footer 
 
-        **Build protected and Secured AI with** |br|
+        **Build Protected and Secured AI with** |br|
         |bigdl-logo| **PPML**
         ^^^
         - run DL applications unmodified in trustred cluster environment (`link <dummy.html>`_)
         +++
         .. button-ref:: doc/PPML/Overview/ppml
             :expand:
-            :outline:
-            :class: card-button-custom 
+            :class: doc-button doc-button-outlined
 
             Get Started
 
@@ -148,82 +142,80 @@ Find the right document for you
     .. grid-item-card::
         :text-align: center
         :shadow: none
-        :class-card: card-custom 
-        :class-header: card-header-custom 
-        :class-footer: card-footer-custom 
+        :class-card: doc-card 
+        :class-header: doc-card-header doc-card-header-with-icon
+        :class-footer: doc-card-footer 
 
-        **Getting Started**
+        **Getting Started** |br|
+        :material-outlined:`rocket_launch;2.5em`
         ^^^
         BigDL makes it easy for data scientists and data engineers to build end-to-end, distributed AI applications. 
         The BigDL 2.0 release combines the original BigDL and Analytics Zoo projects.
         +++
-        .. button-ref:: doc/Chronos/Overview/chronos
-            :expand:
-            :outline:
-            :class: card-button-custom 
+        .. raw:: html
 
-            Get Started
+            <a href="doc/PPML/Overview/ppml.html" class="doc-badge"> Getting Strated </a>
 
     .. grid-item-card::
         :text-align: center
         :shadow: none
-        :class-card: card-custom 
-        :class-header: card-header-custom 
-        :class-footer: card-footer-custom 
+        :class-card: doc-card 
+        :class-header: doc-card-header doc-card-header-with-icon
+        :class-footer: doc-card-footer
 
-        **User Guides**
+        **User Guides** |br|
+        :material-outlined:`auto_stories;2.5em`
 
         ^^^
         BigDL makes it easy for data scientists and data engineers to build end-to-end, distributed AI applications. 
         The BigDL 2.0 release combines the original BigDL and Analytics Zoo projects.
 
         +++
-        .. button-ref:: doc/PPML/Overview/ppml
-            :expand:
-            :outline:
-            :class: card-button-custom 
+        .. raw:: html
 
-            Get Started
+            <a href="doc/PPML/Overview/ppml.html" class="doc-badge"> DLLib </a>
+            <a href="doc/PPML/Overview/ppml.html" class="doc-badge"> Nano </a>
+            <a href="doc/PPML/Overview/ppml.html" class="doc-badge"> Orca </a>
+            <a href="doc/PPML/Overview/ppml.html" class="doc-badge"> Chronos </a>
+            <a href="doc/PPML/Overview/ppml.html" class="doc-badge"> Friesian </a>
+            <a href="doc/PPML/Overview/ppml.html" class="doc-badge"> PPML </a>
+        
 .. grid:: 1 1 2 2
 
     .. grid-item-card::
         :text-align: center
         :shadow: none
-        :class-card: card-custom 
-        :class-header: card-header-custom 
-        :class-footer: card-footer-custom 
+        :class-card: doc-card 
+        :class-header: doc-card-header doc-card-header-with-icon
+        :class-footer: doc-card-footer 
 
-        **API reference**
+        **API reference** |br|
+        :material-outlined:`api;2.5em`
         ^^^
         BigDL makes it easy for data scientists and data engineers to build end-to-end, distributed AI applications. 
         The BigDL 2.0 release combines the original BigDL and Analytics Zoo projects.
         +++
-        .. button-ref:: doc/Chronos/Overview/chronos
-            :expand:
-            :outline:
-            :class: card-button-custom 
+        .. raw:: html
 
-            Get Started
+            <a href="doc/PPML/Overview/ppml.html" class="doc-badge"> API reference </a>
 
     .. grid-item-card::
         :text-align: center
         :shadow: none
-        :class-card: card-custom 
-        :class-header: card-header-custom 
-        :class-footer: card-footer-custom
+        :class-card: doc-card 
+        :class-header: doc-card-header doc-card-header-with-icon
+        :class-footer: doc-card-footer
 
-        **Developer Guides**
+        **Developer Guides** |br|
+        :material-outlined:`terminal;2.5em`
         ^^^
         BigDL makes it easy for data scientists and data engineers to build end-to-end, distributed AI applications. 
         The BigDL 2.0 release combines the original BigDL and Analytics Zoo projects.
 
         +++
-        .. button-ref:: doc/PPML/Overview/ppml
-            :expand:
-            :outline:
-            :class: card-button-custom 
+        .. raw:: html
 
-            Get Started
+            <a href="doc/PPML/Overview/ppml.html" class="doc-badge"> Developer Guides </a>
 
 .. meta::
    :google-site-verification: hG9ocvSRSRTY5z8g6RLn97_tdJvYRx_tVGhNdtZZavM

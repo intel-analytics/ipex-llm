@@ -1,27 +1,55 @@
-.card-custom {
+/* For card */
+.doc-card {
     border: 1px solid rgb(235, 235, 235);
 }
 
-.card-header-custom  {
+/* For card header */
+.doc-card-header  {
     background-color: rgb(230, 230, 230);
     color: black;
     text-align: center;
 }
 
-.card-header-custom > b, strong{
+.doc-card-header > b, strong{
     font-size: 17px;
 }
 
-.card-footer-custom  {
+/* For card header with icon, need to be used together with doc-card-header */
+.doc-card-header-with-icon svg {
+    margin-top: 5px;
+}
+
+/* For card footer*/
+.doc-card-footer  {
     background-color: rgb(240, 240, 240);
 }
 
-.card-button-custom  {
+/* For normal button*/
+.doc-button  {
     color: rgb(41, 128, 185) !important;
+}
+
+.doc-button:hover {
+    color: rgb(116, 196, 249) !important;
+}
+
+/* For outlined button, need to be used together with doc-button */
+.doc-button-outlined {
     border: 1px solid rgb(41, 128, 185) !important;
 }
 
-.card-button-custom:hover {
+.doc-button-outlined:hover {
     color: white !important;
     background-color: rgb(41, 128, 185) !important;
+}
+
+/* For small button/badge */
+.doc-badge {
+    color: rgb(41, 128, 185) !important;
+    margin: 5px;
+    font-size: 14px;
+}
+
+.doc-badge:hover {
+    color: rgb(116, 196, 249) !important;
 }
