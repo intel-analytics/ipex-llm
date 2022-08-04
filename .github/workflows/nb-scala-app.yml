@@ -9,8 +9,8 @@
 name: Nightly Build Scala App
 
 on:
-  #pull_request:
-    #branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
   #release:
    # types: [published]
   schedule:
