@@ -142,6 +142,7 @@ ENV SPARK_VERSION                       ${SPARK_VERSION}
 ENV SPARK_HOME                          /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}
 ENV BIGDL_HOME                          /ppml/trusted-big-data-ml/work/bigdl-${BIGDL_VERSION}
 ENV JAVA_HOME                           /opt/jdk8
+ENV PATH                                ${JAVA_HOME}/bin:${PATH}
 ENV LOCAL_IP                            127.0.0.1
 ENV SGX_MEM_SIZE                        32G
 ENV SGX_LOG_LEVEL                       error
@@ -159,7 +160,6 @@ ENV TINI_VERSION                        $TINI_VERSION
 ENV PYTHONPATH                          /usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages
 ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
-ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
 RUN mkdir -p /ppml/trusted-big-data-ml/work && \
     mkdir -p /ppml/trusted-big-data-ml/work/lib && \
