@@ -87,3 +87,4 @@ jobs:
           rm -rf /opt/scala-2.11.8 scala-2.11.8.tar
       env:
         BIGDL_ROOT: ${{ github.workspace }}
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
