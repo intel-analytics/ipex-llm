@@ -107,10 +107,10 @@
         <findbugs.version>3.0.0</findbugs.version>
 
         <!-- define the Java language version used by the compiler -->
-        <java.version>1.7</java.version>
-        <javac.version>1.7</javac.version>
-        <scala.major.version>2.11</scala.major.version>
-        <scala.version>2.11.8</scala.version>
+        <java.version>1.8</java.version>
+        <javac.version>1.8</javac.version>
+        <scala.major.version>2.12</scala.major.version>
+        <scala.version>2.12.2</scala.version>
         <scala.macros.version>2.1.0</scala.macros.version>
         <scalatest.version>3.0.7</scalatest.version>
 
@@ -677,8 +677,8 @@
                 <javac.version>1.8</javac.version>
                 <spark-version.project>2.0</spark-version.project>
                 <spark.version>2.4.6</spark.version>
-                <scala.major.version>2.11</scala.major.version>
-                <scala.version>2.11.8</scala.version>
+                <scala.major.version>2.12</scala.major.version>
+                <scala.version>2.12.2</scala.version>
                 <scala.macros.version>2.1.0</scala.macros.version>
             </properties>
             <build>
