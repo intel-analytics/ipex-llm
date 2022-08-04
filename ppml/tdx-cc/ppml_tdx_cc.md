@@ -43,7 +43,12 @@ Run `docker exec -it spark-local-client bash` to entry the container.
 ### 2. Run applications in spark local mode
 The example for run Spark Pi:
 ```bash
-spark-submit-with-ppml.sh
+bash spark-submit-with-ppml-tdx.sh \
+    --master local[4] \
+    --name spark-pi \
+    --class org.apache.spark.examples.SparkPi \
+    --conf spark.executor.instances=1 \
+    local:///opt/spark/examples/jars/spark-examples_2.12-3.1.2.jar
 ```
 
 ## Run as Spark on Kubernetes Mode
