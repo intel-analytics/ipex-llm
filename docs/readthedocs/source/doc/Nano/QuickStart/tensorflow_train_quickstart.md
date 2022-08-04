@@ -22,7 +22,7 @@ from bigdl.nano.tf.keras import Model, Sequential
 ```
 
 ### **Step 2: Load the Data**
-Here we load data from tensorflow_datasets(hereafter TFDS). The dataset contains images of 120 breeds of dogs around the world. There are 20,580 images, out of which 12,000 are used for training and 8580 for testing.
+Here we load data from tensorflow_datasets(hereafter [TFDS](https://www.tensorflow.org/datasets)). The [Stanford Dogs](http://vision.stanford.edu/aditya86/ImageNetDogs/main.html) dataset contains images of 120 breeds of dogs around the world. There are 20,580 images, out of which 12,000 are used for training and 8580 for testing.
 ```python
 import tensorflow_datasets as tfds
 (ds_train, ds_test), ds_info = tfds.load(
@@ -48,8 +48,8 @@ ds_test = ds_test.map(preprocessing).batch(batch_size, drop_remainder=True).pref
 ```
 
 ### **Step 3: Build Your Model**
-BigDL-Nano's `Model` and `Sequential` classes have identical APIs with `tf.keras.Model` and `tf.keras.Sequential`.
-Here we initialize the model with pre-trained ImageNet weights, and we fine-tune it on the Stanford Dogs dataset. We use the `data_augmentation` preprocessor and make it part of the model.
+BigDL-Nano's `Model` (`bigdl.nano.tf.keras.Model`) and `Sequential` (`bigdl.nano.tf.keras.Sequential`) classes have identical APIs with `tf.keras.Model` and `tf.keras.Sequential`.
+Here we initialize the model with pre-trained ImageNet weights, and we fine-tune it on the Stanford Dogs dataset.
 ```python
 from tensorflow.keras import layers
 from tensorflow.keras.applications import EfficientNetB0
@@ -97,7 +97,6 @@ def unfreeze_model(model):
 steps_per_epoch = ds_info.splits['train'].num_examples // batch_size
 model_default = make_model()
 
-start = time()
 model_default.fit(ds_train,
                   epochs=15,
                   validation_data=ds_test,
@@ -113,7 +112,6 @@ BigDL-Nano makes it very easy to conduct multi-instance training correctly. You 
 ```python
 model_multi = make_model()
 
-start = time()
 model_multi.fit(ds_train,
                 epochs=15, 
                 validation_data=ds_test, 
@@ -127,7 +125,6 @@ his_multi = model_multi.fit(ds_train,
                 steps_per_epoch=steps_per_epoch,
                 num_processes=4, 
                 backend='multiprocessing')
-fit_time_multi = time() - start
 ```
 
 You can find the detailed result of training from [here](https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/tensorflow/tutorial/tensorflow_fit.ipynb)

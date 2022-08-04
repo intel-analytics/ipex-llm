@@ -1,5 +1,5 @@
 # BigDL-Nano TensorFlow SparseEmbedding and SparseAdam
-**In this guide we demonstrates how to use SparseEmbedding and SparseAdam to obtain stroger performance with sparse gradient.**
+**In this guide we demonstrates how to use `SparseEmbedding` and `SparseAdam` to obtain stroger performance with sparse gradient.**
 
 ### **Step 0: Prepare Environment**
 
@@ -22,7 +22,7 @@ from bigdl.nano.tf.keras import Model, Sequential
 ```
 
 ### **Step 2: Load the data**
-We use imdb_reviews a large movie review dataset for demonstration.
+We demonstrate with imdb_reviews, a large movie review dataset.
 ```python
 import tensorflow_datasets as tfds
 (raw_train_ds, raw_val_ds, raw_test_ds), info = tfds.load(
@@ -83,8 +83,8 @@ test_ds = test_ds.cache().prefetch(buffer_size=10)
 ```
 
 ### **Step 4: Build model**
-`bigdl.nano.tf.keras.Embedding` is a slightly modified version of tf.keras.Embedding layer, this embedding layer only applies regularizer to the output of the embedding layer, so that the gradient to embeddings is sparse. `bigdl.nano.tf.optimzers.Adam` is a variant of the Adam optimizer that handles sparse updates more efficiently. 
-Here we create two models, one using normal Embedding layer and Adam optimizer, the other using SparseEmbedding and SparseAdam.
+`bigdl.nano.tf.keras.Embedding` is a slightly modified version of `tf.keras.Embedding` layer, this embedding layer only applies regularizer to the output of the embedding layer, so that the gradient to embeddings is sparse. `bigdl.nano.tf.optimzers.Adam` is a variant of the `Adam` optimizer that handles sparse updates more efficiently. 
+Here we create two models, one using normal Embedding layer and Adam optimizer, the other using `SparseEmbedding` and `SparseAdam`.
 ```python
 from tensorflow.keras import layers
 from bigdl.nano.tf.keras.layers import Embedding

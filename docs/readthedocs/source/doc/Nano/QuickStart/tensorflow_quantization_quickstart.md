@@ -1,5 +1,5 @@
 ## BigDL-Nano TensorFLow Quantization Quickstart
-**In this guide we will demonstrates how to apply Post-training quantization on a keras model with BigDL-Nano in 4 simple steps.**
+**In this guide we will demonstrates how to apply post-training quantization on a keras model with BigDL-Nano in 4 simple steps.**
 
 ### **Step 0: Prepare Environment**
 
@@ -14,7 +14,7 @@ pip install --pre --upgrade bigdl-nano[tensorflow]
 source bigdl-nano-init
 ```
 
-By default, Intel Neural Compressor is not installed with BigDL-Nano. So if you determine to use it as your quantization backend, you'll need to install it first:
+By default, [Intel Neural Compressor](https://github.com/intel/neural-compressor) is not installed with BigDL-Nano. So if you determine to use it as your quantization backend, you'll need to install it first:
 ```bash
 pip install neural-compressor==1.11.0
 ```
@@ -27,7 +27,7 @@ from bigdl.nano.tf.keras import Model, Sequential
 
 ### Step 1: Loading Data
 
-Here we load data from tensorflow_datasets. The Imagenette is a subset of 10 easily classified classes from the Imagenet dataset.
+Here we load data from tensorflow_datasets. The [Imagenette](https://github.com/fastai/imagenette) is a subset of 10 easily classified classes from the Imagenet dataset.
 
 ```python
 import tensorflow_datasets as tfds
@@ -71,8 +71,7 @@ model.fit(train_ds, epochs=1)
 ```
 
 ### Step 3: Quantization using Intel Neural Compressor
-`Model.quantize()` return a Keras module with desired precision and accuracy. Taking Resnet50 as an example, you can add quantization as below.
-Get more information about `Model.quantize()` from [here](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Nano/tensorflow.html#bigdl.nano.tf.keras.Model).
+[`Model.quantize()`](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Nano/tensorflow.html#bigdl.nano.tf.keras.Model) return a Keras module with desired precision and accuracy. Taking Resnet50 as an example, you can add quantization as below.
 
 ```python
 from tensorflow.keras.metrics import CategoricalAccuracy
