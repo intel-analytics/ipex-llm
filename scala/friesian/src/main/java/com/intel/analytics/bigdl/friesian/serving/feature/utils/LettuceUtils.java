@@ -128,8 +128,10 @@ public class LettuceUtils {
                                            String redisPrefix, String sentinelMasterURL, String sentinelMasterName,
                                            int itemSlotType) {
         // TODO: Thread-Safe
-        instance = new LettuceUtils(redisType, redisHostPort, redisPrefix, sentinelMasterURL,
-                sentinelMasterName, itemSlotType);
+        if (instance == null) {
+            instance = new LettuceUtils(redisType, redisHostPort, redisPrefix, sentinelMasterURL,
+                    sentinelMasterName, itemSlotType);
+        }
         return instance;
     }
 

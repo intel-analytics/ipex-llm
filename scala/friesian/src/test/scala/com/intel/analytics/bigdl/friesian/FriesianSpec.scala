@@ -18,7 +18,6 @@ package com.intel.analytics.bigdl.friesian
 
 import com.intel.analytics.bigdl.dllib.NNContext
 import com.intel.analytics.bigdl.friesian.python.PythonFriesian
-import com.intel.analytics.bigdl.grpc.ConfigParser
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.core.config.Configurator
 import org.apache.spark.rdd.RDD
@@ -32,15 +31,12 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable
 
 class FriesianSpec extends ZooSpecHelper {
-  val resource: URL = getClass.getClassLoader.getResource("")
-  val friesian: PythonFriesian[Float] = PythonFriesian.ofFloat()
-  var testHelper: TestHelper = _
   var sqlContext: SQLContext = _
   var sc: SparkContext = _
+  val resource: URL = getClass.getClassLoader.getResource("")
+  val friesian = PythonFriesian.ofFloat()
 
   override def doBefore(): Unit = {
-    val configPath = resource.getFile + "testConfig/config_friesian.yaml"
-    testHelper = ConfigParser.loadConfigFromPath(configPath, classOf[TestHelper])
     Configurator.setLevel("org", Level.ERROR)
     val conf = new SparkConf().setMaster("local[1]").setAppName("FriesianTest")
     sc = NNContext.initNNContext(conf)
@@ -54,7 +50,8 @@ class FriesianSpec extends ZooSpecHelper {
   }
 
   "Fill NA int" should "work properly" in {
-    val df = sqlContext.read.parquet(testHelper.dataFramePath)
+    val path = resource.getFile + "/data1.parquet"
+    val df = sqlContext.read.parquet(path)
     val cols = Array("col_1", "col_2")
     val dfFilled = friesian.fillNa(df, 0, cols.toList.asJava)
     TestUtils.conditionFailTest(dfFilled.filter(dfFilled("col_1").isNull).count == 0)
@@ -62,7 +59,8 @@ class FriesianSpec extends ZooSpecHelper {
   }
 
   "Fill NA string" should "work properly" in {
-    val df = sqlContext.read.parquet(testHelper.dataFramePath)
+    val path = resource.getFile + "/data1.parquet"
+    val df = sqlContext.read.parquet(path)
     val cols = Array("col_4", "col_5")
     val dfFilled = friesian.fillNa(df, "bb", cols.toList.asJava)
     TestUtils.conditionFailTest(dfFilled.filter(dfFilled("col_4").isNull).count == 0)
@@ -70,7 +68,8 @@ class FriesianSpec extends ZooSpecHelper {
   }
 
   "Fill NA string int" should "throw exception" in {
-    val df = sqlContext.read.parquet(testHelper.dataFramePath)
+    val path = resource.getFile + "/data1.parquet"
+    val df = sqlContext.read.parquet(path)
     val cols = Array("col_1", "col_4")
     assertThrows[IllegalArgumentException] {
       friesian.fillNa(df, "bb", cols.toList.asJava)
@@ -78,7 +77,8 @@ class FriesianSpec extends ZooSpecHelper {
   }
 
   "Fill NAInt" should "work properly" in {
-    val df = sqlContext.read.parquet(testHelper.dataFramePath)
+    val path = resource.getFile + "/data1.parquet"
+    val df = sqlContext.read.parquet(path)
     val dfFilled = friesian.fillNaInt(df, 3)
     TestUtils.conditionFailTest(dfFilled.filter(dfFilled("col_2").isNull).count == 0)
     TestUtils.conditionFailTest(dfFilled.filter(dfFilled("col_3").isNull).count == 0)
@@ -88,7 +88,8 @@ class FriesianSpec extends ZooSpecHelper {
   }
 
   "Clip" should "work properly" in {
-    val df = sqlContext.read.parquet(testHelper.dataFramePath)
+    val path = resource.getFile + "/data1.parquet"
+    val df = sqlContext.read.parquet(path)
     val cols = Array("col_2", "col_3")
     val dfClip = friesian.clip(df, cols.toList.asJava, 1, 2)
     dfClip.show()
@@ -228,7 +229,7 @@ class FriesianSpec extends ZooSpecHelper {
     val df = sqlContext.createDataFrame(data, schema)
     val dft = friesian.postPad(df, Array("history", "history_list").toList.asJava, 4, 5.6)
     dft.show(3, false)
-    // dft.schema.fields.map(x => x.dataType).foreach(println(_))
+    //    dft.schema.fields.map(x => x.dataType).foreach(println(_))
     TestUtils.conditionFailTest(dft.filter("size(history) = 4").count() == 3)
     TestUtils.conditionFailTest(dft.filter("size(history_list) = 4").count() == 3)
     TestUtils.conditionFailTest(
@@ -422,7 +423,8 @@ class FriesianSpec extends ZooSpecHelper {
   }
 
   "Fill median" should "work properly" in {
-    val df = sqlContext.read.parquet(testHelper.dataFramePath)
+    val path = resource.getFile + "/data1.parquet"
+    val df = sqlContext.read.parquet(path)
     val cols = Array("col_1", "col_2")
     val dfFilled = friesian.fillMedian(df, cols.toList.asJava)
     TestUtils.conditionFailTest(dfFilled.filter(dfFilled("col_1").isNull).count == 0)
@@ -430,7 +432,8 @@ class FriesianSpec extends ZooSpecHelper {
   }
 
   "Median" should "work properly" in {
-    val df = sqlContext.read.parquet(testHelper.dataFramePath)
+    val path = resource.getFile + "/data1.parquet"
+    val df = sqlContext.read.parquet(path)
     val cols = Array("col_1", "col_2")
     val dfFilled = friesian.median(df, cols.toList.asJava)
     TestUtils.conditionFailTest(dfFilled.count == 2)

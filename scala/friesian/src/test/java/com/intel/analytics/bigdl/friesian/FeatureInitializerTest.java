@@ -24,11 +24,13 @@ import com.intel.analytics.bigdl.friesian.serving.utils.EncodeUtils;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import scala.collection.JavaConverters;
 import scala.collection.Seq;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Base64;
@@ -83,6 +85,13 @@ public class FeatureInitializerTest {
             }
             // assertNotEquals(redis.getSync().getdel(generateID(keyPrefix, row.get(0).toString())), null);
         });
+    }
+
+    @BeforeEach
+    public void removeLettuceInstance() throws NoSuchFieldException, IllegalAccessException {
+        Field field = LettuceUtils.class.getDeclaredField("instance");
+        field.setAccessible(true);
+        field.set(null, null);
     }
 
     @Test
