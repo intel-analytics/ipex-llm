@@ -9,9 +9,49 @@
 BigDL Documentation
 ===========================
 
-
 BigDL Architecture
 ----------------------------
+
+.. raw:: html
+
+    <div class="video-wrapper">
+        <div class="video-flex-container-h">
+            <div class="video-left-title">
+                Domain Specific Toolkits
+            </div>
+            <div class="video-container">
+                <iframe src="https://www.youtube.com/embed/d0vcXf5CLdM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+            <div class="video-container">
+                <iframe src="https://www.youtube.com/embed/d0vcXf5CLdM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+            <div class="video-container">
+                <iframe src="https://www.youtube.com/embed/d0vcXf5CLdM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+        </div>
+        <div class="video-divider"></div>
+        <div class="video-flex-container-h">
+            <div class="video-left-title">
+                End-to-End Distributed AI Pipelines
+            </div>
+            <div class="video-container">
+                <iframe src="https://www.youtube.com/embed/d0vcXf5CLdM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+            <div class="video-container">
+                <iframe src="https://www.youtube.com/embed/d0vcXf5CLdM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+            <div class="video-container">
+                <iframe src="https://www.youtube.com/embed/d0vcXf5CLdM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+        </div>
+        <div class="video-bottom-flex-container-h">
+            <div class="video-bottom-text">Laptop</div>
+            <div class="video-bottom-text">K8s</div>
+            <div class="video-bottom-text">Apache Hadoop/Spark</div>
+            <div class="video-bottom-text">Ray</div>
+            <div class="video-bottom-text">Cloud</div>
+        </div>
+    </div>
 
 
 
@@ -142,7 +182,7 @@ Find the right document for you
     .. grid-item-card::
         :text-align: center
         :shadow: none
-        :class-card: doc-card 
+        :class-card: sd-mb-2 doc-card 
         :class-header: doc-card-header doc-card-header-with-icon
         :class-footer: doc-card-footer 
 
@@ -159,7 +199,7 @@ Find the right document for you
     .. grid-item-card::
         :text-align: center
         :shadow: none
-        :class-card: doc-card 
+        :class-card: sd-mb-2 doc-card 
         :class-header: doc-card-header doc-card-header-with-icon
         :class-footer: doc-card-footer
 
@@ -185,7 +225,7 @@ Find the right document for you
     .. grid-item-card::
         :text-align: center
         :shadow: none
-        :class-card: doc-card 
+        :class-card: sd-mb-2 doc-card 
         :class-header: doc-card-header doc-card-header-with-icon
         :class-footer: doc-card-footer 
 
@@ -202,7 +242,7 @@ Find the right document for you
     .. grid-item-card::
         :text-align: center
         :shadow: none
-        :class-card: doc-card 
+        :class-card: sd-mb-2 doc-card 
         :class-header: doc-card-header doc-card-header-with-icon
         :class-footer: doc-card-footer
 
