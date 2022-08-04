@@ -103,3 +103,4 @@ jobs:
         #scp ./python/serving/src/dist/bigdl_serving*-py2.py3-none-any.whl \
         #intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/cluster-serving-py
 
+
