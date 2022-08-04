@@ -73,18 +73,10 @@ jobs:
         apt-get update
         apt-get install wget 
 
-        #wget https://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz
-        #gunzip scala-2.11.8.tgz
-        #tar -xf scala-2.11.8.tar -C /opt
-        #rm scala-2.11.8.tar
-        #ln -s /opt/scala-2.11.8 /opt/scala
-        export SCALA_HOME=/opt/scala-2.11.8
-        if [ ! -d ${SCALA_HOME} ]; then
-	wget -c https://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz 
+        wget https://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz
         gunzip scala-2.11.8.tgz
-        tar -xf scala-2.11.8.tar -C /opt 
-        rm -rf scala-2.11.8.tgz 
-        fi
+        tar -xf scala-2.11.8.tar -C /opt
+        export SCALA_HOME=/opt/scala-2.11.8
     - name: Run Test
       #run: python -m build
       run: |
@@ -94,3 +86,5 @@ jobs:
 
           chmod a+x apps/run-scala-app-test.sh
           apps/run-scala-app-test.sh
+          
+          rm -rf /opt/scala-2.11.8 scala-2.11.8.tar
