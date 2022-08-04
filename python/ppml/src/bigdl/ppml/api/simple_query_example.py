@@ -32,8 +32,8 @@ python simple_query_example.py \
 --data_key_path /your/data/key/path/dataKey \
 --input_path /your/file/input/path \
 --output_path /your/file/output/path \
---input_encrypt_mode AES/CBC/PKCS5Padding \
---output_encrypt_mode plain_text
+--input_encrypt_mode plain_text \
+--output_encrypt_mode AES/CBC/PKCS5Padding
 
 """
 
@@ -65,7 +65,6 @@ def do_sql_operation(csv_df, parquet_df):
     # join and sort
     result_df = count_df.join(avg_df, "job").sort(desc("average_age"))
 
-    result_df.show()
     return result_df
 
 
@@ -100,6 +99,8 @@ if __name__ == '__main__':
 
     # 3.do sql operation
     result = do_sql_operation(df1, df2)
+
+    result.show()
 
     # 4.save as json file
     save(sc, result, args.output_encrypt_mode, args.output_path)

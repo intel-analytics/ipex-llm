@@ -24,9 +24,10 @@ def timing(name):
     def call_func(func):
         def inner(*args, **kwargs):
             start = time.time()
-            func(*args, **kwargs)
+            result = func(*args, **kwargs)
             end = time.time()
             cost = end - start
             print(f"{name} time elapsed {cost * 1000} ms")
+            return result
         return inner
     return call_func
