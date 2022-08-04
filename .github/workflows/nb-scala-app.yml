@@ -77,12 +77,13 @@ jobs:
         gunzip scala-2.11.8.tgz
         tar -xf scala-2.11.8.tar -C /opt
         export SCALA_HOME=/opt/scala-2.11.8
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
     - name: Run Test
       #run: python -m build
       run: |
           set -x 
           set -e
-          export BIGDL_ROOT=.
 
           chmod a+x apps/run-scala-app-test.sh
           apps/run-scala-app-test.sh
