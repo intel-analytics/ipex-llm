@@ -17,6 +17,9 @@
 import argparse
 
 from bigdl.ppml.ppml_context import *
+from bigdl.ppml.utils.supportive import timing
+
+from pyspark.sql.functions import desc
 
 """
 execute the following command to run this example on local
@@ -33,45 +36,67 @@ python simple_query_example.py \
 
 """
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--simple_app_id", type=str, required=True, help="simple app id")
-parser.add_argument("--simple_app_key", type=str, required=True, help="simple app key")
-parser.add_argument("--primary_key_path", type=str, required=True, help="primary key path")
-parser.add_argument("--data_key_path", type=str, required=True, help="data key path")
-parser.add_argument("--input_encrypt_mode", type=str, required=True, help="input encrypt mode")
-parser.add_argument("--output_encrypt_mode", type=str, required=True, help="output encrypt mode")
-parser.add_argument("--input_path", type=str, required=True, help="input path")
-parser.add_argument("--output_path", type=str, required=True, help="output path")
-parser.add_argument("--kms_type", type=str, default="SimpleKeyManagementService",
-                    help="SimpleKeyManagementService or EHSMKeyManagementService")
-args = parser.parse_args()
-arg_dict = vars(args)
 
-sc = PPMLContext('testApp', arg_dict)
+@timing("1/4 load data from csv")
+def read_from_csv(context, mode, path):
+    return context.read(mode).option("header", "true").csv(path)
 
-# create a DataFrame
-data = [("Tom", "20", "Developer"), ("Jane", "21", "Developer"), ("Tony", "19", "Developer")]
-df = sc.spark.createDataFrame(data).toDF("name", "age", "job")
 
-# write DataFrame as an encrypted csv file
-sc.write(df, args.input_encrypt_mode) \
-    .mode('overwrite') \
-    .option("header", True) \
-    .csv(args.input_path)
+@timing("2/4 load data from parquet")
+def read_from_parquet(context, mode, path):
+    return context.read(mode).parquet(path)
 
-# get a DataFrame from an encrypted csv file
-df = sc.read(args.input_encrypt_mode) \
-    .option("header", "true") \
-    .csv(args.input_path)
 
-df.select("name").count()
+@timing("3/4 do sql operation")
+def do_sql_operation(csv_df, parquet_df):
+    # union
+    union_df = csv_df.unionByName(parquet_df)
+    # filter
+    filter_df = union_df.filter(union_df["age"].between(20, 40))
+    # count people in each job
+    count_df = filter_df.groupby("job").count()
+    # calculate average age in each job
+    avg_df = filter_df.groupby("job")\
+        .avg("age")\
+        .withColumnRenamed("avg(age)", "average_age")
+    # join and sort
+    result_df = count_df.join(avg_df, "job").sort(desc("average_age"))
 
-df.select(df["name"], df["age"] + 1).show()
+    result_df.show()
+    return result_df
 
-developers = df.filter((df["job"] == "Developer") & df["age"]
-                       .between(20, 40)).toDF("name", "age", "job").repartition(1)
 
-sc.write(developers, args.output_encrypt_mode) \
-    .mode('overwrite') \
-    .option("header", True) \
-    .csv(args.output_path)
+@timing("4/4 encrypt and save outputs")
+def save(context, df, encrypted_mode, path):
+    context.write(df, encrypted_mode).mode('overwrite').json(path)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--simple_app_id", type=str, required=True, help="simple app id")
+    parser.add_argument("--simple_app_key", type=str, required=True, help="simple app key")
+    parser.add_argument("--primary_key_path", type=str, required=True, help="primary key path")
+    parser.add_argument("--data_key_path", type=str, required=True, help="data key path")
+    parser.add_argument("--input_encrypt_mode", type=str, required=True, help="input encrypt mode")
+    parser.add_argument("--output_encrypt_mode", type=str, required=True, help="output encrypt mode")
+    parser.add_argument("--input_path", type=str, required=True, help="input path")
+    parser.add_argument("--output_path", type=str, required=True, help="output path")
+    parser.add_argument("--kms_type", type=str, default="SimpleKeyManagementService",
+                        help="SimpleKeyManagementService or EHSMKeyManagementService")
+    args = parser.parse_args()
+    arg_dict = vars(args)
+
+    # create a PPMLContext
+    sc = PPMLContext('testApp', arg_dict)
+
+    # 1.read data from csv
+    df1 = read_from_csv(sc, args.input_encrypt_mode, args.input_path)
+
+    # 2.read data from parquet
+    df2 = read_from_parquet(sc, args.input_encrypt_mode, args.input_path)
+
+    # 3.do sql operation
+    result = do_sql_operation(df1, df2)
+
+    # 4.save as json file
+    save(sc, result, args.output_encrypt_mode, args.output_path)
