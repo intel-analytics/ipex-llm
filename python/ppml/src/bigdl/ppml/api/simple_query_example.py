@@ -92,7 +92,7 @@ if __name__ == '__main__':
     arg_dict = vars(args)
 
     # create a PPMLContext
-    sc = PPMLContext('testApp', arg_dict)
+    sc = PPMLContext('SimpleQuery', arg_dict)
 
     # 1.read data from csv
     df1 = read_from_csv(sc, args.input_encrypt_mode, args.input_path)
