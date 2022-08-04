@@ -18,11 +18,15 @@ To solve this issue, you need to set the path of `libhdfs.so` in Cloudera to the
    ```
    # For yarn-client mode
    spark-submit --conf spark.executorEnv.ARROW_LIBHDFS_DIR=/opt/cloudera/parcels/CDH-5.15.2-1.cdh5.15.2.p0.3/lib64
-
+   
    # For yarn-cluster mode
    spark-submit --conf spark.executorEnv.ARROW_LIBHDFS_DIR=/opt/cloudera/parcels/CDH-5.15.2-1.cdh5.15.2.p0.3/lib64 \
                 --conf spark.yarn.appMasterEnv.ARROW_LIBHDFS_DIR=/opt/cloudera/parcels/CDH-5.15.2-1.cdh5.15.2.p0.3/lib64
    ```
+
+### UnkownError: Could not start gRPC server
+
+This error may because the previous pyspark tf job did not clean completely. You can retry later or you can set spark config `spark.python.worker.reuse=false` in your application.
 
 ## **Orca Context Issues**
 
