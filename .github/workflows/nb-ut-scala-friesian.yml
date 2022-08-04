@@ -11,7 +11,7 @@ on:
 jobs:
   build:
 
-    runs-on: [ self-hosted, Gondolin, ubuntu-20.04, CLX, AVX512, Ettenmoors ]
+    runs-on: [ self-hosted, Gondolin, Linux, CLX, AVX512, Ettenmoors ]
     permissions:
       contents: read
       packages: write
