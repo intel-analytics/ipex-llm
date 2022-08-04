@@ -3,12 +3,14 @@ import os
 import sys
 import re
 
+
 class Workload:
     def __init__(self, name: str, script_path: str):
         self.name = name
         self.script_path = script_path
 
     def run(self):
+        """Run a workload."""
         process = subprocess.run(f"bash {self.script_path}", stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE, shell=True)
         if process.returncode != 0:
