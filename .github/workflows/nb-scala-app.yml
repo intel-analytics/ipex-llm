@@ -81,6 +81,9 @@ jobs:
     - name: Run Test
       #run: python -m build
       run: |
+          set -x 
+          set -e
+          export BIGDL_ROOT=./
           export SCALA_HOME=/opt/scala
 
           chmod a+x apps/run-scala-app-test.sh
