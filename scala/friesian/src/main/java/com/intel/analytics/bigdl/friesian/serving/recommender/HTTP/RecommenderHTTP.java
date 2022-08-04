@@ -4,8 +4,6 @@ import com.intel.analytics.bigdl.friesian.serving.utils.CMDParser;
 import com.intel.analytics.bigdl.friesian.serving.utils.Utils;
 import com.intel.analytics.bigdl.friesian.serving.utils.gRPCHelper;
 import com.intel.analytics.bigdl.grpc.ConfigParser;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -16,7 +14,6 @@ import java.net.URI;
 
 public class RecommenderHTTP {
     private static URI baseUri;
-    private static final Logger logger = LogManager.getLogger(RecommenderHTTP.class.getName());
     /**
      * Starts Grizzly HTTP server exposing JAX-RS resources defined in this application.
      * @return Grizzly HTTP server.
@@ -58,21 +55,9 @@ public class RecommenderHTTP {
      */
     public static void main(String[] args) throws IOException {
         final HttpServer server = startServer(args);
-
-        // register shutdown hook
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            logger.info("Stopping server..");
-            server.shutdown();
-        }, "shutdownHook"));
-
-        // run
-        try {
-            server.start();
-            logger.info(String.format("Recommender Jersey app started with endpoints " +
-                    "available at %s%nHit Ctrl-C to stop it...", baseUri.toString()));
-            Thread.currentThread().join();
-        } catch (Exception e) {
-            logger.error("There was an error while starting Grizzly HTTP server.", e);
-        }
+        System.out.println(String.format("Recommender Jersey app started with endpoints " +
+                "available at %s%nHit Ctrl-C to stop it...", baseUri.toString()));
+        System.in.read();
+        server.shutdownNow();
     }
 }
