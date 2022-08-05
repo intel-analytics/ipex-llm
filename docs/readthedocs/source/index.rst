@@ -63,7 +63,7 @@ What can you do with BigDL?
     .. grid-item-card::
         :shadow: none
         :class-card: sd-mb-2 doc-card 
-        :class-header: doc-card-header 
+        :class-header: doc-card-header what-can-you-do-header
         :class-footer: doc-card-footer 
 
         **Build Distributed AI on Spark with** |br|
@@ -82,7 +82,7 @@ What can you do with BigDL?
     .. grid-item-card::
         :shadow: none
         :class-card: sd-mb-2 doc-card 
-        :class-header: doc-card-header 
+        :class-header: doc-card-header what-can-you-do-header
         :class-footer: doc-card-footer 
 
         **Accelerate TF/PyTorch Programs with** |br|
@@ -100,7 +100,7 @@ What can you do with BigDL?
     .. grid-item-card::
         :shadow: none
         :class-card: sd-mb-2 doc-card 
-        :class-header: doc-card-header 
+        :class-header: doc-card-header what-can-you-do-header
         :class-footer: doc-card-footer 
 
         **Make TF/PyTorch Programs Distributed with** |br|
@@ -122,7 +122,7 @@ What can you do with BigDL?
     .. grid-item-card::
         :shadow: none
         :class-card: sd-mb-2 doc-card 
-        :class-header: doc-card-header 
+        :class-header: doc-card-header what-can-you-do-header
         :class-footer: doc-card-footer 
 
         **Build Time Series Applications with** |br|
@@ -141,7 +141,7 @@ What can you do with BigDL?
     .. grid-item-card::
         :shadow: none
         :class-card: sd-mb-2 doc-card 
-        :class-header: doc-card-header 
+        :class-header: doc-card-header what-can-you-do-header
         :class-footer: doc-card-footer 
 
         **Build Large-scale Recommendation System with** |br|
@@ -160,7 +160,7 @@ What can you do with BigDL?
     .. grid-item-card::
         :shadow: none
         :class-card: sd-mb-2 doc-card 
-        :class-header: doc-card-header 
+        :class-header: doc-card-header what-can-you-do-header
         :class-footer: doc-card-footer 
 
         **Build Protected and Secured AI with** |br|
@@ -184,7 +184,7 @@ Find the right document for you
         :shadow: none
         :class-card: sd-mb-2 doc-card 
         :class-header: doc-card-header doc-card-header-with-icon
-        :class-footer: doc-card-footer 
+        :class-footer: doc-card-footer doc-card-footer-with-badges right-document-footer
 
         **Getting Started** |br|
         :material-outlined:`rocket_launch;2.5em`
@@ -201,7 +201,7 @@ Find the right document for you
         :shadow: none
         :class-card: sd-mb-2 doc-card 
         :class-header: doc-card-header doc-card-header-with-icon
-        :class-footer: doc-card-footer
+        :class-footer: doc-card-footer doc-card-footer-with-badges right-document-footer
 
         **User Guides** |br|
         :material-outlined:`auto_stories;2.5em`
@@ -227,9 +227,9 @@ Find the right document for you
         :shadow: none
         :class-card: sd-mb-2 doc-card 
         :class-header: doc-card-header doc-card-header-with-icon
-        :class-footer: doc-card-footer 
+        :class-footer: doc-card-footer doc-card-footer-with-badges right-document-footer
 
-        **API reference** |br|
+        **API Reference** |br|
         :material-outlined:`api;2.5em`
         ^^^
         BigDL makes it easy for data scientists and data engineers to build end-to-end, distributed AI applications. 
@@ -237,14 +237,14 @@ Find the right document for you
         +++
         .. raw:: html
 
-            <a href="doc/PPML/Overview/ppml.html" class="doc-badge"> API reference </a>
+            <a href="doc/PPML/Overview/ppml.html" class="doc-badge"> API Reference </a>
 
     .. grid-item-card::
         :text-align: center
         :shadow: none
         :class-card: sd-mb-2 doc-card 
         :class-header: doc-card-header doc-card-header-with-icon
-        :class-footer: doc-card-footer
+        :class-footer: doc-card-footer doc-card-footer-with-badges right-document-footer
 
         **Developer Guides** |br|
         :material-outlined:`terminal;2.5em`
@@ -259,3 +259,29 @@ Find the right document for you
 
 .. meta::
    :google-site-verification: hG9ocvSRSRTY5z8g6RLn97_tdJvYRx_tVGhNdtZZavM
+
+.. 
+    Add JQuery codes to adjust card header/footers to the max height among all headers/footer inside certain cards group. 
+    Note the for each cards group should have separate class name for identification purposes. 
+
+.. raw:: html 
+
+    <script> 
+        var getMaxHeight = function(elements){ 
+            return Math.max.apply(null, elements.map(function () { 
+                return $(this).height(); 
+            }).get()); 
+        } 
+
+        var headers1 = $(".what-can-you-do-header"); 
+        var footers2 = $(".right-document-footer"); 
+        headers1.height(getMaxHeight(headers1)); 
+        footers2.height(getMaxHeight(footers2)); 
+
+        $(window).resize(function () {
+            $('.doc-card-header').css('height','auto'); 
+            $('.doc-card-footer').css('height','auto'); 
+            headers1.height(getMaxHeight(headers1)); 
+            footers2.height(getMaxHeight(footers2)); 
+        }); 
+    </script> 

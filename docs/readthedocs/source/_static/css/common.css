@@ -7,7 +7,7 @@
 .doc-card-header  {
     background-color: rgb(230, 230, 230);
     color: black;
-    text-align: center;
+    text-align: center;  
 }
 
 .doc-card-header > b, strong{
@@ -46,12 +46,17 @@
 /* For small button/badge */
 .doc-badge {
     color: rgb(41, 128, 185) !important;
-    margin: 5px;
     font-size: 14px;
+    margin: 2px;
 }
 
 .doc-badge:hover {
     color: rgb(116, 196, 249) !important;
+}
+
+/* For footer with badge, need to be used with doc-card-footer */ 
+.doc-card-footer-with-badges {
+    display: inline-block;
 }
 
 /* For video introduction parts */
@@ -59,18 +64,12 @@
     margin-bottom: 24px;
     padding: 10px;
     border: 1px solid rgb(235, 235, 235);
-    border-radius: calc(0.25rem - 1px) calc(0.25rem - 1px) 0 0;;
-}
-
-.video-flex-container-h {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    border-radius: calc(0.25rem - 1px) calc(0.25rem - 1px) 0 0;
 }
 
 .video-container {
-    margin-left: 5px;
-    margin-right: 5px;
+    margin-top: 5px;
+    margin-bottom: 5px;
     border-radius: calc(0.25rem - 1px) calc(0.25rem - 1px) 0 0;
     overflow: hidden;
 }
@@ -81,10 +80,9 @@
 }
 
 .video-left-title {
-    width: 160px;
     font-weight: bold;
     text-align: center;
-    margin-right: 10px;
+    margin-bottom: 5px;
 }
 
 .video-divider {
@@ -101,9 +99,36 @@
     align-items: center;
     margin-top: 15px;
 }
+
 .video-bottom-text {
     font-weight: bold;
     text-align: center;
     background-color: rgb(230, 230, 230);
-    padding: 1vh 3vh;
+    font-size: 14px;
 }
+
+@media only screen and (min-width: 992px) {
+
+    .video-flex-container-h {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .video-container {
+        margin-left: 5px;
+        margin-right: 5px;
+    }
+
+    .video-left-title {
+        width: 160px;
+        margin-right: 10px;
+    }
+
+    .video-bottom-text {
+        font-size: 16px;
+        padding: 10px 30px;
+    }
+}
+
+/* extra-small (<576px), small (768px), medium (992px) and large screens (>1200px), refer from sphinx-design*/
