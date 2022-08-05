@@ -285,11 +285,11 @@ run_spark_tpch(){
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
                 -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
-                -Xmx78g -Xms78g \
+                -Xmx8g -Xms8g \
                 org.apache.spark.deploy.SparkSubmit \
                 --master 'local[4]' \
                 --conf spark.driver.port=54321 \
-                --conf spark.driver.memory=12g \
+                --conf spark.driver.memory=8g \
                 --conf spark.driver.blockManager.port=10026 \
                 --conf spark.blockManager.port=10025 \
                 --conf spark.scheduler.maxRegisteredResourcesWaitingTime=5000000 \
