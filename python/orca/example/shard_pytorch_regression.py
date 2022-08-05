@@ -30,7 +30,6 @@ from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.metrics import Accuracy
 from bigdl.orca.data.transformer import StringIndexer
-from bigdl.orca.data.utils import *
 
 class MLP(Module):
     # define model elements
@@ -87,8 +86,7 @@ orca_estimator = Estimator.from_torch(model=model,
                                       metrics=[Accuracy()],
                                       backend="bigdl")
 
-data_shard = assembleFeatureLabelCols(data_shard,
-                                      featureCols=list(column[:-1]),
-                                      labelCols=[column[-1]])
+data_shard = data_shard.assembleFeatureLabelCols(featureCols=list(column[:-1]),
+                                                 labelCols=[column[-1]])
 
 orca_estimator.fit(data=data_shard, epochs=100, batch_size=32)

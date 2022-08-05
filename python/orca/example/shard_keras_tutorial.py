@@ -22,7 +22,6 @@ from tensorflow.keras.layers import Dense
 import bigdl.orca.data.pandas
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf.estimator import Estimator
-from bigdl.orca.data.utils import *
 
 init_orca_context(cluster_mode="local", cores=4, memory="3g")
 
@@ -37,10 +36,9 @@ model.add(Dense(1, activation='sigmoid'))
 # compile the keras model
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-data_shard = assembleFeatureLabelCols(data_shard,
-                                      featureCols=['f1', 'f2', 'f3',
-                                                   'f4', 'f5', 'f6', 'f7', 'f8'],
-                                      labelCols=['label'])
+data_shard = data_shard.assembleFeatureLabelCols(featureCols=['f1', 'f2', 'f3',
+                                                              'f4', 'f5', 'f6', 'f7', 'f8'],
+                                                 labelCols=['label'])
 
 est = Estimator.from_keras(keras_model=model)
 est.fit(data=data_shard,
