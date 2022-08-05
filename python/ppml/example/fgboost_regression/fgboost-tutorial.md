@@ -73,7 +73,7 @@ fgboost_regression.fit(df_train, feature_columns=df_train.columns, num_round=10)
 fgboost_regression.fit(df_x, df_y, feature_columns=df_x.columns, label_columns=['SalePrice'], num_round=10)
 ```
 ### 2.6 Save & Load
-Save the model and load it back
+Save the client model and load it back
 
 ```python
 fgboost_regression.save_model(model_path)
@@ -95,6 +95,9 @@ Copy the configuration file `ppml/scripts/ppml-conf.yaml` to the current directo
 # the port server gRPC uses
 serverPort: 8980
 
+# the path server uses to save server model checkpoints
+fgBoostServerModelPath: /tmp/fgboost_server_model
+
 # the number of clients in this federated learning application
 clientNum: 2
 ```
@@ -110,12 +113,9 @@ clientTarget: localhost:8980
 ```
 Run client applications
 
-Start Client 1:
 ```bash
+# run following commands in 2 different terminals
 python fgboost_regression_party_1.py
-```
-Start Client 2:
-```bash
 python fgboost_regression_party_2.py
 ```
 ### 3.3 Get Results
@@ -126,4 +126,18 @@ The first 5 prediction results are printed
 2-th result of FGBoost predict: 9.793853759765625
 3-th result of FGBoost predict: 9.793853759765625
 4-th result of FGBoost predict: 9.793853759765625
+```
+### 3.4 Incremental Training
+Incremental training is supported, as long as `fgBoostServerModelPath` is specified in FL Server config, the server automatically saves the model checkpoints. Thus, we just need to use the same configurations and start FL Server again.
+
+In SGX container, start FL Server
+```
+./ppml/scripts/start-fl-server.sh 
+```
+For client applications, we change from creating model to directly loading. This is already implemented in example code, we just need to run client applications with an argument
+
+```bash
+# run following commands in 2 different terminals
+python fgboost_regression_party_1.py true
+python fgboost_regression_party_2.py true
 ```

@@ -20,7 +20,7 @@ from bigdl.ppml.fl.algorithms.fgboost_regression import FGBoostRegression
 import pandas as pd
 
 from bigdl.ppml.fl.algorithms.psi import PSI
-
+import click
 
 # the preprocess code is mainly from 
 # https://www.kaggle.com/code/pablocastilla/predict-house-prices-with-xgboost-regression/notebook
@@ -79,7 +79,9 @@ def preprocess(train_dataset, test_dataset):
     return train_dataset[every_column_except_y], y, test_dataset
 
 
-if __name__ == '__main__':
+@click.command()
+@click.argument('load_model', type=bool)
+def run_client(load_model):
     client_id = '2'
     init_fl_context(client_id)
 
@@ -95,16 +97,23 @@ if __name__ == '__main__':
 
     x, y, x_test = preprocess(df_train, df_test)
 
-    fgboost_regression = FGBoostRegression()
+    if load_model:
+        loaded = FGBoostRegression.load_model('/tmp/fgboost_model_2.json')
+        loaded.fit(x, y, feature_columns=x.columns, label_columns=y.columns, num_round=10)
+    else:
+        fgboost_regression = FGBoostRegression()
 
-    # party 2 owns label, so pass features and labels
-    fgboost_regression.fit(x, y, feature_columns=x.columns, label_columns=y.columns, num_round=10)
+        # party 2 owns label, so pass features and labels
+        fgboost_regression.fit(x, y, feature_columns=x.columns, label_columns=y.columns, num_round=10)
 
-    fgboost_regression.save_model('/tmp/fgboost_model_2.json')
-    loaded = FGBoostRegression.load_model('/tmp/fgboost_model_2.json')
+        fgboost_regression.save_model('/tmp/fgboost_model_2.json')
+        loaded = FGBoostRegression.load_model('/tmp/fgboost_model_2.json')
 
     result = loaded.predict(x_test, feature_columns=x_test.columns)
 
     # print first 5 results
     for i in range(5):
         print(f"{i}-th result of FGBoost predict: {result[i]}")
+
+if __name__ == '__main__':
+    run_client()
