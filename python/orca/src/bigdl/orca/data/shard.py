@@ -25,6 +25,7 @@ from bigdl.dllib.utils.log4Error import *
 
 import numpy as np
 
+
 class XShards(object):
     """
 
@@ -461,6 +462,7 @@ class SparkXShards(XShards):
             invalidInputError(False,
                               "Currently only support assembleFeatureLabelCols() on"
                               " XShards of Pandas DataFrame")
+
         def to_shard_dict(df):
             featureLists = [df[feature_col].to_numpy() for feature_col in featureCols]
             labelLists = [df[label_col].to_numpy() for label_col in labelCols]
