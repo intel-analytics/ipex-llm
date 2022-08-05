@@ -64,7 +64,7 @@ class MLP(Module):
 
 init_orca_context(memory="4g")
 
-path = 'new_ionosphere.csv'
+path = '/home/ding/data/new_ionosphere.csv'
 data_shard = bigdl.orca.data.pandas.read_csv(path)
 
 column = data_shard.get_schema()['columns']

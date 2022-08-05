@@ -475,7 +475,7 @@ class SparkXShards(XShards):
                               "The two SparkXShards should have the same number of elements "
                               "in each partition")
 
-    def to_spark_df(self):
+    def to_spark_df2(self):
         if self._get_class_name() != 'pandas.core.frame.DataFrame':
             invalidInputError(False,
                               "Currently only support to_spark_df on XShards of Pandas DataFrame")
@@ -488,6 +488,67 @@ class SparkXShards(XShards):
         rdd = self.rdd.mapPartitions(f)
         column = self.get_schema()['columns']
         df = rdd.toDF(list(column))
+        return df
+
+    def to_spark_df(self):
+        if self._get_class_name() != 'pandas.core.frame.DataFrame':
+            invalidInputError(False,
+                              "Currently only support to_spark_df on XShards of Pandas DataFrame")
+
+        import pyarrow as pa
+        from pyspark.sql.pandas.serializers import ArrowStreamPandasSerializer
+        from pyspark.sql.pandas.types import from_arrow_type, to_arrow_type
+
+        schema = self.get_schema()
+        arrow_types = [to_arrow_type(f) for f in schema['dtypes']]
+        t = 0
+        def f(iter):
+            for pdf in iter:
+                arrow_types = [to_arrow_type(f) for f in schema['dtypes']]
+
+                # Create list of Arrow (columns, type) for serializer dump_stream
+                arrow_data = [(c, t) for (_, c), t in zip(pdf.iteritems(), arrow_types)]
+
+                print("ding arrow_data")
+                timezone = self._jconf.sessionLocalTimeZone()
+                jsparkSession = self._jsparkSession
+                safecheck = self._jconf.arrowSafeTypeConversion()
+                col_by_name = True  # col by name only applies to StructType columns, can't happen here
+                from pyspark.sql.pandas.serializers import ArrowStreamPandasSerializer
+                ser = ArrowStreamPandasSerializer(timezone, safecheck, col_by_name)
+                print("ding create ser")
+
+                @no_type_check
+                def reader_func(temp_filename):
+                    return self._jvm.PythonSQLUtils.readArrowStreamFromFile(temp_filename)
+
+                @no_type_check
+                def create_iter_server():
+                    return self._jvm.ArrowIteratorServer()
+
+                # Create Spark DataFrame from Arrow stream file, using one batch per partition
+                # jiter = self._sc._serialize_to_jvm(arrow_data, ser, reader_func, create_iter_server)
+                from tempfile import NamedTemporaryFile
+                import os
+                tempFile = NamedTemporaryFile(delete=False, dir=self._temp_dir)
+                try:
+                    try:
+                        print("ding before dump stream")
+                        ser.dump_stream(arrow_data, tempFile)
+                    finally:
+                        tempFile.close()
+                    return reader_func(tempFile.name)
+                finally:
+                    # we eagerly reads the file so we can delete right after.
+                    os.unlink(tempFile.name)
+
+        jiter = self.rdd.mapPartitions(f)
+        assert self._jvm is not None
+        jdf = self._jvm.SQLUtils.toDataFrame(jiter, schema.json(), jsparkSession)
+
+        from pyspark.sql.dataframe import DataFrame
+        df = DataFrame(jdf, self)
+        df._schema = schema
         return df
 
     def __len__(self):
