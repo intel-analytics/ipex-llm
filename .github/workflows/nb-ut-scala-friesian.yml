@@ -72,8 +72,11 @@ jobs:
           export http_proxy="http://child-prc.intel.com:913/"
           export https_proxy="http://child-prc.intel.com:913/"
           apt-get update
-          apt install intel-mkl -y          
-
+          apt install intel-mkl -y
+          yes
+          
+      
+      
       - name: Prepare data
         run: |
           mkdir -p /tmp/friesian-unittest
