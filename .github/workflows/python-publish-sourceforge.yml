@@ -11,8 +11,8 @@ name: Nightly Build PyPI Publish Python Sourceforge
 on:
   #release:
    # types: [published]
-  pull_request:
-    branches: [ "main" ]
+  #pull_request:
+    #branches: [ "main" ]
   schedule:
     - cron: '0 15 * * *'
   # Allows you to run this workflow manually from the Actions tab
