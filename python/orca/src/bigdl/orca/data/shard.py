@@ -500,29 +500,128 @@ class SparkXShards(XShards):
         from pyspark.sql.pandas.types import from_arrow_type, to_arrow_type
 
         schema = self.get_schema()
-        arrow_types = [to_arrow_type(f) for f in schema['dtypes']]
-        t = 0
+        # pdf = self.rdd.take(1)[0]
+        from pyspark.sql.types import StructType
+        from pyspark.sql.pandas.serializers import ArrowStreamPandasSerializer
+        from tempfile import NamedTemporaryFile
+        from pyspark.context import SparkContext
+        import os
+        # schema = [str(x) if not isinstance(x, str) else x for x in pdf.columns]
+        # if isinstance(schema, (list, tuple)):
+        #     arrow_schema = pa.Schema.from_pandas(pdf, preserve_index=False)
+        #     struct = StructType()
+        #     for name, field in zip(schema, arrow_schema):
+        #         struct.add(
+        #             name, from_arrow_type(field.type), nullable=field.nullable
+        #         )
+        #     schema = struct
+        # arrow_types = [to_arrow_type(f.dataType) for f in schema.fields]
+        #
+        # arrow_data = [(c, t) for (_, c), t in zip(pdf.iteritems(), arrow_types)]
+
+        # timezone = self._jconf.sessionLocalTimeZone()
+        # jsparkSession = self._jsparkSession
+        # safecheck = self._jconf.arrowSafeTypeConversion()
+        # col_by_name = True  # col by name only applies to StructType columns, can't happen here
+        # from pyspark.sql.pandas.serializers import ArrowStreamPandasSerializer
+        # ser = ArrowStreamPandasSerializer(timezone, safecheck, col_by_name)
+        #
+        # @no_type_check
+        # def reader_func(temp_filename):
+        #     return self._jvm.PythonSQLUtils.readArrowStreamFromFile(temp_filename)
+        #
+        # @no_type_check
+        # def create_iter_server():
+        #     return self._jvm.ArrowIteratorServer()
+        #
+        # # Create Spark DataFrame from Arrow stream file, using one batch per partition
+        # # jiter = self._sc._serialize_to_jvm(arrow_data, ser, reader_func, create_iter_server)
+        # from tempfile import NamedTemporaryFile
+        # import os
+        # tempFile = NamedTemporaryFile(delete=False, dir=self._temp_dir)
+        # try:
+        #     try:
+        #         ser.dump_stream(arrow_data, tempFile)
+        #     finally:
+        #         tempFile.close()
+        #     return reader_func(tempFile.name)
+        # finally:
+        #     # we eagerly reads the file so we can delete right after.
+        #     os.unlink(tempFile.name)
+
+        def f2(iter):
+            for pdf in iter:
+                np_records = pdf.to_records(index=False)
+                return [r.tolist() for r in np_records]
+
+        def f3(iter):
+            for pdf in iter:
+                schema = [str(x) if not isinstance(x, str) else x for x in pdf.columns]
+                if isinstance(schema, (list, tuple)):
+                    arrow_schema = pa.Schema.from_pandas(pdf, preserve_index=False)
+                    struct = StructType()
+                    for name, field in zip(schema, arrow_schema):
+                        struct.add(
+                            name, from_arrow_type(field.type), nullable=field.nullable
+                        )
+                    schema = struct
+                arrow_types = [to_arrow_type(f.dataType) for f in schema.fields]
+
+                arrow_data = [(c, t) for (_, c), t in zip(pdf.iteritems(), arrow_types)]
+
+                col_by_name = True  # col by name only applies to StructType columns, can't happen here
+                # # ser = ArrowStreamPandasSerializer(timezone, safecheck, col_by_name)
+                safecheck = False
+                ser = ArrowStreamPandasSerializer("", safecheck, col_by_name)
+                SparkContext._ensure_initialized()
+                jvm = SparkContext._jvm
+
+                def reader_func(temp_filename):
+                    return jvm.PythonSQLUtils.readArrowStreamFromFile(temp_filename)
+
+                # tempFile = NamedTemporaryFile(delete=False, dir=self._temp_dir)
+                tempFile = NamedTemporaryFile(delete=False, dir="/tmp/test/")
+                try:
+                    try:
+                        ser.dump_stream(arrow_data, tempFile)
+                    finally:
+                        tempFile.close()
+                        return reader_func(tempFile.name)
+                        # return [0]
+                finally:
+                    # we eagerly reads the file so we can delete right after.
+                    os.unlink(tempFile.name)
+
         def f(iter):
             for pdf in iter:
+                from pyspark.sql.types import StructType
+                schema = [str(x) if not isinstance(x, str) else x for x in pdf.columns]
+                if isinstance(schema, (list, tuple)):
+                    arrow_schema = pa.Schema.from_pandas(pdf, preserve_index=False)
+                    struct = StructType()
+                    for name, field in zip(schema, arrow_schema):
+                        struct.add(
+                            name, from_arrow_type(field.type), nullable=field.nullable
+                        )
+                    schema = struct
+
                 arrow_types = [to_arrow_type(f) for f in schema['dtypes']]
 
                 # Create list of Arrow (columns, type) for serializer dump_stream
                 arrow_data = [(c, t) for (_, c), t in zip(pdf.iteritems(), arrow_types)]
-
                 print("ding arrow_data")
-                timezone = self._jconf.sessionLocalTimeZone()
-                jsparkSession = self._jsparkSession
-                safecheck = self._jconf.arrowSafeTypeConversion()
+                # timezone = self._jconf.sessionLocalTimeZone()
+                # jsparkSession = self._jsparkSession
+                # safecheck = self._jconf.arrowSafeTypeConversion()
                 col_by_name = True  # col by name only applies to StructType columns, can't happen here
                 from pyspark.sql.pandas.serializers import ArrowStreamPandasSerializer
-                ser = ArrowStreamPandasSerializer(timezone, safecheck, col_by_name)
-                print("ding create ser")
+                # ser = ArrowStreamPandasSerializer(timezone, safecheck, col_by_name)
+                ser = ArrowStreamPandasSerializer("", safecheck, col_by_name)
+                print("ding ser")
 
-                @no_type_check
                 def reader_func(temp_filename):
                     return self._jvm.PythonSQLUtils.readArrowStreamFromFile(temp_filename)
 
-                @no_type_check
                 def create_iter_server():
                     return self._jvm.ArrowIteratorServer()
 
@@ -530,19 +629,22 @@ class SparkXShards(XShards):
                 # jiter = self._sc._serialize_to_jvm(arrow_data, ser, reader_func, create_iter_server)
                 from tempfile import NamedTemporaryFile
                 import os
+                print("ding create file")
                 tempFile = NamedTemporaryFile(delete=False, dir=self._temp_dir)
                 try:
                     try:
-                        print("ding before dump stream")
+                        print("ding dump stream")
                         ser.dump_stream(arrow_data, tempFile)
                     finally:
                         tempFile.close()
-                    return reader_func(tempFile.name)
+                    # return reader_func(tempFile.name)
+                        return [0]
                 finally:
                     # we eagerly reads the file so we can delete right after.
                     os.unlink(tempFile.name)
 
-        jiter = self.rdd.mapPartitions(f)
+        jiter = self.rdd.mapPartitions(f3)
+        jiter.count()
         assert self._jvm is not None
         jdf = self._jvm.SQLUtils.toDataFrame(jiter, schema.json(), jsparkSession)
 
