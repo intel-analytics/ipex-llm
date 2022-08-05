@@ -85,7 +85,7 @@ jobs:
       #run: python -m build
       run: |
           export SPARK_HOME=/opt/spark-3.1.2-bin-hadoop2.7
-          #export FTP_URI=ftp://zoo:1234qwer@10.112.231.51
+          export FTP_URI=ftp://zoo:1234qwer@10.112.231.51
           chmod a+x apps/run-scala-app-test.sh
           apps/run-scala-app-test.sh
           
@@ -94,5 +94,4 @@ jobs:
       env:
         BIGDL_ROOT: ${{ github.workspace }}
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-        FTP_URI: "${FTP_URI}"
 
