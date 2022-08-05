@@ -160,7 +160,10 @@ def exists(path):
         classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
                                      stdout=subprocess.PIPE).communicate()[0]
         os.environ["CLASSPATH"] = classpath.decode("utf-8")
-        fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
+        if len(host_port) > 1:
+            fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
+        else:
+            fs = pa.hdfs.connect(host=host_port[0])
         return fs.exists(path)
     else:
         if path.startswith("file://"):
@@ -193,7 +196,10 @@ def makedirs(path):
         classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
                                      stdout=subprocess.PIPE).communicate()[0]
         os.environ["CLASSPATH"] = classpath.decode("utf-8")
-        fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
+        if len(host_port) > 1:
+            fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
+        else:
+            fs = pa.hdfs.connect(host=host_port[0])
         return fs.mkdir(path)
     else:
         if path.startswith("file://"):
@@ -272,7 +278,10 @@ def is_file(path):
         classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
                                      stdout=subprocess.PIPE).communicate()[0]
         os.environ["CLASSPATH"] = classpath.decode("utf-8")
-        fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
+        if len(host_port) > 1:
+            fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
+        else:
+            fs = pa.hdfs.connect(host=host_port[0])
         return fs.isfile(path)
     else:
         if path.startswith("file://"):
@@ -288,7 +297,10 @@ def put_local_dir_to_remote(local_dir, remote_dir):
         classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
                                      stdout=subprocess.PIPE).communicate()[0]
         os.environ["CLASSPATH"] = classpath.decode("utf-8")
-        fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
+        if len(host_port) > 1:
+            fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
+        else:
+            fs = pa.hdfs.connect(host=host_port[0])
         if not fs.exists(remote_dir):
             fs.mkdir(remote_dir)
         for file in os.listdir(local_dir):
@@ -375,7 +387,10 @@ def put_local_file_to_remote(local_path, remote_path, filemode=None):
                                      stdout=subprocess.PIPE).communicate()[0]
         os.environ["CLASSPATH"] = classpath.decode("utf-8")
         try:
-            fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
+            if len(host_port) > 1:
+                fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
+            else:
+                fs = pa.hdfs.connect(host=host_port[0])
             remote_dir = os.path.dirname(remote_path)
             if not fs.exists(remote_dir):
                 fs.mkdir(remote_dir)
