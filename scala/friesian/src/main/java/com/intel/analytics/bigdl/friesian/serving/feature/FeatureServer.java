@@ -127,7 +127,11 @@ public class FeatureServer extends GrpcServerBase {
             colNamesMap = new HashMap<>();
             parseServiceType();
             if (serviceType.contains(ServiceType.KV)) {
-                redis = LettuceUtils.getInstance();
+                redis = LettuceUtils.getInstance(Utils.helper().redisTypeEnum(),
+                        Utils.helper().redisHostPort(),
+                        Utils.helper().getRedisKeyPrefix(),
+                        Utils.helper().redisSentinelMasterURL(),
+                        Utils.helper().redisSentinelMasterName(), Utils.helper().itemSlotType());
             }
 
             if (serviceType.contains(ServiceType.INFERENCE)) {

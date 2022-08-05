@@ -1,7 +1,6 @@
 package com.intel.analytics.bigdl.friesian.serving.feature.utils;
 
-import com.intel.analytics.bigdl.dllib.utils.Log4Error;
-import com.intel.analytics.bigdl.friesian.nearline.utils.NearlineUtils;
+import com.intel.analytics.bigdl.friesian.serving.utils.Utils;
 import io.lettuce.core.*;
 import io.lettuce.core.api.async.RedisStringAsyncCommands;
 import io.lettuce.core.api.sync.RedisStringCommands;
@@ -24,12 +23,13 @@ import org.apache.logging.log4j.Logger;
 import scala.Tuple2;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import com.intel.analytics.bigdl.friesian.serving.utils.Utils;
 
 public class LettuceUtils {
     private static final Logger logger = LogManager.getLogger(LettuceUtils.class.getName());
@@ -136,34 +136,6 @@ public class LettuceUtils {
                 if (instance == null) {
                     instance = new LettuceUtils(redisType, redisHostPort, redisPrefix,
                             sentinelMasterURL, sentinelMasterName, itemSlotType);
-                }
-            }
-        }
-        return instance;
-    }
-
-    public static LettuceUtils getInstance() {
-        if (instance == null) {
-            synchronized (LettuceUtils.class) {
-                if (instance == null) {
-                    if (NearlineUtils.helper() != null) {
-                        instance = new LettuceUtils(NearlineUtils.helper().redisTypeEnum(),
-                                NearlineUtils.helper().redisHostPort(),
-                                NearlineUtils.helper().getRedisKeyPrefix(),
-                                NearlineUtils.helper().redisSentinelMasterURL(),
-                                NearlineUtils.helper().redisSentinelMasterName(),
-                                NearlineUtils.helper().itemSlotType());
-                    } else if (Utils.helper() != null) {
-                        instance = new LettuceUtils(Utils.helper().redisTypeEnum(),
-                                Utils.helper().redisHostPort(),
-                                Utils.helper().getRedisKeyPrefix(),
-                                Utils.helper().redisSentinelMasterURL(),
-                                Utils.helper().redisSentinelMasterName(),
-                                Utils.helper().itemSlotType());
-                    } else {
-                        Log4Error.invalidInputError(false, "Please make sure " +
-                                "either of NearlineUtils or Utils is initialized.", null);
-                    }
                 }
             }
         }
