@@ -21,7 +21,7 @@ on:
 jobs:
   build:
 
-    runs-on: [self-hosted,alpha,Esgaroth,ubuntu-20.04-lts]
+    runs-on: [self-hosted,alpha,Bree,ubuntu-20.04-lts]
     permissions:
       contents: read
       packages: write
