@@ -1,0 +1,148 @@
+name: Nightly Build Docker Publish BigDL-PPML-test
+
+on:
+  # schedule:
+  #   - cron: '0 17 * * *'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      artifact:
+        description: 'select which job to run("ALL" will make all jobs run)'
+        required: true
+        default: 'latest'
+        type: choice
+        options:
+        - ALL
+        - bigdl-ppml-trusted-big-data-ml-python-graphene
+        - bigdl-ppml-trusted-realtime-ml-scala-graphene
+        - bigdl-ppml-trusted-big-data-ml-scala-occlum
+        - bigdl-ppml-trusted-realtime-ml-scala-occlum
+      tag:
+        description: 'e.g. 2.1.0-SNAPSHOT'
+        required: true
+        default: 'latest'
+        type: string
+  
+
+jobs:
+  docker-publish-ppml:
+    runs-on: [self-hosted, Shire]
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: docker login
+      run: |
+        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+    - name: set env
+      run: |
+        if [ -n "${{inputs.tag}}" ]; then  export TAG=${{inputs.tag}};  else export TAG=latest; fi
+        if [ -n "${{inputs.ARTIFACT" ]; then export ARTIFACT=${{inputs.ARTIFACT}}; else export ARTIFACT=ALL; fi
+    - name: bigdl-ppml-trusted-big-data-ml-python-graphene
+      run: |
+        if [ "${ARTIFACT}" = "bigdl-ppml-trusted-big-data-ml-python-graphene" ] || [ "${ARTIFACT}" = "ALL" ] ; then
+        echo "########################################"
+        echo "####### big-data-ml-python-graphene ####"
+        echo "########################################"
+        cd ppml/trusted-big-data-ml/python/docker-graphene
+        pwd
+        export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene
+        pwd
+        sudo docker build \
+          --no-cache=true \
+          --build-arg http_proxy=http://${HTTP_PROXY_HOST}:${HTTP_PROXY_PORT_2} \
+          --build-arg https_proxy=http://${HTTPS_PROXY_HOST}:${HTTPS_PROXY_PORT} \
+          --build-arg HTTP_PROXY_HOST=${HTTP_PROXY_HOST} \
+          --build-arg HTTP_PROXY_PORT=${HTTP_PROXY_PORT_2} \
+          --build-arg HTTPS_PROXY_HOST=${HTTPS_PROXY_HOST} \
+          --build-arg HTTPS_PROXY_PORT=${HTTPS_PROXY_PORT} \
+          --build-arg JDK_VERSION=8u192 \
+          --build-arg JDK_URL=${JDK_URL} \
+          --build-arg no_proxy=${NO_PROXY} \
+          --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
+          -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG}
+        fi
+    - name: bigdl-ppml-trusted-realtime-ml-scala-graphene
+      run: |
+        if [ "${ARTIFACT}" = "bigdl-ppml-trusted-realtime-ml-scala-graphene" ] || [ "${ARTIFACT}" = "ALL" ]; then
+        echo "########################################"
+        echo "####### realtime-ml-scala-graphene #####"
+        echo "########################################"
+        cd ppml/trusted-realtime-ml/scala/docker-graphene/
+        export image=intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-graphene
+        pwd
+        docker build \
+          --no-cache=true \
+          --build-arg http_proxy=http://${HTTP_PROXY_HOST}:${HTTP_PROXY_PORT_2} \
+          --build-arg https_proxy=http://${HTTPS_PROXY_HOST}:${HTTPS_PROXY_PORT} \
+          --build-arg HTTP_PROXY_HOST=${HTTP_PROXY_HOST} \
+          --build-arg HTTP_PROXY_PORT=${HTTP_PROXY_PORT_2} \
+          --build-arg HTTPS_PROXY_HOST=${HTTPS_PROXY_HOST} \
+          --build-arg HTTPS_PROXY_PORT=${HTTPS_PROXY_PORT} \
+          --build-arg JDK_VERSION=8u192 \
+          --build-arg JDK_URL=${JDK_URL} \
+          --build-arg no_proxy=${NO_PROXY} \
+          --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
+          -t ${image}:${TAG} -f ./Dockerfile .
+        docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        docker push 10.239.45.10/arda/${image}:${TAG}
+        docker rmi -f ${image}:${TAG}
+        fi
+    - name: bigdl-ppml-trusted-big-data-ml-scala-occlum
+      run: |
+        if [ "${ARTIFACT}" = "bigdl-ppml-trusted-big-data-ml-scala-occlum" ] || [ "${ARTIFACT}" = "ALL" ]; then
+        echo "########################################"
+        echo "####### big-data-ml-scala-occlum  ######"
+        echo "########################################"
+        cd ppml/trusted-big-data-ml/scala/docker-occlum/
+        export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum
+        pwd
+        docker build \
+          --no-cache=true \
+          --build-arg http_proxy=http://${HTTP_PROXY_HOST}:${HTTP_PROXY_PORT_2} \
+          --build-arg https_proxy=http://${HTTPS_PROXY_HOST}:${HTTPS_PROXY_PORT} \
+          --build-arg HTTP_PROXY_HOST=${HTTP_PROXY_HOST} \
+          --build-arg HTTP_PROXY_PORT=${HTTP_PROXY_PORT_2} \
+          --build-arg HTTPS_PROXY_HOST=${HTTPS_PROXY_HOST} \
+          --build-arg HTTPS_PROXY_PORT=${HTTPS_PROXY_PORT} \
+          --build-arg JDK_VERSION=8u192 \
+          --build-arg JDK_URL=${JDK_URL} \
+          --build-arg no_proxy=${NO_PROXY} \
+          --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
+          -t ${image}:${TAG} -f ./Dockerfile .
+        docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        docker push 10.239.45.10/arda/${image}:${TAG}
+        docker rmi -f ${image}:${TAG}
+        fi
+    - name: bigdl-ppml-trusted-realtime-ml-scala-occlum
+      run: |
+        if [ "${ARTIFACT}" = "bigdl-ppml-trusted-realtime-ml-scala-occlum" ] || [ "${ARTIFACT}" = "ALL" ]; then
+        echo "########################################"
+        echo "####### realtime-ml-scala-occlum  ######"
+        echo "########################################"
+        cd ppml/trusted-realtime-ml/scala/docker-occlum/
+        export image=intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-occlum
+        pwd
+        docker build \
+          --no-cache=true \
+          --build-arg http_proxy=http://${HTTP_PROXY_HOST}:${HTTP_PROXY_PORT_2} \
+          --build-arg https_proxy=http://${HTTPS_PROXY_HOST}:${HTTPS_PROXY_PORT} \
+          --build-arg HTTP_PROXY_HOST=${HTTP_PROXY_HOST} \
+          --build-arg HTTP_PROXY_PORT=${HTTP_PROXY_PORT_2} \
+          --build-arg HTTPS_PROXY_HOST=${HTTPS_PROXY_HOST} \
+          --build-arg HTTPS_PROXY_PORT=${HTTPS_PROXY_PORT} \
+          --build-arg JDK_VERSION=8u192 \
+          --build-arg JDK_URL=${JDK_URL} \
+          --build-arg no_proxy=${NO_PROXY} \
+          --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
+          -t ${image}:${TAG} -f ./Dockerfile .
+        docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        docker push 10.239.45.10/arda/${image}:${TAG}
+        docker rmi -f ${image}:${TAG}
+        fi
