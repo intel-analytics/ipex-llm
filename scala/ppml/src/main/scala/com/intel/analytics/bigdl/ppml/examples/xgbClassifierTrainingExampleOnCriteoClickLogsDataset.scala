@@ -119,7 +119,7 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
 
     val tStart = System.nanoTime()
     // read csv files to dataframe
-    val csvDF  = sc.read(inputEncryptMode)
+    val csvDF = sc.read(inputEncryptMode)
       .option("header", "false")
       .option("inferSchema", "true")
       .option("delimiter", "\t")
