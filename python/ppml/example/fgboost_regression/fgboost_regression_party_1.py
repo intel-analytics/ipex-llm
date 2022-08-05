@@ -80,7 +80,7 @@ def preprocess(train_dataset, test_dataset):
 
 
 @click.command()
-@click.argument('load_model', type=bool)
+@click.option('--load_model', default=False)
 def run_client(load_model):
     client_id = '1'
     init_fl_context(client_id)
