@@ -72,6 +72,9 @@ jobs:
           cd /tmp
           curl -O http://10.239.45.10:8081/repository/raw/analytics-zoo-data/faiss-lib.zip
           unzip -o faiss-lib.zip -d /lib
+          ln -s /lib/libmkl_core.so /lib/libmkl_core.so.2
+          ln -s /lib/libmkl_gnu_thread.so /lib/libmkl_gnu_thread.so.2
+          ln -s /lib/libmkl_intel_lp64.so /lib/libmkl_intel_lp64.so.2
       
       - name: Prepare data
         run: |
