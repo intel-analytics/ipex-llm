@@ -1,4 +1,4 @@
-**BigDL PPML** provides a Trusted Cluster Environment for secure Big Data & AI applications (TensorFlow, PyTorch, OpenVINO, XGBoost, Apache Spark/Flink, Ray, etc.), even on untrusted cloud environment.
+Protecting privacy and confidentiality is critical for large-scale data analysis and machine learning. **BigDL PPML** (BigDL Privacy Preserving Machine Learning) combines various low-level hardware and software security technologies (e.g., Intel® Software Guard Extensions (Intel® SGX), Security Key Management, Remote Attestation, Data Encryption, Federated Learning, etc.) so that users can continue applying standard Big Data and AI technologies (such as Apache Spark, Apache Flink, TensorFlow, PyTorch, etc.) without sacrificing privacy. 
 
 #### Table of Contents  
 [1. What is BigDL PPML?](#1-what-is-bigdl-ppml)  
