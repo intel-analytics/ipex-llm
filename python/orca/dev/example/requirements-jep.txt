@@ -1,8 +1,15 @@
 opencv-python==4.2.0.34
 pandas==1.1.0
 cloudpickle==1.3.0
+albumentations
+scikit-learn==0.22.2.post1
 matplotlib==3.3.3
-opencv-python==4.2.0.34
 pandas==1.1.0
-matplotlib==3.3.3
 pytest==5.4.1
+jep==3.9.1
+torch==1.7.1
+torchvision==0.8.2
+matplotlib==3.2.1
+protobuf==3.12.0
+wheel==0.34.2
+torchmetrics
