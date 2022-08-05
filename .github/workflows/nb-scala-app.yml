@@ -94,5 +94,5 @@ jobs:
       env:
         BIGDL_ROOT: ${{ github.workspace }}
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-        FTP_URI: ${FTP_URI}
+        FTP_URI: "${FTP_URI}"
 
