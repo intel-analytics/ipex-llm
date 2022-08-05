@@ -14,10 +14,15 @@ on:
   workflow_call:
   schedule:
     - cron: '0 15 * * *'
+env:
+  http_proxy: "http://child-prc.intel.com:913/"
+  https_proxy: "http://child-prc.intel.com:913/"
+  HTTP_PROXY: "http://child-prc.intel.com:913/"
+  HTTPS_PROXY: "http://child-prc.intel.com:913/"
 
 jobs:
   friesian-maven-test:
-    runs-on: [ self-hosted, ubuntu-20.04, CLX, AVX512, Ettenmoors, docker ]
+    runs-on: [ self-hosted, ubuntu-20.04, CLX, AVX512, Ettenmoors ]
     permissions:
       contents: read
       packages: write
@@ -61,8 +66,8 @@ jobs:
           export https_proxy="http://child-prc.intel.com:913/"
           curl -fsSL https://packages.redis.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
           echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
-          apt-get update
-          apt-get install -y redis redis-tools
+          sudo apt-get update
+          sudo apt-get install -y redis redis-tools
           redis-server --daemonize yes
           redis-cli ping
 
@@ -70,11 +75,11 @@ jobs:
         run: |
           cd /tmp
           curl -O http://10.239.45.10:8081/repository/raw/analytics-zoo-data/faiss-lib.zip
-          unzip -o faiss-lib.zip -d /lib
-          ln -s /lib/libmkl_core.so /lib/libmkl_core.so.2
-          ln -s /lib/libmkl_gnu_thread.so /lib/libmkl_gnu_thread.so.2
-          ln -s /lib/libmkl_intel_lp64.so /lib/libmkl_intel_lp64.so.2
-      
+          sudo unzip -o faiss-lib.zip -d /lib
+          sudo ln -s /lib/libmkl_core.so /lib/libmkl_core.so.2
+          sudo ln -s /lib/libmkl_gnu_thread.so /lib/libmkl_gnu_thread.so.2
+          sudo ln -s /lib/libmkl_intel_lp64.so /lib/libmkl_intel_lp64.so.2
+
       - name: Prepare data
         run: |
           mkdir -p /tmp/friesian-unittest
@@ -84,8 +89,7 @@ jobs:
 
       - name: Run tests
         run: |
-          redis-server --daemonize yes
           export SPARK_LOCAL_HOSTNAME=localhost
           export KERAS_BACKEND=tensorflow
           cd scala
-          mvn "-Dorg.slf4j.simpleLogger.defaultLogLevel=debug" "-DwildcardSuites=com.intel.analytics.bigdl.friesian" "-Dtest=com.intel.analytics.bigdl.friesian.*Test" test -P spark_2.x -Dspark.version=2.4.6 "-Dspark.master=local[*]"
+          mvn "-DwildcardSuites=com.intel.analytics.bigdl.friesian" "-Dtest=com.intel.analytics.bigdl.friesian.*Test" test -P spark_2.x -Dspark.version=2.4.6 "-Dspark.master=local[*]"

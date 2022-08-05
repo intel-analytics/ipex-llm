@@ -15,16 +15,8 @@ public class RecallInitializer {
     // TODO: add item model inference ?
     private InferenceModel itemModel;
 
-    public void init() {
-        IndexService indexService = new IndexService(NearlineUtils.helper().indexDim());
-        String dataDir = NearlineUtils.helper().getInitialDataPath();
-        RecallNearlineUtils.loadItemData(indexService, dataDir);
-        assert(indexService.isTrained());
-        System.out.printf("Index service nTotal = %d\n", indexService.getNTotal());
-    }
-
     public static void main(String[] args) throws InterruptedException, IOException {
-        Configurator.setLevel("org", Level.INFO);
+        Configurator.setLevel("org", Level.ERROR);
 
         CMDParser cmdParser = new CMDParser();
         cmdParser.addOption("c", "The path to the yaml config file.",
@@ -37,5 +29,13 @@ public class RecallInitializer {
         NearlineUtils.helper().parseConfigStrings();
         RecallInitializer initializer = new RecallInitializer();
         initializer.init();
+    }
+
+    public void init() {
+        IndexService indexService = new IndexService(NearlineUtils.helper().indexDim());
+        String dataDir = NearlineUtils.helper().getInitialDataPath();
+        RecallNearlineUtils.loadItemData(indexService, dataDir);
+        assert (indexService.isTrained());
+        System.out.printf("Index service nTotal = %d\n", indexService.getNTotal());
     }
 }

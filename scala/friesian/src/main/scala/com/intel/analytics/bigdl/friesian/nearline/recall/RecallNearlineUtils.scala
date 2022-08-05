@@ -39,7 +39,6 @@ object RecallNearlineUtils {
       NearlineUtils.helper.itemEmbeddingColumn)
     val readList = NearlineUtils.getListOfFiles(dataDir)
     val start = System.currentTimeMillis()
-    logger.info("Start time = " + start)
     for (parquetFiles <- readList) {
       var df = spark.read.parquet(parquetFiles: _*)
       df = df.select(itemFeatureColumns.map(col): _*).distinct()

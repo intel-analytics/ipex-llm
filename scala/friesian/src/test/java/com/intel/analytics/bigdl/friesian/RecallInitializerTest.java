@@ -28,8 +28,6 @@ import org.apache.spark.sql.SparkSession;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
@@ -43,20 +41,10 @@ public class RecallInitializerTest {
 
     @Test
     public void testInitialization() throws IOException, InterruptedException {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
         URL resource = getClass().getClassLoader().getResource("testConfig/config_recall_init.yaml");
         assert resource != null;
-        try {
-            RecallInitializer.main(new String[]{"-c", resource.getPath()});
-            // you can get initialDataPath file from friesian-serving.tar.gz
-        } catch (AssertionError error) {
-            logger.error(error.getMessage());
-            error.printStackTrace(pw);
-            String sStackTrace = sw.toString();
-            logger.error(error.getStackTrace());
-            logger.error(sStackTrace);
-        }
+        RecallInitializer.main(new String[]{"-c", resource.getPath()});
+        // you can get initialDataPath file from friesian-serving.tar.gz
 
         SparkSession sparkSession = SparkSession.builder().getOrCreate();
         Dataset<Row> dataset = sparkSession.read().parquet(NearlineUtils.helper().getInitialDataPath());
