@@ -1,13 +1,14 @@
 package com.intel.analytics.bigdl.friesian.nearline.recall;
 
 import com.intel.analytics.bigdl.friesian.nearline.utils.NearlineHelper;
-import com.intel.analytics.bigdl.friesian.serving.recall.IndexService;
 import com.intel.analytics.bigdl.friesian.nearline.utils.NearlineUtils;
+import com.intel.analytics.bigdl.friesian.serving.recall.IndexService;
 import com.intel.analytics.bigdl.friesian.serving.utils.CMDParser;
 import com.intel.analytics.bigdl.grpc.ConfigParser;
 import com.intel.analytics.bigdl.orca.inference.InferenceModel;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
+
 import java.io.IOException;
 
 public class RecallInitializer {
@@ -23,7 +24,7 @@ public class RecallInitializer {
     }
 
     public static void main(String[] args) throws InterruptedException, IOException {
-        Configurator.setLevel("org", Level.ERROR);
+        Configurator.setLevel("org", Level.INFO);
 
         CMDParser cmdParser = new CMDParser();
         cmdParser.addOption("c", "The path to the yaml config file.",

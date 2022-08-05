@@ -29,7 +29,6 @@ jobs:
         with:
           java-version: "8"
           distribution: "temurin"
-          #server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
           settings-path: ${{ github.workspace }} # location for the settings.xml file
 
       - name: Set up Maven
@@ -85,7 +84,8 @@ jobs:
 
       - name: Run tests
         run: |
+          redis-server --daemonize yes
           export SPARK_LOCAL_HOSTNAME=localhost
           export KERAS_BACKEND=tensorflow
           cd scala
-          mvn "-DwildcardSuites=com.intel.analytics.bigdl.friesian" "-Dtest=com.intel.analytics.bigdl.friesian.*Test" test -P spark_2.x -Dspark.version=2.4.6 "-Dspark.master=local[*]"
+          mvn "-Dorg.slf4j.simpleLogger.defaultLogLevel=debug" "-DwildcardSuites=com.intel.analytics.bigdl.friesian" "-Dtest=com.intel.analytics.bigdl.friesian.*Test" test -P spark_2.x -Dspark.version=2.4.6 "-Dspark.master=local[*]"
