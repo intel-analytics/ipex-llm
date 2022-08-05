@@ -62,6 +62,7 @@ jobs:
         run: |
           export http_proxy="http://child-prc.intel.com:913/"
           export https_proxy="http://child-prc.intel.com:913/"
+          mkdir -p /usr/share/keyrings
           curl -fsSL https://packages.redis.io/gpg | sudo -E gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
           echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
           sudo -E apt-get update
