@@ -69,13 +69,9 @@ jobs:
 
       - name: Set up mkl
         run: |
-          export http_proxy="http://child-prc.intel.com:913/"
-          export https_proxy="http://child-prc.intel.com:913/"
-          apt-get update
-          apt install intel-mkl -y
-          yes
-          
-      
+          cd /tmp
+          curl -O http://10.239.45.10:8081/repository/raw/analytics-zoo-data/faiss-lib.zip
+          unzip -o faiss-lib.zip -d /lib
       
       - name: Prepare data
         run: |
