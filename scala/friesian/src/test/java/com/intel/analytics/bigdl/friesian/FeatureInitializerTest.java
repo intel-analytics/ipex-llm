@@ -25,7 +25,8 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import scala.collection.JavaConverters;
 import scala.collection.Seq;
 
@@ -94,17 +95,9 @@ public class FeatureInitializerTest {
         field.set(null, null);
     }
 
-    @Test
-    public void testFeatureInit() throws IOException, InterruptedException {
-        checkInit("testConfig/config_feature_init.yaml");
-    }
-
-    @Test
-    public void testFeatureVecInit() throws IOException, InterruptedException {
-        checkInit("testConfig/config_feature_vec_init.yaml");
-    }
-
-    public void checkInit(String configPath) throws IOException, InterruptedException {
+    @ParameterizedTest
+    @ValueSource(strings = {"testConfig/config_feature_init.yaml", "testConfig/config_feature_vec_init.yaml"})
+    public void testFeatureInit(String configPath) throws IOException, InterruptedException {
         URL resource = getClass().getClassLoader().getResource(configPath);
         assert resource != null;
         FeatureInitializer.main(new String[]{"-c", resource.getPath()});

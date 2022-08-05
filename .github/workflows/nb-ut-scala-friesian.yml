@@ -1,16 +1,23 @@
 name: Nightly Build UT Scala Friesian
 
 on:
-  #pull_request:
-  #branches: [ "main" ]
-  schedule:
-    - cron: "0 15 * * *"
-  # Allows you to run this workflow manually from the Actions tab
+  push:
+    paths:
+      - 'scala/friesian/**'
+      - '.github/workflows/nb-ut-scala-friesian.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'scala/friesian/**'
+      - '.github/workflows/nb-ut-scala-friesian.yml'
   workflow_dispatch:
+  workflow_call:
+  schedule:
+    - cron: '0 15 * * *'
 
 jobs:
-  build:
-    runs-on: [self-hosted, ubuntu-20.04, CLX, AVX512, Ettenmoors, docker]
+  friesian-maven-test:
+    runs-on: [ self-hosted, ubuntu-20.04, CLX, AVX512, Ettenmoors, docker ]
     permissions:
       contents: read
       packages: write
@@ -72,4 +79,4 @@ jobs:
           export SPARK_LOCAL_HOSTNAME=localhost
           export KERAS_BACKEND=tensorflow
           cd scala
-          mvn "-DwildcardSuites=com.intel.analytics.bigdl.friesian" "-Dtest=com.intel.analytics.bigdl.friesian" test -P spark_2.x -Dspark.version=2.4.6 "-Dspark.master=local[*]" -U
+          mvn "-DwildcardSuites=com.intel.analytics.bigdl.friesian" "-Dtest=com.intel.analytics.bigdl.friesian.*Test" test -P spark_2.x -Dspark.version=2.4.6 "-Dspark.master=local[*]" -U
