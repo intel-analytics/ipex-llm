@@ -17,8 +17,6 @@ on:
 env:
   http_proxy: "http://child-prc.intel.com:913/"
   https_proxy: "http://child-prc.intel.com:913/"
-  HTTP_PROXY: "http://child-prc.intel.com:913/"
-  HTTPS_PROXY: "http://child-prc.intel.com:913/"
 
 jobs:
   friesian-maven-test:
