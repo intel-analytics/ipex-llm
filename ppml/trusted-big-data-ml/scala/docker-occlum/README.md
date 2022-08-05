@@ -117,19 +117,14 @@ The examples are run in the docker container. Attach it and see the results (`do
 
 ## Spark TPC-H example
 
-### Rebuild Image
 
-Enlarge these four configurations in [run_spark_on_occlum_glibc.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/run_spark_on_occlum_glibc.sh#L19) to:
-```
-.resource_limits.max_num_of_threads = 4096 |
-.process.default_heap_size = "4096MB" |
-.resource_limits.kernel_space_heap_size="4096MB" |
-```
-
-Then build the docker image:
-
+You can change the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
 ``` bash
-bash build-docker-image.sh
+#start-spark-local.sh
+-e SGX_MEM_SIZE=16GB \
+-e SGX_THREAD=1024 \
+-e SGX_HEAP=1GB \
+-e SGX_KERNEL_HEAP=1GB \
 ```
 
 ### Generate Data
@@ -140,9 +135,9 @@ cd zoo-tutorials/tpch-spark/dbgen && \
 make
 ```
 
-Then you can generate 100G size data by:
+Then you can generate 1G size data by:
 ```
-./dbgen -s 100
+./dbgen -s 1
 ```
 
 Then mount `/path/to/zoo-tutorials/tpch-spark/dbgen` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
