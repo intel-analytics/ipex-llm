@@ -468,7 +468,10 @@ def save_pkl(data, path):
         classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
                                      stdout=subprocess.PIPE).communicate()[0]
         os.environ["CLASSPATH"] = classpath.decode("utf-8")
-        fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
+        if len(host_port) > 1:
+            fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
+        else:
+            fs = pa.hdfs.connect(host=host_port[0])
         with fs.open(path, 'wb') as f:
             pickle.dump(data, f)
     elif path.startswith("s3"):  # s3://bucket/file_path
