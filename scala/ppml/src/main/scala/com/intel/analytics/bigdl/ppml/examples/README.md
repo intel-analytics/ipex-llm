@@ -10,7 +10,7 @@ Run this example in spark local mode:
 
 3.prepare a BigDL PPML Client Container(refer to PPML tutorial)
 
-4.run the following command
+4.run the following command in the container
 
 > your input file can be CSV, JSON, PARQUET or other textfile with or without encryption. if input file is not encrypted, specify the `inputEncryptMode==plain_text`. else, for encrypted CSV, JSON and other textfile, specify the `inputEncryptMode==AES/CBC/PKCS5Padding`. for encrypted parquet file, specify the `inputEncryptMode==AES_GCM_CTR_V1 or AES_GCM_V1`.
 >
