@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -e
-
+set -x
 echo "App[Model-inference-example] Test"
 echo "# Test 1 text-classification-training"
 
