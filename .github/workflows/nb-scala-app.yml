@@ -86,6 +86,7 @@ jobs:
     - name: Run Test
       #run: python -m build
       run: |
+          export SPARK_LOCAL_HOSTNAME=localhost
           export SPARK_HOME=/opt/spark-2.4.6-bin-hadoop2.7
           #export SPARK_HOME=/opt/spark-3.1.2-bin-hadoop2.7
           export FTP_URI=ftp://zoo:1234qwer@10.112.231.51
