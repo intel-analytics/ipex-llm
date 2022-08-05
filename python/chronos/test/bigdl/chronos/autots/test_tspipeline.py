@@ -77,6 +77,7 @@ class TestTSPipeline(TestCase):
         pass
 
     @skip_onnxrt
+    @pytest.mark.onnxrt16
     def test_seq2seq_tsppl_support_dataloader(self):
         # load
         tsppl_seq2seq = TSPipeline.load(
@@ -181,6 +182,7 @@ class TestTSPipeline(TestCase):
             yhat = tsppl_lstm.predict(data=get_test_tsdataset(), batch_size=16)
 
     @skip_onnxrt
+    @pytest.mark.onnxrt16
     def test_tsppl_quantize_data_creator(self):
         # s2s not support quantize
         with pytest.raises(RuntimeError):

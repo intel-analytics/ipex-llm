@@ -153,6 +153,7 @@ class TestAutoSeq2Seq(TestCase):
         auto_seq2seq.evaluate((test_data_x, test_data_y))
 
     @skip_onnxrt
+    @pytest.mark.onnxrt16
     def test_onnx_methods(self):
         auto_seq2seq = get_auto_estimator()
         auto_seq2seq.fit(data=train_dataloader_creator(config={"batch_size": 64}),
@@ -173,6 +174,7 @@ class TestAutoSeq2Seq(TestCase):
             pass
 
     @skip_onnxrt
+    @pytest.mark.onnxrt16
     def test_save_load(self):
         auto_seq2seq = get_auto_estimator()
         auto_seq2seq.fit(data=train_dataloader_creator(config={"batch_size": 64}),

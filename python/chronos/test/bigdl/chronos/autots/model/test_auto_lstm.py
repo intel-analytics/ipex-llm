@@ -145,6 +145,7 @@ class TestAutoLSTM(TestCase):
         auto_lstm.evaluate((test_data_x, test_data_y))
 
     @skip_onnxrt
+    @pytest.mark.onnxrt16
     def test_onnx_methods(self):
         auto_lstm = get_auto_estimator()
         auto_lstm.fit(data=train_dataloader_creator(config={"batch_size": 64}),
@@ -165,6 +166,7 @@ class TestAutoLSTM(TestCase):
             pass
 
     @skip_onnxrt
+    @pytest.mark.onnxrt16
     def test_save_load(self):
         auto_lstm = get_auto_estimator()
         auto_lstm.fit(data=train_dataloader_creator(config={"batch_size": 64}),

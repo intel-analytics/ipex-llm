@@ -24,6 +24,7 @@ import pandas as pd
 import numpy as np
 import tensorflow as tf
 from numpy.testing import assert_array_almost_equal
+from ... import op_tf2
 
 
 def create_data():

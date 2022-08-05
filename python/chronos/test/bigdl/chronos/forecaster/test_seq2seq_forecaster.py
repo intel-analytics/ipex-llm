@@ -102,6 +102,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         assert test_mse[0].shape == test_data[1].shape[1:]
 
     @skip_onnxrt
+    @pytest.mark.onnxrt16
     def test_s2s_forecaster_fit_loader(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
         forecaster = Seq2SeqForecaster(past_seq_len=24,
@@ -120,6 +121,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
 
 
     @skip_onnxrt
+    @pytest.mark.onnxrt16
     def test_s2s_forecaster_onnx_methods(self):
         train_data, val_data, test_data = create_data()
         forecaster = Seq2SeqForecaster(past_seq_len=24,
@@ -250,6 +252,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         stop_orca_context()
 
     @skip_onnxrt
+    @pytest.mark.onnxrt16
     def test_s2s_forecaster_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_data, val_data, test_data = create_data()
@@ -391,6 +394,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         assert yhat.shape == y_test.shape
 
     @skip_onnxrt
+    @pytest.mark.onnxrt16
     def test_forecaster_from_tsdataset_data_loader_onnx(self):
         train, test = create_tsdataset(roll=False)
         train.gen_dt_feature(one_hot_features=['WEEK'])

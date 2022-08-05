@@ -312,6 +312,7 @@ class TestAutoTrainer(TestCase):
         assert 4 <= best_config["past_seq_len"] <= 6
 
     @skip_onnxrt
+    @pytest.mark.onnxrt16
     def test_fit_lstm_feature(self):
         from sklearn.preprocessing import StandardScaler
         scaler = StandardScaler()
@@ -379,6 +380,7 @@ class TestAutoTrainer(TestCase):
         new_ts_pipeline.fit(tsdata_valid)
 
     @skip_onnxrt
+    @pytest.mark.onnxrt16
     def test_fit_tcn_feature(self):
         from sklearn.preprocessing import StandardScaler
         scaler = StandardScaler()
@@ -447,6 +449,7 @@ class TestAutoTrainer(TestCase):
         new_ts_pipeline.fit(tsdata_valid)
 
     @skip_onnxrt
+    @pytest.mark.onnxrt16
     def test_fit_seq2seq_feature(self):
         from sklearn.preprocessing import StandardScaler
         scaler = StandardScaler()

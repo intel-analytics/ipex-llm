@@ -102,6 +102,7 @@ class TestChronosNBeatsForecaster(TestCase):
         assert eva[0].shape == test_data[1].shape[1:]
 
     @skip_onnxrt
+    @pytest.mark.onnxrt16
     def test_nbeats_forecaster_fit_loader(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
         forecaster = NBeatsForecaster(past_seq_len=24,
@@ -123,6 +124,7 @@ class TestChronosNBeatsForecaster(TestCase):
         forecaster.evaluate_with_onnx(test_loader, batch_size=32, quantize=True)
 
     @skip_onnxrt
+    @pytest.mark.onnxrt16
     def test_nbeats_forecaster_onnx_methods(self):
         train_data, val_data, test_data = create_data()
         forecaster = NBeatsForecaster(past_seq_len=24,
@@ -199,6 +201,7 @@ class TestChronosNBeatsForecaster(TestCase):
         np.testing.assert_almost_equal(test_pred_save_q, test_pred_load_q)
 
     @skip_onnxrt
+    @pytest.mark.onnxrt16
     def test_nbeats_forecaster_quantization_onnx(self):
         train_data, val_data, test_data = create_data()
         forecaster = NBeatsForecaster(past_seq_len=24,
@@ -212,6 +215,7 @@ class TestChronosNBeatsForecaster(TestCase):
         eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
 
     @skip_onnxrt
+    @pytest.mark.onnxrt16
     def test_nbeats_forecaster_quantization_onnx_tuning(self):
         train_data, val_data, test_data = create_data()
         forecaster = NBeatsForecaster(past_seq_len=24,
@@ -289,6 +293,7 @@ class TestChronosNBeatsForecaster(TestCase):
         stop_orca_context()
 
     @skip_onnxrt
+    @pytest.mark.onnxrt16
     def test_nbeats_forecaster_distributed(self):
         train_data, val_data, test_data = create_data()
         _train_loader, _, _test_loader = create_data(loader=True)
@@ -434,6 +439,7 @@ class TestChronosNBeatsForecaster(TestCase):
         assert yhat.shape == y_test.shape
 
     @skip_onnxrt
+    @pytest.mark.onnxrt16
     def test_forecaster_from_tsdataset_data_loader_onnx(self):
         train, test = create_tsdataset(roll=False)
         loader = train.to_torch_data_loader(roll=True,
