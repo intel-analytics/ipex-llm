@@ -80,12 +80,12 @@ jobs:
 
         wget http://archive.apache.org/dist/spark/spark-3.1.2/spark-3.1.2-bin-hadoop2.7.tgz
         tar -xf spark-3.1.2-bin-hadoop2.7.tgz -C /opt/
-        #export SPARK_HOME=/opt/spark-3.1.2-bin-hadoop2.7
     - name: Run Test
       #run: python -m build
       run: |
           export SPARK_HOME=/opt/spark-3.1.2-bin-hadoop2.7
           export FTP_URI=ftp://zoo:1234qwer@10.112.231.51
+          export MASTER=local[4]
           chmod a+x apps/run-scala-app-test.sh
           apps/run-scala-app-test.sh
           
