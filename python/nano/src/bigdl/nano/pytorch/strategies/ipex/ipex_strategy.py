@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import types
 import torch
 import pytorch_lightning as pl
 from pytorch_lightning.strategies import SingleDeviceStrategy
@@ -63,3 +64,24 @@ class IPEXStrategy(SingleDeviceStrategy):
             ipex.optimize(self.model, optimizer=self.optimizers[0], inplace=True, dtype=dtype)
         else:
             invalidInputError(False, "Ipex does not support more than one optimizers.")
+
+        if self.enable_bf16:
+            self.patch_on_before_batch_transfer_for_bf16_training(trainer)
+
+    def patch_on_before_batch_transfer_for_bf16_training(self, trainer: pl.Trainer):
+        def on_before_batch_transfer(self, batch, dataloader_idx):
+            def convert_data_to_bf16(batch):
+                if isinstance(batch, torch.Tensor) and batch.dtype == torch.float32:
+                    batch = batch.bfloat16()
+                elif isinstance(batch, list) or isinstance(batch, tuple):
+                    batch = list(batch)
+                    for index, t in enumerate(batch):
+                        batch[index] = convert_data_to_bf16(t)
+                return batch
+            batch = convert_data_to_bf16(batch)
+            return batch
+
+        model = self.model or trainer.lightning_module
+        setattr(model, '_original_on_before_batch_transfer', model.on_before_batch_transfer)
+        setattr(model, 'on_before_batch_transfer',
+                types.MethodType(on_before_batch_transfer, model))
