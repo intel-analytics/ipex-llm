@@ -41,6 +41,7 @@ jobs:
       run: |
         if [ -n "${{inputs.tag}}" ]; then  export TAG=${{inputs.tag}};  else export TAG=latest; fi
         if [ -n "${{inputs.artifact}}" ]; then export ARTIFACT=${{inputs.artifact}}; else export ARTIFACT=ALL; fi
+        echo ${TAG} && echo ${ARTIFACT}
     - name: bigdl-ppml-trusted-big-data-ml-python-graphene
       run: |
         if [ "${ARTIFACT}" = "bigdl-ppml-trusted-big-data-ml-python-graphene" ] || [ "${ARTIFACT}" = "ALL" ] ; then
