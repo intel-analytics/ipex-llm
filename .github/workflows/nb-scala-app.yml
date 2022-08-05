@@ -78,19 +78,24 @@ jobs:
         tar -xf scala-2.11.8.tar -C /opt
         export SCALA_HOME=/opt/scala-2.11.8
 
-        wget http://archive.apache.org/dist/spark/spark-3.1.2/spark-3.1.2-bin-hadoop2.7.tgz
-        tar -xf spark-3.1.2-bin-hadoop2.7.tgz -C /opt/
+        #wget http://archive.apache.org/dist/spark/spark-3.1.2/spark-3.1.2-bin-hadoop2.7.tgz
+        #tar -xf spark-3.1.2-bin-hadoop2.7.tgz -C /opt/
+        wget http://archive.apache.org/dist/spark/spark-2.4.6/spark-2.4.6-bin-hadoop2.7.tgz
+        tar -xf spark-2.4.6-bin-hadoop2.7.tgz -C /opt/
+
     - name: Run Test
       #run: python -m build
       run: |
-          export SPARK_HOME=/opt/spark-3.1.2-bin-hadoop2.7
+          export SPARK_HOME=/opt/spark-2.4.6-bin-hadoop2.7
+          #export SPARK_HOME=/opt/spark-3.1.2-bin-hadoop2.7
           export FTP_URI=ftp://zoo:1234qwer@10.112.231.51
           export MASTER=local[4]
           chmod a+x apps/run-scala-app-test.sh
           apps/run-scala-app-test.sh
           
           rm -rf /opt/scala-2.11.8 scala-2.11.8.tar
-          rm -rf /opt/spark-3.1.2-bin-hadoop2.7 spark-3.1.2-bin-hadoop2.7.tgz
+          #rm -rf /opt/spark-3.1.2-bin-hadoop2.7 spark-3.1.2-bin-hadoop2.7.tgz
+          rm -rf /opt/spark-2.4.6-bin-hadoop2.7 spark-2.4.6-bin-hadoop2.7.tgz
       env:
         BIGDL_ROOT: ${{ github.workspace }}
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
