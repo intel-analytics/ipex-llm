@@ -1,5 +1,6 @@
 package com.intel.analytics.bigdl.friesian.serving.feature.utils;
 
+import com.intel.analytics.bigdl.friesian.serving.utils.Utils;
 import io.lettuce.core.*;
 import io.lettuce.core.api.async.RedisStringAsyncCommands;
 import io.lettuce.core.api.sync.RedisStringCommands;
@@ -22,16 +23,17 @@ import org.apache.logging.log4j.Logger;
 import scala.Tuple2;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import com.intel.analytics.bigdl.friesian.serving.utils.Utils;
-
 public class LettuceUtils {
     private static final Logger logger = LogManager.getLogger(LettuceUtils.class.getName());
-    private static LettuceUtils instance = null;
+    private volatile static LettuceUtils instance = null;
     private static StatefulRedisMasterReplicaConnection<String, String> standaloneConn = null;
     private static StatefulRedisClusterConnection<String, String> clusterConn = null;
     private static AbstractRedisClient redisClient;
@@ -40,7 +42,8 @@ public class LettuceUtils {
     private int itemSlotType;
 
     private LettuceUtils(RedisType redisType, ArrayList<Tuple2<String, Integer>> redisHostPort,
-                         String redisPrefix, String sentinelMasterUrl, String sentinelMasterName, int itemSlotType) {
+                         String redisPrefix, String sentinelMasterUrl, String sentinelMasterName,
+                         int itemSlotType) {
         int logInterval = 2;
         this.redisType = redisType;
         this.itemSlotType = itemSlotType;
@@ -73,8 +76,8 @@ public class LettuceUtils {
             } else {
                 String[] sentinelUrl = sentinelMasterUrl.split(":");
                 assert sentinelUrl.length == 2;
-                nodes.add(RedisURI.Builder.sentinel(sentinelUrl[0].trim(), Integer.parseInt(sentinelUrl[1].trim()),
-                        sentinelMasterName).build());
+                nodes.add(RedisURI.Builder.sentinel(sentinelUrl[0].trim(),
+                        Integer.parseInt(sentinelUrl[1].trim()), sentinelMasterName).build());
             }
             standaloneConn = MasterReplica.connect(redisStandaloneClient, StringCodec.UTF8, nodes);
             if (nodes.size() == 1) {
@@ -89,8 +92,10 @@ public class LettuceUtils {
             RedisClusterClient redisClusterClient = RedisClusterClient.create(nodes);
             ClusterTopologyRefreshOptions topologyRefreshOptions =
                     ClusterTopologyRefreshOptions.builder()
-                            .enableAdaptiveRefreshTrigger(ClusterTopologyRefreshOptions.RefreshTrigger.MOVED_REDIRECT,
-                                    ClusterTopologyRefreshOptions.RefreshTrigger.PERSISTENT_RECONNECTS)
+                            .enableAdaptiveRefreshTrigger(
+                                    ClusterTopologyRefreshOptions.RefreshTrigger.MOVED_REDIRECT,
+                                    ClusterTopologyRefreshOptions.RefreshTrigger
+                                            .PERSISTENT_RECONNECTS)
                             .adaptiveRefreshTriggersTimeout(Duration.ofSeconds(30)).build();
             redisClusterClient.setOptions(ClusterClientOptions.builder()
                             .topologyRefreshOptions(topologyRefreshOptions).build());
@@ -122,12 +127,17 @@ public class LettuceUtils {
         }));
     }
 
-    public static LettuceUtils getInstance(RedisType redisType, ArrayList<Tuple2<String, Integer>> redisHostPort,
-                                           String redisPrefix, String sentinelMasterURL, String sentinelMasterName,
-                                           int itemSlotType) {
+    public static LettuceUtils getInstance(RedisType redisType,
+                                           ArrayList<Tuple2<String, Integer>> redisHostPort,
+                                           String redisPrefix, String sentinelMasterURL,
+                                           String sentinelMasterName, int itemSlotType) {
         if (instance == null) {
-            instance = new LettuceUtils(redisType, redisHostPort, redisPrefix, sentinelMasterURL,
-                    sentinelMasterName, itemSlotType);
+            synchronized (LettuceUtils.class) {
+                if (instance == null) {
+                    instance = new LettuceUtils(redisType, redisHostPort, redisPrefix,
+                            sentinelMasterURL, sentinelMasterName, itemSlotType);
+                }
+            }
         }
         return instance;
     }
@@ -192,8 +202,8 @@ public class LettuceUtils {
                     if (data.length != 2) {
                         logger.warn("Data size in dataArray should be 2, but got" + data.length);
                     } else {
-                        keyValue.put("{" + this.redisKeyPrefix + keyPrefix + data[0].charAt(data[0].length() - 1) +
-                                "}:" + data[0], data[1]);
+                        keyValue.put("{" + this.redisKeyPrefix + keyPrefix +
+                                data[0].charAt(data[0].length() - 1) + "}:" + data[0], data[1]);
                     }
                 }
             }
@@ -206,8 +216,8 @@ public class LettuceUtils {
                 }
             }
         }
-        RedisStringAsyncCommands<String, String> async = getAsync();
-        async.mset(keyValue);
+        RedisStringCommands<String, String> sync = getSync();
+        sync.mset(keyValue);
         logger.info(keyValue.size() + " valid records written to redis.");
     }
 
@@ -229,8 +239,8 @@ public class LettuceUtils {
             } else {
                 for (int i = 0; i < keys.length; i ++) {
                     // TODO: keys[i] = ""
-                    redisKeys[i] = "{" + this.redisKeyPrefix + keyPrefix + keys[i].charAt(keys[i].length() - 1) + "}:" +
-                            keys[i];
+                    redisKeys[i] = "{" + this.redisKeyPrefix + keyPrefix +
+                            keys[i].charAt(keys[i].length() - 1) + "}:" + keys[i];
                 }
             }
         } else {
