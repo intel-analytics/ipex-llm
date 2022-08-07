@@ -57,17 +57,10 @@ jobs:
           export KERAS_BACKEND=tensorflow
           cd scala
           mvn "-DwildcardSuites=com.intel.analytics.bigdl.friesian" test -P spark_3.x -Dspark.version=3.1.2
-    - name: Upload test results
-      if: success() || failure()
-      uses: actions/upload-artifact@v2
+    - name: Rest Report    
+      uses: dorny/test-reporter@v1
       with:
-        name: test-results
-        path: __tests__/__results__/*.xml
-
-    - name: Create test report
-      uses: ./
-      if: success() || failure()
-      with:
-        name: JEST Tests
-        path: __tests__/__results__/*.xml
-        reporter: jest-junit
+        artifact: test-results            # artifact name
+        name: JEST Tests                  # Name of the check run which will be created
+        path: '*.xml'                     # Path to test results (inside artifact .zip)
+        reporter: jest-junit              # Format of test results
