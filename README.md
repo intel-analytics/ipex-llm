@@ -54,6 +54,7 @@ For Building Fast, Scalable, and Secured AI
 - ✅ run machine learning and deep learning in securied and privacy preserved environment [_PPML_](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html) <br/>
 
 ![](https://www.momswhothink.com/wp-content/uploads/button-button.jpg)
+:joy:
 
 BigDL can make all above tasks easy. For more guidence, tutorials and demos, refer to our [Docs site](https://bigdl.readthedocs.io/).
 
