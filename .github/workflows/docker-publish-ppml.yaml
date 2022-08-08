@@ -44,10 +44,11 @@ jobs:
       run: |
         echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
         echo "ARTIFACT=${{ github.event.inputs.artifact || env.DEFAULT_ARTIFACT }} " >> $GITHUB_ENV
+        echo ${ARTIFACT} && echo ${TAG}
     - name: bigdl-ppml-trusted-big-data-ml-python-graphene
       run: |
         # if [[ "${ARTIFACT}" == "bigdl-ppml-trusted-big-data-ml-python-graphene"  ||  "${ARTIFACT}" == "ALL" ]] ; then
-        if ["${ARTIFACT" == "ALL"] ; then
+        if ["${ARTIFACT}" == "ALL"] ; then
         echo "########################################"
         echo "####### big-data-ml-python-graphene ####"
         echo "########################################"
@@ -75,7 +76,7 @@ jobs:
     - name: bigdl-ppml-trusted-realtime-ml-scala-graphene
       run: |
         #if [[ "${ARTIFACT}" == "bigdl-ppml-trusted-realtime-ml-scala-graphene"  ||  "${ARTIFACT}" == "ALL" ]]; then
-        if ["${ARTIFACT" == "ALL"] ; then
+        if ["${ARTIFACT}" == "ALL"] ; then
         echo "########################################"
         echo "####### realtime-ml-scala-graphene #####"
         echo "########################################"
@@ -102,7 +103,7 @@ jobs:
     - name: bigdl-ppml-trusted-big-data-ml-scala-occlum
       run: |
         #if [[ "${ARTIFACT}" == "bigdl-ppml-trusted-big-data-ml-scala-occlum"  ||  "${ARTIFACT}" == "ALL" ]]; then
-        if ["${ARTIFACT" == "ALL"] ; then
+        if ["${ARTIFACT}" == "ALL"] ; then
         echo "########################################"
         echo "####### big-data-ml-scala-occlum  ######"
         echo "########################################"
@@ -129,7 +130,7 @@ jobs:
     - name: bigdl-ppml-trusted-realtime-ml-scala-occlum
       run: |
        # if [[ "${ARTIFACT}" == "bigdl-ppml-trusted-realtime-ml-scala-occlum"  ||  "${ARTIFACT}" == "ALL" ]]; then
-        if ["${ARTIFACT" == "ALL"] ; then
+        if ["${ARTIFACT}" == "ALL"] ; then
         echo "########################################"
         echo "####### realtime-ml-scala-occlum  ######"
         echo "########################################"
