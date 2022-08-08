@@ -10,7 +10,7 @@ For Building Fast, Scalable, and Secured AI
 
 <div align="center">
 
-[![Latest release][release-badge][release-link]] [![Latest release date][release-date-badge]][release-link] [![PyPI][pypi-badge]][pypi-link] 
+[![Latest release][release-badge]][release-link] [![Latest release date][release-date-badge]][release-link] [![PyPI][pypi-badge]][pypi-link] 
 
 </div>
 
