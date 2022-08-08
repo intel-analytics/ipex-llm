@@ -178,16 +178,27 @@ You can find source code [here](https://github.com/intel-analytics/BigDL/tree/ma
 
 ### Run Spark TPC-H example
 
-Modify the following configuration in `driver.yaml` and `executor.yaml`.
+Generate 1g Data like [this](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/scala/docker-occlum#generate-data), and you can use hdfs to replace the mount way, and you can just excute one query by adding [query_number] from 1 to 22 behind output_dir.For example:
+hdfs://input/dbgen hdfs://output/dbgen 13 means excute query 13.
 
-```yaml
-env:
-- name: SGX_THREAD
-  value: "256"
-- name: SGX_HEAP
-  value: "2GB"
-- name: SGX_KERNEL_HEAP
-  value: "2GB"
+
+Modify the following configuration in [run_spark_tpch.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/kubernetes/run_spark_tpch.sh)
+
+```bash
+#run_spark_tpch.sh
+    --conf spark.kubernetes.driverEnv.DRIVER_MEMORY=1g \
+    --conf spark.kubernetes.driverEnv.SGX_MEM_SIZE="10GB" \
+    --conf spark.kubernetes.driverEnv.META_SPACE=1024m \
+    --conf spark.kubernetes.driverEnv.SGX_HEAP="1GB" \
+    --conf spark.kubernetes.driverEnv.SGX_KERNEL_HEAP="2GB" \
+    --conf spark.kubernetes.driverEnv.SGX_THREAD="1024" \
+    --conf spark.executorEnv.SGX_MEM_SIZE="10GB" \
+    --conf spark.executorEnv.SGX_KERNEL_HEAP="1GB" \
+    --conf spark.executorEnv.SGX_HEAP="1GB" \
+    --conf spark.executorEnv.SGX_THREAD="1024" \
+    --num-executors 2 \
+    --executor-cores 4 \
+    --executor-memory 4g \
 ```
 
 Then run the script.
