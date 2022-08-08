@@ -181,7 +181,7 @@ You can find source code [here](https://github.com/intel-analytics/BigDL/tree/ma
 Generate 1g Data like [this](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/scala/docker-occlum#generate-data), and you can use hdfs to replace the mount way, and you can just excute one query by adding [query_number] from 1 to 22 behind output_dir.For example:
 "hdfs:///input/dbgen hdfs:///output/dbgen 13" means excute query 13.
 
-Modify the following configuration in 'driver.yaml' and 'executor.yaml'.
+Modify the following configuration in 'driver.yaml' and 'executor.yaml' and 'run_spark_tpch.sh'.
 
 ```yaml
 #driver.yaml
@@ -211,6 +211,13 @@ env:
   value: "1GB"
 - name: SGX_KERNEL_HEAP
   value: "2GB"
+```
+
+```bash
+#run_spark_tpch.sh
+--num-executors 2 \
+--executor-cores 4 \
+--executor-memory 4g \
 ```
 
 Or you can directly add the following configuration in [run_spark_tpch.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/kubernetes/run_spark_tpch.sh) and it will overwrite the changes in *.yaml.
