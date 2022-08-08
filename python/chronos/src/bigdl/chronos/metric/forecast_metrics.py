@@ -131,13 +131,13 @@ class Evaluator(object):
                     res_list.append(res.numpy())
         return res_list
 
-    
+
     @staticmethod
     def get_latency(num_running, func, *args):
         """
-        Display the time cost in milliseconds of a specific function by running multiple times. 
+        Display the time cost in milliseconds of a specific function by running multiple times.
 
-        :param num_running: Int and the value is positive. Specify the running number of 
+        :param num_running: Int and the value is positive. Specify the running number of
                the function.
         :param func: The python function to be captured the latency.
         :param args: other arguments in this function.
@@ -152,25 +152,25 @@ class Evaluator(object):
             >>> # to evaluate the time cost
             >>> latency = Evaluator.get_latency(len(tsdata_test.df), forecaster.predict, x.numpy())
         """
-        if not isinstance(num_running, int):            
-            invalidInputError(False,"num_running type must be int,"
-                              f" but found {type(num_running)}.")
+        if not isinstance(num_running, int):        
+            invalidInputError(False,"num_running type must be int, "
+                              f"but found {type(num_running)}.")
         elif num_running < 0:
-            invalidInputError(False,"num_running value must be positive,"
-                              f" but found {num_running}.")
-        
-        time_list = repeat(lambda : func(*args), number = 1, repeat = num_running)
+            invalidInputError(False,"num_running value must be positive, "
+                              f"but found {num_running}.")
+
+        time_list = repeat(lambda:func(*args), number=1, repeat=num_running)
         sorted_time = np.sort(time_list)
 
-        latency_list = {"50p": '%.3f' %(1000*np.median(time_list)), 
+        latency_list = {"50p": '%.3f' %(1000*np.median(time_list)),
                         "90p": '%.3f' %(1000*sorted_time[int(0.90*num_running)]),
                         "95p": '%.3f' %(1000*sorted_time[int(0.95*num_running)]),
                         "99p": '%.3f' %(1000*sorted_time[int(0.99*num_running)])}
-        
+
         print(">" * 20, "latency result of", str(func.__name__), ">" * 20)
         for info in ["50p", "90p", "95p", "99p"]:
             print(info, "latency:", latency_list[info], "ms")
         print("<" * 20, "latency result of", str(func.__name__), "<" * 20, "\n")
-        
+
         return latency_list
-        
+
