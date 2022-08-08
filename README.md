@@ -62,7 +62,7 @@ BigDL can make all above tasks easy. For more guidence, tutorials and demos, ref
 	```bash
 	pip install bigdl
 	```
- For more information, refer to [Python user guide](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/python.html). Scala users, please refer to [Scala user guide](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/scala.html)
+   For more information, refer to [Python user guide](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/python.html). Scala users, please refer to [Scala user guide](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/scala.html)
 
 - Or you may want to install individual libraries. For example, install chronos only 
 	```
