@@ -1,0 +1,134 @@
+/* For card */
+.doc-card {
+    border: 1px solid rgb(235, 235, 235);
+}
+
+/* For card header */
+.doc-card-header  {
+    background-color: rgb(230, 230, 230);
+    color: black;
+    text-align: center;  
+}
+
+.doc-card-header > b, strong{
+    font-size: 17px;
+}
+
+/* For card header with icon, need to be used together with doc-card-header */
+.doc-card-header-with-icon svg {
+    margin-top: 5px;
+}
+
+/* For card footer*/
+.doc-card-footer  {
+    background-color: rgb(240, 240, 240);
+}
+
+/* For normal button*/
+.doc-button  {
+    color: rgb(41, 128, 185) !important;
+}
+
+.doc-button:hover {
+    color: rgb(116, 196, 249) !important;
+}
+
+/* For outlined button, need to be used together with doc-button */
+.doc-button-outlined {
+    border: 1px solid rgb(41, 128, 185) !important;
+}
+
+.doc-button-outlined:hover {
+    color: white !important;
+    background-color: rgb(41, 128, 185) !important;
+}
+
+/* For small button/badge */
+.doc-badge {
+    color: rgb(41, 128, 185) !important;
+    font-size: 14px;
+    margin: 2px;
+}
+
+.doc-badge:hover {
+    color: rgb(116, 196, 249) !important;
+}
+
+/* For footer with badge, need to be used with doc-card-footer */ 
+.doc-card-footer-with-badges {
+    display: inline-block;
+}
+
+/* For video introduction parts */
+.video-wrapper {
+    margin-bottom: 24px;
+    padding: 10px;
+    border: 1px solid rgb(235, 235, 235);
+    border-radius: calc(0.25rem - 1px) calc(0.25rem - 1px) 0 0;
+}
+
+.video-container {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    border-radius: calc(0.25rem - 1px) calc(0.25rem - 1px) 0 0;
+    overflow: hidden;
+}
+
+.video-container iframe {
+    width: 100%;
+    max-height: 100%;
+}
+
+.video-left-title {
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.video-divider {
+    background: rgb(116,196,249);
+    background: linear-gradient(90deg, rgba(116,196,249,1) 0%, rgba(41,128,185,1) 100%);
+    width: 100%;
+    height: 5px;
+    margin: 10px 0px 15px 0px;
+}
+
+.video-bottom-flex-container-h {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+}
+
+.video-bottom-text {
+    font-weight: bold;
+    text-align: center;
+    background-color: rgb(230, 230, 230);
+    font-size: 14px;
+}
+
+@media only screen and (min-width: 992px) {
+
+    .video-flex-container-h {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .video-container {
+        margin-left: 5px;
+        margin-right: 5px;
+    }
+
+    .video-left-title {
+        width: 160px;
+        margin-right: 10px;
+    }
+
+    .video-bottom-text {
+        font-size: 16px;
+        padding: 10px 30px;
+    }
+}
+
+/* extra-small (<576px), small (768px), medium (992px) and large screens (>1200px), refer from sphinx-design*/
