@@ -45,6 +45,7 @@ jobs:
     - name: bigdl-ppml-trusted-big-data-ml-python-graphene
       run: |
         echo ${ARTIFACT}
+        echo ???
         if [[ "${ARTIFACT}" = "bigdl-ppml-trusted-big-data-ml-python-graphene"  ||  "${ARTIFACT}" = "ALL" ]] ; then
         echo "########################################"
         echo "####### big-data-ml-python-graphene ####"
