@@ -1,59 +1,94 @@
 name: Nightly Build UT Scala Friesian
 
 on:
-  #pull_request:
-    #branches: [ "main" ]
+  push:
+    paths:
+      - 'scala/friesian/**'
+      - '.github/workflows/nb-ut-scala-friesian.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'scala/friesian/**'
+      - '.github/workflows/nb-ut-scala-friesian.yml'
+  workflow_dispatch:
+  workflow_call:
   schedule:
     - cron: '0 15 * * *'
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+env:
+  http_proxy: "http://child-prc.intel.com:913/"
+  https_proxy: "http://child-prc.intel.com:913/"
 
 jobs:
-  build:
-
-    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+  friesian-maven-test:
+    runs-on: [ self-hosted, ubuntu-20.04, CLX, AVX512, Ettenmoors ]
     permissions:
       contents: read
       packages: write
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK 8
-      uses: actions/setup-java@v3
-      with:
-        java-version: '8'
-        distribution: 'temurin'
-        #server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
-        settings-path: ${{ github.workspace }} # location for the settings.xml file
+      - uses: actions/checkout@v3
+      - name: Set up JDK 8
+        uses: actions/setup-java@v3
+        with:
+          java-version: "8"
+          distribution: "temurin"
+          settings-path: ${{ github.workspace }} # location for the settings.xml file
 
-    - name: Set up Maven
-      uses: stCarolas/setup-maven@v4.4
-      with:
-        maven-version: 3.8.2
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v4.4
+        with:
+          maven-version: 3.8.2
 
-    - name: Set up Maven Settings
-      uses: s4u/maven-settings-action@v2.6.0
-      with:
-        sonatypeSnapshots: true
-        apacheSnapshots: true
-        servers: |
-          [{
-            "id": "central",
-            "configuration": {
-              "httpConfiguration": {
-                "all": {
-                  "connectionTimeout": "3600000",
-                  "readTimeout": "3600000"
+      - name: Set up Maven Settings
+        uses: s4u/maven-settings-action@v2.6.0
+        with:
+          sonatypeSnapshots: true
+          apacheSnapshots: true
+          servers: |
+            [{
+              "id": "central",
+              "configuration": {
+                "httpConfiguration": {
+                  "all": {
+                    "connectionTimeout": "3600000",
+                    "readTimeout": "3600000"
+                    }
                   }
                 }
-              }
-          }]
-        mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${NEXUS_URL}" }]'
+            }]
+          mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${NEXUS_URL}" }]'
 
+      - name: Set up redis
+        run: |
+          export http_proxy="http://child-prc.intel.com:913/"
+          export https_proxy="http://child-prc.intel.com:913/"
+          sudo mkdir -p /usr/share/keyrings
+          curl -fsSL https://packages.redis.io/gpg | sudo -E gpg --yes --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
+          echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
+          sudo -E apt-get update
+          sudo -E apt-get install -y redis redis-tools
+          redis-server --daemonize yes
+          redis-cli ping
 
-    - name: Run tests
-      run: |
+      - name: Set up mkl
+        run: |
+          cd /tmp
+          curl -O http://10.239.45.10:8081/repository/raw/analytics-zoo-data/faiss-lib.zip
+          sudo unzip -o faiss-lib.zip -d /lib
+          sudo ln -fs /lib/libmkl_core.so /lib/libmkl_core.so.2
+          sudo ln -fs /lib/libmkl_gnu_thread.so /lib/libmkl_gnu_thread.so.2
+          sudo ln -fs /lib/libmkl_intel_lp64.so /lib/libmkl_intel_lp64.so.2
+
+      - name: Prepare data
+        run: |
+          mkdir -p /tmp/friesian-unittest
+          cd /tmp/friesian-unittest
+          curl -O http://10.239.45.10:8081/repository/raw/analytics-zoo-data/friesian-serving-upload.tar.gz 
+          tar -zxf friesian-serving-upload.tar.gz
+
+      - name: Run tests
+        run: |
           export SPARK_LOCAL_HOSTNAME=localhost
           export KERAS_BACKEND=tensorflow
           cd scala
-          mvn "-DwildcardSuites=com.intel.analytics.bigdl.friesian" test -P spark_3.x -Dspark.version=3.1.2
+          mvn "-DwildcardSuites=com.intel.analytics.bigdl.friesian" "-Dtest=com.intel.analytics.bigdl.friesian.*Test" test -P spark_2.x -Dspark.version=2.4.6 "-Dspark.master=local[*]"

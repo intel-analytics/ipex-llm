@@ -15,7 +15,7 @@
     <properties>
         <scoverage.plugin.version>1.1.1</scoverage.plugin.version>
         <scoverage.scalacPluginVersion>1.1.1</scoverage.scalacPluginVersion>
-        <grpc.version>1.47.0</grpc.version>
+        <grpc.version>1.48.1</grpc.version>
         <scoverage.aggregate>true</scoverage.aggregate>
         <runSpecsInParallel>false</runSpecsInParallel>
         <tagsToExclude>com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
@@ -298,10 +298,24 @@
             <artifactId>jersey-hk2</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit-jupyter.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${junit5-maven-surefire-plugin.version}</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>${junit5-maven-failsafe-plugin.version}</version>
+            </plugin>
             <plugin>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest-maven-plugin</artifactId>
@@ -431,16 +445,16 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <executions>
                     <!--<execution>-->
-                        <!--<id>with-spark</id>-->
-                        <!--<configuration>-->
-                            <!--<descriptors>-->
-                                <!--<descriptor>${project.basedir}/src/assembly/all-in-one.xml</descriptor>-->
-                            <!--</descriptors>-->
-                        <!--</configuration>-->
-                        <!--<phase>package</phase>-->
-                        <!--<goals>-->
-                            <!--<goal>single</goal>-->
-                        <!--</goals>-->
+                    <!--<id>with-spark</id>-->
+                    <!--<configuration>-->
+                    <!--<descriptors>-->
+                    <!--<descriptor>${project.basedir}/src/assembly/all-in-one.xml</descriptor>-->
+                    <!--</descriptors>-->
+                    <!--</configuration>-->
+                    <!--<phase>package</phase>-->
+                    <!--<goals>-->
+                    <!--<goal>single</goal>-->
+                    <!--</goals>-->
                     <!--</execution>-->
                     <execution>
                         <id>python</id>
@@ -518,15 +532,15 @@
         <profile>
             <id>per_platform</id>
             <properties>
-              <bigdl-core-all-scope>provided</bigdl-core-all-scope>
+                <bigdl-core-all-scope>provided</bigdl-core-all-scope>
             </properties>
             <dependencies>
-              <dependency>
-                <groupId>com.intel.analytics.bigdl.core.dist</groupId>
-                <artifactId>${os-flag}</artifactId>
-                <version>2.1.0-SNAPSHOT</version>
-                <type>pom</type>
-              </dependency>
+                <dependency>
+                    <groupId>com.intel.analytics.bigdl.core.dist</groupId>
+                    <artifactId>${os-flag}</artifactId>
+                    <version>2.1.0-SNAPSHOT</version>
+                    <type>pom</type>
+                </dependency>
             </dependencies>
         </profile>
 

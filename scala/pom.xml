@@ -140,6 +140,11 @@
         <maven-surefire-report-plugin.version>${maven-surefire-plugin.version}</maven-surefire-report-plugin.version>
         <maven-failsafe-plugin.version>${maven-surefire-plugin.version}</maven-failsafe-plugin.version>
 
+        <junit5-maven-surefire-plugin.version>2.22.2</junit5-maven-surefire-plugin.version>
+        <junit5-maven-failsafe-plugin.version>
+            ${junit5-maven-surefire-plugin.version}
+        </junit5-maven-failsafe-plugin.version>
+
         <maven-clean-plugin.version>2.5</maven-clean-plugin.version>
         <maven-compiler-plugin.version>3.2.1</maven-compiler-plugin.version>
         <maven-install-plugin.version>2.5.1</maven-install-plugin.version>
@@ -166,6 +171,7 @@
         <jetty.jspapi.version>6.1.14</jetty.jspapi.version>
         <commons-cli.version>1.2</commons-cli.version>
         <junit.version>4.11</junit.version>
+        <junit-jupyter.version>5.9.0</junit-jupyter.version>
         <commons-codec.version>1.9</commons-codec.version>
         <commons-io.version>2.4</commons-io.version>
         <commons-lang.version>2.6</commons-lang.version>
@@ -189,7 +195,7 @@
         <module>friesian</module>
         <module>grpc</module>
         <module>serving</module>
-	<module>ppml</module>
+        <module>ppml</module>
         <module>assembly</module>
     </modules>
 
@@ -345,7 +351,7 @@
                     <artifactId>license-maven-plugin</artifactId>
                     <version>2.0.0</version>
                     <configuration>
-                        <includeTransitiveDependencies>true</includeTransitiveDependencies>                       
+                        <includeTransitiveDependencies>true</includeTransitiveDependencies>
                         <verbose>true</verbose>
                         <cleanLicensesOutputDirectory>true</cleanLicensesOutputDirectory>
                         <errorRemedy>ignore</errorRemedy>
@@ -364,9 +370,9 @@
                             <licenseMerge>Apache-2.0|Apache License v2.0</licenseMerge>
                             <licenseMerge>Apache-2.0|Apache 2.0 License</licenseMerge>
                             <licenseMerge>Apache-2.0|Apache License</licenseMerge>
-                            <licenseMerge>Apache-2.0|Apache License 2.0</licenseMerge>    
-                            <licenseMerge>Apache-2.0|Apache License Version 2.0</licenseMerge>    
-                            <licenseMerge>Apache-2.0|Apache License, version 2.0</licenseMerge>    
+                            <licenseMerge>Apache-2.0|Apache License 2.0</licenseMerge>
+                            <licenseMerge>Apache-2.0|Apache License Version 2.0</licenseMerge>
+                            <licenseMerge>Apache-2.0|Apache License, version 2.0</licenseMerge>
                             <licenseMerge>MIT|The MIT License (MIT)</licenseMerge>
                             <licenseMerge>MIT|MIT License</licenseMerge>
                             <licenseMerge>MIT|The MIT License</licenseMerge>
@@ -430,7 +436,7 @@
                         <phase>pre-site</phase>
                     </execution>
                 </executions>
-	    </plugin>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -560,15 +566,15 @@
                 </configuration>
             </plugin>
             <plugin>
-            <groupId>org.sonatype.plugins</groupId>
-            <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>1.6.7</version>
-            <extensions>true</extensions>
-            <configuration>
-                <serverId>ossrh</serverId>
-                <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                <autoReleaseAfterClose>false</autoReleaseAfterClose>
-            </configuration>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.7</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
