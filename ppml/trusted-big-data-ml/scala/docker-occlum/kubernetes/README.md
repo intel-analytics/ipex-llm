@@ -181,8 +181,39 @@ You can find source code [here](https://github.com/intel-analytics/BigDL/tree/ma
 Generate 1g Data like [this](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/scala/docker-occlum#generate-data), and you can use hdfs to replace the mount way, and you can just excute one query by adding [query_number] from 1 to 22 behind output_dir.For example:
 "hdfs:///input/dbgen hdfs:///output/dbgen 13" means excute query 13.
 
+Modify the following configuration in 'driver.yaml' and 'executor.yaml'.
 
-Modify the following configuration in [run_spark_tpch.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/kubernetes/run_spark_tpch.sh)
+```yaml
+#driver.yaml
+env:
+- name: DRIVER_MEMORY
+  value: "1g"
+- name: SGX_MEMORY_SIZE
+  value: "10GB"
+- name: SGX_THREAD
+  value: "1024"
+- name: SGX_HEAP
+  value: "1GB"
+- name: SGX_KERNEL_HEAP
+  value: "2GB"
+- name: META_SPACE
+  value: "1024m"
+```
+
+```yaml
+#excutor.yaml
+env:
+- name: SGX_MEMORY_SIZE
+  value: "10GB"
+- name: SGX_THREAD
+  value: "1024"
+- name: SGX_HEAP
+  value: "1GB"
+- name: SGX_KERNEL_HEAP
+  value: "2GB"
+```
+
+Or you can directly add the following configuration in [run_spark_tpch.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/kubernetes/run_spark_tpch.sh) and it will overwrite the changes in *.yaml.
 
 ```bash
 #run_spark_tpch.sh
@@ -200,6 +231,7 @@ Modify the following configuration in [run_spark_tpch.sh](https://github.com/int
     --executor-cores 4 \
     --executor-memory 4g \
 ```
+
 
 Then run the script.
 
