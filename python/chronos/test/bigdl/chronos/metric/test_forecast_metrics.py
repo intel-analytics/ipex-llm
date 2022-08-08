@@ -16,6 +16,7 @@
 
 import numpy as np
 import pytest
+import time
 from unittest import TestCase
 from numpy.testing import assert_almost_equal
 from numpy.testing import assert_array_almost_equal
@@ -110,3 +111,18 @@ class TestChronosForecastMetrics(TestCase):
         smape = Evaluator.evaluate("smape", y_true, y_pred, aggregate="mean")[0]
         orca_smape = sMAPE(y_true, y_pred, multioutput='uniform_average')
         assert_almost_equal(smape, orca_smape, 6)
+    
+    def test_get_latency(self):
+        def test_func(count):
+            time.sleep(0.001*count)
+        with pytest.raises(RuntimeError):
+            Evaluator.get_latency("10", test_func, 5)
+        with pytest.raises(RuntimeError):
+            Evaluator.get_latency(-2, test_func, 5)
+
+        latency_list = Evaluator.get_latency(100, test_func, 5)
+        ref_list = {"50p": 5.0, "90p": 5.0, "95p": 5.1, "99p": 5.1}
+        assert isinstance(latency_list, dict)
+        for info in ["50p", "90p", "95p", "99p"]:
+            assert info in latency_list
+            assert_almost_equal(latency_list[info], ref_list[info], 1)
