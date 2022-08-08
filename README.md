@@ -54,11 +54,11 @@ For Building Fast, Scalable, and Secured AI
 - ✅ run machine learning and deep learning in securied and privacy preserved environment [_PPML_](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html) <br/>
 
 <table align="center">
-	<tr><td><details>
+	<tr><td style="maxwidth:100px"><details>
 		<summary> Refer to <em>Nano</em> </summary>
 			make your single-node Tensorflow/PyTroch programs faster, - Refer to [_Nano_](https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html) <br/>
 	</details></td>
-	<td><details>
+	<td style="color:black"><details>
 		<summary> Refer to <em>Orca</em> </summary>
 			turn your single-node AI applications to distributed and run on a large cluster, Refer to [_Orca: Distributed Training and Inference_](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-training-inference.html#) <br/>
 			use automatic hyperparameter tuning in parallel or in a distributed cluster - Refer to [_Orca: Distributed Hyperparam Tuning_](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-tuning.html) <br/>
