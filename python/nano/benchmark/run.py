@@ -89,6 +89,4 @@ if __name__ == '__main__':
     name = sys.argv[1]
     script_path = os.path.join("python/nano/benchmark", name, "run.sh")
     workload = Workload(name, script_path)
-    logs = [{"config": "default", "train_time": 100.0, "train_throughput": 20.0}]
-    workload._save_logs(logs)
-    # workload.run()
+    workload.run()
