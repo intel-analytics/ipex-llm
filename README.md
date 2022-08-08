@@ -55,12 +55,29 @@ For Building Fast, Scalable, and Secured AI
 
 <table>
 	<tr><td><details>
-		<summary> make your single-node Tensorflow/PyTroch programs faster</summary>
-			- Refer to [_Nano_](https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html)<br/>
+		<summary> Refer to <em>Nano</em> </summary>
+			make your single-node Tensorflow/PyTroch programs faster, - Refer to [_Nano_](https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html) <br/>
+	</details></td></tr>
+	<tr><td><details>
+		<summary> Refer to <em>Orca</em> </summary>
+			turn your single-node AI applications to distributed and run on a large cluster, Refer to [_Orca: Distributed Training and Inference_](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-training-inference.html#) <br/>
+			use automatic hyperparameter tuning in parallel or in a distributed cluster - Refer to [_Orca: Distributed Hyperparam Tuning_](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-tuning.html) <br/>
+			run Ray applications on Spark cluster - Refer to [_Orca: RayOnSpark_](https://bigdl.readthedocs.io/en/latest/doc/Ray/Overview/ray.html)  <br/>
+	</details></td></tr>
+	<tr><td><details>
+		<summary> Refer to <em>DLLib</em> </summary>
+			develop deep learning applications in Scala or Python from scratch to run on Spark cluster - Refer to [_DLLib_](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/dllib.html)  <br/>
+	</details></td></tr>
+	<tr><td><details>
+		<summary> Refer to <em>Chronos and Friesian</em> </summary>
+			build fast and scalable domain-specific applications optimized on Xeon platforms (e.g. Time series, Recommendation Systems) - Refer to [_Chronos_](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html) and [_Friesian_]()  <br/>
+	</details></td></tr>
+	<tr><td><details>
+		<summary> Refer to <em>PPML</em> </summary>
+			run machine learning and deep learning in securied and privacy preserved environment [_PPML_](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html) <br/>
 	</details></td></tr>
 </table>
 
-	
 BigDL can make all above tasks easy. For more guidence, tutorials and demos, refer to our [Docs site](https://bigdl.readthedocs.io/).
 
 ---
