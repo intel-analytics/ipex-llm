@@ -54,7 +54,7 @@ For Building Fast, Scalable, and Secured AI
 - ✅ run machine learning and deep learning in securied and privacy preserved environment [_PPML_](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html) <br/>
 
 <table>
-	<tr><td style="max-width:100px"><details>
+	<tr><td style="color=red;"><details>
 		<summary> Refer to <em>Nano</em> </summary>
 			make your single-node Tensorflow/PyTroch programs faster, - Refer to [_Nano_](https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html) <br/>
 	</details></td>
