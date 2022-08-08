@@ -42,6 +42,8 @@ jobs:
         if [ -n "${{inputs.tag}}" ]; then  export TAG=${{inputs.tag}};  else export TAG=latest; fi
         if [ -n "${{inputs.artifact}}" ]; then export ARTIFACT=${{inputs.artifact}}; else export ARTIFACT=ALL; fi
         echo ${ARTIFACT} && echo ${TAG}
+    - name: debug
+      run: apt-get update
     - name: bigdl-ppml-trusted-big-data-ml-python-graphene
       run: |
         if [[ "${ARTIFACT}" = "bigdl-ppml-trusted-big-data-ml-python-graphene"  ||  "ALL" = "ALL" ]] ; then
