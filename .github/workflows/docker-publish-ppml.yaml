@@ -42,10 +42,8 @@ jobs:
         DEFAULT_ARTIFACT: 'ALL'
         DEFAULT_TAG: 'latest'
       run: |
-        # echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
-        # echo "ARTIFACT=${{ github.event.inputs.artifact || env.DEFAULT_ARTIFACT }} " >> $GITHUB_ENV
-        export ARTIFACT=bigdl-ppml-trusted-big-data-ml-python-graphene
-        export TAG=latest
+        echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
+        echo "ARTIFACT=${{ github.event.inputs.artifact || env.DEFAULT_ARTIFACT }} " >> $GITHUB_ENV
         echo ${ARTIFACT} && echo ${TAG}
     - name: bigdl-ppml-trusted-big-data-ml-python-graphene
       run: |
