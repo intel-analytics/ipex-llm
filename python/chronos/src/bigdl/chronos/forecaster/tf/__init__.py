@@ -17,10 +17,12 @@
 import importlib
 from bigdl.chronos.utils import LazyImport
 
-tf_spec = importlib.util.find_spec('tensorflow')
-PREFIXPATH_TF2 = 'bigdl.chronos.forecaster.tf'
+tf_spec = bool(importlib.util.find_spec('tensorflow'))
+
+PREFIXNAME_TF2 = 'bigdl.chronos.forecaster.tf.'
+bigdl = LazyImport('bigdl')
 if tf_spec:
-    LSTMForecaster = LazyImport('..LSTMForecaster', pkg=PREFIXPATH_TF2+'.LSTMForecaster')
-    MTNetForecaster = LazyImport('..MTNetForecaster', pkg=PREFIXPATH_TF2+'.MTNetForecaster')
-    Seq2SeqForecaster = LazyImport('..Seq2SeqForecaster', pkg=PREFIXPATH_TF2+'.Seq2SeqForecaster')
-    TCNForecaster = LazyImport('..TCNForecaster', pkg=PREFIXPATH_TF2+'.TCNForecaster')
+    LSTMForecaster = LazyImport(PREFIXNAME_TF2+'lstm_forecaster.LSTMForecaster')
+    MTNetForecaster = LazyImport(PREFIXNAME_TF2+'metnet_forecaster.MTNetForecaster')
+    Seq2SeqForecaster = LazyImport(PREFIXNAME_TF2+'seq2seq_forecaster.Seq2SeqForecaster')
+    TCNForecaster = LazyImport(PREFIXNAME_TF2+'tcn_forecaster.TCNForecaster')
