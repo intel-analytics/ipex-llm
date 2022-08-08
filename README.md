@@ -53,7 +53,7 @@ For Building Fast, Scalable, and Secured AI
 - ✅ build fast and scalable domain-specific applications optimized on Xeon platforms (e.g. Time series, Recommendation Systems) - Refer to [_Chronos_](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html) and [_Friesian_]()  <br/>
 - ✅ run machine learning and deep learning in securied and privacy preserved environment [_PPML_](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html) <br/>
 
-![](https://www.momswhothink.com/wp-content/uploads/button-button.jpg)
+[![](https://www.momswhothink.com/wp-content/uploads/button-button.jpg)](www.baidu.com)
 :joy:
 
 BigDL can make all above tasks easy. For more guidence, tutorials and demos, refer to our [Docs site](https://bigdl.readthedocs.io/).
