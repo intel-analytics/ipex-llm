@@ -48,6 +48,8 @@ You can initialize a [`XShardsTSDataset`](../../PythonAPI/Chronos/tsdataset.html
             # 1          08:40 2021/7/9   72          80              
             # 1          08:41 2021/7/9   79          80              
             # 1          ...              ...         ...
+            from bigdl.chronos.data import TSDataset
+
             tsdata = TSDataset.from_pandas(df,
                                            dt_col="Datetime",
                                            id_col="Server id",
@@ -65,6 +67,8 @@ You can initialize a [`XShardsTSDataset`](../../PythonAPI/Chronos/tsdataset.html
             # 00        2019-01-02    2.4     3                   4
             # 01        2019-01-02    2.6     0                   2
             from bigdl.orca.data.pandas import read_csv
+            from bigdl.chronos.data.experimental import XShardsTSDataset
+
             shards = read_csv(csv_path)
             tsdataset = XShardsTSDataset.from_xshards(shards, dt_col="datetime",
                                                       target_col="value", id_col="id",
@@ -110,9 +114,11 @@ Since a scaler should not fit, a typical call for scaling operations is is:
 
             from sklearn.preprocessing import StandardScaler
             scale = StandardScaler()
+
             # scale
             for tsdata in [tsdata_train, tsdata_valid, tsdata_test]:
                 tsdata.scale(scaler, fit=tsdata is tsdata_train)
+
             # unscale
             for tsdata in [tsdata_train, tsdata_valid, tsdata_test]:
                 tsdata.unscale()
@@ -123,11 +129,12 @@ Since a scaler should not fit, a typical call for scaling operations is is:
 
             from sklearn.preprocessing import StandardScaler
             scale = StandardScaler()
+
             # scale
             scaler = {"id1": StandardScaler(), "id2": StandardScaler()}
-            # scale
             for tsdata in [tsdata_train, tsdata_valid, tsdata_test]:
                 tsdata.scale(scaler, fit=tsdata is tsdata_train)
+
             # unscale
             for tsdata in [tsdata_train, tsdata_valid, tsdata_test]:
                 tsdata.unscale()
