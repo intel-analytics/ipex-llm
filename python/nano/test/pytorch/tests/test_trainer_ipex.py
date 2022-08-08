@@ -26,6 +26,7 @@ from torch import nn
 
 from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch.vision.models import vision
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 
 batch_size = 256
 max_epochs = 2
@@ -86,6 +87,11 @@ class TestTrainer(TestCase):
         pl_model = Trainer.compile(model, loss, optimizer, scheduler_dict)
         trainer.fit(pl_model, self.train_loader)
         trainer.test(pl_model, self.train_loader)
+        
+        if TORCH_VERSION_LESS_1_10:
+            import intel_pytorch_extension as ipex
+            # Avoid affecting other tests
+            ipex.enable_auto_mixed_precision(None)
 
     def test_trainer_ipex_bf16_unspport_optim(self):
         trainer = Trainer(max_epochs=max_epochs, use_ipex=True, enable_bf16=True)
@@ -106,6 +112,11 @@ class TestTrainer(TestCase):
         pl_model = Trainer.compile(model, loss, optimizer, scheduler_dict)
         trainer.fit(pl_model, self.train_loader)
         trainer.test(pl_model, self.train_loader)
+
+        if TORCH_VERSION_LESS_1_10:
+            import intel_pytorch_extension as ipex
+            # Avoid affecting other tests
+            ipex.enable_auto_mixed_precision(None)
 
 
 if __name__ == '__main__':
