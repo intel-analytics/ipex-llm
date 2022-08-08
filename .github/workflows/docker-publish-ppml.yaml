@@ -46,7 +46,7 @@ jobs:
       run: |
         echo ${ARTIFACT}
         echo ???
-        if [[ "${ARTIFACT}" = "bigdl-ppml-trusted-big-data-ml-python-graphene"  ||  "${ARTIFACT}" = "ALL" ]] ; then
+        if [[ "$ARTIFACT" == bigdl-ppml-trusted-realtime-ml-scala-graphene || "$ARTIFACT" == ALL ]]; then
         echo "########################################"
         echo "####### big-data-ml-python-graphene ####"
         echo "########################################"
@@ -73,7 +73,7 @@ jobs:
         fi
     - name: bigdl-ppml-trusted-realtime-ml-scala-graphene
       run: |
-        if [[ "${ARTIFACT}" = "bigdl-ppml-trusted-realtime-ml-scala-graphene"  ||  "${ARTIFACT}" = "ALL" ]]; then
+        if [[ "$ARTIFACT" == bigdl-ppml-trusted-realtime-ml-scala-graphene || "$ARTIFACT" == ALL ]]; then
         echo "########################################"
         echo "####### realtime-ml-scala-graphene #####"
         echo "########################################"
@@ -99,7 +99,7 @@ jobs:
         fi
     - name: bigdl-ppml-trusted-big-data-ml-scala-occlum
       run: |
-        if [[ "${ARTIFACT}" = "bigdl-ppml-trusted-big-data-ml-scala-occlum"  ||  "${ARTIFACT}" = "ALL" ]]; then
+        if [[ "$ARTIFACT" == bigdl-ppml-trusted-big-data-ml-scala-occlum || "$ARTIFACT" == ALL ]]; then
         echo "########################################"
         echo "####### big-data-ml-scala-occlum  ######"
         echo "########################################"
@@ -125,7 +125,7 @@ jobs:
         fi
     - name: bigdl-ppml-trusted-realtime-ml-scala-occlum
       run: |
-        if [[ "${ARTIFACT}" = "bigdl-ppml-trusted-realtime-ml-scala-occlum"  ||  "${ARTIFACT}" = "ALL" ]]; then
+        if [[ "$ARTIFACT" == bigdl-ppml-trusted-realtime-ml-scala-occlum || "$ARTIFACT" == ALL ]]; then
         echo "########################################"
         echo "####### realtime-ml-scala-occlum  ######"
         echo "########################################"
