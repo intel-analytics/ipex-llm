@@ -20,7 +20,7 @@ import os
 import sys
 import re
 import psycopg2
-import time
+from datetime import datetime
 
 
 class Workload:
@@ -49,7 +49,7 @@ class Workload:
 
     def _save_logs(self, logs: list):
         is_pr = True if os.environ.get('IS_PR') is not None else False
-        timestamp = time.time()
+        timestamp = datetime.now()
         conn = psycopg2.connect(
             database=self._get_secret('DB_NAME'),
             user    =self._get_secret('DB_USER'),
