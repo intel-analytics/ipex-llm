@@ -11,7 +11,7 @@ trait ImageProcessing {
   val logger = LoggerFactory.getLogger(getClass)
 
   // convert Array[byte] to OpenCVMat.
-  def byteArrayToMat(bytes: Array[Byte], imageCodec: Int = Imgcodecs.CV_LOAD_IMAGE_UNCHANGED): OpenCVMat = {
+  def byteArrayToMat(bytes: Array[Byte], imageCodec: Int = Imgcodecs.IMAGE_UNCHANGED): OpenCVMat = {
     OpenCVMethod.fromImageBytes(bytes, imageCodec)
   }
 

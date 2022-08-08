@@ -113,7 +113,7 @@ echo "#App[Model-inference-example] Test 3.1: text-classification-inference:Simp
 #echo "#App[Model-inference-example] Test 3.1: recommendation-inference:SimpleScalaDriver time used:$time4 seconds"
 
 #echo "# Test 3.2 recommendation-inference:SimpleDriver[Java]"
-#timer
+##timer
 #start=$(date "+%s")
 
 #java -cp ./recommendation-inference/target/recommendation-inference-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
