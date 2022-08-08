@@ -53,10 +53,13 @@ For Building Fast, Scalable, and Secured AI
 - ✅ build fast and scalable domain-specific applications optimized on Xeon platforms (e.g. Time series, Recommendation Systems) - Refer to [_Chronos_](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html) and [_Friesian_]()  <br/>
 - ✅ run machine learning and deep learning in securied and privacy preserved environment [_PPML_](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html) <br/>
 
-<details>
-	<summary> make your single-node Tensorflow/PyTroch programs faster</summary>
-	<br> - Refer to [_Nano_](https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html)</br>
-</details>
+<table>
+	<tr><td><details>
+		<summary> make your single-node Tensorflow/PyTroch programs faster</summary>
+			- Refer to [_Nano_](https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html)<br/>
+	</details></td></tr>
+</table>
+
 	
 BigDL can make all above tasks easy. For more guidence, tutorials and demos, refer to our [Docs site](https://bigdl.readthedocs.io/).
 
