@@ -1,6 +1,8 @@
 # PPML Python Module Dev Guide
 Before development, install all the required dependencies by `pip install -r requirements.txt`
 
+And get the PPML Jar ready, `cd BigDL/scala && ./make-dist -P spark_3.x`, once finished, copy the jar by `cp BigDL/scala/ppml/target/bigdl-ppml-*-jar-with-dependencies.jar BigDL/dist/lib/`
+
 ## Environment Variables
 In terminal, run `source prepare_env.sh`, you can see some environment variables printed. These are the environment variables used in developments.
 
