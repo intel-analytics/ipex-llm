@@ -14,13 +14,22 @@
 # limitations under the License.
 #
 
+from contextlib import contextmanager
+from functools import partial
+from typing import Any, Union, Callable
+
 import torch
+from torch.nn import Module
+from torch.optim import Optimizer
+
 import pytorch_lightning as pl
 from pytorch_lightning.strategies import SingleDeviceStrategy
 from pytorch_lightning.accelerators.accelerator import Accelerator
 from pytorch_lightning.plugins.precision import PrecisionPlugin
+
 from bigdl.nano.utils.log4Error import invalidInputError
 import intel_extension_for_pytorch as ipex
+from intel_extension_for_pytorch.optim._optimizer_utils import IPEX_FUSED_OPTIMIZER_LIST
 
 from .ipex_accelerator import IPEXAccelerator
 
@@ -44,6 +53,9 @@ class IPEXStrategy(SingleDeviceStrategy):
         """
         self.enable_bf16 = enable_bf16
 
+        if enable_bf16 and isinstance(precision_plugin, PrecisionPlugin):
+            precision_plugin = IPEXBF16Precision()
+
         super().__init__(accelerator=accelerator, precision_plugin=precision_plugin)
 
     def setup(self, trainer: pl.Trainer) -> None:
@@ -63,3 +75,29 @@ class IPEXStrategy(SingleDeviceStrategy):
             ipex.optimize(self.model, optimizer=self.optimizers[0], inplace=True, dtype=dtype)
         else:
             invalidInputError(False, "Ipex does not support more than one optimizers.")
+
+
+class IPEXBF16Precision(PrecisionPlugin):
+    """Create Precision Plugin for IPEX BFloat16."""
+
+    @contextmanager
+    def forward_context(self):
+        """PyTorch AMP for managing model forward/training_step/evaluation_step/predict_step."""
+        with torch.cpu.amp.autocast():
+            yield
+
+    def optimizer_step(self,
+                       model: Union["pl.LightningModule", Module],
+                       optimizer: Optimizer,
+                       optimizer_idx: int,
+                       closure: Callable[[], Any],
+                       **kwargs: Any) -> Any:
+        """Hook to run the optimizer step."""
+        if isinstance(model, pl.LightningModule):
+            closure = partial(self._wrap_closure, model, optimizer, optimizer_idx, closure)
+
+        # Automatically call closure for optimizer not supported by IPEX
+        if type(optimizer) not in IPEX_FUSED_OPTIMIZER_LIST:
+            closure()
+
+        return optimizer.step(closure, **kwargs)

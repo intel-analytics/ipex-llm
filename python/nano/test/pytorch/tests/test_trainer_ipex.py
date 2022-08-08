@@ -66,6 +66,47 @@ class TestTrainer(TestCase):
         pl_model = Trainer.compile(self.model, self.loss, self.optimizer, self.scheduler_dict)
         trainer.fit(pl_model, self.train_loader)
 
+    def test_trainer_ipex_bf16(self):
+        trainer = Trainer(max_epochs=max_epochs, use_ipex=True, enable_bf16=True)
+
+        # use_ipex=True will perform inplace optimization
+        model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
+        optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
+        loss = nn.CrossEntropyLoss()
+        scheduler_dict = {
+            "scheduler": OneCycleLR(
+                optimizer,
+                0.1,
+                epochs=max_epochs,
+                steps_per_epoch=len(self.train_loader),
+            ),
+            "interval": "step",
+        }
+
+        pl_model = Trainer.compile(model, loss, optimizer, scheduler_dict)
+        trainer.fit(pl_model, self.train_loader)
+        trainer.test(pl_model, self.train_loader)
+
+    def test_trainer_ipex_bf16_unspport_optim(self):
+        trainer = Trainer(max_epochs=max_epochs, use_ipex=True, enable_bf16=True)
+
+        model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
+        optimizer = torch.optim.AdamW(model.parameters(), lr=0.01, weight_decay=5e-4)
+        loss = nn.CrossEntropyLoss()
+        scheduler_dict = {
+            "scheduler": OneCycleLR(
+                optimizer,
+                0.1,
+                epochs=max_epochs,
+                steps_per_epoch=len(self.train_loader),
+            ),
+            "interval": "step",
+        }
+
+        pl_model = Trainer.compile(model, loss, optimizer, scheduler_dict)
+        trainer.fit(pl_model, self.train_loader)
+        trainer.test(pl_model, self.train_loader)
+
 
 if __name__ == '__main__':
     pytest.main([__file__])
