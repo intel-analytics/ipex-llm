@@ -104,7 +104,7 @@ To run this example in spark local mode:
    run the following command to generate `people.parquet`
 
    ```bash
-   python generate_people_parquet.py </your/save/path/people.parquet> <number>
+   python generate_people_parquet.py </your/save/path> <number>
    ```
 
 2. select a KeyManagementService(`SimpleKeyManagementService` or `EHSMKeyManagementService`)
