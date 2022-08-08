@@ -46,20 +46,20 @@ For Building Fast, Scalable, and Secured AI
 
 ```mermaid
 flowchart TD;
-    Feature1(Make your single-node <br/>Tensorflow/PyTroch programs faster?)-- Yes you can! -->Refer1(Refer to <b>Nano</b>);
+    Feature1(Make your single-node <br/>Tensorflow/PyTroch programs faster?)-- Yes you can! -->Refer1[Refer to <b>Nano</b>];
     Feature1-->Feature2(Turn your single-node AI applications <br/>to distributed and run on a large cluster?);
     Feature2 --> Feature3(Use automatic hyperparameter tuning <br/>in parallel or in a distributed cluster?);
-    Feature2-- Yes you can! -->Refer2(Refer to <br/><b>Orca: Distributed<br/> Training and Inference</b>);
-    Feature3 -- Yes you can! --> Refer3(Refer to <br/><b>Orca: Distributed<br/> Hyperparam Tuning</b>);
+    Feature2-- Yes you can! -->Refer2[Refer to <br/><b>Orca: Distributed<br/> Training and Inference</b>];
+    Feature3 -- Yes you can! --> Refer3[Refer to <br/><b>Orca: Distributed<br/> Hyperparam Tuning</b>];
     Feature3 --> Feature4(Develop deep learning applications <br/>in Scala or Python from scratch <br/>to run on Spark cluster?);
     Feature4 --> Feature5(Run Ray applications on Spark cluster?);
-    Feature4 -- Yes you can! --> Refer4(Refer to <b>DLLib</b>);
-    Feature5 -- Yes you can! --> Refer5(Refer to <b>Orca: RayOnSpark</b>);
+    Feature4 -- Yes you can! --> Refer4[Refer to <b>DLLib</b>];
+    Feature5 -- Yes you can! --> Refer5[Refer to <b>Orca: RayOnSpark</b>];
     Feature5 --> Feature6(Build fast and scalable domain-specific applications <br/>optimized on Xeon platforms? <br/>e.g. Time series, Recommendation Systems)
     Feature6 --> Feature7(Run machine learning and deep learning in securied and privacy preserved environment?);
-    Feature6 -- Yes you can! --> Refer6(Refer to)
-    Refer6 --> Refer6a(<b>Chronos</b>) & Refer6b(<b>Friesian</b>);
-    Feature7 -- Yes you can! --> Refer7(Refer to <b>PPML</b>);
+    Feature6 -- Yes you can! --> Refer6[Refer to];
+    Refer6 --> Refer6a[<b>Chronos</b>] & Refer6b[<b>Friesian</b>];
+    Feature7 -- Yes you can! --> Refer7[Refer to <b>PPML</b>];
     
     click Refer1 "https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html" "Refer to Nano" _parent
     click Refer2 "https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-training-inference.html"
@@ -69,47 +69,6 @@ flowchart TD;
     click Refer6a "https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html"
     click Refer7 "https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html"
 ```
-
-* ✅ **Make your single-node Tensorflow/PyTroch programs faster.** &rarr; Refer to [Nano](https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html)
-
-* ✅ **Turn your single-node AI applications to distributed and run on a large cluster.** &rarr; Refer to [Orca: Distributed Training and Inference](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-training-inference.html)
-
-* ✅ **Use automatic hyperparameter tuning in parallel or in a distributed cluster.** &rarr; Refer to [Orca: Distributed Hyperparam Tuning](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-tuning.html)
-
-* ✅ **Run Ray applications on Spark cluster.** &rarr; Refer to [Orca: RayOnSpark](https://bigdl.readthedocs.io/en/latest/doc/Ray/Overview/ray.html)
-
-* ✅ **Develop deep learning applications in Scala or Python from scratch to run on Spark cluster.** &rarr; Refer to [DLLib](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/dllib.html)
-
-* ✅ **Build fast and scalable domain-specific applications optimized on Xeon platforms (e.g. Time series, Recommendation Systems).** &rarr; Refer to [Chronos](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html) and [Friesian]()
-
-* ✅ **Run machine learning and deep learning in securied and privacy preserved environment.** &rarr; Refer to [PPML](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html)
-
-<br/>
-
-<table align="center">
-	<tr><td><details>
-		<summary> <strong>Refer to <em>Nano</em></strong> </summary>
-			✅ make your single-node Tensorflow/PyTroch programs faster - Refer to <a href="https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html">Nano</a> <br/>
-	</details></td>
-	<td><details>
-		<summary> <strong>Refer to <em>Orca</em></strong> </summary>
-			✅ turn your single-node AI applications to distributed and run on a large cluster - Refer to <a href="https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-training-inference.html">Orca: Distributed Training and Inference</a><br/>
-			✅ use automatic hyperparameter tuning in parallel or in a distributed cluster - Refer to <a href="https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-tuning.html">Orca: Distributed Hyperparam Tuning</a><br/>
-			✅ run Ray applications on Spark cluster - Refer to <a href="https://bigdl.readthedocs.io/en/latest/doc/Ray/Overview/ray.html">Orca: RayOnSpark</a>  <br/>
-	</details></td>
-	<td><details>
-		<summary> <strong>Refer to <em>DLLib</em></strong> </summary>
-			✅ develop deep learning applications in Scala or Python from scratch to run on Spark cluster - Refer to <a href="https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/dllib.html">DLLib</a> <br/>
-	</details></td>
-	<td><details>
-		<summary> <strong>Refer to <em>Chronos and Friesian</em></strong> </summary>
-			✅ build fast and scalable domain-specific applications optimized on Xeon platforms (e.g. Time series, Recommendation Systems) - Refer to <a href="https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html">Chronos</a> and <a href="123">Friesian</a>  <br/>
-	</details></td>
-	<td><details>
-		<summary> <strong>Refer to <em>PPML</em></strong> </summary>
-			✅ run machine learning and deep learning in securied and privacy preserved environment <a href="https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html">PPML</a> <br/>
-	</details></td></tr>
-</table>
 
 BigDL can make all above tasks easy. For more guidence, tutorials and demos, refer to our [Docs site](https://bigdl.readthedocs.io/).
 
