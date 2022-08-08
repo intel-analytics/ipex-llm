@@ -58,17 +58,13 @@ BigDL can make all above tasks easy. For more guidence, tutorials and demos, ref
 ---
 
 ## Installation
-- Python users can use pip to install a stable release of BigDL 
+- You can install a stable release of BigDL using pip (including all libraries)
 	```bash
 	pip install bigdl
 	```
-  or install the latest nightly build
-	```bash
-	pip install --pre --upgrade bigdl
-	```
-  The above commands will install all the libraries in BigDL. For more information, refer to [Python user guide](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/python.html) or [Scala user guide](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/scala.html).
+ For more information, refer to [Python user guide](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/python.html). Scala users, please refer to [Scala user guide](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/scala.html)
 
-- You may want to install only one library. For example, install chronos only 
+- Or you may want to install individual libraries. For example, install chronos only 
 	```
 	pip install bigdl-chronos
 	```
