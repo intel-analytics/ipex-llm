@@ -15,11 +15,14 @@
 #
 
 import torch
+import numpy as np
 from torch import Tensor
 from numpy import ndarray
 from functools import partial
 from torchmetrics.functional import mean_squared_error, mean_absolute_error,\
     mean_absolute_percentage_error, r2_score
+from bigdl.nano.utils.log4Error import invalidInputError
+from timeit import repeat
 
 
 EPSILON = 1e-10
@@ -54,7 +57,6 @@ def _standard_input(metrics, y_true, y_pred):
         metrics = [metrics]
     if isinstance(metrics[0], str):
         metrics = list(map(lambda x: x.lower(), metrics))
-        from bigdl.nano.utils.log4Error import invalidInputError
         invalidInputError(all(metric in TORCHMETRICS_REGRESSION_MAP.keys() for metric in metrics),
                           f"metric should be one of {TORCHMETRICS_REGRESSION_MAP.keys()},"
                           f" but get {metrics}.")
@@ -63,7 +65,6 @@ def _standard_input(metrics, y_true, y_pred):
                           f" but found {type(y_pred)} and {type(y_true)}.")
         y_true, y_pred = torch.from_numpy(y_true), torch.from_numpy(y_pred)
 
-    from bigdl.nano.utils.log4Error import invalidInputError
     invalidInputError(y_true.shape == y_pred.shape,
                       "y_true and y_pred should have the same shape, "
                       f"but get {y_true.shape} and {y_pred.shape}.")
@@ -129,3 +130,47 @@ class Evaluator(object):
                     res = metric_func(y_pred, y_true)
                     res_list.append(res.numpy())
         return res_list
+
+    
+    @staticmethod
+    def get_latency(num_running, func, *args):
+        """
+        Display the time cost in milliseconds of a specific function by running multiple times. 
+
+        :param num_running: Int and the value is positive. Specify the running number of 
+               the function.
+        :param func: The python function to be captured the latency.
+        :param args: other arguments in this function.
+
+        :return: Dictionary of str:float.
+                 Show the information of the time cost in milliseconds.
+
+        Example:
+            >>> # to get the inferencing performance of a trained TCNForecaster
+            >>> x = next(iter(test_loader))[0]
+            >>> # run forecaster.predict(x.numpy()) for len(tsdata_test.df) times
+            >>> # to evaluate the time cost
+            >>> latency = Evaluator.get_latency(len(tsdata_test.df), forecaster.predict, x.numpy())
+        """
+        if not isinstance(num_running, int):            
+            invalidInputError(False,"num_running type must be int,"
+                              f" but found {type(num_running)}.")
+        elif num_running < 0:
+            invalidInputError(False,"num_running value must be positive,"
+                              f" but found {num_running}.")
+        
+        time_list = repeat(lambda : func(*args), number = 1, repeat = num_running)
+        sorted_time = np.sort(time_list)
+
+        latency_list = {"50p": '%.3f' %(1000*np.median(time_list)), 
+                        "90p": '%.3f' %(1000*sorted_time[int(0.90*num_running)]),
+                        "95p": '%.3f' %(1000*sorted_time[int(0.95*num_running)]),
+                        "99p": '%.3f' %(1000*sorted_time[int(0.99*num_running)])}
+        
+        print(">" * 20, "latency result of", str(func.__name__), ">" * 20)
+        for info in ["50p", "90p", "95p", "99p"]:
+            print(info, "latency:", latency_list[info], "ms")
+        print("<" * 20, "latency result of", str(func.__name__), "<" * 20, "\n")
+        
+        return latency_list
+        
