@@ -57,17 +57,18 @@ class Workload:
             host    =self._get_secret('DB_HOST'),
             port    =self._get_secret('DB_PORT')
         )
-        try:
-            cursor = conn.cursor()
-            for log in logs:
-                log['time'] = timestamp
-                log['is_pr'] = is_pr
-                sql = self._get_sql(log)
-                cursor.execute(sql, log)
 
-            conn.commit()
-        finally:
-            conn.close()
+        cursor = conn.cursor()
+        for log in logs:
+            log['time'] = timestamp
+            log['is_pr'] = is_pr
+            sql = self._get_sql(log)
+            print(sql)
+            print(log)
+            cursor.execute(sql, log)
+
+        conn.commit()
+        conn.close()
 
     def _get_secret(self, key: str):
         config_dir = os.environ.get('CONFIG_DIR')
@@ -89,4 +90,9 @@ if __name__ == '__main__':
     name = sys.argv[1]
     script_path = os.path.join("python/nano/benchmark", name, "run.sh")
     workload = Workload(name, script_path)
-    workload.run()
+    # workload.run()
+    workload._save_logs([{"config": "PyTorch Baseline", "train_time": 209.8150200843811, "train_throughput": 57.19323619049757},
+                         {"config": "Nano default env", "train_time": 220.78346490859985, "train_throughput": 54.35189634770779},
+                         {"config": "Nano default env with ipex", "train_time": 231.97819709777832, "train_throughput": 51.72899932031986},
+                         {"config": "Nano default env with ipex, nano data", "train_time": 221.37899827957153, "train_throughput": 54.20568388716636},
+                         ])
