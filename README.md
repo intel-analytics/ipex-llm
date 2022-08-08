@@ -69,6 +69,7 @@ flowchart TD;
     click J "https://bigdl.readthedocs.io/en/latest/doc/Ray/Overview/ray.html"
     click N "https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html"
     click L "https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html"
+    click P "https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html"
 ```
 
 * ✅ **Make your single-node Tensorflow/PyTroch programs faster.** &rarr; Refer to [Nano](https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html)
