@@ -22,7 +22,7 @@ import org.apache.logging.log4j.core.config.Configurator
 import org.apache.logging.log4j.{Level, LogManager}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-class FLSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger {
+class FLSpec extends FlatSpec with Matchers with BeforeAndAfter {
   var port: Int = 8980
   var target: String = "localhost:8980"
   val logger = LogManager.getLogger(classOf[FLSpec])

@@ -55,6 +55,11 @@ abstract class FGBoostModel(continuous: Boolean,
     val sortedIndexByFeature = TreeUtils.sortByFeature(feature)
     // TODO Load model from file
     initFGBoost(label)
+    if (trees.nonEmpty) {
+      logger.info(s"This is incremental training, evaluating using existed trees..")
+      (0 until trees.size).foreach(i => uploadResidual(feature, i))
+
+    }
 
     if (continuous) {
       trainRegressionTree(feature, sortedIndexByFeature, boostRound)
@@ -158,11 +163,14 @@ abstract class FGBoostModel(continuous: Boolean,
    * @param data the input data to predict
    * @return
    */
-  def uploadResidual(data: Array[Tensor[Float]]): Unit = {
-    val lastTreePredict = data.map { record =>
-      Map(trees.last.treeID -> trees.last.predict(record))
+  def uploadResidual(data: Array[Tensor[Float]], idx: Int = trees.size - 1): Unit = {
+    logger.info(s"Uploading tree $idx ...")
+    val predictToUpload = data.map { record =>
+      val tree = trees.get(idx).get
+      Map(tree.treeID -> tree.predict(record))
     }
-    val boostEvals = toBoostEvals(lastTreePredict)
+
+    val boostEvals = toBoostEvals(predictToUpload)
     // TODO: add grouped sending message
 
     val perMsgSize = ObjectSizeCalculator.getObjectSize(boostEvals.head)
@@ -187,8 +195,8 @@ abstract class FGBoostModel(continuous: Boolean,
   def trainRegressionTree(dataSet: Array[Tensor[Float]],
                           indices: Array[Array[Int]], totalRound: Int): Unit = {
     for (i <- 0 until totalRound) {
-      logger.info(s"Round: $i/$totalRound, loss: $curLoss")
       val grads = downloadGrad(i)
+      logger.info(s"Round: $i/$totalRound, loss: $curLoss")
       val currTree = RegressionTree(dataSet, indices, grads, i.toString)
       currTree.init()
       currTree.setLearningRate(learningRate).setMinChildSize(minChildSize)
