@@ -12,16 +12,30 @@ To solve this issue, you need to set the path of `libhdfs.so` in Cloudera to the
 3. If you are using `init_orca_context(cluster_mode="yarn-client")`: 
    ```
    conf = {"spark.executorEnv.ARROW_LIBHDFS_DIR": "/opt/cloudera/parcels/CDH-5.15.2-1.cdh5.15.2.p0.3/lib64"}
-   init_orca_context(cluster_mode="yarn", conf=conf)
+   init_orca_context(cluster_mode="yarn-client", conf=conf)
    ```
    If you are using `init_orca_context(cluster_mode="spark-submit")`:
    ```
    # For yarn-client mode
    spark-submit --conf spark.executorEnv.ARROW_LIBHDFS_DIR=/opt/cloudera/parcels/CDH-5.15.2-1.cdh5.15.2.p0.3/lib64
-
+   
    # For yarn-cluster mode
    spark-submit --conf spark.executorEnv.ARROW_LIBHDFS_DIR=/opt/cloudera/parcels/CDH-5.15.2-1.cdh5.15.2.p0.3/lib64 \
                 --conf spark.yarn.appMasterEnv.ARROW_LIBHDFS_DIR=/opt/cloudera/parcels/CDH-5.15.2-1.cdh5.15.2.p0.3/lib64
+   ```
+
+### UnkownError: Could not start gRPC server
+
+This error occurs while running Orca TF2 Estimator with spark backend, which may because the previous pyspark tensorflow job was not cleaned completely. You can retry later or you can set spark config `spark.python.worker.reuse=false` in your application.
+
+If you are using `init_orca_context(cluster_mode="yarn-client")`: 
+   ```
+   conf = {"spark.python.worker.reuse": "false"}
+   init_orca_context(cluster_mode="yarn-client", conf=conf)
+   ```
+   If you are using `init_orca_context(cluster_mode="spark-submit")`:
+   ```
+   spark-submit --conf spark.python.worker.reuse=false
    ```
 
 ## **Orca Context Issues**
