@@ -100,7 +100,7 @@ pip install --pre --upgrade bigdl-nano[tensorflow]
 ```
 after you install the pytorch backend chronos.
 
-#### OS and Python version requirement
+#### **2.3 OS and Python version requirement**
 
 ```eval_rst
 .. note:: 
@@ -114,117 +114,75 @@ after you install the pytorch backend chronos.
 
      Chronos only supports Python 3.7.2 ~ latest 3.7.x. We are validating more Python versions.
 ```
+
 ---
-### **3. Run**
-Various Python programming environments are supported to run a _Chronos_ application.
 
-#### **3.1 Jupyter Notebook**
 
-You can start the Jupyter notebook as you normally do using the following command and run  _Chronos_ application directly in a Jupyter notebook:
-
-```bash
-jupyter notebook --notebook-dir=./ --ip=* --no-browser
-```
-
-#### **3.2 Python Script**
-
-You can directly write _Chronos_ application in a Python file (e.g. script.py) and run in the command line as a normal Python program:
-
-```bash
-python script.py
-```
+### **3. Which document to see?**
 
 ```eval_rst
-.. note:: 
-    **Optimization on Intel® Hardware**:
-    
-     Chronos integrated many optimized libraries and best known methods (BKMs) **automatically**.
+.. grid:: 2
+    :gutter: 1
 
-     Currently, this function is under active development.
-     
+    .. grid-item-card::
+        :class-footer: sd-bg-light
+
+        **Quick Tour**
+        ^^^
+
+        You may understand the basic usage of Chronos' components and learn to write the first runnable application in this quick tour page.
+
+        +++
+
+        {bdg-link}`Quick Tour <./quick-tour.html>`
+
+    .. grid-item-card::
+        :class-footer: sd-bg-light
+
+        **User Guides**
+        ^^^
+
+        Our user guides provide you with in-depth information, concepts and knowledges about Chronos.
+
+        +++
+
+        {bdg-link}`Data processing <./data_processing_feature_engineering.html>`
+        {bdg-link}`Forecasting <./forecasting.html>`
+        {bdg-link}`Detection <./anomaly_detection.html>`
+        {bdg-link}`Simulation <./simulation.html>`
+
+.. grid:: 2
+    :gutter: 1
+
+    .. grid-item-card::
+        :class-footer: sd-bg-light
+
+        **How-to-Guide**
+        ^^^
+
+        If you are meeting with some specific problems during the usage, how-to guides are good place to be checked.
+
+        +++
+
+        Work In Progress
+
+    .. grid-item-card::
+        :class-footer: sd-bg-light
+
+        **API Document**
+        ^^^
+
+        API Document provides you with a detailed description of the Chronos APIs. 
+
+        +++
+
+        {bdg-link}`API Document <../../PythonAPI/Chronos/index.html>`
+
 ```
----
-
-#### **4.1 Initialization**
-_Chronos_ uses [Orca](../../Orca/Overview/orca.md) to enable distributed training and AutoML capabilities. Initialize orca as below when you want to:
-
-1. Use the distributed mode of a forecaster.
-2. Use automl to distributedly tuning your model.
-3. Use `XshardsTSDataset` to process time series dataset in distribution fashion.
-
-Otherwise, there is no need to initialize an orca context.
-
-View [Orca Context](../../Orca/Overview/orca-context.md) for more details. Note that argument `init_ray_on_spark` must be `True` for _Chronos_. 
-
-```python
-from bigdl.orca import init_orca_context, stop_orca_context
-
-if __name__ == "__main__":
-    # run in local mode
-    init_orca_context(cluster_mode="local", cores=4, init_ray_on_spark=True)
-    # run on K8s cluster
-    init_orca_context(cluster_mode="k8s", num_nodes=2, cores=2, init_ray_on_spark=True)
-    # run on Hadoop YARN cluster
-    init_orca_context(cluster_mode="yarn-client", num_nodes=2, cores=2, init_ray_on_spark=True)
-
-    # >>> Start of Chronos Application >>>
-    # ...
-    # <<< End of Chronos Application <<<
-
-    stop_orca_context()
-```
-#### **4.2 AutoTS Example**
-
-This example run a forecasting task with automl optimization with `AutoTSEstimator` on New York City Taxi Dataset. To run this example, install the following: `pip install --pre --upgrade bigdl-chronos[all]`.
-
-```python
-from bigdl.orca.automl import hp
-from bigdl.chronos.data.repo_dataset import get_public_dataset
-from bigdl.chronos.autots import AutoTSEstimator
-from bigdl.orca import init_orca_context, stop_orca_context
-from sklearn.preprocessing import StandardScaler
-
-if __name__ == "__main__":
-    # initial orca context
-    init_orca_context(cluster_mode="local", cores=4, memory="8g", init_ray_on_spark=True)
-
-    # load dataset
-    tsdata_train, tsdata_val, tsdata_test = get_public_dataset(name='nyc_taxi')
-
-    # dataset preprocessing
-    stand = StandardScaler()
-    for tsdata in [tsdata_train, tsdata_val, tsdata_test]:
-        tsdata.gen_dt_feature().impute()\
-              .scale(stand, fit=tsdata is tsdata_train)
-
-    # AutoTSEstimator initalization
-    autotsest = AutoTSEstimator(model="tcn",
-                                future_seq_len=10)
-
-    # AutoTSEstimator fitting
-    tsppl = autotsest.fit(data=tsdata_train,
-                          validation_data=tsdata_val)
-
-    # Evaluation
-    autotsest_mse = tsppl.evaluate(tsdata_test)
-
-    # stop orca context
-    stop_orca_context()
-```
-
-### **5. Details**
-_Chronos_ provides flexible components for forecasting, detection, simulation and other userful functionalities. You may review following pages to fully learn how to use Chronos to build various time series related applications.
-- [Time Series Processing and Feature Engineering Overview](./data_processing_feature_engineering.html)
-- [Time Series Forecasting Overview](./forecasting.html)
-- [Time Series Anomaly Detection Overview](./anomaly_detection.html)
-- [Generate Synthetic Sequential Data Overview](./simulation.html)
-- [Useful Functionalities Overview](./useful_functionalities.html)
-- [Speed up Chronos built-in/customized models](./speed_up.html)
-- [Chronos API Doc](../../PythonAPI/Chronos/index.html)
 
 ---
 
-### **5. Examples and Demos**
+### **4. Examples and Demos**
 - Quickstarts
     - [Use AutoTSEstimator for Time-Series Forecasting](../QuickStart/chronos-autotsest-quickstart.html)
     - [Use TSDataset and Forecaster for Time-Series Forecasting](../QuickStart/chronos-tsdataset-forecaster-quickstart.html)

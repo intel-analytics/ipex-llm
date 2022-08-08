@@ -78,8 +78,6 @@ Welcome to Chronos for building a fast, accuracy and scalable time series analys
 
             Get Started
 
-.. note:: 
-    You may understand the basic usage of Chronos' components and learn to write the first runnable application in this quick tour page. If you are looking for some specific or advanced topic, you may refer to our tutorial and how-to guide.
 
 TSDataset/XShardsTSDataset
 ---------------------
@@ -111,7 +109,6 @@ In Chronos, we provide a ``TSDataset`` (and a ``XShardsTSDataset`` to handle lar
     .. grid-item-card::
         :class-footer: sd-bg-light
 
-        Our tutorial provides you with in-depth information about how to use Chronos and some key concepts in time series data.
         +++
 
         .. button-ref:: ./data_processing_feature_engineering
@@ -124,7 +121,6 @@ In Chronos, we provide a ``TSDataset`` (and a ``XShardsTSDataset`` to handle lar
     .. grid-item-card::
         :class-footer: sd-bg-light
 
-        Our API document provides you with detailed method and parameter definition for ``TSDataset`` and ``XShardsTSDataset``. It assumes you are familiar with time series data processing basic concepts and designs in Chronos.
         +++
 
         .. button-ref:: ../../PythonAPI/Chronos/tsdataset
@@ -207,7 +203,6 @@ For time series forecasting, we also provide an ``AutoTSEstimator`` for distribu
     .. grid-item-card::
         :class-footer: sd-bg-light
 
-        Try using Chronos in a practical and runnable notebook in Colab or any environment you like time series forecasting.
         +++
 
         .. button-ref:: ../QuickStart/chronos-tsdataset-forecaster-quickstart
@@ -216,18 +211,10 @@ For time series forecasting, we also provide an ``AutoTSEstimator`` for distribu
             :outline:
 
             Quick Start 1
-        
-        .. button-ref:: ../QuickStart/chronos-autotsest-quickstart
-            :color: primary
-            :expand:
-            :outline:
-
-            Quick Start 2
 
     .. grid-item-card::
         :class-footer: sd-bg-light
 
-        Our tutorial provides you with in-depth information about how to use Chronos and some key concepts in time series forecasting.
         +++
 
         .. button-ref:: ./forecasting
@@ -240,7 +227,6 @@ For time series forecasting, we also provide an ``AutoTSEstimator`` for distribu
     .. grid-item-card::
         :class-footer: sd-bg-light
 
-        Our API document provides you with detailed method and parameter definition for ``TSDataset`` and ``AutoTSEstimator``. It assumes you are familiar with time series forecasting basic concepts and designs in Chronos.
         +++
 
         .. button-ref:: ../../PythonAPI/Chronos/forecasters
@@ -280,7 +266,6 @@ To import a specific detector, you may use {algorithm name} + "Detector", and ca
     .. grid-item-card::
         :class-footer: sd-bg-light
 
-        Try using Chronos in a practical and runnable notebook in Colab or any environment you like for time series anomaly detection.
         +++
 
         .. button-ref:: ../QuickStart/chronos-anomaly-detector
@@ -293,7 +278,6 @@ To import a specific detector, you may use {algorithm name} + "Detector", and ca
     .. grid-item-card::
         :class-footer: sd-bg-light
 
-        Our tutorial provides you with in-depth information about how to use Chronos and some key concepts in time series anomaly detection.
         +++
 
         .. button-ref:: ./anomaly_detection
@@ -306,7 +290,6 @@ To import a specific detector, you may use {algorithm name} + "Detector", and ca
     .. grid-item-card::
         :class-footer: sd-bg-light
 
-        Our API document provides you with detailed method and parameter definition for ``Detector``. It assumes you are familiar with time series anomaly detection basic concepts and designs in Chronos.
         +++
 
         .. button-ref:: ../../PythonAPI/Chronos/anomaly_detectors
@@ -326,7 +309,6 @@ Simulator is still under activate development with unstable API.
     .. grid-item-card::
         :class-footer: sd-bg-light
 
-        Our tutorial provides you with in-depth information about how to use Chronos and some key concepts in time series simulation.
         +++
 
         .. button-ref:: ./simulation
@@ -339,7 +321,6 @@ Simulator is still under activate development with unstable API.
     .. grid-item-card::
         :class-footer: sd-bg-light
 
-        Our API document provides you with detailed method and parameter definition for ``Simulator``. It assumes you are familiar with time series simulation basic concepts and designs in Chronos.
         +++
 
         .. button-ref:: ../../PythonAPI/Chronos/simulator
