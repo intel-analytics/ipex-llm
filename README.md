@@ -10,7 +10,7 @@ For Building Fast, Scalable, and Secured AI
 
 <div align="center">
 
-[![Latest release][release-badge]][release-link] [![Latest release date][release-date-badge]][release-link] [![PyPI][pypi-badge]][pypi-link] 
+![Latest release][release-badge][release-link] [![Latest release date][release-date-badge]][release-link] [![PyPI][pypi-badge]][pypi-link] 
 
 </div>
 
@@ -53,7 +53,7 @@ For Building Fast, Scalable, and Secured AI
 - ✅ build fast and scalable domain-specific applications optimized on Xeon platforms (e.g. Time series, Recommendation Systems) - Refer to [_Chronos_](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html) and [_Friesian_]()  <br/>
 - ✅ run machine learning and deep learning in securied and privacy preserved environment [_PPML_](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html) <br/>
 
-[![][button]]
+![][button]
 
 [button]: https://www.momswhothink.com/wp-content/uploads/button-button.jpg
 
