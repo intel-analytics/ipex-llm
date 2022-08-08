@@ -26,7 +26,7 @@ To solve this issue, you need to set the path of `libhdfs.so` in Cloudera to the
 
 ### UnkownError: Could not start gRPC server
 
-This error occurs while running Orca TF2 Estimator with spark backend, which may because the previous pyspark tensorflow job was not cleaned completely. You can retry later or you can set spark config `spark.python.worker.reuse=false` in your application.
+This error may because the previous pyspark tensorflow job did not clean completely. You can retry later or you can set spark config `spark.python.worker.reuse=false` in your application.
 
 If you are using `init_orca_context(cluster_mode="yarn-client")`: 
    ```
