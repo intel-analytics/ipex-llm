@@ -133,8 +133,7 @@ after you install the pytorch backend chronos.
         You may understand the basic usage of Chronos' components and learn to write the first runnable application in this quick tour page.
 
         +++
-
-        {bdg-link-primary-line}`Quick Tour <./quick-tour.html>`
+        `Quick Tour<./quick-tour.html>`_
 
     .. grid-item-card::
         :class-footer: sd-bg-light
@@ -146,10 +145,10 @@ after you install the pytorch backend chronos.
 
         +++
 
-        {bdg-link-primary-line}`Data processing <./data_processing_feature_engineering.html>`
-        {bdg-link-primary-line}`Forecasting <./forecasting.html>`
-        {bdg-link-primary-line}`Detection <./anomaly_detection.html>`
-        {bdg-link-primary-line}`Simulation <./simulation.html>`
+        `Data processing <./data_processing_feature_engineering.html>`_
+        `Forecasting <./forecasting.html>`_
+        `Detection <./anomaly_detection.html>`_
+        `Simulation <./simulation.html>`_
 
 .. grid:: 2
     :gutter: 1
@@ -176,7 +175,7 @@ after you install the pytorch backend chronos.
 
         +++
 
-        {bdg-link-primary-line}`API Document <../../PythonAPI/Chronos/index.html>`
+        `API Document <../../PythonAPI/Chronos/index.html>`_
 
 ```
 

@@ -116,9 +116,6 @@ In Chronos, we provide a ``TSDataset`` (and a ``XShardsTSDataset`` to handle lar
             Tutorial
 
     .. grid-item-card::
-        :class-footer: sd-bg-light
-
-        +++
 
         .. button-ref:: ../../PythonAPI/Chronos/tsdataset
             :color: primary
@@ -198,21 +195,15 @@ For time series forecasting, we also provide an ``AutoTSEstimator`` for distribu
     :gutter: 1
 
     .. grid-item-card::
-        :class-footer: sd-bg-light
-
-        +++
 
         .. button-ref:: ../QuickStart/chronos-tsdataset-forecaster-quickstart
             :color: primary
             :expand:
             :outline:
 
-            Quick Start 1
+            Quick Start
 
     .. grid-item-card::
-        :class-footer: sd-bg-light
-
-        +++
 
         .. button-ref:: ./forecasting
             :color: primary
@@ -222,9 +213,6 @@ For time series forecasting, we also provide an ``AutoTSEstimator`` for distribu
             Tutorial
 
     .. grid-item-card::
-        :class-footer: sd-bg-light
-
-        +++
 
         .. button-ref:: ../../PythonAPI/Chronos/forecasters
             :color: primary
@@ -261,9 +249,6 @@ To import a specific detector, you may use {algorithm name} + "Detector", and ca
     :gutter: 1
 
     .. grid-item-card::
-        :class-footer: sd-bg-light
-
-        +++
 
         .. button-ref:: ../QuickStart/chronos-anomaly-detector
             :color: primary
@@ -273,9 +258,6 @@ To import a specific detector, you may use {algorithm name} + "Detector", and ca
             Quick Start
 
     .. grid-item-card::
-        :class-footer: sd-bg-light
-
-        +++
 
         .. button-ref:: ./anomaly_detection
             :color: primary
@@ -285,9 +267,6 @@ To import a specific detector, you may use {algorithm name} + "Detector", and ca
             Tutorial
 
     .. grid-item-card::
-        :class-footer: sd-bg-light
-
-        +++
 
         .. button-ref:: ../../PythonAPI/Chronos/anomaly_detectors
             :color: primary
@@ -304,9 +283,6 @@ Simulator is still under activate development with unstable API.
     :gutter: 1
 
     .. grid-item-card::
-        :class-footer: sd-bg-light
-
-        +++
 
         .. button-ref:: ./simulation
             :color: primary
@@ -316,9 +292,6 @@ Simulator is still under activate development with unstable API.
             Tutorial
 
     .. grid-item-card::
-        :class-footer: sd-bg-light
-
-        +++
 
         .. button-ref:: ../../PythonAPI/Chronos/simulator
             :color: primary
