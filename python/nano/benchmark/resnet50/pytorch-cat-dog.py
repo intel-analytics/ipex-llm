@@ -94,8 +94,8 @@ def _main_process(args, train_loader, val_loader, train_size):
     
     output = json.dumps({
         "config": args.name,
-        "train time": train_end - train_start,
-        "train throughput": train_size * args.epochs / (train_end - train_start)
+        "train_time": train_end - train_start,
+        "train_throughput": train_size * args.epochs / (train_end - train_start)
     })
     
     print(f'>>>{output}<<<')
