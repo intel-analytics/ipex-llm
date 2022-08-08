@@ -1,7 +1,7 @@
 # Chronos User Guide
 
 ### **1. Overview**
-_BigDL-Chronos_ (_Chronos_ for short) is an application framework for building large-scale time series analysis applications.
+_BigDL-Chronos_ (_Chronos_ for short) is an application framework for building a fast, accuracy and scalable time series analysis application.
 
 You can use _Chronos_ to do:
 
@@ -145,9 +145,9 @@ after you install the pytorch backend chronos.
 
         +++
 
-        `Data process <./data_processing_feature_engineering.html>`_
-        `Forecast <./forecasting.html>`_
-        `Detect <./anomaly_detection.html>`_
+        `Data process <./data_processing_feature_engineering.html>`_ / 
+        `Forecast <./forecasting.html>`_ / 
+        `Detect <./anomaly_detection.html>`_ / 
         `Simulate <./simulation.html>`_
 
 .. grid:: 2
