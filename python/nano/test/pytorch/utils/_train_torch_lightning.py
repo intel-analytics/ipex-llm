@@ -122,5 +122,7 @@ def train_torch_lightning(model, batch_size, num_workers, data_dir, use_ipex=Fal
         else:
             # Frozen parameters should not change
             if not torch.all(torch.eq(para1, para2)):
-                raise Exception(name + " freeze failed.")
+                raise Exception(name + " freeze failed.\n"
+                                + para1 + "\n"
+                                + para2 + "\n")
     print("pass")

@@ -82,7 +82,7 @@ class IPEXBF16Precision(PrecisionPlugin):
 
     @contextmanager
     def forward_context(self):
-        """PyTorch AMP for managing model forward/training_step/evaluation_step/predict_step."""
+        """AMP for managing model forward/training_step/evaluation_step/predict_step."""
         with torch.cpu.amp.autocast():
             yield
 
