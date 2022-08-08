@@ -46,20 +46,20 @@ For Building Fast, Scalable, and Secured AI
 
 ```mermaid
 flowchart TD;
-    Feature1(Make your single-node <br/>Tensorflow/PyTroch programs faster?)-- Yes you can! -->Refer1[Refer to <b>Nano</b>];
+    Feature1(Make your single-node <br/>Tensorflow/PyTroch programs faster?)-- Yes you can! ---Refer1[Refer to <b>Nano</b>];
     Feature1-->Feature2(Turn your single-node AI applications <br/>to distributed and run on a large cluster?);
     Feature2 --> Feature3(Use automatic hyperparameter tuning <br/>in parallel or in a distributed cluster?);
-    Feature2-- Yes you can! -->Refer2[Refer to <br/><b>Orca: Distributed<br/> Training and Inference</b>];
-    Feature3 -- Yes you can! --> Refer3[Refer to <br/><b>Orca: Distributed<br/> Hyperparam Tuning</b>];
+    Feature2-- Yes you can! ---Refer2[Refer to <br/><b>Orca: Distributed<br/> Training and Inference</b>];
+    Feature3 -- Yes you can! ---Refer3[Refer to <br/><b>Orca: Distributed<br/> Hyperparam Tuning</b>];
     Feature3 --> Feature4(Develop deep learning applications <br/>in Scala or Python from scratch <br/>to run on Spark cluster?);
     Feature4 --> Feature5(Run Ray applications on Spark cluster?);
-    Feature4 -- Yes you can! --> Refer4[Refer to <b>DLLib</b>];
-    Feature5 -- Yes you can! --> Refer5[Refer to <b>Orca: RayOnSpark</b>];
+    Feature4 -- Yes you can! ---Refer4[Refer to <b>DLLib</b>];
+    Feature5 -- Yes you can! ---Refer5[Refer to <b>Orca: RayOnSpark</b>];
     Feature5 --> Feature6(Build fast and scalable domain-specific applications <br/>optimized on Xeon platforms? <br/>e.g. Time series, Recommendation Systems)
     Feature6 --> Feature7(Run machine learning and deep learning in securied and privacy preserved environment?);
-    Feature6 -- Yes you can! --> Refer6[Refer to];
-    Refer6 --> Refer6a[<b>Chronos</b>] & Refer6b[<b>Friesian</b>];
-    Feature7 -- Yes you can! --> Refer7[Refer to <b>PPML</b>];
+    Feature6 -- Yes you can! ---Refer6[Refer to];
+    Refer6 ---Refer6a[<b>Chronos</b>] & Refer6b[<b>Friesian</b>];
+    Feature7 -- Yes you can! ---Refer7[Refer to <b>PPML</b>];
     
     click Refer1 "https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html" "Refer to Nano" _parent
     click Refer2 "https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-training-inference.html"
