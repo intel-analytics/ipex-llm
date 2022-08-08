@@ -20,19 +20,19 @@ BigDL Architecture
                 Domain Specific Toolkits
             </div>
             <div class="video-text-flex-container-v">
-                <a href="doc/PPML/Overview/ppml.html" class="doc-button"> DLLib </a>
+                <a href="doc/PPML/Overview/ppml.html" class="doc-button video-upper-text"> DLLib </a>
                 <div class="video-container">
                     <iframe src="https://www.youtube.com/embed/d0vcXf5CLdM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                 </div>
             </div>
             <div class="video-text-flex-container-v">
-                <a href="doc/PPML/Overview/ppml.html" class="doc-button"> Nano </a>
+                <a href="doc/PPML/Overview/ppml.html" class="doc-button video-upper-text"> Nano </a>
                 <div class="video-container">
                     <iframe src="https://www.youtube.com/embed/d0vcXf5CLdM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                 </div>
             </div>
             <div class="video-text-flex-container-v">
-                <a href="doc/PPML/Overview/ppml.html" class="doc-button"> Orca </a>
+                <a href="doc/PPML/Overview/ppml.html" class="doc-button video-upper-text"> Orca </a>
                 <div class="video-container">
                     <iframe src="https://www.youtube.com/embed/d0vcXf5CLdM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                 </div>
@@ -44,19 +44,19 @@ BigDL Architecture
                 End-to-End Distributed AI Pipelines
             </div>
             <div class="video-text-flex-container-v">
-                <a href="doc/PPML/Overview/ppml.html" class="doc-button"> Chronos </a>
+                <a href="doc/PPML/Overview/ppml.html" class="doc-button video-upper-text"> Chronos </a>
                 <div class="video-container">
                     <iframe src="https://www.youtube.com/embed/d0vcXf5CLdM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                 </div>
             </div>
             <div class="video-text-flex-container-v">
-                <a href="doc/PPML/Overview/ppml.html" class="doc-button"> Friesian </a>
+                <a href="doc/PPML/Overview/ppml.html" class="doc-button video-upper-text"> Friesian </a>
                 <div class="video-container">
                     <iframe src="https://www.youtube.com/embed/d0vcXf5CLdM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                 </div>
             </div>
             <div class="video-text-flex-container-v">
-                <a href="doc/PPML/Overview/ppml.html" class="doc-button"> PPML </a>
+                <a href="doc/PPML/Overview/ppml.html" class="doc-button video-upper-text"> PPML </a>
                 <div class="video-container">
                     <iframe src="https://www.youtube.com/embed/d0vcXf5CLdM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                 </div>
