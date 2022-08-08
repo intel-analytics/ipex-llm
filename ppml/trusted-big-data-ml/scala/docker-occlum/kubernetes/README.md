@@ -179,7 +179,7 @@ You can find source code [here](https://github.com/intel-analytics/BigDL/tree/ma
 ### Run Spark TPC-H example
 
 Generate 1g Data like [this](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/scala/docker-occlum#generate-data), and you can use hdfs to replace the mount way, and you can just excute one query by adding [query_number] from 1 to 22 behind output_dir.For example:
-hdfs://input/dbgen hdfs://output/dbgen 13 means excute query 13.
+"hdfs:///input/dbgen hdfs:///output/dbgen 13" means excute query 13.
 
 
 Modify the following configuration in [run_spark_tpch.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/kubernetes/run_spark_tpch.sh)
