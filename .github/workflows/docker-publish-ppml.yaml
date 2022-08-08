@@ -38,10 +38,12 @@ jobs:
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
     - name: set env
+      env:
+        DEFAULT_ARTIFACT: 'ALL'
+        DEFAULT_TAG: 'latest'
       run: |
-        if [ -n "${{inputs.tag}}" ]; then  export TAG=${{inputs.tag}};  else export TAG=latest; fi
-        if [ -n "${{inputs.artifact}}" ]; then export ARTIFACT=${{inputs.artifact}}; else export ARTIFACT=ALL; fi
-        echo ${TAG} && echo ${ARTIFACT}
+        echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
+        echo "ARTIFACT=${{ github.event.inputs.artifact || env.DEFAULT_ARTIFACT }} " >> $GITHUB_ENV
     - name: bigdl-ppml-trusted-big-data-ml-python-graphene
       run: |
         if [[ "${ARTIFACT}" == "bigdl-ppml-trusted-big-data-ml-python-graphene"  ||  "${ARTIFACT}" == "ALL" ]] ; then
