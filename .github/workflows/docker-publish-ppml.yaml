@@ -37,15 +37,10 @@ jobs:
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: set env
+    - name: bigdl-ppml-trusted-big-data-ml-python-graphene
       run: |
         if [ -n "${{inputs.tag}}" ]; then  export TAG=${{inputs.tag}};  else export TAG=latest; fi
         if [ -n "${{inputs.artifact}}" ]; then export ARTIFACT=${{inputs.artifact}}; else export ARTIFACT=ALL; fi
-        echo ${ARTIFACT} && echo ${TAG}
-    - name: bigdl-ppml-trusted-big-data-ml-python-graphene
-      run: |
-        echo ${ARTIFACT}
-        echo ???
         if [[ "$ARTIFACT" == bigdl-ppml-trusted-realtime-ml-scala-graphene || "$ARTIFACT" == ALL ]]; then
         echo "########################################"
         echo "####### big-data-ml-python-graphene ####"
@@ -73,6 +68,8 @@ jobs:
         fi
     - name: bigdl-ppml-trusted-realtime-ml-scala-graphene
       run: |
+        if [ -n "${{inputs.tag}}" ]; then  export TAG=${{inputs.tag}};  else export TAG=latest; fi
+        if [ -n "${{inputs.artifact}}" ]; then export ARTIFACT=${{inputs.artifact}}; else export ARTIFACT=ALL; fi
         if [[ "$ARTIFACT" == bigdl-ppml-trusted-realtime-ml-scala-graphene || "$ARTIFACT" == ALL ]]; then
         echo "########################################"
         echo "####### realtime-ml-scala-graphene #####"
@@ -99,6 +96,8 @@ jobs:
         fi
     - name: bigdl-ppml-trusted-big-data-ml-scala-occlum
       run: |
+        if [ -n "${{inputs.tag}}" ]; then  export TAG=${{inputs.tag}};  else export TAG=latest; fi
+        if [ -n "${{inputs.artifact}}" ]; then export ARTIFACT=${{inputs.artifact}}; else export ARTIFACT=ALL; fi
         if [[ "$ARTIFACT" == bigdl-ppml-trusted-big-data-ml-scala-occlum || "$ARTIFACT" == ALL ]]; then
         echo "########################################"
         echo "####### big-data-ml-scala-occlum  ######"
@@ -125,6 +124,8 @@ jobs:
         fi
     - name: bigdl-ppml-trusted-realtime-ml-scala-occlum
       run: |
+        if [ -n "${{inputs.tag}}" ]; then  export TAG=${{inputs.tag}};  else export TAG=latest; fi
+        if [ -n "${{inputs.artifact}}" ]; then export ARTIFACT=${{inputs.artifact}}; else export ARTIFACT=ALL; fi
         if [[ "$ARTIFACT" == bigdl-ppml-trusted-realtime-ml-scala-occlum || "$ARTIFACT" == ALL ]]; then
         echo "########################################"
         echo "####### realtime-ml-scala-occlum  ######"
