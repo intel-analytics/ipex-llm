@@ -274,6 +274,10 @@ class BasePytorchForecaster(Forecaster):
                |
                | 2. earlystop:
                | Monitor the val_loss and stop training when it stops improving.
+               |
+               | 3. best_epoch:
+               | Monitor the val_loss. And load the checkpoint of the epoch with the smallest
+               | val_loss after the training.
 
         :param earlystop_patience: Number of checks with no improvement after which training will
                be stopped. It takes effect when 'validation_mode' is 'earlystop'. Under the default
@@ -347,7 +351,15 @@ class BasePytorchForecaster(Forecaster):
                                                                      name="forecaster_tmp_log")
             from pytorch_lightning.callbacks import EarlyStopping
             early_stopping = EarlyStopping('val/loss', patience=earlystop_patience)
-            callbacks = [early_stopping] if validation_mode == 'earlystop' else None
+            from pytorch_lightning.callbacks import ModelCheckpoint
+            checkpoint_callback = ModelCheckpoint(monitor="val/loss", dirpath='validation',
+                                                  filename='best', save_on_train_epoch_end=True)
+            if validation_mode == 'earlystop':
+                callbacks = [early_stopping]
+            elif validation_mode == 'best_epoch':
+                callbacks = [checkpoint_callback]
+            else:
+                callbacks = None
             # Trainer init
             self.trainer = Trainer(logger=logger, max_epochs=epochs, callbacks=callbacks,
                                    checkpoint_callback=self.checkpoint_callback,
@@ -385,6 +397,9 @@ class BasePytorchForecaster(Forecaster):
                 self.fitted = True
                 fit_out = read_csv('./forecaster_tmp_log/version_0/metrics.csv')
                 delete_folder("./forecaster_tmp_log")
+                if validation_mode == 'best_epoch':
+                    self.load('validation/best.ckpt')
+                    delete_folder("./validation")
                 return fit_out
 
     def predict(self, data, batch_size=32, quantize=False):
