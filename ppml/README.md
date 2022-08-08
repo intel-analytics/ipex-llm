@@ -102,7 +102,7 @@ sudo docker run -itd \
 ```
 
 **c. Run Python HelloWorld in BigDL PPML Client Container**
-  
+
 Run the [script](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/start-scripts/start-python-helloworld-sgx.sh) to run trusted [Python HelloWorld](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/examples/helloworld.py) in BigDL PPML client container:
 ```
 sudo docker exec -it bigdl-ppml-client-local bash work/start-scripts/start-python-helloworld-sgx.sh
@@ -250,6 +250,7 @@ Here we use **k8s client mode** and **PPML CLI** to run SimpleQuery. Check other
       ```
   
   4. If you setup [PPML Monitoring](docs/prepare_environment.md#optional-k8s-monitioring-setup), you can check PPML Dashboard to monitor the status in http://kubernetes_master_url:3000
+
     ![image](https://user-images.githubusercontent.com/61072813/179948818-a2f6844f-0009-49d1-aeac-2e8c5a7ef677.png)
 
   </details>
@@ -267,4 +268,238 @@ In addition to the above Spark Pi and Python HelloWorld programs running locally
 
 ## 4. Develop your own Big Data & AI applications with BigDL PPML
 
-xxxx
+We provide both Scala and Python APIs to help you develop your own applications with BigDL PPML. 
+
+First thing you need to do is create a `PPMLContext`, who wraps a `SparkSession` and provides read functions to read encrypted data files to plain-text RDD or DataFrame, also provides write functions to save DataFrame to encrypted data files. 
+
+If you are familiar with Spark, then you will find that using `PPMLConext` is very similar to Spark.
+
+### 4.1 PPMLContext In Scala
+
+#### 4.1.1 create a PPMLContext
+
+1. `create a PPMLContext with appName`
+
+   This is the simplest way to create a `PPMLContext`. When you don't need to read/write encrypted files, you can use this way to create a `PPMLContext`.
+
+   Code Example
+
+   ```scala
+   import com.intel.analytics.bigdl.ppml.PPMLContext
+   
+   val sc = PPMLContext.initPPMLContext("MyApp")
+   ```
+
+   If you want to read/write encrypted files, then you need to provide more information.
+
+2. `create a PPMLContext with appName & ppmlArgs`
+
+   `ppmlArgs` is a Map, what parameters in the Map depends on what kind of `KeyManagementService(KMS)` you use. we support 3 types of KMS ——`SimpleKeyManagementService`, `EHSMKeyManagementService`, `AzureKeyManagementService`. 
+
+   We use KMS to generate a `primaryKey` and `dataKey`, then we use the keys to encrypt/decrypt data.
+
+   > How to use KMS to generate primaryKey and dataKey, please refer to [this](https://github.com/intel-analytics/BigDL/blob/main/ppml/services/kms-utils/docker/README.md)
+
+   After preparing the keys, now you can create a `PPMLContext` with the following parameters.
+
+   For `SimpleKeyManagementService`:
+
+   ```scala
+   import com.intel.analytics.bigdl.ppml.PPMLContext
+   
+   val ppmlArgs: Map[String, String] = Map(
+       "spark.bigdl.kms.type" -> "SimpleKeyManagementService",
+       "spark.bigdl.kms.simple.id" -> your_app_id,
+       "spark.bigdl.kms.simple.key" -> your_app_key,
+       "spark.bigdl.kms.key.primary" -> /your/primary/key/path,
+       "spark.bigdl.kms.key.data" -> /your/data/key/path
+   )
+   
+   val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
+   ```
+
+   For `EHSMKeyManagementService`
+
+   ```scala
+   import com.intel.analytics.bigdl.ppml.PPMLContext
+   
+   val ppmlArgs: Map[String, String] = Map(
+       "spark.bigdl.kms.type" -> "EHSMKeyManagementService",
+       "spark.bigdl.kms.ehs.ip" -> your_server_ip,
+       "spark.bigdl.kms.ehs.port" -> your_server_port,
+       "spark.bigdl.kms.ehs.id" -> your_app_id,
+       "spark.bigdl.kms.ehs.key" -> your_app_key,
+       "spark.bigdl.kms.key.primary" -> /your/primary/key/path,
+       "spark.bigdl.kms.key.data" -> /your/data/key/path
+   )
+   
+   val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
+   ```
+
+   For `AzureKeyManagementService`
+
+   ```scala
+   import com.intel.analytics.bigdl.ppml.PPMLContext
+   
+   val ppmlArgs: Map[String, String] = Map(
+       "spark.bigdl.kms.type" -> "AzureKeyManagementService",
+       "spark.bigdl.kms.azure.vault" -> key_vault_name,
+       "spark.bigdl.kms.azure.clientId" -> client_id,
+       "spark.bigdl.kms.key.primary" -> /your/primary/key/path,
+       "spark.bigdl.kms.key.data" -> /your/data/key/path
+   )
+   
+   val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
+   ```
+
+3. `create a PPMLContext with sparkConf & appName & ppmlArgs`
+
+   If you need to set Spark configurations, you can provide a `SparkConf` with Spark configurations to create a `PPMLContext`.
+
+   ```scala
+   import com.intel.analytics.bigdl.ppml.PPMLContext
+   import org.apache.spark.SparkConf
+   
+   val ppmlArgs: Map[String, String] = Map(
+       "spark.bigdl.kms.type" -> "SimpleKeyManagementService",
+       "spark.bigdl.kms.simple.id" -> your_app_id,
+       "spark.bigdl.kms.simple.key" -> your_app_key,
+       "spark.bigdl.kms.key.primary" -> /your/primary/key/path,
+       "spark.bigdl.kms.key.data" -> /your/data/key/path
+   )
+   
+   val conf: SparkConf = new SparkConf().setMaster("local[4]")
+   
+   val sc = PPMLContext.initPPMLContext(conf, "MyApp", ppmlArgs)
+   ```
+
+#### 4.1.2 Read & Write Files
+
+After you create a `PPMLContext`, you can use the method in `PPMLContext` to do read/write operations. you can read from a plain file or encrypted file, or write a DataFrame as plain or encrypted file, so you need to specify the `CryptoMode`:
+
+- `plain_text`: no encryption
+- `AES/CBC/PKCS5Padding`: for CSV, JSON and text file
+- `AES_GCM_V1`: for PARQUET only
+- `AES_GCM_CTR_V1`: for PARQUET only
+
+The following examples use `sc` to represent a initialized `PPMLContext`
+
+##### CSV
+
+Code Example
+
+```scala
+import com.intel.analytics.bigdl.ppml.PPMLContext
+import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, PLAIN_TEXT}
+
+// read a plain csv file and return a DataFrame
+val plainCsvPath = "/plain/csv/path"
+val df1 = sc.read(cryptoMode = PLAIN_TEXT).option("header", "true").csv(plainCsvPath)
+
+// write a DataFrame as a plain csv file
+val plainOutputPath = "/plain/output/path"
+sc.write(df1, PLAIN_TEXT)
+.mode("overwrite")
+.option("header", "true")
+.csv(plainOutputPath)
+
+// read a encrypted csv file and return a DataFrame
+val encryptedCsvPath = "/encrypted/csv/path"
+val df2 = sc.read(cryptoMode = AES_CBC_PKCS5PADDING).option("header", "true").csv(encryptedCsvPath)
+
+// write a DataFrame as a encrypted csv file
+val encryptedOutputPath = "/encrypted/output/path"
+sc.write(df2, AES_CBC_PKCS5PADDING)
+.mode("overwrite")
+.option("header", "true")
+.csv(encryptedOutputPath)
+```
+
+**write mode**
+
+there are 5 modes:
+
+- `overwrite`: Overwrite existing data with the content of dataframe.
+- `append`: Append content of the dataframe to existing data or table.
+- `ignore`: Ignore current write operation if data / table already exists without any error.
+- `error`: Throw an exception if data or table already exists.
+- `errorifexists`: Throw an exception if data or table already exists.
+
+##### PARQUET
+
+Code Example
+
+```scala
+import com.intel.analytics.bigdl.ppml.PPMLContext
+import com.intel.analytics.bigdl.ppml.crypto.{AES_GCM_CTR_V1, PLAIN_TEXT}
+
+// read a plain parquet file and return a DataFrame
+val plainParquetPath = "/plain/parquet/path"
+val df1 = sc.read(PLAIN_TEXT).parquet(plainParquetPath)
+
+// write a DataFrame as a plain parquet file
+plainOutputPath = "/plain/output/path"
+sc.write(df1, PLAIN_TEXT)
+.mode("overwrite")
+.parquet(plainOutputPath)
+
+// read a encrypted parquet file and return a DataFrame
+val encryptedParquetPath = "/encrypted/parquet/path"
+val df2 = sc.read(AES_GCM_CTR_V1).parquet(encryptedParquetPath)
+
+// write a DataFrame as a encrypted parquet file
+val encryptedOutputPath = "/encrypted/output/path"
+sc.write(df2, AES_GCM_CTR_V1)
+.mode("overwrite")
+.parquet(encryptedOutputPath)
+```
+
+##### JSON
+
+Code Example
+
+```scala
+import com.intel.analytics.bigdl.ppml.PPMLContext
+import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, PLAIN_TEXT}
+
+// read a plain json file and return a DataFrame
+val plainJsonPath = "/plain/json/path"
+val df1 = sc.read(PLAIN_TEXT).json(plainJsonPath)
+
+// write a DataFrame as a plain json file
+val plainOutputPath = "/plain/output/path"
+sc.write(df1, PLAIN_TEXT)
+.mode("overwrite")
+.json(plainOutputPath)
+
+// read a encrypted json file and return a DataFrame
+val encryptedJsonPath = "/encrypted/parquet/path"
+val df2 = sc.read(AES_CBC_PKCS5PADDING).json(encryptedJsonPath)
+
+// write a DataFrame as a encrypted parquet file
+val encryptedOutputPath = "/encrypted/output/path"
+sc.write(df2, AES_CBC_PKCS5PADDING)
+.mode("overwrite")
+.json(encryptedOutputPath)
+```
+
+##### textfile
+
+Code Example
+
+```scala
+import com.intel.analytics.bigdl.ppml.PPMLContext
+import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, PLAIN_TEXT}
+
+// read from a plain csv file and return a RDD
+val plainCsvPath = "/plain/csv/path"
+val rdd1 = sc.textfile(plainCsvPath) // the default cryptoMode is PLAIN_TEXT
+
+// read from a encrypted csv file and return a RDD
+val encryptedCsvPath = "/encrypted/csv/path"
+val rdd2 = sc.textfile(path=encryptedCsvPath, cryptoMode=AES_CBC_PKCS5PADDING)
+```
+
+### 4.2 PPMLContext In Python
+
+We also provide `PPMLContext` Python API. Please refer to [this](https://github.com/intel-analytics/BigDL/blob/main/python/ppml/src/bigdl/ppml/README.md) 
