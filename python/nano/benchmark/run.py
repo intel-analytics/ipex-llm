@@ -19,6 +19,7 @@ import subprocess
 import os
 import sys
 import re
+import json
 import psycopg2
 from datetime import datetime
 
@@ -45,6 +46,7 @@ class Workload:
     @staticmethod
     def _extract_logs(output: str):
         logs = [match.group(1) for match in re.finditer(">>>(.*?)<<<", output)]
+        logs = [json.loads(log) for log in logs]
         return logs
 
     def _save_logs(self, logs: list):
@@ -90,9 +92,4 @@ if __name__ == '__main__':
     name = sys.argv[1]
     script_path = os.path.join("python/nano/benchmark", name, "run.sh")
     workload = Workload(name, script_path)
-    # workload.run()
-    workload._save_logs([{"config": "PyTorch Baseline", "train_time": 209.8150200843811, "train_throughput": 57.19323619049757},
-                         {"config": "Nano default env", "train_time": 220.78346490859985, "train_throughput": 54.35189634770779},
-                         {"config": "Nano default env with ipex", "train_time": 231.97819709777832, "train_throughput": 51.72899932031986},
-                         {"config": "Nano default env with ipex, nano data", "train_time": 221.37899827957153, "train_throughput": 54.20568388716636},
-                         ])
+    workload.run()
