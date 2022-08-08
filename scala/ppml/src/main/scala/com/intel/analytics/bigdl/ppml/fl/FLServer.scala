@@ -50,6 +50,7 @@ class FLServer private[ppml](val _args: Array[String] = null) extends GrpcServer
   private val logger = LogManager.getLogger(classOf[FLServer])
   configPath = "ppml-conf.yaml"
   var clientNum: Int = 1
+  parseConfig()
 
   def setClientNum(clientNum: Int): Unit = {
     this.clientNum = clientNum

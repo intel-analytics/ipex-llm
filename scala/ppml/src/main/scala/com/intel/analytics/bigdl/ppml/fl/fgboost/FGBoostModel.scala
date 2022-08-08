@@ -77,7 +77,10 @@ abstract class FGBoostModel(continuous: Boolean,
     logger.info(s"sort index end")
     // TODO Load model from file
     initFGBoost(yTrain)
-
+    if (trees.nonEmpty) {
+      logger.info(s"This is incremental training, evaluating using existed trees..")
+      (0 until trees.size).foreach(i => uploadResidual(xTrain, i))
+    }
     if (continuous) {
       trainRegressionTree(xTrain, sortedIndexByFeature, boostRound)
     } else {

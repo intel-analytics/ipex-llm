@@ -101,6 +101,8 @@ fgBoostServerModelPath: /tmp/fgboost_server_model
 # the number of clients in this federated learning application
 clientNum: 2
 ```
+Note that we also set `fgBoostServerModelPath` which will be used in incremental training in [Section 3.4](#34-incremental-training)
+
 Then start the FL Server
 ```
 ./ppml/scripts/start-fl-server.sh 
@@ -141,3 +143,12 @@ For client applications, we change from creating model to directly loading. This
 python fgboost_regression_party_1.py true
 python fgboost_regression_party_2.py true
 ```
+The result based on new boosted trees are printed
+```
+0-th result of FGBoost predict: 7.993928909301758
+1-th result of FGBoost predict: 7.993928909301758
+2-th result of FGBoost predict: 7.993928909301758
+3-th result of FGBoost predict: 7.993928909301758
+4-th result of FGBoost predict: 7.993928909301758
+```
+and you can see the loss continues to drop from the log of [Section 3.3](#33-get-results)
