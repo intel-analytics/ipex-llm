@@ -134,7 +134,7 @@ after you install the pytorch backend chronos.
 
         +++
 
-        {bdg-link}`Quick Tour <./quick-tour.html>`
+        {bdg-link-primary-line}`Quick Tour <./quick-tour.html>`
 
     .. grid-item-card::
         :class-footer: sd-bg-light
@@ -146,10 +146,10 @@ after you install the pytorch backend chronos.
 
         +++
 
-        {bdg-link}`Data processing <./data_processing_feature_engineering.html>`
-        {bdg-link}`Forecasting <./forecasting.html>`
-        {bdg-link}`Detection <./anomaly_detection.html>`
-        {bdg-link}`Simulation <./simulation.html>`
+        {bdg-link-primary-line}`Data processing <./data_processing_feature_engineering.html>`
+        {bdg-link-primary-line}`Forecasting <./forecasting.html>`
+        {bdg-link-primary-line}`Detection <./anomaly_detection.html>`
+        {bdg-link-primary-line}`Simulation <./simulation.html>`
 
 .. grid:: 2
     :gutter: 1
@@ -176,7 +176,7 @@ after you install the pytorch backend chronos.
 
         +++
 
-        {bdg-link}`API Document <../../PythonAPI/Chronos/index.html>`
+        {bdg-link-primary-line}`API Document <../../PythonAPI/Chronos/index.html>`
 
 ```
 

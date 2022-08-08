@@ -107,9 +107,6 @@ In Chronos, we provide a ``TSDataset`` (and a ``XShardsTSDataset`` to handle lar
     :gutter: 1
 
     .. grid-item-card::
-        :class-footer: sd-bg-light
-
-        +++
 
         .. button-ref:: ./data_processing_feature_engineering
             :color: primary
