@@ -84,7 +84,7 @@ if __name__ == '__main__':
     parser.add_argument('--driver_memory', type=str, default="4g",
                         help='The amount of memory to allocate for the driver.')
     parser.add_argument('--backend', type=str, default="ray",
-                        help='The backend of TF2 Estimator, either ray or spark')
+                        help='The backend of TF2 Estimator, either ray or spark.')
     parser.add_argument('--lr', default=0.001, type=float,
                         help='The learning rate to train the model.')
     parser.add_argument('--epochs', default=5, type=int,
