@@ -56,7 +56,7 @@ flowchart TD;
     
     Feature5-- training & inference -->ReferOrcaLearn([<em><strong>Orca: Learn </strong></em>]);
     Feature5-- tuning -->ReferOrcaAutoml([<em><strong>Orca: AutoML </strong></em>]);
-    Feature3-- general -->ReferDLlib([<em><strong>DLLib</strong></em>]);
+    Feature3-- general -->ReferDLlib([<em><strong>DLlib</strong></em>]);
     Feature3-- domain-specific -->Feature4[Which domain?];
     Feature4-- time series -->ReferChronos([<em><strong>Chronos</strong></em>]);
     Feature4-- recommendation system -->ReferFriesian([<em><strong>Friesian</strong></em>]);
