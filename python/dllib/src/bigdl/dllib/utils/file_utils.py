@@ -13,16 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from bigdl.dllib.utils.common import Sample as BSample, JTensor as BJTensor,\
-    JavaCreator, _get_gateway, _py2java, _java2py
-import numpy as np
-import os
-import tempfile
-import uuid
+
 import functools
 import glob
-
+import os
+import subprocess
+import tempfile
 from urllib.parse import urlparse
+import uuid
+
+import numpy as np
+import pyarrow as pa
+
+from bigdl.dllib.utils.common import Sample as BSample, JTensor as BJTensor,\
+    JavaCreator, _get_gateway, _py2java, _java2py
 from bigdl.dllib.utils.log4Error import *
 
 
@@ -137,6 +141,34 @@ def enable_multi_fs_load(load_func):
             get_remote_file_to_local(path, temp_path)
             try:
                 return load_func(obj, temp_path, *args, **kwargs)
+            finally:
+                os.remove(temp_path)
+
+    return multi_fs_load
+
+
+def enable_hdfs_load(load_func):
+
+    @functools.wraps(load_func)
+    def multi_fs_load(path, *args, **kwargs):
+        if is_local_path(path):
+            return load_func(path, *args, **kwargs)
+        else:
+            file_name = str(uuid.uuid1())
+            file_name = append_suffix(file_name, path)
+            temp_path = os.path.join(tempfile.gettempdir(), file_name)
+            host_port = path.split("://")[1].split("/")[0].split(":")
+            classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
+                                         stdout=subprocess.PIPE).communicate()[0]
+            os.environ["CLASSPATH"] = classpath.decode("utf-8")
+            if len(host_port) > 1:
+                fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
+            else:
+                fs = pa.hdfs.connect(host=host_port[0])
+            with fs.open(path, "rb") as r_file, open(temp_path, "wb") as l_file:
+                    l_file.write(r_file.read())
+            try:
+                return load_func(temp_path, *args, **kwargs)
             finally:
                 os.remove(temp_path)
 
