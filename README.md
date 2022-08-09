@@ -46,32 +46,36 @@ For Building Fast, Scalable, and Secured AI
 
 ```mermaid
 flowchart TD;
-    Feature1[Make your single-node <br/>Tensorflow/PyTroch programs faster?]-- Yes you can! ---Refer1([Refer to <em><strong>Nano</strong></em>]);
-    Feature1-->Feature2[Turn your single-node AI applications <br/>to distributed and run on a large cluster?];
-    Feature2 --> Feature3[Use automatic hyperparameter tuning <br/>in parallel or in a distributed cluster?];
-    Feature2-- Yes you can! ---Refer2([Refer to <br/><em><strong>Orca: Distributed<br/> Training and Inference</strong></em>]);
-    Feature3 -- Yes you can! ---Refer3([Refer to <br/><em><strong>Orca: Distributed<br/> Hyperparam Tuning</strong></em>]);
-    Feature3 --> Feature4[Develop deep learning applications <br/>in Scala or Python from scratch <br/>to run on Spark cluster?];
-    Feature4 --> Feature5[Run Ray applications on Spark cluster?];
-    Feature4 -- Yes you can! ---Refer4([Refer to <em><strong>DLLib</strong></em>]);
-    Feature5 -- Yes you can! ---Refer5([Refer to <br/><em><strong>Orca: RayOnSpark</strong></em>]);
-    Feature5 --> Feature6[Build fast and scalable domain-specific applications <br/>optimized on Xeon platforms? <br/><em>e.g. Time series, Recommendation Systems</em>];
-    Feature6 --> Feature7[Run machine learning and deep learning<br/> in securied and privacy preserved environment?];
-    Feature6 -- Yes you can! ---Refer6([Refer to]);
-    Refer6 ---Refer6a([<em><strong>Chronos</strong></em>]) & Refer6b([<em><strong>Friesian</strong></em>]);
-    Feature7 -- Yes you can! ---Refer7([Refer to <em><strong>PPML</strong></em>]);
+    Feature1[Develop AI from scratch?];
+    Feature1-- No, I want to improve --->Feature2[Single-node or Cluster?];
+    Feature1-- No, I want to protect --->ReferPPML([<em><strong>PPML</strong></em>]);
+    Feature2-- single node ---ReferNano([<em><strong>Nano</strong></em>]);
+    Feature2-- cluster ---Feature5[Scale which part?];
+    Feature5-- training & inference ---ReferOrcaLearn([<em><strong>Orca: Learn </strong></em>]);
+    Feature5-- tuning ---ReferOrcaAutoml([<em><strong>Orca: AutoML </strong></em>]);
+    Feature1-- Yes ---> Feature3[General or Domain-specific application?];
+    Feature3-- domain-specific -->Feature4[Which domain?];
+    Feature3-- general ---ReferDLlib([<em><strong>DLLib</strong></em>]);
+    Feature4-- time series ---ReferChronos([<em><strong>Chronos</strong></em>]);
+    Feature4-- recommendation system ---ReferFriesian([<em><strong>Friesian</strong></em>]);
+    Feature4-- others --- ReferContact([<em><strong>Contact Us</strong></em>]);
+
     
-    click Refer1 "https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html" "Refer to Nano" _parent
-    click Refer2 "https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-training-inference.html"
-    click Refer3 "https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-tuning.html"
-    click Refer4 "https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/dllib.html"
-    click Refer5 "https://bigdl.readthedocs.io/en/latest/doc/Ray/Overview/ray.html"
-    click Refer6a "https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html"
-    click Refer7 "https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html"
+    click ReferNano "https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html" "Refer to Nano" _parent
+    click ReferOrcaLearn "https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-training-inference.html"
+    click ReferOrcaAutoml "https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-tuning.html"
+    click ReferDLlib "https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/dllib.html"
+    click ReferRayOnSpark "https://bigdl.readthedocs.io/en/latest/doc/Ray/Overview/ray.html"
+    click ReferChronos "https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html"
+    click ReferFriesian "https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html"
+    click ReferPPML "https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html"
+    click ReferContact "https://bigdl.readthedocs.io/"
     
-    classDef Refer fill:#FFF;
+    classDef ReferStyle1 fill:#FFE;
+    classDef ReferStyle2 fill:#FF1;
     classDef Feature fill:#FFF,stroke:#0f29ba,stroke-width:1px;
-    class Refer1,Refer2,Refer3,Refer4,Refer5,Refer6,Refer6a,Refer6b,Refer7 Refer;
+    class ReferNano,ReferOrcaLearn,ReferOrcaAutoml,ReferDLlib,ReferRayOnSpark,ReferChronos,ReferFriesian,ReferPPML ReferStyle1;
+    class ReferContact, ReferStyle2
     class Feature1,Feature2,Feature3,Feature4,Feature5,Feature6,Feature7 Feature;
     
 ```
