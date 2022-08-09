@@ -59,7 +59,7 @@ flowchart TD;
     Feature3-- domain-specific -->Feature4[Which domain?];
     Feature4-- time series -->ReferChronos([<em><strong>Chronos</strong></em>]);
     Feature4-- recommendation system -->ReferFriesian([<em><strong>Friesian</strong></em>]);
-    Feature4-- others -->ReferContact([<em><strong>Contact Us :D</strong></em>]);
+    Feature4-- others -->ReferContact([<em><strong>Contact Us &#x2709 !</strong></em>]);
 
     
     click ReferNano "README.md#Nano" "Refer to Nano" _parent
@@ -71,7 +71,7 @@ flowchart TD;
     click ReferChronos "https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html"
     click ReferFriesian "https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html"
     click ReferPPML "https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html"
-    click ReferContact "https://bigdl.readthedocs.io/"
+    click ReferContact "email:jason.dai@intel.com"
     
     classDef ReferStyle1 fill:#f96;
     classDef ReferStyle2 fill:#FF1;
