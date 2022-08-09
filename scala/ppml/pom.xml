@@ -331,7 +331,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <configuration>
-
                     <filters>
                         <filter>
                             <artifact>*:*</artifact>
@@ -342,7 +341,6 @@
                             </excludes>
                         </filter>
                     </filters>
-
                 </configuration>
                 <executions>
                     <execution>
