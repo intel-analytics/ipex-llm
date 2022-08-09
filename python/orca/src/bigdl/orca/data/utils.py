@@ -42,6 +42,7 @@ if TYPE_CHECKING:
     from pyspark.sql.dataframe import DataFrame
     from ray.data.dataset import Dataset
 
+
 def list_s3_file(file_path, env):
     path_parts = file_path.split('/')
     bucket = path_parts.pop(0)
@@ -226,7 +227,7 @@ def ray_partitions_get_data_label(partition_list,
 
 
 def ray_partitions_get_tf_dataset(partition_list, has_label=True):
-    import tensorflow as tf # type:ignore
+    import tensorflow as tf  # type:ignore
     partition_data = [item for partition in partition_list for item in partition]
     if len(partition_data) != 0:
 
@@ -241,7 +242,7 @@ def ray_partitions_get_tf_dataset(partition_list, has_label=True):
             dataset = tf.data.Dataset.from_tensor_slices((data, label))
         elif "ds_def" in keys and "elem_spec" in keys:
             from tensorflow.python.distribute.coordinator.values import \
-                deserialize_dataset_from_graph # type:ignore
+                deserialize_dataset_from_graph  # type:ignore
             from functools import reduce
             dataset_list = [deserialize_dataset_from_graph(serialized_dataset["ds_def"],
                                                            serialized_dataset["elem_spec"])
@@ -392,7 +393,7 @@ def get_size(x):
 
 def spark_df_to_rdd_pd(df: "DataFrame", squeeze: bool=False, index_col: Optional[str]=None,
                        dtype: Optional[Union[str, Dict[str, str], Dict[str, Type[float32]],
-                       Dict[int, Union[Type[float32], Type[int32]]]]]=None,
+                                       Dict[int, Union[Type[float32], Type[int32]]]]]=None,
                        index_map: Optional[Dict[int, str]]=None) -> "PipelinedRDD":
     from bigdl.orca.data import SparkXShards
     from bigdl.orca import OrcaContext
@@ -420,8 +421,10 @@ def spark_df_to_pd_sparkxshards(df: "DataFrame", squeeze: bool=False, index_col:
 
 
 def to_pandas(columns: List[str], squeeze: bool=False, index_col: Optional[str]=None,
-              dtype: Optional[Union[str, Dict[str, Type[float32]], Dict[int, Union[Type[float32],
-              Type[int32]]], Dict[str, str]]]=None, index_map: Optional[Dict[int, str]]=None,
+              dtype: Optional[Union[str, Dict[str, Type[float32]],
+                                    Dict[int, Union[Type[float32], Type[int32]]],
+                                    Dict[str, str]]]=None,
+              index_map: Optional[Dict[int, str]]=None,
               batch_size: None=None) -> Callable:
 
     def postprocess(pd_df):

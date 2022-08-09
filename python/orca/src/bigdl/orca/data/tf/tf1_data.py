@@ -29,7 +29,8 @@ class TF1Dataset(TFDataset):
 
     def __init__(self, dataset: "MapDataset", batch_size: int,
                  batch_per_thread: int,
-                 validation_dataset: None=None, intra_threads: None=None, inter_threads: None=None) -> None:
+                 validation_dataset: "MapDataset"=None,
+                 intra_threads: int=None, inter_threads: None=None) -> None:
 
         node_num, core_num = get_node_and_core_number()
 

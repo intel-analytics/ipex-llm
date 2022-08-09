@@ -43,7 +43,12 @@ if TYPE_CHECKING:
 
 class ParquetDataset:
     @staticmethod
-    def write(path: str, generator: List[Dict[str, Union[str, int]]], schema: Dict[str, SchemaField], block_size: int=1000, write_mode: str="overwrite", **kwargs) -> None:
+    def write(path: str,
+              generator: List[Dict[str, Union[str, int, ndarray]]],
+              schema: Dict[str, SchemaField],
+              block_size: int=1000,
+              write_mode: str="overwrite",
+              **kwargs) -> None:
         """
         Take each record in the generator and write it to a parquet file.
 
@@ -242,7 +247,11 @@ def _extract_mnist_labels(labels_filepath: str):
         return labels
 
 
-def write_from_directory(directory: str, label_map: Dict[str, int], output_path: str, shuffle: bool=True, **kwargs) -> None:
+def write_from_directory(directory: str,
+                         label_map: Dict[str, int],
+                         output_path: str,
+                         shuffle: bool=True,
+                         **kwargs) -> None:
     labels = os.listdir(directory)
     valid_labels = [label for label in labels if label in label_map]
     generator = []
@@ -299,7 +308,10 @@ def write_mnist(image_file: str, label_file: str, output_path: str, **kwargs) ->
     _write_ndarrays(images, labels, output_path, **kwargs)
 
 
-def write_voc(voc_root_path: str, splits_names: List[Tuple[int, str]], output_path: str, **kwargs) -> None:
+def write_voc(voc_root_path: str,
+              splits_names: List[Tuple[int, str]],
+              output_path: str,
+              **kwargs) -> None:
     custom_classes = kwargs.get("classes", None)
     voc_datasets = VOCDatasets(
         voc_root_path, splits_names, classes=custom_classes)
@@ -326,7 +338,9 @@ def write_voc(voc_root_path: str, splits_names: List[Tuple[int, str]], output_pa
     ParquetDataset.write(output_path, make_generator(), schema, **kwargs)
 
 
-def _check_arguments(_format: str, kwargs: Dict[str, Union[str, List[Tuple[int, str]], Dict[str, int], bool]], args: List[str]) -> None:
+def _check_arguments(_format: str,
+                     kwargs: Dict[str, Union[str, List[Tuple[int, str]], Dict[str, int], bool]],
+                     args: List[str]) -> None:
     for keyword in args:
         invalidInputError(keyword in kwargs,
                           keyword + " is not specified for format " + _format + ".")

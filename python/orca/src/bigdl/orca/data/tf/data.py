@@ -35,7 +35,10 @@ class Dataset(object):
     on each partitions.
     """
 
-    def __init__(self, xshards:"SparkXShards", create_dataset_fn: Callable, xshards_transform_fn: Optional[Callable]=None) -> None:
+    def __init__(self,
+                 xshards: "SparkXShards",
+                 create_dataset_fn: Callable,
+                 xshards_transform_fn: Optional[Callable]=None) -> None:
         self.xshards = xshards
         self.create_dataset_fn = create_dataset_fn
         self.xshards_transform_fn = xshards_transform_fn
@@ -121,7 +124,7 @@ class Dataset(object):
             return new_shards
 
     @staticmethod
-    def from_tensor_slices(xshards:"SparkXShards") -> "TensorSliceDataset":
+    def from_tensor_slices(xshards: "SparkXShards") -> "TensorSliceDataset":
         return TensorSliceDataset(xshards)
 
     @staticmethod
@@ -140,7 +143,7 @@ class Dataset(object):
 
 class TensorSliceDataset(Dataset):
 
-    def __init__(self, xshards:"SparkXShards") -> None:
+    def __init__(self, xshards: "SparkXShards") -> None:
         invalidInputError(isinstance(xshards, SparkXShards),
                           "only datasets backed by a SparkXShards are supported")
 

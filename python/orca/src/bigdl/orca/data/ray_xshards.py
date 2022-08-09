@@ -152,7 +152,7 @@ def get_from_ray(idx, redis_address, redis_password, idx_to_store_name):
 
 class RayXShards(XShards):
 
-    def __init__(self, uuid: str, id_ip_store_rdd: "PipelinedRDD", 
+    def __init__(self, uuid: str, id_ip_store_rdd: "PipelinedRDD",
                  partition_stores: Dict[str, "ActorHandle"]) -> None:
         self.uuid = uuid
         self.rdd = id_ip_store_rdd
@@ -224,7 +224,7 @@ class RayXShards(XShards):
             refs.append(partition_ref)
         return refs
 
-    def transform_shards_with_actors(self, actors: List["ActorHandle"], 
+    def transform_shards_with_actors(self, actors: List["ActorHandle"],
                                      func: Callable) -> "RayXShards":
         """
         Assign each partition_ref (referencing a list of shards) to an actor,
@@ -304,8 +304,8 @@ class RayXShards(XShards):
         results = ray.get(result_refs)
         return results
 
-    def assign_partitions_to_actors(self, actors: List["ActorHandle"]) -> Tuple[List[List[int]],
-                                    List[str], List["ActorHandle"]]:
+    def assign_partitions_to_actors(self, actors: List["ActorHandle"]) \
+            -> Tuple[List[List[int]], List[str], List["ActorHandle"]]:
         num_parts = self.num_partitions()
         if num_parts < len(actors):
             logger.warning(f"this rdd has {num_parts} partitions, which is smaller "
@@ -328,16 +328,16 @@ class RayXShards(XShards):
         # todo extract this algorithm to other functions for unit tests.
         actor_ips = []
         for actor in actors:
-            invalidInputError(hasattr(actor, "get_node_ip"), # type:ignore
+            invalidInputError(hasattr(actor, "get_node_ip"),  # type:ignore
                               "each actor should have a get_node_ip method")
             actor_ip = actor.get_node_ip.remote()
             actor_ips.append(actor_ip)
 
         actor_ips = ray.get(actor_ips)
 
-        actor2assignments = [[] for i in range(len(actors))] # type:ignore
+        actor2assignments = [[] for i in range(len(actors))]  # type:ignore
 
-        ip2actors = {} # type:ignore
+        ip2actors = {}  # type:ignore
         for idx, ip in enumerate(actor_ips):
             if ip not in ip2actors:
                 ip2actors[ip] = []

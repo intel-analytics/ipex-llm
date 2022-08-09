@@ -95,9 +95,10 @@ class XShards(object):
 
     @staticmethod
     def partition(
-        data: Union[List["ndarray"], Tuple["ndarray", "ndarray"],
-                    "ndarray", Dict[str, Union[Tuple["ndarray"],
-                    List["ndarray"]]], Dict[str, "ndarray"]],
+        data: Union[List["ndarray"],
+                    Tuple["ndarray", "ndarray"],
+                    "ndarray",
+                    Dict[str, Union[Tuple["ndarray"], List["ndarray"]]], Dict[str, "ndarray"]],
         num_shards: Optional[int] = None
     ) -> "SparkXShards":
         """
@@ -193,8 +194,9 @@ class SparkXShards(XShards):
         self._uncache()
         return transformed_shard
 
-    def collect(self)-> List[Union[Dict[str, Dict[str, "ndarray"]], 
-                        Tuple["SparkDataFrame", "PandasDataFrame"], Dict[str, "ndarray"], "Series"]]:
+    def collect(self)-> List[Union[Dict[str, Dict[str, "ndarray"]],
+                                   Tuple["SparkDataFrame", "PandasDataFrame"],
+                                   Dict[str, "ndarray"], "Series"]]:
         """
 
         Returns a list that contains all of the elements in this SparkXShards
@@ -524,7 +526,7 @@ class SparkXShards(XShards):
 
     def __len__(self) -> int:
         return self.rdd.map(lambda data: len(data) if hasattr(data, '__len__') else 1)\
-           .reduce(lambda l1, l2: l1 + l2)
+                   .reduce(lambda l1, l2: l1 + l2)
 
     def save_pickle(self, path: str, batchSize: int = 10) -> "SparkXShards":
         """
