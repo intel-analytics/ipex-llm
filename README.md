@@ -53,9 +53,9 @@ flowchart TD;
     Feature1-- Yes --> Feature3[General or Domain-specific application?];
     Feature2-- single node --->ReferNano([<em><strong>Nano</strong></em>]);
     Feature2-- cluster -->Feature5[Scale which part?];
-    
-    Feature5-- training & inference -->ReferOrcaLearn([<em><strong>Orca: Learn </strong></em>]);
-    Feature5-- tuning -->ReferOrcaAutoml([<em><strong>Orca: AutoML </strong></em>]);
+    Feature5-- data processing -->ReferOrcaData([<em><strong>Orca:Data </strong></em>]);
+    Feature5-- training & inference -->ReferOrcaLearn([<em><strong>Orca:Learn </strong></em>]);
+    Feature5-- tuning -->ReferOrcaAutoml([<em><strong>Orca:AutoML </strong></em>]);
     Feature3-- general -->ReferDLlib([<em><strong>DLlib</strong></em>]);
     Feature3-- domain-specific -->Feature4[Which domain?];
     Feature4-- time series -->ReferChronos([<em><strong>Chronos</strong></em>]);
@@ -64,6 +64,7 @@ flowchart TD;
 
     
     click ReferNano "README.md#Nano" "Refer to Nano" _parent
+    click ReferOrcaData "https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/data-parallel-processing.html"
     click ReferOrcaLearn "https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-training-inference.html"
     click ReferOrcaAutoml "https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-tuning.html"
     click ReferDLlib "https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/dllib.html"
@@ -76,7 +77,7 @@ flowchart TD;
     classDef ReferStyle1 fill:#f96;
     classDef ReferStyle2 fill:#FF1;
     classDef Feature fill:#FFF,stroke:#0f29ba,stroke-width:1px;
-    class ReferNano,ReferOrcaLearn,ReferOrcaAutoml,ReferDLlib,ReferRayOnSpark,ReferChronos,ReferFriesian,ReferPPML ReferStyle1;
+    class ReferNano,ReferOrcaLearn,ReferOrcaData,ReferOrcaAutoml,ReferDLlib,ReferRayOnSpark,ReferChronos,ReferFriesian,ReferPPML ReferStyle1;
     class ReferContact, ReferStyle2
     class Feature1,Feature2,Feature3,Feature4,Feature5,Feature6,Feature7 Feature;
     
