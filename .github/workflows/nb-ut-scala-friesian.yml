@@ -1,22 +1,19 @@
 name: Nightly Build UT Scala Friesian
 
 on:
-  #  push:
-  #    paths:
-  #      - 'scala/friesian/**'
-  #      - '.github/workflows/nb-ut-scala-friesian.yml'
-  #  pull_request:
-  #    branches: [ main ]
-  #    paths:
-  #      - 'scala/friesian/**'
-  #      - '.github/workflows/nb-ut-scala-friesian.yml'
+  push:
+    paths:
+      - 'scala/friesian/**'
+      - '.github/workflows/nb-ut-scala-friesian.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'scala/friesian/**'
+      - '.github/workflows/nb-ut-scala-friesian.yml'
   workflow_dispatch:
-  #  workflow_call:
+  workflow_call:
   schedule:
     - cron: '0 15 * * *'
-env:
-  http_proxy: "http://child-prc.intel.com:913/"
-  https_proxy: "http://child-prc.intel.com:913/"
 
 jobs:
   friesian-maven-test:
@@ -60,8 +57,6 @@ jobs:
 
       - name: Set up redis
         run: |
-          export http_proxy="http://child-prc.intel.com:913/"
-          export https_proxy="http://child-prc.intel.com:913/"
           sudo mkdir -p /usr/share/keyrings
           curl -fsSL https://packages.redis.io/gpg | sudo -E gpg --yes --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
           echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
