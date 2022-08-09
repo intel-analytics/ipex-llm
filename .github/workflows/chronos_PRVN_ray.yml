@@ -66,8 +66,8 @@ jobs:
           pip install optuna==2.10.1
           pip install onnxruntime==1.11.1
           pip install onnx==1.11.0
-          apt-get update
-          apt-get install patchelf          
+          sudo apt-get update
+          sudo apt-get install patchelf          
           $CONDA/bin/conda info
           bash python/dev/release_default_linux_spark246.sh default $QUICK false
           bash python/nano/dev/build_and_install.sh linux default false pytorch --force-reinstall --no-deps -U
