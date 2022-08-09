@@ -81,8 +81,8 @@ if [ -d "${BIGDL_DIR}/python/orca/src/dist" ]; then
    rm -r ${BIGDL_DIR}/python/orca/src/dist
 fi
 
-if [ -d "${BIGDL_DIR}/python/orca/src/bigdl_orca.egg-info" ]; then
-   rm -r ${BIGDL_DIR}/python/orca/src/bigdl_orca.egg-info
+if [ -d "${BIGDL_DIR}/python/orca/src/bigdl_orca_spark3.egg-info" ]; then
+   rm -r ${BIGDL_DIR}/python/orca/src/bigdl_orca_spark3.egg-info
 fi
 
 wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname} --python-tag py3"
@@ -90,7 +90,7 @@ echo "Packing python distribution: $wheel_command"
 ${wheel_command}
 
 if [ ${upload} == true ]; then
-    upload_command="twine upload dist/bigdl_orca-${bigdl_version}-py3-none-${verbose_pname}.whl"
+    upload_command="twine upload dist/bigdl_orca_spark3-${bigdl_version}-py3-none-${verbose_pname}.whl"
     echo "Please manually upload with this command: $upload_command"
     $upload_command
 fi

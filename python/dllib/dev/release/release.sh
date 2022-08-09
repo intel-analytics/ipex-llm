@@ -78,8 +78,8 @@ if [ -d "${BIGDL_DIR}/python/dllib/src/dist" ]; then
    rm -r ${BIGDL_DIR}/python/dllib/src/dist
 fi
 
-if [ -d "${BIGDL_DIR}/python/dllib/src/bigdl_dllib.egg-info" ]; then
-   rm -r ${BIGDL_DIR}/python/dllib/src/bigdl_dllib.egg-info
+if [ -d "${BIGDL_DIR}/python/dllib/src/bigdl_dllib_spark3.egg-info" ]; then
+   rm -r ${BIGDL_DIR}/python/dllib/src/bigdl_dllib_spark3.egg-info
 fi
 
 if [ -d "${BIGDL_DIR}/python/dllib/src/bigdl/scripts" ]; then
@@ -93,11 +93,11 @@ echo "Packing python source code and distribution: $wheel_command"
 ${wheel_command}
 
 if [ ${upload} == true ]; then
-    upload_wheel_command="twine upload dist/bigdl_dllib-${bigdl_version}-py3-none-${verbose_pname}.whl"
+    upload_wheel_command="twine upload dist/bigdl_dllib_spark3-${bigdl_version}-py3-none-${verbose_pname}.whl"
     echo "Uploading wheel with this command: $upload_wheel_command"
     $upload_wheel_command
     if [ "$platform" == "linux" ]; then
-        upload_source_command="twine upload dist/bigdl-dllib-${bigdl_version}.tar.gz"
+        upload_source_command="twine upload dist/bigdl-dllib-spark3-${bigdl_version}.tar.gz"
         echo "Uploading source with this command: $upload_source_command"
         $upload_source_command
     fi

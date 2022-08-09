@@ -16,17 +16,34 @@
 
 package org.apache.spark.sql
 
+import java.io.FileInputStream
+
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.sql.api.python.PythonSQLUtils
+import org.apache.spark.sql.execution.arrow.ArrowConverters
 import org.apache.spark.sql.{Column, DataFrame, Row, SparkSession}
 
+import scala.reflect.ClassTag
+
 object PythonOrcaSQLUtils {
-  def readArrowStreamFromFile(file: String): Iterator[Array[Byte]] = {
-    PythonSQLUtils.readArrowStreamFromFile(temp_filename)
+
+  def ofFloat(): PythonOrcaSQLUtils[Float] = new PythonOrcaSQLUtils[Float]()
+
+  def ofDouble(): PythonOrcaSQLUtils[Double] = new PythonOrcaSQLUtils[Double]()
+}
+
+class PythonOrcaSQLUtils[T: ClassTag](implicit ev: TensorNumeric[T]) {
+  def readArrowStreamFromFile(file: String): Array[Array[Byte]] = {
+    org.apache.spark.util.Utils.tryWithResource(new FileInputStream(file)) { fileStream =>
+      // Create array to consume iterator so that we can safely close the file
+      ArrowConverters.getBatchesFromStream(fileStream.getChannel).toArray
+    }
   }
 
-  def toDataFrame(arrowBatches: Iterator[Array[Byte]],
+  def orcaToDataFrame(arrowBatchRDD: JavaRDD[Array[Byte]],
                   schemaString: String,
-                  session: SparkSession): DataFrame = {
-    PythonSQLUtils.toDataFrame(arrowBatches, schemaString, session)
+                  sqlContext: SQLContext): DataFrame = {
+    PythonSQLUtils.toDataFrame(arrowBatchRDD, schemaString, sqlContext)
   }
 }

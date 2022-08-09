@@ -44,7 +44,7 @@ After the build:
 """
 
 
-if os.path.exists(dllib_src_path + "/bigdl_dllib.egg-info"):
+if os.path.exists(dllib_src_path + "/bigdl_dllib_spark3.egg-info"):
     build_from_source = False
 else:
     build_from_source = True
@@ -87,7 +87,7 @@ def setup_package():
     copyfile(dllib_src_path + "/bigdl/dllib/nn/__init__.py",
              SCRIPTS_TARGET + "__init__.py")
     metadata = dict(
-        name='bigdl-dllib',
+        name='bigdl-dllib-spark3',
         version=VERSION,
         description='Distributed Deep Learning Library for Apache Spark',
         author='BigDL Authors',
@@ -97,7 +97,7 @@ def setup_package():
         packages=get_bigdl_packages(),
         scripts=scripts,
         install_requires=[
-            'numpy>=1.19.5', 'pyspark==2.4.6', 'conda-pack==0.3.1',
+            'numpy>=1.19.5', 'pyspark==3.1.2', 'conda-pack==0.3.1',
             'six>=1.10.0', 'bigdl-core==2.1.0b20220321'],
         dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],
         include_package_data=True,
