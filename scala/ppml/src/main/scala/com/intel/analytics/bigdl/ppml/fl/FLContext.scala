@@ -34,10 +34,10 @@ object FLContext {
     flClient = null
   }
 
-  def setPsiSalt(psiSalt: String) = {
+  def setPsiSalt(psiSalt: String): Unit = {
     flClient.psiSalt = psiSalt
   }
-  
+
   def getPsiSalt(): String = {
       flClient.psiSalt
   }
