@@ -1,6 +1,8 @@
 name: Nightly Build UT Scala Dllib
 
 on:
+  pull_request:
+    branches: [ "main" ]
   schedule:
     - cron: '0 15 * * *'
   # Allows you to run this workflow manually from the Actions tab
