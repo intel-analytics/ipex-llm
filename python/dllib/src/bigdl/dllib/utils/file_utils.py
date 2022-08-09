@@ -19,11 +19,10 @@ import glob
 import os
 import subprocess
 import tempfile
-from urllib.parse import urlparse
 import uuid
+from urllib.parse import urlparse
 
 import numpy as np
-import pyarrow as pa
 
 from bigdl.dllib.utils.common import Sample as BSample, JTensor as BJTensor,\
     JavaCreator, _get_gateway, _py2java, _java2py
@@ -161,6 +160,7 @@ def enable_hdfs_load(load_func):
             classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
                                          stdout=subprocess.PIPE).communicate()[0]
             os.environ["CLASSPATH"] = classpath.decode("utf-8")
+            import pyarrow as pa
             if len(host_port) > 1:
                 fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
             else:
