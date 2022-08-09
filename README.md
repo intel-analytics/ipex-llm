@@ -48,8 +48,8 @@ For Building Fast, Scalable, and Secured AI
 flowchart TD;
     Feature1[Develop AI from scratch?];
     
-    Feature1-- No, want to improve -->Feature2[Single-node or Cluster?];
-    Feature1-- No, want to protect -->ReferPPML([<em><strong>PPML</strong></em>]);
+    Feature1-- No, I want to improve -->Feature2[Single-node or Cluster?];
+    Feature1-- No, I want to protect -->ReferPPML([<em><strong>PPML</strong></em>]);
     Feature1-- Yes --> Feature3[General or Domain-specific application?];
     Feature2-- single node --->ReferNano([<em><strong>Nano</strong></em>]);
     Feature2-- cluster -->Feature5[Scale which part?];
