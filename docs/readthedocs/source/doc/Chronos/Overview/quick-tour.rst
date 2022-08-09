@@ -1,6 +1,6 @@
 Chronos Quick Tour
 ======================
-Welcome to Chronos for building a fast, accuracy and scalable time series analysis application🎉! Start with our quick tour to understand some critical concepts and how to use them to tackle your tasks.
+Welcome to Chronos for building a fast, accurate and scalable time series analysis application🎉! Start with our quick tour to understand some critical concepts and how to use them to tackle your tasks.
 
 .. grid:: 1 1 1 1
 
