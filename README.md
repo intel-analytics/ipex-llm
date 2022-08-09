@@ -47,7 +47,6 @@ For Building Fast, Scalable, and Secured AI
 ```mermaid
 flowchart TD;
     Feature1[Develop AI from scratch?];
-    
     Feature1-- No, I want to improve -->Feature2[Single-node or Cluster?];
     Feature1-- No, I want to protect -->ReferPPML([<em><strong>PPML</strong></em>]);
     Feature1-- Yes --> Feature3[General or Domain-specific application?];
