@@ -1,17 +1,17 @@
 name: Nightly Build UT Scala Friesian
 
 on:
-  #  push:
-  #    paths:
-  #      - 'scala/friesian/**'
-  #      - '.github/workflows/nb-ut-scala-friesian.yml'
-  #  pull_request:
-  #    branches: [ main ]
-  #    paths:
-  #      - 'scala/friesian/**'
-  #      - '.github/workflows/nb-ut-scala-friesian.yml'
+  push:
+    paths:
+      - 'scala/friesian/**'
+      - '.github/workflows/nb-ut-scala-friesian.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'scala/friesian/**'
+      - '.github/workflows/nb-ut-scala-friesian.yml'
   workflow_dispatch:
-  #  workflow_call:
+  workflow_call:
   schedule:
     - cron: '0 15 * * *'
 
