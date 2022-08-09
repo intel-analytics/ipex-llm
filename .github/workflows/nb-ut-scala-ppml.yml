@@ -1,8 +1,8 @@
 name: Nightly Build UT Scala Ppml
 
 on:
-  pull_request:
-    branches: [ "main" ]
+#  pull_request:
+#    branches: [ "main" ]
   schedule:
     - cron: '0 16 * * *'
   # Allows you to run this workflow manually from the Actions tab
