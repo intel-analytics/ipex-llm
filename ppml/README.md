@@ -388,6 +388,7 @@ To write data, you should set the `write` mode:
 - `errorifexists`: Throw an exception if data or table already exists.
 
 <details><summary>expand to see the example of CryptoMode and write mode</summary>
+
 ```scala
 import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, PLAIN_TEXT}
 
@@ -400,9 +401,8 @@ sc.write(dataFrame = df, cryptoMode = AES_CBC_PKCS5PADDING)
 .mode("overwrite")
 ...
 ```
-</details>
 
-<br />
+</details>
 
 The following examples use `sc` to represent a initialized `PPMLContext`
 
