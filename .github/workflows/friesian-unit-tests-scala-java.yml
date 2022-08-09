@@ -4,12 +4,12 @@ on:
   push:
     paths:
       - 'scala/friesian/**'
-      - '.github/workflows/nb-ut-scala-friesian.yml'
+      - '.github/workflows/friesian-unit-tests-scala-java.yml'
   pull_request:
     branches: [ main ]
     paths:
       - 'scala/friesian/**'
-      - '.github/workflows/nb-ut-scala-friesian.yml'
+      - '.github/workflows/friesian-unit-tests-scala-java.yml'
   workflow_dispatch:
   workflow_call:
   schedule:
