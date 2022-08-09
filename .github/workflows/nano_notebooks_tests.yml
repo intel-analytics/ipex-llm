@@ -88,3 +88,44 @@ jobs:
             $CONDA/bin/conda remove -n notebooks-tutorial-pytorch --all
         env:
             ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+  nano-notebooks-tensorflow-test:
+    # The type of runner that the job will run on
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-20.04"]
+        python-version: ["3.7"]
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools==58.0.4
+          python -m pip install --upgrade wheel
+
+      - name: Run tutorial notebooks TensorFlow unit tests
+        shell: bash
+        run: |
+            $CONDA/bin/conda create -n notebooks-tutorial-tensorflow -y python==3.7.10 setuptools=58.0.4
+            source $CONDA/bin/activate notebooks-tutorial-tensorflow
+            $CONDA/bin/conda info
+            bash python/nano/dev/build_and_install.sh linux default false tensorflow
+            source bigdl-nano-init
+            pip install pytest nbmake
+            pip install jupyter nbconvert
+            pip install neural-compressor==1.11
+            pip install tensorflow-datasets
+            bash python/nano/notebooks/tensorflow/tutorial/run-nano-notebooks-tensorflow-tutorial-tests.sh
+            source $CONDA/bin/deactivate
+            $CONDA/bin/conda remove -n notebooks-tutorial-tensorflow --all
+        env:
+            ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

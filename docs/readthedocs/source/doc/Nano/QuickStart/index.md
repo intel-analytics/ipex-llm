@@ -15,6 +15,13 @@
 
 ---------------------------
 
+- [**BigDL-Nano TensorFlow Training Quickstart**](./tensorflow_train_quickstart.html)
+
+    > ![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][Nano_tensorflow_training]
+
+    In this guide we will describe how to accelerate TensorFlow Keras applications on training workloads with BigDL-Nano
+
+---------------------------
 - [**BigDL-Nano PyTorch ONNXRuntime Acceleration Quickstart**](./pytorch_onnxruntime.html)
 
     > ![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][Nano_pytorch_onnxruntime]
@@ -56,7 +63,26 @@
 
 ---------------------------
 
+- [**BigDL-Nano TensorFlow Quantization with INC Quickstart**](./tensorflow_quantization_quickstart.html)
+    > ![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][Nano_tensorflow_quantization_inc]
+
+    In this guide we will demonstrates how to apply Post-training quantization on a keras model with BigDL-Nano.
+
+
+---------------------------
+
+- [**BigDL-Nano TensorFlow SparseEmbedding and SparseAdam**](./tensorflow_embedding.html)
+
+    > ![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][Nano_tensorflow_embedding]
+
+    In this guide we demonstrates how to use SparseEmbedding and SparseAdam to obtain stroger performance with sparse gradient
+
+
+-------------------------
+
+
 - [**BigDL-Nano Hyperparameter Tuning (Tensorflow Sequential/Functional API) Quickstart**](../Tutorials/seq_and_func.html)
+
 
     > ![](../../../../image/colab_logo_32px.png)[Run in Google Colab][Nano_hpo_tf_seq_func_colab] &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][Nano_hpo_tf_seq_func]
 
@@ -75,11 +101,14 @@
 
 [Nano_pytorch_training]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/tutorial/pytorch_train.ipynb>
 [Nano_pytorch_nano]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/tutorial/pytorch_nano.ipynb>
+[Nano_tensorflow_training]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/tensorflow/tutorial/tensorflow_fit.ipynb>
 [Nano_pytorch_onnxruntime]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/tutorial/pytorch_inference_onnx.ipynb>
 [Nano_pytorch_openvino]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/tutorial/pytorch_inference_openvino.ipynb>
 [Nano_pytorch_Quantization_inc]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/tutorial/pytorch_quantization_inc.ipynb>
 [Nano_pytorch_quantization_inc_onnx]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/tutorial/pytorch_quantization_inc.ipynb>
 [Nano_pytorch_quantization_openvino]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/tutorial/pytorch_quantization_openvino.ipynb>
+[Nano_tensorflow_quantization_inc]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/tensorflow/tutorial/tensorflow_quantization.ipynb>
+[Nano_tensorflow_embedding]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/tensorflow/tutorial/tensorflow_embedding.ipynb>
 [Nano_hpo_tf_seq_func]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/hpo/seq_and_func.ipynb>
 [Nano_hpo_tf_seq_func_colab]: <https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/nano/notebooks/hpo/seq_and_func.ipynb>
 [Nano_hpo_tf_subclassing]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/hpo/custom.ipynb>
