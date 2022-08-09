@@ -44,14 +44,37 @@ For Building Fast, Scalable, and Secured AI
 
 ## What can you do with BigDL
 
-
-- ✅ make your single-node Tensorflow/PyTroch programs faster - Refer to [_Nano_](https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html) <br/>
-- ✅ turn your single-node AI applications to distributed and run on a large cluster - Refer to [_Orca: Distributed Training and Inference_](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-training-inference.html#) <br/>
-- ✅ use automatic hyperparameter tuning in parallel or in a distributed cluster - Refer to [_Orca: Distributed Hyperparam Tuning_](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-tuning.html) <br/>
-- ✅ develop deep learning applications in Scala or Python from scratch to run on Spark cluster - Refer to [_DLLib_](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/dllib.html)  <br/>
-- ✅ run Ray applications on Spark cluster - Refer to [_Orca: RayOnSpark_](https://bigdl.readthedocs.io/en/latest/doc/Ray/Overview/ray.html)  <br/>
-- ✅ build fast and scalable domain-specific applications optimized on Xeon platforms (e.g. Time series, Recommendation Systems) - Refer to [_Chronos_](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html) and [_Friesian_]()  <br/>
-- ✅ run machine learning and deep learning in securied and privacy preserved environment [_PPML_](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html) <br/>
+```mermaid
+flowchart TD;
+    Feature1[Make your single-node <br/>Tensorflow/PyTroch programs faster?]-- Yes you can! ---Refer1([Refer to <em><strong>Nano</strong></em>]);
+    Feature1-->Feature2[Turn your single-node AI applications <br/>to distributed and run on a large cluster?];
+    Feature2 --> Feature3[Use automatic hyperparameter tuning <br/>in parallel or in a distributed cluster?];
+    Feature2-- Yes you can! ---Refer2([Refer to <br/><em><strong>Orca: Distributed<br/> Training and Inference</strong></em>]);
+    Feature3 -- Yes you can! ---Refer3([Refer to <br/><em><strong>Orca: Distributed<br/> Hyperparam Tuning</strong></em>]);
+    Feature3 --> Feature4[Develop deep learning applications <br/>in Scala or Python from scratch <br/>to run on Spark cluster?];
+    Feature4 --> Feature5[Run Ray applications on Spark cluster?];
+    Feature4 -- Yes you can! ---Refer4([Refer to <em><strong>DLLib</strong></em>]);
+    Feature5 -- Yes you can! ---Refer5([Refer to <br/><em><strong>Orca: RayOnSpark</strong></em>]);
+    Feature5 --> Feature6[Build fast and scalable domain-specific applications <br/>optimized on Xeon platforms? <br/><em>e.g. Time series, Recommendation Systems</em>];
+    Feature6 --> Feature7[Run machine learning and deep learning<br/> in securied and privacy preserved environment?];
+    Feature6 -- Yes you can! ---Refer6([Refer to]);
+    Refer6 ---Refer6a([<em><strong>Chronos</strong></em>]) & Refer6b([<em><strong>Friesian</strong></em>]);
+    Feature7 -- Yes you can! ---Refer7([Refer to <em><strong>PPML</strong></em>]);
+    
+    click Refer1 "https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html" "Refer to Nano" _parent
+    click Refer2 "https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-training-inference.html"
+    click Refer3 "https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-tuning.html"
+    click Refer4 "https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/dllib.html"
+    click Refer5 "https://bigdl.readthedocs.io/en/latest/doc/Ray/Overview/ray.html"
+    click Refer6a "https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html"
+    click Refer7 "https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html"
+    
+    classDef Refer fill:#FFF;
+    classDef Feature fill:#FFF,stroke:#0f29ba,stroke-width:1px;
+    class Refer1,Refer2,Refer3,Refer4,Refer5,Refer6,Refer6a,Refer6b,Refer7 Refer;
+    class Feature1,Feature2,Feature3,Feature4,Feature5,Feature6,Feature7 Feature;
+    
+```
 
 BigDL can make all above tasks easy. For more guidence, tutorials and demos, refer to our [Docs site](https://bigdl.readthedocs.io/).
 
