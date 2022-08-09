@@ -83,7 +83,8 @@ class IPEXBF16Precision(PrecisionPlugin):
     @contextmanager
     def forward_context(self):
         """AMP for managing model forward/training_step/evaluation_step/predict_step."""
-        with torch.cpu.amp.autocast():
+        # Manually set the dtype
+        with torch.cpu.amp.autocast(dtype=torch.bfloat16):
             yield
 
     def optimizer_step(self,
