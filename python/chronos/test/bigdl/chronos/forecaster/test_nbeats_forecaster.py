@@ -95,6 +95,7 @@ def create_tsdataset_val(roll=True, horizon=5):
     return train, val, test
 
 
+@op_torch
 class TestChronosNBeatsForecaster(TestCase):
     def setUp(self):
         pass
@@ -168,6 +169,7 @@ class TestChronosNBeatsForecaster(TestCase):
         except ImportError:
             pass
 
+    @op_all
     def test_nbeats_forecaster_openvino_methods(self):
         train_data, val_data, test_data = create_data()
         forecaster = NBeatsForecaster(past_seq_len=24,
@@ -188,6 +190,7 @@ class TestChronosNBeatsForecaster(TestCase):
             ckpt_name_q = os.path.join(tmp_dir_name, "int_openvino")
             forecaster.export_openvino_file(dirname=ckpt_name, quantized_dirname=ckpt_name_q)
 
+    @op_all
     def test_nbeats_forecaster_quantization(self):
         train_data, val_data, test_data = create_data()
         forecaster = NBeatsForecaster(past_seq_len=24,
@@ -200,6 +203,7 @@ class TestChronosNBeatsForecaster(TestCase):
         pred_q = forecaster.predict(test_data[0], quantize=True)
         eval_q = forecaster.evaluate(test_data, quantize=True)
 
+    @op_all
     def test_nbeats_forecaster_quantization_tuning(self):
         train_data, val_data, test_data = create_data()
         forecaster = NBeatsForecaster(past_seq_len=24,
@@ -287,6 +291,7 @@ class TestChronosNBeatsForecaster(TestCase):
         with pytest.raises(RuntimeError):
             forecaster.evaluate(test_data)
 
+    @op_distributed
     def test_nbeats_forecaster_xshard_input(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_data, val_data, test_data = create_data()
@@ -365,6 +370,7 @@ class TestChronosNBeatsForecaster(TestCase):
 
         stop_orca_context()
 
+    @op_distributed
     def test_nbeats_forecaster_dataloader_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_data, _, _ = create_data(loader=True)

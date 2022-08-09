@@ -21,6 +21,7 @@ import os
 from bigdl.chronos.forecaster.arima_forecaster import ARIMAForecaster
 from unittest import TestCase
 import pytest
+from .. import op_all
 
 
 def create_data():
@@ -31,6 +32,7 @@ def create_data():
     return data, validation_data
 
 
+@op_all
 class TestChronosModelARIMAForecaster(TestCase):
 
     def setUp(self):

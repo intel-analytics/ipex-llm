@@ -21,7 +21,10 @@ from unittest import TestCase
 import tempfile
 import pandas as pd
 
+from .. import op_all
 
+
+@op_all
 class TestChronosModelTCMFForecaster(TestCase):
 
     def setUp(self):

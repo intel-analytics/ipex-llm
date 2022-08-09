@@ -23,6 +23,7 @@ from bigdl.chronos.forecaster.autoformer_forecaster import AutoformerForecaster
 from bigdl.chronos.data import TSDataset
 from unittest import TestCase
 import pytest
+from .. import op_torch, op_automl
 
 
 def get_ts_df():
@@ -94,7 +95,7 @@ def create_tsdataset(val_ratio=0):
                         label_len=12)
         return train, val, test
 
-
+@op_torch
 class TestChronosModelAutoformerForecaster(TestCase):
 
     def setUp(self):
@@ -139,6 +140,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
         evaluate = forecaster.evaluate(val)
         pred = forecaster.predict(test)
 
+    @op_automl
     def test_autoformer_forecaster_tune(self):
         import bigdl.nano.automl.hpo.space as space
         train_data, val_data, test_data = create_data(loader=False)
@@ -155,6 +157,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
         forecaster.fit(train_data, epochs=3, batch_size=32)
         evaluate = forecaster.evaluate(val_data)
 
+    @op_automl
     def test_autoformer_forecaster_fit_without_tune(self):
         import bigdl.nano.automl.hpo.space as space
         train_data, val_data, test_data = create_data(loader=False)
@@ -173,6 +176,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
         assert error_msg == "There is no trainer, and you " \
                             "should call .tune() before .fit()"
 
+    @op_automl
     def test_autoformer_forecaster_multi_objective_tune(self):
         import bigdl.nano.automl.hpo.space as space
         train_data, val_data, test_data = create_data(loader=False)

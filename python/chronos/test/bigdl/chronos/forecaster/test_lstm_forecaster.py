@@ -22,7 +22,7 @@ import torch
 from bigdl.chronos.forecaster.lstm_forecaster import LSTMForecaster
 from unittest import TestCase
 import pytest
-from .. import op_all, op_onnxrt16
+from .. import op_all, op_onnxrt16, op_torch
 
 def create_data(loader=False):
     num_train_samples = 1000
@@ -95,6 +95,7 @@ def create_tsdataset_val(roll=True, horizon=1):
     return train, val, test
 
 
+@op_torch
 class TestChronosModelLSTMForecaster(TestCase):
 
     def setUp(self):
@@ -175,6 +176,7 @@ class TestChronosModelLSTMForecaster(TestCase):
         except ImportError:
             pass
 
+    @op_all
     def test_lstm_forecaster_openvino_methods(self):
         train_data, val_data, test_data = create_data()
         forecaster = LSTMForecaster(past_seq_len=24,
@@ -211,6 +213,7 @@ class TestChronosModelLSTMForecaster(TestCase):
         except ImportError:
             pass
 
+    @op_all
     def test_lstm_forecaster_quantization(self):
         train_data, val_data, test_data = create_data()
         forecaster = LSTMForecaster(past_seq_len=24,
@@ -321,6 +324,7 @@ class TestChronosModelLSTMForecaster(TestCase):
         with pytest.raises(RuntimeError):
             forecaster.fit(train_data, epochs=2)
 
+    @op_distributed
     def test_lstm_forecaster_xshard_input(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_data, val_data, test_data = create_data()
@@ -400,6 +404,8 @@ class TestChronosModelLSTMForecaster(TestCase):
 
         stop_orca_context()
 
+    @op_distributed
+    @op_all
     def test_lstm_dataloader_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_loader, _, _ = create_data(loader=True)

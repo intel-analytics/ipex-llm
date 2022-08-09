@@ -22,8 +22,8 @@ import torch
 from bigdl.chronos.forecaster.seq2seq_forecaster import Seq2SeqForecaster
 from unittest import TestCase
 import pytest
+from .. import op_torch, op_distributed, op_all
 
-from .. import op_all, op_onnxrt16
 
 def create_data(loader=False):
     num_train_samples = 1000
@@ -96,6 +96,7 @@ def create_tsdataset_val(roll=True, horizon=5):
     return train, val, test
 
 
+@op_torch
 class TestChronosModelSeq2SeqForecaster(TestCase):
 
     def setUp(self):
@@ -166,6 +167,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         except ImportError:
             pass
 
+    @op_all
     def test_s2s_forecaster_openvino_methods(self):
         train_data, val_data, test_data = create_data()
         forecaster = Seq2SeqForecaster(past_seq_len=24,
@@ -188,6 +190,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
             ckpt_name_q = os.path.join(tmp_dir_name, "int_openvino")
             forecaster.export_openvino_file(dirname=ckpt_name, quantized_dirname=ckpt_name_q)
 
+    @op_all
     def test_s2s_forecaster_quantization(self):
         train_data, val_data, test_data = create_data()
         forecaster = Seq2SeqForecaster(past_seq_len=24,
@@ -245,6 +248,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         with pytest.raises(RuntimeError):
             forecaster.fit(train_data, epochs=2)
 
+    @op_distributed
     def test_s2s_forecaster_xshard_input(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_data, val_data, test_data = create_data()
@@ -327,6 +331,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
 
         stop_orca_context()
 
+    @op_distributed
     def test_s2s_dataloader_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_data, _, _ = create_data(loader=True)
