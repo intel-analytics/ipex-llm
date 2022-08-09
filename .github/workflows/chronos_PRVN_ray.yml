@@ -1,0 +1,84 @@
+name: Chronos PRVN ray
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'python/chronos/**'
+      - '.github/workflows/chronos_PRVN_ray.yml'
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  chronos-PRVN-ray:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-20.04"]
+        python-version: ["3.7"]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools==58.0.4
+          python -m pip install --upgrade wheel
+      
+      - name: Create environment variables
+        run: |
+          export _JAVA_OPTIONS='-XX:MaxPermSize=3G -Xmx10G'
+          export MAVEN_OPTS='-XX:ReservedCodeCacheSize=512m -XX:MaxPermSize=3G -Xmx10G'
+          export no_proxy='10.239.45.10:8081,10.112.231.51'
+          export http_proxy='$HTTP_PROXY'
+          export https_proxy='$HTTPS_PROXY'
+          export JAVA_HOME=/opt/work/jdk8
+          export CLASSPATH=.:${JAVA_HOME}/lib:${JAVA_HOME}/jre/lib:${JAVA_HOME}/lib/tools.jar:${JAVA_HOME}/lib/dt.jar
+          export PATH=${JAVA_HOME}/bin/:${JAVA_HOME}/jre/bin:${PATH}
+          export PATH=/opt/work/apache-maven-3.6.3/bin:$PATH 
+          export FTP_URI=ftp://zoo:1234qwer@10.112.231.51
+
+      - name: Run Chronos python test
+        shell: bash
+        run: |
+          $CONDA/bin/conda create -n chronos-prvn -y python==3.7 setuptools==58.0.4
+          source $CONDA/bin/activate chronos-prvn
+          pip config set global.index-url https://pypi.org/simple
+          pip install pytest==5.4.1
+          pip install prophet==1.1
+          pip install pmdarima==1.8.4
+          pip install neural_compressor==1.11
+          pip install tsfresh==0.17.0
+          pip install ray==1.9.2 ray[tune]==1.9.2 ray[default]==1.9.2
+          pip install pyarrow==6.0.1
+          pip install openvino-dev
+          pip install ConfigSpace==0.5.0
+          pip install optuna==2.10.1
+          pip install onnxruntime==1.11.1
+          pip install onnx==1.11.0
+          apt-get install patchelf          
+          $CONDA/bin/conda info
+          bash python/dev/release_default_linux_spark246.sh default $QUICK false
+          bash python/nano/dev/build_and_install.sh linux default false pytorch --force-reinstall --no-deps -U
+          whl_name=`ls python/nano/dist/`
+          pip install python/nano/dist/${whl_name}[tensorflow,pytorch]
+          pip install python/dllib/src/dist/bigdl_dllib-*-py3-none-manylinux1_x86_64.whl
+          pip install python/orca/src/dist/bigdl_orca-*-py3-none-manylinux1_x86_64.whl
+          pip install python/chronos/src/dist/bigdl_chronos-*-py3-none-manylinux1_x86_64.whl
+          export KERAS_BACKEND=tensorflow
+          pip install scipy==1.5.4
+          bash python/chronos/dev/test/run-pytests.sh
+          source $CONDA/bin/deactivate
+          $CONDA/bin/conda remove -n chronos-prvn -y --all
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
