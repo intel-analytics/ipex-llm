@@ -31,14 +31,14 @@ For Building Fast, Scalable, and Secured AI
 ---
 
 
-**BigDL is a suite of libraries which can help data scientists and engineers to easily build end-to-end, fast, and scalable AI applications in various aspects.** Each library in BigDL can be installed and used alone or in combinition:
+**BigDL is a suite of libraries which helps data scientists and engineers to easily build end-to-end, fast, and scalable AI applications in various aspects.** Each library in BigDL can be installed and used alone or in combinition:
 
-* [_Nano_]() - transparent acceleration of PyTorch/Tensorflow.
-* [_Orca_]() - seamless scaling local AI to cluster.
-* [_DLLib_]() - deep learning for Apache Spark
-* [_BigDL-Chronos_]() - fast and scalable time series analysis.
-* [_BigDL-Friesian_]() - large-scale recommendation systems.
-* [_BigDL-PPML_]() - secure and privacy preserved AI
+* [_Nano_](#nano) - transparent acceleration of PyTorch/Tensorflow.
+* [_Orca_](#orca) - seamless scaling local AI to cluster.
+* [_DLLib_](#dllib) - deep learning for Apache Spark
+* [_Chronos_](#chronos) - fast and scalable time series analysis.
+* [_Friesian_](#friesian) - large-scale recommendation systems.
+* [_PPML_](#ppml) - secure and privacy preserved AI
  
 
 
