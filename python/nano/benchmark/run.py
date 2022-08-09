@@ -65,8 +65,6 @@ class Workload:
             log['time'] = timestamp
             log['is_pr'] = is_pr
             sql = self._get_sql(log)
-            print(sql)
-            print(log)
             cursor.execute(sql, log)
 
         conn.commit()

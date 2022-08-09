@@ -1,11 +1,11 @@
 name: Performance Regression Test
 
 on:
-  pull_request:
-    branches: [ "main" ]
-    paths:
-      - 'python/**'
-      - '.github/workflows/performance-regression-test.yml'
+  # pull_request:
+  #   branches: [ "main" ]
+  #   paths:
+  #     - 'python/**'
+  #     - '.github/workflows/performance-regression-test.yml'
   schedule:
     - cron: '0 16 * * *'
   # Allows you to run this workflow manually from the Actions tab
