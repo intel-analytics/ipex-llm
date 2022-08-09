@@ -58,9 +58,8 @@ jobs:
           cd scala
           mvn "-DwildcardSuites=com.intel.analytics.bigdl.friesian" test -P spark_3.x -Dspark.version=3.1.2
     - name: Rest Report    
-      uses: dorny/test-reporter@v1
+      uses: actions/upload-artifact@v2
+      if: success() || failure()        # run this step even if previous step failed
       with:
-        artifact: test-results            # artifact name
-        name: JEST Tests                  # Name of the check run which will be created
-        path: '*.xml'                     # Path to test results (inside artifact .zip)
-        reporter: jest-junit              # Format of test results
+        name: test-results
+        path: jest-junit.xml
