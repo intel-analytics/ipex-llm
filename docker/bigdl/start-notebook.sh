@@ -15,14 +15,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+#set -x
+port=${port:-no_port}
+token=${token:-no_token}
 
-set -x
-if [[ -z "${NOTEBOOK_PORT}" || -z "${NOTEBOOK_TOKEN}" ]]
-then 
-    echo "NOTEBOOK_TOKEN and NOTEBOOK_PORT cannot be empty!"
+while [ $# -gt 0 ]; do
+
+   if [[ $1 == *"--"* ]]; then
+        param="${1/--/}"
+        declare $param="$2"
+   fi
+
+  shift
+done
+echo $port $token
+
+if [[ $port = "no_port" || -z $port ]]
+then
+    echo "the --port parameter should be a int value, and cannot be empty!"
     exit 1
-else
-    echo $BIGDL_HOME
-    jupyter-lab --notebook-dir=$BIGDL_HOME/apps --ip=0.0.0.0 --port=$NOTEBOOK_PORT --no-browser --NotebookApp.token=$NOTEBOOK_TOKEN --allow-root
+elif [[ $token = "no_token" || -z $token ]]
+then
+    echo "the --token parameter should be a string value, and cannot be empty!"
+    exit 1
 fi
+
+echo $BIGDL_HOME
+jupyter-lab --notebook-dir=$BIGDL_HOME/apps --ip=0.0.0.0 --port=$port --no-browser --NotebookApp.token=$token --allow-root
 

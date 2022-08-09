@@ -18,6 +18,31 @@
 
 set -x
 
+#notebook token and port
+port=${port:-no_port}
+token=${token:-no_token}
+
+# check the notebook token and port.
+while [ $# -gt 0 ]; do
+
+   if [[ $1 == *"--"* ]]; then
+        param="${1/--/}"
+        declare $param="$2"
+   fi
+
+  shift
+done
+
+if [[ $port = "no_port" || -z $port ]]
+then
+    echo "the --port parameter should be a int value, and cannot be empty!"
+    exit 1
+elif [[ $token = "no_token" || -z $token ]]
+then
+    echo "the --token parameter should be a string value, and cannot be empty!"
+    exit 1
+fi
+
 #setup pathes
 BIGDL_TUTORIALS_HOME=${BIGDL_HOME}/apps
 SPARK_MAJOR_VERSION=${SPARK_VERSION%%.[0-9]}
@@ -27,7 +52,7 @@ echo $SPARK_VERSION
 echo $SPARK_MAJOR_VERSION
 
 export PYSPARK_DRIVER_PYTHON=jupyter-lab
-export PYSPARK_DRIVER_PYTHON_OPTS="--notebook-dir=$BIGDL_TUTORIALS_HOME --ip=0.0.0.0 --port=$NOTEBOOK_PORT --no-browser --NotebookApp.token=$NOTEBOOK_TOKEN --allow-root"
+export PYSPARK_DRIVER_PYTHON_OPTS="--notebook-dir=$BIGDL_TUTORIALS_HOME --ip=0.0.0.0 --port=$port --no-browser --NotebookApp.token=$token --allow-root"
 
 echo $RUNTIME_SPARK_MASTER
 echo $RUNTIME_EXECUTOR_CORES
@@ -61,12 +86,6 @@ fi
 if [[ $* == *"verbose"* ]]; then
     export KMP_SETTINGS=1
     export KMP_AFFINITY=${KMP_AFFINITY},verbose
-fi
-
-if [[ -z "${NOTEBOOK_PORT}" || -z "${NOTEBOOK_TOKEN}" ]]
-then
-    echo "NOTEBOOK_TOKEN and NOTEBOOK_PORT cannot be empty!"
-    exit 1
 fi
 
 jars=$(echo ${BIGDL_HOME}/jars/*.jar | tr ' ' ',')
