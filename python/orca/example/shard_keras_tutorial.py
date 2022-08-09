@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 # This example is adapted from
-# https://machinelearningmastery.com/tutorial-first-neural-network-python-keras/
+# https://machinelearningmastery.com/tutorial-first-neural-network-python-keras
 
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
