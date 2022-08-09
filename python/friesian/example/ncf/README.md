@@ -1,5 +1,5 @@
 # Train an NCF model on MovieLens 
-This example demonstrates how to use BigDL Friesian to train a [NCF](https://dl.acm.org/doi/10.1145/3038912.3052569)(Neural Collaborative Filtering) model using [MovieLens 1M](https://grouplens.org/datasets/movielens/1m/) dataset.
+This example demonstrates how to use BigDL Friesian to train a [NCF](https://dl.acm.org/doi/10.1145/3038912.3052569) (Neural Collaborative Filtering) model using [MovieLens 1M](https://grouplens.org/datasets/movielens/1m/) dataset.
 
 ## Prepare the environment
 We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux) to prepare the environments, especially if you want to run on a yarn cluster.
@@ -12,7 +12,7 @@ pip install --pre --upgrade bigdl-friesian
 ```
 
 ## Train NCF model
-* Spark local, we can use some sample data to have a trial, example command:
+* Spark local, example command:
 ```bash
 python ncf_train.py \
     --executor_cores 4 \
