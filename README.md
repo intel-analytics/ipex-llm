@@ -62,7 +62,7 @@ flowchart TD;
     Feature4-- others -->ReferContact([<em><strong>Contact Us &#x2709 !</strong></em>]);
 
     
-    click ReferNano "README.md#Nano" "Refer to Nano" _parent
+    click ReferNano "https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html" "Refer to Nano" _parent
     click ReferOrcaData "https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/data-parallel-processing.html"
     click ReferOrcaLearn "https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-training-inference.html"
     click ReferOrcaAutoml "https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-tuning.html"
