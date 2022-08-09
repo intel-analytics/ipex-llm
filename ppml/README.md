@@ -299,7 +299,7 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
    For `SimpleKeyManagementService`:
 
    ```scala
-import com.intel.analytics.bigdl.ppml.PPMLContext
+   import com.intel.analytics.bigdl.ppml.PPMLContext
    
    val ppmlArgs: Map[String, String] = Map(
           "spark.bigdl.kms.type" -> "SimpleKeyManagementService",
