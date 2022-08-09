@@ -17,6 +17,12 @@
 #
 
 set -x
+if [[ -z "${NOTEBOOK_PORT}" || -z "${NOTEBOOK_TOKEN}" ]]
+then 
+    echo "NOTEBOOK_TOKEN and NOTEBOOK_PORT cannot be empty!"
+    exit 1
+else
+    echo $BIGDL_HOME
+    jupyter-lab --notebook-dir=$BIGDL_HOME/apps --ip=0.0.0.0 --port=$NOTEBOOK_PORT --no-browser --NotebookApp.token=$NOTEBOOK_TOKEN --allow-root
+fi
 
-echo $BIGDL_HOME
-jupyter-lab --notebook-dir=$BIGDL_HOME/apps --ip=0.0.0.0 --port=$NOTEBOOK_PORT --no-browser --NotebookApp.token=$NOTEBOOK_TOKEN --allow-root

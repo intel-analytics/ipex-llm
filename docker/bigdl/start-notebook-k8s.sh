@@ -63,6 +63,12 @@ if [[ $* == *"verbose"* ]]; then
     export KMP_AFFINITY=${KMP_AFFINITY},verbose
 fi
 
+if [[ -z "${NOTEBOOK_PORT}" || -z "${NOTEBOOK_TOKEN}" ]]
+then
+    echo "NOTEBOOK_TOKEN and NOTEBOOK_PORT cannot be empty!"
+    exit 1
+fi
+
 jars=$(echo ${BIGDL_HOME}/jars/*.jar | tr ' ' ',')
 echo $jars
 

@@ -69,51 +69,35 @@
 ### To start a notebook directly with a specified port(e.g. 12345). You can view the notebook on http://[host-ip]:12345
 
     sudo docker run -it --rm -p 12345:12345 \
-        -e NOTEBOOK_PORT=12345 \
-        -e NOTEBOOK_TOKEN="your-token" \
         intelanalytics/bigdl:default
 
     sudo docker run -it --rm --net=host \
-        -e NOTEBOOK_PORT=12345 \
-        -e NOTEBOOK_TOKEN="your-token" \
         intelanalytics/bigdl:default
 
     sudo docker run -it --rm -p 12345:12345 \
-        -e NOTEBOOK_PORT=12345 \
-        -e NOTEBOOK_TOKEN="your-token" \
         intelanalytics/bigdl:latest
 
     sudo docker run -it --rm --net=host \
-        -e NOTEBOOK_PORT=12345 \
-        -e NOTEBOOK_TOKEN="your-token" \
         intelanalytics/bigdl:spark_2.4.6
 
 ### If you need http and https proxy in your environment:
 
     sudo docker run -it --rm -p 12345:12345 \
-        -e NOTEBOOK_PORT=12345 \
-        -e NOTEBOOK_TOKEN="your-token" \
         -e http_proxy=http://your-proxy-host:your-proxy-port \
         -e https_proxy=https://your-proxy-host:your-proxy-port \
         intelanalytics/bigdl:default
 
     sudo docker run -it --rm --net=host \
-        -e NOTEBOOK_PORT=12345 \
-        -e NOTEBOOK_TOKEN="your-token" \
         -e http_proxy=http://your-proxy-host:your-proxy-port \
         -e https_proxy=https://your-proxy-host:your-proxy-port \
         intelanalytics/bigdl:default
 
     sudo docker run -it --rm -p 12345:12345 \
-        -e NOTEBOOK_PORT=12345 \
-        -e NOTEBOOK_TOKEN="your-token" \
         -e http_proxy=http://your-proxy-host:your-proxy-port \
         -e https_proxy=https://your-proxy-host:your-proxy-port \
         intelanalytics/bigdl:spark_2.4.6
 
     sudo docker run -it --rm --net=host \
-        -e NOTEBOOK_PORT=12345 \
-        -e NOTEBOOK_TOKEN="your-token" \
         -e http_proxy=http://your-proxy-host:your-proxy-port \
         -e https_proxy=https://your-proxy-host:your-proxy-port \
         intelanalytics/bigdl:spark_2.4.6
@@ -121,8 +105,6 @@
 ### You can also start the container first
 
     sudo docker run -it --rm --net=host \
-        -e NOTEBOOK_PORT=12345 \
-        -e NOTEBOOK_TOKEN="your-token" \
         intelanalytics/bigdl:default bash
 
 ### In the container, after setting proxy and ports, you can start the Notebook by:
@@ -140,8 +122,6 @@
 ### With 0.3+ version of BigDL Docker image, you can specify the runtime conf of spark
 
     sudo docker run -itd --net=host \
-        -e NOTEBOOK_PORT=12345 \
-        -e NOTEBOOK_TOKEN="1234qwer" \
         -e http_proxy=http://your-proxy-host:your-proxy-port  \
         -e https_proxy=https://your-proxy-host:your-proxy-port  \
         -e RUNTIME_SPARK_MASTER=spark://your-spark-master-host:your-spark-master-port or local[*] \
