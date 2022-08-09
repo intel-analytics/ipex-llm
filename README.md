@@ -71,7 +71,7 @@ flowchart TD;
     click ReferChronos "https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html"
     click ReferFriesian "https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html"
     click ReferPPML "https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html"
-    click ReferContact "email:jason.dai@intel.com"
+    click ReferContact "mailto:jason.dai@intel.com"
     
     classDef ReferStyle1 fill:#f96;
     classDef ReferStyle2 fill:#FF1;
