@@ -20,7 +20,7 @@ env:
 
 jobs:
   friesian-maven-test:
-    runs-on: [ self-hosted, ubuntu-20.04, CLX, AVX512, Ettenmoors ]
+    runs-on: [ self-hosted, ubuntu-20.04-lts, CLX, AVX512, Ettenmoors ]
     permissions:
       contents: read
       packages: write
