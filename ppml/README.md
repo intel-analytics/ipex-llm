@@ -430,16 +430,6 @@ sc.write(df2, AES_CBC_PKCS5PADDING)
 .csv(encryptedOutputPath)
 ```
 
-**write mode**
-
-there are 5 modes:
-
-- `overwrite`: Overwrite existing data with the content of dataframe.
-- `append`: Append content of the dataframe to existing data or table.
-- `ignore`: Ignore current write operation if data / table already exists without any error.
-- `error`: Throw an exception if data or table already exists.
-- `errorifexists`: Throw an exception if data or table already exists.
-
 ##### PARQUET
 
 Code Example
