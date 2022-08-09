@@ -42,7 +42,7 @@ For Building Fast, Scalable, and Secured AI
  
 
 
-## What can you do with BigDL
+## Choosing the right lib
 
 ```mermaid
 flowchart TD;
