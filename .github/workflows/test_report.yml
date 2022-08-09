@@ -57,14 +57,14 @@ jobs:
           mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.optim" "-Dtest=com.intel.analytics.bigdl.dllib.optim.*Test" test -P spark_3.x -Dspark.version=3.1.2
 
     - name: Test Report    
-      #uses: actions/upload-artifact@v2
-      #if: success() || failure()        # run this step even if previous step failed
-      #with:
-        #name: test-results
-        #path: jest-junit.xml
-      uses: dorny/test-reporter@v1
-      if: success() || failure()    # run this step even if previous step failed
+      uses: actions/upload-artifact@v2
+      if: success() || failure()        # run this step even if previous step failed
       with:
-        name: JEST Tests            # Name of the check run which will be created
-        path: reports/jest-*.xml    # Path to test results
-        reporter: jest-junit        # Format of test results
+        name: test-results
+        path: jest-junit.xml
+      #uses: dorny/test-reporter@v1
+      #if: success() || failure()    # run this step even if previous step failed
+      #with:
+        #name: JEST Tests            # Name of the check run which will be created
+        #path: reports/jest-*.xml    # Path to test results
+        #reporter: jest-junit        # Format of test results
