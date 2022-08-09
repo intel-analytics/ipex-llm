@@ -16,6 +16,7 @@
 
 import os.path
 import shutil
+import pytest
 import tempfile
 
 from bigdl.orca.data.file import open_image, open_text, load_numpy, exists, makedirs, write_text
@@ -160,3 +161,7 @@ class TestFile:
                 aws_access_key_id=access_key_id,
                 aws_secret_access_key=secret_access_key).client('s3', verify=False)
             s3_client.delete_object(Bucket='analytics-zoo-data', Key='test.txt')
+
+if __name__ == "__main__":
+    pytest.main([__file__])
+

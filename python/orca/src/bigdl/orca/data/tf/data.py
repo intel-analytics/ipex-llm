@@ -21,6 +21,11 @@ from bigdl.orca.data import SparkXShards
 from bigdl.dllib.utils import log4Error
 from bigdl.dllib.utils.log4Error import *
 
+from typing import TYPE_CHECKING, Callable, Optional
+if TYPE_CHECKING:
+    from bigdl.orca.data.shard import SparkXShards
+    from pyspark.rdd import PipelinedRDD
+
 
 class Dataset(object):
 
@@ -30,12 +35,12 @@ class Dataset(object):
     on each partitions.
     """
 
-    def __init__(self, xshards, create_dataset_fn, xshards_transform_fn=None):
+    def __init__(self, xshards:"SparkXShards", create_dataset_fn: Callable, xshards_transform_fn: Optional[Callable]=None) -> None:
         self.xshards = xshards
         self.create_dataset_fn = create_dataset_fn
         self.xshards_transform_fn = xshards_transform_fn
 
-    def as_graph_rdd(self, batch_per_shard, drop_remainder=True):
+    def as_graph_rdd(self, batch_per_shard: int, drop_remainder: bool=True) -> "PipelinedRDD":
 
         create_dataset_fn = self.create_dataset_fn
 
@@ -116,7 +121,7 @@ class Dataset(object):
             return new_shards
 
     @staticmethod
-    def from_tensor_slices(xshards):
+    def from_tensor_slices(xshards:"SparkXShards") -> "TensorSliceDataset":
         return TensorSliceDataset(xshards)
 
     @staticmethod
@@ -128,14 +133,14 @@ class Dataset(object):
         xshards = featuretable_to_xshards(tbl)
         return TensorSliceDataset(xshards)
 
-    def map(self, map_func):
+    def map(self, map_func: Callable) -> "MapDataset":
 
         return MapDataset(self, map_func)
 
 
 class TensorSliceDataset(Dataset):
 
-    def __init__(self, xshards):
+    def __init__(self, xshards:"SparkXShards") -> None:
         invalidInputError(isinstance(xshards, SparkXShards),
                           "only datasets backed by a SparkXShards are supported")
 
@@ -148,7 +153,7 @@ class TensorSliceDataset(Dataset):
 
 class MapDataset(Dataset):
 
-    def __init__(self, input_dataset, map_func):
+    def __init__(self, input_dataset: "TensorSliceDataset", map_func: Callable) -> None:
 
         create_pre_dataset_fn = input_dataset.create_dataset_fn
         xshards_pre_transform_fn = input_dataset.xshards_transform_fn

@@ -20,12 +20,16 @@ from bigdl.dllib.feature.common import FeatureSet
 from bigdl.orca.tfpark import TFDataset
 from bigdl.dllib.utils.log4Error import *
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from bigdl.orca.data.tf.data import MapDataset
+
 
 class TF1Dataset(TFDataset):
 
-    def __init__(self, dataset, batch_size,
-                 batch_per_thread,
-                 validation_dataset=None, intra_threads=None, inter_threads=None):
+    def __init__(self, dataset: "MapDataset", batch_size: int,
+                 batch_per_thread: int,
+                 validation_dataset: None=None, intra_threads: None=None, inter_threads: None=None) -> None:
 
         node_num, core_num = get_node_and_core_number()
 
@@ -105,7 +109,7 @@ class TF1Dataset(TFDataset):
                              self.inter_threads, self.intra_threads)
         return FeatureSet(jvalue=jvalue)
 
-    def _get_validation_data(self):
+    def _get_validation_data(self) -> None:
         if self.validation_dataset is not None:
             jvalue = callZooFunc("float", "createTFDataFeatureSet",
                                  self.val_rdd.map(lambda x: x[0]), self.init_op_name,

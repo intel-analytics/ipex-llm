@@ -23,6 +23,28 @@ from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.dllib.utils import nest
 from bigdl.dllib.utils.log4Error import *
 
+from typing import TYPE_CHECKING
+from typing import (
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    Union,
+)
+
+if TYPE_CHECKING:
+    from numpy import ndarray
+    from pandas.core.frame import DataFrame as PandasDataFrame
+    from pandas.core.indexes.base import Index
+    from pandas.core.series import Series
+    from pyspark.rdd import (
+        PipelinedRDD,
+        RDD,
+    )
+    from pyspark.sql.dataframe import DataFrame as SparkDataFrame
+    from ray.data.dataset import Dataset
+
 
 class XShards(object):
     """
@@ -59,7 +81,7 @@ class XShards(object):
         pass
 
     @classmethod
-    def load_pickle(cls, path, minPartitions=None):
+    def load_pickle(cls, path: str, minPartitions: None = None) -> "SparkXShards":
         """
 
         Load XShards from pickle files.
@@ -72,7 +94,12 @@ class XShards(object):
         return SparkXShards(sc.pickleFile(path, minPartitions))
 
     @staticmethod
-    def partition(data, num_shards=None):
+    def partition(
+        data: Union[List["ndarray"], Tuple["ndarray", "ndarray"],
+                    "ndarray", Dict[str, Union[Tuple["ndarray"],
+                    List["ndarray"]]], Dict[str, "ndarray"]],
+        num_shards: Optional[int] = None
+    ) -> "SparkXShards":
         """
 
         Partition local in memory data and form a SparkXShards
@@ -136,7 +163,7 @@ class SparkXShards(XShards):
 
     A collection of data which can be pre-processed in parallel on Spark
     """
-    def __init__(self, rdd, transient=False):
+    def __init__(self, rdd: Union["PipelinedRDD", "RDD"], transient: bool = ...) -> None:
         self.rdd = rdd
         self.user_cached = False
         if transient:
@@ -148,7 +175,7 @@ class SparkXShards(XShards):
             self.compute()
         self.type = {}
 
-    def transform_shard(self, func, *args):
+    def transform_shard(self, func: Callable, *args) -> "SparkXShards":
         """
 
         Return a new SparkXShards by applying a function to each shard of this SparkXShards
@@ -166,7 +193,8 @@ class SparkXShards(XShards):
         self._uncache()
         return transformed_shard
 
-    def collect(self):
+    def collect(self)-> List[Union[Dict[str, Dict[str, "ndarray"]], 
+                        Tuple["SparkDataFrame", "PandasDataFrame"], Dict[str, "ndarray"], "Series"]]:
         """
 
         Returns a list that contains all of the elements in this SparkXShards
@@ -175,7 +203,7 @@ class SparkXShards(XShards):
         """
         return self.rdd.collect()
 
-    def cache(self):
+    def cache(self) -> "SparkXShards":
         """
 
         Persist this SparkXShards in memory
@@ -186,7 +214,7 @@ class SparkXShards(XShards):
         self.rdd.cache()
         return self
 
-    def uncache(self):
+    def uncache(self) -> "SparkXShards":
         """
 
         Make this SparkXShards as non-persistent, and remove all blocks for it from memory
@@ -201,18 +229,18 @@ class SparkXShards(XShards):
                 print("Try to unpersist an uncached rdd")
         return self
 
-    def _uncache(self):
+    def _uncache(self) -> None:
         if not self.user_cached:
             self.uncache()
 
-    def is_cached(self):
+    def is_cached(self) -> bool:
         return self.rdd.is_cached
 
-    def compute(self):
+    def compute(self) -> "SparkXShards":
         self.rdd.count()
         return self
 
-    def num_partitions(self):
+    def num_partitions(self) -> int:
         """
 
         Get number of partitions for this SparkXShards.
@@ -221,7 +249,7 @@ class SparkXShards(XShards):
         """
         return self.rdd.getNumPartitions()
 
-    def repartition(self, num_partitions):
+    def repartition(self, num_partitions: int) -> "SparkXShards":
         """
 
         Return a new SparkXShards that has exactly num_partitions partitions.
@@ -339,7 +367,7 @@ class SparkXShards(XShards):
         self._uncache()
         return repartitioned_shard
 
-    def partition_by(self, cols, num_partitions=None):
+    def partition_by(self, cols: str, num_partitions: Optional[int] = None) -> "SparkXShards":
         """
 
         Return a new SparkXShards partitioned using the specified columns.
@@ -388,7 +416,7 @@ class SparkXShards(XShards):
                               "Currently only support partition by for XShards"
                               " of Pandas DataFrame")
 
-    def unique(self):
+    def unique(self) -> "ndarray":
         """
 
         Return a unique list of elements of this SparkXShards.
@@ -408,7 +436,7 @@ class SparkXShards(XShards):
             invalidInputError(False,
                               "Currently only support unique() on XShards of Pandas Series")
 
-    def deduplicates(self):
+    def deduplicates(self) -> "PandasDataFrame":
         if self._get_class_name() == 'pandas.core.frame.DataFrame':
             import pandas as pd
             df = self.to_spark_df()
@@ -420,7 +448,7 @@ class SparkXShards(XShards):
             invalidInputError(False,
                               "Currently only support dedup() on XShards of Pandas DataFrame")
 
-    def split(self):
+    def split(self) -> List["SparkXShards"]:
         """
 
         Split SparkXShards into multiple SparkXShards.
@@ -450,7 +478,7 @@ class SparkXShards(XShards):
             else:
                 return [self]
 
-    def zip(self, other):
+    def zip(self, other: Union["SparkXShards", List[int]]) -> "SparkXShards":
         """
 
         Zips this SparkXShards with another one, returning key-value pairs with the first element
@@ -475,7 +503,7 @@ class SparkXShards(XShards):
                               "The two SparkXShards should have the same number of elements "
                               "in each partition")
 
-    def to_spark_df(self):
+    def to_spark_df(self) -> "SparkXShards":
         if self._get_class_name() != 'pandas.core.frame.DataFrame':
             invalidInputError(False,
                               "Currently only support to_spark_df on XShards of Pandas DataFrame")
@@ -494,11 +522,11 @@ class SparkXShards(XShards):
         df = rdd.toDF(list(column))
         return df
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self.rdd.map(lambda data: len(data) if hasattr(data, '__len__') else 1)\
-            .reduce(lambda l1, l2: l1 + l2)
+           .reduce(lambda l1, l2: l1 + l2)
 
-    def save_pickle(self, path, batchSize=10):
+    def save_pickle(self, path: str, batchSize: int = 10) -> "SparkXShards":
         """
 
         Save this SparkXShards as a SequenceFile of serialized objects.
@@ -513,7 +541,7 @@ class SparkXShards(XShards):
     def __del__(self):
         self.uncache()
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> "SparkXShards":
         def get_data(data):
             invalidInputError(hasattr(data, '__getitem__'),
                               "No selection operation available for this XShards")
@@ -525,7 +553,7 @@ class SparkXShards(XShards):
             return value
         return SparkXShards(self.rdd.map(get_data), transient=True)
 
-    def _for_each(self, func, *args, **kwargs):
+    def _for_each(self, func: Callable, *args, **kwargs) -> "PipelinedRDD":
         def utility_func(x, func, *args, **kwargs):
             try:
                 result = func(x, *args, **kwargs)
@@ -535,7 +563,7 @@ class SparkXShards(XShards):
         result_rdd = self.rdd.map(lambda x: utility_func(x, func, *args, **kwargs))
         return result_rdd
 
-    def get_schema(self):
+    def get_schema(self) -> Dict[str, Union["Index", "Series"]]:
         if 'schema' in self.type:
             return self.type['schema']
         else:
@@ -546,7 +574,7 @@ class SparkXShards(XShards):
                 return self.type['schema']
             return None
 
-    def _get_class_name(self):
+    def _get_class_name(self) -> str:
         if 'class_name' in self.type:
             return self.type['class_name']
         else:
@@ -555,7 +583,7 @@ class SparkXShards(XShards):
 
 
 class SharedValue(object):
-    def __init__(self, data):
+    def __init__(self, data: int) -> None:
         sc = init_nncontext()
         self.broadcast_data = sc.broadcast(data)
         self._value = None
@@ -569,7 +597,7 @@ class SharedValue(object):
         self.broadcast_data.unpersist()
 
 
-def spark_df_to_ray_dataset(df):
+def spark_df_to_ray_dataset(df: "SparkDataFrame") -> "Dataset":
     """
     Convert a Spark DataFrame to Ray Dataset. The block number of ray datasets equals to the
     partition number of the input DataFrame.

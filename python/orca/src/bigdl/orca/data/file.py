@@ -22,10 +22,16 @@ import glob
 from distutils.dir_util import copy_tree
 from bigdl.dllib.utils.log4Error import *
 
+from typing import TYPE_CHECKING, List
+if TYPE_CHECKING:
+    from PIL.JpegImagePlugin import JpegImageFile
+    from numpy import ndarray
+    from typing import List
+
 logger = logging.getLogger(__name__)
 
 
-def open_text(path):
+def open_text(path: str) -> List[str]:
     """
 
     Read a text file to list of lines. It supports local, hdfs, s3 file systems.
@@ -60,7 +66,7 @@ def open_text(path):
     return [line.strip() for line in lines]
 
 
-def open_image(path):
+def open_image(path: str) -> "JpegImageFile":
     """
 
     Open a image file. It supports local, hdfs, s3 file systems.
@@ -93,7 +99,7 @@ def open_image(path):
         return Image.open(path)
 
 
-def load_numpy(path):
+def load_numpy(path: str) -> "ndarray":
     """
 
     Load arrays or pickled objects from ``.npy``, ``.npz`` or pickled files.
@@ -129,7 +135,7 @@ def load_numpy(path):
         return np.load(path)
 
 
-def exists(path):
+def exists(path: str) -> bool:
     """
 
     Check if a path exists or not. It supports local, hdfs, s3 file systems.
@@ -168,7 +174,7 @@ def exists(path):
         return os.path.exists(path)
 
 
-def makedirs(path):
+def makedirs(path: str) -> None:
     """
 
     Make a directory with creating intermediate directories.
@@ -201,7 +207,7 @@ def makedirs(path):
         return os.makedirs(path)
 
 
-def write_text(path, text):
+def write_text(path: str, text: str):
     """
 
     Write text to a file. It supports local, hdfs, s3 file systems.

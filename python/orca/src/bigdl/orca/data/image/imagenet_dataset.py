@@ -34,12 +34,17 @@ from datetime import datetime
 import math
 import os
 import random
-from typing import Iterable, List, Mapping, Union, Tuple
+from typing import TYPE_CHECKING, Iterable, List, Mapping, Union, Tuple
 import sys
 import threading
 
 import numpy as np
 from bigdl.dllib.utils.log4Error import *
+
+if TYPE_CHECKING:
+    from numpy import ndarray
+    from tensorflow.core.example.example_pb2 import Example
+    from tensorflow.core.example.feature_pb2 import Feature
 
 TRAINING_SHARDS = 1024
 VALIDATION_SHARDS = 128
@@ -107,7 +112,7 @@ def convert_imagenet_to_tf_records(
 class ImageCoder(object):
     """Helper class that provides TensorFlow image coding utilities."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         import tensorflow as tf
         # Create a single Session to run all image coding calls.
         self._sess = tf.Session()
@@ -136,7 +141,7 @@ class ImageCoder(object):
         return self._sess.run(self._cmyk_to_rgb,
                               feed_dict={self._cmyk_data: image_data})
 
-    def decode_jpeg(self, image_data: bytes):
+    def decode_jpeg(self, image_data: bytes) -> "ndarray":
         """Decodes a JPEG image."""
         image = self._sess.run(self._decode_jpeg,
                                feed_dict={self._decode_jpeg_data: image_data})
@@ -230,7 +235,7 @@ def _process_image_files_batch(
         output_file: str,
         filenames: Iterable[str],
         synsets: Iterable[Union[str, bytes]],
-        labels: Mapping[str, int]):
+        labels: Mapping[str, int]) -> None:
     """
     Processes and saves a list of images as TFRecords.
 
@@ -255,14 +260,14 @@ def _process_image_files_batch(
     writer.close()
 
 
-def _check_or_create_dir(directory: str):
+def _check_or_create_dir(directory: str) -> None:
     import tensorflow as tf
     """Checks if directory exists otherwise creates it."""
     if not tf.gfile.Exists(directory):
         tf.gfile.MakeDirs(directory)
 
 
-def _int64_feature(value: Union[int, Iterable[int]]):
+def _int64_feature(value: Union[int, Iterable[int]]) -> "Feature":
     """Inserts int64 features into Example proto."""
     import tensorflow as tf
     if not isinstance(value, list):
@@ -270,7 +275,7 @@ def _int64_feature(value: Union[int, Iterable[int]]):
     return tf.train.Feature(int64_list=tf.train.Int64List(value=value))
 
 
-def _bytes_feature(value: Union[bytes, str]):
+def _bytes_feature(value: Union[bytes, str]) -> "Feature":
     """Inserts bytes features into Example proto."""
     import tensorflow as tf
     if isinstance(value, str):
@@ -283,7 +288,7 @@ def _convert_to_example(filename: str,
                         label: int,
                         synset: str,
                         height: int,
-                        width: int):
+                        width: int) -> "Example":
     """
     Builds an Example proto for an ImageNet example.
 

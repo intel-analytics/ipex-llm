@@ -19,6 +19,10 @@ import os.path as osp
 from PIL import Image
 import logging
 from bigdl.dllib.utils.log4Error import *
+from typing import TYPE_CHECKING, List, Tuple
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 try:
     import xml.etree.cElementTree as ET
@@ -38,10 +42,10 @@ class VOCDatasets:
     difficult: bool, False ignore voc xml difficult value.
     """
 
-    def __init__(self, root="VOCdevkit",
-                 splits_names=[(2007, "trainval")],
-                 classes=None,
-                 difficult=False) -> None:
+    def __init__(self, root: str="VOCdevkit",
+                 splits_names: List[Tuple[int, str]]=[(2007, "trainval")],
+                 classes: None=None,
+                 difficult: bool=False) -> None:
 
         self.CLASSES = ['aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car',
                         'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike',
@@ -59,7 +63,7 @@ class VOCDatasets:
         self._im_anno = [self._load_label(idx) for idx in range(len(self))]
         self._im_cache = {}
 
-    def _load_items(self, splits_names):
+    def _load_items(self, splits_names: List[Tuple[int, str]]) -> List[Tuple[str, str]]:
 
         img_ids = []
         for year, txtname in splits_names:
@@ -72,14 +76,14 @@ class VOCDatasets:
                 continue
         return img_ids
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._imgid_items)
 
-    def __iter__(self):
+    def __iter__(self) -> zip:
         img_path = [self._image_path.format(*img_id) for img_id in self._imgid_items]
         return zip(img_path, self._im_anno)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int) -> Tuple["ndarray", "ndarray"]:
         img_id = self._imgid_items[idx]
         img_path = self._image_path.format(*img_id)
         if img_path in self._im_cache:
@@ -89,7 +93,7 @@ class VOCDatasets:
 
         return img, self._im_anno[idx]
 
-    def _load_label(self, idx):
+    def _load_label(self, idx: int) -> "ndarray":
         img_id = self._imgid_items[idx]
         anno_path = self._anno_path.format(*img_id)
         root = ET.parse(anno_path).getroot()
@@ -136,7 +140,7 @@ class VOCDatasets:
             logging.warning("Invalid label at %s, %s", anno_path, e)
         return label
 
-    def _check_label(self, label, width=1, height=1):
+    def _check_label(self, label: "ndarray", width: int=1, height: int=1) -> None:
         """Check if label is correct."""
         xmin = label[:, 0]
         ymin = label[:, 1]
@@ -151,7 +155,7 @@ class VOCDatasets:
         invalidInputError(((ymin < ymax) & (ymax <= height)).any(),
                           "ymax must in ({}, {}], given {}".format(ymin, height, ymax))
 
-    def _read_image(self, image_path):
+    def _read_image(self, image_path: str) -> "ndarray":
         try:
             img = Image.open(image_path)
             img = np.array(img)
