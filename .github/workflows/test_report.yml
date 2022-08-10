@@ -59,12 +59,18 @@ jobs:
       run: |
         pwd
         ls
-    - name: Test Report    
+    - name: Upload Report    
       uses: actions/upload-artifact@v2
       if: success() || failure()        # run this step even if previous step failed
       with:
         name: test-results
-        path: scala/dllib/target/surefire-reports/*.xml
+        path: scala/dllib/target/surefire-reports/*scalatest*.xml
+    - name: Test Report
+      uses: dorny/test-reporter@v1
+      if: success() || failure()    # run this step even if previous step failed
+      with:
+        name: MVN Tests            # Name of the check run which will be created
+        path: scala/dllib/target/surefire-reports/*scalatest*.xml    # Path to test results
       #uses: dorny/test-reporter@v1
       #if: success() || failure()    # run this step even if previous step failed
       #with:
