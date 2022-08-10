@@ -97,7 +97,7 @@ Click the buttons in above chart to find out more.
 	```
 	pip install bigdl-chronos
 	```
-  The installtion steps may differ for each library. Please refer to the installation guide for more specifics. 
+  The installtion steps may differ for different libraries. Please refer to the installation guide for each library.  
 
 ---
 
