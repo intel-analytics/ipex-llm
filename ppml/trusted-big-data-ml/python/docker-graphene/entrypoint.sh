@@ -103,6 +103,8 @@ case "$SPARK_K8S_CMD" in
     unset PYTHONPATH && \
     if [ "$SGX_ENABLED" == "false" ]; then
         $SPARK_HOME/bin/spark-submit --conf spark.driver.bindAddress=$SPARK_DRIVER_BIND_ADDRESS --deploy-mode client "$@"
+    elif [ "$SGX_ENABLED" == "true" ]; then
+        ./init.sh
     fi
     ;;
   driver-py)
@@ -144,6 +146,8 @@ case "$SPARK_K8S_CMD" in
         --app-id $SPARK_APPLICATION_ID \
         --hostname $SPARK_EXECUTOR_POD_IP \
         --resourceProfileId $SPARK_RESOURCE_PROFILE_ID
+    elif [ "$SGX_ENABLED" == "true" ]; then
+      ./init.sh
     fi
     ;;
 
