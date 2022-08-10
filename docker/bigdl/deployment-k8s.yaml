@@ -161,7 +161,7 @@ data:
   spark.executor.cores: "4"
   spark.executor.memory: 20g
   spark.executor.instances: "4"
-  token: ${NOTEBOOK_TOKEN}  # To specific the token value
+  token: ""  # To specific the token value
   spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName: nfsvolumeclaim
   spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path: /data/jupyter
   spark.pyspark.driver.python: python

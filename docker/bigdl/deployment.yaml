@@ -25,7 +25,7 @@ spec:
             - name: CONTAINER_NAME
               value: bigdl-notebook
             - name: NOTEBOOK_TOKEN
-              value: ${NOTEBOOK_TOKEN}  # To specific the token value
+              value: ""  # To specific the token value
           volumeMounts:
             - name: bigdl-notebook-volume
               mountPath: /data/jupyter

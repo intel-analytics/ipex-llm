@@ -19,8 +19,8 @@
 set -x
 
 #notebook token and port
-port=${port:-no_port}
-token=${token:-no_token}
+port=${port:-12345}
+token=${token:-""}
 
 # check the notebook token and port.
 while [ $# -gt 0 ]; do
@@ -32,16 +32,6 @@ while [ $# -gt 0 ]; do
 
   shift
 done
-
-if [[ $port = "no_port" || -z $port ]]
-then
-    echo "the --port parameter should be a int value, and cannot be empty!"
-    exit 1
-elif [[ $token = "no_token" || -z $token ]]
-then
-    echo "the --token parameter should be a string value, and cannot be empty!"
-    exit 1
-fi
 
 #setup pathes
 BIGDL_TUTORIALS_HOME=${BIGDL_HOME}/apps
