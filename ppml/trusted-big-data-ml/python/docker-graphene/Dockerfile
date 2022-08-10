@@ -305,7 +305,8 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     wget -P $SPARK_HOME/jars https://github.com/xerial/sqlite-jdbc/releases/download/3.36.0.1/sqlite-jdbc-3.36.0.1.jar && \
     chmod +x /opt/entrypoint.sh && \
     chmod +x /sbin/tini && \
-    cp /sbin/tini /usr/bin/tini
+    cp /sbin/tini /usr/bin/tini && \
+    /graphene/Tools/argv_serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && export _SPARK_AUTH_SECRET=$_SPARK_AUTH_SECRET && $spark_commnd' > /ppml/trusted-big-data-ml/secured-argvs
 
 # Azure support
 RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash

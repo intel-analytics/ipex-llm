@@ -6,7 +6,6 @@ name: your_job_name
 pvc: your_pvc
 
 kmsURL: http://your_kms_url:port
-securedArgvsFilePath: path_to_generated_secured_argvs_file_on_shared_storage
 deployMode: client
 driverCores: "4"
 driverMem: "1g"

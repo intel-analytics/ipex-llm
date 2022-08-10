@@ -97,9 +97,6 @@ spec:
             mountPath: /root/.kube/config
             subPath: kubeconfig
       volumes:
-      - name: secured-argvs
-        hostPath:
-          path: {{ .Values.securedArgvsFilePath }}
       - name: device-plugin
         hostPath:
           path: /var/lib/kubelet/device-plugins
