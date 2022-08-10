@@ -31,7 +31,7 @@ For Building Fast, Scalable, and Secured AI
 ---
 
 
-**BigDL is a suite of libraries which helps data scientists and engineers to easily build end-to-end, fast, and scalable AI applications in various aspects.** Each library in BigDL can be installed and used alone or in combinition:
+**BigDL is a suite of libraries which helps data scientists and engineers to easily build end-to-end, fast, and scalable AI applications.** Each library in BigDL can be installed and used alone or in combinition:
 
 * [_Nano_](#nano) - transparent acceleration of PyTorch/Tensorflow.
 * [_Orca_](#orca) - seamless scaling local AI to cluster.
