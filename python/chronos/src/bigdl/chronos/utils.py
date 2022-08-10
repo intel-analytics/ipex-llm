@@ -17,6 +17,7 @@
 import warnings
 from functools import wraps
 import importlib
+import sys
 
 
 def deprecated(message=""):
@@ -41,23 +42,38 @@ class LazyImport:
         :param module_name: The name of module imported later
         :param pkg: prefix path.
     """
-    def __init__(self, module_name, pkg=None):
+    def __init__(self, module_name: str, pkg=None):
         self.module_name = module_name
         self.pkg = pkg
 
     def __getattr__(self, name):
+        abslute_name = importlib.util.resolve_name(self.module_name, self.pkg)
+        # not reload modules
         try:
-            module = importlib.import_module(self.module_name, package=self.pkg)
-            mod = getattr(module, name)
-        except:
-            spec = importlib.util.find_spec(str(self.module_name + '.' + name))
-            mod = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(mod)
-        return mod
+            return getattr(sys.modules[abslute_name], name)
+        except (KeyError, AttributeError):
+            pass
+
+        try:
+            module = importlib.import_module(abslute_name)
+            module = getattr(module, name)
+        except AttributeError:
+            spec = importlib.util.find_spec(self.module_name+'.'+name)
+            if spec is None:
+                from bigdl.nano.utils.log4Error import invalidInputError
+                invalidInputError(False,
+                                  f"No module named {self.module_name}.")
+            else:
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+        return module
 
     def __call__(self, *args, **kwargs):
         function_name = self.module_name.split('.')[-1]
         module_name = self.module_name.split(f'.{function_name}')[0]
-        module = importlib.import_module(module_name, package=self.pkg)
+        try:
+            module = sys.modules[module_name]
+        except KeyError:
+            module = importlib.import_module(module_name, package=self.pkg)
         function = getattr(module, function_name)
         return function(*args, **kwargs)
