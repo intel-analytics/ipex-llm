@@ -61,7 +61,6 @@ if not orca_available:
     warnings.warn("Please install `bigdl-orca` to use full collection of forecasters.")
 
 # import forecasters
-bigdl = LazyImport('bigdl')
 PREFIXNAME = 'bigdl.chronos.forecaster.'
 if torch_available:
     LSTMForecaster = LazyImport(PREFIXNAME+'lstm_forecaster.LSTMForecaster')

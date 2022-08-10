@@ -20,7 +20,7 @@ from bigdl.chronos.utils import LazyImport
 tf_spec = bool(importlib.util.find_spec('tensorflow'))
 
 PREFIXNAME_TF2 = 'bigdl.chronos.forecaster.tf.'
-bigdl = LazyImport('bigdl')
+
 if tf_spec:
     LSTMForecaster = LazyImport(PREFIXNAME_TF2+'lstm_forecaster.LSTMForecaster')
     MTNetForecaster = LazyImport(PREFIXNAME_TF2+'metnet_forecaster.MTNetForecaster')

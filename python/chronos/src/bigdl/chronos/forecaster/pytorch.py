@@ -14,8 +14,9 @@
 # limitations under the License.
 #
 
-from bigdl.chronos.forecaster.tcn_forecaster import TCNForecaster
-from bigdl.chronos.forecaster.lstm_forecaster import LSTMForecaster
-from bigdl.chronos.forecaster.nbeats_forecaster import NBeatsForecaster
-from bigdl.chronos.forecaster.seq2seq_forecaster import Seq2SeqForecaster
-from bigdl.chronos.forecaster.autoformer_forecaster import AutoformerForecaster
+from bigdl.chronos.utils import LazyImport
+TCNForecaster = LazyImport('bigdl.chronos.forecaster.tcn_forecaster.TCNForecaster')
+LSTMForecaster= LazyImport('bigdl.chronos.forecaster.lstm_forecaster.LSTMForecaster')
+NBeatsForecaster= LazyImport('bigdl.chronos.forecaster.nbeats_forecaster.NBeatsForecaster')
+Seq2SeqForecaster= LazyImport('bigdl.chronos.forecaster.seq2seq_forecaster.Seq2SeqForecaster')
+AutoformerForecaster= LazyImport('bigdl.chronos.forecaster.autoformer_forecaster.AutoformerForecaster')
