@@ -12,13 +12,31 @@ var hardware="singlenode";
 var automl="automlno"
 
 
+
 function set_color(id){
-   $("#"+id).css("background-color","yellow");
+   $("#"+id).parent().css("background-color","rgb(74, 106, 237)");
+   $("#"+id).css("color","white");
 }
 
 function reset_color(list){
     for (btn in list){
-        $("#"+list[btn]).css("background-color","buttonface");
+        $("#"+list[btn]).parent().css("background-color","transparent");
+        $("#"+list[btn]).css("color","black");
+    }
+}
+
+function disable(list){
+    for(btn in list){
+        $("#"+list[btn]).css("text-decoration","line-through");
+        $("#"+list[btn]).attr("disabled","true");
+    }
+    reset_color(list);
+}
+
+function enable(list){
+    for(btn in list){
+        $("#"+list[btn]).css("text-decoration","none");
+        $("#"+list[btn]).attr("disabled",false);
     }
 }
 
@@ -37,10 +55,24 @@ function refresh_cmd(){
     set_color(automl);
 
     var cmd = "NA";
+
+    if(way=="docker"){
+        disable(ais);
+        disable(releases);
+        disable(oss);
+        disable(hardwares);
+        disable(automls);
+        cmd="Please refer to docker installation guide.";
+    }else{
+        enable(ais);
+        enable(releases);
+        enable(oss);
+        enable(hardwares);
+        enable(automls);
+    }
+
     if(ai=="pytorch"){
-        if(way=="docker"){
-            cmd="Please refer to docker installation guide.";
-        }else{
+        if(way=="pypi"){
             if(os=="win"){
                 cmd="Please refer to windows installation guide.";
             }else{
@@ -77,9 +109,7 @@ function refresh_cmd(){
     }
     
     if(ai=="tensorflow"){
-        if(way=="docker"){
-            cmd="Please refer to docker installation guide.";
-        }else{
+        if(way=="pypi"){
             if(os=="win"){
                 cmd="Please refer to windows installation guide.";
             }else{
@@ -91,9 +121,7 @@ function refresh_cmd(){
     }
 
     if(ai=="prophet"){
-        if(way=="docker"){
-            cmd="Please refer to docker installation guide.";
-        }else{
+        if(way=="pypi"){
             if(os=="win"){
                 cmd="Please refer to windows installation guide.";
             }else{
@@ -130,9 +158,7 @@ function refresh_cmd(){
     }
 
     if(ai=="pmdarima"){
-        if(way=="docker"){
-            cmd="Please refer to docker installation guide.";
-        }else{
+        if(way=="pypi"){
             if(os=="win"){
                 cmd="Please refer to windows installation guide.";
             }else{
