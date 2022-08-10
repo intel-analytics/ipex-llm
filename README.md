@@ -82,7 +82,7 @@ flowchart TD;
     
 ```
 
-For more information, refer to our [Docs site](https://bigdl.readthedocs.io/).
+Click above buttons to find out more.
 
 ---
 
