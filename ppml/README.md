@@ -20,6 +20,10 @@ Protecting privacy and confidentiality is critical for large-scale data analysis
 
 ## 1. What is BigDL PPML?
 
+
+https://user-images.githubusercontent.com/61072813/183801696-71ff46da-f095-48d7-baa3-afdca3e329a9.mp4
+
+
 Protecting data privacy and confidentiality is critical in a world where data is everywhere. In recent years, more and more countries have enacted data privacy legislation or are expected to pass comprehensive legislation to protect data privacy, the importance of privacy and data protection is increasingly recognized.
 
 To better protect sensitive data, it's necessary to ensure security for all dimensions of data lifecycle: data at rest, data in transit, and data in use. Data being transferred on a network is `in transit`, data in storage is `at rest`, and data being processed is `in use`.
@@ -142,6 +146,12 @@ The result should look something like this:
 ### 3.2 BigDL PPML End-to-End Workflow
 ![image](https://user-images.githubusercontent.com/61072813/178393982-929548b9-1c4e-4809-a628-10fafad69628.png)
 In this section we take SimpleQuery as an example to go through the entire BigDL PPML end-to-end workflow. SimpleQuery is simple example to query developers between the ages of 20 and 40 from people.csv. 
+
+
+https://user-images.githubusercontent.com/61072813/183802216-44bfa75e-810e-4f09-bebf-7e0e1fe0d61d.mp4
+
+
+
 
 #### Step 0. Preparation your environment
 To secure your Big Data & AI applications in BigDL PPML manner, you should prepare your environment first, including K8s cluster setup, K8s-SGX plugin setup, key/password preparation, key management service (KMS) and attestation service (AS) setup, BigDL PPML client container preparation. **Please follow the detailed steps in** [Prepare Environment](./docs/prepare_environment.md). 
