@@ -36,4 +36,3 @@ fi
 ls -al /dev/sgx
 
 make SGX=1 GRAPHENEDIR=/graphene THIS_DIR=/ppml/trusted-big-data-ml  SPARK_LOCAL_IP=$local_ip SPARK_USER=root G_SGX_SIZE=$sgx_mem_size G_LOG_LEVEL=$sgx_log_level
-SGX=1 ./pal_loader bash  1>&2
