@@ -69,7 +69,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install patchelf          
           $CONDA/bin/conda info
-          bash python/dev/release_default_linux_spark246.sh default false
+          bash python/dev/release_default_linux_spark246.sh default false true true
           bash python/nano/dev/build_and_install.sh linux default false pytorch --force-reinstall --no-deps -U
           whl_name=`ls python/nano/dist/`
           pip install python/nano/dist/${whl_name}[tensorflow,pytorch]
