@@ -83,8 +83,8 @@ jobs:
           pip install optuna==2.10.1
           pip install onnxruntime==1.11.1
           pip install onnx==1.11.0
-          sudo apt-get update
-          sudo apt-get install patchelf          
+          apt-get update
+          apt-get install patchelf          
           bash python/dev/release_default_linux_spark246.sh default false true true
           bash python/nano/dev/build_and_install.sh linux default false pytorch --force-reinstall --no-deps -U
           whl_name=`ls python/nano/dist/`
