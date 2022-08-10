@@ -67,6 +67,7 @@ jobs:
                 "timeout": "3600000"
               }
             }]
+          mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${NEXUS_URL}" }]'
 
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
