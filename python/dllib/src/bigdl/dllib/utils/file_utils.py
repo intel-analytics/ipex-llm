@@ -154,23 +154,23 @@ def enable_hdfs_load(load_func):
             return load_func(path, *args, **kwargs)
         else:
             file_name = str(uuid.uuid1())
-            file_name = append_suffix(file_name, path)
+            file_name = append_suffix(file_name, path.strip("/").split("/")[-1])
             temp_path = os.path.join(tempfile.gettempdir(), file_name)
-            host_port = path.split("://")[1].split("/")[0].split(":")
             classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
                                          stdout=subprocess.PIPE).communicate()[0]
             os.environ["CLASSPATH"] = classpath.decode("utf-8")
-            import pyarrow as pa
-            if len(host_port) > 1:
-                fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
-            else:
-                fs = pa.hdfs.connect(host=host_port[0])
-            with fs.open(path, "rb") as r_file, open(temp_path, "wb") as l_file:
-                    l_file.write(r_file.read())
+            import pyarrow.fs as pafs
+            if "isdir" in kwargs and kwargs["isdir"]:
+                os.mkdir(temp_path)
+            pafs.copy_files(path, temp_path)
             try:
                 return load_func(temp_path, *args, **kwargs)
             finally:
-                os.remove(temp_path)
+                if os.path.isdir(temp_path):
+                    import shutil
+                    shutil.rmtree(temp_path)
+                else:
+                    os.remove(temp_path)
 
     return multi_fs_load
 
