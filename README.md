@@ -51,7 +51,7 @@ flowchart TD;
     Feature1-- No, I want to protect -->ReferPPML([<em><strong>PPML</strong></em>]);
     Feature1-- Yes --> Feature3[General or Domain-specific application?];
     Feature2-- single node --->ReferNano([<em><strong>Nano</strong></em>]);
-    Feature2-- cluster -->Feature5[Scale which part?];
+    Feature2-- cluster -->Feature5[Which part to Scale?];
     Feature5-- data processing -->ReferOrcaData([<em><strong>Orca:Data </strong></em>]);
     Feature5-- training & inference -->ReferOrcaLearn([<em><strong>Orca:Learn </strong></em>]);
     Feature5-- tuning -->ReferOrcaAutoml([<em><strong>Orca:AutoML </strong></em>]);
