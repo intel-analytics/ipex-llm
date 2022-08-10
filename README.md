@@ -82,7 +82,7 @@ flowchart TD;
     
 ```
 
-Click the above buttons to find out more.
+Click the buttons in above chart to find out more.
 
 ---
 
