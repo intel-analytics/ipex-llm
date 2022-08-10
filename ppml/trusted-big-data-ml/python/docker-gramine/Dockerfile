@@ -157,7 +157,6 @@ ENV SPARK_DRIVER_BLOCK_MANAGER_PORT     10026
 ENV SPARK_DRIVER_IP                     $LOCAL_IP
 ENV SPARK_BLOCK_MANAGER_PORT            10025
 ENV TINI_VERSION                        $TINI_VERSION
-ENV PYTHONPATH                          /usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages
 ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
 
@@ -196,8 +195,8 @@ ADD ./python-pslinux.patch ./python-pslinux.patch
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt install software-properties-common -y && \
     add-apt-repository ppa:deadsnakes/ppa -y && \
-    apt-get install -y python3.7-minimal build-essential python3.7-distutils python3.7 python3-setuptools python3.7-dev python3-wheel python3-pip libpython3.7
-RUN rm /usr/bin/python3 && \
+    apt-get install -y python3.7-minimal build-essential python3.7-distutils python3.7 python3-setuptools python3.7-dev python3-wheel python3-pip libpython3.7 && \
+    rm /usr/bin/python3 && \
     ln -s /usr/bin/python3.7 /usr/bin/python3 && \
     pip3 install --upgrade pip && \
     pip install setuptools==58.4.0 && \
@@ -248,4 +247,5 @@ RUN rm /usr/bin/python3 && \
     chmod a+x /ppml/trusted-big-data-ml/clean.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/*
 
+ENV PYTHONPATH                          /usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages
 WORKDIR /ppml/trusted-big-data-ml
