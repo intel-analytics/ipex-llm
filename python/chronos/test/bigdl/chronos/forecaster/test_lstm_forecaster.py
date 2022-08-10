@@ -485,7 +485,7 @@ class TestChronosModelLSTMForecaster(TestCase):
                                     dropout=[0.1, 0.2],
                                     loss="mae",
                                     lr=0.01)
-        val_loss = forecaster.fit(train_data, val_data, validation_mode='earlystop', epochs=50)
+        val_loss = forecaster.fit(train_data, val_data, validation_mode='earlystop', epochs=10)
 
     def test_lstm_forecaster_fit_earlystop_patience(self):
         train_data, val_data, _ = create_data()
@@ -498,4 +498,16 @@ class TestChronosModelLSTMForecaster(TestCase):
                                     loss="mae",
                                     lr=0.01)
         val_loss = forecaster.fit(train_data, val_data, validation_mode='earlystop',
-                                  earlystop_patience=6, epochs=50)
+                                  earlystop_patience=6, epochs=10)
+
+    def test_lstm_forecaster_fit_best_val(self):
+        train_data, val_data, _ = create_data()
+        forecaster = LSTMForecaster(past_seq_len=24,
+                                    input_feature_num=2,
+                                    output_feature_num=2,
+                                    hidden_dim=[32, 16],
+                                    layer_num=2,
+                                    dropout=[0.1, 0.2],
+                                    loss="mae",
+                                    lr=0.01)
+        val_loss = forecaster.fit(train_data, val_data, validation_mode='best_epoch', epochs=10)
