@@ -2,7 +2,7 @@
 #table-1 tr, #table-1 td, #table-1 th  {
     border-width: 2px;
     border-style: solid;
-    border-color: transparent;
+    border-color: white;
     }
 
     #table-1 {
