@@ -57,7 +57,7 @@ public abstract class GrpcServerBase extends AbstractGrpcBase {
      * One Server could support multiple services.
      * @param args
      */
-    public GrpcServerBase(String[] args) throws Exception {
+    public GrpcServerBase(String[] args) {
         this.args = args;
     }
 
