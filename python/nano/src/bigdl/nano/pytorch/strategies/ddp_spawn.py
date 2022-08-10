@@ -61,7 +61,6 @@ from bigdl.nano.pytorch.strategies.ipex.ipex_api import ipex_device, \
     ipex_optimize, create_IPEXAccelerator, to_cpu
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 from bigdl.nano.utils.log4Error import invalidInputError
-from bigdl.nano.pytorch.strategies.ipex.ipex_strategy import IPEXBF16Precision
 
 import logging
 import warnings
@@ -183,6 +182,7 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
                              parallel_devices=parallel_devices,
                              cluster_environment=cluster_environment, **kwargs)
         elif use_ipex and enable_bf16 and 'precision_plugin' not in kwargs:
+            from bigdl.nano.pytorch.strategies.ipex.ipex_strategy import IPEXBF16Precision
             super().__init__(parallel_devices=parallel_devices,
                              cluster_environment=cluster_environment,
                              precision_plugin=IPEXBF16Precision(), **kwargs)

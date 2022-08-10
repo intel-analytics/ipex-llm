@@ -75,5 +75,6 @@ class TestPlugin(TestCase):
         trainer.fit(pl_model, self.data_loader, self.test_data_loader)
         trainer.test(pl_model, self.test_data_loader)
 
+
 if __name__ == '__main__':
     pytest.main([__file__])
