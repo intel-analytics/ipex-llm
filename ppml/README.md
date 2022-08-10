@@ -279,7 +279,7 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
 
 #### 1. create a PPMLContext
 
-1. create a PPMLContext with `appName`
+a. create a PPMLContext with `appName`
 
    This is the simplest way to create a `PPMLContext`. When you don't need to read/write encrypted files, you can use this way to create a `PPMLContext`.
 
@@ -293,7 +293,7 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
 
    If you want to read/write encrypted files, then you need to provide more information.
 
-2. create a PPMLContext with `appName` & `ppmlArgs`
+b. create a PPMLContext with `appName` & `ppmlArgs`
 
    `ppmlArgs` is ppml arguments in a Map, `ppmlArgs` varies according to the kind of Key Management Service (KMS) you are using. Key Management Service (KMS) is used to generate `primaryKey` and `dataKey` to encrypt/decrypt data. We provide 3 types of KMS ——SimpleKeyManagementService, EHSMKeyManagementService, AzureKeyManagementService.
 
@@ -349,7 +349,7 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
    val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
    ```
 
-3. create a PPMLContext with `sparkConf` & `appName` & `ppmlArgs`
+c. create a PPMLContext with `sparkConf` & `appName` & `ppmlArgs`
 
    If you need to set Spark configurations, you can provide a `SparkConf` with Spark configurations to create a `PPMLContext`.
 
@@ -404,11 +404,11 @@ sc.write(dataFrame = df, cryptoMode = AES_CBC_PKCS5PADDING)
 
 </details>
 
+<details><summary>expand to see the examples of reading/writing CSV, PARQUET, JSON and text file</summary>
+
 The following examples use `sc` to represent a initialized `PPMLContext`
 
-##### CSV
-
-Code Example
+read/write CSV file
 
 ```scala
 import com.intel.analytics.bigdl.ppml.PPMLContext
@@ -437,9 +437,7 @@ sc.write(df2, AES_CBC_PKCS5PADDING)
 .csv(encryptedOutputPath)
 ```
 
-##### PARQUET
-
-Code Example
+read/write PARQUET file
 
 ```scala
 import com.intel.analytics.bigdl.ppml.PPMLContext
@@ -466,9 +464,7 @@ sc.write(df2, AES_GCM_CTR_V1)
 .parquet(encryptedOutputPath)
 ```
 
-##### JSON
-
-Code Example
+read/write JSON file
 
 ```scala
 import com.intel.analytics.bigdl.ppml.PPMLContext
@@ -495,9 +491,7 @@ sc.write(df2, AES_CBC_PKCS5PADDING)
 .json(encryptedOutputPath)
 ```
 
-##### textfile
-
-Code Example
+read textfile
 
 ```scala
 import com.intel.analytics.bigdl.ppml.PPMLContext
@@ -511,6 +505,8 @@ val rdd1 = sc.textfile(plainCsvPath) // the default cryptoMode is PLAIN_TEXT
 val encryptedCsvPath = "/encrypted/csv/path"
 val rdd2 = sc.textfile(path=encryptedCsvPath, cryptoMode=AES_CBC_PKCS5PADDING)
 ```
+
+</details>
 
 ### 4.2 Develop App In Python
 
