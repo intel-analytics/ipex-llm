@@ -96,12 +96,11 @@ class IPEXBF16Precision(PrecisionPlugin):
         """Hook to run the optimizer step."""
         if type(optimizer) in IPEX_FUSED_OPTIMIZER_LIST:
             return super().optimizer_step(model, optimizer, optimizer_idx, closure, **kwargs)
-            
+
         if isinstance(model, pl.LightningModule):
             closure = partial(self._wrap_closure, model, optimizer, optimizer_idx, closure)
-        
+
         closure_result = closure()
         optimizer.step(closure=None, **kwargs)
-        
-        return closure_result
 
+        return closure_result
