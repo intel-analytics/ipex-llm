@@ -546,6 +546,30 @@ class TestTFEstimator(TestCase):
             print("predict result: ", res)
         finally:
             shutil.rmtree(temp_dir)
+    
+    def test_save_load_model_architecture(self):
+        config = {
+            "lr": 0.2
+        }
+        try:
+            model = simple_model(config)
+            model_path = os.path.join(tempfile.gettempdir(), str(uuid.uuid1()) + ".json")
+            with open(model_path, "wb") as f:
+                f.write(model.to_json())
+        
+            from bigdl.dllib.utils.file_utils import enable_hdfs_load
+
+            @enable_hdfs_load
+            def load_model_architecture(path):
+                with open(path, "rb") as f:
+                    model = tf.keras.models.model_from_json(f.read())
+                return model
+
+            model_load = load_model_architecture(model_path)
+            assert model.summary() == model_load.summary()
+        finally:
+            os.remove(model_path)
+
 
 
 if __name__ == "__main__":
