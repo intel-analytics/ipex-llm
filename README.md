@@ -82,7 +82,7 @@ flowchart TD;
     
 ```
 
-BigDL can make all above tasks easy. For more guidence, tutorials and demos, refer to our [Docs site](https://bigdl.readthedocs.io/).
+For more information, refer to our [Docs site](https://bigdl.readthedocs.io/).
 
 ---
 
