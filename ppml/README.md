@@ -13,8 +13,8 @@ Protecting privacy and confidentiality is critical for large-scale data analysis
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 4. Decrypt and Read Result](#step-4-decrypt-and-read-result) \
 &ensp;&ensp;[3.3 More BigDL PPML Examples](#33-more-bigdl-ppml-examples) \
 [4. Develop your own Big Data & AI applications with BigDL PPML](#4-develop-your-own-big-data--ai-applications-with-bigdl-ppml) \
-&ensp;&ensp;[4.1 Develop App In Scala](#41-develop-app-in-scala) \
-&ensp;&ensp;[4.2 Develop App In Python](#42-develop-app-in-python)
+&ensp;&ensp;[4.1 Develop App in Scala](#41-develop-app-in-scala) \
+&ensp;&ensp;[4.2 Develop App in Python](#42-develop-app-in-python)
 
 
 
@@ -275,7 +275,7 @@ First you need to create a `PPMLContext`, which wraps `SparkSession` and provide
 
 If you are familiar with Spark, you may find that the usage of `PPMLConext` is very similar to Spark.
 
-### 4.1 Develop App In Scala
+### 4.1 Develop App in Scala
 
 #### 1. create a PPMLContext
 
@@ -387,8 +387,6 @@ To write data, you should set the `write` mode:
 - `error`: Throw an exception if data or table already exists.
 - `errorifexists`: Throw an exception if data or table already exists.
 
-<details><summary>expand to see the example of CryptoMode and write mode</summary>
-
 ```scala
 import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, PLAIN_TEXT}
 
@@ -401,8 +399,6 @@ sc.write(dataFrame = df, cryptoMode = AES_CBC_PKCS5PADDING)
 .mode("overwrite")
 ...
 ```
-
-</details>
 
 <details><summary>expand to see the examples of reading/writing CSV, PARQUET, JSON and text file</summary>
 
@@ -508,6 +504,6 @@ val rdd2 = sc.textfile(path=encryptedCsvPath, cryptoMode=AES_CBC_PKCS5PADDING)
 
 </details>
 
-### 4.2 Develop App In Python
+### 4.2 Develop App in Python
 
 To use `PPMLContext` Python API, please refer to [PPMLContext Python API](https://github.com/intel-analytics/BigDL/blob/main/python/ppml/src/bigdl/ppml/README.md).
