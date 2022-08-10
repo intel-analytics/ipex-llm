@@ -59,7 +59,7 @@ flowchart TD;
     Feature3-- domain-specific -->Feature4[Which domain?];
     Feature4-- time series -->ReferChronos([<em><strong>Chronos</strong></em>]);
     Feature4-- recommendation system -->ReferFriesian([<em><strong>Friesian</strong></em>]);
-    Feature4-- others -->ReferContact([<em><strong>Contact Us &#x2709 !</strong></em>]);
+    Feature4-- others -->ReferContact([<em><strong>Contact Us &#x2709  </strong></em>]);
 
     
     click ReferNano "https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html" "Refer to Nano" _parent
