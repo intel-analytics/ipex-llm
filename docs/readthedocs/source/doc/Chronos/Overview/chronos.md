@@ -163,7 +163,7 @@ after you install the pytorch backend chronos.
 
         +++
 
-        Work In Progress
+        `How-to Guide <../Howto/index.html>`
 
     .. grid-item-card::
         :class-footer: sd-bg-light

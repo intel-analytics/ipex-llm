@@ -1,4 +1,4 @@
-# Chronos Windows User Guide
+# Use Chronos on Windows
 
 ## Step 1: Install WSL2
 

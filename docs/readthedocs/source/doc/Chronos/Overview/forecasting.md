@@ -28,6 +28,7 @@ There're three ways to do forecasting:
 | LSTM    | RR    | ✅             | ❌      | ✅    | ✅   | ✅           | ✅        | ✅          | ✅         | pytorch/tf2  |
 | Seq2Seq     | RR    | ✅             | ✅     | ✅     | ✅     | ✅           | ❌      | ✅          | ✅         | pytorch/tf2  |
 | TCN | RR    | ✅             | ✅     | ✅     | ✅     | ✅           | ✅      | ✅          | ✅         | pytorch  |
+| Autoformer | RR    | ✅             | ✅     | ✅     | ❌     | ❌           | ❌      | ❌          | ❌         | pytorch  |
 | NBeats | RR    | ❌             | ✅     | ❌     | ✅     | ✅           | ✅      | ❌          | ❌         | pytorch  |
 | MTNet   | RR    | ✅             | ❌    | ✅     | ❌     | ❌          | ❌         | ❌          | ✳️\*\*        | tf2 |
 | TCMF    | TS    | ✅             | ✅    | ✅      | ✳️\*     | ❌          | ❌         | ❌          | ❌         | pytorch  |
