@@ -277,79 +277,77 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
 
 ### 4.1 Develop App in Scala
 
-#### 1. create a PPMLContext
+#### 1. Create PPMLContext
 
-a. create a PPMLContext with `appName`
+- Create a PPMLContext with `appName`
+  
+    This is the simplest way to create a `PPMLContext`. When you don't need to read/write encrypted files, you can use this way to create a `PPMLContext`.
 
-   This is the simplest way to create a `PPMLContext`. When you don't need to read/write encrypted files, you can use this way to create a `PPMLContext`.
+    ```scala
+    import com.intel.analytics.bigdl.ppml.PPMLContext
 
-   Code Example
+    val sc = PPMLContext.initPPMLContext("MyApp")
+    ```
 
-   ```scala
-   import com.intel.analytics.bigdl.ppml.PPMLContext
-   
-   val sc = PPMLContext.initPPMLContext("MyApp")
-   ```
+    If you want to read/write encrypted files, then you need to provide more information.
 
-   If you want to read/write encrypted files, then you need to provide more information.
-
-b. create a PPMLContext with `appName` & `ppmlArgs`
+- Create a PPMLContext with `appName` & `ppmlArgs`
 
    `ppmlArgs` is ppml arguments in a Map, `ppmlArgs` varies according to the kind of Key Management Service (KMS) you are using. Key Management Service (KMS) is used to generate `primaryKey` and `dataKey` to encrypt/decrypt data. We provide 3 types of KMS ——SimpleKeyManagementService, EHSMKeyManagementService, AzureKeyManagementService.
 
    Refer to [KMS Utils](https://github.com/intel-analytics/BigDL/blob/main/ppml/services/kms-utils/docker/README.md) to use KMS to generate `primaryKey` and `dataKey`, then you are ready to create **PPMLContext** with `ppmlArgs`.
 
-   For `SimpleKeyManagementService`:
+   - For `SimpleKeyManagementService`:
 
-   ```scala
-   import com.intel.analytics.bigdl.ppml.PPMLContext
+     ```scala
+     import com.intel.analytics.bigdl.ppml.PPMLContext
    
-   val ppmlArgs: Map[String, String] = Map(
-          "spark.bigdl.kms.type" -> "SimpleKeyManagementService",
-          "spark.bigdl.kms.simple.id" -> your_app_id,
-          "spark.bigdl.kms.simple.key" -> your_app_key,
-          "spark.bigdl.kms.key.primary" -> /your/primary/key/path,
-          "spark.bigdl.kms.key.data" -> /your/data/key/path
-      )
+     val ppmlArgs: Map[String, String] = Map(
+            "spark.bigdl.kms.type" -> "SimpleKeyManagementService",
+            "spark.bigdl.kms.simple.id" -> your_app_id,
+            "spark.bigdl.kms.simple.key" -> your_app_key,
+            "spark.bigdl.kms.key.primary" -> /your/primary/key/path,
+            "spark.bigdl.kms.key.data" -> /your/data/key/path
+     )
    
-   val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
-   ```
+     val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
+     ```
    
-   For `EHSMKeyManagementService`:
+   - For `EHSMKeyManagementService`:
    
-   ```scala
-   import com.intel.analytics.bigdl.ppml.PPMLContext
-      
-   val ppmlArgs: Map[String, String] = Map(
-          "spark.bigdl.kms.type" -> "EHSMKeyManagementService",
-          "spark.bigdl.kms.ehs.ip" -> your_server_ip,
-          "spark.bigdl.kms.ehs.port" -> your_server_port,
-          "spark.bigdl.kms.ehs.id" -> your_app_id,
-          "spark.bigdl.kms.ehs.key" -> your_app_key,
-          "spark.bigdl.kms.key.primary" -> /your/primary/key/path,
-          "spark.bigdl.kms.key.data" -> /your/data/key/path
-   )
-      
-   val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
-   ```
-   
-   For `AzureKeyManagementService`
-   
-   ```scala
-   import com.intel.analytics.bigdl.ppml.PPMLContext
-      
-   val ppmlArgs: Map[String, String] = Map(
-          "spark.bigdl.kms.type" -> "AzureKeyManagementService",
-          "spark.bigdl.kms.azure.vault" -> key_vault_name,
-          "spark.bigdl.kms.azure.clientId" -> client_id,
-          "spark.bigdl.kms.key.primary" -> /your/primary/key/path,
-          "spark.bigdl.kms.key.data" -> /your/data/key/path
-      )
-      
-   val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
-   ```
+     ```scala
+     import com.intel.analytics.bigdl.ppml.PPMLContext
 
-c. create a PPMLContext with `sparkConf` & `appName` & `ppmlArgs`
+     val ppmlArgs: Map[String, String] = Map(
+	    "spark.bigdl.kms.type" -> "EHSMKeyManagementService",
+	    "spark.bigdl.kms.ehs.ip" -> your_server_ip,
+	    "spark.bigdl.kms.ehs.port" -> your_server_port,
+	    "spark.bigdl.kms.ehs.id" -> your_app_id,
+	    "spark.bigdl.kms.ehs.key" -> your_app_key,
+	    "spark.bigdl.kms.key.primary" -> /your/primary/key/path,
+	    "spark.bigdl.kms.key.data" -> /your/data/key/path
+     )
+
+     val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
+     ```
+   
+   - For `AzureKeyManagementService`
+   
+     ```scala
+     import com.intel.analytics.bigdl.ppml.PPMLContext
+      
+     val ppmlArgs: Map[String, String] = Map(
+            "spark.bigdl.kms.type" -> "AzureKeyManagementService",
+            "spark.bigdl.kms.azure.vault" -> key_vault_name,
+            "spark.bigdl.kms.azure.clientId" -> client_id,
+            "spark.bigdl.kms.key.primary" -> /your/primary/key/path,
+            "spark.bigdl.kms.key.data" -> /your/data/key/path
+     )
+      
+     val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
+     ```
+
+- Create a PPMLContext with `sparkConf` & `appName` & `ppmlArgs`
 
    If you need to set Spark configurations, you can provide a `SparkConf` with Spark configurations to create a `PPMLContext`.
 
