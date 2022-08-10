@@ -23,6 +23,51 @@ jobs:
         os: ["ubuntu-20.04"]
         python-version: ["3.7"]
     steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 8
+        uses: actions/setup-java@v3
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+          #server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
+          settings-path: ${{ github.workspace }} # location for the settings.xml file
+
+      - uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: maven-
+
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v4.4
+        with:
+          maven-version: 3.8.2
+
+      - name: Set up Maven Settings
+        uses: s4u/maven-settings-action@v2.6.0
+        with:
+          sonatypeSnapshots: true
+          apacheSnapshots: true
+          servers: |
+            [{
+              "id": "central",
+              "configuration": {
+                "httpConfiguration": {
+                  "all": {
+                    "connectionTimeout": "3600000",
+                    "readTimeout": "3600000"
+                    }    
+                  }
+                }
+            },{
+              "id": "ossrh",
+              "username": "${{ secrets.OSSRH_USERNAME }}",
+              "password": "${{ secrets.OSSRH_PASSWORD }}",
+              "configuration": {
+                "timeout": "3600000"
+              }
+            }]
+
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
@@ -34,19 +79,6 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --upgrade setuptools==58.0.4
           python -m pip install --upgrade wheel
-      
-      - name: Create environment variables
-        run: |
-          export _JAVA_OPTIONS='-XX:MaxPermSize=3G -Xmx10G'
-          export MAVEN_OPTS='-XX:ReservedCodeCacheSize=512m -XX:MaxPermSize=3G -Xmx10G'
-          export no_proxy='10.239.45.10:8081,10.112.231.51'
-          export http_proxy='$HTTP_PROXY'
-          export https_proxy='$HTTPS_PROXY'
-          export JAVA_HOME=/opt/work/jdk8
-          export CLASSPATH=.:${JAVA_HOME}/lib:${JAVA_HOME}/jre/lib:${JAVA_HOME}/lib/tools.jar:${JAVA_HOME}/lib/dt.jar
-          export PATH=${JAVA_HOME}/bin/:${JAVA_HOME}/jre/bin:${PATH}
-          export PATH=/opt/work/apache-maven-3.6.3/bin:$PATH 
-          export FTP_URI=ftp://zoo:1234qwer@10.112.231.51
 
       - name: Run Chronos python test
         shell: bash
