@@ -12,7 +12,7 @@ You can use _Chronos_ to do:
 - **Speed up or tune your customized time-series model** (using TSTrainer and [AutoTS](./forecasting.html#use-autots-pipeline))
 
 ---
-### **2. Install(updated)**
+### **2. Install**
 
 ```eval_rst
 .. raw:: html
