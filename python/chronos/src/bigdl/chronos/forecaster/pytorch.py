@@ -15,8 +15,9 @@
 #
 
 from bigdl.chronos.utils import LazyImport
-TCNForecaster = LazyImport('bigdl.chronos.forecaster.tcn_forecaster.TCNForecaster')
-LSTMForecaster= LazyImport('bigdl.chronos.forecaster.lstm_forecaster.LSTMForecaster')
-NBeatsForecaster= LazyImport('bigdl.chronos.forecaster.nbeats_forecaster.NBeatsForecaster')
-Seq2SeqForecaster= LazyImport('bigdl.chronos.forecaster.seq2seq_forecaster.Seq2SeqForecaster')
-AutoformerForecaster= LazyImport('bigdl.chronos.forecaster.autoformer_forecaster.AutoformerForecaster')
+PREFIXNAME = 'bigdl.chronos.forecaster.'
+TCNForecaster = LazyImport(PREFIXNAME+'tcn_forecaster.TCNForecaster')
+LSTMForecaster = LazyImport(PREFIXNAME+'lstm_forecaster.LSTMForecaster')
+NBeatsForecaster = LazyImport(PREFIXNAME+'nbeats_forecaster.NBeatsForecaster')
+Seq2SeqForecaster = LazyImport(PREFIXNAME+'seq2seq_forecaster.Seq2SeqForecaster')
+AutoformerForecaster = LazyImport(PREFIXNAME+"autoformer_forecaster.AutoformerForecaster")
