@@ -160,7 +160,7 @@ def enable_hdfs_load(load_func):
                                          stdout=subprocess.PIPE).communicate()[0]
             os.environ["CLASSPATH"] = classpath.decode("utf-8")
             import pyarrow.fs as pafs
-            if "isdir" in kwargs and kwargs["isdir"]:
+            if not pafs.FileInfo(path).is_file: 
                 os.mkdir(temp_path)
             pafs.copy_files(path, temp_path)
             try:
