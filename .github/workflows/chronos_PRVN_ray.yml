@@ -70,8 +70,6 @@ jobs:
       - name: Run Chronos python test
         shell: bash
         run: |
-          $CONDA/bin/conda create -n chronos-prvn -y python==3.7 setuptools==58.0.4
-          source $CONDA/bin/activate chronos-prvn
           pip config set global.index-url https://pypi.org/simple
           pip install pytest==5.4.1
           pip install prophet==1.1
@@ -87,7 +85,6 @@ jobs:
           pip install onnx==1.11.0
           sudo apt-get update
           sudo apt-get install patchelf          
-          $CONDA/bin/conda info
           bash python/dev/release_default_linux_spark246.sh default false true true
           bash python/nano/dev/build_and_install.sh linux default false pytorch --force-reinstall --no-deps -U
           whl_name=`ls python/nano/dist/`
@@ -99,7 +96,5 @@ jobs:
           python --version
           pip install scipy==1.5.4
           bash python/chronos/dev/test/run-pytests.sh
-          source $CONDA/bin/deactivate
-          $CONDA/bin/conda remove -n chronos-prvn -y --all
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
