@@ -100,6 +100,7 @@ public class FeatureServer extends GrpcServerBase {
      */
     public static void main(String[] args) throws Exception {
         FeatureServer featureServer = new FeatureServer(args);
+        featureServer.parseConfig();
         featureServer.build();
         if (Utils.runMonitor()) {
             new HTTPServer.Builder()
