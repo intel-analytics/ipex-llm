@@ -16,11 +16,10 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   chronos-PRVN-ray:
-    runs-on: ${{ matrix.os }}
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
     strategy:
       fail-fast: false
       matrix:
-        os: ["self-hosted, Gondolin, ubuntu-20.04-lts"]
         python-version: ["3.7"]
     steps:
       - uses: actions/checkout@v3
