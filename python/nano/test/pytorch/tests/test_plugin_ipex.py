@@ -64,6 +64,16 @@ class TestPlugin(TestCase):
         trainer.fit(pl_model, self.data_loader, self.test_data_loader)
         trainer.test(pl_model, self.test_data_loader)
 
+    def test_trainer_subprocess_plugin_bf16(self):
+        pl_model = LightningModule(
+            self.model, self.loss, self.optimizer,
+            metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
+        )
+        trainer = Trainer(num_processes=2, distributed_backend="subprocess",
+                          max_epochs=4, use_ipex=True, enable_bf16=True,
+                          callbacks=[CheckIPEXCallback()])
+        trainer.fit(pl_model, self.data_loader, self.test_data_loader)
+        trainer.test(pl_model, self.test_data_loader)
 
 if __name__ == '__main__':
     pytest.main([__file__])
