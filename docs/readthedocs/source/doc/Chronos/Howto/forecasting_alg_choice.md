@@ -4,7 +4,7 @@ How to choose a forecasting model among so many built-in models (or build one by
 
 The flowchart below is designed to guide our users which forecasting model to try on your own data. Click on the blocks in the chart below to see its documentation/examples.
 
-```
+```mermaid
 flowchart TD
     StartPoint[I want to build a forecasting model]
     StartPoint-- always start from --> TCN[TCNForecaster]
