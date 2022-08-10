@@ -1,4 +1,4 @@
-name: Nightly Build Docker Publish BigDL-PPML-test
+name: Nightly Build Docker Publish BigDL-PPML
 
 on:
   # schedule:
