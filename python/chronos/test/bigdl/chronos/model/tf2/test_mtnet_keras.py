@@ -22,9 +22,8 @@ from bigdl.chronos.model.tf2.MTNet_keras import MTNetKeras
 from bigdl.chronos.data import TSDataset
 import pandas as pd
 import numpy as np
-import tensorflow as tf
 from numpy.testing import assert_array_almost_equal
-from ... import op_tf2
+import tensorflow as tf
 
 
 def create_data():
@@ -57,6 +56,7 @@ def create_data():
 class TestMTNetKeras(TestCase):
 
     def setup_method(self, method):
+        import tensorflow as tf
         tf.keras.backend.clear_session()
         train_data, test_data = create_data()
         self.x_train, y_train = train_data.to_numpy()
