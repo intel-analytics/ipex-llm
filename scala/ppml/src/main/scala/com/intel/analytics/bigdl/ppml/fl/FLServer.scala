@@ -50,6 +50,8 @@ class FLServer private[ppml](val _args: Array[String] = null) extends GrpcServer
   private val logger = LogManager.getLogger(classOf[FLServer])
   configPath = "ppml-conf.yaml"
   var clientNum: Int = 1
+  val fgBoostConfig = new FLConfig()
+  parseConfig()
 
   def setClientNum(clientNum: Int): Unit = {
     this.clientNum = clientNum
@@ -58,7 +60,6 @@ class FLServer private[ppml](val _args: Array[String] = null) extends GrpcServer
   override def parseConfig(): Unit = {
     val flHelper = getConfigFromYaml(classOf[FLHelper], configPath)
     // overwrite the current config if there exists in config file
-    val fgBoostConfig = new FLConfig()
     if (flHelper != null) {
       port = flHelper.serverPort
       clientNum = flHelper.clientNum
@@ -66,9 +67,18 @@ class FLServer private[ppml](val _args: Array[String] = null) extends GrpcServer
       privateKeyFilePath = flHelper.privateKeyFilePath
       fgBoostConfig.setModelPath(flHelper.fgBoostServerModelPath)
     }
+  }
 
-    // start all services without providing service list
-    // start all services without providing service list
+  override def build(): Unit = {
+    addService()
+    super.build()
+  }
+
+  override def buildWithTls(): Unit = {
+    addService()
+    super.buildWithTls()
+  }
+  def addService(): Unit = {
     serverServices.add(new PSIServiceImpl(clientNum))
     serverServices.add(new NNServiceImpl(clientNum))
     serverServices.add(new FGBoostServiceImpl(clientNum, fgBoostConfig))
