@@ -444,7 +444,7 @@ xmlenc:xmlenc
 :llvm
 :re2
 com.esotericsoftware.reflectasm:reflectasm
-net.java.dev.msv:msv
+net.java.dev.msv:xsdlib
 org.xmlpull:xpp3
 
 CC0-1.0
