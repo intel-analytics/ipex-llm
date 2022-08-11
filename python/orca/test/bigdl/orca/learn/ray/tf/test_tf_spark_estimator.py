@@ -551,6 +551,7 @@ class TestTFEstimator(TestCase):
         config = {
             "lr": 0.2
         }
+        import uuid
         model_path = os.path.join(tempfile.gettempdir(), str(uuid.uuid1()) + ".json")
         try:
             model = simple_model(config)
