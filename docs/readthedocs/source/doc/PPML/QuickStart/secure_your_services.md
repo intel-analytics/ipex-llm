@@ -10,7 +10,7 @@ Almost all Big Data & AI applications are built upon large scale dataset, we can
  
 Big Data & AI applications are mainly distributed applications, which means we need to use lots of nodes to run our applications and get jobs done. During that period, not just control flows (command used to control applications running on different nodes), data partitions (a division of data) may also go through different nodes. So, we need to ensure all network traffic is fully protected.
  
-Talking about secure data transit, TLS is commonly used. The server would provide a private key and certificate chain. To make sure it is fully secured, a complete certificate chain is needed (with two or more certificates built). In addition, a SSL/TLS protocol and secure cipher tools would be used. It is also recommended to use forward secrecy and strong key exchange. However, it is general that secure approaches would bring some performance problems. To mitigate these problems, a series of approaches are available, including session resumption, cache, etc. For the details of this section, please see https://github.com/ssllabs/research/wiki/SSL-and-TLS-Deployment-Best-Practices.
+Talking about secure data transit, TLS is commonly used. The server would provide a private key and certificate chain. To make sure it is fully secured, a complete certificate chain is needed (with two or more certificates built). In addition, a SSL/TLS protocol and secure cipher tools would be used. It is also recommended to use forward secrecy and strong key exchange. However, it is general that secure approaches would bring some performance problems. To mitigate these problems, a series of approaches are available, including session resumption, cache, etc. For the details of this section, please see [SSL-and-TLS-Deployment-Best-Practices](https://github.com/ssllabs/research/wiki/SSL-and-TLS-Deployment-Best-Practices).
  
 ### Secure Storage (in storage)
  
@@ -26,30 +26,19 @@ WARNING: This example lists minimum security features that should be enabled for
  
 ### [HDFS Security](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/SecureMode.html)
  
-Please ensure authentication and [access control](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/HdfsPermissionsGuide.html) is correctly configured. Note that HDFS authentication relies on [Kerberos](http://web.mit.edu/kerberos/krb5-1.12/doc/user/user_commands/kinit.html).
- 
+Please ensure authentication and [access control](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/HdfsPermissionsGuide.html) is correctly configured. Note that HDFS authentication relies on [Kerberos](http://web.mit.edu/kerberos/krb5-1.12/doc/user/user_commands/kinit.html). 
 Enable [Data_confidentiality](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/SecureMode.html#Data_confidentiality) for network. This will protect PRC, block transfer and http.
- 
 When storing sensitive data in HDFS, please enable [Transparent Encryption](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/TransparentEncryption.html) in HDFS. This feature ensures all data blocks are encrypted on data nodes.
  
 ### [Spark Security](https://spark.apache.org/docs/latest/security.html)
  
-Please ensure [network crypto](https://spark.apache.org/docs/latest/security.html#encryption) and [spark.authenticate](https://spark.apache.org/docs/latest/security.html#spark-rpc-communication-protocol-between-spark-processes) are enabled.
- 
-Enable [Local Storage Encryption](https://spark.apache.org/docs/latest/security.html#local-storage-encryption) to protect local temp data.
- 
-Enable [SSL](https://spark.apache.org/docs/latest/security.html#ssl-configuration) to secure Spark Webui.
- 
-You can enable [Kerberos related settings](https://spark.apache.org/docs/latest/security.html#kerberos) if your have Kerberos service.
- 
+Please ensure [network crypto](https://spark.apache.org/docs/latest/security.html#encryption) and [spark.authenticate](https://spark.apache.org/docs/latest/security.html#spark-rpc-communication-protocol-between-spark-processes) are enabled. 
+Enable [Local Storage Encryption](https://spark.apache.org/docs/latest/security.html#local-storage-encryption) to protect local temp data. 
+Enable [SSL](https://spark.apache.org/docs/latest/security.html#ssl-configuration) to secure Spark Webui. 
+You can enable [Kerberos related settings](https://spark.apache.org/docs/latest/security.html#kerberos) if your have Kerberos service. 
 ### [Kubernetes Security](https://kubernetes.io/docs/concepts/security/)
  
-As a huge resource management service, Kubernetes has lots of security features.
- 
-Enable [RBAC](https://kubernetes.io/docs/concepts/security/rbac-good-practices/) to ensure that cluster users and workloads have only the access to resources required to execute their roles.
- 
-Enable [Encrypting Secret Data at Rest](https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/) to protect data in rest API.
- 
+As a huge resource management service, Kubernetes has lots of security features. 
+Enable [RBAC](https://kubernetes.io/docs/concepts/security/rbac-good-practices/) to ensure that cluster users and workloads have only the access to resources required to execute their roles. 
+Enable [Encrypting Secret Data at Rest](https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/) to protect data in rest API. 
 When mounting key & sensitive configurations into pods, use [Kubernetes Secret](https://kubernetes.io/docs/concepts/configuration/secret/).
- 
-
