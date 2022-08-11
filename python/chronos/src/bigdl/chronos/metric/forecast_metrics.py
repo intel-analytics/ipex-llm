@@ -153,7 +153,7 @@ class Evaluator(object):
             >>> # {"p50": 3.853, "p90": 3.881, "p95": 3.933, "p99": 4.107}
         """
         invalidInputError(isinstance(num_running, int), "num_running type must be int, "
-                              f"but found {type(num_running)}.")
+                          f"but found {type(num_running)}.")
         if num_running < 0:
             invalidInputError(False, "num_running value must be positive, "
                               f"but found {num_running}.")
