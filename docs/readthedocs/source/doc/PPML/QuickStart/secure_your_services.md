@@ -1,7 +1,5 @@
-# Secure Your Services
- 
-This document is a gentle reminder for enabling security & privacy features for your services. To avoid privacy & security issues during deployment, we recommend Developer/Admin to go through this document, which suits users/customers who want to apply BigDL into their production environment (not just for PPML).
- 
+# Secure Your Services 
+This document is a gentle reminder for enabling security & privacy features for your services. To avoid privacy & security issues during deployment, we recommend Developer/Admin to go through this document, which suits users/customers who want to apply BigDL into their production environment (not just for PPML). 
 ## Security in data lifecycle
 Almost all Big Data & AI applications are built upon large scale dataset, we can simply go through security key steps in the data lifecycle. That is data protection in transit, in storage, and in use.
 ### Secure Network (in transit)
