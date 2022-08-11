@@ -1,4 +1,4 @@
-name: Manually Build Docker Publish BigDL-PPML
+name: Nightly Build Docker Publish BigDL-PPML
 
 on:
   workflow_dispatch:
