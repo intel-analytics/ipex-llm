@@ -22,7 +22,6 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.sql.api.python.PythonSQLUtils
 import org.apache.spark.sql.execution.arrow.ArrowConverters
-import org.apache.spark.sql.{Column, DataFrame, Row, SparkSession}
 
 import scala.reflect.ClassTag
 

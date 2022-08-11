@@ -515,93 +515,43 @@ class SparkXShards(XShards):
                     name, from_arrow_type(field.type), nullable=field.nullable
                 )
             schema = struct
-        # arrow_types = [to_arrow_type(f.dataType) for f in schema.fields]
-        #
-        # arrow_data = [[(c, t) for (_, c), t in zip(pdf.iteritems(), arrow_types)]]
-        #
-        # timezone = "America/Los_Angeles"
-        # col_by_name = True  # col by name only applies to StructType columns, can't happen here
-        # # # ser = ArrowStreamPandasSerializer(timezone, safecheck, col_by_name)
-        # safecheck = False
-        # ser = ArrowStreamPandasSerializer(timezone, safecheck, col_by_name)
-        #
-        # def reader_func(temp_filename):
-        #     return SparkContext._jvm.PythonSQLUtils.readArrowStreamFromFile(temp_filename)
-        #
-        # tempFile = NamedTemporaryFile(delete=False, dir="/tmp/test/")
-        # try:
-        #     try:
-        #         ser.dump_stream(arrow_data, tempFile)
-        #     finally:
-        #         tempFile.close()
-        #         t = SparkContext._jvm.PythonSQLUtils.readArrowStreamFromFile(tempFile.name)
-        #         ttt = 0
-        #         # return reader_func(tempFile.name)
-        #         # return [0]
-        # finally:
-        #     # we eagerly reads the file so we can delete right after.
-        #     os.unlink(tempFile.name)
+        sqlContext = get_spark_sql_context(get_spark_context())
+        timezone = sqlContext._conf.sessionLocalTimeZone()
 
-        t = 0
         def f2(iter):
             for pdf in iter:
                 np_records = pdf.to_records(index=False)
                 return [r.tolist() for r in np_records]
 
-        def f3(iter):
+        def f(iter):
             for pdf in iter:
-                pdf = pdf.iloc[:, 2:-1]
-                schema = [str(x) if not isinstance(x, str) else x for x in pdf.columns]
-                if isinstance(schema, (list, tuple)):
-                    arrow_schema = pa.Schema.from_pandas(pdf, preserve_index=False)
-                    struct = StructType()
-                    for name, field in zip(schema, arrow_schema):
-                        struct.add(
-                            name, from_arrow_type(field.type), nullable=field.nullable
-                        )
-                    schema = struct
+                SparkContext._ensure_initialized()
+                jvm = SparkContext._jvm
                 arrow_types = [to_arrow_type(f.dataType) for f in schema.fields]
 
                 arrow_data = [[(c, t) for (_, c), t in zip(pdf.iteritems(), arrow_types)]]
-
-                SparkContext._ensure_initialized()
-                jvm = SparkContext._jvm
-                # timezone = SparkContext.conf.sessionLocalTimeZone()
-                timezone = "America/Los_Angeles"
                 col_by_name = True  # col by name only applies to StructType columns, can't happen here
-                # # ser = ArrowStreamPandasSerializer(timezone, safecheck, col_by_name)
                 safecheck = False
                 ser = ArrowStreamPandasSerializer(timezone, safecheck, col_by_name)
 
                 def reader_func(temp_filename):
-                    return jvm.PythonSQLUtils.readArrowStreamFromFile(temp_filename)
+                    return jvm.PythonOrcaSQLUtils.ofFloat().readArrowStreamFromFile(temp_filename)
 
-                # tempFile = NamedTemporaryFile(delete=False, dir=self._temp_dir)
                 tempFile = NamedTemporaryFile(delete=False, dir="/tmp/test/")
                 try:
                     try:
                         ser.dump_stream(arrow_data, tempFile)
                     finally:
                         tempFile.close()
-                        return jvm.PythonOrcaSQLUtils.ofFloat().readArrowStreamFromFile(tempFile.name)
-                        # return reader_func(tempFile.name)
-                        # return [0]
+                    return reader_func(tempFile.name)
                 finally:
-                    # we eagerly reads the file so we can delete right after.
                     os.unlink(tempFile.name)
-                    # t=0
 
-        jiter = self.rdd.mapPartitions(f3)
-        # jiter.count()
+        jiter = self.rdd.mapPartitions(f)
 
         from bigdl.dllib.utils.file_utils import callZooFunc
-        sqlContext = get_spark_sql_context(get_spark_context())
-        jdf = callZooFunc("float", "orcaToDataFrame", jiter, schema.json(), sqlContext)
-        # jdf = self._jvm.SQLUtils.toDataFrame(jiter, schema.json(), jsparkSession)
-
-        from pyspark.sql.dataframe import DataFrame
-        df = DataFrame(jdf, sqlContext)
-        df._schema = schema
+        df = callZooFunc("float", "orcaToDataFrame", jiter, schema.json(), sqlContext)
+        df.show()
         return df
 
     def __len__(self):
