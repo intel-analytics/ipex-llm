@@ -78,7 +78,7 @@ jobs:
         pip install albumentations
         pip install scikit-learn==0.22.2.post1
         pip install opencv-python
-        pip instal matplotlib
+        pip install matplotlib
         pip install tqdm
         pip install protobuf==3.15.3
         pip install pandas
