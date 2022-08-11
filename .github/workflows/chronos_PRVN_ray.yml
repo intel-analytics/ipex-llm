@@ -84,12 +84,6 @@ jobs:
       - name: Run Chronos python test
         shell: bash
         run: |
-          bash python/dev/release_default_linux_spark246.sh default true false
-          
-          if [ -d python/dllib/src/dist/ ]; then
-            echo 'exist'
-          else
-            echo 'not exist'
-          fi
+          bash python/dev/release_default_linux_spark246.sh default false false
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
