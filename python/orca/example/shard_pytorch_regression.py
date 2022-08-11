@@ -67,24 +67,31 @@ init_orca_context(memory="4g")
 path = '/home/ding/data/new_ionosphere.csv'
 # path = '/home/ding/data/toy.csv'
 data_shard = bigdl.orca.data.pandas.read_csv(path)
+import time
+start = time.time()
+df = data_shard.to_spark_df()
+# df = data_shard.to_spark_df_without_arrow()
+df.count()
+end = time.time()
+print(f"to_spark_df takes {end-start} seconds")
 
-column = data_shard.get_schema()['columns']
-
-label_encoder = StringIndexer(inputCol=column[-1])
-data_shard = label_encoder.fit_transform(data_shard)
-
-model = MLP(34)
-criterion = BCELoss()
-optimizer = SGD(model.parameters(), lr=0.01, momentum=0.9)
-
-orca_estimator = Estimator.from_torch(model=model,
-                                      optimizer=optimizer,
-                                      loss=criterion,
-                                      metrics=[Accuracy()],
-                                      backend="bigdl")
-
-data_shard = shards_pd_df_to_shards_dic(data_shard,
-                                        featureCols=list(column[:-1]),
-                                        labelCol=column[-1])
-
-orca_estimator.fit(data=data_shard, epochs=8, batch_size=4)
+# column = data_shard.get_schema()['columns']
+#
+# label_encoder = StringIndexer(inputCol=column[-1])
+# data_shard = label_encoder.fit_transform(data_shard)
+#
+# model = MLP(34)
+# criterion = BCELoss()
+# optimizer = SGD(model.parameters(), lr=0.01, momentum=0.9)
+#
+# orca_estimator = Estimator.from_torch(model=model,
+#                                       optimizer=optimizer,
+#                                       loss=criterion,
+#                                       metrics=[Accuracy()],
+#                                       backend="bigdl")
+#
+# data_shard = shards_pd_df_to_shards_dic(data_shard,
+#                                         featureCols=list(column[:-1]),
+#                                         labelCol=column[-1])
+#
+# orca_estimator.fit(data=data_shard, epochs=8, batch_size=4)

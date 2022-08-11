@@ -475,7 +475,7 @@ class SparkXShards(XShards):
                               "The two SparkXShards should have the same number of elements "
                               "in each partition")
 
-    def to_spark_df2(self):
+    def to_spark_df_without_arrow(self):
         if self._get_class_name() != 'pandas.core.frame.DataFrame':
             invalidInputError(False,
                               "Currently only support to_spark_df on XShards of Pandas DataFrame")
@@ -496,7 +496,6 @@ class SparkXShards(XShards):
                               "Currently only support to_spark_df on XShards of Pandas DataFrame")
 
         import pyarrow as pa
-        from pyspark.sql.pandas.serializers import ArrowStreamPandasSerializer
         from pyspark.sql.pandas.types import from_arrow_type, to_arrow_type
 
         from pyspark.sql.types import StructType
@@ -505,23 +504,28 @@ class SparkXShards(XShards):
         from pyspark.context import SparkContext
         import os
 
-        pdf = self.rdd.take(1)[0]
-        schema = [str(x) if not isinstance(x, str) else x for x in pdf.columns]
-        if isinstance(schema, (list, tuple)):
-            arrow_schema = pa.Schema.from_pandas(pdf, preserve_index=False)
-            struct = StructType()
-            for name, field in zip(schema, arrow_schema):
-                struct.add(
-                    name, from_arrow_type(field.type), nullable=field.nullable
-                )
-            schema = struct
+        def getSchemaStructType(iter):
+            for pdf in iter:
+                schema = [str(x) if not isinstance(x, str) else x for x in pdf.columns]
+                if isinstance(schema, (list, tuple)):
+                    arrow_schema = pa.Schema.from_pandas(pdf, preserve_index=False)
+                    struct = StructType()
+                    for name, field in zip(schema, arrow_schema):
+                        struct.add(
+                            name, from_arrow_type(field.type), nullable=field.nullable
+                        )
+                    schema = struct
+                    return [schema]
+
+        schema = self.rdd.mapPartitions(getSchemaStructType).first()
         sqlContext = get_spark_sql_context(get_spark_context())
         timezone = sqlContext._conf.sessionLocalTimeZone()
-
-        def f2(iter):
-            for pdf in iter:
-                np_records = pdf.to_records(index=False)
-                return [r.tolist() for r in np_records]
+        # create temp dir
+        jvm = SparkContext._jvm
+        local_dir = jvm.org.apache.spark.util.Utils.getLocalDir(sqlContext._jsc.sc().conf())
+        tmpFile = jvm.org.apache.spark.util.Utils.createTempDir(
+            local_dir, "pyspark"
+        ).getAbsolutePath()
 
         def f(iter):
             for pdf in iter:
@@ -537,7 +541,7 @@ class SparkXShards(XShards):
                 def reader_func(temp_filename):
                     return jvm.PythonOrcaSQLUtils.ofFloat().readArrowStreamFromFile(temp_filename)
 
-                tempFile = NamedTemporaryFile(delete=False, dir="/tmp/test/")
+                tempFile = NamedTemporaryFile(delete=False, dir=tmpFile)
                 try:
                     try:
                         ser.dump_stream(arrow_data, tempFile)
@@ -551,7 +555,6 @@ class SparkXShards(XShards):
 
         from bigdl.dllib.utils.file_utils import callZooFunc
         df = callZooFunc("float", "orcaToDataFrame", jiter, schema.json(), sqlContext)
-        df.show()
         return df
 
     def __len__(self):
