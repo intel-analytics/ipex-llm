@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: bigdl-notebook
-  namespace: default
+  namespace: bigdl
 spec:
   replicas: 1
   selector:
@@ -16,7 +16,7 @@ spec:
         appType: bigdl
     spec:
       containers:
-        - image: intelanalytics/bigdl:default
+        - image: intelanalytics/bigdl-spark-3.1.2:ctc-client-1.0
           ports:
             - name: jupyter-address
               containerPort: 8888
@@ -47,7 +47,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: bigdl-notebook
-  namespace: default
+  namespace: bigdl
   labels:
     app: bigdl-notebook
 spec:
