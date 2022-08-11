@@ -64,6 +64,7 @@ jobs:
       uses: scacap/action-surefire-report@v1
       with:
         check_name: Example mvn Report
+        github_token: ${{ secrets.GITHUB_TOKEN }}
         report_paths: scala/dllib/target/surefire-reports/*.xml
 #     - name: Test Report
 #       uses: dorny/test-reporter@v1
