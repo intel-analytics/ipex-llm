@@ -13,7 +13,7 @@ on:
 
 jobs:
   fossa-scan:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Esgaroth, ubuntu-20.04-lts]
     steps:
       - name: "Checkout Code"
         uses: actions/checkout@v3
@@ -21,10 +21,10 @@ jobs:
       - name: "Run FOSSA Scan"
         uses: fossas/fossa-action@main # Use a specific version if locking is preferred
         with:
-          api-key: ${{ secrets.FOSSAAPIKEY }}
+          api-key: ${FOSSAAPIKEY}
           
       - name: "Run FOSSA Test"
         uses: fossas/fossa-action@main # Use a specific version if locking is preferred
         with:
-          api-key: ${{ secrets.FOSSAAPIKEY }}
+          api-key: ${FOSSAAPIKEY}
           run-tests: true
