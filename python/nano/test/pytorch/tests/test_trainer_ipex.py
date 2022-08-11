@@ -15,6 +15,7 @@
 #
 
 
+from gc import callbacks
 import os
 from unittest import TestCase
 
@@ -22,6 +23,7 @@ import pytest
 import torch
 from torch.optim.lr_scheduler import OneCycleLR
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
+from test.pytorch.utils._train_ipex_callback import CheckIPEXFusedStepCallback
 from torch import nn
 
 from bigdl.nano.pytorch import Trainer
@@ -68,7 +70,8 @@ class TestTrainer(TestCase):
         trainer.fit(pl_model, self.train_loader)
 
     def test_trainer_ipex_bf16(self):
-        trainer = Trainer(max_epochs=max_epochs, use_ipex=True, enable_bf16=True)
+        trainer = Trainer(max_epochs=max_epochs, use_ipex=True, precision="bf16",
+                          callbacks=[CheckIPEXFusedStepCallback()])
 
         # use_ipex=True will perform inplace optimization
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
@@ -87,14 +90,16 @@ class TestTrainer(TestCase):
         pl_model = Trainer.compile(model, loss, optimizer, scheduler_dict)
         trainer.fit(pl_model, self.train_loader)
         trainer.test(pl_model, self.train_loader)
-        
+
         if TORCH_VERSION_LESS_1_10:
             import intel_pytorch_extension as ipex
+            # Diable IPEX AMP
             # Avoid affecting other tests
             ipex.enable_auto_mixed_precision(None)
 
     def test_trainer_ipex_bf16_unspport_optim(self):
-        trainer = Trainer(max_epochs=max_epochs, use_ipex=True, enable_bf16=True)
+        trainer = Trainer(max_epochs=max_epochs, use_ipex=True, precision="bf16",
+                          callbacks=[CheckIPEXFusedStepCallback()])
 
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
         optimizer = torch.optim.AdamW(model.parameters(), lr=0.01, weight_decay=5e-4)
@@ -115,6 +120,7 @@ class TestTrainer(TestCase):
 
         if TORCH_VERSION_LESS_1_10:
             import intel_pytorch_extension as ipex
+            # Diable IPEX AMP
             # Avoid affecting other tests
             ipex.enable_auto_mixed_precision(None)
 

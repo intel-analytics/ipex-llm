@@ -57,7 +57,6 @@ class Trainer(pl.Trainer):
 
     def __init__(self, num_processes: int = 1,
                  use_ipex: bool = False,
-                 enable_bf16=False,
                  distributed_backend="subprocess",
                  cpu_for_each_process: Optional[List[List[int]]] = None,
                  use_hpo=False,
@@ -110,6 +109,12 @@ class Trainer(pl.Trainer):
             use_ipex = False
 
         self.use_ipex = use_ipex
+
+        enable_bf16 = False
+
+        if self.use_ipex and kwargs.get('precision', None) == "bf16":
+            # No need to set precision to 32, because Strategy > Accelerator/precision/plugins
+            enable_bf16 = True
 
         if num_processes == 1:
             from bigdl.nano.pytorch.strategies import create_IPEXStrategy

@@ -16,16 +16,18 @@
 
 from contextlib import contextmanager
 from functools import partial
+from logging import warning
 from typing import Any, Union, Callable
 
 import torch
 from torch.nn import Module
-from torch.optim import Optimizer
+from torch.optim import Optimizer, LBFGS
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_12
 
 import pytorch_lightning as pl
 from pytorch_lightning.strategies import SingleDeviceStrategy
 from pytorch_lightning.accelerators.accelerator import Accelerator
-from pytorch_lightning.plugins.precision import PrecisionPlugin
+from pytorch_lightning.plugins.precision import PrecisionPlugin, NativeMixedPrecisionPlugin
 
 from bigdl.nano.utils.log4Error import invalidInputError
 import intel_extension_for_pytorch as ipex
@@ -55,7 +57,6 @@ class IPEXStrategy(SingleDeviceStrategy):
 
         if enable_bf16 and isinstance(precision_plugin, PrecisionPlugin):
             precision_plugin = IPEXBF16Precision()
-
         super().__init__(accelerator=accelerator, precision_plugin=precision_plugin)
 
     def setup(self, trainer: pl.Trainer) -> None:
@@ -83,7 +84,10 @@ class IPEXBF16Precision(PrecisionPlugin):
     @contextmanager
     def forward_context(self):
         """AMP for managing model forward/training_step/evaluation_step/predict_step."""
-        # Manually set the dtype
+        # Using IPEX bf16 and torch.autocast(...) will raise a segmentation fault
+        # in PyTorch 1.11.
+        # torch.autocast("cpu", args...) is equivalent to torch.cpu.amp.autocast(args...)
+        # in PyTorch 1.12.
         with torch.cpu.amp.autocast(dtype=torch.bfloat16):
             yield
 
@@ -100,7 +104,19 @@ class IPEXBF16Precision(PrecisionPlugin):
         if isinstance(model, pl.LightningModule):
             closure = partial(self._wrap_closure, model, optimizer, optimizer_idx, closure)
 
+        # Only `torch.optim.LBFGS`  need to reevaluate closure multiple times
+        # in optimizer.step(...) now.
+        if isinstance(optimizer, LBFGS):
+            invalidInputError(False,
+                              "IPEX BFloat16 and the LBFGS optimizer are not compatible "
+                              f"(optimizer {optimizer_idx}")
+
+        # Detect custom optimzer
+        if type(optimizer).__name__ not in dir(torch.optim):
+            warning("Closure use in optimizer.step(...) is not currently supported"
+                    " if IPEX and BFloat16 are enabled.")
+
         closure_result = closure()
-        optimizer.step(closure=None, **kwargs)
+        optimizer.step(**kwargs)
 
         return closure_result

@@ -17,6 +17,7 @@
 import torch
 import warnings
 from typing import Dict
+import pytorch_lightning as pl
 from pytorch_lightning.callbacks import Callback
 from pytorch_lightning.plugins.training_type import SingleDevicePlugin, DDPSpawnPlugin
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
@@ -68,3 +69,16 @@ class CheckIPEXCallback(Callback):
                 return False
             assert check_ipex_layers(pl_module)
 
+
+class CheckIPEXFusedStepCallback(Callback):
+    def on_train_start(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule"):
+        if not TORCH_VERSION_LESS_1_10:
+            from intel_extension_for_pytorch.optim._optimizer_utils import IPEX_FUSED_OPTIMIZER_LIST
+            # IPEX only support one optimizer
+            opt = trainer.optimizers[0]
+            if type(opt) in IPEX_FUSED_OPTIMIZER_LIST:
+                assert opt.fused  # type: ignore
+            else:
+                # Check non-fused step
+                assert hasattr(opt, '_original_step')
+                assert getattr(opt, 'step') is not getattr(type(opt), 'step')

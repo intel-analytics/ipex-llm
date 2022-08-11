@@ -27,7 +27,7 @@ from bigdl.nano.pytorch import Trainer
 
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
 from test.pytorch.utils._train_torch_lightning import create_test_data_loader
-from test.pytorch.utils._train_ipex_callback import CheckIPEXCallback
+from test.pytorch.utils._train_ipex_callback import CheckIPEXCallback, CheckIPEXFusedStepCallback
 from test.pytorch.tests.test_lightning import ResNet18
 
 num_classes = 10
@@ -65,13 +65,16 @@ class TestPlugin(TestCase):
         trainer.test(pl_model, self.test_data_loader)
 
     def test_trainer_subprocess_plugin_bf16(self):
+        model = ResNet18(pretrained=False, include_top=False, freeze=True)
+        loss = nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
         pl_model = LightningModule(
-            self.model, self.loss, self.optimizer,
+            model, loss, optimizer,
             metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
         )
         trainer = Trainer(num_processes=2, distributed_backend="subprocess",
-                          max_epochs=4, use_ipex=True, enable_bf16=True,
-                          callbacks=[CheckIPEXCallback()])
+                          max_epochs=4, use_ipex=True, precision="bf16",
+                          callbacks=[CheckIPEXCallback(), CheckIPEXFusedStepCallback()])
         trainer.fit(pl_model, self.data_loader, self.test_data_loader)
         trainer.test(pl_model, self.test_data_loader)
 
