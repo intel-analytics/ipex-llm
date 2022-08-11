@@ -24,7 +24,7 @@ on:
 jobs:
   build:
 
-    runs-on: [self-hosted, ubuntu-20.04-lts, Bree]
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
     permissions:
       contents: read
       packages: write
