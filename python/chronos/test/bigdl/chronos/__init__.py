@@ -20,7 +20,8 @@ op_torch = pytest.mark.torch
 op_tf2 = pytest.mark.tf2
 
 # distribution and automl
-op_automl = pytest.mark.automlop_distributed = pytest.mark.distributed
+op_automl = pytest.mark.automl
+op_distributed = pytest.mark.distributed
 
 # other mark
 op_tf1 = pytest.mark.tf1
