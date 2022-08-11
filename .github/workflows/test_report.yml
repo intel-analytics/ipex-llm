@@ -59,14 +59,9 @@ jobs:
       run: |
         pwd
         ls
-    - name: Upload Report    
-      uses: actions/upload-artifact@v2
-      if: success() || failure()        # run this step even if previous step failed
-      with:
-        name: test-results
-        path: scala/dllib/target/surefire-reports/*.xml
-    - uses: scacap/action-surefire-report@master
-      if: endsWith(github.ref, 'master') == false
+    - name: Publish Test Report
+      if: ${{ always() }}
+      uses: scacap/action-surefire-report@v1
       with:
         check_name: Example mvn Report
         report_paths: scala/dllib/target/surefire-reports/*.xml
