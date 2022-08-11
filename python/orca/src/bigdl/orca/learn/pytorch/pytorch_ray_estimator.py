@@ -438,7 +438,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                  profile=False,
                  info=None,
                  feature_cols=None,
-                 label_cols=None):
+                 label_cols=None,
+                 callbacks=[]):
         """
         Evaluates a PyTorch model given validation data.
         Note that only accuracy for classification with zero-based label is supported by
@@ -483,7 +484,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 data_creator = partition_refs_to_creator(partition_refs)
                 # Should not wrap DistributedSampler on DataLoader for SparkXShards input.
                 return worker.validate.remote(
-                    data_creator, batch_size, num_steps, profile, info, False)
+                    data_creator, batch_size, num_steps, profile, info, False, callbacks)
 
             worker_stats = ray_xshards.reduce_partitions_for_actors(self.remote_workers,
                                                                     transform_func)

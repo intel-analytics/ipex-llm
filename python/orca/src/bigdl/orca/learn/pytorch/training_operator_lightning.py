@@ -42,7 +42,8 @@ from bigdl.orca.learn.pytorch.constants import (SCHEDULER_STEP_EPOCH, NUM_STEPS,
                                                 SCHEDULER_STEP_BATCH, SCHEDULER_STEP)
 from torch.nn.parallel import DistributedDataParallel as DDP
 from bigdl.dllib.utils.log4Error import *
-
+import pytorch_lightning as pl
+from pytorch_lightning.callbacks import Callback as callback_lightning
 
 tqdm = None
 try:
@@ -50,13 +51,12 @@ try:
 except ImportError:
     pass
 
-
 def _is_multiple(component):
     """Checks if a component (optimizer, model, etc) is not singular."""
     return isinstance(component, collections.Iterable) and len(component) > 1
 
 
-class TrainingOperator:
+class TrainingOperatorLightning:
     """Abstract class for custom training or validation loops.
 
     The scheduler will only be called at a batch or epoch frequency, depending
@@ -81,46 +81,28 @@ class TrainingOperator:
 
     def __init__(self,
                  config,
+                 models_ori,
                  models,
-                 optimizers,
                  world_rank,
-                 criterion=None,
-                 schedulers=None,
-                 use_fp16=False,
                  use_tqdm=False,
-                 sync_stats=False,
-                 dist_backend=None):
+                 sync_stats=False,):
         # You are not expected to override this method.
         self._models = models  # List of models
+        self._models_ori = models_ori  # List of models
         invalidInputError(isinstance(models, collections.Iterable),
                           "Components need to be iterable. Got: {}".format(type(models)))
-        self._optimizers = optimizers  # List of optimizers
-        invalidInputError(isinstance(optimizers, collections.Iterable),
-                          "Components need to be iterable. Got: {}".format(type(optimizers)))
         self._world_rank = world_rank
-        self._criterion = criterion
-        self._schedulers = schedulers
-        if schedulers:
-            invalidInputError(isinstance(schedulers, collections.Iterable),
-                              "Components need to be iterable. Got: {}".format(type(schedulers)))
+
         self._config = config
-        self._use_fp16 = use_fp16
         if tqdm is None and use_tqdm:
             invalidInputError(False,
                               "tqdm must be installed to use tqdm in training.")
         self._use_tqdm = use_tqdm
         self.global_step = 0
         self.sync_stats = sync_stats
-        self.dist_backend = dist_backend
-
-        if type(self) is TrainingOperator:
-            for component in (models, schedulers, optimizers):
-                if _is_multiple(component):
-                    invalidInputError(False,
-                                      "Need to provide a custom operator subclassing "
-                                      "TrainingOperator if using multi-scheduler, "
-                                      "multi-model or multi-optimizer training/validation.")
+        self.dist_backend = "torch"
         self.timers = TimerCollection()
+        self.optimizer_config = self.model_ori.configure_optimizers()
         self.setup(config)
 
     def _set_timers(self, timers):
@@ -215,7 +197,10 @@ class TrainingOperator:
             batch_info.update(info)
             if callbacks is not None:
                 for callback in callbacks:
-                    callback.on_batch_begin(batch_idx)
+                    if isinstance(callback, callback_lightning):
+                        callback.on_train_batch_start(pl.Trainer(), self.model_ori, batch, batch_info["batch_idx"])
+                    else:
+                        callback.on_batch_begin(batch_idx)
             metrics = self.train_batch(batch, batch_info=batch_info)
             if self.use_tqdm and self.world_rank == 0:
                 _progress_bar.n = batch_idx + 1
@@ -232,7 +217,10 @@ class TrainingOperator:
             self.global_step += 1
             if callbacks is not None:
                 for callback in callbacks:
-                    callback.on_batch_end(batch_idx)
+                    if isinstance(callback, callback_lightning):
+                        callback.on_train_batch_end(pl.Trainer(), self.model_ori, metrics["train_loss"], batch, batch_info["batch_idx"])
+                    else:
+                        callback.on_batch_end(batch_idx)
 
     def train_batch(self, batch, batch_info):
         """Computes loss and updates the model over one batch.
@@ -268,29 +256,42 @@ class TrainingOperator:
 
         """
         # unpack features into list to support multiple inputs model
-        *features, target = batch
+        *features, target = batch ###
         # If features is already a tuple, we don't give it an extra list dimension.
         already_list = (isinstance(features[0], tuple) or isinstance(features[0], list))
         if len(features) == 1 and already_list:
             features = features[0]
+        batch = *features, target
 
         # Compute output.
         with self.timers.record("fwd"):
-            output = self.model(*features)
-            if isinstance(output, tuple) or isinstance(output, list):
-                # Then target is also assumed to be a tuple or list.
-                loss = self.criterion(*output, *target)
-            else:
-                loss = self.criterion(output, target)
+            training_step_output = self.model_ori.training_step(batch, batch_info['batch_idx'])
+            if isinstance(training_step_output, dict):
+                invalidInputError("loss" in training_step_output, "training_step function must has 'loss' output")
+                loss = training_step_output['loss']
+            opt = self.optimizer[0]
+            ind = 0
+            opt_len = len(self.optimizer)
+            if opt_len > 1:
+                freq = 0
+                freq_interval = []
+                for i in range(opt_len):
+                    freq += self.optimizer[i]["frequency"]
+                    freq_interval.append(freq)
+                for i in range(len(freq_interval)):
+                    if freq_interval[i] > batch_info['batch_idx'] % freq:
+                        ind = i
+                        break
+                opt = self.optimizer[ind]["optimizer"]
 
         # Compute gradients in a backward pass.
         with self.timers.record("grad"):
-            self.optimizer.zero_grad()
+            opt.zero_grad()
             loss.backward()
 
         # Call step of optimizer to update model params.
         with self.timers.record("apply"):
-            self.optimizer.step()
+            opt.step()
 
         return {"train_loss": loss.item(), NUM_SAMPLES: features[0].size(0)}
 
@@ -399,11 +400,17 @@ class TrainingOperator:
         already_list = (isinstance(features[0], tuple) or isinstance(features[0], list))
         if len(features) == 1 and already_list:
             features = features[0]
+        batch = *features, target
 
-        # compute output
+        # # compute output
         with self.timers.record("eval_fwd"):
-            output = self.model(*features)
-            loss = self.criterion(output, target)
+            validation_step_output = self.model_ori.validation_step(batch, batch_info['batch_idx'])
+            if isinstance(validation_step_output, dict):
+                invalidInputError("loss" in validation_step_output, "training_step function must has 'loss' output")
+                loss = validation_step_output['loss']
+                output = validation_step_output['predictions']
+            else:
+                output = self.model(*features)
 
         return output, target, loss
 
@@ -437,14 +444,14 @@ class TrainingOperator:
         return self._models
 
     @property
-    def optimizer(self):
-        """First or only optimizer(s) created by the ``optimizer_creator``."""
-        return self._optimizers[0]
+    def model_ori(self):
+        """First or only model created by the provided ``model_creator``."""
+        return self._models_ori[0]
 
     @property
-    def optimizers(self):
-        """List of optimizers created by the ``optimizer_creator``."""
-        return self._optimizers
+    def models_ori(self):
+        """List of models created by the provided ``model_creator``."""
+        return self._models_ori
 
     @property
     def world_rank(self):
@@ -452,27 +459,21 @@ class TrainingOperator:
         return self._world_rank
 
     @property
-    def criterion(self):
-        """Criterion created by the provided ``loss_creator``."""
-        return self._criterion
-
-    @property
-    def scheduler(self):
-        """First or only scheduler(s) created by the ``scheduler_creator``."""
-        if self._schedulers:
-            return self._schedulers[0]
-
-    @property
-    def schedulers(self):
-        """List of schedulers created by the ``scheduler_creator``."""
-        return self._schedulers
-
-    @property
-    def use_fp16(self):
-        """bool: Whether the model and optimizer have been FP16 enabled."""
-        return self._use_fp16
-
-    @property
     def use_tqdm(self):
         """bool: Whether tqdm progress bars are enabled."""
         return self._use_tqdm
+
+    @property
+    def optimizer(self):
+        if isinstance(self.optimizer_config, tuple):
+            return self.optimizer_config[0]
+        elif not isinstance(self.optimizer_config, collections.Iterable):
+            return [self.optimizer_config]
+        else:
+            return self.optimizer_config
+
+    @property
+    def scheduler(self):
+        if not isinstance(self.optimizer_config, tuple):
+            return None
+        return self.optimizer_config[1][0]
