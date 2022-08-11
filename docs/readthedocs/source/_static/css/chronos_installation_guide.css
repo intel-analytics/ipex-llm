@@ -37,6 +37,7 @@
     /* setting div id=cmd width */
     #cmd {
         width: 460px;
+        height: 30px;
     }
 
     td, th {
