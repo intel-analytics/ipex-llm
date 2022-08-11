@@ -16,12 +16,14 @@ var automl="automlno"
 function set_color(id){
    $("#"+id).parent().css("background-color","rgb(74, 106, 237)");
    $("#"+id).css("color","white");
+   $("#"+id).addClass("isset");
 }
 
 function reset_color(list){
     for (btn in list){
         $("#"+list[btn]).parent().css("background-color","transparent");
         $("#"+list[btn]).css("color","black");
+        $("#"+list[btn]).removeClass("isset");
     }
 }
 
@@ -240,5 +242,15 @@ $("button").click(function(){
         set_automl(id);
     }
 });
+
+$("button").hover(function(){
+    $(this).parent().css("background-color","rgb(74, 106, 237)");
+    $(this).css("color","white");
+},function(){
+    if(!$(this).hasClass("isset")){
+        $(this).parent().css("background-color","transparent");
+        $(this).css("color","black");
+    }
+})
 
 refresh_cmd();
