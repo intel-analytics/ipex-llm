@@ -84,6 +84,6 @@ jobs:
       - name: Run Chronos python test
         shell: bash
         run: |
-          bash python/dev/release_default_linux_spark246.sh default false true true
+          bash python/dev/release_default_linux_spark246.sh default true false
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
