@@ -551,9 +551,9 @@ class TestTFEstimator(TestCase):
         config = {
             "lr": 0.2
         }
+        model_path = os.path.join(tempfile.gettempdir(), str(uuid.uuid1()) + ".json")
         try:
             model = simple_model(config)
-            model_path = os.path.join(tempfile.gettempdir(), str(uuid.uuid1()) + ".json")
             with open(model_path, "wb") as f:
                 f.write(model.to_json())
         
@@ -568,7 +568,8 @@ class TestTFEstimator(TestCase):
             model_load = load_model_architecture(model_path)
             assert model.summary() == model_load.summary()
         finally:
-            os.remove(model_path)
+            if os.path.exists(model_path):
+                os.remove(model_path)
 
 
 
