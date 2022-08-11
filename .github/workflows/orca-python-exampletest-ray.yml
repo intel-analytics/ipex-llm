@@ -11,6 +11,11 @@ name: Nightly Build Orca Python EampleTest Ray Py37
 on:
   #release:
    # types: [published]
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'python/orca/**'
+      - '.github/workflows/orca-python-exampletest-ray.yml'
   schedule:
     - cron: '0 15 * * *'
   # Allows you to run this workflow manually from the Actions tab
