@@ -500,7 +500,7 @@ class TFRunner:
         """Load the model from provided local filepath."""
         import tensorflow as tf
         self.model = tf.keras.models.load_model(filepath, custom_objects, compile, options)
-    
+
     def load_remote_model(self, filepath, custom_objects, compile, options):
         """Load the model from provided remote filepath."""
         import pyarrow.fs as pafs

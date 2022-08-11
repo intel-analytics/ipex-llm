@@ -577,7 +577,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
         :param filepath: (str) Path of saved model (SavedModel or H5 file).
                It can be local/hdfs/s3 filepath
-        :param custom_objects: Optional dictionary mapping names (strings) to 
+        :param custom_objects: Optional dictionary mapping names (strings) to
                custom classes or functions to be considered during deserialization.
         :param compile: Boolean, whether to compile the model after loading.
         :param options: Optional `tf.saved_model.LoadOptions` object that specifies
@@ -589,7 +589,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             custom_objects=custom_objects,
             compile=compile,
             options=options
-            )
+        )
         if is_local_path(filepath):
             ray.get([worker.load_model.remote(**params)
                      for worker in self.remote_workers])
