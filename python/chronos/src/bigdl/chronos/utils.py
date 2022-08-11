@@ -34,39 +34,58 @@ def deprecated(message=""):
     return deprecated_decorator
 
 
+# code adaptted from https://github.com/intel/neural-compressor/
+#                    blob/master/neural_compressor/utils/utility.py#L62
 class LazyImport:
     """
-        code adaptted from https://github.com/intel/neural-compressor
-        /blob/master/neural_compressor/utils/utility.py#L62
-
-        :param module_name: The name of module imported later
-        :param pkg: prefix path.
+    Example:
+        >>> from bigdl.chronos.utils import LazyImport
+        >>> forecaster = LazyImport('bigdl.chronos.forecaster.lstm_forecaster.LSTMForecaster')
+        >>> forecaster.from_tsdataset(tsdataset, ...)
+        >>> forecaster(...)
     """
     def __init__(self, module_name: str, pkg=None):
+        """
+        :param module_name: Import module name.
+        :param pkg: prefix path.
+        """
         self.module_name = module_name
         self.pkg = pkg
 
     def __getattr__(self, name):
-        abslute_name = importlib.util.resolve_name(self.module_name, self.pkg)
+        absolute_name = importlib.util.resolve_name(self.module_name, self.pkg)
         # not reload modules
         try:
-            return getattr(sys.modules[abslute_name], name)
+            return getattr(sys.modules[absolute_name], name)
         except (KeyError, AttributeError):
             pass
 
+        # Because early LazyImport does not allow absolute_name to contain class name,
+        # original usage:
+        #   lstm = LazyImport('bigdl.chronos.forecaster.lstm_forecaster')
+        #   lstm.LSTMForecaster() and lstm.LSTMForecaster.from_tsdataset()
+        # But including the class name is better for our needs.
+        # Usage: forecaster = LazyImport('bigdl.chronos.forecaster.lstm_forecaster.LSTMForecaster')
+        # forecaster() and forecaster.from_tsdataset()
+        # This comment will be removed later and migrated to pr..
+
+        if "." in absolute_name:
+            # Split module name to prevent class name from being introduced as package
+            parent_name, _, child_name = absolute_name.rpartition('.')
+        else:
+            parent_name, child_name = absolute_name, None
+
         try:
-            module = importlib.import_module(abslute_name)
-            module = getattr(module, name)
+            module = importlib.import_module(parent_name)
+            module = getattr(module, child_name) if child_name else module
         except AttributeError:
-            spec = importlib.util.find_spec(self.module_name+'.'+name)
-            if spec is None:
-                from bigdl.nano.utils.log4Error import invalidInputError
-                invalidInputError(False,
-                                  f"No module named {self.module_name}.")
-            else:
-                module = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(module)
-        return module
+            # concatenate possible class names
+            full_module_name = parent_name+'.'+child_name if child_name else parent_name
+            spec = importlib.util.find_spec(full_module_name)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+
+        return getattr(module, name)
 
     def __call__(self, *args, **kwargs):
         function_name = self.module_name.split('.')[-1]
