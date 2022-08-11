@@ -401,7 +401,7 @@ org.xerial.snappy:snappy-java
 org.yaml:snakeyaml
 
 :threading_building_blocks
-com.intel.analytics.bigdl.core.native.opencv:opencv-java-x86_64-linux opencv
+com.intel.analytics.bigdl.core.native.opencv:opencv-java-x86_64-linux
 io.perfmark:perfmark-api
 org.apache.apr:apr
 org.jctools:jctools-core
