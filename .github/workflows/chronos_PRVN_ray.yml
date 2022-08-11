@@ -66,12 +66,6 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --upgrade setuptools==58.0.4
           python -m pip install --upgrade wheel
-          pip install twine
-
-      - name: Run Chronos python test
-        shell: bash
-        run: |
-          pip config set global.index-url https://pypi.org/simple
           pip install pytest==5.4.1
           pip install prophet==1.1
           pip install pmdarima==1.8.4
@@ -85,10 +79,11 @@ jobs:
           pip install onnxruntime==1.11.1
           pip install onnx==1.11.0
           apt-get update
-          apt-get install patchelf          
+          apt-get install patchelf
+
+      - name: Run Chronos python test
+        shell: bash
+        run: |
           bash python/dev/release_default_linux_spark246.sh default false true true
-          bash python/nano/dev/build_and_install.sh linux default false pytorch --force-reinstall --no-deps -U
-          whl_name=`ls python/nano/dist/`
-          pip install python/nano/dist/${whl_name}[tensorflow,pytorch]
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
