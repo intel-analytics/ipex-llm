@@ -25,8 +25,7 @@ import ray
 
 from bigdl.dllib.utils import log4Error
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, \
-    is_local_path, put_local_file_to_remote, put_local_dir_tree_to_remote, \
-    get_remote_file_to_local, get_remote_dir_tree_to_local
+    is_local_path, put_local_file_to_remote, put_local_dir_tree_to_remote
 
 from bigdl.orca.data.ray_xshards import RayXShards
 from bigdl.orca.learn.dl_cluster import RayDLCluster
@@ -533,19 +532,19 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         Saves the model to Tensorflow SavedModel or a single HDF5 file.
 
         :param filepath: String, PathLike, path to SavedModel or H5 file to save the
-            model. It can be local/hdfs/s3 filepath
+               model. It can be local/hdfs/s3 filepath
         :param overwrite: Whether to silently overwrite any existing file at the
-            target location, or provide the user with a manual prompt.
+               target location, or provide the user with a manual prompt.
         :param include_optimizer: If True, save optimizer's state together.
         :param save_format: Either `'tf'` or `'h5'`, indicating whether to save the
-            model to Tensorflow SavedModel or HDF5. Defaults to 'tf' in TF 2.X,
-            and 'h5' in TF 1.X.
+               model to Tensorflow SavedModel or HDF5. Defaults to 'tf' in TF 2.X,
+               and 'h5' in TF 1.X.
         :param signatures: Signatures to save with the SavedModel. Applicable to the
-            'tf' format only. Please see the `signatures` argument in
-            `tf.saved_model.save` for details.
+               'tf' format only. Please see the `signatures` argument in
+               `tf.saved_model.save` for details.
         :param options: (only applies to SavedModel format)
-            `tf.saved_model.SaveOptions` object that specifies options for
-            saving to SavedModel.
+               `tf.saved_model.SaveOptions` object that specifies options for
+               saving to SavedModel.
         """
         # get current trained model
         model = self.get_model()
@@ -576,47 +575,27 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         """
         Loads a model saved via `estimator.save()
 
-        :param filepath: (str) Path of saved model.
-        :param custom_objects: Optional dictionary mapping names
-          (strings) to custom classes or functions to be
-          considered during deserialization.
+        :param filepath: (str) Path of saved model (SavedModel or H5 file).
+               It can be local/hdfs/s3 filepath
+        :param custom_objects: Optional dictionary mapping names (strings) to 
+               custom classes or functions to be considered during deserialization.
         :param compile: Boolean, whether to compile the model after loading.
         :param options: Optional `tf.saved_model.LoadOptions` object that specifies
-        options for loading from SavedModel.
+               options for loading from SavedModel.
 
         """
+        params = dict(
+            filepath=filepath,
+            custom_objects=custom_objects,
+            compile=compile,
+            options=options
+            )
         if is_local_path(filepath):
-            params = dict(
-                filepath=filepath,
-                custom_objects=custom_objects,
-                compile=compile,
-                options=options
-            )
-            model_refs = [
-                worker.load_model.remote(**params) for worker in self.remote_workers
-            ]
-            ray.get(model_refs)
+            ray.get([worker.load_model.remote(**params)
+                     for worker in self.remote_workers])
         else:
-            file_name = os.path.basename(filepath)
-            temp_dir = tempfile.mkdtemp()
-            temp_path = os.path.join(temp_dir, file_name)
-            params = dict(
-                filepath=temp_path,
-                custom_objects=custom_objects,
-                compile=compile,
-                options=options
-            )
-            try:
-                if filepath.endswith('.h5') or filepath.endswith('.keras'):
-                    get_remote_file_to_local(filepath, temp_path)
-                else:
-                    get_remote_dir_tree_to_local(filepath, temp_path)
-                model_refs = [
-                    worker.load_model.remote(**params) for worker in self.remote_workers
-                ]
-                ray.get(model_refs)
-            finally:
-                shutil.rmtree(temp_dir)
+            ray.get([worker.load_remote_model.remote(**params)
+                     for worker in self.remote_workers])
 
     def shutdown(self):
         """

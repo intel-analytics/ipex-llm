@@ -31,13 +31,14 @@ import copy
 import logging
 import json
 import os
-
-import numpy as np
+import socket
+import shutil
+import tempfile
+import subprocess
 
 import ray
+import numpy as np
 from contextlib import closing
-import logging
-import socket
 
 from bigdl.dllib.utils import log4Error
 from bigdl.orca.data.utils import ray_partitions_get_data_label, ray_partitions_get_tf_dataset
@@ -496,9 +497,30 @@ class TFRunner:
                                         "method.")
 
     def load_model(self, filepath, custom_objects, compile, options):
-        """Load the model from provided filepath."""
+        """Load the model from provided local filepath."""
         import tensorflow as tf
         self.model = tf.keras.models.load_model(filepath, custom_objects, compile, options)
+    
+    def load_remote_model(self, filepath, custom_objects, compile, options):
+        """Load the model from provided remote filepath."""
+        import pyarrow.fs as pafs
+        import tensorflow as tf
+        file_name = os.path.basename(filepath)
+        temp_path = os.path.join(tempfile.mkdtemp(), file_name)
+        classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
+                                     stdout=subprocess.PIPE).communicate()[0]
+        os.environ["CLASSPATH"] = classpath.decode("utf-8")
+        if not pafs.FileInfo(filepath).is_file:
+            if os.path.exists(temp_path):
+                os.makedirs(temp_path)
+        pafs.copy_files(filepath, temp_path)
+        try:
+            self.model = tf.keras.models.load_model(temp_path, custom_objects, compile, options)
+        finally:
+            if os.path.isdir(temp_path):
+                shutil.rmtree(temp_path)
+            else:
+                os.remove(temp_path)
 
     def shutdown(self):
         """Attempts to shut down the worker."""
