@@ -13,16 +13,23 @@ Even if data is fully encrypted in transit and storage, we still need to decrypt
 ## Example: Spark on Kubernetes with data stored on HDFS
 WARNING: This example lists minimum security features that should be enabled for your applications. In production, please confirm with your cluster admin or security reviewer.
 ### [HDFS Security](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/SecureMode.html)
-Please ensure authentication and [access control](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/HdfsPermissionsGuide.html) is correctly configured. Note that HDFS authentication relies on [Kerberos](http://web.mit.edu/kerberos/krb5-1.12/doc/user/user_commands/kinit.html). 
+Please ensure authentication and [access control](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/HdfsPermissionsGuide.html) is correctly configured. Note that HDFS authentication relies on [Kerberos](http://web.mit.edu/kerberos/krb5-1.12/doc/user/user_commands/kinit.html).
+
 Enable [Data_confidentiality](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/SecureMode.html#Data_confidentiality) for network. This will protect PRC, block transfer and http.
+
 When storing sensitive data in HDFS, please enable [Transparent Encryption](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/TransparentEncryption.html) in HDFS. This feature ensures all data blocks are encrypted on data nodes.
 ### [Spark Security](https://spark.apache.org/docs/latest/security.html) 
 Please ensure [network crypto](https://spark.apache.org/docs/latest/security.html#encryption) and [spark.authenticate](https://spark.apache.org/docs/latest/security.html#spark-rpc-communication-protocol-between-spark-processes) are enabled.
+
 Enable [Local Storage Encryption](https://spark.apache.org/docs/latest/security.html#local-storage-encryption) to protect local temp data. 
+
 Enable [SSL](https://spark.apache.org/docs/latest/security.html#ssl-configuration) to secure Spark Webui.
+
 You can enable [Kerberos related settings](https://spark.apache.org/docs/latest/security.html#kerberos) if your have Kerberos service.
 ### [Kubernetes Security](https://kubernetes.io/docs/concepts/security/)
 As a huge resource management service, Kubernetes has lots of security features.
+
 Enable [RBAC](https://kubernetes.io/docs/concepts/security/rbac-good-practices/) to ensure that cluster users and workloads have only the access to resources required to execute their roles.
+
 Enable [Encrypting Secret Data at Rest](https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/) to protect data in rest API. 
 When mounting key & sensitive configurations into pods, use [Kubernetes Secret](https://kubernetes.io/docs/concepts/configuration/secret/).
