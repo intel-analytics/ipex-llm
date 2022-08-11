@@ -31,6 +31,9 @@ function disable(list){
         $("#"+list[btn]).attr("disabled","true");
     }
     reset_color(list);
+    for(btn in list){
+        $("#"+list[btn]).parent().css("background-color","rgb(133, 133, 133)");
+    }
 }
 
 function enable(list){
