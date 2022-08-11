@@ -121,8 +121,7 @@ class TestChronosForecastMetrics(TestCase):
             Evaluator.get_latency(-2, test_func, 5)
 
         latency_list = Evaluator.get_latency(100, test_func, 5)
-        ref_list = {"50p": 5.0, "90p": 5.0, "95p": 5.1, "99p": 5.1}
         assert isinstance(latency_list, dict)
-        for info in ["50p", "90p", "95p", "99p"]:
+        for info in ["p50", "p90", "p95", "p99"]:
             assert info in latency_list
-            assert_almost_equal(latency_list[info], ref_list[info], 1)
+            assert isinstance(latency_list[info], float)

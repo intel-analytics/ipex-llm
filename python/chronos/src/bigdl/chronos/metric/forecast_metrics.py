@@ -133,12 +133,12 @@ class Evaluator(object):
 
     def get_latency(num_running, func, *args):
         """
-        Display the time cost in milliseconds of a specific function by running multiple times.
+        Return the time cost in milliseconds of a specific function by running multiple times.
 
         :param num_running: Int and the value is positive. Specify the running number of
                the function.
-        :param func: The python function to be captured the latency.
-        :param args: other arguments in this function.
+        :param func: The function to be tested for latency.
+        :param args: other arguments to be inputted to func.
 
         :return: Dictionary of str:float.
                  Show the information of the time cost in milliseconds.
@@ -149,25 +149,21 @@ class Evaluator(object):
             >>> # run forecaster.predict(x.numpy()) for len(tsdata_test.df) times
             >>> # to evaluate the time cost
             >>> latency = Evaluator.get_latency(len(tsdata_test.df), forecaster.predict, x.numpy())
+            >>> # an example output:
+            >>> # {"p50": 3.853, "p90": 3.881, "p95": 3.933, "p99": 4.107}
         """
-        if not isinstance(num_running, int):
-            invalidInputError(False, "num_running type must be int, "
+        invalidInputError(isinstance(num_running, int), "num_running type must be int, "
                               f"but found {type(num_running)}.")
-        elif num_running < 0:
+        if num_running < 0:
             invalidInputError(False, "num_running value must be positive, "
                               f"but found {num_running}.")
 
         time_list = repeat(lambda: func(*args), number=1, repeat=num_running)
         sorted_time = np.sort(time_list)
 
-        latency_list = {"50p": round(1000 * np.median(time_list), 3),
-                        "90p": round(1000 * sorted_time[int(0.90 * num_running)], 3),
-                        "95p": round(1000 * sorted_time[int(0.95 * num_running)], 3),
-                        "99p": round(1000 * sorted_time[int(0.99 * num_running)], 3)}
-
-        print(">" * 20, "latency result of", str(func.__name__), ">" * 20)
-        for info in ["50p", "90p", "95p", "99p"]:
-            print(info, "latency:", latency_list[info], "ms")
-        print("<" * 20, "latency result of", str(func.__name__), "<" * 20, "\n")
+        latency_list = {"p50": round(1000 * np.median(time_list), 3),
+                        "p90": round(1000 * sorted_time[int(0.90 * num_running)], 3),
+                        "p95": round(1000 * sorted_time[int(0.95 * num_running)], 3),
+                        "p99": round(1000 * sorted_time[int(0.99 * num_running)], 3)}
 
         return latency_list
