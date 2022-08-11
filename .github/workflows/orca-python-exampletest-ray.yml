@@ -1,0 +1,96 @@
+# This workflow will upload a Python Package using Twine when a release is created
+# For more information see: https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions#publishing-to-package-registries
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Nightly Build Orca Python EampleTest Ray Py37
+
+on:
+  #release:
+   # types: [published]
+  schedule:
+    - cron: '0 15 * * *'
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+
+    runs-on: [self-hosted, ubuntu-20.04-lts, Bree]
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK 8
+      uses: actions/setup-java@v3
+      with:
+        java-version: '8'
+        distribution: 'temurin'
+        #server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
+        settings-path: ${{ github.workspace }} # location for the settings.xml file
+    
+    - name: Set up Maven
+      uses: stCarolas/setup-maven@v4.4
+      with:
+        maven-version: 3.8.2
+
+    - name: Set up Maven Settings
+      uses: s4u/maven-settings-action@v2.6.0
+      with:
+        sonatypeSnapshots: true
+        apacheSnapshots: true
+        servers: |
+          [{
+            "id": "central",
+            "configuration": {
+              "httpConfiguration": {
+                "all": {
+                  "connectionTimeout": "3600000",
+                  "readTimeout": "3600000"
+                  }
+                }
+              }
+          }]
+        mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${NEXUS_URL}" }]'
+
+    - name: Set up Python 
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build
+        pip install wheel
+        pip install torch==1.7.1
+        pip install torchvision
+        pip install torchmetrics
+        pip install albumentations
+        pip install scikit-learn==0.22.2.post1
+        pip install opencv-python
+        pip instal matplotlib
+        pip install tqdm
+        pip install protobuf==3.15.3
+        pip install pandas
+        pip install ray[default]==1.9.2
+        pip install dm_tree
+        pip install gym[atari]==0.17.1
+        pip install atari-py==0.2.5
+        pip install tabulate==0.8.7
+        pip install tensorflow==1.15.0
+        pip install mxnet==1.6.0
+        pip install xgboost_ray
+        pip install argparse
+        pip install Pillow
+        pip install pyarrow==4.0.1
+    - name: Run Test
+      #run: python -m build
+      run: |
+        pip install -i https://pypi.org/simple --pre --upgrade bigdl-orca
+        chmod a+x python/orca/dev/example/run-example-test-ray.sh
+        python/orca/dev/example/run-example-test-ray.sh
