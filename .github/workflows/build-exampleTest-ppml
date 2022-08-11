@@ -1,0 +1,54 @@
+name: Nightly Build Example Tests PPML
+
+on:
+  # schedule:
+  #   - cron: '0 17 * * *'
+  pull_request:
+    branches: [main]
+  # workflow_dispatch:
+  #   inputs:
+  #     artifact:
+  #       description: 'select which job to run("ALL" will make all jobs run)'
+  #       required: true
+  #       default: 'latest'
+  #       type: choice
+  #       options:
+  #       - all
+  #       - bigdl-ppml-trusted-big-data-ml-python-graphene
+  #       - bigdl-ppml-trusted-realtime-ml-scala-graphene
+  #       - bigdl-ppml-trusted-big-data-ml-scala-occlum
+  #       - bigdl-ppml-trusted-realtime-ml-scala-occlum
+  #     tag:
+  #       description: 'e.g. 2.1.0-SNAPSHOT'
+  #       required: true
+  #       default: 'latest'
+  #       type: string
+  
+
+jobs:
+  example tests ppml:
+    runs-on: [self-hosted, SGX, Wilwarin]
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set the variable
+      run: |
+        echo "LOCAL_IP=192.168.0.112" >> $GITHUB_ENV
+        echo "CPUSET="116-120"" >> $GITHUB_ENV
+        echo "CONTAINER_NAME="pyspark-graphene-jenkins"" >> $GITHUB_ENV
+        echo "ENCLAVE_KEY=/home/sdp/glorysdj/enclave-key.pem" >> $GITHUB_ENV
+        echo "DATA_PATH=/home/sdp/glorysdj/data" >> $GITHUB_ENV
+        echo "KEYS_PATH=/home/sdp/glorysdj/keys" >> $GITHUB_ENV
+        echo "SECURE_PASSWORD_PATH=/home/sdp/glorysdj/password" >> $GITHUB_ENV
+    - name: Test variable
+      run: |
+        echo ${LOCAL_IP}
+        echo ${CPUSET}
+        echo ${CONTAINER_NAME}
+        echo ${ENCLAVE_KEY}
+        echo ${DATA_PATH}
+        echo ${KEYS_PATH}
+        echo ${SECURE_PASSWORD_PATH}
