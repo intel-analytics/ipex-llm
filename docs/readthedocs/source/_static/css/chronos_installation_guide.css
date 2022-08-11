@@ -1,8 +1,8 @@
 /* Border styles */
 #table-1 tr, #table-1 td, #table-1 th  {
-    border-width: 2px;
+    border-width: 5px;
     border-style: solid;
-    border-color: white;
+    border-color: transparent;
     }
 
     #table-1 {
@@ -11,18 +11,12 @@
     
     /* Padding and font style */
     #table-1 td, #table-1 th {
-    font-size: 12px;
+    font-size: 16px;
     font-family: Verdana;
     color: rgb(15, 24, 33);
     }
     
     /* Alternating background colors */
-    /* #table-1 tr:nth-child(even) {
-    background: rgb(59, 164, 230)
-    }
-    #table-1 tr:nth-child(odd) {
-    background: rgb(59, 164, 230)
-    } */
     #table-1 tr, td{
         background-color: rgb(240, 241, 245);
         height: 30px;
@@ -36,8 +30,9 @@
 
     /* setting div id=cmd width */
     #cmd {
-        width: 460px;
-        height: 30px;
+        width: 450px;
+        height: 35px;
+        overflow:unset;
     }
 
     td, th {
@@ -50,5 +45,6 @@
         height: 100%;
         background-color: transparent;
         cursor: pointer;
+        font-size: 16px;
     }
 
