@@ -555,7 +555,7 @@ class TestTFEstimator(TestCase):
         model_path = os.path.join(tempfile.gettempdir(), str(uuid.uuid1()) + ".json")
         try:
             model = simple_model(config)
-            with open(model_path, "wb") as f:
+            with open(model_path, "w") as f:
                 f.write(model.to_json())
         
             from bigdl.dllib.utils.file_utils import enable_hdfs_load
