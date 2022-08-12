@@ -664,7 +664,7 @@ def get_arg_parser():
                         help='Whether to enable Dynamic-dimension Embedding Variable. '
                              'Default to False.',
                         type=boolean_string,
-                        default=False)  # TODO:enable
+                        default=False)  # TODO: enable
     parser.add_argument('--incremental_ckpt',
                         help='Set time of save Incremental Checkpoint. Default 0 to close.',
                         type=int,
@@ -990,7 +990,7 @@ class RayWorker:
 
 
 def to_tensor_slice_dataset(data, label, config):
-    # TODO: make OrderedDict more general?
+    # TODO: make OrderedDict more general
     features = collections.OrderedDict()
     output_types = collections.OrderedDict()
     for i in range(len(CONTINUOUS_COLUMNS)):
