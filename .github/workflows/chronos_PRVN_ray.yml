@@ -88,6 +88,5 @@ jobs:
           bash python/nano/dev/build_and_install.sh linux default false pytorch --force-reinstall --no-deps -U
           whl_name=`ls python/nano/dist/`
           pip install python/nano/dist/${whl_name}[tensorflow,pytorch]
-          pip install python/dllib/src/dist/bigdl_dllib-*-py3-none-manylinux1_x86_64.whl
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
