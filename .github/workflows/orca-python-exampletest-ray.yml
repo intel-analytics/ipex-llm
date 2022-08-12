@@ -85,7 +85,7 @@ jobs:
         pip install tqdm
         pip install protobuf==3.15.3
         pip install pandas
-        pip install ray[default]==1.9.2
+        pip install ray[default]==1.11.0
         pip install dm_tree
         pip install gym[atari]==0.17.1
         pip install atari-py==0.2.5
