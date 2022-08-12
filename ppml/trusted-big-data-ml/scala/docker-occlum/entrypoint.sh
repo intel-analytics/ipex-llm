@@ -133,7 +133,7 @@ case "$SPARK_K8S_CMD" in
             --hostname $SPARK_EXECUTOR_POD_IP
             )
     else
-        echo "use SGX_EXECUTOR_JVM_MEM_SIZE=$SGX_EXCUTOR_JVM_MEM_SIZE"
+        echo "use SGX_EXECUTOR_JVM_MEM_SIZE=$SGX_EXECUTOR_JVM_MEM_SIZE"
         CMD=(
             /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
             "${SPARK_EXECUTOR_JAVA_OPTS[@]}" \
@@ -141,8 +141,8 @@ case "$SPARK_K8S_CMD" in
             -XX:MaxMetaspaceSize=$META_SPACE \
             -XX:ActiveProcessorCount=$SPARK_EXECUTOR_CORES \
             -Divy.home=/tmp/.ivy \
-            -Xms$SGX_EXCUTOR_JVM_MEM_SIZE \
-            -Xmx$SGX_EXCUTOR_JVM_MEM_SIZE \
+            -Xms$SGX_EXECUTOR_JVM_MEM_SIZE \
+            -Xmx$SGX_EXECUTOR_JVM_MEM_SIZE \
             -Dos.name=Linux \
             -Dio.netty.availableProcessors=$NETTY_THREAD \
             -Djdk.lang.Process.launchMechanism=posix_spawn \
