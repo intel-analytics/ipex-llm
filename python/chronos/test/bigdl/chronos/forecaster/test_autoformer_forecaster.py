@@ -220,7 +220,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
             evaluate1 = forecaster.evaluate(val_data)
             with tempfile.TemporaryDirectory() as tmp_dir_name:
                 ckpt_name = os.path.join(tmp_dir_name, "tune.ckpt")
-                forecaster.save(ckpt_name, tune=True)
+                forecaster.save(ckpt_name)
                 forecaster = AutoformerForecaster(past_seq_len=24,
                                             future_seq_len=5,
                                             input_feature_num=2,

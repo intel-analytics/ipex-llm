@@ -420,13 +420,13 @@ class AutoformerForecaster(Forecaster):
         args = _transform_config_to_namedtuple(self.model_config)
         self.internal = AutoFormer.load_from_checkpoint(checkpoint_file, configs=args)
 
-    def save(self, checkpoint_file, tune=False):
+    def save(self, checkpoint_file):
         """
         save the forecaster.
 
         :param checkpoint_file: The checkpoint file location you want to load the forecaster.
         """
-        if tune:
+        if self.use_hpo:
             self.trainer.model = self.trainer.model.model
         self.trainer.save_checkpoint(checkpoint_file)
 
