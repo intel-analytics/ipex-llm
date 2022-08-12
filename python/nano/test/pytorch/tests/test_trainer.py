@@ -87,6 +87,11 @@ class TestTrainer(TestCase):
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
         pl_model = Trainer.compile(model, loss, optimizer)
         if TORCH_VERSION_LESS_1_10:
+            trainer = Trainer(max_epochs=1, precision=64)
+            trainer.fit(pl_model, self.train_loader)
+            assert isinstance(trainer.strategy.precision_plugin, DoublePrecisionPlugin)
+            assert optimizer.param_groups[0]['params'][0].dtype is torch.float64
+        else:
             trainer = Trainer(max_epochs=1, precision='bf16')
             trainer.fit(pl_model, self.train_loader)
             assert isinstance(trainer.strategy.precision_plugin, NativeMixedPrecisionPlugin)
@@ -95,11 +100,6 @@ class TestTrainer(TestCase):
             train_loader = DataLoader(input)
             y_hat = trainer.predict(pl_model, train_loader)
             assert y_hat[0].dtype is torch.bfloat16
-        else:
-            trainer = Trainer(max_epochs=1, precision=64)
-            trainer.fit(pl_model, self.train_loader)
-            assert isinstance(trainer.strategy.precision_plugin, DoublePrecisionPlugin)
-            assert optimizer.param_groups[0]['params'][0].dtype is torch.float64
 
     def test_trainer_save_load(self):
         trainer = Trainer(max_epochs=1)
