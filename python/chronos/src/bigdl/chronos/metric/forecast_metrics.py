@@ -131,14 +131,15 @@ class Evaluator(object):
                     res_list.append(res.numpy())
         return res_list
 
-    def get_latency(num_running, func, *args):
+    def get_latency(func, *args, num_running = 100, **kwargs):
         """
         Return the time cost in milliseconds of a specific function by running multiple times.
 
-        :param num_running: Int and the value is positive. Specify the running number of
-               the function.
         :param func: The function to be tested for latency.
-        :param args: other arguments to be inputted to func.
+        :param args: arguments for the tested function.
+        :param num_running: Int and the value is positive. Specify the running number of
+               the function and the value defaults to 100.
+        :param kwargs: other arguments for the tested function.
 
         :return: Dictionary of str:float.
                  Show the information of the time cost in milliseconds.
@@ -148,7 +149,8 @@ class Evaluator(object):
             >>> x = next(iter(test_loader))[0]
             >>> # run forecaster.predict(x.numpy()) for len(tsdata_test.df) times
             >>> # to evaluate the time cost
-            >>> latency = Evaluator.get_latency(len(tsdata_test.df), forecaster.predict, x.numpy())
+            >>> latency = Evaluator.get_latency(forecaster.predict, x.numpy(),\
+                          num_running = len(tsdata_test.df))
             >>> # an example output:
             >>> # {"p50": 3.853, "p90": 3.881, "p95": 3.933, "p99": 4.107}
         """
@@ -158,7 +160,7 @@ class Evaluator(object):
             invalidInputError(False, "num_running value must be positive, "
                               f"but found {num_running}.")
 
-        time_list = repeat(lambda: func(*args), number=1, repeat=num_running)
+        time_list = repeat(lambda: func(*args, **kwargs), number=1, repeat=num_running)
         sorted_time = np.sort(time_list)
 
         latency_list = {"p50": round(1000 * np.median(time_list), 3),

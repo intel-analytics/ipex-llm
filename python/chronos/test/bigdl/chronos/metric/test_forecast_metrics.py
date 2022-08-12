@@ -116,11 +116,11 @@ class TestChronosForecastMetrics(TestCase):
         def test_func(count):
             time.sleep(0.001*count)
         with pytest.raises(RuntimeError):
-            Evaluator.get_latency("10", test_func, 5)
+            Evaluator.get_latency(test_func, 5, num_running = "10")
         with pytest.raises(RuntimeError):
-            Evaluator.get_latency(-2, test_func, 5)
+            Evaluator.get_latency(test_func, 5, num_running = -10)
 
-        latency_list = Evaluator.get_latency(100, test_func, 5)
+        latency_list = Evaluator.get_latency(test_func, 5)
         assert isinstance(latency_list, dict)
         for info in ["p50", "p90", "p95", "p99"]:
             assert info in latency_list
