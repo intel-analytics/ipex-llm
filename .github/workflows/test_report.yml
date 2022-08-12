@@ -62,7 +62,6 @@ jobs:
     - name: Publish Test Report
       env:
         https_proxy: http://child-prc.intel.com:913
-        no_proxy: github.com,nodejs.org,registry.npmjs.org
       if: ${{ always() }}
       uses: scacap/action-surefire-report@v1
       with:
