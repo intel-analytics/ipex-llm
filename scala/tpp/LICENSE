@@ -400,7 +400,7 @@ org.typelevel:macro-compat_2.12
 org.xerial.snappy:snappy-java
 org.yaml:snakeyaml
 
-:threading_building_blocks
+threading_building_blocks
 com.intel.analytics.bigdl.core.native.opencv:opencv-java-x86_64-linux
 io.perfmark:perfmark-api
 org.apache.apr:apr
@@ -440,9 +440,9 @@ org.scala-lang.modules:scala-java8-compat_2.12
 org.scala-lang.modules:scala-xml_2.12
 xmlenc:xmlenc
 
-:libwebp
-:llvm
-:re2
+libwebp
+llvm
+re2
 com.esotericsoftware.reflectasm:reflectasm
 net.java.dev.msv:xsdlib
 org.xmlpull:xpp3
@@ -500,13 +500,13 @@ org.typelevel:spire-util_2.12
 org.typelevel:spire_2.12
 redis.clients:jedis
 
-:curl
-:giflib
-:isorelax
-:jsoncpp
-:libffi
-:libtiff
-:safestring
+curl
+giflib
+isorelax
+jsoncpp
+libffi
+libtiff
+safestring
 org.codehaus.mojo:animal-sniffer-parent
 org.slf4j:slf4j-parent
 
@@ -517,14 +517,14 @@ org.hdrhistogram:HdrHistogram
 org.latencyutils:LatencyUtils
 org.tukaani:xz
 
-:blas
-:sqlite3
+blas
+sqlite3
 
-Zlib-Libpng
+Zlib
 ------------
 black.ninia:jep
 
-
+zlib
 
 Plexus Classworlds License
 ------------
@@ -533,27 +533,22 @@ classworlds:classworlds
 
 Unicode
 ------------
-:icu
+icu
 
 
 libjpeg
 ------------
-:libjpeg-turbo
+libjpeg-turbo
 
 
 libpng
 ------------
-:libpng
+libpng
 
 
 openssl
 ------------
-:boringssl
-
-
-zlib
-------------
-:zlib
+boringssl
 
 
 
