@@ -503,8 +503,8 @@ class TFRunner:
 
     def load_remote_model(self, filepath, custom_objects, compile, options):
         """Load the model from provided hdfs filepath."""
-        import pyarrow.fs as pafs
         import pyarrow as pa
+        import pyarrow.fs as pafs
         import tensorflow as tf
         file_name = os.path.basename(filepath)
         temp_path = os.path.join(tempfile.mkdtemp(), file_name)
