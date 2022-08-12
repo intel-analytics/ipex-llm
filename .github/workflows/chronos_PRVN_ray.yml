@@ -84,6 +84,7 @@ jobs:
       - name: Run Chronos python test
         shell: bash
         run: |
+          sed -i "s/'bigdl-core=='+VERSION/'bigdl-core==2.1.0b20220811'/g" python/dllib/src/setup.py
           bash python/dev/release_default_linux_spark246.sh default false false
           bash python/nano/dev/build_and_install.sh linux default false pytorch --force-reinstall --no-deps -U
           pip install bigdl-core==2.1.0.dev0
