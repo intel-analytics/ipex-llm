@@ -48,26 +48,16 @@ jobs:
           }]
         mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${NEXUS_URL}" }]'
 
-
-    - name: Run tests
-      run: |
-          export SPARK_LOCAL_HOSTNAME=localhost
-          export KERAS_BACKEND=tensorflow
-          cd scala
-          mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.optim" "-Dtest=com.intel.analytics.bigdl.dllib.optim.*Test" test -P spark_3.x -Dspark.version=3.1.2
-    - name: set git proxy
-      run: |
-        git config --global http.proxy 'http://child-prc.intel.com:913'
-        git config --global https.proxy 'http://child-prc.intel.com:913'
     - name: Publish Test Report
       env:
         https_proxy: http://child-prc.intel.com:913
+        http_proxy: http://child-prc.intel.com:913
       if: ${{ always() }}
       uses: scacap/action-surefire-report@v1
       with:
         check_name: Example mvn Report
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        report_paths: scala/dllib/target/surefire-reports/*.xml
+        report_paths: scala/dllib/target/surefire-reports/TEST*.xml
 #     - name: Test Report
 #       uses: dorny/test-reporter@v1
 #       if: success() || failure()    # run this step even if previous step failed
