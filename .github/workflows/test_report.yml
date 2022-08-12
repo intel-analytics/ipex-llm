@@ -47,15 +47,11 @@ jobs:
               }
           }]
         mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${NEXUS_URL}" }]'
-    - uses: actions/download-artifact@v3
-      with:
-        name: test-results
-    - name: Display structure of downloaded files
-      run: ls -R
     - name: Publish Test Report
       env:
         https_proxy: http://child-prc.intel.com:913
         http_proxy: http://child-prc.intel.com:913
+        no_proxy: http://child-prc.intel.com:913
       if: ${{ always() }}
       uses: scacap/action-surefire-report@v1
       with:
