@@ -10,6 +10,7 @@ on:
         type: choice
         options:
         - all
+        - bigdl-ppml-trusted-big-data-ml-python-gramine
         - bigdl-ppml-trusted-big-data-ml-python-graphene
         - bigdl-ppml-trusted-realtime-ml-scala-graphene
         - bigdl-ppml-trusted-big-data-ml-scala-occlum
@@ -40,6 +41,31 @@ jobs:
       run: |
         echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }} " >> $GITHUB_ENV
         echo "ARTIFACT=${{ github.event.inputs.artifact || env.DEFAULT_ARTIFACT }}" >> $GITHUB_ENV
+    - name: bigdl-ppml-trusted-big-data-ml-python-gramine
+      run: |
+        if [ "$ARTIFACT" = "bigdl-ppml-trusted-big-data-ml-python-gramine" ] || [ "$ARTIFACT" = "ALL" ] ; then
+        echo "########################################"
+        echo "####### big-data-ml-python-gramine ####"
+        echo "########################################"
+        cd ppml/trusted-big-data-ml/python/docker-gramine
+        export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine
+        sudo docker build \
+            --no-cache=true \
+            --build-arg http_proxy=http://$HTTP_PROXY_HOST:$HTTP_PROXY_PORT \
+            --build-arg https_proxy=http://$HTTPS_PROXY_HOST:$HTTPS_PROXY_PORT \
+            --build-arg HTTP_PROXY_HOST=$HTTP_PROXY_HOST \
+            --build-arg HTTP_PROXY_PORT=$HTTP_PROXY_PORT \
+            --build-arg HTTPS_PROXY_HOST=$HTTPS_PROXY_HOST \
+            --build-arg HTTPS_PROXY_PORT=$HTTPS_PROXY_PORT \
+            --build-arg JDK_VERSION=8u192 \
+            --build-arg JDK_URL=$JDK_URL \
+            --build-arg no_proxy=10.239.45.10 \
+            --build-arg SPARK_JAR_REPO_URL=$SPARK_JAR_REPO_URL \
+            -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG}
+        fi
     - name: bigdl-ppml-trusted-big-data-ml-python-graphene
       run: |
         if [[ "$ARTIFACT" == bigdl-ppml-trusted-big-data-ml-python-graphene || "$ARTIFACT" == all ]]; then
