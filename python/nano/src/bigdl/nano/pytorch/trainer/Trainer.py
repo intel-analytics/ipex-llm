@@ -113,8 +113,9 @@ class Trainer(pl.Trainer):
         enable_bf16 = False
 
         if self.use_ipex and kwargs.get('precision', None) == "bf16":
-            # No need to set precision to 32, because Strategy > Accelerator/precision/plugins
             enable_bf16 = True
+            if TORCH_VERSION_LESS_1_10:
+                kwargs['precision'] = 32
 
         if num_processes == 1:
             from bigdl.nano.pytorch.strategies import create_IPEXStrategy

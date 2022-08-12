@@ -32,6 +32,7 @@ from torch import nn
 
 from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch.vision.models import vision
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 
 batch_size = 256
 num_workers = 0
@@ -84,15 +85,21 @@ class TestTrainer(TestCase):
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
         loss = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
-        trainer = Trainer(max_epochs=1, precision='bf16')
         pl_model = Trainer.compile(model, loss, optimizer)
-        trainer.fit(pl_model, self.train_loader)
-        assert isinstance(trainer.strategy.precision_plugin, NativeMixedPrecisionPlugin)
-        # model is not converted to bfloat16 precision
-        input = TensorDataset(torch.rand(1, 3, 32, 32))
-        train_loader = DataLoader(input)
-        y_hat = trainer.predict(pl_model, train_loader)
-        assert y_hat[0].dtype is torch.bfloat16
+        if TORCH_VERSION_LESS_1_10:
+            trainer = Trainer(max_epochs=1, precision='bf16')
+            trainer.fit(pl_model, self.train_loader)
+            assert isinstance(trainer.strategy.precision_plugin, NativeMixedPrecisionPlugin)
+            # model is not converted to bfloat16 precision
+            input = TensorDataset(torch.rand(1, 3, 32, 32))
+            train_loader = DataLoader(input)
+            y_hat = trainer.predict(pl_model, train_loader)
+            assert y_hat[0].dtype is torch.bfloat16
+        else:
+            trainer = Trainer(max_epochs=1, precision=64)
+            trainer.fit(pl_model, self.train_loader)
+            assert isinstance(trainer.strategy.precision_plugin, DoublePrecisionPlugin)
+            assert optimizer.param_groups[0]['params'][0].dtype is torch.float64
 
     def test_trainer_save_load(self):
         trainer = Trainer(max_epochs=1)

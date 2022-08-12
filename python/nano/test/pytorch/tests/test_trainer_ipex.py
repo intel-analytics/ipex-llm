@@ -15,7 +15,6 @@
 #
 
 
-from gc import callbacks
 import os
 from unittest import TestCase
 

@@ -84,7 +84,7 @@ class IPEXBF16Precision(PrecisionPlugin):
     @contextmanager
     def forward_context(self):
         """AMP for managing model forward/training_step/evaluation_step/predict_step."""
-        # Using IPEX bf16 and torch.autocast(...) will raise a segmentation fault
+        # Using IPEX bf16 and torch.autocast(...) reports a segmentation fault
         # in PyTorch 1.11.
         # torch.autocast("cpu", args...) is equivalent to torch.cpu.amp.autocast(args...)
         # in PyTorch 1.12.
