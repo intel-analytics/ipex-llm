@@ -226,7 +226,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
                                             input_feature_num=2,
                                             output_feature_num=2,
                                             label_len=12,
-                                            d_model=128,
+                                            d_model=256,
                                             freq='s',
                                             loss="mse",
                                             metrics=['mae', 'mse', 'mape'],
