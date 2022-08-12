@@ -35,11 +35,11 @@ import logging
 
 
 class NNServiceImpl(NNServiceServicer):
-    def __init__(self, client_num, **kargs) -> None:
-        self.client_num = client_num
+    def __init__(self, conf, **kargs) -> None:        
+        self.client_num = conf['clientNum']
         self.aggregator_map = {
-            'tf': tf_agg.Aggregator(client_num, **kargs),
-            'pt': pt_agg.Aggregator(client_num, **kargs)}
+            'tf': tf_agg.Aggregator(conf, **kargs),
+            'pt': pt_agg.Aggregator(conf, **kargs)}
         self.model_dir = tempfile.mkdtemp() # store tmp file dir
         self.model_path = os.path.join(self.model_dir, "vfl_server_model")
 

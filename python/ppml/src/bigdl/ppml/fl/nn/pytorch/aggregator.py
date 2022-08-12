@@ -22,19 +22,39 @@ import torch
 from bigdl.ppml.fl.nn.utils import ndarray_map_to_tensor_map
 from bigdl.dllib.utils.log4Error import invalidInputError
 from threading import Condition
+import os
 
 
 class Aggregator(object):
-    def __init__(self,
-                 client_num=1) -> None:
+    def __init__(self, conf) -> None:
         self.model = None
         self.client_data = {'train':{}, 'eval':{}, 'pred':{}}
         self.server_data = {'train':{}, 'eval':{}, 'pred':{}}
-        self.client_num = client_num
+        self.client_num = conf['clientNum']
+        self.model_path = conf['pytorchServerModelPath'] \
+            if 'pytorchServerModelPath' in conf else None
         self.condition = Condition()
         self._lock = threading.Lock()
-        logging.info(f"Initialized Pytorch aggregator [client_num: {client_num}]")
+        self.agg_counter = 0
+        logging.info(f"Initialized Pytorch aggregator [client_num: {self.client_num}]")
+        self.load_model_if_exists()
+        # need to set optimizer with model
 
+    def load_model_if_exists(self):
+        if self.model_path is None:
+            return
+        if os.path.exists(self.model_path):
+            try:
+                logging.info(f"Trying to load model from {self.model_path}")
+                self.model = torch.jit.load(f"{self.model_path}/model.pt")
+                # if loaded, set meta here to make the optimizer bind the model
+                with open(f"{self.model_path}/model.meta", "rb") as meta_file:
+                    meta = pickle.load(meta_file)
+                    self.loss_fn = meta['loss']
+                    self.set_optimizer(meta['optimizer'][0], meta['optimizer'][1])
+
+            except Exception as e:
+                logging.warn(f"Loading model failed, will create a new model on FL Server")
 
     def set_meta(self, loss_fn, optimizer):
         with self._lock:
@@ -42,6 +62,16 @@ class Aggregator(object):
             optimizer_cls = pickle.loads(optimizer.cls)
             optimizer_args = pickle.loads(optimizer.args)
             self.set_optimizer(optimizer_cls, optimizer_args)
+
+            # save meta to file if according config is set
+            if self.model_path is None:
+                return            
+            if not os.path.exists(f"{self.model_path}/model.meta"):
+                os.makedirs(f"{self.model_path}", exist_ok=True)
+                with open(f"{self.model_path}/model.meta", 'wb') as meta_file:
+                    pickle.dump({'loss': loss_fn,
+                                 'optimizer': (optimizer_cls, optimizer_args)},
+                                meta_file)
 
 
     def set_loss_fn(self, loss_fn):
@@ -72,6 +102,7 @@ got {len(self.client_data[phase])}/{self.client_num}')
 
 
     def aggregate(self, phase):
+    
         input, target = [], None
         # to record the order of tensors with client ID
         for cid, ndarray_map in self.client_data[phase].items():
@@ -113,6 +144,12 @@ got {len(self.client_data[phase])}/{self.client_num}')
             for cid, input_tensor in input:
                 grad_map = {'grad': input_tensor.grad.numpy(), 'loss': loss.detach().numpy()}
                 self.server_data['train'][cid] = ndarray_map_to_tensor_map(grad_map)
+
+            self.agg_counter += 1
+            if self.model_path is not None and self.agg_counter % 100 == 0:
+                m = torch.jit.script(self.model)
+                torch.jit.save(m, f"{self.model_path}/model.pt")
+
         elif phase == 'eval':
             pass
         elif phase == 'pred':

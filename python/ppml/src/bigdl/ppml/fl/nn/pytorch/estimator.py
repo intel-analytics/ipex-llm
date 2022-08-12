@@ -24,7 +24,6 @@ from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.ppml.fl.nn.utils import file_chunk_generate, tensor_map_to_ndarray_map
 import os
 import tempfile
-from torch.testing._internal.jit_utils import clear_class_registry
 
 
 

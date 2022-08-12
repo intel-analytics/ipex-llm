@@ -103,6 +103,9 @@ Modify the config file `ppml-conf.yaml`
 # the port server gRPC uses
 serverPort: 8980
 
+# the path server uses to save server model checkpoints
+pytorchModelPath: /tmp/pytorch_server_model.pt
+
 # the number of clients in this federated learning application
 clientNum: 2
 ```
@@ -135,3 +138,26 @@ The first 5 predict results are printed
  [1.2120417e-23]
  [0.0000000e+00]]
 ```
+### 3.4 Incremental Training
+Incremental training is supported, as long as `pytorchModelPath` is specified in FL Server config, the server automatically saves the model checkpoints (every 100 aggregations by default). Thus, we just need to use the same configurations and start FL Server again.
+
+In SGX container, start FL Server
+```
+./ppml/scripts/start-fl-server.sh 
+```
+For client applications, we change from creating model to directly loading. This is already implemented in example code, we just need to run client applications with an argument
+
+```bash
+# run following commands in 2 different terminals
+python pytorch_nn_lr_1.py true
+python pytorch_nn_lr_2.py true
+```
+The result based on new boosted trees are printed
+```
+[[1.8799074e-36]
+ [1.7512805e-25]
+ [4.6501680e-30]
+ [1.4828590e-27]
+ [0.0000000e+00]]
+```
+and you can see the loss continues to drop from the log of [Section 3.3](#33-get-results)

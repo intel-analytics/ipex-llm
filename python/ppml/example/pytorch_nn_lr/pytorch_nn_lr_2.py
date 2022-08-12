@@ -16,12 +16,11 @@
 
 import numpy as np
 import pandas as pd
+import click
 
 import torch
 from torch import nn
 from bigdl.ppml.fl.estimator import Estimator
-from bigdl.ppml.fl.algorithms.psi import PSI
-from bigdl.ppml.fl.nn.pytorch.utils import set_one_like_parameter
 
 
 class LocalModel(nn.Module):
@@ -34,7 +33,9 @@ class LocalModel(nn.Module):
         return x
 
 
-if __name__ == '__main__':
+@click.command()
+@click.option('--load_model', default=False)
+def run_client(load_model):
     df_train = pd.read_csv('./python/ppml/example/pytorch_nn_lr/data/diabetes-vfl-2.csv')
 
     # this should wait for the merge of 2 FLServer (Py4J Java gRPC and Python gRPC)
@@ -45,16 +46,31 @@ if __name__ == '__main__':
     
     df_x = df_train
     x = df_x.to_numpy(dtype="float32")
-    y = None
+    y = None    
     
-    model = LocalModel(len(df_x.columns))
     loss_fn = nn.BCELoss()
-    ppl = Estimator.from_torch(client_model=model,
-                               client_id='2',
-                               loss_fn=loss_fn,
-                               optimizer_cls=torch.optim.SGD,
-                               optimizer_args={'lr':1e-5},
-                               target='localhost:8980')
-    response = ppl.fit(x, y)
+
+    if load_model:
+        model = torch.load('/tmp/pytorch_client_model_2.pt')
+        ppl = Estimator.from_torch(client_model=model,
+                                   client_id='2',
+                                   loss_fn=loss_fn,
+                                   optimizer_cls=torch.optim.SGD,
+                                   optimizer_args={'lr':1e-5},
+                                   target='localhost:8980')
+        response = ppl.fit(x, y, 5)
+    else:
+        model = LocalModel(len(df_x.columns))
+        ppl = Estimator.from_torch(client_model=model,
+                                   client_id='2',
+                                   loss_fn=loss_fn,
+                                   optimizer_cls=torch.optim.SGD,
+                                   optimizer_args={'lr':1e-5},
+                                   target='localhost:8980')
+        response = ppl.fit(x, y, 5)
+        torch.save(ppl.model, '/tmp/pytorch_client_model_2.pt')
     result = ppl.predict(x)
     print(result[:5])
+
+if __name__ == '__main__':
+    run_client()
