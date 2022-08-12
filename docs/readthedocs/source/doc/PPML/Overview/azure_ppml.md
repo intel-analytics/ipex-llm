@@ -179,6 +179,51 @@ Example command:
 ```bash
 az keyvault set-policy --name myKeyVault --object-id <systemManagedIdentityOfVMSS> --secret-permissions get --key-permissions all
 ```
+#### 2.5.3.2 Set access for AKS
+##### a. Enable Azure Key Vault Provider for Secrets Store CSI Driver support
+Example command:
+```bash
+az aks enable-addons --addons azure-keyvault-secrets-provider --name myAKSCluster --resource-group myResourceGroup
+```
+* Verify the Azure Key Vault Provider for Secrets Store CSI Driver installation
+Example command:
+```bash
+kubectl get pods -n kube-system -l 'app in (secrets-store-csi-driver, secrets-store-provider-azure)'
+```
+Be sure that a Secrets Store CSI Driver pod and an Azure Key Vault Provider pod are running on each node in your cluster's node pools.
+* Enable Azure Key Vault Provider for Secrets Store CSI Driver to track of secret update in key vault
+```bash
+az aks update -g myResourceGroup -n myAKSCluster --enable-secret-rotation
+```
+#### b. Provide an identity to access the Azure Key Vault
+There are several ways to provide identity for Azure Key Vault Provider for Secrets Store CSI Driver to access Azure Key Vault: `An Azure Active Directory pod identity`, `user-assigned identity` or `system-assigned managed identity`. In our solution, we use user-assigned managed identity.
+* Enable managed identity in AKS
+```bash
+az aks update -g myResourceGroup -n myAKSCluster --enable-managed-identity
+```
+* Get user-assigned managed identity that you created when you enabled a managed identity on your AKS cluster
+Run:
+```bash
+az aks show -g myResourceGroup -n myAKSCluster --query addonProfiles.azureKeyvaultSecretsProvider.identity.clientId -o tsv
+```
+The output would be like:
+```bash
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+```
+Take note of this output as your user-assigned managed identity of Azure KeyVault Secrets Provider
+* Grant your user-assigned managed identity permissions that enable it to read your key vault and view its contents
+Example command:
+```bash
+az keyvault set-policy -n myKeyVault --key-permissions get --spn xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+az keyvault set-policy -n myKeyVault --secret-permissions get --spn xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+```
+#### c. Create a SecretProviderClass to access your Key Vault
+On your client docker container, edit `/ppml/trusted-big-data-ml/azure/secretProviderClass.yaml` file, modify `<client-id>` to your user-assigned managed identity of Azure KeyVault Secrets Provider, and modify `<key-vault-name>` and  `<tenant-id>` to your real key vault name and tenant id.
+
+Then run:
+```bash
+kubectl apply -f /ppml/trusted-big-data-ml/azure/secretProviderClass.yaml
+```
 
 ## 3. Run Spark PPML jobs
 Login to your client VM and enter your BigDL PPML container:
