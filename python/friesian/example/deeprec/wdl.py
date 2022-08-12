@@ -103,14 +103,14 @@ class WDL():
                  input_layer_partitioner=None,
                  dense_layer_partitioner=None):
         if not inputs:
-            raise ValueError("Dataset is not defined.")
+            invalidInputError(False, "Dataset is not defined.")
         self._feature = inputs[0]
         self._label = inputs[1]
 
         self._wide_column = wide_column
         self._deep_column = deep_column
         if not wide_column or not deep_column:
-            raise ValueError("Wide column or Deep column is not defined.")
+            invalidInputError(False, "Wide column or Deep column is not defined.")
 
         self.tf = stock_tf
         self.bf16 = False if self.tf else bf16
@@ -176,10 +176,9 @@ class WDL():
                 self._add_layer_summary(net, 'input_from_feature_columns')
 
             # hidden layers
-            dnn_scope = tf.variable_scope('dnn_layers', \
-                partitioner=self._dense_layer_partitioner, reuse=tf.AUTO_REUSE)
-            with dnn_scope.keep_weights(dtype=tf.float32) if self.bf16 \
-                else dnn_scope:
+            dnn_scope = tf.variable_scope(
+                'dnn_layers', partitioner=self._dense_layer_partitioner, reuse=tf.AUTO_REUSE)
+            with dnn_scope.keep_weights(dtype=tf.float32) if self.bf16 else dnn_scope:
                 if self.bf16:
                     net = tf.cast(net, dtype=tf.bfloat16)
 
@@ -191,7 +190,7 @@ class WDL():
                 # dnn logits
                 logits_scope = tf.variable_scope('logits')
                 with logits_scope.keep_weights(dtype=tf.float32) if self.bf16 \
-                    else logits_scope as dnn_logits_scope:
+                        else logits_scope as dnn_logits_scope:
                     dnn_logits = tf.layers.dense(net,
                                                  units=1,
                                                  activation=None,
@@ -250,7 +249,7 @@ class WDL():
                 learning_rate=self._deep_learning_rate,
                 global_step=self.global_step)
         else:
-            raise ValueError("Optimzier type error.")
+            invalidInputError(False, "Optimzier type error.")
 
         linear_optimizer = tf.train.FtrlOptimizer(
             learning_rate=self._linear_learning_rate,
@@ -342,16 +341,17 @@ def build_feature_columns():
                         column_name, dtype=tf.int64, ev_option=ev_opt)
                 elif args.adaptive_emb:
                     '''                 Adaptive Embedding Feature Part 2 of 2
-                    Expcet the follow code, a dict, 'adaptive_mask_tensors', is need as the input of 
+                    Except the follow code, a dict, 'adaptive_mask_tensors', is need as the input of
                     'tf.feature_column.input_layer(adaptive_mask_tensors=adaptive_mask_tensors)'.
                     For column 'COL_NAME',the value of adaptive_mask_tensors['$COL_NAME'] is a int32
                     tensor with shape [batch_size].
                     '''
-                    categorical_column = tf.feature_column.categorical_column_with_adaptive_embedding(
-                        column_name,
-                        hash_bucket_size=HASH_BUCKET_SIZES[column_name],
-                        dtype=tf.int64,
-                        ev_option=ev_opt)
+                    categorical_column = \
+                        tf.feature_column.categorical_column_with_adaptive_embedding(
+                            column_name,
+                            hash_bucket_size=HASH_BUCKET_SIZES[column_name],
+                            dtype=tf.int64,
+                            ev_option=ev_opt)
                 elif args.dynamic_ev:
                     '''Dynamic-dimension Embedding Variable'''
                     print(
@@ -419,7 +419,7 @@ def train(sess_config,
     '''
                             Incremental_Checkpoint
     Please add `save_incremental_checkpoint_secs` in 'tf.train.MonitoredTrainingSession'
-    it's default to None, Incremental_save checkpoint time in seconds can be set 
+    it's default to None, Incremental_save checkpoint time in seconds can be set
     to use incremental checkpoint function, like `tf.train.MonitoredTrainingSession(
         save_incremental_checkpoint_secs=args.incremental_ckpt)`
     '''
@@ -531,9 +531,9 @@ def main(train_dataset, test_dataset=None, tf_config=None, server=None, config=N
 
     # Run model training and evaluation
     train(sess_config, hooks, model, train_init_op, config, tf_config, server)
-    if not config["no_eval"]:  # TODO: the original script won't evaluate in distributed mode?
+    if not config["no_eval"]:  # TODO: the original script won't evaluate in distributed mode
         eval_acc, eval_auc = eval(sess_config, hooks, model, test_init_op, config['test_steps'],
-             config['checkpoint_dir'])
+                                  config['checkpoint_dir'])
         return eval_acc, eval_auc
     return None
 
@@ -541,7 +541,7 @@ def main(train_dataset, test_dataset=None, tf_config=None, server=None, config=N
 def boolean_string(string):
     low_string = string.lower()
     if low_string not in {'false', 'true'}:
-        raise ValueError('Not a valid boolean string')
+        invalidInputError(False, 'Not a valid boolean string')
     return low_string == 'true'
 
 
@@ -578,7 +578,7 @@ def get_arg_parser():
                         type=int,
                         default=2021)
     parser.add_argument('--optimizer',
-                        type=str, \
+                        type=str,
                         choices=['adam', 'adamasync', 'adagraddecay', 'adagrad'],
                         default='adamasync')
     parser.add_argument('--linear_learning_rate',
@@ -609,11 +609,11 @@ def get_arg_parser():
                         help='set inter op parallelism threads.',
                         type=int,
                         default=0)
-    parser.add_argument('--input_layer_partitioner', \
+    parser.add_argument('--input_layer_partitioner',
                         help='slice size of input layer partitioner, units MB. Default 8MB',
                         type=int,
                         default=8)
-    parser.add_argument('--dense_layer_partitioner', \
+    parser.add_argument('--dense_layer_partitioner',
                         help='slice size of dense layer partitioner, units KB. Default 16KB',
                         type=int,
                         default=16)
@@ -623,52 +623,53 @@ def get_arg_parser():
     parser.add_argument('--no_eval',
                         help='not evaluate trained model by eval dataset.',
                         action='store_true')
-    parser.add_argument('--tf', \
+    parser.add_argument('--tf',
                         help='Use TF 1.15.5 API and disable DeepRec feature to run a baseline.',
                         action='store_true')
-    parser.add_argument('--smartstaged', \
+    parser.add_argument('--smartstaged',
                         help='Whether to enable smart staged feature of DeepRec, Default to True.',
                         type=boolean_string,
                         default=True)
-    parser.add_argument('--emb_fusion', \
+    parser.add_argument('--emb_fusion',
                         help='Whether to enable embedding fusion, Default to True.',
                         type=boolean_string,
                         default=True)
-    parser.add_argument('--ev', \
+    parser.add_argument('--ev',
                         help='Whether to enable DeepRec EmbeddingVariable. Default False.',
                         type=boolean_string,
                         default=False)
-    parser.add_argument('--ev_elimination', \
+    parser.add_argument('--ev_elimination',
                         help='Feature Elimination of EmbeddingVariable Feature. Default closed.',
                         type=str,
                         choices=[None, 'l2', 'gstep'],
                         default=None)
-    parser.add_argument('--ev_filter', \
+    parser.add_argument('--ev_filter',
                         help='Feature Filter of EmbeddingVariable Feature. Default closed.',
                         type=str,
                         choices=[None, 'counter', 'cbf'],
                         default=None)
-    parser.add_argument('--op_fusion', \
+    parser.add_argument('--op_fusion',
                         help='Whether to enable Auto graph fusion feature. Default to True',
                         type=boolean_string,
                         default=True)
     parser.add_argument('--micro_batch',
                         help='Set num for Auto Mirco Batch. Default close.',
                         type=int,
-                        default=0)  #TODO: Default to True
-    parser.add_argument('--adaptive_emb', \
+                        default=0)  # TODO: Default to True
+    parser.add_argument('--adaptive_emb',
                         help='Whether to enable Adaptive Embedding. Default to False.',
                         type=boolean_string,
                         default=False)
-    parser.add_argument('--dynamic_ev', \
-                        help='Whether to enable Dynamic-dimension Embedding Variable. Default to False.',
+    parser.add_argument('--dynamic_ev',
+                        help='Whether to enable Dynamic-dimension Embedding Variable. '
+                             'Default to False.',
                         type=boolean_string,
-                        default=False)#TODO:enable
-    parser.add_argument('--incremental_ckpt', \
+                        default=False)  # TODO:enable
+    parser.add_argument('--incremental_ckpt',
                         help='Set time of save Incremental Checkpoint. Default 0 to close.',
                         type=int,
                         default=0)
-    parser.add_argument('--workqueue', \
+    parser.add_argument('--workqueue',
                         help='Whether to enable Work Queue. Default to False.',
                         type=boolean_string,
                         default=False)
@@ -702,9 +703,11 @@ def get_arg_parser():
 def set_env_for_DeepRec():
     '''
     Set some ENV for these DeepRec's features enabled by ENV.
-    More Detail information is shown in https://deeprec.readthedocs.io/zh/latest/index.html.
-    START_STATISTIC_STEP & STOP_STATISTIC_STEP: On CPU platform, DeepRec supports memory optimization
-        in both stand-alone and distributed trainging. It's default to open, and the
+    More Detail information is shown in
+    https://deeprec.readthedocs.io/zh/latest/index.html.
+    START_STATISTIC_STEP & STOP_STATISTIC_STEP:
+        On CPU platform, DeepRec supports memory optimization
+        in both stand-alone and distributed training. It's default to open, and the
         default start and stop steps of collection is 1000 and 1100. Reduce the initial
         cold start time by the following settings.
     MALLOC_CONF: On CPU platform, DeepRec can use memory optimization with the jemalloc library.
@@ -712,7 +715,7 @@ def set_env_for_DeepRec():
     '''
     os.environ['START_STATISTIC_STEP'] = '100'
     os.environ['STOP_STATISTIC_STEP'] = '110'
-    os.environ['MALLOC_CONF']= \
+    os.environ['MALLOC_CONF'] = \
         'background_thread:true,metadata_thp:auto,dirty_decay_ms:20000,muzzy_decay_ms:20000'
 
 
@@ -736,8 +739,9 @@ class RayDeepRecCluster:
         self.num_instances = ray_ctx.num_ray_nodes * instances_per_node
         self.num_workers = self.num_instances - self.num_ps
         num_chief = 1  # Normally there would always be only one chief.
-        invalidInputError(self.num_instances >=2,
-                          "There should be at least two instances, one parameter server and one worker")
+        invalidInputError(
+            self.num_instances >= 2,
+            "There should be at least two instances, one parameter server and one worker")
         invalidInputError(self.num_workers > 0,
                           "Do not have enough resources to launch {} parameter servers. "
                           "Try to reduce num_ps".format(self.num_ps))
@@ -766,16 +770,19 @@ class RayDeepRecCluster:
             train_files_dict = self.divide_files(train_processed_folder)
             test_files_dict = None
             if test_df:
-                test_processed_folder = self.config['data_location'] + "/test_processed"
-                test_df.write.csv(path=test_processed_folder, mode="overwrite", header=False, sep=",")
+                test_processed_folder = \
+                    self.config['data_location'] + "/test_processed"
+                test_df.write.csv(
+                    path=test_processed_folder, mode="overwrite", header=False, sep=",")
                 test_files_dict = self.divide_files(test_processed_folder)
-            worker_stats = ray.get([worker.step_file.remote(train_files_dict, test_files_dict) for worker in self.remote_workers])
+            worker_stats = ray.get([worker.step_file.remote(train_files_dict, test_files_dict)
+                                    for worker in self.remote_workers])
         else:
             train_dataset, test_dataset = maybe_dataframe_to_xshards(train_df, test_df,
-                                                                    feature_cols, label_cols,
-                                                                    mode="fit",
-                                                                    num_workers=self.num_workers,
-                                                                    accept_str_col=True)
+                                                                     feature_cols, label_cols,
+                                                                     mode="fit",
+                                                                     num_workers=self.num_workers,
+                                                                     accept_str_col=True)
             ray_xshards = process_spark_xshards(train_dataset, self.num_workers)
             val_ray_xshards = None
             if test_df:
@@ -928,7 +935,8 @@ class RayWorker:
 
         partition_list = ray.get(data_refs)
         partition_data = [item for partition in partition_list for item in partition]
-        data, label = ray_partition_get_data_label(partition_data, allow_tuple=True, allow_list=False)
+        data, label = ray_partition_get_data_label(
+            partition_data, allow_tuple=True, allow_list=False)
         data_size = len(label)
         steps = data_size // self.config["batch_size"] + 1
         print("Number of train records for this worker: ", data_size)
@@ -938,7 +946,8 @@ class RayWorker:
         test_dataset = None
         if validation_data_refs:
             validation_partition_list = ray.get(validation_data_refs)
-            validation_partition_data = [item for partition in validation_partition_list for item in partition]
+            validation_partition_data = \
+                [item for partition in validation_partition_list for item in partition]
             validation_data, validation_label = ray_partition_get_data_label(
                 validation_partition_data, allow_tuple=True, allow_list=False)
             test_data_size = len(validation_label)
@@ -1031,7 +1040,8 @@ def to_textline_dataset(files, config):
         features = all_columns
         # EmbeddingVariable only supports int64 not int32.
         for j in range(len(CATEGORICAL_COLUMNS)):
-            features[CATEGORICAL_COLUMNS[j]] = tf.cast(features[CATEGORICAL_COLUMNS[j]], dtype=tf.int64)
+            features[CATEGORICAL_COLUMNS[j]] = \
+                tf.cast(features[CATEGORICAL_COLUMNS[j]], dtype=tf.int64)
         return features, labels
 
     print(files)
@@ -1119,31 +1129,38 @@ args = parser.parse_args()
 if not args.tf:
     set_env_for_DeepRec()
 
+extra_params = \
+    {"min-worker-port": "30000", "max-worker-port": "33333", "metrics-export-port": "20010"}
 if args.cluster_mode == "k8s":
     if not args.master:
         invalidInputError(False, "k8s master address must be provided for k8s cluster_mode")
+    conf = {
+        "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName":
+            "nfsvolumeclaim",
+        "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path":
+            "/bigdl2.0/data",
+        "spark.kubernetes.executor.deleteOnTermination": "true",
+        "spark.kubernetes.memoryOverheadFactor": "0.6"
+    }
     sc = init_orca_context(
         cluster_mode="k8s", cores=args.cores, num_nodes=args.num_nodes, memory="40g",
         master=args.master, container_image="intelanalytics/bigdl-k8s:latest",
-        conf={"spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName": "nfsvolumeclaim",
-              "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path": "/bigdl2.0/data",
-              "spark.kubernetes.executor.deleteOnTermination": "true",
-              "spark.kubernetes.memoryOverheadFactor": "0.6"},
-        extra_params={"min-worker-port": "30000", "max-worker-port": "33333", "metrics-export-port": "20010"},
-        init_ray_on_spark=True)
+        conf=conf, extra_params=extra_params, init_ray_on_spark=True)
 elif args.cluster_mode == "yarn":
     sc = init_orca_context(
         cluster_mode="yarn", cores=args.cores, num_nodes=args.num_nodes, memory="40g",
         conf={"spark.yarn.executor.memoryOverhead": "24000"},
-        extra_params={"min-worker-port": "30000", "max-worker-port": "33333", "metrics-export-port": "20010"},
-        init_ray_on_spark=True)
+        extra_params=extra_params, init_ray_on_spark=True)
 elif args.cluster_mode == "local":
-    invalidInputError(args.instances_per_node >= 2, "For local cluster_mode, workers_per_node must no less than 2")
+    invalidInputError(
+        args.instances_per_node >= 2,
+        "For local cluster_mode, workers_per_node must no less than 2")
     invalidInputError(args.num_nodes == 1, "For local cluster mode, num_nodes must be equal to 1")
     init_orca_context(cores=args.cores, memory="20g", init_ray_on_spark=True)
 else:
-    invalidInputError(False,
-                     "cluster_mode should be one of 'local', 'k8s' and 'yarn', but got " + args.cluster_mode)
+    invalidInputError(
+        False,
+        "cluster_mode should be one of 'local', 'k8s' and 'yarn', but got " + args.cluster_mode)
 
 train_df, test_df, params = data_processing(args)
 config = vars(args)
