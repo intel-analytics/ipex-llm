@@ -85,5 +85,6 @@ jobs:
         shell: bash
         run: |
           bash python/dev/release_default_linux_spark246.sh default false false
+          bash python/nano/dev/build_and_install.sh linux default false pytorch --force-reinstall --no-deps -U
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
