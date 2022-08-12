@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+set -x
 echo "App[Model-inference-example] Test"
 echo "# Test 1 text-classification-training"
 
@@ -84,43 +86,43 @@ echo "#App[Model-inference-example] Test 3.1: text-classification-inference:Simp
 # # time3=$((now-start))
 # # echo "#App[Model-inference-example] Test 3.2: text-classification-inference:WebServiceDriver time used:$time3 seconds"
 
-echo "# Test 3.recommendation-inference"
+#echo "# Test 3.recommendation-inference"
 
-#recommendation
-cd ${BIGDL_ROOT}/apps/model-inference-examples/recommendation-inference
-mvn clean
-mvn clean package
-cd ${BIGDL_ROOT}/apps/model-inference-examples
+##recommendation
+#cd ${BIGDL_ROOT}/apps/model-inference-examples/recommendation-inference
+#mvn clean
+#mvn clean package
+#cd ${BIGDL_ROOT}/apps/model-inference-examples
 
-if [ -f models/recommendation/ncf.bigdl ]
-then
-    echo "models/recommedation/ncf.bigdl already exists"
-else
-    wget $FTP_URI/analytics-zoo-models/recommendation/ncf.bigdl -P models/recommendation/
-fi
-echo "# Test 3.1 recommendation-inference:SimpleScalaDriver"
-#timer
-start=$(date "+%s")
+#if [ -f models/recommendation/ncf.bigdl ]
+#then
+    #echo "models/recommedation/ncf.bigdl already exists"
+#else
+    #wget $FTP_URI/analytics-zoo-models/recommendation/ncf.bigdl -P models/recommendation/
+#fi
+#echo "# Test 3.1 recommendation-inference:SimpleScalaDriver"
+##timer
+#start=$(date "+%s")
 
-java -cp ./recommendation-inference/target/recommendation-inference-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
--DMODEL_PATH=./models/recommendation/ncf.bigdl \
-com.intel.analytics.bigdl.apps.recommendation.inference.SimpleScalaDriver
+#java -cp ./recommendation-inference/target/recommendation-inference-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+#-DMODEL_PATH=./models/recommendation/ncf.bigdl \
+#com.intel.analytics.bigdl.apps.recommendation.inference.SimpleScalaDriver
 
-now=$(date "+%s")
-time4=$((now-start))
-echo "#App[Model-inference-example] Test 3.1: recommendation-inference:SimpleScalaDriver time used:$time4 seconds"
+#now=$(date "+%s")
+#time4=$((now-start))
+#echo "#App[Model-inference-example] Test 3.1: recommendation-inference:SimpleScalaDriver time used:$time4 seconds"
 
-echo "# Test 3.2 recommendation-inference:SimpleDriver[Java]"
-#timer
-start=$(date "+%s")
+#echo "# Test 3.2 recommendation-inference:SimpleDriver[Java]"
+##timer
+#start=$(date "+%s")
 
-java -cp ./recommendation-inference/target/recommendation-inference-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
--DMODEL_PATH=./analytics-zoo-models/recommendation/ncf.bigdl \
-com.intel.analytics.zoo.apps.recommendation.inference.SimpleDriver
+#java -cp ./recommendation-inference/target/recommendation-inference-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+#-DMODEL_PATH=./analytics-zoo-models/recommendation/ncf.bigdl \
+#com.intel.analytics.zoo.apps.recommendation.inference.SimpleDriver
 
-now=$(date "+%s")
-time5=$((now-start))
-echo "#App[Model-inference-example] Test 4.2: recommendation-inference:SimpleDriver time used:$time5 seconds"
+#now=$(date "+%s")
+#time5=$((now-start))
+#echo "#App[Model-inference-example] Test 4.2: recommendation-inference:SimpleDriver time used:$time5 seconds"
 
 echo "# Test 5.model-inference-flink"
 

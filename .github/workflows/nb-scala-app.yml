@@ -9,8 +9,8 @@
 name: Nightly Build Scala App
 
 on:
-  #pull_request:
-    #branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
   #release:
    # types: [published]
   schedule:
@@ -76,12 +76,27 @@ jobs:
         wget https://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz
         gunzip scala-2.11.8.tgz
         tar -xf scala-2.11.8.tar -C /opt
-        rm scala-2.11.8.tar
-        ln -s /opt/scala-2.11.8 /opt/scala
+        export SCALA_HOME=/opt/scala-2.11.8
+
+        wget http://archive.apache.org/dist/spark/spark-2.4.6/spark-2.4.6-bin-hadoop2.7.tgz
+        tar -xf spark-2.4.6-bin-hadoop2.7.tgz -C /opt/
+
     - name: Run Test
       #run: python -m build
       run: |
-          export SCALA_HOME=/opt/scala
-
+          export SPARK_LOCAL_HOSTNAME=localhost
+          export SPARK_HOME=/opt/spark-2.4.6-bin-hadoop2.7
+          export FTP_URI=ftp://zoo:1234qwer@10.112.231.51
+          export MASTER=local[4]
+          export no_proxy="10.239.45.10:8081,10.112.231.51,10.239.45.10"
           chmod a+x apps/run-scala-app-test.sh
           apps/run-scala-app-test.sh
+          
+          rm -rf /opt/scala-2.11.8 scala-2.11.8.tar
+          #rm -rf /opt/spark-3.1.2-bin-hadoop2.7 spark-3.1.2-bin-hadoop2.7.tgz
+          rm -rf /opt/spark-2.4.6-bin-hadoop2.7 spark-2.4.6-bin-hadoop2.7.tgz
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+
