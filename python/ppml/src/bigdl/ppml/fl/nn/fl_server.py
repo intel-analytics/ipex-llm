@@ -69,10 +69,9 @@ class FLServer(object):
                     self.port = conf['serverPort']
                 self.generate_conf(conf)
 
-        except yaml.YAMLError as e:
-            logging.warn('Loading config failed, using default config ')
         except Exception as e:
-            logging.warn('Failed to find config file "ppml-conf.yaml", using default config')
+            logging.warn('Failed to load config file "ppml-conf.yaml", using default config')
+            self.generate_conf({})
 
     def generate_conf(self, conf: dict):
         self.conf = conf
