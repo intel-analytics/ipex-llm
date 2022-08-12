@@ -502,15 +502,17 @@ class TFRunner:
         self.model = tf.keras.models.load_model(filepath, custom_objects, compile, options)
 
     def load_remote_model(self, filepath, custom_objects, compile, options):
-        """Load the model from provided remote filepath."""
+        """Load the model from provided hdfs filepath."""
         import pyarrow.fs as pafs
+        import pyarrow as pa
         import tensorflow as tf
         file_name = os.path.basename(filepath)
         temp_path = os.path.join(tempfile.mkdtemp(), file_name)
         classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
                                      stdout=subprocess.PIPE).communicate()[0]
         os.environ["CLASSPATH"] = classpath.decode("utf-8")
-        if not pafs.FileInfo(filepath).is_file:
+        hdfs = pa.hdfs.connect()
+        if not hdfs.isfile(filepath):
             if os.path.exists(temp_path):
                 os.makedirs(temp_path)
         pafs.copy_files(filepath, temp_path)

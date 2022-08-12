@@ -576,7 +576,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         Loads a model saved via `estimator.save()
 
         :param filepath: (str) Path of saved model (SavedModel or H5 file).
-               It can be local/hdfs/s3 filepath
+               It can be local/hdfs filepath
         :param custom_objects: Optional dictionary mapping names (strings) to
                custom classes or functions to be considered during deserialization.
         :param compile: Boolean, whether to compile the model after loading.
