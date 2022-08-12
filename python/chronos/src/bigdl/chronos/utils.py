@@ -60,15 +60,6 @@ class LazyImport:
         except (KeyError, AttributeError):
             pass
 
-        # Because early LazyImport does not allow absolute_name to contain class name,
-        # original usage:
-        #   lstm = LazyImport('bigdl.chronos.forecaster.lstm_forecaster')
-        #   lstm.LSTMForecaster() and lstm.LSTMForecaster.from_tsdataset()
-        # But including the class name is better for our needs.
-        # Usage: forecaster = LazyImport('bigdl.chronos.forecaster.lstm_forecaster.LSTMForecaster')
-        # forecaster() and forecaster.from_tsdataset()
-        # This comment will be removed later and migrated to pr..
-
         if "." in absolute_name:
             # Split module name to prevent class name from being introduced as package
             parent_name, _, child_name = absolute_name.rpartition('.')
