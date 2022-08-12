@@ -20,9 +20,9 @@ from bigdl.ppml.fl.algorithms.fgboost_regression import FGBoostRegression
 import pandas as pd
 
 from bigdl.ppml.fl.algorithms.psi import PSI
+import click
 
-
-# the preprocess code is mainly from 
+# the preprocess code is mainly from
 # https://www.kaggle.com/code/pablocastilla/predict-house-prices-with-xgboost-regression/notebook
 def preprocess(train_dataset, test_dataset):
     # takes Pandas DataFrame of raw data and output the preprocessed data
@@ -41,7 +41,7 @@ def preprocess(train_dataset, test_dataset):
         if col not in categorical_features_party and col not in ['Id'] ]
     # log transform skewed numeric features:
     numeric_feats = train_dataset[every_column_non_categorical] \
-        .dtypes[train_dataset.dtypes != "object"].index  
+        .dtypes[train_dataset.dtypes != "object"].index
     train_dataset[numeric_feats] = np.log1p(train_dataset[numeric_feats])
 
     every_column_non_categorical= [col for col in test_dataset.columns \
@@ -58,16 +58,16 @@ def preprocess(train_dataset, test_dataset):
 
     numeric_features_with_nan_all = ['LotFrontage', 'GarageYrBlt']
     numeric_features_with_nan_party = list(set(train_dataset.columns) & set(numeric_features_with_nan_all))
-    
+
     def ConvertNaNToNAString(data, columnList):
-        for x in columnList:       
-            data[x] = str(data[x])  
+        for x in columnList:
+            data[x] = str(data[x])
 
     def FillNaWithMean(data, columnList):
         for x in columnList:
             data[x] = data[x].fillna(data[x].mean())
 
-    ConvertNaNToNAString(train_dataset, categorical_features_with_nan_party)        
+    ConvertNaNToNAString(train_dataset, categorical_features_with_nan_party)
     ConvertNaNToNAString(test_dataset, categorical_features_with_nan_party)
     FillNaWithMean(train_dataset, numeric_features_with_nan_party)
     FillNaWithMean(test_dataset, numeric_features_with_nan_party)
@@ -79,7 +79,9 @@ def preprocess(train_dataset, test_dataset):
     return train_dataset[every_column_except_y], y, test_dataset
 
 
-if __name__ == '__main__':
+@click.command()
+@click.option('--load_model', default=False)
+def run_client(load_model):
     client_id = '2'
     init_fl_context(client_id)
 
@@ -95,16 +97,23 @@ if __name__ == '__main__':
 
     x, y, x_test = preprocess(df_train, df_test)
 
-    fgboost_regression = FGBoostRegression()
+    if load_model:
+        loaded = FGBoostRegression.load_model('/tmp/fgboost_model_2.json')
+        loaded.fit(x, y, feature_columns=x.columns, label_columns=y.columns, num_round=10)
+    else:
+        fgboost_regression = FGBoostRegression()
 
-    # party 2 owns label, so pass features and labels
-    fgboost_regression.fit(x, y, feature_columns=x.columns, label_columns=y.columns, num_round=10)
+        # party 2 owns label, so pass features and labels
+        fgboost_regression.fit(x, y, feature_columns=x.columns, label_columns=y.columns, num_round=10)
 
-    fgboost_regression.save_model('/tmp/fgboost_model_2.json')
-    loaded = FGBoostRegression.load_model('/tmp/fgboost_model_2.json')
+        fgboost_regression.save_model('/tmp/fgboost_model_2.json')
+        loaded = FGBoostRegression.load_model('/tmp/fgboost_model_2.json')
 
     result = loaded.predict(x_test, feature_columns=x_test.columns)
 
     # print first 5 results
     for i in range(5):
         print(f"{i}-th result of FGBoost predict: {result[i]}")
+
+if __name__ == '__main__':
+    run_client()

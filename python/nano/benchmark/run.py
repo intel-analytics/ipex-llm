@@ -19,6 +19,9 @@ import subprocess
 import os
 import sys
 import re
+import json
+import psycopg2
+from datetime import datetime
 
 
 class Workload:
@@ -43,11 +46,41 @@ class Workload:
     @staticmethod
     def _extract_logs(output: str):
         logs = [match.group(1) for match in re.finditer(">>>(.*?)<<<", output)]
+        logs = [json.loads(log) for log in logs]
         return logs
 
     def _save_logs(self, logs: list):
+        is_pr = True if os.environ.get('IS_PR') is not None else False
+        timestamp = datetime.now()
+        conn = psycopg2.connect(
+            database=self._get_secret('DB_NAME'),
+            user    =self._get_secret('DB_USER'),
+            password=self._get_secret('DB_PASS'),
+            host    =self._get_secret('DB_HOST'),
+            port    =self._get_secret('DB_PORT')
+        )
+
+        cursor = conn.cursor()
         for log in logs:
-            print(log)
+            log['time'] = timestamp
+            log['is_pr'] = is_pr
+            sql = self._get_sql(log)
+            cursor.execute(sql, log)
+
+        conn.commit()
+        conn.close()
+
+    def _get_secret(self, key: str):
+        config_dir = os.environ.get('CONFIG_DIR')
+        secret = open(os.path.join(config_dir, key), 'r').read()
+        return secret
+
+    def _get_sql(self, log: dict):
+        keys = [key for key in log.keys()]
+        fields = ", ".join(keys)
+        place_holders = ", ".join([f"%({key})s" for key in keys])
+        sql = f"INSERT INTO {self.name} ({fields}) VALUES ({place_holders})"
+        return sql
 
 
 if __name__ == '__main__':

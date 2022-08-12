@@ -224,7 +224,6 @@ Then run:
 ```bash
 kubectl apply -f /ppml/trusted-big-data-ml/azure/secretProviderClass.yaml
 ```
-to create secretProviderClass in your AKS.
 
 ## 3. Run Spark PPML jobs
 Login to your client VM and enter your BigDL PPML container:
