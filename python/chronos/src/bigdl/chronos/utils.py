@@ -67,10 +67,11 @@ class LazyImport:
             parent_name, child_name = absolute_name, None
 
         try:
+            # For import parent module
             module = importlib.import_module(parent_name)
             module = getattr(module, child_name) if child_name else module
         except AttributeError:
-            # concatenate possible class names
+            #  When calling staticmethod or classmethod, such as Forecaster.from_tsdataset
             full_module_name = parent_name+'.'+child_name if child_name else parent_name
             spec = importlib.util.find_spec(full_module_name)
             module = importlib.util.module_from_spec(spec)
