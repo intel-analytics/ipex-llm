@@ -121,7 +121,6 @@
             <p>In this notebook, we demostrate how to use _multi-objective hyperparameter optimization with built-in latency metric_ in project <a href="https://github.com/intel-analytics/bigdl/tree/main/python/chronos/src/bigdl/chronos">Chronos</a> to do time series forecasting and achieve good tradeoff between performance and latency.</p>
         </details>
         <hr>
-
     </div>
 
     <script src="../../../_static/js/chronos_tutorial.js"></script> 
