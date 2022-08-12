@@ -51,7 +51,7 @@ jobs:
       env:
         https_proxy: http://child-prc.intel.com:913
         http_proxy: http://child-prc.intel.com:913
-        no_proxy: http://child-prc.intel.com:913
+        no_proxy: api.github.com
       if: ${{ always() }}
       uses: scacap/action-surefire-report@v1
       with:
