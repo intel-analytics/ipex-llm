@@ -400,11 +400,18 @@ org.typelevel:macro-compat_2.12
 org.xerial.snappy:snappy-java
 org.yaml:snakeyaml
 
+threading_building_blocks
+com.intel.analytics.bigdl.core.native.opencv:opencv-java-x86_64-linux
+io.perfmark:perfmark-api
+org.apache.apr:apr
+org.jctools:jctools-core
+org.jetbrains:annotations
 
 BSD 2 Clause
 ------------
 com.github.wendykierp:JTransforms
 pl.edu.icm:JLargeArrays
+
 
 
 BSD 3 Clause
@@ -433,10 +440,17 @@ org.scala-lang.modules:scala-java8-compat_2.12
 org.scala-lang.modules:scala-xml_2.12
 xmlenc:xmlenc
 
+libwebp
+llvm
+re2
+com.esotericsoftware.reflectasm:reflectasm
+net.java.dev.msv:xsdlib
+org.xmlpull:xpp3
 
 CC0-1.0
 ------------
 org.reactivestreams:reactive-streams
+
 
 
 CDDL-1.0
@@ -445,19 +459,23 @@ javax.activation:activation
 javax.xml.stream:stax-api
 
 
+
 CDDL-1.1
 ------------
 javax.xml.bind:jaxb-api
 
 
-CPL-1.0
+
+EPL-1.0
 ------------
 junit:junit
+
 
 
 JSON
 ------------
 org.json:json
+
 
 
 MIT
@@ -482,6 +500,15 @@ org.typelevel:spire-util_2.12
 org.typelevel:spire_2.12
 redis.clients:jedis
 
+curl
+giflib
+isorelax
+jsoncpp
+libffi
+libtiff
+safestring
+org.codehaus.mojo:animal-sniffer-parent
+org.slf4j:slf4j-parent
 
 Public Domain
 ------------
@@ -490,9 +517,38 @@ org.hdrhistogram:HdrHistogram
 org.latencyutils:LatencyUtils
 org.tukaani:xz
 
+blas
+sqlite3
 
-Zlib-Libpng
+Zlib
 ------------
 black.ninia:jep
+
+zlib
+
+Plexus Classworlds License
+------------
+classworlds:classworlds
+
+
+Unicode
+------------
+icu
+
+
+libjpeg
+------------
+libjpeg-turbo
+
+
+libpng
+------------
+libpng
+
+
+openssl
+------------
+boringssl
+
 
 
