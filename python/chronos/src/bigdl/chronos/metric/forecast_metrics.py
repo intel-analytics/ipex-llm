@@ -137,7 +137,7 @@ class Evaluator(object):
 
         :param num_running: Int and the value is positive. Specify the running number of
                the function.
-        :param func: The function to be tested for the latency.
+        :param func: The function to be tested for latency.
         :param args: other arguments to be inputted to func.
 
         :return: Dictionary of str:float.
