@@ -27,9 +27,9 @@ Remarks:
 ```bash
 docker exec -it container_id bash
 ```
-5. Install [Anaconda](https://www.anaconda.com/distribution/#linux) in the container and create a Python 3.8 environment:
+5. Install [Anaconda](https://www.anaconda.com/distribution/#linux) in the container and create a Python 3.7 environment:
 ```bash
-conda create --name bigdl python=3.8
+conda create --name bigdl python=3.7
 ```
 6. Install the necessary packages in the conda environment:
 ```bash
@@ -42,8 +42,8 @@ pip install numpy==1.18.5
 ```
 7. Download and install DeepRec in the conda environment:
 ```bash
-wget https://deeprec-whl.oss-cn-beijing.aliyuncs.com/tensorflow-1.15.5%2Bdeeprec2206-220721%2B1c1e6ba-cp38-cp38-linux_x86_64.whl
-pip install tensorflow-1.15.5+deeprec2206-220721+1c1e6ba-cp38-cp38-linux_x86_64.whl
+wget https://deeprec-whl.oss-cn-beijing.aliyuncs.com/tensorflow-1.15.5%2Bdeeprec2204-220614%2Bglibc-cp37-cp37m-linux_x86_64.whl
+pip install tensorflow-1.15.5+deeprec2204-220614+glibc-cp37-cp37m-linux_x86_64.whl
 ```
 8. Run the program `wdl.py`. You may need to change the NFS configurations in `init_orca_context` according to your cluster settings.
 
