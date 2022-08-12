@@ -235,8 +235,3 @@ class TestChronosModelAutoformerForecaster(TestCase):
                 forecaster.load(ckpt_name)
                 evaluate2 = forecaster.evaluate(val_data)
             assert evaluate1[0]['val/loss'] == evaluate2[0]['val_loss']
-
-
-if __name__ == "__main__":
-    test = TestChronosModelAutoformerForecaster()
-    test.test_autoformer_forecaster_tune_save_load()
