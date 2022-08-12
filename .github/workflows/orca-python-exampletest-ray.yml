@@ -63,6 +63,9 @@ jobs:
           }]
         mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${NEXUS_URL}" }]'
 
+    - name: Setup Env
+      run: |
+        apt-get install wget
     - name: Set up Python 
       uses: actions/setup-python@v2
       with:
@@ -99,3 +102,6 @@ jobs:
         pip install -i https://pypi.org/simple --pre --upgrade bigdl-orca
         chmod a+x python/orca/dev/example/run-example-test-ray.sh
         python/orca/dev/example/run-example-test-ray.sh
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
