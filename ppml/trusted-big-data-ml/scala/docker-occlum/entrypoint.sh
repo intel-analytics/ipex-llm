@@ -65,50 +65,97 @@ case "$SPARK_K8S_CMD" in
     /opt/run_spark_on_occlum_glibc.sh init
     cd /opt/occlum_spark
     DMLC_TRACKER_URI=$SPARK_DRIVER_BIND_ADDRESS
-    CMD=(
-        /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
-        -Divy.home="/tmp/.ivy" \
-        -Dos.name="Linux" \
-        -XX:-UseCompressedOops \
-        -XX:MaxMetaspaceSize=$META_SPACE \
-        -Djdk.lang.Process.launchMechanism=posix_spawn \
-        -cp "$SPARK_CLASSPATH" \
-        -Xmx$DRIVER_MEMORY \
-        -XX:ActiveProcessorCount=4 \
-        -Dio.netty.availableProcessors=$NETTY_THREAD \
-        org.apache.spark.deploy.SparkSubmit \
-        --conf "spark.driver.bindAddress=$SPARK_DRIVER_BIND_ADDRESS" \
-        --deploy-mode client \
-        "$@"
+
+    if [[ -z "$SGX_DRIVER_JVM_MEM_SIZE" ]]; then
+        echo "SGX_DRIVER_JVM_MEM_SIZE not set, using default DRIVER_MEMORY"
+        CMD=(
+            /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+            -Divy.home="/tmp/.ivy" \
+            -Dos.name="Linux" \
+            -XX:-UseCompressedOops \
+            -XX:MaxMetaspaceSize=$META_SPACE \
+            -Djdk.lang.Process.launchMechanism=posix_spawn \
+            -cp "$SPARK_CLASSPATH" \
+            -Xmx$DRIVER_MEMORY \
+            -XX:ActiveProcessorCount=4 \
+            -Dio.netty.availableProcessors=$NETTY_THREAD \
+            org.apache.spark.deploy.SparkSubmit \
+            --conf "spark.driver.bindAddress=$SPARK_DRIVER_BIND_ADDRESS" \
+            --deploy-mode client \
+            "$@"
         )
+    else
+        echo "use SGX_DRIVER_JVM_MEM_SIZE=$SGX_DRIVER_JVM_MEM_SIZE"
+        CMD=(
+            /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+            -Divy.home="/tmp/.ivy" \
+            -Dos.name="Linux" \
+            -XX:-UseCompressedOops \
+            -XX:MaxMetaspaceSize=$META_SPACE \
+            -Djdk.lang.Process.launchMechanism=posix_spawn \
+            -cp "$SPARK_CLASSPATH" \
+            -Xmx$SGX_DRIVER_JVM_MEM_SIZE \
+            -XX:ActiveProcessorCount=4 \
+            -Dio.netty.availableProcessors=$NETTY_THREAD \
+            org.apache.spark.deploy.SparkSubmit \
+            --conf "spark.driver.bindAddress=$SPARK_DRIVER_BIND_ADDRESS" \
+            --deploy-mode client \
+            "$@"
+        )
+    fi
     ;;
   executor)
     echo "SGX Mem $SGX_MEM_SIZE"
     /opt/run_spark_on_occlum_glibc.sh init
     cd /opt/occlum_spark
     DMLC_TRACKER_URI=$SPARK_DRIVER_BIND_ADDRESS
-    CMD=(
-        /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
-        "${SPARK_EXECUTOR_JAVA_OPTS[@]}" \
-        -XX:-UseCompressedOops \
-        -XX:MaxMetaspaceSize=$META_SPACE \
-        -XX:ActiveProcessorCount=$SPARK_EXECUTOR_CORES \
-        -Divy.home=/tmp/.ivy \
-        -Xms$SPARK_EXECUTOR_MEMORY \
-        -Xmx$SPARK_EXECUTOR_MEMORY \
-        -Dos.name=Linux \
-        -Dio.netty.availableProcessors=$NETTY_THREAD \
-        -Djdk.lang.Process.launchMechanism=posix_spawn \
-        -cp "$SPARK_CLASSPATH" \
-        org.apache.spark.executor.CoarseGrainedExecutorBackend \
-        --driver-url $SPARK_DRIVER_URL \
-        --executor-id $SPARK_EXECUTOR_ID \
-        --cores $SPARK_EXECUTOR_CORES \
-        --app-id $SPARK_APPLICATION_ID \
-        --hostname $SPARK_EXECUTOR_POD_IP
-        )
-    ;;
 
+    if [[ -z "$SGX_EXECUTOR_JVM_MEM_SIZE" ]]; then
+        echo "SGX_EXECUTOR_JVM_MEM_SIZE not set, using default EXCUTOR_MEMORY"
+        CMD=(
+            /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+            "${SPARK_EXECUTOR_JAVA_OPTS[@]}" \
+            -XX:-UseCompressedOops \
+            -XX:MaxMetaspaceSize=$META_SPACE \
+            -XX:ActiveProcessorCount=$SPARK_EXECUTOR_CORES \
+            -Divy.home=/tmp/.ivy \
+            -Xms$SPARK_EXECUTOR_MEMORY \
+            -Xmx$SPARK_EXECUTOR_MEMORY \
+            -Dos.name=Linux \
+            -Dio.netty.availableProcessors=$NETTY_THREAD \
+            -Djdk.lang.Process.launchMechanism=posix_spawn \
+            -cp "$SPARK_CLASSPATH" \
+            org.apache.spark.executor.CoarseGrainedExecutorBackend \
+            --driver-url $SPARK_DRIVER_URL \
+            --executor-id $SPARK_EXECUTOR_ID \
+            --cores $SPARK_EXECUTOR_CORES \
+            --app-id $SPARK_APPLICATION_ID \
+            --hostname $SPARK_EXECUTOR_POD_IP
+            )
+    else
+        echo "use SGX_EXECUTOR_JVM_MEM_SIZE=$SGX_EXCUTOR_JVM_MEM_SIZE"
+        CMD=(
+            /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+            "${SPARK_EXECUTOR_JAVA_OPTS[@]}" \
+            -XX:-UseCompressedOops \
+            -XX:MaxMetaspaceSize=$META_SPACE \
+            -XX:ActiveProcessorCount=$SPARK_EXECUTOR_CORES \
+            -Divy.home=/tmp/.ivy \
+            -Xms$SGX_EXCUTOR_JVM_MEM_SIZE \
+            -Xmx$SGX_EXCUTOR_JVM_MEM_SIZE \
+            -Dos.name=Linux \
+            -Dio.netty.availableProcessors=$NETTY_THREAD \
+            -Djdk.lang.Process.launchMechanism=posix_spawn \
+            -cp "$SPARK_CLASSPATH" \
+            org.apache.spark.executor.CoarseGrainedExecutorBackend \
+            --driver-url $SPARK_DRIVER_URL \
+            --executor-id $SPARK_EXECUTOR_ID \
+            --cores $SPARK_EXECUTOR_CORES \
+            --app-id $SPARK_APPLICATION_ID \
+            --hostname $SPARK_EXECUTOR_POD_IP
+        )
+    fi
+    ;;
   *)
     echo "Unknown command: $SPARK_K8S_CMD" 1>&2
     exit 1

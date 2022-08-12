@@ -19,6 +19,8 @@ spec:
     securityContext:
       privileged: true
     env:
+    - name: SGX_EXECUTOR_JVM_MEM_SIZE
+      value: ""
     - name: NETTY_THREAD
       value: "32"
     - name: SGX_MEM_SIZE

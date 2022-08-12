@@ -19,6 +19,8 @@ spec:
     securityContext:
       privileged: true
     env:
+    - name: SGX_DRIVER_JVM_MEM_SIZE
+      value: ""
     - name: DRIVER_MEMORY
       value: "5g"
     - name: SGX_MEM_SIZE
