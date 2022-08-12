@@ -102,6 +102,7 @@ jobs:
       #run: python -m build
       run: |
         export SPARK_LOCAL_HOSTNAME=localhost
+        export FTP_URI=ftp://zoo:1234qwer@10.112.231.51
         chmod a+x python/orca/dev/example/run-example-test-ray.sh
         python/orca/dev/example/run-example-test-ray.sh
       env:
