@@ -106,6 +106,14 @@
 
     Chronos can help a 3rd party time series lib to improve the performance (both training and inferencing) and accuracy. This use-case shows Chronos can easily help pytorch-forecasting speed up the training of TFT model.
 
+---------------------------
+
+- [**Tune a Time Series Forecasting Model with multi-objective hyperparameter optimization.**][pytorch_forecasting_mo_tune]
+
+    > ![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][pytorch_forecasting_mo_tune]
+
+    In this notebook, we demostrate how to use _multi-objective hyperparameter optimization with built-in latency metric_ in project [Chronos][chronos] to do time series forecasting and achieve good tradeoff between performance and latency.
+
 
 [DBScan]: <../../PythonAPI/Chronos/anomaly_detectors.html#dbscandetector>
 [AE]: <../../PythonAPI/Chronos/anomaly_detectors.html#aedetector>
@@ -127,3 +135,4 @@
 [AIOps_anomaly_detect_unsupervised_forecast_based]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.ipynb>
 [pytorch_forecasting_deepar]: <https://github.com/intel-analytics/BigDL/tree/main/python/chronos/use-case/pytorch-forecasting/DeepAR>
 [pytorch_forecasting_tft]: <https://github.com/intel-analytics/BigDL/tree/main/python/chronos/use-case/pytorch-forecasting/TFT>
+[pytorch_forecasting_mo_tune]: <https://github.com/intel-analytics/BigDL/tree/main/python/chronos/example/hpo/muti_objective_hpo_with_builtin_latency_tutorial.ipynb>
