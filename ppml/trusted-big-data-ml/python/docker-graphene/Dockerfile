@@ -4,13 +4,19 @@ ARG TINI_VERSION=v0.18.0
 ARG JDK_VERSION=8u192
 ARG JDK_URL=your_jdk_url
 ARG SPARK_JAR_REPO_URL=your_spark_jar_repo_url
+ARG HTTP_PROXY_HOST
+ARG HTTP_PROXY_PORT
+ARG HTTPS_PROXY_HOST
+ARG HTTPS_PROXY_PORT
 
 # stage.1 graphene
 FROM ubuntu:20.04 AS graphene
 
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     env DEBIAN_FRONTEND=noninteractive apt-get install -y autoconf bison build-essential coreutils gawk git libcurl4-openssl-dev libprotobuf-c-dev protobuf-c-compiler python3-protobuf wget
-RUN git clone https://github.com/analytics-zoo/graphene.git /graphene
+RUN git config --global http.proxy http://$HTTP_PROXY_HOST:$HTTP_PROXY_PORT && \
+    git config --global https.proxy https://$HTTPS_PROXY_HOST:$HTTPS_PROXY_PORT && \
+    git clone https://github.com/analytics-zoo/graphene.git /graphene
 RUN cd /graphene && \
     git fetch origin branch-0.7 && \
     git checkout branch-0.7
