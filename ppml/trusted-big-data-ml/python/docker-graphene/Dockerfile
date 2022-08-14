@@ -125,6 +125,8 @@ RUN cd /opt && \
     make install && \
     protoc --version && \
     cd /opt && \
+    git config --global http.proxy http://$HTTP_PROXY_HOST:$HTTP_PROXY_PORT && \
+    git config --global https.proxy https://$HTTPS_PROXY_HOST:$HTTPS_PROXY_PORT && \    
     git clone https://github.com/analytics-zoo/hadoop.git && \
     cd hadoop && \
     git checkout branch-3.2.0-ppml && \
