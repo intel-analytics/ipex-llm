@@ -221,17 +221,6 @@ class TestChronosModelAutoformerForecaster(TestCase):
             with tempfile.TemporaryDirectory() as tmp_dir_name:
                 ckpt_name = os.path.join(tmp_dir_name, "tune.ckpt")
                 forecaster.save(ckpt_name)
-                forecaster = AutoformerForecaster(past_seq_len=24,
-                                            future_seq_len=5,
-                                            input_feature_num=2,
-                                            output_feature_num=2,
-                                            label_len=12,
-                                            d_model=128,
-                                            freq='s',
-                                            loss="mse",
-                                            metrics=['mae', 'mse', 'mape'],
-                                            seed=1,
-                                            lr=0.01)
                 forecaster.load(ckpt_name)
                 evaluate2 = forecaster.evaluate(val_data)
             assert evaluate1[0]['val/loss'] == evaluate2[0]['val_loss']

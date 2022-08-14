@@ -417,8 +417,11 @@ class AutoformerForecaster(Forecaster):
         self.trainer = Trainer(logger=False, max_epochs=1,
                                checkpoint_callback=self.checkpoint_callback, num_processes=1,
                                use_ipex=self.use_ipex, distributed_backend="spawn")
-        args = _transform_config_to_namedtuple(self.model_config)
-        self.internal = AutoFormer.load_from_checkpoint(checkpoint_file, configs=args)
+        checkpoint = torch.load(checkpoint_file)
+        config = checkpoint["hyper_parameters"]
+        args = _transform_config_to_namedtuple(config)
+        internal = AutoFormer.load_from_checkpoint(checkpoint_file, configs=args)
+        self.internal = internal
 
     def save(self, checkpoint_file):
         """

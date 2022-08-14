@@ -819,10 +819,11 @@ class BasePytorchForecaster(Forecaster):
         else:
             from bigdl.nano.pytorch.lightning import LightningModule
             from bigdl.chronos.pytorch import TSTrainer as Trainer
-
-            model = self.model_creator({**self.model_config, **self.data_config})
-            loss = self.loss_creator(self.loss_config)
-            optimizer = self.optimizer_creator(model, self.optim_config)
+            ckpt = torch.load(checkpoint_file)
+            hparams = ckpt["hyper_parameters"]
+            model = self.model_creator(hparams)
+            loss = self.loss_creator(hparams)
+            optimizer = self.optimizer_creator(model, hparams)
             self.internal = LightningModule.load_from_checkpoint(checkpoint_file,
                                                                  model=model,
                                                                  loss=loss,

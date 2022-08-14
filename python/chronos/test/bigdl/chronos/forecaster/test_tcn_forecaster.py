@@ -648,3 +648,25 @@ class TestChronosModelTCNForecaster(TestCase):
                                    loss="mae",
                                    lr=0.01)
         val_loss = forecaster.fit(train_data, val_data, validation_mode='best_epoch', epochs=10)
+
+    def test_tcn_forecaster_tune_save_load(self):
+        import bigdl.nano.automl.hpo.space as space
+        train_data, val_data, test_data = create_data()
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=4,
+                                   num_channels=space.Categorical([16, 16], [4, 4]),
+                                   lr=0.01)
+        forecaster.tune(train_data, validation_data=val_data,
+                        n_trials=2, target_metric='mse', direction="minimize")
+        forecaster.fit(train_data, epochs=2)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            ckpt_name = os.path.join(tmp_dir_name, "ckpt")
+            test_pred_save = forecaster.predict(test_data[0])
+            forecaster.save(ckpt_name)
+            forecaster.load(ckpt_name)
+            test_pred_load = forecaster.predict(test_data[0])
+        np.testing.assert_almost_equal(test_pred_save, test_pred_load)
+ 
