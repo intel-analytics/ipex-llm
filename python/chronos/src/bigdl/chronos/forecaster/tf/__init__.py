@@ -14,7 +14,17 @@
 # limitations under the License.
 #
 
-from .lstm_forecaster import LSTMForecaster
-from .mtnet_forecaster import MTNetForecaster
-from .seq2seq_forecaster import Seq2SeqForecaster
-from .tcn_forecaster import TCNForecaster
+import importlib
+from bigdl.chronos.utils import LazyImport
+
+tf_spec = bool(importlib.util.find_spec('tensorflow'))
+orca_available = bool(importlib.util.find_spec('bigdl.orca'))
+
+PREFIXNAME_TF2 = 'bigdl.chronos.forecaster.tf.'
+
+if tf_spec:
+    LSTMForecaster = LazyImport(PREFIXNAME_TF2+'lstm_forecaster.LSTMForecaster')
+    Seq2SeqForecaster = LazyImport(PREFIXNAME_TF2+'seq2seq_forecaster.Seq2SeqForecaster')
+    TCNForecaster = LazyImport(PREFIXNAME_TF2+'tcn_forecaster.TCNForecaster')
+    if orca_available:
+        MTNetForecaster = LazyImport(PREFIXNAME_TF2+'metnet_forecaster.MTNetForecaster')
