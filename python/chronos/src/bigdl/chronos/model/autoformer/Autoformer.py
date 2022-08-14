@@ -39,7 +39,6 @@
 # code adapted from https://github.com/thuml/Autoformer
 
 
-from distutils.command.config import config
 import torch
 import torch.nn as nn
 from .layers.Embed import DataEmbedding_wo_pos
