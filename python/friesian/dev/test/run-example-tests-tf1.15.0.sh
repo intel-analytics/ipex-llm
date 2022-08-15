@@ -67,7 +67,7 @@ fi
 
 python ../../example/deeprec/wdl.py \
     --smartstaged false \
-    --data_location ./input_deeprec \
+    --data_location ./data/input_deeprec \
     --checkpoint ./result \
     --instances_per_node 3
 
