@@ -148,7 +148,9 @@ The result should look something like this:
 In this section we take SimpleQuery as an example to go through the entire BigDL PPML end-to-end workflow. SimpleQuery is simple example to query developers between the ages of 20 and 40 from people.csv. 
 
 
-https://user-images.githubusercontent.com/61072813/183802216-44bfa75e-810e-4f09-bebf-7e0e1fe0d61d.mp4
+
+
+https://user-images.githubusercontent.com/61072813/184561176-9b32ea82-28d2-4c03-b3cb-f140d2501b9c.mp4
 
 
 
@@ -275,6 +277,11 @@ When the job is done, you can decrypt and read result of the job. More details i
   ```
   docker exec -i $KMSUTIL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh decrypt $appid $appkey $input_path"
   ```
+
+
+
+https://user-images.githubusercontent.com/61072813/184561128-781b1cf5-659f-45ec-8cbd-e993dfb4abf7.mp4
+
 
 ### 3.3 More BigDL PPML Examples
 In addition to the above Spark Pi and Python HelloWorld programs running locally, and simplequery application running on the k8s cluster, we also provide other examples including Trusted Data Analysis, Trusted ML, Trusted DL and Trusted FL. You can find these examples in [more examples](./docs/examples.md). 
