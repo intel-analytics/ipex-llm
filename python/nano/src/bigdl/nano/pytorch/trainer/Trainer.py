@@ -105,8 +105,8 @@ class Trainer(pl.Trainer):
         self.use_ipex = use_ipex
         enable_bf16 = self.use_ipex and kwargs.get('precision', None) == 'bf16'
 
-        # No need to set precision for torch greater or equal to 1.10,
-        # because strategy > accelerator/precision/plugin
+        # Set 'precision' for strategy without precision_plugin, 
+        # Strategy > accelerator/precision/plugin
         if TORCH_VERSION_LESS_1_10 and enable_bf16:
             kwargs['precision'] = 32
 
