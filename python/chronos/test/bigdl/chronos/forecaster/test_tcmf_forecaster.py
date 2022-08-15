@@ -16,7 +16,9 @@
 
 import pytest
 import numpy as np
-from bigdl.chronos.forecaster.tcmf_forecaster import TCMFForecaster
+
+from bigdl.chronos.utils import LazyImport
+TCMFForecaster=LazyImport('bigdl.chronos.forecaster.tcmf_forecaster.TCMFForecaster')
 from unittest import TestCase
 import tempfile
 import pandas as pd

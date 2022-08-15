@@ -17,9 +17,10 @@
 import numpy as np
 import tempfile
 import os
-import torch
 
-from bigdl.chronos.forecaster.seq2seq_forecaster import Seq2SeqForecaster
+from bigdl.chronos.utils import LazyImport
+torch = LazyImport('torch')
+Seq2SeqForecaster = LazyImport('bigdl.chronos.forecaster.seq2seq_forecaster.Seq2SeqForecaster')
 from unittest import TestCase
 import pytest
 from .. import op_torch, op_distributed, op_all

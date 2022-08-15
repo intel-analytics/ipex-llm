@@ -19,7 +19,8 @@ import pandas as pd
 import tempfile
 import os
 
-from bigdl.chronos.forecaster.autoformer_forecaster import AutoformerForecaster
+from bigdl.chronos.utils import LazyImport
+AutoformerForecaster = LazyImport('bigdl.chronos.forecaster.autoformer_forecaster.AutoformerForecaster')
 from bigdl.chronos.data import TSDataset
 from unittest import TestCase
 import pytest

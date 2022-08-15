@@ -19,7 +19,8 @@ import pandas as pd
 import tempfile
 import os
 
-from bigdl.chronos.forecaster.prophet_forecaster import ProphetForecaster
+from bigdl.chronos.utils import LazyImport
+ProphetForecaster = LazyImport('bigdl.chronos.forecaster.prophet_forecaster.ProphetForecaster')
 from unittest import TestCase
 import pytest
 from .. import op_all

@@ -18,7 +18,8 @@ import numpy as np
 import tempfile
 import os
 
-from bigdl.chronos.forecaster.arima_forecaster import ARIMAForecaster
+from bigdl.chronos.utils import LazyImport
+ARIMAForecaster = LazyImport('bigdl.chronos.forecaster.arima_forecaster.ARIMAForecaster')
 from unittest import TestCase
 import pytest
 from .. import op_all

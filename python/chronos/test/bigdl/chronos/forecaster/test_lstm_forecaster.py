@@ -17,9 +17,10 @@
 import numpy as np
 import tempfile
 import os
-import torch
 
-from bigdl.chronos.forecaster.lstm_forecaster import LSTMForecaster
+from bigdl.chronos.utils import LazyImport
+torch = LazyImport('torch')
+LSTMForecaster = LazyImport('bigdl.chronos.forecaster.lstm_forecaster.LSTMForecaster')
 from unittest import TestCase
 import pytest
 from .. import op_all, op_onnxrt16, op_torch

@@ -17,9 +17,10 @@
 import numpy as np
 import tempfile
 import os
-import torch
 
-from bigdl.chronos.forecaster.tcn_forecaster import TCNForecaster
+from bigdl.chronos.utils import LazyImport
+torch = LazyImport('torch')
+TCNForecaster = LazyImport('bigdl.chronos.forecaster.tcn_forecaster.TCNForecaster')
 from unittest import TestCase
 import pytest
 from .. import op_torch, op_all, op_distributed, op_automl

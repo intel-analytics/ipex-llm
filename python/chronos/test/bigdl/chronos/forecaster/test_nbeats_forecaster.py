@@ -16,13 +16,14 @@
 
 import os
 import tempfile
-import torch
 import numpy as np
 from unittest import TestCase
 import pytest
 
-from bigdl.chronos.forecaster.nbeats_forecaster import NBeatsForecaster
-from .. import op_all, op_onnxrt16
+from bigdl.chronos.utils import LazyImport
+torch = LazyImport('torch')
+NBeatsForecaster = LazyImport('bigdl.chronos.forecaster.nbeats_forecaster.NBeatsForecaster')
+from .. import op_all, op_torch, op_distributed
 
 def create_data(loader=False):
     num_train_samples = 1000
