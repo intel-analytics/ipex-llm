@@ -322,38 +322,38 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
       <details open>
        <summary>scala</summary>
   
-        ```scala
-        import com.intel.analytics.bigdl.ppml.PPMLContext
+      ```scala
+      import com.intel.analytics.bigdl.ppml.PPMLContext
       
-        val ppmlArgs: Map[String, String] = Map(
-               "spark.bigdl.kms.type" -> "SimpleKeyManagementService",
-               "spark.bigdl.kms.simple.id" -> "your_app_id",
-               "spark.bigdl.kms.simple.key" -> "your_app_key",
-               "spark.bigdl.kms.key.primary" -> "/your/primary/key/path/primaryKey",
-               "spark.bigdl.kms.key.data" -> "/your/data/key/path/dataKey"
-           )
-      
-        val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
-        ```
+      val ppmlArgs: Map[String, String] = Map(
+             "spark.bigdl.kms.type" -> "SimpleKeyManagementService",
+             "spark.bigdl.kms.simple.id" -> "your_app_id",
+             "spark.bigdl.kms.simple.key" -> "your_app_key",
+             "spark.bigdl.kms.key.primary" -> "/your/primary/key/path/primaryKey",
+             "spark.bigdl.kms.key.data" -> "/your/data/key/path/dataKey"
+         )
+    
+      val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
+      ```
+
       </details>
   
   
       <details>
        <summary>python</summary>
   
-        ```python
-        from bigdl.ppml.ppml_context import *
-  
-        ppml_args = {"kms_type": "SimpleKeyManagementService",
-                     "simple_app_id": "your_app_id",
-                     "simple_app_key": "your_app_key",
-                     "primary_key_path": "/your/primary/key/path/primaryKey",
-                     "data_key_path": "/your/data/key/path/dataKey"
-                    }
-  
-        sc = PPMLContext("MyApp", ppml_args)
+      ```python
+      from bigdl.ppml.ppml_context import *
+
+      ppml_args = {"kms_type": "SimpleKeyManagementService",
+                   "simple_app_id": "your_app_id",
+                   "simple_app_key": "your_app_key",
+                   "primary_key_path": "/your/primary/key/path/primaryKey",
+                   "data_key_path": "/your/data/key/path/dataKey"
+                  }
+
+      sc = PPMLContext("MyApp", ppml_args)
         ```
-  
       </details>
 
    - For `EHSMKeyManagementService`:
@@ -418,7 +418,7 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
       val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
       ```
    
-     </details>>
+     </details>
 
      <details>
        <summary>python</summary>
