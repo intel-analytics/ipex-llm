@@ -8,8 +8,6 @@ export BIGDL_IMAGE_NAME=your_bigdl_base_image_name_used_to_build_user_image
 export BIGDL_IMAGE_VERSION=your_bigdl_base_image_version_used_to_build_user_image
 export USER_IMAGE_TAG=your_user_image_tag
 
-cp -r ../../../kms-client ./
-
 if [ "$IMAGE_MODE" == "bigdl_base_image_or_user_image" ]
 then
     echo "Please modify the mode of image to build, you can choose bigdl_base_image or user_image. The user_image is built on top of bigdl_base_image, where the user_image is a user-specific one signed by your enclave-key.pem."
@@ -62,5 +60,3 @@ else
      fi
   fi
 fi
-
-rm -r ./kms-client

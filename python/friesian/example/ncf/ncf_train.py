@@ -74,23 +74,27 @@ if __name__ == '__main__':
     parser.add_argument('--master', type=str, default=None,
                         help='The master url, only used when cluster mode is standalone.')
     parser.add_argument('--executor_cores', type=int, default=8,
-                        help='The executor core number.')
+                        help='The number of cores to use on each executor.')
     parser.add_argument('--executor_memory', type=str, default="4g",
-                        help='The executor memory.')
+                        help='The amount of memory to allocate on each executor.')
     parser.add_argument('--num_executors', type=int, default=2,
-                        help='The number of executor.')
+                        help='The number of executors to use in the cluster.')
     parser.add_argument('--driver_cores', type=int, default=4,
-                        help='The driver core number.')
+                        help='The number of cores to use for the driver.')
     parser.add_argument('--driver_memory', type=str, default="4g",
-                        help='The driver memory.')
+                        help='The amount of memory to allocate for the driver.')
     parser.add_argument('--backend', type=str, default="ray",
-                        help='The backend of TF2 Estimator, either ray or spark')
-    parser.add_argument('--lr', default=0.001, type=float, help='learning rate')
-    parser.add_argument('--epochs', default=5, type=int, help='train epoch')
-    parser.add_argument('--batch_size', default=8000, type=int, help='batch size')
+                        help='The backend of TF2 Estimator, either ray or spark.')
+    parser.add_argument('--lr', default=0.001, type=float,
+                        help='The learning rate to train the model.')
+    parser.add_argument('--epochs', default=5, type=int,
+                        help='The number of epochs to train the model.')
+    parser.add_argument('--batch_size', default=8000, type=int,
+                        help='The batch size to train the model.')
     parser.add_argument('--model_dir', default='./', type=str,
-                        help='The directory to save the trained model')
-    parser.add_argument('--data_dir', type=str, default="./movielens", help='data directory')
+                        help='The directory to save the trained model.')
+    parser.add_argument('--data_dir', type=str, default="./movielens",
+                        help='The directory for the movielens data.')
     args = parser.parse_args()
 
     if args.cluster_mode == "local":
