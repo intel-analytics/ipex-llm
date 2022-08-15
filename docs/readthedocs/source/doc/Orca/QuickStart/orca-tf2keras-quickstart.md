@@ -130,7 +130,7 @@ You could also switch the saving format to Keras H5 by:
 **1. SaveModel Format**
 
 ```python
-# save model in tf format
+# save model in SaveModel format
 estimator.save("/tmp/cifar10_model")
 
 # load model
@@ -140,8 +140,8 @@ estimator.load("/tmp/cifar10_model")
 **2. HDF5 format**
 
 ```python
-# save model in h5 format
-estimator.save("/tmp/cifar10_model.h5"), save_format='h5')
+# save model in H5 format
+estimator.save("/tmp/cifar10_model.h5", save_format='h5')
 
 # load model
 estimator.load("/tmp/cifar10_model.h5")
