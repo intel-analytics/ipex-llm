@@ -19,7 +19,6 @@ package com.intel.analytics.bigdl.friesian;
 import com.google.protobuf.Empty;
 import com.intel.analytics.bigdl.friesian.nearline.feature.FeatureInitializer;
 import com.intel.analytics.bigdl.friesian.nearline.utils.NearlineUtils;
-import com.intel.analytics.bigdl.friesian.serving.feature.FeatureClient;
 import com.intel.analytics.bigdl.friesian.serving.feature.FeatureServer;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureGrpc;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureGrpc.FeatureBlockingStub;
@@ -51,9 +50,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
 public class FeatureServerTest {
-    private static final Logger logger = LogManager.getLogger(FeatureClient.class.getName());
+    private static final Logger logger = LogManager.getLogger(FeatureServerTest.class.getName());
     private static FeatureBlockingStub blockingStub;
-    private static FeatureServer featureServer;
     private static ManagedChannel channel;
     private static List<Row> itemRowList = null, userRowList = null;
 
@@ -68,25 +66,31 @@ public class FeatureServerTest {
      */
     @BeforeAll
     public static void setUp() throws Exception {
-        String configDir = Objects.requireNonNull(FeatureServer.class.getClassLoader().getResource("testConfig")).getPath();
+        String configDir = Objects.requireNonNull(
+                FeatureServer.class.getClassLoader().getResource("testConfig")).getPath();
         FeatureInitializer.main(new String[]{"-c", configDir + "/config_feature_init.yaml"});
 
         SparkSession sparkSession = SparkSession.builder().getOrCreate();
         if (NearlineUtils.helper().initialUserDataPath() != null) {
             Dataset<Row> userDataset = sparkSession.read().parquet(NearlineUtils.helper().initialUserDataPath());
-            userDataset = userDataset.select(NearlineUtils.helper().userIDColumn(), convertListToSeq(NearlineUtils.helper().userFeatureColArr()));
+            userDataset = userDataset.select(
+                    NearlineUtils.helper().userIDColumn(),
+                    convertListToSeq(NearlineUtils.helper().userFeatureColArr()));
             userRowList = userDataset.collectAsList();
         }
         if (NearlineUtils.helper().initialItemDataPath() != null) {
             Dataset<Row> itemDataset = sparkSession.read().parquet(NearlineUtils.helper().initialItemDataPath());
-            itemDataset = itemDataset.select(NearlineUtils.helper().itemIDColumn(), convertListToSeq(NearlineUtils.helper().itemFeatureColArr()));
+            itemDataset = itemDataset.select(
+                    NearlineUtils.helper().itemIDColumn(),
+                    convertListToSeq(NearlineUtils.helper().itemFeatureColArr()));
             itemRowList = itemDataset.collectAsList();
         }
-        featureServer = new FeatureServer(new String[]{"-c", configDir + "/config_feature_server.yaml"});
+        FeatureServer featureServer = new FeatureServer(new String[]{"-c", configDir + "/config_feature_server.yaml"});
         featureServer.parseConfig();
         featureServer.build();
         featureServer.start();
-        channel = ManagedChannelBuilder.forAddress("localhost", Utils.helper().getServicePort()).usePlaintext().build();
+        channel = ManagedChannelBuilder.forAddress(
+                "localhost", Utils.helper().getServicePort()).usePlaintext().build();
         blockingStub = FeatureGrpc.newBlockingStub(channel);
     }
 
@@ -166,10 +170,12 @@ public class FeatureServerTest {
     @Test
     public void testResetMetrics() {
         Empty request = Empty.newBuilder().build();
+        Empty empty = null;
         try {
-            Empty empty = blockingStub.resetMetrics(request);
+            empty = blockingStub.resetMetrics(request);
         } catch (StatusRuntimeException e) {
             logger.error("RPC failed: " + e.getStatus().toString());
         }
+        assertNotNull(empty);
     }
 }
