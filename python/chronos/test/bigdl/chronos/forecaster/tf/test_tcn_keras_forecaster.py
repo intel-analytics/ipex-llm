@@ -20,8 +20,10 @@ import os
 
 from unittest import TestCase
 import numpy as np
-import tensorflow as tf
+
 from bigdl.chronos.forecaster.tf.tcn_forecaster import TCNForecaster
+from bigdl.chronos.utils import LazyImport
+tf = LazyImport('tensorflow')
 
 
 def create_data(tf_data=False, batch_size=32):

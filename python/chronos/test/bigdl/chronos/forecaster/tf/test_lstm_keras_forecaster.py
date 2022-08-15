@@ -21,7 +21,8 @@ import os
 from bigdl.chronos.forecaster.tf.lstm_forecaster import LSTMForecaster
 from unittest import TestCase
 import numpy as np
-import tensorflow as tf
+from bigdl.chronos.utils import LazyImport
+tf = LazyImport('tensorflow')
 
 
 def create_data(tf_data=False, batch_size=32):

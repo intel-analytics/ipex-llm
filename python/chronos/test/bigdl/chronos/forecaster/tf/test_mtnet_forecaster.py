@@ -16,10 +16,11 @@
 
 import pytest
 import numpy as np
-import tensorflow as tf
 import pandas as pd
 
 from bigdl.chronos.data import TSDataset
+from bigdl.chronos.utils import LazyImport
+tf = LazyImport('tensorflow')
 from unittest import TestCase
 
 
