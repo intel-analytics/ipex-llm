@@ -1,9 +1,9 @@
 # Build user-spefic kubernetes spark image from bigdl image
 
-ARG BIGDL_NAME=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene
-ARG BIGDL_VERSION=2.1.0-SNAPSHOT
+ARG BIGDL_IMAGE_NAME
+ARG BIGDL_IMAGE_VERSION
 
-FROM $BIGDL_NAME:$BIGDL_VERSION
+FROM $BIGDL_IMAGE_NAME:$BIGDL_IMAGE_VERSION
 
 ADD ./enclave-key.pem /graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem
 RUN cd /ppml/trusted-big-data-ml && \
