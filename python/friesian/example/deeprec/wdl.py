@@ -776,7 +776,7 @@ class RayDeepRecCluster:
             label_cols=None):
         # ps has already be launched and waiting and thus it is removed when training
         # as ps should not consume data.
-        # TODO: without repartition to_ray_xshards will throw error
+        # TODO: without repartition to_ray_xshards will crash on k8s
         # TODO: do not fix repartition size
         train_df = train_df.repartition(10)
         test_df = test_df.repartition(10)
