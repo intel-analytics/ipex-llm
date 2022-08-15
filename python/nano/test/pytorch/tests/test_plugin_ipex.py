@@ -24,6 +24,8 @@ from torch import nn
 
 from bigdl.nano.pytorch.lightning import LightningModule
 from bigdl.nano.pytorch import Trainer
+from bigdl.nano.common import check_avx512
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
 from test.pytorch.utils._train_torch_lightning import create_test_data_loader
@@ -65,6 +67,9 @@ class TestPlugin(TestCase):
         trainer.test(pl_model, self.test_data_loader)
 
     def test_trainer_subprocess_plugin_bf16(self):
+        # IPEX BF16 weight prepack needs the cpu support avx512bw, avx512vl and avx512dq
+        if not TORCH_VERSION_LESS_1_10 and not check_avx512():
+            return
         model = ResNet18(pretrained=False, include_top=False, freeze=True)
         loss = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)

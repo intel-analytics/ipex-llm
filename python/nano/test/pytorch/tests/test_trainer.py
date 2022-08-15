@@ -26,10 +26,10 @@ from pytorch_lightning import LightningModule
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
 from test.pytorch.utils._train_torch_lightning import train_with_linear_top_layer
 from torch import nn
+import torchmetrics
 
 from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch.vision.models import vision
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 
 batch_size = 256
 num_workers = 0
@@ -96,7 +96,7 @@ class TestTrainer(TestCase):
         for k in original_state_dict.keys():
             assert (original_state_dict[k] == loaded_state_dict[k]).all()
         shutil.rmtree('saved_model')
-
+        
 
 if __name__ == '__main__':
     pytest.main([__file__])

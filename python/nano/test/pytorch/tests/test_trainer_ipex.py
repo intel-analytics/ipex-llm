@@ -28,6 +28,7 @@ from torch import nn
 from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch.vision.models import vision
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
+from bigdl.nano.common import check_avx512
 
 batch_size = 256
 max_epochs = 2
@@ -69,6 +70,9 @@ class TestTrainer(TestCase):
         trainer.fit(pl_model, self.train_loader)
 
     def test_trainer_ipex_bf16(self):
+        # IPEX BF16 weight prepack needs the cpu support avx512bw, avx512vl and avx512dq
+        if not TORCH_VERSION_LESS_1_10 and not check_avx512():
+            return
         trainer = Trainer(max_epochs=max_epochs, use_ipex=True, precision="bf16",
                           callbacks=[CheckIPEXFusedStepCallback()])
 
@@ -97,6 +101,9 @@ class TestTrainer(TestCase):
             ipex.enable_auto_mixed_precision(None)
 
     def test_trainer_ipex_bf16_unspport_optim(self):
+        # IPEX BF16 weight prepack needs the cpu support avx512bw, avx512vl and avx512dq
+        if not TORCH_VERSION_LESS_1_10 and not check_avx512():
+            return
         trainer = Trainer(max_epochs=max_epochs, use_ipex=True, precision="bf16",
                           callbacks=[CheckIPEXFusedStepCallback()])
 
