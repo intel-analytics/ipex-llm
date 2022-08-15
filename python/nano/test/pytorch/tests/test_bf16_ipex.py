@@ -20,6 +20,7 @@ from bigdl.nano.pytorch import Trainer
 from torchvision.models.resnet import resnet18
 from unittest.mock import MagicMock, Mock, PropertyMock, patch
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_12
+from bigdl.nano.common import check_avx512
 
 
 class Pytorch1_9:
@@ -40,6 +41,8 @@ class Pytorch1_12:
         """
         Debug mode. Allow run bf16 forward without bf16 instruction support.
         """
+        if not check_avx512():
+            return
         trainer = Trainer(max_epochs=1)
         model = resnet18(num_classes=10)
 
