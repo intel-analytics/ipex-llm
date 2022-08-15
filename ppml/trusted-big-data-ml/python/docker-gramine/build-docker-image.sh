@@ -38,5 +38,3 @@ else
         $Proxy_Modified
     fi
 fi
-
-rm -r ./kms-client
