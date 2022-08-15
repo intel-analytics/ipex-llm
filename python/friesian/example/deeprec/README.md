@@ -3,7 +3,7 @@ Here we demonstrate how to integrate [DeepRec](https://github.com/alibaba/DeepRe
 
 See [here](https://github.com/alibaba/DeepRec/tree/main/modelzoo/WDL) for the original Wide & Deep training example in DeepRec. This BigDL example addes BigDL Friesian for recommendation feature engineering and BigDL Orca for launching DeepRec distributed training on the Kubernetes cluster.
 
-## 1. Environment preparation
+## 1. Environment Preparation
 1. Enter the client node of the k8s cluster.
 2. Pull BigDL image on the client node (probably as well as on all nodes of the k8s cluster):
 ```bash
@@ -46,6 +46,9 @@ wget https://deeprec-whl.oss-cn-beijing.aliyuncs.com/tensorflow-1.15.5%2Bdeeprec
 pip install tensorflow-1.15.5+deeprec2204-220614+glibc-cp37-cp37m-linux_x86_64.whl
 ```
 8. Run the program `wdl.py`. You may need to change the NFS configurations in `init_orca_context` according to your cluster settings.
+
+## 2. Data Preparation
+Please refer to the [README](https://github.com/alibaba/DeepRec/tree/main/modelzoo/WDL/data) of DeepRec's WDL example to download the dataset. The dataset should be accessible to all nodes in the cluster (e.g. in NFS).
 
 ## 2. Train DeepRec WDL
 - Local mode:
