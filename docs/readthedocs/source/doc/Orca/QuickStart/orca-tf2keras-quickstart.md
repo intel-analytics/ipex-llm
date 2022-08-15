@@ -118,6 +118,34 @@ est.shutdown()
 print(stats)
 ```
 
+## **Step5: Save and Load the Model**
+
+Orca TF2 Estimator supports 2 formats to save and load the entire model (**TensorFlow SavedModel and Keras H5 Format**). The recommended format is SavedModel, it is the default when you use `estimator.save()`.
+You could also switch the saving format to Keras H5 by:
+
+- Passing `save_format='h5'` to `estimator.save()`.
+- Passing a filename that ends in `.h5` or `.keras` to `estimator.save()`.
+
+### **1. SaveModel Format**
+
+```python
+# save model in tf format
+estimator.save("/tmp/cifar10_model")
+
+# load model
+estimator.load("/tmp/cifar10_model")
+```
+
+### **2. HDF5 format**
+
+```python
+# save model in h5 format
+estimator.save("/tmp/cifar10_model.h5"), save_format='h5')
+
+# load model
+estimator.load("/tmp/cifar10_model.h5")
+```
+
 That's it, the same code can run seamlessly in your local laptop and to distribute K8s or Hadoop cluster.
 
 **Note:** You should call `stop_orca_context()` when your program finishes.
