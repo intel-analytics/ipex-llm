@@ -22,10 +22,7 @@ from unittest import TestCase
 
 import pytest
 import torch
-from torch.utils.data import DataLoader, TensorDataset
 from pytorch_lightning import LightningModule
-from pytorch_lightning.plugins.precision.native_amp import NativeMixedPrecisionPlugin
-from pytorch_lightning.plugins.precision.double import DoublePrecisionPlugin
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
 from test.pytorch.utils._train_torch_lightning import train_with_linear_top_layer
 from torch import nn
@@ -80,26 +77,6 @@ class TestTrainer(TestCase):
         trainer = Trainer(max_epochs=1)
         pl_model = Trainer.compile(self.model, self.loss, self.optimizer)
         trainer.fit(pl_model, self.train_loader)
-
-    def test_trainer_precision_bf16(self):
-        model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
-        loss = nn.CrossEntropyLoss()
-        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
-        pl_model = Trainer.compile(model, loss, optimizer)
-        if TORCH_VERSION_LESS_1_10:
-            trainer = Trainer(max_epochs=1, precision=64)
-            trainer.fit(pl_model, self.train_loader)
-            assert isinstance(trainer.strategy.precision_plugin, DoublePrecisionPlugin)
-            assert optimizer.param_groups[0]['params'][0].dtype is torch.float64
-        else:
-            trainer = Trainer(max_epochs=1, precision='bf16')
-            trainer.fit(pl_model, self.train_loader)
-            assert isinstance(trainer.strategy.precision_plugin, NativeMixedPrecisionPlugin)
-            # model is not converted to bfloat16 precision
-            input = TensorDataset(torch.rand(1, 3, 32, 32))
-            train_loader = DataLoader(input)
-            y_hat = trainer.predict(pl_model, train_loader)
-            assert y_hat[0].dtype is torch.bfloat16
 
     def test_trainer_save_load(self):
         trainer = Trainer(max_epochs=1)
