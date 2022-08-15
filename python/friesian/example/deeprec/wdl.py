@@ -776,7 +776,7 @@ class RayDeepRecCluster:
             label_cols=None):
         # ps has already be launched and waiting and thus it is removed when training
         # as ps should not consume data.
-        # TODO: without repartition to_ray_xshards will throw error
+        # TODO: without repartition to_ray_xshards will crash on k8s
         # TODO: do not fix repartition size
         train_df = train_df.repartition(10)
         test_df = test_df.repartition(10)
@@ -872,15 +872,20 @@ class RayDeepRecCluster:
             "worker": worker_ips
         }
         print(cluster_info)
-        result_refs = [worker.setup_distributed.remote(cluster_info, self.protocol)
-                       for worker in self.remote_instances]
+        ps_chief_refs = [worker.setup_distributed.remote(cluster_info, self.protocol)
+                         for worker in self.remote_ps]
+        ps_chief_refs += [self.remote_workers[0]
+                              .setup_distributed.remote(cluster_info, self.protocol)]
         # Use ray.wait since ps server.join process won't terminate by itself and
         # thus using ray.get on all results would hang.
-        # By using ray.wait, we just wait for all the workers to finish the distributed setting
-        # and we don't need to manually kill the ps process at the very end.
-        # This also makes sure that ps is launched earlier than workers.
-        finished, unfinished = ray.wait(result_refs, num_returns=self.num_workers)
+        # By using ray.wait, we wait for the chief to finish the distributed setting and proceed.
+        # In this case, we don't need to manually kill the ps process at the very end.
+        # This also tries to make sure that ps and chief is launched earlier than ordinary workers.
+        finished, unfinished = ray.wait(ps_chief_refs, num_returns=1)
         print(ray.get(finished))
+        worker_refs = [worker.setup_distributed.remote(cluster_info, self.protocol)
+                       for worker in self.remote_workers[1:]]
+        print(ray.get(worker_refs))
 
 
 class RayWorker:
@@ -913,6 +918,9 @@ class RayWorker:
 
         if self.task_type == 'chief':
             task_type = 'worker'
+            # Make sure ps is launched earlier than the chief
+            # TODO: any better way to do this?
+            time.sleep(2)
 
         print("ps hosts: ", ps_hosts)
         print("worker hosts: ", worker_hosts)
@@ -927,10 +935,6 @@ class RayWorker:
             print("Launching parameter server")
             self.server.join()
         else:
-            # Make sure ps is first launched, then chief, then other workers
-            time.sleep(2)
-            if self.task_index != 0:
-                time.sleep(2)
             print("Launching worker")
             self.config["task_index"] = self.task_index
             self.tf_config = {
