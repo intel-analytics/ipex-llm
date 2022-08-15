@@ -50,7 +50,7 @@ pip install tensorflow-1.15.5+deeprec2204-220614+glibc-cp37-cp37m-linux_x86_64.w
 ## 2. Data Preparation
 Please refer to the [README](https://github.com/alibaba/DeepRec/tree/main/modelzoo/WDL/data) of DeepRec's WDL example to download the dataset. Put `train.csv` and `eval.csv` under the same folder. The files should be accessible to all nodes in the cluster (e.g. in NFS).
 
-## 2. Train DeepRec WDL
+## 3. Train DeepRec WDL
 - Local mode:
 ```bash
 python wdl.py
@@ -83,7 +83,7 @@ We put data in NFS and save the model checkpoint to NFS as well. You need to cha
 - `num_ps`: The number of parameter servers to use. Default to be 1.
 - `in_memory`: Whether to run the example based on in-memory data ingestion. Default to be False. Add `--in_memory` in the running command to enable in-memory data transfer.
 
-## 3. Evaluation Results
+## 4. Evaluation Results
 Evaluation results on the test dataset of each worker will be printed at the end:
 ```
 (RayWorker pid=410, ip=10.244.7.203) Evaluation complete:[1954/1954]
