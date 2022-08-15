@@ -353,7 +353,8 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
                   }
 
       sc = PPMLContext("MyApp", ppml_args)
-        ```
+      ```
+      
       </details>
 
    - For `EHSMKeyManagementService`:
