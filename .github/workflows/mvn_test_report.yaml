@@ -62,7 +62,6 @@ jobs:
       uses: scacap/action-surefire-report@v1
       with:
         check_name: Example mvn Report
-        skip_publishing: true
         github_token: ${{ secrets.GITHUB_TOKEN }}
         report_paths: scala/dllib/target/surefire-reports/TEST*.xml
  
