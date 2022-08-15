@@ -138,6 +138,7 @@ case "$SPARK_K8S_CMD" in
           spark_commnd=$ATTESTATION_COMMAND" && "$spark_commnd
         fi
         echo $spark_commnd && \
+        ./init.sh && \
         SGX=1 ./pal_loader bash  1>&2
     fi
     ;;
@@ -186,6 +187,7 @@ case "$SPARK_K8S_CMD" in
       if [ "$ATTESTATION" = "true" ]; then
         spark_commnd=$ATTESTATION_COMMAND" && "$spark_commnd
       fi
+      ./init.sh && \
       echo $spark_commnd && \
       SGX=1 ./pal_loader bash  1>&2
     fi
