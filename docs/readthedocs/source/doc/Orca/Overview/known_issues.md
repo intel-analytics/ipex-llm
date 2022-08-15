@@ -40,7 +40,35 @@ If you are using `init_orca_context(cluster_mode="yarn-client")`:
 
 ### **RuntimeError: Inter op parallelism cannot be modified after initialization**
 
-This error occurs while building model in driver rather than in ray worker. You should build the model in model creator which runs in each ray worker.
+This error occurs while building model in driver rather than in worker. You should build the model in model creator which runs in each ray worker. You can refer to the following example:
+   
+**Wrong Example**
+   ```
+   def build_model():
+       ...
+
+   model = build_model()
+
+   def model_creator(config):
+       ...
+
+   estimator = Estimator.from_keras(model_creator=model_creator,...)
+   ...
+
+   ```
+
+**Correct Eample**
+   ```
+   def build_model():
+       ...
+
+   def model_creator(config):
+       model = build_model()
+       ...
+
+   estimator = Estimator.from_keras(model_creator=model_creator,...)
+   ...
+   ```
 
 ## **Orca Context Issues**
 
