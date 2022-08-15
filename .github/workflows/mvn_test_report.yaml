@@ -53,15 +53,24 @@ jobs:
           cd scala
           mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.optim" "-Dtest=com.intel.analytics.bigdl.dllib.optim.*Test" test -P spark_3.x -Dspark.version=3.1.2
     
-    - name: Publish Test Report
-      env:
-        https_proxy: http://child-prc.intel.com:913
-        http_proxy: http://child-prc.intel.com:913
-        no_proxy: api.github.com
-      if: ${{ always() }}
-      uses: scacap/action-surefire-report@v1
+#     - name: Publish Test Report
+#       env:
+#         https_proxy: http://child-prc.intel.com:913
+#         http_proxy: http://child-prc.intel.com:913
+#         no_proxy: api.github.com
+#       if: ${{ always() }}
+#       uses: scacap/action-surefire-report@v1
+#       with:
+#         check_name: Example mvn Report
+#         github_token: ${{ secrets.GITHUB_TOKEN }}
+#         report_paths: scala/dllib/target/surefire-reports/TEST*.xml
+        
+    - name: Report
+      uses: dorny/test-reporter@v1.5.0
+      if: always()
       with:
-        check_name: Example mvn Report
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        report_paths: scala/dllib/target/surefire-reports/TEST*.xml
+        name: Maven Tests
+        path: "scala/dllib/target/surefire-reports/TEST*.xml"
+        reporter: java-junit
+        fail-on-error: false
  
