@@ -82,6 +82,11 @@ class TestPlugin(TestCase):
                           callbacks=[CheckIPEXCallback(), CheckIPEXFusedStepCallback()])
         trainer.fit(pl_model, self.data_loader, self.test_data_loader)
         trainer.test(pl_model, self.test_data_loader)
+        if TORCH_VERSION_LESS_1_10:
+            import intel_pytorch_extension as ipex
+            # Diable IPEX AMP
+            # Avoid affecting other tests
+            ipex.enable_auto_mixed_precision(None)
 
 
 if __name__ == '__main__':

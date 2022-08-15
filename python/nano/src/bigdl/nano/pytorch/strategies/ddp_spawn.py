@@ -180,7 +180,12 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
         if use_ipex and TORCH_VERSION_LESS_1_10 and 'accelerator' not in kwargs:
             super().__init__(accelerator=create_IPEXAccelerator(),
                              parallel_devices=parallel_devices,
-                             cluster_environment=cluster_environment, **kwargs)
+                             cluster_environment=cluster_environment,
+                             **kwargs)
+            if enable_bf16:
+                import intel_pytorch_extension as ipex
+                # Automatically mix precision
+                ipex.enable_auto_mixed_precision(mixed_dtype=torch.bfloat16)
         elif use_ipex and enable_bf16 and 'precision_plugin' not in kwargs:
             from bigdl.nano.pytorch.strategies.ipex.ipex_strategy import IPEXBF16Precision
             super().__init__(parallel_devices=parallel_devices,

@@ -105,16 +105,17 @@ class Trainer(pl.Trainer):
         self.use_ipex = use_ipex
         enable_bf16 = self.use_ipex and kwargs.get('precision', None) == 'bf16'
 
+        # No need to set precision for torch greater or equal to 1.10,
+        # because strategy > accelerator/precision/plugin
+        if TORCH_VERSION_LESS_1_10 and enable_bf16:
+            kwargs['precision'] = 32
+
         if self.use_ipex and not check_avx512():
             if TORCH_VERSION_LESS_1_11:
                 warning("Enable ipex<=1.10 in a cpu instruction set"
                         " without avx512 will crash."
                         "Fall back to regular pytorch.")
                 self.use_ipex = False
-                if TORCH_VERSION_LESS_1_10 and enable_bf16:
-                    warning("torch must be greater or equal to 1.10 to use bfloat16 without ipex."
-                            "Will use 32-bit precision")
-                    kwargs['precision'] = 32
             elif enable_bf16:
                 warning("Enable IPEX bfloat16 in a cpu instruction set"
                         " without avx512 will crash. "
