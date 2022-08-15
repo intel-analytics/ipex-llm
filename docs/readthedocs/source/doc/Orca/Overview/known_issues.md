@@ -40,7 +40,7 @@ If you are using `init_orca_context(cluster_mode="yarn-client")`:
 
 ### **RuntimeError: Inter op parallelism cannot be modified after initialization**
 
-This error occurs if you build your TensorFlow model on the driver rather than in worker. You should build the complete model in `model_creator` which runs on each worker node. You can refer to the following examples:
+This error occurs if you build your TensorFlow model on the driver rather than on worker. You should build the complete model in `model_creator` which runs on each worker node. You can refer to the following examples:
    
 **Wrong Example**
    ```
@@ -52,7 +52,6 @@ This error occurs if you build your TensorFlow model on the driver rather than i
 
    estimator = Estimator.from_keras(model_creator=model_creator,...)
    ...
-
    ```
 
 **Correct Example**
