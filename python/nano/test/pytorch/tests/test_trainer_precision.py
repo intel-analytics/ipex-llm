@@ -67,8 +67,8 @@ class TestTrainer(TestCase):
             trainer = Trainer(max_epochs=4, precision=64)
             trainer.fit(pl_model, self.train_loader)
             assert isinstance(trainer.strategy.precision_plugin, DoublePrecisionPlugin)
-            for opt in pl_model.optimizers():
-                assert opt.param_groups[0]['params'][0].dtype is torch.float64
+            opt = pl_model.optimizers()
+            assert opt.param_groups[0]['params'][0].dtype is torch.float64
         else:
             trainer = Trainer(max_epochs=4, precision='bf16')
             trainer.fit(pl_model, self.train_loader)
