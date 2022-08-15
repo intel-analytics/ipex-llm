@@ -23,7 +23,7 @@ torch = LazyImport('torch')
 LSTMForecaster = LazyImport('bigdl.chronos.forecaster.lstm_forecaster.LSTMForecaster')
 from unittest import TestCase
 import pytest
-from .. import op_all, op_onnxrt16, op_torch
+from .. import op_torch, op_distributed, op_all
 
 def create_data(loader=False):
     num_train_samples = 1000
