@@ -48,7 +48,6 @@ This error occurs while building model in driver rather than in worker. You shou
 
    def model_creator(config):
        model.compile(...)
-       ...
        return model
 
    estimator = Estimator.from_keras(model_creator=model_creator,...)
@@ -56,12 +55,11 @@ This error occurs while building model in driver rather than in worker. You shou
 
    ```
 
-**Correct Eample**
+**Correct Example**
    ```
    def model_creator(config):
        model = ...
        model.compile(...)
-       ...
        return model
 
    estimator = Estimator.from_keras(model_creator=model_creator,...)
