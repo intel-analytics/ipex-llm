@@ -22,12 +22,15 @@ public class FLHelper {
     int serverPort = 8980;
 
     // Client property
+    String psiSalt = null;
     String clientTarget = "localhost:8980";
     String taskID = "taskID";
     String certChainFilePath = null;
     String privateKeyFilePath = null;
 
     String fgBoostServerModelPath = null;
+
+    public void setPsiSalt(String psiSalt) { this.psiSalt = psiSalt; }
 
     public void setClientNum(int clientNum) {
         this.clientNum = clientNum;

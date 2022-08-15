@@ -22,7 +22,6 @@ import java.util
 import java.util.{Arrays, Properties}
 
 import com.intel.analytics.bigdl.dllib.common.zooUtils
-import org.codehaus.plexus.util.FileUtils
 import org.scalatest._
 import org.slf4j.LoggerFactory
 

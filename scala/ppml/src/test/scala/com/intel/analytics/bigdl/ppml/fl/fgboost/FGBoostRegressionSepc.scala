@@ -34,6 +34,7 @@ class FGBoostRegressionSepc extends FLSpec {
   "FGBoostRegression client save and load" should "work" in {
     val flServer = new FLServer()
     try {
+      flServer.setClientNum(1)
       flServer.setPort(port)
       val rowkeyName = "Id"
       val labelName = "SalePrice"
@@ -55,7 +56,7 @@ class FGBoostRegressionSepc extends FLSpec {
       fGBoostRegression.saveModel(tmpFileName)
 
       val fGBoostRegressionLoaded = FGBoostRegression.loadModel(tmpFileName)
-
+      new File(tmpFileName).delete()
 
       var cnt = 0
     } catch {
@@ -65,7 +66,7 @@ class FGBoostRegressionSepc extends FLSpec {
     }
 
   }
-  "FGBoostRegression server save and load" should "work" in {
+  "FGBoostRegression client/server save/load" should "work" in {
     val flServer = new FLServer(Array("-c",
       getClass.getClassLoader.getResource("ppml-conf-save-model.yaml").getPath))
     try {
@@ -79,25 +80,31 @@ class FGBoostRegressionSepc extends FLSpec {
         PreprocessUtil.preprocessing(sources, testSources, rowkeyName, labelName)
       XGBoostFormatValidator.clearHeaders()
       XGBoostFormatValidator.addHeaders(flattenHeaders)
+      flServer.setPort(port)
+      flServer.setClientNum(1)
       flServer.build()
       flServer.start()
-      FLContext.initFLContext("1", "localhost:8991")
+      FLContext.initFLContext("1", target)
       val fGBoostRegression = new FGBoostRegression(
         learningRate = 0.1f, maxDepth = 7, minChildSize = 5)
       fGBoostRegression.fit(trainFeatures, trainLabels, 5)
+      val tmpFileName = s"/tmp/${UUID.randomUUID().toString}"
+      fGBoostRegression.saveModel(tmpFileName)
       flServer.stop()
+
       // start another FLServer to load the server model and continue training
       val flServer2 = new FLServer(Array("-c",
         getClass.getClassLoader.getResource("ppml-conf-save-model.yaml").getPath))
+      flServer2.setPort(port)
       flServer2.build()
       flServer2.start()
-      FLContext.initFLContext("1", "localhost:8991")
-      val fGBoostRegression2 = new FGBoostRegression(
-        learningRate = 0.1f, maxDepth = 7, minChildSize = 5)
+      FLContext.initFLContext("1", target)
+      val fGBoostRegression2 = FGBoostRegression.loadModel(tmpFileName)
       fGBoostRegression2.fit(trainFeatures, trainLabels, 5)
       flServer2.stop()
 
       new File("/tmp/fgboost-server-model").delete()
+      new File(tmpFileName).delete()
     } catch {
       case e: Exception => throw e
     } finally {
@@ -106,4 +113,3 @@ class FGBoostRegressionSepc extends FLSpec {
 
   }
 }
-
