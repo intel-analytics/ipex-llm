@@ -48,16 +48,28 @@ pip install tensorflow-1.15.5+deeprec2204-220614+glibc-cp37-cp37m-linux_x86_64.w
 8. Run the program `wdl.py`. You may need to change the NFS configurations in `init_orca_context` according to your cluster settings.
 
 ## 2. Data Preparation
-Please refer to the [README](https://github.com/alibaba/DeepRec/tree/main/modelzoo/WDL/data) of DeepRec's WDL example to download the dataset. The dataset should be accessible to all nodes in the cluster (e.g. in NFS).
+Please refer to the [README](https://github.com/alibaba/DeepRec/tree/main/modelzoo/WDL/data) of DeepRec's WDL example to download the dataset. Put `train.csv` and `eval.csv` under the same folder. The files should be accessible to all nodes in the cluster (e.g. in NFS).
 
 ## 2. Train DeepRec WDL
 - Local mode:
 ```bash
-python wdl.py --smartstaged false --data_location /bigdl2.0/data/deeprec/data --checkpoint /bigdl2.0/data/deeprec/result --workers_per_node 3
+python wdl.py
+    --smartstaged false \
+    --ev True \
+    --data_location /folder/path/to/train/and/test/files \
+    --checkpoint /path/to/save/model/checkpoint \
+    --workers_per_node 3
 ```
 - K8s mode:
 ```bash
-python wdl.py --smartstaged false --data_location /bigdl2.0/data/deeprec/data --checkpoint /bigdl2.0/data/deeprec/result --cluster_mode k8s --num_nodes 3 --master k8s://https://ip:port
+python wdl.py
+    --smartstaged false \
+    --ev True \
+    --data_location /folder/path/to/train/and/test/files \
+    --checkpoint /path/to/save/model/checkpoint \
+    --cluster_mode k8s \
+    --num_nodes 3 \
+    --master k8s://https://ip:port
 ```
 
 For DeepRec related arguments, please refer to the original example for more description.
