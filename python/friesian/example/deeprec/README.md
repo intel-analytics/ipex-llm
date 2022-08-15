@@ -58,7 +58,7 @@ python wdl.py \
     --ev True \
     --data_location /folder/path/to/train/and/test/files \
     --checkpoint /path/to/save/model/checkpoint \
-    --workers_per_node 3
+    --instances_per_node 3
 ```
 - K8s mode:
 ```bash
@@ -79,7 +79,7 @@ We put data in NFS and save the model checkpoint to NFS as well. You need to cha
 **Additional Options**:
 - `num_nodes`: The number of nodes to use in the cluster. Default to be 1 for local mode.
 - `cores`: The number of cpu cores to use on each node. Default to be 8.
-- `workers_per_node`: The number of ps and worker instances to run on each node. Default to be 1. For local mode, this value needs to be no less than 2 as there must be at least 1 worker and 1 parameter server.
+- `instances_per_node`: The number of ps and worker instances to run on each node. Default to be 1. For local mode, this value needs to be no less than 2 as there must be at least 1 worker and 1 parameter server.
 - `num_ps`: The number of parameter servers to use. Default to be 1.
 - `in_memory`: Whether to run the example based on in-memory data ingestion. Default to be False. Add `--in_memory` in the running command to enable in-memory data transfer.
 

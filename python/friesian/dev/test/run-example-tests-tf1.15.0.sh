@@ -69,7 +69,7 @@ python ../../example/deeprec/wdl.py \
     --smartstaged false \
     --data_location ./input_deeprec \
     --checkpoint ./result \
-    --workers_per_node 3
+    --instances_per_node 3
 
 now=$(date "+%s")
 time3=$((now - start))
