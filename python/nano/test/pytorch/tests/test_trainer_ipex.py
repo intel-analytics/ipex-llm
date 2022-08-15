@@ -71,7 +71,7 @@ class TestTrainer(TestCase):
 
     def test_trainer_ipex_bf16(self):
         # IPEX BF16 weight prepack needs the cpu support avx512bw, avx512vl and avx512dq
-        if not TORCH_VERSION_LESS_1_10 and not check_avx512():
+        if not check_avx512():
             return
         trainer = Trainer(max_epochs=max_epochs, use_ipex=True, precision="bf16",
                           callbacks=[CheckIPEXFusedStepCallback()])
@@ -102,7 +102,7 @@ class TestTrainer(TestCase):
 
     def test_trainer_ipex_bf16_unspport_optim(self):
         # IPEX BF16 weight prepack needs the cpu support avx512bw, avx512vl and avx512dq
-        if not TORCH_VERSION_LESS_1_10 and not check_avx512():
+        if not check_avx512():
             return
         trainer = Trainer(max_epochs=max_epochs, use_ipex=True, precision="bf16",
                           callbacks=[CheckIPEXFusedStepCallback()])

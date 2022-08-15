@@ -68,7 +68,7 @@ class TestPlugin(TestCase):
 
     def test_trainer_subprocess_plugin_bf16(self):
         # IPEX BF16 weight prepack needs the cpu support avx512bw, avx512vl and avx512dq
-        if not TORCH_VERSION_LESS_1_10 and not check_avx512():
+        if not check_avx512():
             return
         model = ResNet18(pretrained=False, include_top=False, freeze=True)
         loss = nn.CrossEntropyLoss()

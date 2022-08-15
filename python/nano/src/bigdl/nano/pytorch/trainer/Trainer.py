@@ -107,6 +107,10 @@ class Trainer(pl.Trainer):
                     " without avx512 will crash."
                     "Fall back to regular pytorch.")
             use_ipex = False
+            # torch must be greater or equal to 1.10 to use bfloat16 without ipex
+            if TORCH_VERSION_LESS_1_10:
+                if kwargs.get('precision', None) == "bf16":
+                    kwargs['precision'] = 32
 
         self.use_ipex = use_ipex
 
