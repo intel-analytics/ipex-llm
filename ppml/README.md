@@ -294,7 +294,7 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
 
 ### 4.1 Create PPMLContext
 
-a. create a PPMLContext with `appName`
+- create a PPMLContext with `appName`
 
    This is the simplest way to create a `PPMLContext`. When you don't need to read/write encrypted files, you can use this way to create a `PPMLContext`.
 
@@ -311,125 +311,125 @@ a. create a PPMLContext with `appName`
 
    If you want to read/write encrypted files, then you need to provide more information.
 
-b. create a PPMLContext with `appName` & `ppmlArgs`
+- create a PPMLContext with `appName` & `ppmlArgs`
 
    `ppmlArgs` is ppml arguments in a Map, `ppmlArgs` varies according to the kind of Key Management Service (KMS) you are using. Key Management Service (KMS) is used to generate `primaryKey` and `dataKey` to encrypt/decrypt data. We provide 3 types of KMS ——SimpleKeyManagementService, EHSMKeyManagementService, AzureKeyManagementService.
 
    Refer to [KMS Utils](https://github.com/intel-analytics/BigDL/blob/main/ppml/services/kms-utils/docker/README.md) to use KMS to generate `primaryKey` and `dataKey`, then you are ready to create **PPMLContext** with `ppmlArgs`.
 
-   - For `SimpleKeyManagementService`:
+  - For `SimpleKeyManagementService`:
 
-   <details open>
-    <summary>scala</summary>
-
-   ```scala
-   import com.intel.analytics.bigdl.ppml.PPMLContext
-   
-   val ppmlArgs: Map[String, String] = Map(
-          "spark.bigdl.kms.type" -> "SimpleKeyManagementService",
-          "spark.bigdl.kms.simple.id" -> "your_app_id",
-          "spark.bigdl.kms.simple.key" -> "your_app_key",
-          "spark.bigdl.kms.key.primary" -> "/your/primary/key/path/primaryKey",
-          "spark.bigdl.kms.key.data" -> "/your/data/key/path/dataKey"
-      )
-   
-   val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
-   ```
-   </details>
-
-
-   <details>
-    <summary>python</summary>
-
-   ```python
-   from bigdl.ppml.ppml_context import *
-
-   ppml_args = {"kms_type": "SimpleKeyManagementService",
-                "simple_app_id": "your_app_id",
-                "simple_app_key": "your_app_key",
-                "primary_key_path": "/your/primary/key/path/primaryKey",
-                "data_key_path": "/your/data/key/path/dataKey"
-               }
-
-   sc = PPMLContext("MyApp", ppml_args)
-   ```
-
-   </details>
+      <details open>
+       <summary>scala</summary>
+  
+        ```scala
+        import com.intel.analytics.bigdl.ppml.PPMLContext
+      
+        val ppmlArgs: Map[String, String] = Map(
+               "spark.bigdl.kms.type" -> "SimpleKeyManagementService",
+               "spark.bigdl.kms.simple.id" -> "your_app_id",
+               "spark.bigdl.kms.simple.key" -> "your_app_key",
+               "spark.bigdl.kms.key.primary" -> "/your/primary/key/path/primaryKey",
+               "spark.bigdl.kms.key.data" -> "/your/data/key/path/dataKey"
+           )
+      
+        val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
+        ```
+      </details>
+  
+  
+      <details>
+       <summary>python</summary>
+  
+        ```python
+        from bigdl.ppml.ppml_context import *
+  
+        ppml_args = {"kms_type": "SimpleKeyManagementService",
+                     "simple_app_id": "your_app_id",
+                     "simple_app_key": "your_app_key",
+                     "primary_key_path": "/your/primary/key/path/primaryKey",
+                     "data_key_path": "/your/data/key/path/dataKey"
+                    }
+  
+        sc = PPMLContext("MyApp", ppml_args)
+        ```
+  
+      </details>
 
    - For `EHSMKeyManagementService`:
 
-   <details open>
-    <summary>scala</summary>
+      <details open>
+       <summary>scala</summary>
+      
+      ```scala
+      import com.intel.analytics.bigdl.ppml.PPMLContext
+         
+      val ppmlArgs: Map[String, String] = Map(
+             "spark.bigdl.kms.type" -> "EHSMKeyManagementService",
+             "spark.bigdl.kms.ehs.ip" -> "your_server_ip",
+             "spark.bigdl.kms.ehs.port" -> "your_server_port",
+             "spark.bigdl.kms.ehs.id" -> "your_app_id",
+             "spark.bigdl.kms.ehs.key" -> "your_app_key",
+             "spark.bigdl.kms.key.primary" -> "/your/primary/key/path/primaryKey",
+             "spark.bigdl.kms.key.data" -> "/your/data/key/path/dataKey"
+      )
+         
+      val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
+      ```
    
-   ```scala
-   import com.intel.analytics.bigdl.ppml.PPMLContext
-      
-   val ppmlArgs: Map[String, String] = Map(
-          "spark.bigdl.kms.type" -> "EHSMKeyManagementService",
-          "spark.bigdl.kms.ehs.ip" -> "your_server_ip",
-          "spark.bigdl.kms.ehs.port" -> "your_server_port",
-          "spark.bigdl.kms.ehs.id" -> "your_app_id",
-          "spark.bigdl.kms.ehs.key" -> "your_app_key",
-          "spark.bigdl.kms.key.primary" -> "/your/primary/key/path/primaryKey",
-          "spark.bigdl.kms.key.data" -> "/your/data/key/path/dataKey"
-   )
-      
-   val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
-   ```
-
-  </details>
-
-  <details>
-    <summary>python</summary>
-
-   ```python
-   from bigdl.ppml.ppml_context import *
-
-   ppml_args = {"kms_type": "EHSMKeyManagementService",
-                "kms_server_ip": "your_server_ip",
-                "kms_server_port": "your_server_port"
-                "ehsm_app_id": "your_app_id",
-                "ehsm_app_key": "your_app_key",
-                "primary_key_path": "/your/primary/key/path/primaryKey",
-                "data_key_path": "/your/data/key/path/dataKey"
-               }
-
-   sc = PPMLContext("MyApp", ppml_args)
-   ```
-
-   </details>
+     </details>
+   
+     <details>
+       <summary>python</summary>
+   
+      ```python
+      from bigdl.ppml.ppml_context import *
+   
+      ppml_args = {"kms_type": "EHSMKeyManagementService",
+                   "kms_server_ip": "your_server_ip",
+                   "kms_server_port": "your_server_port"
+                   "ehsm_app_id": "your_app_id",
+                   "ehsm_app_key": "your_app_key",
+                   "primary_key_path": "/your/primary/key/path/primaryKey",
+                   "data_key_path": "/your/data/key/path/dataKey"
+                  }
+   
+      sc = PPMLContext("MyApp", ppml_args)
+      ```
+   
+      </details>
 
    - For `AzureKeyManagementService`
 
-   <details open>
-    <summary>scala</summary>
+      <details open>
+       <summary>scala</summary>
+      
+      ```scala
+      import com.intel.analytics.bigdl.ppml.PPMLContext
+         
+      val ppmlArgs: Map[String, String] = Map(
+             "spark.bigdl.kms.type" -> "AzureKeyManagementService",
+             "spark.bigdl.kms.azure.vault" -> "key_vault_name",
+             "spark.bigdl.kms.azure.clientId" -> "client_id",
+             "spark.bigdl.kms.key.primary" -> "/your/primary/key/path/primaryKey",
+             "spark.bigdl.kms.key.data" -> "/your/data/key/path/dataKey"
+         )
+         
+      val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
+      ```
    
-   ```scala
-   import com.intel.analytics.bigdl.ppml.PPMLContext
-      
-   val ppmlArgs: Map[String, String] = Map(
-          "spark.bigdl.kms.type" -> "AzureKeyManagementService",
-          "spark.bigdl.kms.azure.vault" -> "key_vault_name",
-          "spark.bigdl.kms.azure.clientId" -> "client_id",
-          "spark.bigdl.kms.key.primary" -> "/your/primary/key/path/primaryKey",
-          "spark.bigdl.kms.key.data" -> "/your/data/key/path/dataKey"
-      )
-      
-   val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
-   ```
+     </details>>
 
-  </details>>
+     <details>
+       <summary>python</summary>
+   
+       ```python
+       # not support yet
+       ```
+   
+     </details>
 
-  <details>
-    <summary>python</summary>
-
-    ```python
-    # not support yet
-    ```
-
-  </details>
-
-c. create a PPMLContext with `sparkConf` & `appName` & `ppmlArgs`
+- create a PPMLContext with `sparkConf` & `appName` & `ppmlArgs`
 
    If you need to set Spark configurations, you can provide a `SparkConf` with Spark configurations to create a `PPMLContext`.
 
@@ -512,7 +512,7 @@ sc.write(dataframe = df, crypto_mode = CryptoMode.AES_CBC_PKCS5PADDING)
 
 The following examples use `sc` to represent a initialized `PPMLContext`
 
-read/write CSV file
+**read/write CSV file**
 
 <details open>
   <summary>scala</summary>
@@ -578,7 +578,7 @@ sc.write(df2, CryptoMode.AES_CBC_PKCS5PADDING)
 
 </details>
 
-read/write PARQUET file
+**read/write PARQUET file**
 
 <details open>
   <summary>scala</summary>
@@ -641,10 +641,10 @@ sc.write(df2, CryptoMode.AES_GCM_CTR_V1)
 
 </details>
 
+**read/write JSON file**
+
 <details open>
   <summary>scala</summary>
-
-read/write JSON file
 
 ```scala
 import com.intel.analytics.bigdl.ppml.PPMLContext
@@ -703,10 +703,10 @@ sc.write(df2, CryptoMode.AES_CBC_PKCS5PADDING)
 
 </details>
 
+**read textfile**
+
 <details open>
   <summary>scala</summary>
-
-read textfile
 
 ```scala
 import com.intel.analytics.bigdl.ppml.PPMLContext
