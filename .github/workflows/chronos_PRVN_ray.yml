@@ -92,7 +92,6 @@ jobs:
           pip install python/dllib/src/dist/bigdl_dllib-*-py3-none-manylinux1_x86_64.whl
           pip install python/orca/src/dist/bigdl_orca-*-py3-none-manylinux1_x86_64.whl
           pip install python/chronos/src/dist/bigdl_chronos-*-py3-none-manylinux1_x86_64.whl
-          export SPARK_LOCAL_HOSTNAME=localhost
           export KERAS_BACKEND=tensorflow
           python --version
           pip install scipy==1.5.4
