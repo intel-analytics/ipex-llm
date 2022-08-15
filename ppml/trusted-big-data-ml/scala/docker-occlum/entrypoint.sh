@@ -55,6 +55,11 @@ fi
 
 case "$SPARK_K8S_CMD" in
   driver)
+    echo "SGX_LOG_LEVEL $SGX_LOG_LEVEL" && \
+    echo "SGX_DRIVER_JVM_MEM_SIZE $SGX_DRIVER_JVM_MEM_SIZE" && \
+    echo "SGX_EXECUTOR_JVM_MEM_SIZE $SGX_EXECUTOR_JVM_MEM_SIZE" && \
+    echo "SPARK_DRIVER_MEMORY $SPARK_DRIVER_MEMORY" && \
+    echo "SPARK_EXECUTOR_MEMORY $SPARK_EXECUTOR_MEMORY" && \
     echo "SGX Mem $SGX_MEM_SIZE"
     if [[ -z "$DRIVER_MEMORY" ]]; then
         echo "DRIVER_MEMORY not set, using default value 10g"
@@ -105,6 +110,11 @@ case "$SPARK_K8S_CMD" in
     fi
     ;;
   executor)
+    echo "SGX_LOG_LEVEL $SGX_LOG_LEVEL" && \
+    echo "SGX_DRIVER_JVM_MEM_SIZE $SGX_DRIVER_JVM_MEM_SIZE" && \
+    echo "SGX_EXECUTOR_JVM_MEM_SIZE $SGX_EXECUTOR_JVM_MEM_SIZE" && \
+    echo "SPARK_DRIVER_MEMORY $SPARK_DRIVER_MEMORY" && \
+    echo "SPARK_EXECUTOR_MEMORY $SPARK_EXECUTOR_MEMORY" && \
     echo "SGX Mem $SGX_MEM_SIZE"
     /opt/run_spark_on_occlum_glibc.sh init
     cd /opt/occlum_spark
