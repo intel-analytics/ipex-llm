@@ -74,30 +74,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -i https://pypi.org/simple --pre --upgrade bigdl-orca
-        pip install build
-        pip install wheel
-        pip install torch==1.7.1
-        pip install torchvision
-        pip install torchmetrics
-        pip install albumentations
-        pip install scikit-learn==0.22.2.post1
-        pip install opencv-python
-        pip install matplotlib
-        pip install tqdm
-        pip install protobuf==3.15.3
-        pip install pandas
-        pip install ray[default]==1.11.0
-        pip install dm_tree
-        pip install gym[atari]==0.17.1
-        pip install atari-py==0.2.5
-        pip install tabulate==0.8.7
-        pip install tensorflow==1.15.0
-        pip install mxnet==1.6.0
-        pip install xgboost_ray
-        pip install argparse
-        pip install Pillow
-        pip install pyarrow==4.0.1
-  
+        pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r python/orca/dev/example/requirements-ray.txt 
 
     - name: Run Test
       #run: python -m build
