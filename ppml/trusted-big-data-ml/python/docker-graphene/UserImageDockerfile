@@ -1,5 +1,3 @@
-# Build user-spefic kubernetes spark image from bigdl image
-
 ARG BIGDL_IMAGE_NAME
 ARG BIGDL_IMAGE_VERSION
 
