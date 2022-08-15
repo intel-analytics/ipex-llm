@@ -14,13 +14,8 @@
 # limitations under the License.
 #
 
-import torch
-import numpy as np
-from torch import Tensor
 from numpy import ndarray
-from functools import partial
-from torchmetrics.functional import mean_squared_error, mean_absolute_error,\
-    mean_absolute_percentage_error, r2_score
+import numpy as np
 from bigdl.nano.utils.log4Error import invalidInputError
 from timeit import repeat
 
@@ -28,23 +23,54 @@ from timeit import repeat
 EPSILON = 1e-10
 
 
-# implemented this metric to keep up with orca.automl
-def symmetric_mean_absolute_percentage_error(preds: Tensor, target: Tensor) -> Tensor:
-    abs_diff = torch.abs(preds - target)
-    abs_per_error = abs_diff / (torch.abs(preds) + torch.abs(target) + EPSILON)
-    sum_abs_per_error = 100 * torch.sum(abs_per_error)
-    num_obs = target.numel()
-    return sum_abs_per_error / num_obs
+def mae(y_label, y_predict):
+    """
+    Calculate the mean absolute error (MAE).
+    .. math::
+        \\text{MAE} = \\frac{1}{n}\\sum_{t=1}^n |y_t-\\hat{y_t}|
+    :param y_label: Array-like of shape = (n_samples, \*).
+           Ground truth (correct) target values.
+    :param y_predict: Array-like of shape = (n_samples, \*).
+           Estimated target values.
+    :return: Ndarray of floats.
+             A non-negative floating point value (the best value is 0.0), or an
+             array of floating point values, one for each individual target.
+    """
+    y_label=np.array(y_label)
+    y_predict=np.array(y_predict)
+    result= np.mean(np.abs(y_label-y_predict))
+    return result
 
 
-TORCHMETRICS_REGRESSION_MAP = {
-    'mae': mean_absolute_error,
-    'mse': mean_squared_error,
-    'rmse': partial(mean_squared_error, squared=False),
-    'mape': mean_absolute_percentage_error,
-    'smape': symmetric_mean_absolute_percentage_error,
-    'r2': r2_score,
-}
+def mse(y_label, y_predict):
+    y_label=np.array(y_label)
+    y_predict=np.array(y_predict)
+    result= np.mean((y_label-y_predict)**2)
+    return result
+
+
+def rmse(y_label, y_predict):
+    return np.sqrt(mse(y_label, y_predict))
+
+
+def mape(y_label, y_predict):
+    y_label, y_predict = np.array(y_label), np.array(y_predict)
+    return np.mean(np.abs((y_label - y_predict) / y_label))
+
+
+def smape(y_label, y_predict):
+    abs_diff = np.abs(y_predict - y_label)
+    abs_per_error = abs_diff / (np.abs(y_predict) + np.abs(y_label) + EPSILON)
+    sum_abs_per_error = np.mean(abs_per_error)
+    return sum_abs_per_error * 100
+
+
+def r2(y_label, y_predict):
+    y_label, y_predict = np.array(y_label), np.array(y_predict)
+    return 1 - np.sum((y_label - y_predict)**2) / np.sum((y_label - np.mean(y_label))**2)
+
+
+REGRESSION_MAP = {'mae', 'mse', 'rmse', 'mape', 'smape', 'r2'}
 
 
 def _standard_input(metrics, y_true, y_pred):
@@ -57,13 +83,12 @@ def _standard_input(metrics, y_true, y_pred):
         metrics = [metrics]
     if isinstance(metrics[0], str):
         metrics = list(map(lambda x: x.lower(), metrics))
-        invalidInputError(all(metric in TORCHMETRICS_REGRESSION_MAP.keys() for metric in metrics),
-                          f"metric should be one of {TORCHMETRICS_REGRESSION_MAP.keys()},"
+        invalidInputError(all(metric in REGRESSION_MAP for metric in metrics),
+                          f"metric should be one of {REGRESSION_MAP},"
                           f" but get {metrics}.")
         invalidInputError(type(y_true) is type(y_pred) and isinstance(y_pred, ndarray),
                           "y_pred and y_true type must be numpy.ndarray,"
                           f" but found {type(y_pred)} and {type(y_true)}.")
-        y_true, y_pred = torch.from_numpy(y_true), torch.from_numpy(y_pred)
 
     invalidInputError(y_true.shape == y_pred.shape,
                       "y_true and y_pred should have the same shape, "
@@ -91,7 +116,6 @@ class Evaluator(object):
     def evaluate(metrics, y_true, y_pred, aggregate='mean'):
         """
         Evaluate a specific metrics for y_true and y_pred.
-
         :param metrics: String or list in ['mae', 'mse', 'rmse', 'r2', 'mape', 'smape'] for built-in
                metrics. If callable function, it signature should be func(y_true, y_pred), where
                y_true and y_pred are numpy ndarray.
@@ -100,7 +124,6 @@ class Evaluator(object):
         :param aggregate: aggregation method. Currently, "mean" and None are supported,
                'mean' represents aggregating by mean, while None will return the element-wise
                result. The value defaults to 'mean'.
-
         :return: Float or ndarray of floats.
                  A floating point value, or an
                  array of floating point values, one for each individual target.
@@ -109,26 +132,15 @@ class Evaluator(object):
 
         res_list = []
         for metric in metrics:
-            if callable(metric):
-                metric_func = metric
-            else:
-                metric_func = TORCHMETRICS_REGRESSION_MAP[metric]
             if len(original_shape) in [2, 3] and aggregate is None:
                 res = torch.zeros(y_true.shape[-1])
                 for i in range(y_true.shape[-1]):
-                    if callable(metric):
-                        res[i] = torch.from_numpy(metric_func(y_true[..., i], y_pred[..., i]))
-                    else:
-                        res[i] = metric_func(y_pred[..., i], y_true[..., i])
+                    res[i] = eval(metric)(y_true[..., i], y_pred[..., i])
                 res = res.reshape(original_shape[1:])
                 res_list.append(res.numpy())
             else:
-                if callable(metric):
-                    res = metric_func(y_true, y_pred)
-                    res_list.append(res)
-                else:
-                    res = metric_func(y_pred, y_true)
-                    res_list.append(res.numpy())
+                res = eval(metric)(y_true, y_pred)
+                res_list.append(res)
         return res_list
 
     def get_latency(func, *args, num_running=100, **kwargs):
