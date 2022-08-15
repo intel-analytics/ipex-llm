@@ -53,7 +53,7 @@ Please refer to the [README](https://github.com/alibaba/DeepRec/tree/main/modelz
 ## 3. Train DeepRec WDL
 - Local mode:
 ```bash
-python wdl.py
+python wdl.py \
     --smartstaged false \
     --ev True \
     --data_location /folder/path/to/train/and/test/files \
@@ -62,7 +62,7 @@ python wdl.py
 ```
 - K8s mode:
 ```bash
-python wdl.py
+python wdl.py \
     --smartstaged false \
     --ev True \
     --data_location /folder/path/to/train/and/test/files \
