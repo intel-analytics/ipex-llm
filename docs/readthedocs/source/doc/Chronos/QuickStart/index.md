@@ -18,34 +18,34 @@
 
         <details id="ChronosForecaster">
             <summary><a href="./chronos-tsdataset-forecaster-quickstart.html">Predict Number of Taxi Passengers with Chronos Forecaster</a></summary>
-            <img src="docs\readthedocs\image\colab_logo_32px.png"><a href="https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_nyc_taxi_tsdataset_forecaster.ipynb">Run in Google Colab</a>
+            <img src="../../../_images/colab_logo_32px.png"><a href="https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_nyc_taxi_tsdataset_forecaster.ipynb">Run in Google Colab</a>
             &nbsp;
-            <img src="docs\readthedocs\image\GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_nyc_taxi_tsdataset_forecaster.ipynb">View source on GitHub</a>
+            <img src="../../../_images/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_nyc_taxi_tsdataset_forecaster.ipynb">View source on GitHub</a>
             <p>In this guide we will demonstrate how to use _Chronos TSDataset_ and _Chronos Forecaster_ for time series processing and predict number of taxi passengers.</p>
         </details>
         <hr>
 
         <details id="TuneaForecasting">
             <summary><a href="./chronos-autotsest-quickstart.html">Tune a Forecasting Task Automatically</a></summary>
-            <img src="docs/readthedocs/image/colab_logo_32px.png"><a href="https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_autots_nyc_taxi.ipynb">Run in Google Colab</a>
+            <img src="../../../_images/colab_logo_32px.png"><a href="https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_autots_nyc_taxi.ipynb">Run in Google Colab</a>
             &nbsp;
-            <img src="docs/readthedocs/image/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_autots_nyc_taxi.ipynb">View source on GitHub</a>
+            <img src="../../../_images/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_autots_nyc_taxi.ipynb">View source on GitHub</a>
             <p>In this guide we will demonstrate how to use _Chronos AutoTSEstimator_ and _Chronos TSPipeline_ to auto tune a time seires forecasting task and handle the whole model development process easily.</p>
         </details>
         <hr>
 
         <details id="DetectAnomaly">
             <summary><a href="./chronos-anomaly-detector.html">Detect Anomaly Point in Real Time Traffic Data</a></summary>
-            <img src="docs\readthedocs\image\colab_logo_32px.png"><a href="https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_minn_traffic_anomaly_detector.ipynb">Run in Google Colab</a>
+            <img src="../../../_images/colab_logo_32px.png"><a href="https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_minn_traffic_anomaly_detector.ipynb">Run in Google Colab</a>
             &nbsp;
-            <img src="../../../../_images/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_minn_traffic_anomaly_detector.ipynb">View source on GitHub</a>
+            <img src="../../../_images/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_minn_traffic_anomaly_detector.ipynb">View source on GitHub</a>
             <p>In this guide we will demonstrate how to use _Chronos Anomaly Detector_ for real time traffic data from the Twin Cities Metro area in Minnesota anomaly detection.</p>
         </details>
         <hr>
 
         <details id="AutoTSEstimator">
             <summary><a href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_autots_customized_model.ipynb">Tune a Customized Time Series Forecasting Model with AutoTSEstimator.</a></summary>
-            <img src="../../../../image/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_autots_customized_model.ipynb">View source on GitHub</a>
+            <img src="../../../_images/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_autots_customized_model.ipynb">View source on GitHub</a>
             <p>In this notebook, we demonstrate a reference use case where we use the network traffic KPI(s) in the past to predict traffic KPI(s) in the future. We demonstrate how to use _AutoTSEstimator_ to adjust the parameters of a customized model.</p>
         </details>
         <hr>
