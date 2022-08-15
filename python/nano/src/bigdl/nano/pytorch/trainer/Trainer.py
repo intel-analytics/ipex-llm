@@ -102,27 +102,24 @@ class Trainer(pl.Trainer):
             else:
                 kwargs["callbacks"] = [ChannelsLastCallback()]
 
-        if TORCH_VERSION_LESS_1_11 and use_ipex and not check_avx512():
-            warning("Enable ipex<=1.10 in a cpu instruction set"
-                    " without avx512 will crash."
-                    "Fall back to regular pytorch.")
-            use_ipex = False
-            # torch must be greater or equal to 1.10 to use bfloat16 without ipex
-            if TORCH_VERSION_LESS_1_10:
-                if kwargs.get('precision', None) == "bf16":
-                    kwargs['precision'] = 32
-
         self.use_ipex = use_ipex
+        enable_bf16 = self.use_ipex and kwargs.get('precision', None) == 'bf16'
 
-        enable_bf16 = False
-
-        # enable precision plugin for IPEX BF16
-        if self.use_ipex and kwargs.get('precision', None) == "bf16":
-            enable_bf16 = True
-            # No need to set `precision` because strategy has higher priority
-            # than accelerator/plugin
-            if TORCH_VERSION_LESS_1_10:
-                kwargs['precision'] = 32
+        if self.use_ipex and not check_avx512():
+            if TORCH_VERSION_LESS_1_11:
+                warning("Enable ipex<=1.10 in a cpu instruction set"
+                        " without avx512 will crash."
+                        "Fall back to regular pytorch.")
+                self.use_ipex = False
+                if TORCH_VERSION_LESS_1_10 and enable_bf16:
+                    warning("torch must be greater or equal to 1.10 to use bfloat16 without ipex."
+                            "Will use 32-bit precision")
+                    kwargs['precision'] = 32
+            elif enable_bf16:
+                warning("Enable IPEX bfloat16 in a cpu instruction set"
+                        " without avx512 will crash. "
+                        "Will use PyTorch Lightning BFloat16 Mixed Precision")
+                enable_bf16 = False
 
         if num_processes == 1:
             from bigdl.nano.pytorch.strategies import create_IPEXStrategy
