@@ -129,7 +129,7 @@ You could also switch the saving format to Keras H5 by passing `save_format='h5
 **1. SavedModel Format**
 
 ```python
-# save model in savedModel format
+# save model in SavedModel format
 estimator.save("/tmp/cifar10_model")
 
 # load model
