@@ -112,8 +112,11 @@ class Trainer(pl.Trainer):
 
         enable_bf16 = False
 
+        # enable precision plugin for IPEX BF16
         if self.use_ipex and kwargs.get('precision', None) == "bf16":
             enable_bf16 = True
+            # No need to set `precision` because strategy has higher priority
+            # than accelerator/plugin
             if TORCH_VERSION_LESS_1_10:
                 kwargs['precision'] = 32
 

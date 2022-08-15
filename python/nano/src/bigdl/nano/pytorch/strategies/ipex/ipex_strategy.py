@@ -88,7 +88,7 @@ class IPEXBF16Precision(PrecisionPlugin):
         # in PyTorch 1.11.
         # torch.autocast("cpu", args...) is equivalent to torch.cpu.amp.autocast(args...)
         # in PyTorch 1.12.
-        with torch.cpu.amp.autocast(dtype=torch.bfloat16):
+        with torch.cpu.amp.autocast():
             yield
 
     def optimizer_step(self,
@@ -109,13 +109,15 @@ class IPEXBF16Precision(PrecisionPlugin):
         if isinstance(optimizer, LBFGS):
             invalidInputError(False,
                               "IPEX BFloat16 and the LBFGS optimizer are not compatible "
-                              f"(optimizer {optimizer_idx}")
+                              f"(optimizer {optimizer_idx}",
+                              "Hint: Set 'use_ipex' to False or not set 'precision' to 'bf16'"
+                              " if LBFGS optimizer is necessary")
 
         # Detect custom optimzer
         if type(optimizer).__name__ not in dir(torch.optim):
-            warning("Closure use in optimizer.step(...) is not currently supported"
-                    " if IPEX and BFloat16 are enabled.")
-
+            warning("Seems like you are using a custom optimizer,"
+                    "please make sure that 'optimizer.step(closure)'"
+                    " does not need to be called in training stage")
         closure_result = closure()
         optimizer.step(**kwargs)
 
