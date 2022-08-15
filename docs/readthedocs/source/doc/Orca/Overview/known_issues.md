@@ -40,7 +40,7 @@ If you are using `init_orca_context(cluster_mode="yarn-client")`:
 
 ### **RuntimeError: Inter op parallelism cannot be modified after initialization**
 
-This error occurs while building model in driver rather than in worker. You should build the model in model creator which runs in each ray worker. You can refer to the following example:
+This error occurs if you build your TensorFlow model on the driver rather than in worker. You should build the complete model in `model_creator` which runs on each worker node. You can refer to the following examples:
    
 **Wrong Example**
    ```
@@ -66,7 +66,7 @@ This error occurs while building model in driver rather than in worker. You shou
    ...
    ```
 
-## **Orca Context Issues**
+## **OrcaContext Issues**
 
 ### **Exception: Failed to read dashbord log: [Errno 2] No such file or directory: '/tmp/ray/.../dashboard.log'**
 
