@@ -38,7 +38,8 @@ class BasePytorchForecaster(Forecaster):
     def __init__(self, **kwargs):
         self.internal = None
         if self.distributed:
-            self.use_hpo = False  #  not supported when distributed
+            # don't support use_hpo when distributed
+            self.use_hpo = False
             from bigdl.orca.learn.pytorch.estimator import Estimator
             from bigdl.orca.learn.metrics import MSE, MAE
             ORCA_METRICS = {"mse": MSE, "mae": MAE}
