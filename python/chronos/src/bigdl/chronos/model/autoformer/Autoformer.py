@@ -59,6 +59,8 @@ class AutoFormer(pl.LightningModule):
     """
     def __init__(self, configs):
         super().__init__()
+        kwargs = {k: getattr(configs, k) for k in configs._fields}
+        self.save_hyperparameters(kwargs)
         pl.seed_everything(configs.seed, workers=True)
         self.seq_len = configs.seq_len
         self.label_len = configs.label_len
