@@ -93,8 +93,12 @@ if __name__ == "__main__":
     model = MyLightningModule()
     train_loader, val_loader = create_dataloaders()
 
-    # NHWC is an alternative way of describing the tensor dimensions,
-    # setting channels_last=True
+    # NHWC is an alternative way of describing the tensor dimensions.
+    # NHWC performance is much better performance than NCHW (contiguous storage of tensor),
+    # and operator coverage of NHWC would be higher than blocked memory format (to_mkldnn() method), 
+    # so user experience is better.
+    #
+    # by setting channels_last=True 
     trainer = Trainer(max_epochs=5, channels_last=True)
     trainer.fit(model, train_dataloaders=train_loader)
     trainer.validate(model, dataloaders=val_loader)
