@@ -133,11 +133,11 @@ class Evaluator(object):
         res_list = []
         for metric in metrics:
             if len(original_shape) in [2, 3] and aggregate is None:
-                res = torch.zeros(y_true.shape[-1])
+                res = np.zeros(y_true.shape[-1])
                 for i in range(y_true.shape[-1]):
                     res[i] = eval(metric)(y_true[..., i], y_pred[..., i])
                 res = res.reshape(original_shape[1:])
-                res_list.append(res.numpy())
+                res_list.append(res)
             else:
                 res = eval(metric)(y_true, y_pred)
                 res_list.append(res)
