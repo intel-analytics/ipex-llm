@@ -164,6 +164,7 @@ class TestChronosModelTCNForecaster(TestCase):
                         directions=["minimize", "minimize"])
 
     @op_all
+    @op_onnxrt16
     def test_tcn_forecaster_multi_objective_tune_acceleration(self):
         import bigdl.nano.automl.hpo.space as space
         train_data, val_data, _ = create_data(loader=False)
@@ -183,6 +184,7 @@ class TestChronosModelTCNForecaster(TestCase):
                         acceleration=True, direction=None)
 
     @op_all
+    @op_onnxrt16
     def test_tcn_forecaster_mo_tune_acceleration_fit_input(self):
         import bigdl.nano.automl.hpo.space as space
         train_data, val_data, _ = create_data(loader=False)
@@ -204,6 +206,7 @@ class TestChronosModelTCNForecaster(TestCase):
             forecaster.fit(train_data, epochs=2)
 
     @op_all
+    @op_onnxrt16
     def test_tcn_forecaster_mo_tune_acceleration_fit(self):
         import bigdl.nano.automl.hpo.space as space
         train_data, val_data, _ = create_data(loader=False)
