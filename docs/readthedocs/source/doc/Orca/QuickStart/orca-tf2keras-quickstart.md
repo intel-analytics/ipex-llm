@@ -2,7 +2,7 @@
 
 ---
 
-![](../../../../image/colab_logo_32px.png)[Run in Google Colab](https://colab.research.google.com/github/intel-analytics/BigDL/blob/branch-2.0/python/orca/colab-notebook/quickstart/tf2_keras_lenet_mnist.ipynb) &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/orca/colab-notebook/quickstart/tf2_keras_lenet_mnist.ipynb)
+![](../../../../image/colab_logo_32px.png)[Run in Google Colab](https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/orca/colab-notebook/quickstart/tf2_keras_lenet_mnist.ipynb) &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/main/python/orca/colab-notebook/quickstart/tf2_keras_lenet_mnist.ipynb)
 
 ---
 
@@ -118,7 +118,7 @@ est.shutdown()
 print(stats)
 ```
 
-### **Step5: Save and Load the Model**
+### **Step 5: Save and Load the Model**
 
 Orca TF2 Estimator supports two formats to save and load the entire model (**TensorFlow SavedModel and Keras H5 Format**). The recommended format is SavedModel, which is the default format when you use `estimator.save()`.
 
