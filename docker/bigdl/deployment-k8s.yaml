@@ -16,7 +16,7 @@ spec:
         appType: bigdl
     spec:
       containers:
-        - image: intelanalytics/bigdl-spark-3.1.2-client:latest
+        - image: intelanalytics/bigdl-spark-3.1.2:latest
           ports:
             - name: jupyter-address
               containerPort: 12345
@@ -190,7 +190,7 @@ data:
   name: bigdl-notebook
   spark.kubernetes.authenticate.driver.serviceAccountName: spark
   spark.kubernetes.namespace: bigdl
-  spark.kubernetes.container.image: intelanalytics/bigdl-spark-3.1.2:executor
+  spark.kubernetes.container.image: intelanalytics/bigdl-k8s-spark-3.1.2:latest
   spark.driver.cores: "4"
   spark.driver.memory: 20g
   spark.executor.cores: "4"

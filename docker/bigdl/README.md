@@ -133,7 +133,7 @@
         intelanalytics/bigdl:latest
 
 
-## Run Notebook On K8s With Deployment
+## Run Notebook On K8s
 ### Deploy notebook
 Execute the command to deploy notebook service
 ```bash
@@ -148,4 +148,50 @@ you can execute `kubectl get pods | grep bigdl` to find the pod name likes `bigd
 kubectl port-forward --namespace default bigdl-notebook-XXX 12345:12345 --address 0.0.0.0
 ```
 
+## Run Notebook On K8S and Start Jupyter Task On K8S
+#### 1. Prepare the k8s config
+Create `bigdl` namespace:  
+```bash
+kubectl create namespace bigdl
+```
+Store k8s config configuration with secret to be able to start pods on k8s cluster.
+```bash
+kubectl create secret generic kubeconf --from-file=/root/.kube/config -n bigdl
+```
+### 2. Prepare the nfs
+Steps:
+1. please install nfs first.
+2. create nfs pvc with `deployment-nfs.yaml`, the namespace on this file all named `bigdl` and you can replace that namespace with other namespace.  
+```bash
+kubectl apply -f deployment-nfs.yaml
+```
 
+## Start Notebook On K8S
+### Create Deployment On K8S
+Create `Deployment` with `deployment-k8s.yaml` file.  
+```bash
+kubectl apply -f deployment-k8s.yaml
+```
+
+You can find the pod started by running the following command:  
+```bash
+kubectl get pods -n bigdl | grep bigdl-notebook
+```
+> The example of pod name: bigdl-notebook-XXXX（JupyterLab runs on this pod）
+
+Check the pod's logs:
+```bash
+kubectl logs bigdl-notebook-XXXX -n bigdl
+```
+
+## Access Service
+### Access services through k8s svc
+You can find the svc named "bigdl-notebook" and access the service through the way provided by the svc of k8s.
+```bash
+kubectl get svc -n bigdl
+```
+
+|Service|Port|
+---|---
+|NoteBook|NodePort|
+|TensorBoard|NodePort|

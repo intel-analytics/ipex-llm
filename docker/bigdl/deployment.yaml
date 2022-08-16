@@ -16,7 +16,7 @@ spec:
         appType: bigdl
     spec:
       containers:
-        - image: intelanalytics/bigdl-spark-3.1.2-client:latest
+        - image: intelanalytics/bigdl-spark-3.1.2:latest
           ports:
             - name: jupyter-address
               containerPort: 8888
