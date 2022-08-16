@@ -2,7 +2,7 @@
 
 ## Resource Configuration Guide
 some configuration in *.yaml is introduced in [here](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/README.md), you can refer to it for more information.
-
+The two new configs 'spark.kubernetes.driverEnv.SGX_DRIVER_JVM_MEM_SIZE' and 'spark.executorEnv.SGX_EXECUTOR_JVM_MEM_SIZE' are the same as driver-memory and executor-memory in spark. We use original driver-memory and original executor-memory to alloc extra common memory for libos.   You can refer to [this](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-graphene#configuration-explainations) for more information.
 ## Prerequisite
 
 * Check Kubernetes env or Install Kubernetes from [wiki](https://kubernetes.io/zh/docs/setup/production-environment)
