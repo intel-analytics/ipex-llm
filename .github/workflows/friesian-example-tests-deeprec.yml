@@ -91,4 +91,3 @@ jobs:
         python/friesian/dev/test/run-example-tests-deeprec.sh
       env:
         BIGDL_ROOT: ${{ github.workspace }}
-        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

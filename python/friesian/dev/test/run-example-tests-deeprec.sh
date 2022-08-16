@@ -31,7 +31,7 @@ else
   tar -xvzf data/input_deeprec.tar.gz -C data
 fi
 
-python ../../example/deeprec/wdl.py \
+python ${BIGDL_ROOT}/python/friesian/example/deeprec/wdl.py \
     --smartstaged false \
     --data_location ./data/input_deeprec \
     --checkpoint ./result \
