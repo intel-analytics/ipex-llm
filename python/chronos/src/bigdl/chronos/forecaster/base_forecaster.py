@@ -76,8 +76,6 @@ class BasePytorchForecaster(Forecaster):
                                          "Enable HPO or remove search spaces in arguments to use.")
 
             if not has_space:
-                if self.use_hpo:
-                    warnings.warn("HPO is enabled but no spaces is specified, so disable HPO.")
                 self.use_hpo = False
                 model = self.model_creator({**self.model_config, **self.data_config})
                 loss = self.loss_creator(self.loss_config)
