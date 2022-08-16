@@ -73,7 +73,6 @@ jobs:
           pip install tsfresh==0.17.0
           pip install ray==1.9.2 ray[tune]==1.9.2 ray[default]==1.9.2
           pip install pyarrow==6.0.1
-          pip install openvino-dev
           pip install ConfigSpace==0.5.0
           pip install optuna==2.10.1
           pip install onnxruntime==1.11.1
@@ -96,6 +95,6 @@ jobs:
           export KERAS_BACKEND=tensorflow
           python --version
           pip install scipy==1.5.4
-          bash python/chronos/dev/test/run-pytests.sh 1
+          bash python/chronos/dev/test/run-pytests.sh 2
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
