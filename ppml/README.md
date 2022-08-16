@@ -311,6 +311,17 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
 
    </details>
 
+  <details>
+    <summary>python</summary>
+
+   ```python
+   from bigdl.ppml.ppml_context import *
+   
+   sc = PPMLContext("MyApp")
+   ```
+
+   </details>
+
    If you want to read/write encrypted files, then you need to provide more information.
 
 - create a PPMLContext with `appName` & `ppmlArgs`
@@ -454,6 +465,28 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
    val conf: SparkConf = new SparkConf().setMaster("local[4]")
    
    val sc = PPMLContext.initPPMLContext(conf, "MyApp", ppmlArgs)
+   ```
+
+  </details>
+
+  <details>
+    <summary>python</summary>
+
+   ```python
+   from bigdl.ppml.ppml_context import *
+   from pyspark import SparkConf
+   
+   ppml_args = {"kms_type": "SimpleKeyManagementService",
+                "simple_app_id": "your_app_id",
+                "simple_app_key": "your_app_key",
+                "primary_key_path": "/your/primary/key/path/primaryKey",
+                "data_key_path": "/your/data/key/path/dataKey"
+               }
+   
+   conf = SparkConf()
+   conf.setMaster("local[4]")
+
+   sc = PPMLContext("MyApp", ppml_args, conf)
    ```
 
   </details>
