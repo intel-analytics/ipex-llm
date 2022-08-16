@@ -50,7 +50,7 @@ class Workload:
         return logs
 
     def _save_logs(self, logs: list):
-        is_pr = True if os.environ.get('IS_PR') is not None else False
+        is_pr = True if os.environ.get('IS_PR') == 'true' else False
         timestamp = datetime.now()
         conn = psycopg2.connect(
             database=self._get_secret('DB_NAME'),
