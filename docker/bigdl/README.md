@@ -109,7 +109,7 @@
 
 ### In the container, after setting proxy and ports, you can start the Notebook by:
 
-    /opt/work/start-notebook.sh
+    /opt/work/start-notebook.sh --port=YOUR_PORT --token=YOUR_TOKEN
 
 ## Notice
 
