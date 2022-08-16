@@ -35,7 +35,8 @@ python ${BIGDL_ROOT}/python/friesian/example/deeprec/wdl.py \
     --smartstaged false \
     --data_location ./data/input_deeprec \
     --checkpoint ./result \
-    --instances_per_node 3
+    --instances_per_node 3 \
+    --tf
 
 now=$(date "+%s")
 time1=$((now - start))
