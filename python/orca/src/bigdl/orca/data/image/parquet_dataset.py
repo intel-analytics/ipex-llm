@@ -34,7 +34,7 @@ import math
 from bigdl.dllib.utils.log4Error import *
 from numpy import ndarray, uint32
 
-from typing import TYPE_CHECKING, Dict, List, Tuple, Union
+from typing import TYPE_CHECKING, Dict, List, Tuple, Union, Any
 if TYPE_CHECKING:
     from bigdl.orca.data.shard import SparkXShards
     from pyspark.rdd import PipelinedRDD
@@ -339,7 +339,7 @@ def write_voc(voc_root_path: str,
 
 
 def _check_arguments(_format: str,
-                     kwargs: Dict[str, Union[str, List[Tuple[int, str]], Dict[str, int], bool]],
+                     kwargs: Dict[str, Any],
                      args: List[str]) -> None:
     for keyword in args:
         invalidInputError(keyword in kwargs,

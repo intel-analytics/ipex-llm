@@ -505,7 +505,7 @@ class SparkXShards(XShards):
                               "The two SparkXShards should have the same number of elements "
                               "in each partition")
 
-    def to_spark_df(self) -> "SparkXShards":
+    def to_spark_df(self) -> "SparkDataFrame":
         if self._get_class_name() != 'pandas.core.frame.DataFrame':
             invalidInputError(False,
                               "Currently only support to_spark_df on XShards of Pandas DataFrame")
