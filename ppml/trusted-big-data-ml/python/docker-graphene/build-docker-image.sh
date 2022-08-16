@@ -3,10 +3,11 @@ export HTTP_PROXY_PORT=your_http_proxy_port
 export HTTPS_PROXY_HOST=your_https_proxy_host
 export HTTPS_PROXY_PORT=your_https_proxy_port
 export JDK_URL=http://your-http-url-to-download-jdk
-export IMAGE_MODE=bigdl_base_image_or_user_image
-export BIGDL_IMAGE_NAME=your_bigdl_base_image_name_used_to_build_user_image
-export BIGDL_IMAGE_VERSION=your_bigdl_base_image_version_used_to_build_user_image
-export USER_IMAGE_TAG=your_user_image_tag
+export IMAGE_MODE=user_image
+export BIGDL_IMAGE_NAME=10.239.45.10/arda/intelanalytics/mrenclave-bigdl-image
+export BIGDL_IMAGE_VERSION=latest
+export USER_IMAGE_TAG=user_image_1.0
+export LOCAL_IP=10.239.44.70
 
 if [ "$IMAGE_MODE" == "bigdl_base_image_or_user_image" ]
 then
@@ -55,8 +56,10 @@ else
             sudo docker build \
                     --build-arg BIGDL_IMAGE_NAME=$BIGDL_IMAGE_NAME \
                     --build-arg BIGDL_IMAGE_VERSION=$BIGDL_IMAGE_VERSION \
+                    --build-arg LOCAL_IP=$LOCAL_IP \
                     -t $USER_IMAGE_TAG -f ./UserImageDockerfile .
         fi
      fi
   fi
 fi
+
