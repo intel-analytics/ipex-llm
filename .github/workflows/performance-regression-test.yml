@@ -1,33 +1,44 @@
 name: Performance Regression Test
 
 on:
-  # pull_request:
-    # branches: [ "main" ]
   schedule:
     - cron: '0 16 * * *'
+  issue_comment:
+    types: [created]
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
   performace-regression-test:
-
     runs-on: [Rohan, ubuntu-20.04-lts]
-
+    if: github.event.schedule || github.event.issue.pull_request && github.event.comment.body=='APRT'
     steps:
-      - uses: actions/checkout@v3
+      - name: checkout (schedule)
+        if: github.event.schedule
+        uses: actions/checkout@v3
+
+      - name: checkout (pr comments)
+        if: github.event.issue.pull_request
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ format('refs/pull/{0}/merge', github.event.issue.number) }}
+
       - name: Set up Python 
         uses: actions/setup-python@v2
         with:
           python-version: '3.7'
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install build
           pip install wheel
           pip install twine
+          pip install psycopg2-binary
 
       - name: Run benchmark
         run: |
           python python/nano/benchmark/run.py resnet50
         env: 
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+          IS_PR: ${{ github.event.issue.pull_request != null}}

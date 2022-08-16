@@ -84,6 +84,7 @@ public class RecommenderServer extends GrpcServerBase {
      */
     public static void main(String[] args) throws Exception {
         RecommenderServer recommendServer = new RecommenderServer(args);
+        recommendServer.parseConfig();
         recommendServer.build();
         if (Utils.runMonitor()) {
             new HTTPServer.Builder()

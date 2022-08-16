@@ -43,6 +43,9 @@ class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T])
   def initFLContext(id: String, target: String): Unit = {
     FLContext.initFLContext(id, target)
   }
+  def setPsiSalt(psiSalt: String): Unit = {
+    FLContext.setPsiSalt(psiSalt)
+  }
   def createFLServer(): FLServer = {
     new FLServer()
   }

@@ -94,14 +94,15 @@ public class RecallServer extends GrpcServerBase {
      * Main method.  This comment makes the linter happy.
      */
     public static void main(String[] args) throws Exception {
-        RecallServer indexingServer = new RecallServer(args);
-        indexingServer.build();
+        RecallServer recallServer = new RecallServer(args);
+        recallServer.parseConfig();
+        recallServer.build();
         if (Utils.runMonitor()) {
             new HTTPServer.Builder()
                     .withPort(Utils.helper().monitorPort()).build();
         }
-        indexingServer.start();
-        indexingServer.blockUntilShutdown();
+        recallServer.start();
+        recallServer.blockUntilShutdown();
     }
 
     private static class RecallService extends RecallGrpc.RecallImplBase {
