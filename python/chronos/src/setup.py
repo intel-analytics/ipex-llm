@@ -75,7 +75,8 @@ def setup_package():
             'Programming Language :: Python :: 3',
             'Programming Language :: Python :: 3.7',
             'Programming Language :: Python :: Implementation :: CPython'],
-        platforms=['mac', 'linux']
+        platforms=['mac', 'linux'],
+        scripts=['script/benchmark-chronos', 'script/utils.py'],
     )
 
     setup(**metadata)

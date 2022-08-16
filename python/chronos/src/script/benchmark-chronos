@@ -26,8 +26,10 @@ from typing import Union, Dict, List, Optional
 import numpy as np
 import re
 
+
 from utils import get_bytesize, _find_path, get_nano_env_var
 from bigdl.nano.common.common import _env_variable_is_set, _find_library
+
 
 
 
@@ -161,7 +163,10 @@ def check_nano(use_malloc: str = "tc", use_openmp: bool = True) -> None:
     print("<"*20, "Environment Variables", "<"*20, "\n")
 
 
-
-if __name__ == '__main__':
+def main():
     CPU_info()
     check_nano()
+
+
+if __name__ == '__main__':
+    main()
