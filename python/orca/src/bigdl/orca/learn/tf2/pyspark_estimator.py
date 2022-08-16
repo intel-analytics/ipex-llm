@@ -482,10 +482,8 @@ class SparkTFEstimator():
             saving to SavedModel.
         """
         # get current model
-        if exists(self._model_saved_path):
-            model = load_model(self._model_saved_path)
-        else:
-            model = self.model_creator(self.config)
+        model = self.model_creator(self.config)
+        model.set_weights(self.model_weights)
         # save model
         save_model(model, filepath, overwrite=overwrite, include_optimizer=include_optimizer,
                    save_format=save_format, signatures=signatures, options=options)
