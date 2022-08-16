@@ -29,5 +29,14 @@ parser = get_arg_parser()
 args = parser.parse_args()
 checkpoint_dir = args.checkpoint
 
+# After using EmbeddingVariable, the characteristics of admission can be viewed through ckpt
+
+# xxxxx-freqs is the frequencies of features that have been admitted.
+# xxxxx-freqs_filtered is a freqs that have not yet reached the characteristics of the access filtered out. 
+# xxxxx-keys is id that has been admitted.
+# xxxxx-keys_filtered corresponds to xxxxx-freqs_filteredr.
+# xxxxx-values is the embedding vector that has been allocated, is the actual embedding vector.
+# xxxxx/Adagrad is the embedding vector of the backward.
+# xxxxx-versions is the most recent globalstep to be visited.
 for name, shape in checkpoint_utils.list_variables(checkpoint_dir):
      print('loading...', name, shape, checkpoint_utils.load_variable(checkpoint_dir,name))
