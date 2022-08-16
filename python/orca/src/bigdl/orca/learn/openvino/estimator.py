@@ -100,7 +100,6 @@ class OpenvinoEstimator(SparkEstimator):
                 else:
                     return d, d_len
 
-            results = []
             for idx, batch_data in enumerate(partition):
                 infer_request = local_model.requests[idx]
                 input_dict = dict()
@@ -112,13 +111,12 @@ class OpenvinoEstimator(SparkEstimator):
                     input_dict[inputs[0]], elem_num = add_elem(batch_data)
                 infer_request.infer(input_dict)
                 if len(outputs) == 1:
-                    results.append(infer_request.output_blobs[outputs[0]].buffer[:elem_num])
+                    result = infer_request.output_blobs[outputs[0]].buffer[:elem_num]
                 else:
-                    results.append(list(map(lambda output:
-                                            infer_request.output_blobs[output].buffer[:elem_num],
-                                            outputs)))
-
-            return results
+                    result = list(map(lambda output:
+                                      infer_request.output_blobs[output].buffer[:elem_num],
+                                      outputs))
+                yield result
 
         def predict_transform(dict_data, batch_size):
             invalidInputError(isinstance(dict_data, dict), "each shard should be an dict")
@@ -153,6 +151,7 @@ class OpenvinoEstimator(SparkEstimator):
                                               mode="predict")
             transformed_data = xshards.transform_shard(predict_transform, batch_size)
             result_rdd = transformed_data.rdd.mapPartitions(lambda iter: partition_inference(iter))
+            c = result_rdd.collect()
             return convert_predict_rdd_to_dataframe(data, result_rdd.flatMap(lambda data: data))
         elif isinstance(data, SparkXShards):
             transformed_data = data.transform_shard(predict_transform, batch_size)
@@ -162,7 +161,7 @@ class OpenvinoEstimator(SparkEstimator):
                 shard, y = data
                 shard["prediction"] = y
                 return shard
-            return SparkXShards(data.rdd.zip(result_rdd).map(update_result_shard))
+            return SparkXShards(result_rdd)
         elif isinstance(data, (np.ndarray, list)):
             if isinstance(data, np.ndarray):
                 split_num = math.ceil(len(data)/batch_size)
@@ -241,6 +240,17 @@ class OpenvinoEstimator(SparkEstimator):
 
         with open(model_path[:model_path.rindex(".")] + ".bin", 'rb') as file:
             self.weight_bytes = file.read()
+
+        ie = IECore()
+        config = {'CPU_THREADS_NUM': str(self.core_num)}
+        ie.set_config(config, 'CPU')
+        net = ie.read_network(model=self.model_bytes,
+                              weights=self.weight_bytes, init_from_buffer=True)
+        local_model = ie.load_network(network=net, device_name="CPU",
+                                      num_requests=3)
+        inputs = list(iter(local_model.requests[0].input_blobs))
+        outputs = list(iter(local_model.requests[0].output_blobs))
+        outputs
 
     def set_tensorboard(self, log_dir, app_name):
         """
