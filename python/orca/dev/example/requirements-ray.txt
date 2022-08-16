@@ -14,6 +14,7 @@ gym[atari]==0.17.1
 atari-py==0.2.5
 tabulate==0.8.7
 tensorflow==1.15.0
+tensorflow-gan==2.0.0
 mxnet==1.6.0
 xgboost_ray
 argparse
