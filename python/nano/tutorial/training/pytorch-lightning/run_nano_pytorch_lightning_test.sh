@@ -1,6 +1,6 @@
 export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
 export NANO_HOME=${ANALYTICS_ZOO_ROOT}/python/nano/src
-export NANO_TUTORIAL_TEST_DIR=${ANALYTICS_ZOO_ROOT}python/nano/tutorial/training/pytorch-lightning/
+export NANO_TUTORIAL_TEST_DIR=${ANALYTICS_ZOO_ROOT}python/nano/tutorial/training/pytorch-lightning
 
 set -e
 
