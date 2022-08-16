@@ -120,11 +120,11 @@ print(stats)
 
 ### **Step5: Save and Load the Model**
 
-Orca TF2 Estimator supports two formats to save and load the entire model (**TensorFlow SavedModel and Keras H5 Format**). The recommended format is SavedModel, which is the default when you use `estimator.save()`.
+Orca TF2 Estimator supports two formats to save and load the entire model (**TensorFlow SavedModel and Keras H5 Format**). The recommended format is SavedModel, which is the default format when you use `estimator.save()`.
 
-You could also switch the saving format to Keras H5 by passing `save_format='h5'` or a filename that ends in `.h5` or `.keras` to `estimator.save()`.
+You could also save the model to Keras H5 format by passing `save_format='h5'` or a filename that ends in `.h5` or `.keras` to `estimator.save()`.
 
-**Noted that, if you use Yarn as your application master, you should save the model to HDFS and load it from HDFS as well.**
+**Note that if you run on Apache Hadoop/YARN cluster, you are recommended to save the model to HDFS and load from HDFS as well.**
 
 **1. SavedModel Format**
 
