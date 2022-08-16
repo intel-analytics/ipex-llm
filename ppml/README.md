@@ -21,7 +21,11 @@ Protecting privacy and confidentiality is critical for large-scale data analysis
 ## 1. What is BigDL PPML?
 
 
-https://user-images.githubusercontent.com/61072813/183801696-71ff46da-f095-48d7-baa3-afdca3e329a9.mp4
+
+https://user-images.githubusercontent.com/61072813/184758908-da01f8ea-8f52-4300-9736-8c5ee981d4c0.mp4
+
+
+
 
 
 Protecting data privacy and confidentiality is critical in a world where data is everywhere. In recent years, more and more countries have enacted data privacy legislation or are expected to pass comprehensive legislation to protect data privacy, the importance of privacy and data protection is increasingly recognized.
