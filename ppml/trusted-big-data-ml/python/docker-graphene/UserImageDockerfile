@@ -6,9 +6,9 @@ FROM $BIGDL_IMAGE_NAME:$BIGDL_IMAGE_VERSION as temp
 
 ADD ./enclave-key.pem /graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem
 RUN cd /ppml/trusted-big-data-ml && \
-    echo $LOCAL_IP && \
-    echo $SGX_MEM_SIZE && \
-    echo $SGX_LOG_LEVEL && \
+    echo LOCAL_IP:$LOCAL_IP && \
+    echo SGX_MEM_SIZE:$SGX_MEM_SIZE && \
+    echo SGX_LOG_LEVEL:$SGX_LOG_LEVEL && \
     make SGX=1 GRAPHENEDIR=/graphene THIS_DIR=/ppml/trusted-big-data-ml  SPARK_LOCAL_IP=$LOCAL_IP SPARK_USER=root G_SGX_SIZE=$SGX_MEM_SIZE G_LOG_LEVEL=$SGX_LOG_LEVEL && \
     rm /graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem
 
