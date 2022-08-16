@@ -149,7 +149,7 @@ kubectl port-forward --namespace default bigdl-notebook-XXX 12345:12345 --addres
 ```
 
 ## Run Notebook On K8S and Start Jupyter Task On K8S
-#### 1. Prepare the k8s config
+### 1. Prepare the k8s config
 Create `bigdl` namespace:  
 ```bash
 kubectl create namespace bigdl
@@ -158,7 +158,7 @@ Store k8s config configuration with secret to be able to start pods on k8s clust
 ```bash
 kubectl create secret generic kubeconf --from-file=/root/.kube/config -n bigdl
 ```
-### 2. Prepare the nfs
+### 2. Prepare the NFS
 Steps:
 1. please install nfs first.
 2. create nfs pvc with `deployment-nfs.yaml`, the namespace on this file all named `bigdl` and you can replace that namespace with other namespace.  
@@ -166,8 +166,8 @@ Steps:
 kubectl apply -f deployment-nfs.yaml
 ```
 
-## Start Notebook On K8S
-### Create Deployment On K8S
+### 3. Start Notebook On K8S
+#### Create Deployment On K8S
 Create `Deployment` with `deployment-k8s.yaml` file.  
 ```bash
 kubectl apply -f deployment-k8s.yaml
@@ -184,8 +184,8 @@ Check the pod's logs:
 kubectl logs bigdl-notebook-XXXX -n bigdl
 ```
 
-## Access Service
-### Access services through k8s svc
+### 4. Access Service
+#### Access services through k8s svc
 You can find the svc named "bigdl-notebook" and access the service through the way provided by the svc of k8s.
 ```bash
 kubectl get svc -n bigdl
