@@ -66,7 +66,7 @@ class TestPlugin(TestCase):
         trainer.fit(pl_model, self.data_loader, self.test_data_loader)
         trainer.test(pl_model, self.test_data_loader)
 
-    def test_trainer_subprocess_plugin_bf16(self):
+    def test_trainer_spawn_plugin_bf16(self):
         # IPEX BF16 weight prepack needs the cpu support avx512bw, avx512vl and avx512dq
         model = ResNet18(pretrained=False, include_top=False, freeze=True)
         loss = nn.CrossEntropyLoss()
@@ -75,7 +75,7 @@ class TestPlugin(TestCase):
             model, loss, optimizer,
             metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
         )
-        trainer = Trainer(num_processes=2, distributed_backend="subprocess",
+        trainer = Trainer(num_processes=2, distributed_backend="spawn",
                           max_epochs=4, use_ipex=True, precision="bf16",
                           callbacks=[CheckIPEXCallback(), CheckIPEXFusedStepCallback()])
         trainer.fit(pl_model, self.data_loader, self.test_data_loader)
