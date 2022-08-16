@@ -9,10 +9,9 @@
 
     <div id="tutorial">
         <div>
-            <input type="checkbox" class="checkboxes" name="choice" value="A" checked>A       
-            <input type="checkbox" class="checkboxes" name="choice" value="B">B       
-            <input type="checkbox" class="checkboxes" name="choice" value="C">C       
-            <input id="show" type="radio" value="show">Show All           
+            <div><input type="checkbox" class="checkboxes" name="choice" value="A">A</div>
+            <div><input type="checkbox" class="checkboxes" name="choice" value="B">B</div>
+            <div><input type="checkbox" class="checkboxes" name="choice" value="C">C</div>
         </div>
         </br>
 

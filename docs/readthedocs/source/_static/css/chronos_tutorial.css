@@ -1,3 +1,8 @@
 #tutorial img{
     margin: 10px 5px 10px 15px; 
 }
+
+#tutorial div{
+    display: flex;
+    justify-content: space-around;
+}
