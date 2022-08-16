@@ -146,7 +146,7 @@ class LightningMNISTClassifier(pl.LightningModule):
 
     def training_step(self, train_batch, batch_idx):
         x, y = train_batch
-        outputs = self.forward(x)
+        outputs = self.forward(x[0])
         loss = self.cross_entropy_loss(outputs, y)
         self.log('train_loss', loss)
         # return loss
@@ -154,7 +154,7 @@ class LightningMNISTClassifier(pl.LightningModule):
 
     def validation_step(self, val_batch, batch_idx):
         x, y = val_batch
-        outputs = self.forward(x)
+        outputs = self.forward(x[0])
         loss = self.cross_entropy_loss(outputs, y)
         self.log('val_loss', loss)
         # return loss
@@ -187,12 +187,8 @@ est = Estimator.from_torch(model=model_creator, metrics=[Accuracy()], backend="r
 est.fit(data=shards_train1, feature_cols=['x_scaled'], label_cols=['target'], validation_data=shards_val1,
         epochs=1, batch_size=BATCH_SIZE, callbacks=[MyPrintingCallback()])
 
-# est.fit(data=train_loader_creator, validation_data=test_loader_creator,
-#         epochs=1, batch_size=BATCH_SIZE, callbacks=[MyPrintingCallback()])
-
 result = est.evaluate(data=shards_val1, feature_cols=['x_scaled'], label_cols=['target'], batch_size=1)
 
-# result = est.evaluate(data=test_loader_creator, batch_size=1)
 
 for r in result:
     print(r, ":", result[r])

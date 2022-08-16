@@ -44,6 +44,7 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from bigdl.dllib.utils.log4Error import *
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import Callback as callback_lightning
+from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 
 tqdm = None
 try:
@@ -56,7 +57,7 @@ def _is_multiple(component):
     return isinstance(component, collections.Iterable) and len(component) > 1
 
 
-class TrainingOperatorLightning:
+class TrainingOperatorLightning(TrainingOperator):
     """Abstract class for custom training or validation loops.
 
     The scheduler will only be called at a batch or epoch frequency, depending
@@ -85,7 +86,8 @@ class TrainingOperatorLightning:
                  models,
                  world_rank,
                  use_tqdm=False,
-                 sync_stats=False,):
+                 sync_stats=False):
+        TrainingOperator.__init__(self, config, models, [], world_rank, None, None, False, use_tqdm, sync_stats, "torch")
         # You are not expected to override this method.
         self._models = models  # List of models
         self._models_ori = models_ori  # List of models
@@ -105,88 +107,6 @@ class TrainingOperatorLightning:
         self.optimizer_config = self.model_ori.configure_optimizers()
         self.setup(config)
 
-    def _set_timers(self, timers):
-        """Passes in the timers from the Runner."""
-        self.timers = timers
-
-    def setup(self, config):
-        """Override this method to implement custom operator setup.
-
-        Args:
-            config (dict): Custom configuration value to be passed to
-                all creator and operator constructors. Same as ``self.config``.
-        """
-        pass
-
-    def train_epoch(self, iterator, info, callbacks=None):
-        """Runs one standard training pass over the training dataloader.
-
-        By default, this method will iterate over the given iterator and
-        call ``self.train_batch`` over each batch. If ``scheduler_step_freq``
-        is set, this default method will also step the scheduler accordingly.
-
-        You do not need to call ``train_batch`` in this method if you plan
-        to implement a custom optimization/training routine here.
-
-        You may find ``ray.util.sgd.utils.AverageMeterCollection`` useful
-        when overriding this method. See example below:
-
-        .. code-block:: python
-
-            def train_epoch(self, ...):
-                meter_collection = AverageMeterCollection()
-                self.model.train()
-                for batch in iterator:
-                    # do some processing
-                    metrics = {"metric_1": 1, "metric_2": 3} # dict of metrics
-
-                    # This keeps track of all metrics across multiple batches
-                    meter_collection.update(metrics, n=len(batch))
-
-                # Returns stats of the meters.
-                stats = meter_collection.summary()
-                return stats
-
-
-        Args:
-            iterator (iter): Iterator over the training data for the entire
-                epoch. This iterator is expected to be entirely consumed.
-            info (dict): Dictionary for information to be used for custom
-                training operations.
-
-        Returns:
-            A dict of metrics from training.
-        """
-        if self.use_tqdm and self.world_rank == 0:
-            desc = ""
-            if info is not None and "epoch_idx" in info:
-                if "num_epochs" in info:
-                    desc = "{}/{}e".format(info["epoch_idx"] + 1,
-                                           info["num_epochs"])
-                else:
-                    desc = "{}e".format(info["epoch_idx"] + 1)
-            _progress_bar = tqdm(
-                total=len(iterator),
-                desc=desc,
-                unit="batch",
-                leave=False)
-        else:
-            _progress_bar = None
-
-        metric_meters = AverageMeterCollection()
-
-        self.model.train()
-        if isinstance(self.model, DDP):
-            with self.model.join():
-                self._train_loop(iterator, info, _progress_bar, metric_meters, callbacks)
-        else:
-            self._train_loop(iterator, info, _progress_bar, metric_meters, callbacks)
-
-        if self.scheduler and info.get(SCHEDULER_STEP) == SCHEDULER_STEP_EPOCH:
-            self.scheduler.step()
-
-        return metric_meters.summary(sync_stats=self.sync_stats,
-                                     dist_backend=self.dist_backend)
 
     def _train_loop(self, iterator, info, _progress_bar, metric_meters, callbacks):
         for batch_idx, batch in enumerate(iterator):
@@ -256,12 +176,7 @@ class TrainingOperatorLightning:
 
         """
         # unpack features into list to support multiple inputs model
-        *features, target = batch ###
-        # If features is already a tuple, we don't give it an extra list dimension.
-        already_list = (isinstance(features[0], tuple) or isinstance(features[0], list))
-        if len(features) == 1 and already_list:
-            features = features[0]
-        batch = *features, target
+        *features, target = batch
 
         # Compute output.
         with self.timers.record("fwd"):
@@ -292,85 +207,8 @@ class TrainingOperatorLightning:
         # Call step of optimizer to update model params.
         with self.timers.record("apply"):
             opt.step()
+        return {"train_loss": loss.item(), NUM_SAMPLES: target.size(0)}
 
-        return {"train_loss": loss.item(), NUM_SAMPLES: features[0].size(0)}
-
-    def validate(self, val_iterator, info, metrics, num_steps=None):
-        """Runs one standard validation pass over the val_iterator.
-
-        This will call ``model.eval()`` and ``torch.no_grad`` when iterating
-        over the validation dataloader.
-
-        If overriding this method, you can access model, criterion via
-        ``self.model`` and ``self.criterion``. You also do not need to call
-        ``validate_batch`` if overriding this method.
-
-        Args:
-            val_iterator (iter): Iterable constructed from the
-                validation dataloader.
-            info: (dict): Dictionary for information to be used for custom
-                validation operations.
-
-        Returns:
-            A dict of metrics from the evaluation.
-                By default, returns "val_accuracy" and "val_loss"
-                which is computed by aggregating "loss" and "correct" values
-                from ``validate_batch`` and dividing it by the sum of
-                ``num_samples`` from all calls to ``self.validate_batch``.
-        """
-        # switch to evaluate mode
-        self.model.eval()
-        metrics = Metric.convert_metrics_dict(metrics, backend="pytorch")
-        losses = []
-        total_samples = 0
-        with torch.no_grad():
-            for batch_idx, batch in enumerate(val_iterator):
-                if num_steps and batch_idx == num_steps:
-                    break
-                batch_info = {"batch_idx": batch_idx}
-                batch_info.update(info)
-                output, target, loss = self.forward_batch(batch, batch_info)
-                num_samples = target.size(0)
-                total_samples += num_samples
-                losses.append(loss.item() * num_samples)
-                for metric in metrics.values():
-                    metric(output, target)
-
-        result = {name: metric.compute() for name, metric in metrics.items()}
-
-        result["val_loss"] = sum(losses) / total_samples
-
-        result["num_samples"] = total_samples
-
-        return result
-
-    def predict(self, pred_iterator):
-        # switch to evaluate mode
-        self.model.eval()
-        result = []
-        with torch.no_grad():
-            for batch in pred_iterator:
-                result.append(self.predict_batch(batch))
-
-        return np.concatenate(result, axis=0)
-
-    def predict_batch(self, batch):
-
-        if isinstance(batch, torch.Tensor):
-            batch = [batch]
-
-        # compute output
-        with self.timers.record("pred_fwd"):
-            output = self.model(*batch)
-
-            if len(output.size()) > 1:
-                # In case there is extra trailing dimensions.
-                for i in reversed(range(1, len(output.size()))):
-                    output = torch.squeeze(output, i)
-
-        # todo support multi-output model
-        np_output = output.detach().numpy()
-        return np_output
 
     def forward_batch(self, batch, batch_info):
         """Calculates the loss and accuracy over a given batch.
@@ -396,11 +234,6 @@ class TrainingOperatorLightning:
         """
         # unpack features into list to support multiple inputs model
         *features, target = batch
-        # If features is already a tuple, we don't give it an extra list dimension.
-        already_list = (isinstance(features[0], tuple) or isinstance(features[0], list))
-        if len(features) == 1 and already_list:
-            features = features[0]
-        batch = *features, target
 
         # # compute output
         with self.timers.record("eval_fwd"):
@@ -414,34 +247,6 @@ class TrainingOperatorLightning:
 
         return output, target, loss
 
-    def state_dict(self):
-        """Override this to return a representation of the operator state.
-
-        Returns:
-            dict: The state dict of the operator."""
-        pass
-
-    def load_state_dict(self, state_dict):
-        """Override this to load the representation of the operator state.
-
-        Args:
-            state_dict (dict): State dict as returned by the operator. """
-        pass
-
-    @property
-    def config(self):
-        """dict: Provided into TorchTrainer."""
-        return self._config
-
-    @property
-    def model(self):
-        """First or only model created by the provided ``model_creator``."""
-        return self._models[0]
-
-    @property
-    def models(self):
-        """List of models created by the provided ``model_creator``."""
-        return self._models
 
     @property
     def model_ori(self):
@@ -452,16 +257,6 @@ class TrainingOperatorLightning:
     def models_ori(self):
         """List of models created by the provided ``model_creator``."""
         return self._models_ori
-
-    @property
-    def world_rank(self):
-        """int: The rank of the parent runner. Always 0 if not distributed."""
-        return self._world_rank
-
-    @property
-    def use_tqdm(self):
-        """bool: Whether tqdm progress bars are enabled."""
-        return self._use_tqdm
 
     @property
     def optimizer(self):
