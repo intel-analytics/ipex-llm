@@ -150,8 +150,7 @@ In this section we take SimpleQuery as an example to go through the entire BigDL
 
 
 
-https://user-images.githubusercontent.com/61072813/184561176-9b32ea82-28d2-4c03-b3cb-f140d2501b9c.mp4
-
+https://user-images.githubusercontent.com/61072813/184758702-4b9809f9-50ac-425e-8def-0ea1c5bf1805.mp4
 
 
 
@@ -278,9 +277,8 @@ When the job is done, you can decrypt and read result of the job. More details i
   docker exec -i $KMSUTIL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh decrypt $appid $appkey $input_path"
   ```
 
+https://user-images.githubusercontent.com/61072813/184758643-821026c3-40e0-4d4c-bcd3-8a516c55fc01.mp4
 
-
-https://user-images.githubusercontent.com/61072813/184561128-781b1cf5-659f-45ec-8cbd-e993dfb4abf7.mp4
 
 
 ### 3.3 More BigDL PPML Examples
