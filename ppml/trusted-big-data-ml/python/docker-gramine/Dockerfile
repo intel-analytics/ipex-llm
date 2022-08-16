@@ -225,8 +225,6 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     meson setup build/ --buildtype=release  -Dsgx=enabled   -Dsgx_driver=dcap1.10 && \
     ninja -C build/ && \
     ninja -C build/ install && \
-    cd / && \
-    gramine-sgx-gen-private-key && \
 #
     apt-get update --fix-missing && \
     env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y tzdata && \
