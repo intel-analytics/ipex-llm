@@ -547,7 +547,8 @@ def main(train_dataset, test_dataset=None, tf_config=None, server=None, config=N
 
     # Run model training and evaluation
     train(sess_config, hooks, model, train_init_op, config, tf_config, server)
-    if not config["no_eval"]:  # TODO: the original script won't evaluate in distributed mode
+    # TODO: the original script won't evaluate in distributed mode, have bug for evaluation
+    if not config["no_eval"]:
         eval_acc, eval_auc = eval(sess_config, hooks, model, test_init_op, config['test_steps'],
                                   config['checkpoint_dir'])
         return eval_acc, eval_auc
