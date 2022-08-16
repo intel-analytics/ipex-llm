@@ -48,7 +48,7 @@ class Workload:
                 uuid = self._save_logs(logs)
         finally:
             # notify user if this benchmark is triggered by PR comments
-            if os.environ.get('IS_PR') is not None:
+            if os.environ.get('IS_PR') == 'true':
                 self._notify(uuid)
 
     @staticmethod
