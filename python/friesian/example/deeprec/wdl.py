@@ -547,7 +547,8 @@ def main(train_dataset, test_dataset=None, tf_config=None, server=None, config=N
 
     # Run model training and evaluation
     train(sess_config, hooks, model, train_init_op, config, tf_config, server)
-    if not config["no_eval"]:  # TODO: the original script won't evaluate in distributed mode
+    # TODO: the original script won't evaluate in distributed mode, have bug for evaluation
+    if not config["no_eval"]:
         eval_acc, eval_auc = eval(sess_config, hooks, model, test_init_op, config['test_steps'],
                                   config['checkpoint_dir'])
         return eval_acc, eval_auc
@@ -1174,7 +1175,7 @@ elif args.cluster_mode == "yarn":
 elif args.cluster_mode == "local":
     invalidInputError(
         args.instances_per_node >= 2,
-        "For local cluster_mode, workers_per_node must no less than 2")
+        "For local cluster_mode, instances_per_node needs to be no less than 2")
     invalidInputError(args.num_nodes == 1, "For local cluster mode, num_nodes must be equal to 1")
     init_orca_context(cores=args.cores, memory="20g", init_ray_on_spark=True)
 else:
