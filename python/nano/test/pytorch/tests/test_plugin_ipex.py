@@ -68,8 +68,6 @@ class TestPlugin(TestCase):
 
     def test_trainer_subprocess_plugin_bf16(self):
         # IPEX BF16 weight prepack needs the cpu support avx512bw, avx512vl and avx512dq
-        if not check_avx512():
-            return
         model = ResNet18(pretrained=False, include_top=False, freeze=True)
         loss = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
@@ -82,7 +80,7 @@ class TestPlugin(TestCase):
                           callbacks=[CheckIPEXCallback(), CheckIPEXFusedStepCallback()])
         trainer.fit(pl_model, self.data_loader, self.test_data_loader)
         trainer.test(pl_model, self.test_data_loader)
-        if TORCH_VERSION_LESS_1_10:
+        if trainer.use_ipex and TORCH_VERSION_LESS_1_10:
             import intel_pytorch_extension as ipex
             # Diable IPEX AMP
             # Avoid affecting other tests

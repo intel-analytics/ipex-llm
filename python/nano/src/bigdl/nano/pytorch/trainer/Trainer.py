@@ -107,6 +107,7 @@ class Trainer(pl.Trainer):
 
         # Set 'precision' for strategy without precision_plugin,
         # Strategy > accelerator/precision/plugin
+        # torch must be greater or equal to 1.10 to use natice amp for bfloat16 precision
         if TORCH_VERSION_LESS_1_10 and enable_bf16:
             kwargs['precision'] = 32
 
@@ -119,7 +120,7 @@ class Trainer(pl.Trainer):
             elif enable_bf16:
                 warning("Enable IPEX bfloat16 in a cpu instruction set"
                         " without avx512 will crash. "
-                        "Will use PyTorch Lightning BFloat16 Mixed Precision")
+                        "Will use PyTorch Lightning Native AMP for BFloat16 precision")
                 enable_bf16 = False
 
         if num_processes == 1:

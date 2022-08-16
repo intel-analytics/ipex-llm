@@ -20,8 +20,10 @@ from typing import Dict
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import Callback
 from pytorch_lightning.plugins.training_type import SingleDevicePlugin, DDPSpawnPlugin
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 from pytorch_lightning.accelerators.cpu import CPUAccelerator
+
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
+from bigdl.nano.common import check_avx512
 
 
 class CheckIPEXCallback(Callback):
@@ -76,6 +78,9 @@ class CheckIPEXCallback(Callback):
 
 class CheckIPEXFusedStepCallback(Callback):
     def on_train_start(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule"):
+        if not check_avx512():
+            # IPEX BF16 weight prepack needs the cpu support avx512bw, avx512vl and avx512dq
+            return
         if not TORCH_VERSION_LESS_1_10:
             from intel_extension_for_pytorch.optim._optimizer_utils import IPEX_FUSED_OPTIMIZER_LIST
             # IPEX only support one optimizer

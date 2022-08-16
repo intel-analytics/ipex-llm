@@ -55,11 +55,11 @@ class TestTrainer(TestCase):
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
     scheduler_dict = {
         "scheduler": OneCycleLR(
-                optimizer,
-                0.1,
-                epochs=max_epochs,
-                steps_per_epoch=len(train_loader),
-            ),
+            optimizer,
+            0.1,
+            epochs=max_epochs,
+            steps_per_epoch=len(train_loader),
+        ),
         "interval": "step",
     }
 
@@ -71,8 +71,6 @@ class TestTrainer(TestCase):
 
     def test_trainer_ipex_bf16(self):
         # IPEX BF16 weight prepack needs the cpu support avx512bw, avx512vl and avx512dq
-        if not check_avx512():
-            return
         trainer = Trainer(max_epochs=max_epochs, use_ipex=True, precision="bf16",
                           callbacks=[CheckIPEXFusedStepCallback()])
 
@@ -94,7 +92,7 @@ class TestTrainer(TestCase):
         trainer.fit(pl_model, self.train_loader)
         trainer.test(pl_model, self.train_loader)
 
-        if TORCH_VERSION_LESS_1_10:
+        if trainer.use_ipex and TORCH_VERSION_LESS_1_10:
             import intel_pytorch_extension as ipex
             # Diable IPEX AMP
             # Avoid affecting other tests
@@ -102,8 +100,6 @@ class TestTrainer(TestCase):
 
     def test_trainer_ipex_bf16_unspport_optim(self):
         # IPEX BF16 weight prepack needs the cpu support avx512bw, avx512vl and avx512dq
-        if not check_avx512():
-            return
         trainer = Trainer(max_epochs=max_epochs, use_ipex=True, precision="bf16",
                           callbacks=[CheckIPEXFusedStepCallback()])
 
@@ -124,7 +120,7 @@ class TestTrainer(TestCase):
         trainer.fit(pl_model, self.train_loader)
         trainer.test(pl_model, self.train_loader)
 
-        if TORCH_VERSION_LESS_1_10:
+        if trainer.use_ipex and TORCH_VERSION_LESS_1_10:
             import intel_pytorch_extension as ipex
             # Diable IPEX AMP
             # Avoid affecting other tests

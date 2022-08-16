@@ -63,14 +63,15 @@ class TestTrainer(TestCase):
         loss = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
         pl_model = Trainer.compile(model, loss, optimizer)
+        # torch must be greater or euqal to 1.10 to use native amp for bfloat16 precision
         if TORCH_VERSION_LESS_1_10:
-            trainer = Trainer(max_epochs=4, precision=64)
+            trainer = Trainer(max_epochs=2, precision=64)
             trainer.fit(pl_model, self.train_loader)
             assert isinstance(trainer.strategy.precision_plugin, DoublePrecisionPlugin)
             opt = pl_model.optimizers()
             assert opt.param_groups[0]['params'][0].dtype is torch.float64
         else:
-            trainer = Trainer(max_epochs=4, precision='bf16')
+            trainer = Trainer(max_epochs=2, precision='bf16')
             trainer.fit(pl_model, self.train_loader)
             assert isinstance(trainer.strategy.precision_plugin, NativeMixedPrecisionPlugin)
             # model is not converted to bfloat16 precision
