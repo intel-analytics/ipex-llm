@@ -14,8 +14,8 @@
 # limitations under the License.
 #
 
-from tensorflow.contrib.framework.python.framework import checkpoint_utils
 import argparse
+from tensorflow.contrib.framework.python.framework import checkpoint_utils
 
 def get_arg_parser():
     parser = argparse.ArgumentParser()
