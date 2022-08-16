@@ -14,8 +14,9 @@ on:
   pull_request:
     branches: [ "main" ]
     paths:
-      - 'python/orca/**'
-      - 'python/friesian/**'
+      - 'python/orca/src/bigdl/orca/data/utils.py'
+      - 'python/orca/src/bigdl/orca/learn/utils.py'
+      - 'python/friesian/src/bigdl/friesian/feature/**'
       - '.github/workflows/friesian-example-tests-deeprec.yml'
   schedule:
     - cron: '0 15 * * *'

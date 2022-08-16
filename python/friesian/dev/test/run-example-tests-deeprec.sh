@@ -31,12 +31,15 @@ else
   tar -xvzf data/input_deeprec.tar.gz -C data
 fi
 
+sed -i "s/20g/2g/g" ${BIGDL_ROOT}/python/friesian/example/deeprec/wdl.py
 python ${BIGDL_ROOT}/python/friesian/example/deeprec/wdl.py \
     --smartstaged false \
     --data_location ./data/input_deeprec \
     --checkpoint ./result \
     --instances_per_node 3 \
-    --tf
+    --tf \
+    --cores 4 \
+    --steps 10
 
 now=$(date "+%s")
 time1=$((now - start))
