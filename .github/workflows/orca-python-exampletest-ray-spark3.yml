@@ -6,13 +6,13 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: Nightly Build Orca Python EampleTest Ray Py37 Spark3
+name: Nightly Build Orca Python ExampleTest Ray Py37 Spark3
 
 on:
   #release:
    # types: [published]
-  #pull_request:
-    #branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
     #paths:
       #- 'python/orca/**'
       #- '.github/workflows/orca-python-exampletest-ray.yml'
@@ -85,7 +85,6 @@ jobs:
       #run: python -m build
       run: |
         export SPARK_LOCAL_HOSTNAME=localhost
-        export FTP_URI=ftp://zoo:1234qwer@10.112.231.51
         chmod a+x python/orca/dev/example/run-example-test-ray.sh
         python/orca/dev/example/run-example-test-ray.sh
       env:
