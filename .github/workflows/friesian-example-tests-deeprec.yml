@@ -66,6 +66,7 @@ jobs:
 
     - name: Setup Env
       run: |
+        apt-get update
         apt-get install wget
     - name: Set up Python
       uses: actions/setup-python@v2
