@@ -61,7 +61,7 @@ python wdl.py \
     --data_location /folder/path/to/train/and/test/files \
     --checkpoint /path/to/save/model/checkpoint \
     --instances_per_node 3 \
-    --ev True \
+    --ev True \ 
     --emb_fusion false \
     --ev_filter counter
 ```
