@@ -18,6 +18,21 @@
 
 set -x
 
+#notebook token and port
+port=${port:-12345}
+token=${token:-""}
+
+# check the notebook token and port.
+while [ $# -gt 0 ]; do
+
+   if [[ $1 == *"--"* ]]; then
+        param="${1/--/}"
+        declare $param="$2"
+   fi
+
+  shift
+done
+
 #setup pathes
 BIGDL_TUTORIALS_HOME=${BIGDL_HOME}/apps
 SPARK_MAJOR_VERSION=${SPARK_VERSION%%.[0-9]}
@@ -27,7 +42,7 @@ echo $SPARK_VERSION
 echo $SPARK_MAJOR_VERSION
 
 export PYSPARK_DRIVER_PYTHON=jupyter-lab
-export PYSPARK_DRIVER_PYTHON_OPTS="--notebook-dir=$BIGDL_TUTORIALS_HOME --ip=0.0.0.0 --port=$NOTEBOOK_PORT --no-browser --NotebookApp.token=$NOTEBOOK_TOKEN --allow-root"
+export PYSPARK_DRIVER_PYTHON_OPTS="--notebook-dir=$BIGDL_TUTORIALS_HOME --ip=0.0.0.0 --port=$port --no-browser --NotebookApp.token=$token --allow-root"
 
 echo $RUNTIME_SPARK_MASTER
 echo $RUNTIME_EXECUTOR_CORES
