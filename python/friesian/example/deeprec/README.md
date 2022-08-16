@@ -44,6 +44,8 @@ pip install numpy==1.18.5
 ```bash
 wget https://deeprec-whl.oss-cn-beijing.aliyuncs.com/tensorflow-1.15.5%2Bdeeprec2204-220614%2Bglibc-cp37-cp37m-linux_x86_64.whl
 pip install tensorflow-1.15.5+deeprec2204-220614+glibc-cp37-cp37m-linux_x86_64.whl
+
+# The corresponding stock TensorFlow version should be 1.15.5.
 ```
 8. Run the program `wdl.py`. You may need to change the NFS configurations in `init_orca_context` according to your cluster settings.
 
