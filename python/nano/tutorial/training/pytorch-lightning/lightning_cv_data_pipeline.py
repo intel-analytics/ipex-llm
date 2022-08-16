@@ -199,6 +199,6 @@ if __name__ == "__main__":
     # non-trivial part of the whole training pipeline. 
     # BigDL-Nano can accelerate computer vision data pipelines.
     
-    trainer = Trainer(max_epochs=2)
+    trainer = Trainer(max_epochs=5)
     trainer.fit(model, train_dataloaders=train_loader)
     trainer.validate(model, dataloaders=val_loader)
