@@ -17,6 +17,7 @@ on:
       - 'python/orca/src/bigdl/orca/data/utils.py'
       - 'python/orca/src/bigdl/orca/learn/utils.py'
       - 'python/friesian/src/bigdl/friesian/feature/**'
+      - 'python/friesian/example/deeprec/**'
       - '.github/workflows/friesian-example-tests-deeprec.yml'
   schedule:
     - cron: '0 15 * * *'
