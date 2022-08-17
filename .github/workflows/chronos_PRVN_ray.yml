@@ -96,6 +96,6 @@ jobs:
           export KERAS_BACKEND=tensorflow
           python --version
           pip install scipy==1.5.4
-          bash python/chronos/dev/test/run-pytests.sh 1
+          bash python/chronos/dev/test/run-pytests.sh
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
