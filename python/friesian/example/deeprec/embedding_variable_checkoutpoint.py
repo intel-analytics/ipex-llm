@@ -33,7 +33,7 @@ checkpoint_dir = args.checkpoint
 # After using EmbeddingVariable, the characteristics of features can be viewed through ckpt
 
 # xxxxx-freqs are the features that have been admitted.
-# xxxxx-freqs_filtered are the features that have been filtered, 
+# xxxxx-freqs_filtered are the features that have been filtered,
 # corresponding to xxxxx-freqs_filtered.
 # xxxxx-keys are the id that has been admitted.
 # xxxxx-keys_filtered correspond to xxxxx-freqs_filteredr.
