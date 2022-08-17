@@ -19,7 +19,6 @@ import os
 import random
 import sys
 from functools import reduce
-from xmlrpc.client import boolean
 
 import numpy as np
 import pyspark.sql.functions as F
@@ -37,6 +36,7 @@ from pyspark.sql.types import ArrayType, DataType, StructType, StringType, Struc
 
 from typing import (
     TYPE_CHECKING,
+    TypeVar,
     Callable,
     Dict,
     List,
@@ -51,6 +51,7 @@ if TYPE_CHECKING:
     from pyspark.sql import Row
     from pyspark.sql.dataframe import DataFrame as SparkDataFrame
     from pyspark.sql.types import StructType
+    NUMERIC_TYPE = TypeVar('NUMERIC_TYPE', int, float, complex)
 
 
 JAVA_INT_MIN = -2147483648
@@ -75,7 +76,7 @@ class Table:
         return df
 
     @staticmethod
-    def _read_json(paths: str, cols: Union[List, str]):
+    def _read_json(paths: str, cols: Union[List, str]) -> "SparkDataFrame":
         if not isinstance(paths, list):
             paths = [paths]
         spark = OrcaContext.get_spark_session()
@@ -220,7 +221,7 @@ class Table:
     # TODO: UTs on `value` of boolean
     def fillna(
         self,
-        value: Union[int, float, str, boolean],
+        value: Union[int, float, str, bool],
         columns: Optional[Union[List[str], str]]
     ) -> "FeatureTable":
         """
@@ -311,8 +312,8 @@ class Table:
     def clip(
         self,
         columns: Optional[List[str]],
-        min: Optional[int] = None,
-        max: Optional[int] = None
+        min: Optional[NUMERIC_TYPE] = None,
+        max: Optional[NUMERIC_TYPE] = None
     ) -> "Table":
         """
         Clips continuous values so that they are within the range [min, max]. For instance, by
@@ -377,7 +378,7 @@ class Table:
             check_col_exists(self.df, columns)
         return self._clone(fill_median(self.df, columns))
 
-    def median(self, columns: List[str]) -> "Table":
+    def median(self, columns: Optional[Union[str, List[str]]]=None) -> "Table":
         """
         Returns a new Table that has two columns, `column` and `median`, containing the column
         names and the medians of the specified numeric columns.
@@ -483,7 +484,7 @@ class Table:
             stats[column] = values[0] if len(values) == 1 else values
         return stats
 
-    def min(self, columns: Union[str, List[str]]) -> "Table":
+    def min(self, columns: Optional[Union[str, List[str]]]) -> "Table":
         """
         Returns a new Table that has two columns, `column` and `min`, containing the column
         names and the minimum values of the specified numeric columns.
@@ -500,7 +501,7 @@ class Table:
         spark = OrcaContext.get_spark_session()
         return self._clone(spark.createDataFrame(data, schema))
 
-    def max(self, columns: Union[str, List[str]]) -> "Table":
+    def max(self, columns: Optional[Union[str, List[str]]]) -> "Table":
         """
         Returns a new Table that has two columns, `column` and `max`, containing the column
         names and the maximum values of the specified numeric columns.
@@ -546,7 +547,7 @@ class Table:
             result[column] = [row[i] for row in rows]
         return result
 
-    def add(self, columns: List[str], value: Union[int, float]=1) -> "Table":
+    def add(self, columns: List[str], value: NUMERIC_TYPE=1) -> "Table":
         """
         Increase all of values of the target numeric column(s) by a constant value.
 
@@ -621,7 +622,7 @@ class Table:
         """
         write_parquet(self.df, path, mode)
 
-    def cast(self, columns: str, dtype: str) -> "StringIndex":
+    def cast(self, columns: Union[str, List[str]], dtype: str) -> "StringIndex":
         """
         Cast columns to the specified type.
 
@@ -812,7 +813,7 @@ class Table:
         """
         return pyspark_col(name)
 
-    def sort(self, *cols: List["Column"], **kwargs: Union[bool, List[bool]]) -> "Table":
+    def sort(self, *cols: List[Union["Column", str]], **kwargs: Union[bool, List[bool]]) -> "Table":
         """
         Sort the Table by specified column(s).
 
@@ -901,7 +902,7 @@ class FeatureTable(Table):
         return cls(Table._read_parquet(paths))
 
     @classmethod
-    def read_json(cls, paths: str, cols=None) -> "FeatureTable":
+    def read_json(cls, paths: Union[str, List[str]], cols: Union[str, List[str]]=None) -> "FeatureTable":
         """
         Loads json files as a FeatureTable.
 
@@ -916,10 +917,10 @@ class FeatureTable(Table):
     @classmethod
     def read_csv(
         cls,
-        paths: str,
+        paths: Union[str, List[str]],
         delimiter: str = ",",
         header: bool = False,
-        names: Optional[List[str]] = None,
+        names: Optional[Union[str, List[str]]] = None,
         dtype: Optional[Union[List[str], str, Dict[str, str]]]=None
     ) -> "FeatureTable":
         """
@@ -946,7 +947,7 @@ class FeatureTable(Table):
         return cls(Table._read_csv(paths, delimiter, header, names, dtype))
 
     @classmethod
-    def read_text(cls, paths: str, col_name: str = "value") -> "FeatureTable":
+    def read_text(cls, paths: Union[str, List[str]], col_name: str = "value") -> "FeatureTable":
         """
         Loads text files as a FeatureTable.
 
@@ -1048,7 +1049,7 @@ class FeatureTable(Table):
 
         return FeatureTable(data_df)
 
-    def filter_by_frequency(self, columns: List[str], min_freq: int = 2) -> "FeatureTable":
+    def filter_by_frequency(self, columns: Union[str, List[str]], min_freq: int = 2) -> "FeatureTable":
         """
         Filter the FeatureTable by the given minimum frequency on the target columns.
 
@@ -1161,8 +1162,8 @@ class FeatureTable(Table):
 
     def category_encode(
         self,
-        columns: List[str],
-        freq_limit: Union[int, Dict]=None,
+        columns: Union[str, List[str]],
+        freq_limit: Optional[Union[int, Dict]]=None,
         order_by_freq: bool = False,
         do_split: bool = False,
         sep: str = ',',
@@ -1203,7 +1204,7 @@ class FeatureTable(Table):
 
     def one_hot_encode(
         self,
-        columns: List[str],
+        columns: Union[str, List[str]],
         sizes: Union[int, List[int]]=None,
         prefix: Union[str, List[str]]=None,
         keep_original_columns: bool = False
@@ -1302,11 +1303,10 @@ class FeatureTable(Table):
 
     def gen_string_idx(
         self,
-        columns: Union[List[str],
-                       str,
+        columns: Union[str,
                        List[Union[str, Dict[str, Union[str, List[str]]]]],
                        Dict[str, Union[str, List[str]]]],
-        freq_limit: Optional[Union[int, str, Dict[str, int]]]=None,
+        freq_limit: Optional[Union[int, Dict[str, int]]]=None,
         order_by_freq: bool = False,
         do_split: bool = False,
         sep: str = ','
@@ -1418,7 +1418,7 @@ class FeatureTable(Table):
 
     def min_max_scale(
         self,
-        columns: List[str],
+        columns: Union[str, List[str]],
         min: float = 0.0,
         max: float = 1.0
     ) -> Tuple["FeatureTable", Dict[str, Union[Tuple[float, float],
@@ -1428,9 +1428,9 @@ class FeatureTable(Table):
         column summary statistics, which is also known as min-max normalization or rescaling.
 
         :param columns: str or a list of str, the column(s) to be rescaled.
-        :param min: int, the lower bound after transformation, shared by all columns.
+        :param min: float, the lower bound after transformation, shared by all columns.
                     Default is 0.0.
-        :param max: int, the upper bound after transformation, shared by all columns.
+        :param max: float, the upper bound after transformation, shared by all columns.
                     Default is 1.0.
 
         :return: A tuple of a new FeatureTable with rescaled column(s), and a dict of the
@@ -1500,7 +1500,7 @@ class FeatureTable(Table):
 
     def transform_min_max_scale(
         self,
-        columns: List[str],
+        columns: Union[str, List[str]],
         min_max_dict: Dict[str, Union[Tuple[float, float], Tuple[List[float], List[float]]]]
     ) -> "FeatureTable":
         """
@@ -1584,7 +1584,7 @@ class FeatureTable(Table):
 
     def add_hist_seq(
         self,
-        cols: List[str],
+        cols: Union[str, List[str]],
         user_col: str,
         sort_col: str = 'time',
         min_len: int = 1,
@@ -1643,7 +1643,7 @@ class FeatureTable(Table):
 
     def pad(
         self,
-        cols: List[str],
+        cols: Union[str, List[str]],
         seq_len: int = 100,
         mask_cols: Union[str, List[str]]=None,
         mask_token: Union[int, str]=0
@@ -1699,8 +1699,8 @@ class FeatureTable(Table):
     def join(
         self,
         table: "FeatureTable",
-        on: Optional[str] = None,
-        how: None = None,
+        on: Optional[Union[str, List[str]]] = None,
+        how: str = "inner",
         lsuffix: Optional[str] = None,
         rsuffix: Optional[str] = None
     ) -> "FeatureTable":
@@ -1758,8 +1758,8 @@ class FeatureTable(Table):
 
     def reindex(
         self,
-        columns: List[str] = [],
-        index_tbls: List["FeatureTable"] = []
+        columns: Union[str, List[str]] = [],
+        index_tbls: Union["FeatureTable", List["FeatureTable"]] = []
     ) -> "FeatureTable":
         """
         Replace the value using index_dicts for each col in columns, set 0 for default
@@ -1787,7 +1787,7 @@ class FeatureTable(Table):
     def gen_reindex_mapping(
         self,
         columns: List[str] = [],
-        freq_limit: int = 10
+        freq_limit: Optional[Union[int, Dict[str,int]]] = 10
     ) -> List["FeatureTable"]:
         """
         Generate a mapping from old index to new one based on popularity count on descending order
@@ -1898,14 +1898,14 @@ class FeatureTable(Table):
         self,
         cat_cols: Union[List[str], List[List[str]], str],
         target_cols: Union[List[str], str],
-        target_mean: Optional[Union[Dict[str, str], Dict[str, Union[int, float]]]]=None,
+        target_mean: Optional[Dict[str, Union[int, float, str]]]=None,
         smooth: int = 20,
         kfold: int = 2,
         fold_seed: Optional[int] = None,
         fold_col: str = "__fold__",
         drop_cat: bool = False,
         drop_fold: bool = True,
-        out_cols: Optional[List[List[str]]] = None
+        out_cols: Optional[Union[str, List[str], List[List[str]]]] = None
     ) -> Tuple["FeatureTable", List["TargetCode"]]:
         """
         For each categorical column or column group in cat_cols, calculate the mean of target
@@ -2112,7 +2112,7 @@ class FeatureTable(Table):
     def encode_target(
         self,
         targets: Union["TargetCode", List["TargetCode"]],
-        target_cols: Optional[str] = None,
+        target_cols: Union[List[str], str] = None,
         drop_cat: bool = True
     ) -> "FeatureTable":
         """
@@ -2250,7 +2250,7 @@ class FeatureTable(Table):
         columns: Union[List[str], str],
         bins: Union[Dict[str, List[int]], int, List[int]],
         labels: Optional[Union[List[str], Dict[str, List[str]]]]=None,
-        out_cols: Optional[str] = None,
+        out_cols: Optional[Union[List[str], str]] = None,
         drop: bool = True
     ) -> "FeatureTable":
         """
@@ -2470,7 +2470,7 @@ class FeatureTable(Table):
 
     def string_embed(
         self,
-        columns: List[str],
+        columns: Union[List[str], str],
         bert_model: str = 'distilbert-base-uncased',
         reduce_dim: Optional[int] = None,
         replace: bool = True
@@ -2556,7 +2556,9 @@ class StringIndex(Table):
         self.col_name = col_name
 
     @classmethod
-    def read_parquet(cls, paths: str, col_name: Optional[str] = None) -> "StringIndex":
+    def read_parquet(cls,
+                     paths: Union[List[str], str],
+                     col_name: Optional[str] = None) -> "StringIndex":
         """
         Loads Parquet files as a StringIndex.
 
@@ -2646,7 +2648,7 @@ class TargetCode(Table):
         self,
         df: "SparkDataFrame",
         cat_col: Union[List[str], str],
-        out_target_mean: Dict[str, Union[Tuple[str, str], Tuple[str, float], Tuple[str, int]]]
+        out_target_mean: Dict[str, Tuple[str, Union[str, float, int]]]
     ) -> None:
         """
         Target Encoding output used for encoding new FeatureTables, which consists of the encoded

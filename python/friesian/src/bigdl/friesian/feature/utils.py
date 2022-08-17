@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     from pyspark.sql.dataframe import DataFrame as SparkDataFrame
 
 
-def compute(df):
+def compute(df: "SparkDataFrame"):
     return callZooFunc("float", "compute", df)
 
 
@@ -118,13 +118,14 @@ def add_value_features(df: "SparkDataFrame",
     return callZooFunc("float", "addValueFeatures", df, cols, map_df, key, value)
 
 
-def mask(df, mask_cols, seq_len):
+def mask(df: "SparkDataFrame", mask_cols: Optional[Union[str,List[str]]], seq_len: int):
     return callZooFunc("float", "mask", df, mask_cols, seq_len)
 
 
 def pad(df: "SparkDataFrame",
         cols: List[str],
-        seq_len: int, mask_cols: Optional[List[str]],
+        seq_len: int,
+        mask_cols: Optional[Union[str,List[str]]],
         mask_token: Union[int, str]) -> "SparkDataFrame":
     df = callZooFunc("float", "mask", df, mask_cols, seq_len) if mask_cols else df
     df = callZooFunc("float", "postPad", df, cols, seq_len, mask_token)
@@ -162,7 +163,8 @@ def check_col_str_list_exists(df: "SparkDataFrame",
 
 
 def get_nonnumeric_col_type(df: "SparkDataFrame",
-                            columns: List[str]) -> List[Union[Tuple[str, str], Any]]:
+                            columns: Optional[Union[str,List[str]]]
+) -> List[Union[Tuple[str, str], Any]]:
     return list(filter(
         lambda x: x[0] in columns and not (x[1] == "smallint" or x[1] == "int" or
                                            x[1] == "bigint" or x[1] == "float" or x[1] == "double"),
@@ -267,7 +269,8 @@ def str_to_list(arg: Union[List[str], str], arg_name: str) -> List[str]:
     return arg
 
 
-def featuretable_to_xshards(tbl, convert_cols=None):
+def featuretable_to_xshards(tbl: "SparkDataFrame",
+                            convert_cols: Optional[Union[List[str],str]]=None):
     from bigdl.orca.learn.utils import dataframe_to_xshards_of_feature_dict
     # TODO: partition < node num
     if convert_cols is None:
