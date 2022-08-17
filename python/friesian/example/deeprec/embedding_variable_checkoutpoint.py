@@ -40,4 +40,3 @@ checkpoint_dir = args.checkpoint
 # xxxxx-versions are the most recent global steps of each feature.
 for name, shape in checkpoint_utils.list_variables(checkpoint_dir):
      print('loading...', name, shape, checkpoint_utils.load_variable(checkpoint_dir,name))
-     
