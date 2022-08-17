@@ -377,7 +377,7 @@ class Table:
             check_col_exists(self.df, columns)
         return self._clone(fill_median(self.df, columns))
 
-    def fill_median(self, columns: List[str]) -> "Table":
+    def median(self, columns: List[str]) -> "Table":
         """
         Returns a new Table that has two columns, `column` and `median`, containing the column
         names and the medians of the specified numeric columns.
