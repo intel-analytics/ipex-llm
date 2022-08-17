@@ -20,38 +20,39 @@ from importlib.util import find_spec
 import time
 import numpy as np
 from bigdl.nano.pytorch import Trainer
+import subprocess
 
 
 ALL_INFERENCE_ACCELERATION_METHOD = \
     {
         "None_fp32_noipex": {"inc": False, "ipex": False, "onnxruntime": False,
-                             "openvino":False, "pot": False, "bf16": False},
+                             "openvino": False, "pot": False, "bf16": False},
         "None_fp32_ipex": {"inc": False, "ipex": True, "onnxruntime": False,
-                           "openvino":False, "pot": False, "bf16": False},
+                           "openvino": False, "pot": False, "bf16": False},
         "None_bf16_noipex": {"inc": False, "ipex": False, "onnxruntime": False,
-                             "openvino":False, "pot": False, "bf16": True},
+                             "openvino": False, "pot": False, "bf16": True},
         "None_bf16_ipex": {"inc": False, "ipex": True, "onnxruntime": False,
-                           "openvino":False, "pot": False, "bf16": True},
+                           "openvino": False, "pot": False, "bf16": True},
         "None_int8_noipex": {"inc": True, "ipex": False, "onnxruntime": False,
-                             "openvino":False, "pot": False, "bf16": False},
+                             "openvino": False, "pot": False, "bf16": False},
         "jit_fp32_noipex": {"inc": False, "ipex": False, "onnxruntime": False,
-                            "openvino":False, "pot": False, "bf16": False},
+                            "openvino": False, "pot": False, "bf16": False},
         "jit_fp32_ipex": {"inc": False, "ipex": True, "onnxruntime": False,
-                          "openvino":False, "pot": False, "bf16": False},
+                          "openvino": False, "pot": False, "bf16": False},
         "jit_bf16_noipex": {"inc": False, "ipex": False, "onnxruntime": False,
-                            "openvino":False, "pot": False, "bf16": True},
+                            "openvino": False, "pot": False, "bf16": True},
         "jit_bf16_ipex": {"inc": False, "ipex": True, "onnxruntime": False,
-                          "openvino":False, "pot": False, "bf16": True},
+                          "openvino": False, "pot": False, "bf16": True},
         "onnxruntime_fp32_noipex": {"inc": False, "ipex": False, "onnxruntime": True,
-                                    "openvino":False, "pot": False, "bf16": False},
+                                    "openvino": False, "pot": False, "bf16": False},
         "onnxruntime_int8_noipex_qlinear": {"inc": True, "ipex": False, "onnxruntime": True,
                                             "openvino":False, "pot": False, "bf16": False},
         "onnxruntime_int8_noipex_integer": {"inc": True, "ipex": False, "onnxruntime": True,
-                                            "openvino":False, "pot": False, "bf16": False},
+                                            "openvino": False, "pot": False, "bf16": False},
         "openvino_fp32_noipex": {"inc": False, "ipex": False, "onnxruntime": False,
-                                 "openvino":True, "pot": False, "bf16": False},
+                                 "openvino": True, "pot": False, "bf16": False},
         "openvino_int8_noipex": {"inc": False, "ipex": False, "onnxruntime": False,
-                                 "openvino":True, "pot": True, "bf16": False},
+                                 "openvino": True, "pot": True, "bf16": False},
     }
 
 
@@ -63,7 +64,7 @@ class Optimizor:
         '''
         self.optimized_model_dict = {}
 
-    def optimize(model,
+    def optimize(self, model,
                  training_data,
                  validation_data=None,
                  metric=None,
@@ -93,7 +94,7 @@ class Optimizor:
 
         available_dict = _available_acceleration_combination()
         result_map = {}
-        
+
         for method, available in available_dict.items():
             if available:
                 split_method = method.split('_')
@@ -105,23 +106,31 @@ class Optimizor:
                         if accelerator is None and use_ipex is False:
                             accelerated_model = model
                         else:
+                            # TODO: remove the logging of tracing
                             accelerated_model = Trainer.trace(model=model,
-                                                            accelerator=accelerator,
-                                                            use_ipex=use_ipex,
-                                                            input_sample=input_sample)
+                                                              accelerator=accelerator,
+                                                              use_ipex=use_ipex,
+                                                              input_sample=input_sample)
+
                         def func_test(model, input_sample):
                             model(*input_sample)
                         # TODO: 100 trial run is now fixed, we may make it adjusted intelligently.
-                        result_map[method] = {"latency": _throughput_calculate_helper(100, func_test, accelerated_model, input_sample)}
+                        result_map[method] = {"latency":
+                            _throughput_calculate_helper(100, func_test,
+                                                         accelerated_model, input_sample)}
                         if validation_data is not None and metric is not None:
-                            result_map[method]["accuracy"] = _accuracy_calculate_helper(accelerated_model, metric, validation_data)
+                            result_map[method]["accuracy"] =\
+                                _accuracy_calculate_helper(accelerated_model,
+                                                           metric, validation_data)
                         result_map[method]["model"] = accelerated_model
                     except Exception as e:
                         print(e)
+
                 if split_method[1] == "int8" or split_method[1] == "bf16":  # quantize
                     precision = split_method[1]
                     q_method = None if len(split_method) < 4 else split_method[3]
                     try:
+                        # TODO: remove the logging of quantization
                         accelerated_model = Trainer.quantize(model=model,
                                                              precision=precision,
                                                              accelerator=accelerator,
@@ -139,11 +148,10 @@ class Optimizor:
                         print(e)
             else:
                 pass
-        for iter_item in sorted(result_map.items(), key=lambda x:x[1]["latency"]):
-            print(iter_item)
         self.optimized_model_dict = result_map
 
-    def export(accelerator=None,
+    def export(self,
+               accelerator=None,
                precision=None,
                use_ipex=None,
                allow_acc=None,):
@@ -159,7 +167,8 @@ class Optimizor:
         '''
         pass
 
-    def get_best_model(accelerator=None,
+    def get_best_model(self,
+                       accelerator=None,
                        precision=None,
                        use_ipex=None,
                        allow_acc=None,):
@@ -212,7 +221,8 @@ def _bf16_checker():
     '''
     bf16 availablity will be decided dynamically during the optimization
     '''
-    return True
+    msg = subprocess.check_output(["lscpu"]).decode("utf-8")
+    return "avx512_bf16" in msg or "amx_bf16" in msg
 
 
 def _available_acceleration_combination():
