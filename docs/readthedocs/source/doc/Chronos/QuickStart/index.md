@@ -8,15 +8,25 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/css/chronos_tutorial.css" />
 
     <div id="tutorial">
-        <div>
-            <div><input type="checkbox" class="checkboxes" name="choice" value="A">A</div>
-            <div><input type="checkbox" class="checkboxes" name="choice" value="B">B</div>
-            <div><input type="checkbox" class="checkboxes" name="choice" value="C">C</div>
+        <h3 style="text-align:left">Filter:</h3>
+        <p>Please check what you want. If nothing is checked, all the tutorials will be displayed</p>
+        <div class="choiceline">
+            <div class="choicebox"><input type="checkbox" class="checkboxes" name="choice" value="forecast">forecast </div>
+            <div class="choicebox"><input type="checkbox" class="checkboxes" name="choice" value="anomaly_detection">anomaly detection</div>
+            <div class="choicebox"><input type="checkbox" class="checkboxes" name="choice" value="simulation">simulation</div>
+            <div class="choicebox"><input type="checkbox" class="checkboxes" name="choice" value="hyperparameter_tuning">hyperparameter tuning</div>
+        </div>
+        <div class="choiceline">
+            <div class="choicebox"><input type="checkbox" class="checkboxes" name="choice" value="onnxruntime">onnxruntime </div>
+            <div class="choicebox"><input type="checkbox" class="checkboxes" name="choice" value="quantization">quantization</div>
+            <div class="choicebox"><input type="checkbox" class="checkboxes" name="choice" value="distributed">distributed</div>
+            <div class="choicebox"><input type="checkbox" class="checkboxes" name="choice" value="customized_model">customized model</div>
         </div>
         </br>
 
         <details id="ChronosForecaster">
             <summary><a href="./chronos-tsdataset-forecaster-quickstart.html">Predict Number of Taxi Passengers with Chronos Forecaster</a></summary>
+            <p>Tag: forecast</p>
             <img src="../../../_images/colab_logo_32px.png"><a href="https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_nyc_taxi_tsdataset_forecaster.ipynb">Run in Google Colab</a>
             &nbsp;
             <img src="../../../_images/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_nyc_taxi_tsdataset_forecaster.ipynb">View source on GitHub</a>
@@ -26,6 +36,7 @@
 
         <details id="TuneaForecasting">
             <summary><a href="./chronos-autotsest-quickstart.html">Tune a Forecasting Task Automatically</a></summary>
+            <p>Tag: forecast, hyperparameter tuning</p>
             <img src="../../../_images/colab_logo_32px.png"><a href="https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_autots_nyc_taxi.ipynb">Run in Google Colab</a>
             &nbsp;
             <img src="../../../_images/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_autots_nyc_taxi.ipynb">View source on GitHub</a>
@@ -35,6 +46,7 @@
 
         <details id="DetectAnomaly">
             <summary><a href="./chronos-anomaly-detector.html">Detect Anomaly Point in Real Time Traffic Data</a></summary>
+            <p>Tag: anomaly detection</p>
             <img src="../../../_images/colab_logo_32px.png"><a href="https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_minn_traffic_anomaly_detector.ipynb">Run in Google Colab</a>
             &nbsp;
             <img src="../../../_images/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_minn_traffic_anomaly_detector.ipynb">View source on GitHub</a>
@@ -44,6 +56,7 @@
 
         <details id="AutoTSEstimator">
             <summary><a href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_autots_customized_model.ipynb">Tune a Customized Time Series Forecasting Model with AutoTSEstimator.</a></summary>
+            <p>Tag: forecast, hyperparameter tuning, customized model</p>
             <img src="../../../_images/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_autots_customized_model.ipynb">View source on GitHub</a>
             <p>In this notebook, we demonstrate a reference use case where we use the network traffic KPI(s) in the past to predict traffic KPI(s) in the future. We demonstrate how to use _AutoTSEstimator_ to adjust the parameters of a customized model.</p>
         </details>
@@ -51,6 +64,7 @@
 
         <details id="AutoWIDE">
             <summary><a href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting.ipynb">Auto Tune the Prediction of Network Traffic at the Transit Link of WIDE</a></summary>
+            <p>Tag: forecast, hyperparameter tuning</p>
             <img src="../../../_images/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting.ipynb">View source on GitHub</a>
             <p>In this notebook, we demostrate a reference use case where we use the network traffic KPI(s) in the past to predict traffic KPI(s) in the future. We demostrate how to use _AutoTS_ in project <a href="https://github.com/intel-analytics/bigdl/tree/main/python/chronos/src/bigdl/chronos">Chronos</a> to do time series forecasting in an automated and distributed way.</p>
         </details>
@@ -58,6 +72,7 @@
 
         <details id="MultvarWIDE">
             <summary><a href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.ipynb">Multivariate Forecasting of Network Traffic at the Transit Link of WIDE</a></summary>
+            <p>Tag: forecast</p>
             <img src="../../../_images/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.ipynb">View source on GitHub</a>
             <p>In this notebook, we demonstrate a reference use case where we use the network traffic KPI(s) in the past to predict traffic KPI(s) in the future. We demostrate how to do univariate forecasting (predict only 1 series), and multivariate forecasting (predicts more than 1 series at the same time) using Project <a href="https://github.com/intel-analytics/bigdl/tree/main/python/chronos/src/bigdl/chronos">Chronos</a>.</p>
         </details>
@@ -65,6 +80,7 @@
 
         <details id="MultstepWIDE">
             <summary><a href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.ipynb">Multistep Forecasting of Network Traffic at the Transit Link of WIDE</a></summary>
+            <p>Tag: forecast</p>
             <img src="../../../_images/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.ipynb">View source on GitHub</a>
             <p>In this notebook, we demonstrate a reference use case where we use the network traffic KPI(s) in the past to predict traffic KPI(s) in the future. We demostrate how to do multivariate multistep forecasting using Project <a href="https://github.com/intel-analytics/bigdl/tree/main/python/chronos/src/bigdl/chronos">Chronos</a>.</p>
         </details>
@@ -72,6 +88,7 @@
 
         <details id="LSTMForecaster">
             <summary><a href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/fsi/stock_prediction.ipynb">Stock Price Prediction with LSTMForecaster</a></summary>
+            <p>Tag: forecast</p>
             <img src="../../../_images/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/fsi/stock_prediction.ipynb">View source on GitHub</a>
             <p>In this notebook, we demonstrate a reference use case where we use historical stock price data to predict the future price. The dataset we use is the daily stock price of S&P500 stocks during 2013-2018 (data source). We demostrate how to do univariate forecasting using the past 80% of the total days' MMM price to predict the future 20% days' daily price.</p>
             <p>Reference: <a href="https://github.com/jwkanggist/tf-keras-stock-pred">https://github.com/jwkanggist/tf-keras-stock-pred</a></p>
@@ -80,6 +97,7 @@
 
         <details id="AutoProphet">
             <summary><a href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/fsi/stock_prediction_prophet.ipynb">Stock Price Prediction with ProphetForecaster and AutoProphet</a></summary>
+            <p>Tag: forecast, hyperparameter tuning</p>
             <img src="../../../_images/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/fsi/stock_prediction_prophet.ipynb">View source on GitHub</a>
             <p>In this notebook, we demonstrate a reference use case where we use historical stock price data to predict the future price using the ProphetForecaster and AutoProphet. The dataset we use is the daily stock price of S&P500 stocks during 2013-2018 <a href="https://www.kaggle.com/camnugent/sandp500/">data source</a>.</p>
             <p>Reference: <a href="https://facebook.github.io/prophet">https://facebook.github.io/prophet</a>, <a href="https://github.com/jwkanggist/tf-keras-stock-pred">https://github.com/jwkanggist/tf-keras-stock-pred</a></p>
@@ -88,13 +106,15 @@
 
         <details id="Unsupervised">
             <summary><a href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.ipynb">Unsupervised Anomaly Detection for CPU Usage</a></summary>
+            <p>Tag: anomaly detection</p>
             <img src="../../../_images/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.ipynb">View source on GitHub</a>
             <p>We demonstrates how to perform anomaly detection based on Chronos's built-in <a href="../../PythonAPI/Chronos/anomaly_detectors.html#dbscandetector">DBScanDetector</a>, <a href="../../PythonAPI/Chronos/anomaly_detectors.html#aedetector">AEDetector</a> and <a href="../../PythonAPI/Chronos/anomaly_detectors.html#thresholddetector">ThresholdDetector</a>.</p>
         </details>
         <hr>
 
-        <details id="Anomaly Detection">
+        <details id="AnomalyDetection">
             <summary><a href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.ipynb">Anomaly Detection for CPU Usage Based on Forecasters</a></summary>
+            <p>Tag: forecast, anomaly detection</p>
             <img src="../../../_images/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.ipynb">View source on GitHub</a>
             <p>We demonstrates how to leverage Chronos's built-in models ie. MTNet, to do time series forecasting. Then perform anomaly detection on predicted value with <a href="../../PythonAPI/Chronos/anomaly_detectors.html#thresholddetector">ThresholdDetector</a>.</p>
         </details>
@@ -102,6 +122,7 @@
 
         <details id="DeepARmodel">
             <summary><a href="https://github.com/intel-analytics/BigDL/tree/main/python/chronos/use-case/pytorch-forecasting/DeepAR">Help pytorch-forecasting improve the training speed of DeepAR model</a></summary>
+            <p>Tag: forecast, customized model</p>
             <img src="../../../_images/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/tree/main/python/chronos/use-case/pytorch-forecasting/DeepAR">View source on GitHub</a>
             <p>Chronos can help a 3rd party time series lib to improve the performance (both training and inferencing) and accuracy. This use-case shows Chronos can easily help pytorch-forecasting speed up the training of DeepAR model.</p>
         </details>
@@ -109,6 +130,7 @@
 
         <details id="TFTmodel">
             <summary><a href="https://github.com/intel-analytics/BigDL/tree/main/python/chronos/use-case/pytorch-forecasting/TFT">Help pytorch-forecasting improve the training speed of TFT model</a></summary>
+            <p>Tag: forecast, customized model</p>
             <img src="../../../_images/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/tree/main/python/chronos/use-case/pytorch-forecasting/TFT">View source on GitHub</a>
             <p>Chronos can help a 3rd party time series lib to improve the performance (both training and inferencing) and accuracy. This use-case shows Chronos can easily help pytorch-forecasting speed up the training of TFT model.</p>
         </details>
@@ -116,8 +138,57 @@
 
         <details id="hyperparameter">
             <summary><a href="https://github.com/intel-analytics/BigDL/tree/main/python/chronos/example/hpo/muti_objective_hpo_with_builtin_latency_tutorial.ipynb">Tune a Time Series Forecasting Model with multi-objective hyperparameter optimization.</a></summary>
+            <p>Tag: forecast, hyperparameter tuning</p>
             <img src="../../../_images/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/tree/main/python/chronos/example/hpo/muti_objective_hpo_with_builtin_latency_tutorial.ipynb">View source on GitHub</a>
             <p>In this notebook, we demostrate how to use _multi-objective hyperparameter optimization with built-in latency metric_ in project <a href="https://github.com/intel-analytics/bigdl/tree/main/python/chronos/src/bigdl/chronos">Chronos</a> to do time series forecasting and achieve good tradeoff between performance and latency.</p>
+        </details>
+        <hr>
+
+        <details id="taxiDataset">
+            <summary><a href="https://github.com/intel-analytics/BigDL/tree/main/python/chronos/example/auto_model">Auto tuning prophet on nyc taxi dataset</a></summary>
+            <p>Tag: forecast, hyperparameter tuning</p>
+            <img src="../../../_images/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/tree/main/python/chronos/example/auto_model">View source on GitHub</a>
+            <p>This example collection will demonstrate Chronos auto models (i.e. autolstm & autoprophet) perform automatic time series forecasting on nyc_taxi dataset. The auto model will search the best hyperparameters automatically.</p>
+        </details>
+        <hr>
+
+        <details id="distributedFashion">
+            <summary><a href="https://github.com/intel-analytics/BigDL/tree/main/python/chronos/example/distributed">Use Chronos forecasters in a distributed fashion</a></summary>
+            <p>Tag: forecast, distributed</p>
+            <img src="../../../_images/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/tree/main/python/chronos/example/distributed">View source on GitHub</a>
+            <p>Users can easily train their forecasters in a distributed fashion to handle extra large dataset and speed up the process (training and data processing) by utilizing a cluster or pseudo-distribution on a single node. The functionality is powered by Project Orca.</p>
+        </details>
+        <hr>
+
+        <details id="ONNXRuntime">
+            <summary><a href="https://github.com/intel-analytics/BigDL/tree/main/python/chronos/example/onnx">Use ONNXRuntime to speed-up forecasters' inferecing</a></summary>
+            <p>Tag: forecast, onnxruntime, hyperparameter tuning</p>
+            <img src="../../../_images/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/tree/main/python/chronos/example/onnx">View source on GitHub</a>
+            <p>This example will demonstrate how to use ONNX to speed up the inferencing(prediction/evalution) on forecasters and AutoTSEstimator. In this example, onnx speed up the inferencing for ~4X.</p>
+        </details>
+        <hr>
+
+        <details id="Quantize">
+            <summary><a href="https://github.com/intel-analytics/BigDL/tree/main/python/chronos/example/quantization">Quantize Chronos forecasters method to speed-up inference</a></summary>
+            <p>Tag: forecast, quantization</p>
+            <img src="../../../_images/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/tree/main/python/chronos/example/quantization">View source on GitHub</a>
+            <p>Users can easily quantize their forecasters to low precision and speed up the inference process (both throughput and latency) by on a single node. The functionality is powered by Project Nano.</p>
+        </details>
+        <hr>
+
+        <details id="SimualateTimeSeriesData">
+            <summary><a href="https://github.com/intel-analytics/BigDL/tree/main/python/chronos/example/simulator">Simualate time series data with similar pattern as example data</a></summary>
+            <p>Tag: simulation</p>
+            <img src="../../../_images/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/tree/main/python/chronos/example/simulator">View source on GitHub</a>
+            <p>This example shows how to generate synthetic data with similar distribution as training data with the fast and easy DPGANSimulator API provided by Chronos.</p>
+        </details>
+        <hr>
+
+        <details id="TCMFForecaster">
+            <summary><a href="https://github.com/intel-analytics/BigDL/tree/main/python/chronos/example/tcmf">High dimension time series forecasting with Chronos TCMFForecaster</a></summary>
+            <p>Tag: forecast, distributed</p>
+            <img src="../../../_images/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/tree/main/python/chronos/example/tcmf">View source on GitHub</a>
+            <p>This example demonstrates how to use BigDL Chronos TCMFForecaster to run distributed training and inference for high dimension time series forecasting task.</p>
         </details>
         <hr>
 

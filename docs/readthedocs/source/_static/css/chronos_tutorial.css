@@ -2,7 +2,13 @@
     margin: 10px 5px 10px 15px; 
 }
 
-#tutorial div{
+.choiceline{
     display: flex;
     justify-content: space-around;
+    margin-bottom: 10px;
+}
+
+.choicebox{
+    width: 200px;
+    height: 20px;
 }
