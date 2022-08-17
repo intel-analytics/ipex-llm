@@ -78,7 +78,7 @@ jobs:
         export MAVEN_OPTS="-XX:MaxPermSize=3G -Xmx100G -XX:ReservedCodeCacheSize=512m"
         export _JAVA_OPTIONS="-Xmx100G -XX:MaxPermSize=3G"
         export SPARK_LOCAL_HOSTNAME=localhost
-        export FTP_URI=ftp://zoo:1234qwer@10.112.231.51
+        export HDFS_URI=hdfs://172.168.2.151:9000
         chmod a+x python/orca/dev/example/run-example-tests.sh
         python/orca/dev/example/run-example-tests.sh
       env:
