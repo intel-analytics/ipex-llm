@@ -27,7 +27,7 @@ on:
 jobs:
   build:
 
-    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+    runs-on: [ubuntu-20.04-lts]
     permissions:
       contents: read
       packages: write
@@ -70,9 +70,6 @@ jobs:
       run: |
         apt-get update
         apt-get install wget
-        python -m pip install --upgrade pip
-        python -m pip install --upgrade setuptools==58.0.4
-        python -m pip install --upgrade wheel
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
@@ -80,7 +77,6 @@ jobs:
     - name: Install dependencies
       shell: bash
       run: |
-        $CONDA/bin/conda create --name deeprec python==3.7.10
         python -m pip install --upgrade pip
         python -m pip install --upgrade setuptools==58.0.4
         pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-friesian bigdl-friesian-spark3
