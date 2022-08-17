@@ -9,7 +9,7 @@ on:
       #- 'python/orca/**'
       #- '.github/workflows/orca-python-exampletest-ray.yml'
   schedule:
-    - cron: '0 15 * * *'
+    - cron: '0 16 * * *'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -78,7 +78,6 @@ jobs:
         export MAVEN_OPTS="-XX:MaxPermSize=3G -Xmx100G -XX:ReservedCodeCacheSize=512m"
         export _JAVA_OPTIONS="-Xmx100G -XX:MaxPermSize=3G"
         export SPARK_LOCAL_HOSTNAME=localhost
-        export HDFS_URI=hdfs://172.168.2.151:9000
         chmod a+x python/orca/dev/example/run-example-tests.sh
         python/orca/dev/example/run-example-tests.sh
       env:
