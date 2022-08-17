@@ -16,6 +16,7 @@ tabulate==0.8.7
 tensorflow==1.15.0
 tensorflow-gan==2.0.0
 tensorflow-probability==0.7.0
+tensorflow-datasets==3.2.0
 mxnet==1.6.0
 xgboost_ray
 argparse
