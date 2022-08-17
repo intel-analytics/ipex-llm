@@ -114,6 +114,7 @@ public class RecallServerTest {
         RecallProto.Query query = RecallProto.Query.newBuilder().setUserID(userDataRow.getInt(0)).setK(4).build();
         RecallProto.Candidates itemIDs = recallBlockingStub.searchCandidates(query);
         assertEquals(itemIDs.getCandidate(0), insertedItemID);
+        assertEquals(itemIDs.getCandidateCount(), 4);
     }
 
 

@@ -36,15 +36,13 @@ import org.apache.spark.sql.SparkSession;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import scala.collection.JavaConverters;
-import scala.collection.Seq;
 
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import static com.intel.analytics.bigdl.friesian.JavaTestUtils.convertListToSeq;
 import static com.intel.analytics.bigdl.friesian.JavaTestUtils.destroyLettuceUtilsInstance;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -56,11 +54,6 @@ public class FeatureServerTest {
     private static ManagedChannel channel;
     private static List<Row> itemRowList = null, userRowList = null;
     private static FeatureServer featureServer;
-
-    public static Seq<String> convertListToSeq(String[] inputArray) {
-        return JavaConverters.asScalaIteratorConverter(Arrays.asList(inputArray).iterator()).asScala().toSeq();
-    }
-
 
     /**
      * Sets up the test fixture.
