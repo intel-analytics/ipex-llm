@@ -166,17 +166,17 @@ def create_dataloaders():
 
 
 if __name__ == "__main__":
-    # get dataset
     model = MyLightningModule()
-    # BigDL-Nano can accelerate computer vision data pipelines
-    # by providing a drop-in replacement of torch_vision’s datasets and transforms
-    train_loader, val_loader = create_dataloaders()
     # CV Data Pipelines
     #
     # Computer Vision task often needs a data processing pipeline that sometimes constitutes a 
     # non-trivial part of the whole training pipeline. 
     # BigDL-Nano can accelerate computer vision data pipelines.
-    
+    #
+    # BigDL-Nano can accelerate computer vision data pipelines
+    # by providing a drop-in replacement of torch_vision’s datasets and transforms
+    #
+    train_loader, val_loader = create_dataloaders()
     trainer = Trainer(max_epochs=5)
     trainer.fit(model, train_dataloaders=train_loader)
     trainer.validate(model, dataloaders=val_loader)
