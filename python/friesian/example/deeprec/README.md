@@ -57,9 +57,9 @@ Please refer to the [README](https://github.com/alibaba/DeepRec/tree/main/modelz
 ```bash
 python wdl.py \
     --instances_per_node 3 \
-    --smartstaged False \
     --data_location /folder/path/to/train/and/test/files \
     --checkpoint /path/to/save/model/checkpoint \
+    --smartstaged False \
     --ev True \ 
     --emb_fusion False \
     --ev_filter counter
@@ -70,9 +70,9 @@ python wdl.py \
     --cluster_mode k8s \
     --num_nodes 3 \
     --master k8s://https://ip:port \
-    --smartstaged False \
     --data_location /folder/path/to/train/and/test/files \
     --checkpoint /path/to/save/model/checkpoint \
+    --smartstaged False \
     --ev True \
     --emb_fusion False \
     --ev_filter counter
