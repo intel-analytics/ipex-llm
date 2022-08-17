@@ -19,6 +19,7 @@ import os
 import random
 import sys
 from functools import reduce
+from xmlrpc.client import boolean
 
 import numpy as np
 import pyspark.sql.functions as F
@@ -154,7 +155,7 @@ class Table:
         cnt = self.df.count()
         return cnt
 
-    def broadcast(self):
+    def broadcast(self) -> None:
         """
         Marks the Table as small enough for use in broadcast join.
         """
@@ -216,9 +217,10 @@ class Table:
         return self._clone(self.df.withColumn("partitionId", spark_partition_id())
                            .groupBy("partitionId").count())
 
+    # TODO: UTs on `value` of boolean
     def fillna(
         self,
-        value: Union[int, float, str],
+        value: Union[int, float, str, boolean],
         columns: Optional[Union[List[str], str]]
     ) -> "FeatureTable":
         """
