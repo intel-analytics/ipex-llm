@@ -27,18 +27,8 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
-    --sgx-driver-memory)
-      SGX_DRIVER_MEM="$2"
-      shift # past argument
-      shift # past value
-      ;;
     --sgx-driver-jvm-memory)
       SGX_DRIVER_JVM_MEM="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    --sgx-executor-memory)
-      SGX_EXECUTOR_MEM="$2"
       shift # past argument
       shift # past value
       ;;
@@ -73,14 +63,12 @@ fi
 
 
 if [ "$SGX_ENABLED" = "true" ]; then
-  if [ "$SGX_DRIVER_MEM" = "" ] || [ "$SGX_DRIVER_JVM_MEM" = "" ] || [ "$SGX_EXECUTOR_MEM" = "" ] || [ "$SGX_EXECUTOR_JVM_MEM" = "" ] || [ "$SGX_LOG_LEVEL" = "" ]; then
-    echo "--sgx-driver-memory, --sgx-driver-jvm-memory, --sgx-executor-memory, --sgx-executor-jvm-memory, --sgx-log-level must be specified when sgx is enabled"
+  if [ "$SGX_DRIVER_JVM_MEM" = "" ] || [ "$SGX_EXECUTOR_JVM_MEM" = "" ] || [ "$SGX_LOG_LEVEL" = "" ]; then
+    echo "--sgx-driver-jvm-memory, --sgx-executor-jvm-memory, --sgx-log-level must be specified when sgx is enabled"
     exit 1
   else
     sgx_commands="--conf spark.kubernetes.sgx.enabled=$SGX_ENABLED \
-        --conf spark.kubernetes.sgx.driver.mem=$SGX_DRIVER_MEM \
         --conf spark.kubernetes.sgx.driver.jvm.mem=$SGX_DRIVER_JVM_MEM \
-        --conf spark.kubernetes.sgx.executor.mem=$SGX_EXECUTOR_MEM \
         --conf spark.kubernetes.sgx.executor.jvm.mem=$SGX_EXECUTOR_JVM_MEM \
         --conf spark.kubernetes.sgx.log.level=$SGX_LOG_LEVEL"
   fi
@@ -137,10 +125,6 @@ set -x
 spark_submit_command="${spark_submit_command} ${input_args} ${application_args}"
 echo "spark_submit_command $spark_submit_command"
 if [ "$SGX_ENABLED" == "true" ] && [ "$DEPLOY_MODE" != "cluster" ]; then
-    ./clean.sh
-    /graphene/Tools/argv_serializer bash -c "$spark_submit_command" > /ppml/trusted-big-data-ml/secured-argvs
-
-    ./init.sh
     SGX=1 ./pal_loader bash 2>&1 | tee bigdl-ppml-submit.log
 else
     $spark_submit_command 2>&1 | tee bigdl-ppml-submit.log

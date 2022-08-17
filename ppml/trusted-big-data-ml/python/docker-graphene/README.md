@@ -476,9 +476,7 @@ sudo docker run -itd \
     -e RUNTIME_TOTAL_EXECUTOR_CORES=4 \
     -e RUNTIME_DRIVER_CORES=4 \
     -e RUNTIME_DRIVER_MEMORY=1g \
-    -e SGX_DRIVER_MEM=32g \
     -e SGX_DRIVER_JVM_MEM=8g \
-    -e SGX_EXECUTOR_MEM=32g \
     -e SGX_EXECUTOR_JVM_MEM=12g \
     -e SGX_ENABLED=true \
     -e SGX_LOG_LEVEL=error \
@@ -530,9 +528,7 @@ Note: If you are running this client in trusted env, please skip this step. Then
         --conf spark.python.use.daemon=false \
         --conf spark.python.worker.reuse=false \
         --conf spark.kubernetes.sgx.enabled=$SGX_ENABLED \
-        --conf spark.kubernetes.sgx.driver.mem=$SGX_DRIVER_MEM \
         --conf spark.kubernetes.sgx.driver.jvm.mem=$SGX_DRIVER_JVM_MEM \
-        --conf spark.kubernetes.sgx.executor.mem=$SGX_EXECUTOR_MEM \
         --conf spark.kubernetes.sgx.executor.jvm.mem=$SGX_EXECUTOR_JVM_MEM \
         --conf spark.kubernetes.sgx.log.level=$SGX_LOG_LEVEL \
         --conf spark.authenticate=true \
@@ -601,9 +597,7 @@ bash bigdl-ppml-submit.sh \
         --master local[2] \
         --sgx-enabled true \
         --sgx-log-level error \
-        --sgx-driver-memory 64g \
         --sgx-driver-jvm-memory 12g \
-        --sgx-executor-memory 64g \
         --sgx-executor-jvm-memory 12g \
         --driver-memory 32g \
         --driver-cores 8 \
@@ -626,9 +620,7 @@ bash bigdl-ppml-submit.sh \
         --deploy-mode client \
         --sgx-enabled true \
         --sgx-log-level error \
-        --sgx-driver-memory 64g \
         --sgx-driver-jvm-memory 12g \
-        --sgx-executor-memory 64g \
         --sgx-executor-jvm-memory 12g \
         --driver-memory 32g \
         --driver-cores 8 \
@@ -652,9 +644,7 @@ bash bigdl-ppml-submit.sh \
         --deploy-mode cluster \
         --sgx-enabled true \
         --sgx-log-level error \
-        --sgx-driver-memory 64g \
         --sgx-driver-jvm-memory 12g \
-        --sgx-executor-memory 64g \
         --sgx-executor-jvm-memory 12g \
         --driver-memory 32g \
         --driver-cores 8 \
@@ -682,9 +672,7 @@ bigdl-ppml-submit.sh is used to simplify the steps in 1.4
 --executor-cores 8 \
 --sgx-enabled true \
 --sgx-log-level error \
---sgx-driver-memory 64g \
 --sgx-driver-jvm-memory 12g \
---sgx-executor-memory 64g \
 --sgx-executor-jvm-memory 12g \
 --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
 --num-executors 2 \
@@ -697,9 +685,7 @@ if you are want to enable sgx, don't forget to set the sgx-related arguments
 ```
 --sgx-enabled true \
 --sgx-log-level error \
---sgx-driver-memory 64g \
 --sgx-driver-jvm-memory 12g \
---sgx-executor-memory 64g \
 --sgx-executor-jvm-memory 12g \
 ```
 you can update the application arguments to anything you want to run
@@ -744,9 +730,7 @@ The following parameters enable spark executor running on SGX.
 The following is a recommended configuration in client mode.
 ```bash
     --conf spark.kubernetes.sgx.enabled=true
-    --conf spark.kubernetes.sgx.driver.mem=32g
     --conf spark.kubernetes.sgx.driver.jvm.mem=10g
-    --conf spark.kubernetes.sgx.executor.mem=32g
     --conf spark.kubernetes.sgx.executor.jvm.mem=12g
     --conf spark.kubernetes.sgx.log.level=error
     --conf spark.driver.memory=10g
@@ -755,9 +739,7 @@ The following is a recommended configuration in client mode.
 The following is a recommended configuration in cluster mode.
 ```bash
     --conf spark.kubernetes.sgx.enabled=true
-    --conf spark.kubernetes.sgx.driver.mem=32g
     --conf spark.kubernetes.sgx.driver.jvm.mem=10g
-    --conf spark.kubernetes.sgx.executor.mem=32g
     --conf spark.kubernetes.sgx.executor.jvm.mem=12g
     --conf spark.kubernetes.sgx.log.level=error
     --conf spark.driver.memory=1g
