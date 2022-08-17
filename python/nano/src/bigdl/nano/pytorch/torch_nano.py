@@ -52,7 +52,6 @@ class TorchNano(LightningLite):
 
     def __init__(self, num_processes: int = 1,
                  use_ipex: bool = False,
-                 enable_bf16: bool = False,
                  strategy: str = "subprocess",
                  *args, **kwargs) -> None:
         """
@@ -66,13 +65,25 @@ class TorchNano(LightningLite):
         """
         self.num_processes = num_processes
         self.use_ipex = use_ipex
-        self.enable_bf16 = enable_bf16
+        self.enable_bf16 = self.use_ipex and kwargs.get('precision', None) == 'bf16'
 
-        if TORCH_VERSION_LESS_1_11 and use_ipex and not check_avx512():
-            warning("Enable ipex<=1.10 in a cpu instruction set"
-                    " without avx512 will crash."
-                    "Fall back to regular pytorch.")
-            self.use_ipex = False
+        # Set 'precision' for strategy without precision_plugin,
+        # Strategy > accelerator/precision/plugin
+        # torch must be greater or equal to 1.10 to use native amp for bfloat16 precision
+        if TORCH_VERSION_LESS_1_10 and enable_bf16:
+            kwargs['precision'] = 32
+
+        if self.use_ipex and not check_avx512():
+            if TORCH_VERSION_LESS_1_11:
+                warning("Enable ipex<=1.10 in a cpu instruction set"
+                        " without avx512 will crash."
+                        "Fall back to regular pytorch.")
+                self.use_ipex = False
+            elif enable_bf16:
+                warning("Enable IPEX bfloat16 in a cpu instruction set"
+                        " without avx512 will crash. "
+                        "Will use PyTorch Lightning Native AMP for BFloat16 precision")
+                enable_bf16 = False
 
         if self.num_processes == 1:
             if self.use_ipex:

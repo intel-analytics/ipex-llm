@@ -107,7 +107,7 @@ class Trainer(pl.Trainer):
 
         # Set 'precision' for strategy without precision_plugin,
         # Strategy > accelerator/precision/plugin
-        # torch must be greater or equal to 1.10 to use natice amp for bfloat16 precision
+        # torch must be greater or equal to 1.10 to use native amp for bfloat16 precision
         if TORCH_VERSION_LESS_1_10 and enable_bf16:
             kwargs['precision'] = 32
 

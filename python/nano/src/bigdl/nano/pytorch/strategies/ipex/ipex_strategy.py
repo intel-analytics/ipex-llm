@@ -27,7 +27,8 @@ from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_12
 import pytorch_lightning as pl
 from pytorch_lightning.strategies import SingleDeviceStrategy
 from pytorch_lightning.accelerators.accelerator import Accelerator
-from pytorch_lightning.plugins.precision import PrecisionPlugin, NativeMixedPrecisionPlugin
+from pytorch_lightning.plugins.precision import PrecisionPlugin, MixedPrecisionPlugin
+from pytorch_lightning.utilities import AMPType
 
 from bigdl.nano.utils.log4Error import invalidInputError
 import intel_extension_for_pytorch as ipex
@@ -78,8 +79,11 @@ class IPEXStrategy(SingleDeviceStrategy):
             invalidInputError(False, "Ipex does not support more than one optimizers.")
 
 
-class IPEXBF16Precision(PrecisionPlugin):
+class IPEXBF16Precision(MixedPrecisionPlugin):
     """Create Precision Plugin for IPEX BFloat16."""
+
+    backend: "AMPType" = AMPType.NATIVE
+    precision: Union[str, int] = 'bf16'
 
     @contextmanager
     def forward_context(self):
