@@ -21,7 +21,6 @@ import com.intel.analytics.bigdl.friesian.nearline.feature.FeatureInitializer;
 import com.intel.analytics.bigdl.friesian.nearline.recall.RecallInitializer;
 import com.intel.analytics.bigdl.friesian.nearline.utils.NearlineUtils;
 import com.intel.analytics.bigdl.friesian.serving.feature.FeatureServer;
-import com.intel.analytics.bigdl.friesian.serving.feature.utils.LettuceUtils;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderGrpc;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto;
 import com.intel.analytics.bigdl.friesian.serving.ranking.RankingServer;
@@ -39,24 +38,24 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Field;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import static com.intel.analytics.bigdl.friesian.JavaTestUtils.destroyLettuceUtilsInstance;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class RecommenderServerTest {
     private static final Logger logger = LogManager.getLogger(RecommenderServerTest.class.getName());
-    private static RecommenderGrpc.RecommenderBlockingStub blockingStub;
+    private static RecommenderGrpc.RecommenderBlockingStub recommenderBlockingStub;
     private static ManagedChannel channel;
     private static Row userDataRow;
+    private static FeatureServer featureVecServer;
+    private static FeatureServer featureServer;
+    private static RecallServer recallServer;
+    private static RankingServer rankingServer;
+    private static RecommenderServer recommenderServer;
 
-    private static void destroyLettuceUtilsInstance() throws NoSuchFieldException, IllegalAccessException {
-        Field field = LettuceUtils.class.getDeclaredField("instance");
-        field.setAccessible(true);
-        field.set(null, null);
-    }
 
     /**
      * Sets up the test fixture.
@@ -78,14 +77,14 @@ public class RecommenderServerTest {
 
         RecallInitializer.main(new String[]{"-c", configDir + "/config_recall_init.yaml"});
 
-        FeatureServer featureVecServer = new FeatureServer(
+        featureVecServer = new FeatureServer(
                 new String[]{"-c", configDir + "/config_feature_vec_server.yaml"});
         featureVecServer.parseConfig();
         featureVecServer.build();
         featureVecServer.start();
         destroyLettuceUtilsInstance();
 
-        FeatureServer featureServer = new FeatureServer(
+        featureServer = new FeatureServer(
                 new String[]{"-c", configDir
                         + "/config_feature_server.yaml"});
         featureServer.parseConfig();
@@ -93,17 +92,17 @@ public class RecommenderServerTest {
         featureServer.start();
         destroyLettuceUtilsInstance();
 
-        RecallServer recallServer = new RecallServer(new String[]{"-c", configDir + "/config_recall_server.yaml"});
+        recallServer = new RecallServer(new String[]{"-c", configDir + "/config_recall_server.yaml"});
         recallServer.parseConfig();
         recallServer.build();
         recallServer.start();
 
-        RankingServer rankingServer = new RankingServer(new String[]{"-c", configDir + "/config_ranking_server.yaml"});
+        rankingServer = new RankingServer(new String[]{"-c", configDir + "/config_ranking_server.yaml"});
         rankingServer.parseConfig();
         rankingServer.build();
         rankingServer.start();
 
-        RecommenderServer recommenderServer = new RecommenderServer(
+        recommenderServer = new RecommenderServer(
                 new String[]{"-c", configDir + "/config_recommender_server.yaml"});
         recommenderServer.parseConfig();
         recommenderServer.build();
@@ -111,7 +110,7 @@ public class RecommenderServerTest {
 
         channel = ManagedChannelBuilder.forAddress(
                 "localhost", Utils.helper().getServicePort()).usePlaintext().build();
-        blockingStub = RecommenderGrpc.newBlockingStub(channel);
+        recommenderBlockingStub = RecommenderGrpc.newBlockingStub(channel);
     }
 
     /**
@@ -121,12 +120,18 @@ public class RecommenderServerTest {
     @AfterAll
     public static void tearDown() throws InterruptedException {
         channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
+        featureServer.stop();
+        featureVecServer.stop();
+        recallServer.stop();
+        rankingServer.stop();
+        recommenderServer.stop();
     }
 
     @Test
     public void testGetRecommendIDs() {
-        RecommenderProto.RecommendIDProbs result = blockingStub.getRecommendIDs(RecommenderProto.RecommendRequest
-                .newBuilder().addID(userDataRow.getInt(0)).setRecommendNum(3).setCandidateNum(10).build());
+        RecommenderProto.RecommendIDProbs result = recommenderBlockingStub.getRecommendIDs(
+                RecommenderProto.RecommendRequest
+                        .newBuilder().addID(userDataRow.getInt(0)).setRecommendNum(3).setCandidateNum(10).build());
         assertEquals(result.getIDProbList(0).getIDCount(), 3);
         logger.info("Got Recommend IDs" + result.getIDProbListList().toString());
     }
@@ -138,7 +143,7 @@ public class RecommenderServerTest {
 
         RecommenderProto.ServerMessage msg = null;
         try {
-            msg = blockingStub.getMetrics(request);
+            msg = recommenderBlockingStub.getMetrics(request);
         } catch (StatusRuntimeException e) {
             logger.error("RPC failed:" + e.getStatus());
         }
@@ -152,7 +157,7 @@ public class RecommenderServerTest {
         Empty request = Empty.newBuilder().build();
         Empty empty = null;
         try {
-            empty = blockingStub.resetMetrics(request);
+            empty = recommenderBlockingStub.resetMetrics(request);
         } catch (StatusRuntimeException e) {
             logger.error("RPC failed: " + e.getStatus().toString());
         }
@@ -165,7 +170,7 @@ public class RecommenderServerTest {
 
         RecommenderProto.ServerMessage msg = null;
         try {
-            msg = blockingStub.getClientMetrics(request);
+            msg = recommenderBlockingStub.getClientMetrics(request);
         } catch (StatusRuntimeException e) {
             logger.error("RPC failed:" + e.getStatus());
         }

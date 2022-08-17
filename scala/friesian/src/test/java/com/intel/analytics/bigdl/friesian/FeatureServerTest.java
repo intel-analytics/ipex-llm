@@ -45,15 +45,17 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import static com.intel.analytics.bigdl.friesian.JavaTestUtils.destroyLettuceUtilsInstance;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
 public class FeatureServerTest {
     private static final Logger logger = LogManager.getLogger(FeatureServerTest.class.getName());
-    private static FeatureBlockingStub blockingStub;
+    private static FeatureBlockingStub featureBlockingStub;
     private static ManagedChannel channel;
     private static List<Row> itemRowList = null, userRowList = null;
+    private static FeatureServer featureServer;
 
     public static Seq<String> convertListToSeq(String[] inputArray) {
         return JavaConverters.asScalaIteratorConverter(Arrays.asList(inputArray).iterator()).asScala().toSeq();
@@ -69,6 +71,7 @@ public class FeatureServerTest {
         String configDir = Objects.requireNonNull(
                 FeatureServer.class.getClassLoader().getResource("testConfig")).getPath();
         FeatureInitializer.main(new String[]{"-c", configDir + "/config_feature_init.yaml"});
+        destroyLettuceUtilsInstance();
 
         SparkSession sparkSession = SparkSession.builder().getOrCreate();
         if (NearlineUtils.helper().initialUserDataPath() != null) {
@@ -85,13 +88,16 @@ public class FeatureServerTest {
                     convertListToSeq(NearlineUtils.helper().itemFeatureColArr()));
             itemRowList = itemDataset.collectAsList();
         }
-        FeatureServer featureServer = new FeatureServer(new String[]{"-c", configDir + "/config_feature_server.yaml"});
+
+        featureServer = new FeatureServer(new String[]{"-c", configDir + "/config_feature_server.yaml"});
         featureServer.parseConfig();
         featureServer.build();
         featureServer.start();
+        destroyLettuceUtilsInstance();
+
         channel = ManagedChannelBuilder.forAddress(
                 "localhost", Utils.helper().getServicePort()).usePlaintext().build();
-        blockingStub = FeatureGrpc.newBlockingStub(channel);
+        featureBlockingStub = FeatureGrpc.newBlockingStub(channel);
     }
 
     /**
@@ -101,6 +107,7 @@ public class FeatureServerTest {
     @AfterAll
     public static void tearDown() throws InterruptedException {
         channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
+        featureServer.stop();
     }
 
 
@@ -112,7 +119,7 @@ public class FeatureServerTest {
         }
         FeatureProto.Features features = null;
         try {
-            features = blockingStub.getUserFeatures(builder.build());
+            features = featureBlockingStub.getUserFeatures(builder.build());
         } catch (StatusRuntimeException e) {
             logger.error("RPC failed: " + e.getStatus());
         }
@@ -136,7 +143,7 @@ public class FeatureServerTest {
         }
         FeatureProto.Features features = null;
         try {
-            features = blockingStub.getItemFeatures(builder.build());
+            features = featureBlockingStub.getItemFeatures(builder.build());
         } catch (StatusRuntimeException e) {
             logger.error("RPC failed: " + e.getStatus());
         }
@@ -158,7 +165,7 @@ public class FeatureServerTest {
 
         FeatureProto.ServerMessage msg = null;
         try {
-            msg = blockingStub.getMetrics(request);
+            msg = featureBlockingStub.getMetrics(request);
         } catch (StatusRuntimeException e) {
             logger.error("RPC failed:" + e.getStatus());
         }
@@ -172,7 +179,7 @@ public class FeatureServerTest {
         Empty request = Empty.newBuilder().build();
         Empty empty = null;
         try {
-            empty = blockingStub.resetMetrics(request);
+            empty = featureBlockingStub.resetMetrics(request);
         } catch (StatusRuntimeException e) {
             logger.error("RPC failed: " + e.getStatus().toString());
         }

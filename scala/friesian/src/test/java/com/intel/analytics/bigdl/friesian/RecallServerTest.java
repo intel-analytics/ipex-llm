@@ -39,16 +39,19 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import static com.intel.analytics.bigdl.friesian.JavaTestUtils.destroyLettuceUtilsInstance;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class RecallServerTest {
     private static final Logger logger = LogManager.getLogger(RecallServerTest.class.getName());
-    private static RecallGrpc.RecallBlockingStub blockingStub;
+    private static RecallGrpc.RecallBlockingStub recallBlockingStub;
     private static ManagedChannel channel;
     private static int insertedItemID;
     private static Row userDataRow;
+    private static FeatureServer featureVecServer;
+    private static RecallServer recallServer;
 
 
     /**
@@ -61,23 +64,27 @@ public class RecallServerTest {
         String configDir = Objects.requireNonNull(
                 RecallServerTest.class.getClassLoader().getResource("testConfig")).getPath();
         FeatureInitializer.main(new String[]{"-c", configDir + "/config_feature_vec_init.yaml"});
+        destroyLettuceUtilsInstance();
+
         SparkSession sparkSession = SparkSession.builder().getOrCreate();
         userDataRow = sparkSession.read().parquet(NearlineUtils.helper().getInitialUserDataPath()).first();
         RecallInitializer.main(new String[]{"-c", configDir + "/config_recall_init.yaml"});
 
-        FeatureServer featureVecServer = new FeatureServer(
+        featureVecServer = new FeatureServer(
                 new String[]{"-c", configDir + "/config_feature_vec_server.yaml"});
         featureVecServer.parseConfig();
         featureVecServer.build();
         featureVecServer.start();
+        destroyLettuceUtilsInstance();
 
-        RecallServer recallServer = new RecallServer(new String[]{"-c", configDir + "/config_recall_server.yaml"});
+
+        recallServer = new RecallServer(new String[]{"-c", configDir + "/config_recall_server.yaml"});
         recallServer.parseConfig();
         recallServer.build();
         recallServer.start();
         channel = ManagedChannelBuilder.forAddress(
                 "localhost", Utils.helper().getServicePort()).usePlaintext().build();
-        blockingStub = RecallGrpc.newBlockingStub(channel);
+        recallBlockingStub = RecallGrpc.newBlockingStub(channel);
     }
 
     /**
@@ -87,6 +94,8 @@ public class RecallServerTest {
     @AfterAll
     public static void tearDown() throws InterruptedException {
         channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
+        featureVecServer.stop();
+        recallServer.stop();
     }
 
     @Test
@@ -95,7 +104,7 @@ public class RecallServerTest {
         insertedItemID = (int) (Math.random() * 1000) + 30000;
         RecallProto.Item.Builder itemBuilder = RecallProto.Item.newBuilder().setItemID(insertedItemID);
         Arrays.stream(((DenseVector) userDataRow.get(1)).toArray()).forEach(x -> itemBuilder.addItemVector((float) x));
-        Empty empty = blockingStub.addItem(itemBuilder.build());
+        Empty empty = recallBlockingStub.addItem(itemBuilder.build());
         assertNotNull(empty);
     }
 
@@ -103,7 +112,7 @@ public class RecallServerTest {
     @Order(2)
     public void testSearchCandidates() {
         RecallProto.Query query = RecallProto.Query.newBuilder().setUserID(userDataRow.getInt(0)).setK(4).build();
-        RecallProto.Candidates itemIDs = blockingStub.searchCandidates(query);
+        RecallProto.Candidates itemIDs = recallBlockingStub.searchCandidates(query);
         assertEquals(itemIDs.getCandidate(0), insertedItemID);
     }
 
@@ -114,7 +123,7 @@ public class RecallServerTest {
 
         RecallProto.ServerMessage msg = null;
         try {
-            msg = blockingStub.getMetrics(request);
+            msg = recallBlockingStub.getMetrics(request);
         } catch (StatusRuntimeException e) {
             logger.error("RPC failed:" + e.getStatus());
         }
@@ -128,7 +137,7 @@ public class RecallServerTest {
         Empty request = Empty.newBuilder().build();
         Empty empty = null;
         try {
-            empty = blockingStub.resetMetrics(request);
+            empty = recallBlockingStub.resetMetrics(request);
         } catch (StatusRuntimeException e) {
             logger.error("RPC failed: " + e.getStatus().toString());
         }
