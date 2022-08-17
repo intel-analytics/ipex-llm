@@ -3,6 +3,9 @@ libos.entrypoint = "file:$(EXECDIR)/bash"
 
 loader.log_level = "$(G_LOG_LEVEL)"
 
+loader.insecure__use_host_env = 1
+loader.env.LD_PRELOAD  = ""
+
 loader.insecure_disable_aslr = 1
 loader.argv_src_file = "file:/ppml/trusted-big-data-ml/secured-argvs"
 sgx.trusted_files.trusted_argv = "file:/ppml/trusted-big-data-ml/secured-argvs"

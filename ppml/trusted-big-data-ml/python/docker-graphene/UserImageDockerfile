@@ -1,0 +1,27 @@
+ARG BIGDL_IMAGE_NAME
+ARG BIGDL_IMAGE_VERSION
+
+# stage 1. make SGX and sign in a temp image
+FROM $BIGDL_IMAGE_NAME:$BIGDL_IMAGE_VERSION as temp
+
+ADD ./enclave-key.pem /graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem
+RUN cd /ppml/trusted-big-data-ml && \
+    echo LOCAL_IP:$LOCAL_IP && \
+    echo SGX_MEM_SIZE:$SGX_MEM_SIZE && \
+    echo SGX_LOG_LEVEL:$SGX_LOG_LEVEL && \
+    make SGX=1 GRAPHENEDIR=/graphene THIS_DIR=/ppml/trusted-big-data-ml  SPARK_LOCAL_IP=$LOCAL_IP SPARK_USER=root G_SGX_SIZE=$SGX_MEM_SIZE G_LOG_LEVEL=$SGX_LOG_LEVEL && \
+    rm /graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem
+
+# stage 2. copy sign etc. files from temp into bigdl base image
+FROM $BIGDL_IMAGE_NAME:$BIGDL_IMAGE_VERSION
+
+COPY --from=temp /ppml/trusted-big-data-ml/bash.manifest.sgx /ppml/trusted-big-data-ml/bash.manifest.sgx
+COPY --from=temp /ppml/trusted-big-data-ml/bash.token /ppml/trusted-big-data-ml/bash.token
+COPY --from=temp /ppml/trusted-big-data-ml/bash.sig /ppml/trusted-big-data-ml/bash.sig
+COPY --from=temp /ppml/trusted-big-data-ml/bash.manifest /ppml/trusted-big-data-ml/bash.manifest
+
+RUN ln -s /graphene/Runtime/pal_loader /ppml/trusted-big-data-ml/pal_loader
+
+WORKDIR /ppml/trusted-big-data-ml
+
+ENTRYPOINT [ "/opt/entrypoint.sh" ]
