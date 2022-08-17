@@ -26,13 +26,9 @@ import pytorch_lightning as pl
 from os.path import split, join, realpath
 import cv2
 import os
-from logging import warning
 from PIL import Image
-import urllib.request
 import os
-import stat
 
-LIB_URL = "https://github.com/leonardozcm/libjpeg-turbo/releases/download/2.1.1/libturbojpeg.so.0.2.0"
 # These images in the pet dataset that don't have a proper format. 
 # Some of them are actually .png files instead .jpg, 
 # even though they are in .jpg extension.
@@ -50,26 +46,6 @@ SPECIAL_IMAGES = [
     "/tmp/data/oxford-iiit-pet/images/chihuahua_121.jpg",
     "/tmp/data/oxford-iiit-pet/images/beagle_116.jpg",
 ]
-def download_libs(url: str):
-    libs_dir = "/tmp/libs"
-    if not os.path.exists(libs_dir):
-        os.makedirs(libs_dir, exist_ok=True)
-    libso_file_name = url.split('/')[-1]
-    libso_file = os.path.join(libs_dir, libso_file_name)
-    if not os.path.exists(libso_file):
-        print('downloading libturbojpeg.so.0.2.0.....')
-        urllib.request.urlretrieve(url, libso_file)
-    st = os.stat(libso_file)
-    os.chmod(libso_file, st.st_mode | stat.S_IEXEC)
-
-_turbo_path = realpath(join(split(realpath(__file__))[0],
-                            "/tmp/libs/libturbojpeg.so.0.2.0"))
-
-if not os.path.exists(local_libturbo_path):
-    warning("libturbojpeg.so.0 not found in bigdl-nano, try to load from system.")
-    download_libs(LIB_URL)
-    local_libturbo_path = _turbo_path
-
 class OxfordIIITPet(torchvision.datasets.OxfordIIITPet):
     def __init__(
         self,
