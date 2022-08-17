@@ -1088,7 +1088,8 @@ def data_processing(args):
     train_file = args.data_location + '/train.csv'
     test_file = args.data_location + '/eval.csv'
     if (not os.path.exists(train_file)) or (not os.path.exists(test_file)):
-        invalidInputError(False, "Dataset does not exist in the given data_location.")
+        print("Dataset does not exist in the given data_location.")
+        sys.exit()
 
     train_tbl = FeatureTable.read_csv(train_file, names=TRAIN_DATA_COLUMNS)
     test_tbl = FeatureTable.read_csv(test_file, names=TRAIN_DATA_COLUMNS)

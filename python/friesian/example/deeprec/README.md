@@ -35,7 +35,8 @@ conda create --name bigdl python=3.7
 ```bash
 conda activate bigdl
 
-pip install --pre --upgrade bigdl-friesian-spark3[train]
+pip install --pre --upgrade bigdl-orca-spark3[ray]
+pip install --pre --upgrade bigdl-friesian-spark3
 pip install protobuf==3.19.4
 pip install numpy==1.18.5
 ```
