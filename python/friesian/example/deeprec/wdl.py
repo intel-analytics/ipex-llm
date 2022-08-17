@@ -873,20 +873,20 @@ class RayDeepRecCluster:
             "worker": worker_ips
         }
         print(cluster_info)
-        ps_chief_refs = [worker.setup_distributed.remote(cluster_info, self.protocol)
-                         for worker in self.remote_ps]
-        ps_chief_refs += [self.remote_workers[0]
-                              .setup_distributed.remote(cluster_info, self.protocol)]
-        # Use ray.wait since ps server.join process won't terminate by itself and
-        # thus using ray.get on all results would hang.
-        # By using ray.wait, we wait for the chief to finish the distributed setting and proceed.
-        # In this case, we don't need to manually kill the ps process at the very end.
-        # This also tries to make sure that ps and chief is launched earlier than ordinary workers.
-        finished, unfinished = ray.wait(ps_chief_refs, num_returns=1)
-        print(ray.get(finished))
-        worker_refs = [worker.setup_distributed.remote(cluster_info, self.protocol)
-                       for worker in self.remote_workers[1:]]
-        print(ray.get(worker_refs))
+        # ps_chief_refs = [worker.setup_distributed.remote(cluster_info, self.protocol)
+        #                  for worker in self.remote_ps]
+        # ps_chief_refs += [self.remote_workers[0]
+        #                       .setup_distributed.remote(cluster_info, self.protocol)]
+        # # Use ray.wait since ps server.join process won't terminate by itself and
+        # # thus using ray.get on all results would hang.
+        # # By using ray.wait, we wait for the chief to finish the distributed setting and proceed.
+        # # In this case, we don't need to manually kill the ps process at the very end.
+        # # This also tries to make sure that ps and chief is launched earlier than ordinary workers.
+        # finished, unfinished = ray.wait(ps_chief_refs, num_returns=1)
+        # print(ray.get(finished))
+        # worker_refs = [worker.setup_distributed.remote(cluster_info, self.protocol)
+        #                for worker in self.remote_workers[1:]]
+        # print(ray.get(worker_refs))
 
 
 class RayWorker:
@@ -1188,6 +1188,6 @@ config = vars(args)
 config.update(params)
 
 cluster = RayDeepRecCluster(config, args.instances_per_node, args.num_ps)
-cluster.fit(train_df, test_df, args.in_memory, FEATURE_COLUMNS, LABEL_COLUMN)
+# cluster.fit(train_df, test_df, args.in_memory, FEATURE_COLUMNS, LABEL_COLUMN)
 
 stop_orca_context()
