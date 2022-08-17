@@ -15,16 +15,14 @@
 
 import torch
 import torchvision
-from turbojpeg import TurboJPEG, TJPF_GRAY
+from turbojpeg import TurboJPEG
 from typing import Sequence
 from typing import Any, Callable, Optional, Union, Tuple
 from torch.utils.data.dataloader import DataLoader
 from torchvision.models import resnet18
 from bigdl.nano.pytorch import Trainer
-from torchmetrics import Accuracy
+from bigdl.nano.pytorch.vision.datasets.datasets import local_libturbo_path
 import pytorch_lightning as pl
-from bigdl.nano.pytorch.vision import transforms
-from torchvision.datasets.utils import download_and_extract_archive
 from os.path import split, join, realpath
 import cv2
 import os
@@ -63,14 +61,15 @@ def download_libs(url: str):
         urllib.request.urlretrieve(url, libso_file)
     st = os.stat(libso_file)
     os.chmod(libso_file, st.st_mode | stat.S_IEXEC)
-local_libturbo_path = None
+
 _turbo_path = realpath(join(split(realpath(__file__))[0],
                             "/tmp/libs/libturbojpeg.so.0.2.0"))
 
-if not os.path.exists(_turbo_path):
+if not os.path.exists(local_libturbo_path):
+    warning("libturbojpeg.so.0 not found in bigdl-nano, try to load from system.")
     download_libs(LIB_URL)
-local_libturbo_path = _turbo_path
-    
+    local_libturbo_path = _turbo_path
+
 class OxfordIIITPet(torchvision.datasets.OxfordIIITPet):
     def __init__(
         self,
@@ -160,6 +159,7 @@ class MyLightningModule(pl.LightningModule):
 
 
 def create_dataloaders():
+    from bigdl.nano.pytorch.vision import transforms
     train_transform = transforms.Compose([transforms.Resize(256),
                                           transforms.RandomCrop(224),
                                           transforms.RandomHorizontalFlip(),
@@ -192,6 +192,8 @@ def create_dataloaders():
 if __name__ == "__main__":
     # get dataset
     model = MyLightningModule()
+    # BigDL-Nano can accelerate computer vision data pipelines
+    # by providing a drop-in replacement of torch_vision’s datasets and transforms
     train_loader, val_loader = create_dataloaders()
     # CV Data Pipelines
     #
