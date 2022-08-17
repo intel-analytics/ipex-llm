@@ -496,7 +496,7 @@ class TestTFEstimator(TestCase):
         finally:
             shutil.rmtree(temp_dir)
 
-    def test_save_load_model(self):
+    def test_save_load_model_h5(self):
         sc = OrcaContext.get_spark_context()
         rdd = sc.range(0, 100)
         spark = OrcaContext.get_spark_session()
@@ -528,22 +528,71 @@ class TestTFEstimator(TestCase):
 
             print("start saving")
             trainer.save(os.path.join(temp_dir, "a.h5"))
-            trainer.load(os.path.join(temp_dir, "a.h5"))
-            trainer.save(os.path.join(temp_dir, "saved_model"))
-            trainer.load(os.path.join(temp_dir, "saved_model"))
-            # continous training
-            res = trainer.fit(df, epochs=10, batch_size=4, steps_per_epoch=25,
-                              feature_cols=["feature"],
-                              label_cols=["label"],
-                              validation_data=df,
-                              validation_steps=1,
-                              initial_epoch=5)
+
             res = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
                                    label_cols=["label"])
             print("validation result: ", res)
 
-            res = trainer.predict(df, feature_cols=["feature"]).collect()
-            print("predict result: ", res)
+            before_res = trainer.predict(df, feature_cols=["feature"]).collect()
+            expect_res = np.concatenate([part["prediction"] for part in before_res])
+
+            trainer.load(os.path.join(temp_dir, "a.h5"))
+            
+            # continous predicting
+            after_res = trainer.predict(df, feature_cols=["feature"]).collect()
+            pred_res = np.concatenate([part["prediction"] for part in after_res])
+
+            assert np.array_equal(expect_res, pred_res)
+        finally:
+            shutil.rmtree(temp_dir)
+
+    def test_save_load_model_savemodel(self):
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.range(0, 100)
+        spark = OrcaContext.get_spark_session()
+
+        from pyspark.ml.linalg import DenseVector
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+
+        config = {
+            "lr": 0.2
+        }
+
+        try:
+            temp_dir = tempfile.mkdtemp()
+
+            trainer = Estimator.from_keras(
+                model_creator=model_creator,
+                verbose=True,
+                config=config,
+                workers_per_node=2,
+                backend="spark",
+                model_dir=temp_dir)
+
+            res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
+                              feature_cols=["feature"],
+                              label_cols=["label"],
+                              validation_data=df,
+                              validation_steps=1)
+
+            print("start saving")
+            trainer.save(os.path.join(temp_dir, "saved_model"))
+
+            res = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
+                                   label_cols=["label"])
+            print("validation result: ", res)
+
+            before_res = trainer.predict(df, feature_cols=["feature"]).collect()
+            expect_res = np.concatenate([part["prediction"] for part in before_res])
+
+            trainer.load(os.path.join(temp_dir, "saved_model"))
+            
+            # continous predicting
+            after_res = trainer.predict(df, feature_cols=["feature"]).collect()
+            pred_res = np.concatenate([part["prediction"] for part in after_res])
+
+            assert np.array_equal(expect_res, pred_res)
         finally:
             shutil.rmtree(temp_dir)
 
