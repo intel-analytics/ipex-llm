@@ -902,7 +902,9 @@ class FeatureTable(Table):
         return cls(Table._read_parquet(paths))
 
     @classmethod
-    def read_json(cls, paths: Union[str, List[str]], cols: Union[str, List[str]]=None) -> "FeatureTable":
+    def read_json(cls,
+                  paths: Union[str, List[str]],
+                  cols: Union[str, List[str]]=None) -> "FeatureTable":
         """
         Loads json files as a FeatureTable.
 
@@ -920,7 +922,7 @@ class FeatureTable(Table):
         paths: Union[str, List[str]],
         delimiter: str = ",",
         header: bool = False,
-        names: Optional[Union[str, List[str]]] = None,
+        names: Optional[Union[str, List[str]]]=None,
         dtype: Optional[Union[List[str], str, Dict[str, str]]]=None
     ) -> "FeatureTable":
         """
@@ -1049,7 +1051,9 @@ class FeatureTable(Table):
 
         return FeatureTable(data_df)
 
-    def filter_by_frequency(self, columns: Union[str, List[str]], min_freq: int = 2) -> "FeatureTable":
+    def filter_by_frequency(self,
+                            columns: Union[str, List[str]],
+                            min_freq: int = 2) -> "FeatureTable":
         """
         Filter the FeatureTable by the given minimum frequency on the target columns.
 
@@ -1699,7 +1703,7 @@ class FeatureTable(Table):
     def join(
         self,
         table: "FeatureTable",
-        on: Optional[Union[str, List[str]]] = None,
+        on: Optional[Union[str, List[str]]]=None,
         how: str = "inner",
         lsuffix: Optional[str] = None,
         rsuffix: Optional[str] = None
@@ -1758,8 +1762,8 @@ class FeatureTable(Table):
 
     def reindex(
         self,
-        columns: Union[str, List[str]] = [],
-        index_tbls: Union["FeatureTable", List["FeatureTable"]] = []
+        columns: Union[str, List[str]]=[],
+        index_tbls: Union["FeatureTable", List["FeatureTable"]]=[]
     ) -> "FeatureTable":
         """
         Replace the value using index_dicts for each col in columns, set 0 for default
@@ -1787,7 +1791,7 @@ class FeatureTable(Table):
     def gen_reindex_mapping(
         self,
         columns: List[str] = [],
-        freq_limit: Optional[Union[int, Dict[str,int]]] = 10
+        freq_limit: Optional[Union[int, Dict[str, int]]]=10
     ) -> List["FeatureTable"]:
         """
         Generate a mapping from old index to new one based on popularity count on descending order
@@ -1905,7 +1909,7 @@ class FeatureTable(Table):
         fold_col: str = "__fold__",
         drop_cat: bool = False,
         drop_fold: bool = True,
-        out_cols: Optional[Union[str, List[str], List[List[str]]]] = None
+        out_cols: Optional[Union[str, List[str], List[List[str]]]]=None
     ) -> Tuple["FeatureTable", List["TargetCode"]]:
         """
         For each categorical column or column group in cat_cols, calculate the mean of target
@@ -2112,7 +2116,7 @@ class FeatureTable(Table):
     def encode_target(
         self,
         targets: Union["TargetCode", List["TargetCode"]],
-        target_cols: Union[List[str], str] = None,
+        target_cols: Union[List[str], str]=None,
         drop_cat: bool = True
     ) -> "FeatureTable":
         """
@@ -2250,7 +2254,7 @@ class FeatureTable(Table):
         columns: Union[List[str], str],
         bins: Union[Dict[str, List[int]], int, List[int]],
         labels: Optional[Union[List[str], Dict[str, List[str]]]]=None,
-        out_cols: Optional[Union[List[str], str]] = None,
+        out_cols: Optional[Union[List[str], str]]=None,
         drop: bool = True
     ) -> "FeatureTable":
         """
