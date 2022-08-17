@@ -49,7 +49,7 @@ class MyNano(TorchNano):
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
         loss_func = nn.CrossEntropyLoss()
         if optimizer_supported:
-            optimizer = torch.optim.SGD(model.parameters, lr=0.01)
+            optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
         else:
             optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
         train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
@@ -66,7 +66,6 @@ class MyNano(TorchNano):
                 loss = loss_func(model(X), y)
                 self.backward(loss)
                 optimizer.step()
-                
                 total_loss += loss.sum()
                 num += 1
             print(f'avg_loss: {total_loss / num}')

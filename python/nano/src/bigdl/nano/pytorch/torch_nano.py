@@ -59,7 +59,6 @@ class TorchNano(LightningLite):
 
         :param num_processes: number of processes in distributed training, defaults to 1
         :param use_ipex: whether use ipex acceleration, defaults to False
-        :param enable_bf16: whether use bf16 acceleration, defaults to False
         :param strategy: use which backend in distributed mode, defaults to "subprocess", \
             now avaiable strategies are 'spawn', 'subprocess' and 'ray'
         """
@@ -70,7 +69,7 @@ class TorchNano(LightningLite):
         # Set 'precision' for strategy without precision_plugin,
         # Strategy > accelerator/precision/plugin
         # torch must be greater or equal to 1.10 to use native amp for bfloat16 precision
-        if TORCH_VERSION_LESS_1_10 and enable_bf16:
+        if TORCH_VERSION_LESS_1_10 and self.enable_bf16:
             kwargs['precision'] = 32
 
         if self.use_ipex and not check_avx512():
@@ -79,11 +78,11 @@ class TorchNano(LightningLite):
                         " without avx512 will crash."
                         "Fall back to regular pytorch.")
                 self.use_ipex = False
-            elif enable_bf16:
+            elif self.enable_bf16:
                 warning("Enable IPEX bfloat16 in a cpu instruction set"
                         " without avx512 will crash. "
                         "Will use PyTorch Lightning Native AMP for BFloat16 precision")
-                enable_bf16 = False
+                self.enable_bf16 = False
 
         if self.num_processes == 1:
             if self.use_ipex:
@@ -129,6 +128,14 @@ class TorchNano(LightningLite):
         # so we have to add optimizations in this method, which will be called in
         # user defined `train()` method.
 
+        # the following codes are copied from pl's LightningLite's `setup` method,
+        # ipex 1.9 requires `_move_model_to_device` after `_setup_model_and_optimizers`, but
+        # pl's `setup` method calls `_move_model_to_device` before `_setup_model_and_optimizers`,
+        # so we copy the codes and swap their order.
+        self._validate_setup(model, optimizers)
+
+        model, optimizers = self._strategy._setup_model_and_optimizers(model, list(optimizers))
+
         # add IPEX 1.11's optimization
         if self.use_ipex and not TORCH_VERSION_LESS_1_10:
             dtype = torch.bfloat16 if self.enable_bf16 else None
@@ -139,13 +146,6 @@ class TorchNano(LightningLite):
             else:
                 invalidInputError(False, "Ipex does not support more than one optimizers.")
 
-        # the following codes are copied from pl's LightningLite's `setup` method,
-        # ipex 1.9 requires `_move_model_to_device` after `_setup_model_and_optimizers`, but
-        # pl's `setup` method calls `_move_model_to_device` before `_setup_model_and_optimizers`,
-        # so we copy the codes and swap their order.
-        self._validate_setup(model, optimizers)
-
-        model, optimizers = self._strategy._setup_model_and_optimizers(model, optimizers)
         if move_to_device:
             model = self._move_model_to_device(model=model, optimizers=optimizers)
         model = _TorchNanoModule(model, self._precision_plugin)
