@@ -19,14 +19,18 @@ import pytest
 
 from bigdl.chronos.utils import LazyImport
 torch = LazyImport('torch')
+TensorDataset = LazyImport('torch.utils.data.TensorDataset')
+DataLoader = LazyImport('torch.utils.data.DataLoader')
+tf = LazyImport('tensorflow')
+hp = LazyImport('bigdl.orca.automl.hp')
+
 import numpy as np
 from bigdl.chronos.autots import AutoTSEstimator, TSPipeline
 from bigdl.chronos.data import TSDataset
-from bigdl.orca.automl import hp
 import pandas as pd
 import tensorflow as tf
+from .. import op_all, op_distributed, op_tf2, op_torch, op_onnxrt16
 
-from .. import op_all, op_onnxrt16
 
 def get_ts_df():
     sample_num = np.random.randint(100, 200)
@@ -114,6 +118,7 @@ def model_creator_pytorch(config):
                          output_size=config["output_feature_num"])
 
 
+@op_tf2
 def model_creator_keras(config):
     '''
     Keras(tf2) customized model creator
@@ -133,6 +138,7 @@ def model_creator_keras(config):
     return model
 
 
+@op_distributed
 class TestAutoTrainer(TestCase):
     def setUp(self) -> None:
         from bigdl.orca import init_orca_context
@@ -142,6 +148,7 @@ class TestAutoTrainer(TestCase):
         from bigdl.orca import stop_orca_context
         stop_orca_context()
 
+    @op_torch
     def test_fit_third_party_feature(self):
         from sklearn.preprocessing import StandardScaler
         scaler = StandardScaler()
@@ -201,7 +208,7 @@ class TestAutoTrainer(TestCase):
         # use tspipeline to incrementally train
         new_ts_pipeline.fit(tsdata_valid)
 
-    @pytest.mark.skipif(tf.__version__ < '2.0.0', reason="run only when tf>2.0.0")
+    @op_tf2
     def test_fit_third_party_feature_tf2(self):
         search_space = {'hidden_dim': hp.grid_search([32, 64]),
                         'layer_num': hp.randint(1, 3),
@@ -226,6 +233,7 @@ class TestAutoTrainer(TestCase):
         config = auto_estimator.get_best_config()
         assert config["past_seq_len"] == 7
 
+    @op_torch
     def test_fit_third_party_data_creator(self):
         input_feature_dim = 4
         output_feature_dim = 2  # 2 targets are generated in get_tsdataset
@@ -255,7 +263,7 @@ class TestAutoTrainer(TestCase):
         config = auto_estimator.get_best_config()
         assert config["past_seq_len"] == 7
 
-    @pytest.mark.skipif(tf.__version__ < '2.0.0', reason="run only when tf>2.0.0")
+    @op_tf2
     def test_fit_third_party_data_creator_tf2(self):
         search_space = {'hidden_dim': hp.grid_search([32, 64]),
                         'layer_num': hp.randint(1, 3),
@@ -280,6 +288,7 @@ class TestAutoTrainer(TestCase):
         config = auto_estimator.get_best_config()
         assert config["past_seq_len"] == 7
 
+    @op_torch
     def test_fit_customized_metrics(self):
         from sklearn.preprocessing import StandardScaler
         import torch
@@ -521,6 +530,7 @@ class TestAutoTrainer(TestCase):
         # use tspipeline to incrementally train
         new_ts_pipeline.fit(tsdata_valid)
 
+    @op_torch
     def test_fit_lstm_data_creator(self):
         input_feature_dim = 4
         output_feature_dim = 2  # 2 targets are generated in get_tsdataset
@@ -551,6 +561,7 @@ class TestAutoTrainer(TestCase):
         config = auto_estimator.get_best_config()
         assert config["past_seq_len"] == 7
 
+    @op_torch
     def test_select_feature(self):
         sample_num = np.random.randint(100, 200)
         df = pd.DataFrame({"datetime": pd.date_range('1/1/2019', periods=sample_num),
@@ -591,6 +602,7 @@ class TestAutoTrainer(TestCase):
         config = auto_estimator.get_best_config()
         assert config['past_seq_len'] == 6
 
+    @op_torch
     def test_future_list_input(self):
         sample_num = np.random.randint(100, 200)
         df = pd.DataFrame({"datetime": pd.date_range('1/1/2019', periods=sample_num),
@@ -625,6 +637,8 @@ class TestAutoTrainer(TestCase):
         assert config['future_seq_len'] == 2
         assert auto_estimator._future_seq_len == [1, 3]
 
+    @op_torch
+    @op_all
     def test_autogener_best_cycle_length(self):
         sample_num = 100
         df = pd.DataFrame({"datetime": pd.date_range('1/1/2019', periods=sample_num),

@@ -14,11 +14,13 @@
 # limitations under the License.
 #
 
-from bigdl.chronos.autots.model.auto_arima import AutoARIMA
+from bigdl.chronos.utils import LazyImport
+AutoARIMA = LazyImport('bigdl.chronos.autots.model.auto_arima.AutoARIMA')
+hp = LazyImport('bigdl.orca.automl.hp')
 
 import numpy as np
 from unittest import TestCase
-from bigdl.orca.automl import hp
+from ... import op_all, op_torch, op_distributed
 
 
 def get_data():
@@ -30,6 +32,8 @@ def get_data():
     return data, validation_data
 
 
+@op_distributed
+@op_all
 class TestAutoARIMA(TestCase):
     def setUp(self) -> None:
         from bigdl.orca import init_orca_context
@@ -56,7 +60,9 @@ class TestAutoARIMA(TestCase):
                        )
         best_model = auto_arima.get_best_model()
 
+    @op_torch
     def test_fit_metric(self):
+        # TODO op_all
         data, validation_data = get_data()
         from torchmetrics.functional import mean_squared_error
         import torch

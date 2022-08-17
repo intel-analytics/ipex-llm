@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import warnings
+from bigdl.chronos.utils import LazyImport
 import os
 
 
@@ -23,9 +24,6 @@ if os.getenv("LD_PRELOAD", "null") != "null":
                   "Please run `source bigdl-nano-unset-env` "
                   "in your bash terminal")
 
-try:
-    # TODO: make this a LazyImport
-    from .autotsestimator import AutoTSEstimator
-    from .tspipeline import TSPipeline
-except ImportError:
-    pass
+# TODO: make this a LazyImport
+TSPipeline = LazyImport('bigdl.chronos.autots.tspipeline.TSPipeline')
+AutoTSEstimator = LazyImport('bigdl.chronos.autots.tspipeline.AutoTSEstimator')

@@ -21,7 +21,9 @@ import types
 import numpy as np
 
 from bigdl.chronos.data import TSDataset
-from bigdl.chronos.metric.forecast_metrics import Evaluator
+from bigdl.chronos.utils import LazyImport
+torch = LazyImport('torch')
+Evaluator = LazyImport('bigdl.chronos.metric.forecast_metrics.Evaluator')
 
 DEFAULT_MODEL_INIT_DIR = "model_init.ckpt"
 DEFAULT_BEST_MODEL_DIR = "best_model.ckpt"

@@ -14,7 +14,9 @@
 # limitations under the License.
 #
 
-from bigdl.chronos.autots.model.auto_prophet import AutoProphet
+from bigdl.chronos.utils import LazyImport
+AutoProphet = LazyImport('bigdl.chronos.autots.model.auto_prophet.AutoProphet')
+hp = LazyImport('bigdl.orca.automl.hp')
 
 import os
 import numpy as np
@@ -22,6 +24,8 @@ import pandas as pd
 import tempfile
 from unittest import TestCase
 from bigdl.orca.automl import hp
+from ... import op_tmp_skip
+from ... import op_all, op_distributed, op_torch
 
 
 def get_data():
@@ -32,6 +36,9 @@ def get_data():
     return data, expect_horizon
 
 
+@op_tmp_skip
+@op_distributed
+@op_all
 class TestAutoProphet(TestCase):
     def setUp(self) -> None:
         from bigdl.orca import init_orca_context
@@ -62,6 +69,7 @@ class TestAutoProphet(TestCase):
         assert best_model.seasonality_mode in ['additive', 'multiplicative']
         assert 0.8 <= best_model.changepoint_range <= 0.95
 
+    @op_torch
     def test_auto_prophet_predict_evaluate(self):
         data, expect_horizon = get_data()
         from torchmetrics.functional import mean_squared_error
