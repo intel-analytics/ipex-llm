@@ -186,7 +186,7 @@ class BasePytorchForecaster(Forecaster):
 
         # shall we use the same trainier
         self.tune_trainer = Trainer(logger=False, max_epochs=epochs,
-                                    checkpoint_callback=self.checkpoint_callback,
+                                    enable_checkpointing=self.checkpoint_callback,
                                     num_processes=self.num_processes, use_ipex=self.use_ipex,
                                     use_hpo=True)
 
@@ -349,7 +349,7 @@ class BasePytorchForecaster(Forecaster):
             if isinstance(data, tuple):
                 data = np_to_dataloader(data, batch_size, self.num_processes)
             from pytorch_lightning.loggers import CSVLogger
-            logger = False if validation_data is None else CSVLogger(".",
+            logger = False if validation_data is None else CSVLogger(".", flush_logs_every_n_steps=10,
                                                                      name="forecaster_tmp_log")
             from pytorch_lightning.callbacks import EarlyStopping
             early_stopping = EarlyStopping('val/loss', patience=earlystop_patience)
@@ -364,9 +364,9 @@ class BasePytorchForecaster(Forecaster):
                 callbacks = None
             # Trainer init
             self.trainer = Trainer(logger=logger, max_epochs=epochs, callbacks=callbacks,
-                                   checkpoint_callback=self.checkpoint_callback,
+                                   enable_checkpointing=self.checkpoint_callback,
                                    num_processes=self.num_processes, use_ipex=self.use_ipex,
-                                   flush_logs_every_n_steps=10, log_every_n_steps=10,
+                                   log_every_n_steps=10,
                                    distributed_backend=self.local_distributed_backend)
 
             # This error is only triggered when the python interpreter starts additional processes.
@@ -844,7 +844,7 @@ class BasePytorchForecaster(Forecaster):
             # This trainer is only for quantization, once the user call `fit`, it will be
             # replaced according to the new training config
             self.trainer = Trainer(logger=False, max_epochs=1,
-                                   checkpoint_callback=self.checkpoint_callback,
+                                   enable_checkpointing=self.checkpoint_callback,
                                    num_processes=self.num_processes, use_ipex=self.use_ipex)
 
     def to_local(self):
@@ -876,7 +876,7 @@ class BasePytorchForecaster(Forecaster):
         # This trainer is only for saving, once the user call `fit`, it will be
         # replaced according to the new training config
         self.trainer = Trainer(logger=False, max_epochs=1,
-                               checkpoint_callback=self.checkpoint_callback,
+                               enable_checkpointing=self.checkpoint_callback,
                                num_processes=self.num_processes, use_ipex=self.use_ipex)
 
         self.distributed = False
