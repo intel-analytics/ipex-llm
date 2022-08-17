@@ -18,13 +18,11 @@
 import logging
 import pickle
 import grpc
-from numpy import ndarray
 from bigdl.ppml.fl.nn.generated.nn_service_pb2 import TrainRequest, PredictRequest, UploadMetaRequest
 from bigdl.ppml.fl.nn.generated.nn_service_pb2_grpc import *
 from bigdl.ppml.fl.nn.utils import ndarray_map_to_tensor_map
 import yaml
 import threading
-from torch.utils.data import DataLoader
 from bigdl.dllib.utils.log4Error import invalidInputError
 
 from bigdl.ppml.fl.nn.utils import ClassAndArgsWrapper
@@ -32,6 +30,29 @@ from bigdl.ppml.fl.nn.utils import ClassAndArgsWrapper
 class FLClient(object):
     channel = None
     _lock = threading.Lock()
+    client_id = None
+    target = "localhost:8980"
+    secure = False
+    creds = None
+
+    @staticmethod
+    def set_client_id(client_id):
+        FLClient.client_id = client_id
+    
+    @staticmethod
+    def set_target(target):
+        FLClient.target = target
+
+    @staticmethod
+    def ensure_initialized():
+        with FLClient._lock:
+            if FLClient.channel == None:
+                if FLClient.secure:
+                    FLClient.channel = grpc.secure_channel(FLClient.target, FLClient.creds)
+                else:
+                    FLClient.channel = grpc.insecure_channel(FLClient.target)
+    
+
     def __init__(self, client_id, aggregator, target="localhost:8980") -> None:
         self.secure = False
         self.load_config()
@@ -91,3 +112,4 @@ class FLClient(object):
             logging.warn('Loading config failed, using default config ')
         except Exception as e:
             logging.warn('Failed to find config file "ppml-conf.yaml", using default config')
+
