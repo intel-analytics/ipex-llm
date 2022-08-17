@@ -43,6 +43,7 @@ import java.lang.reflect.Field;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class RecommenderServerTest {
@@ -66,6 +67,7 @@ public class RecommenderServerTest {
 
         String configDir = Objects.requireNonNull(
                 RecommenderServerTest.class.getClassLoader().getResource("testConfig")).getPath();
+
         FeatureInitializer.main(new String[]{"-c", configDir + "/config_feature_init.yaml"});
         destroyLettuceUtilsInstance();
 
@@ -125,6 +127,8 @@ public class RecommenderServerTest {
     public void testGetRecommendIDs() {
         RecommenderProto.RecommendIDProbs result = blockingStub.getRecommendIDs(RecommenderProto.RecommendRequest
                 .newBuilder().addID(userDataRow.getInt(0)).setRecommendNum(3).setCandidateNum(10).build());
+        assertEquals(result.getIDProbList(0).getIDCount(), 3);
+        logger.info("Got Recommend IDs" + result.getIDProbListList().toString());
     }
 
 
