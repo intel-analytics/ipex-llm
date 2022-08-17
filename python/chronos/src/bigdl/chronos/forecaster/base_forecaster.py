@@ -349,7 +349,8 @@ class BasePytorchForecaster(Forecaster):
             if isinstance(data, tuple):
                 data = np_to_dataloader(data, batch_size, self.num_processes)
             from pytorch_lightning.loggers import CSVLogger
-            logger = False if validation_data is None else CSVLogger(".", flush_logs_every_n_steps=10,
+            logger = False if validation_data is None else CSVLogger(".",
+                                                                     flush_logs_every_n_steps=10,
                                                                      name="forecaster_tmp_log")
             from pytorch_lightning.callbacks import EarlyStopping
             early_stopping = EarlyStopping('val/loss', patience=earlystop_patience)
