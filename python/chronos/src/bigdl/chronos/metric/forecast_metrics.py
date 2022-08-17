@@ -33,8 +33,7 @@ def mae(y_label, y_predict):
     :param y_predict: Array-like of shape = (n_samples, \*).
            Estimated target values.
     :return: Ndarray of floats.
-             A non-negative floating point value (the best value is 0.0), or an
-             array of floating point values, one for each individual target.
+             An array of non-negative floating point values (the best value is 0.0).
     """
     y_label=np.array(y_label)
     y_predict=np.array(y_predict)
@@ -43,6 +42,17 @@ def mae(y_label, y_predict):
 
 
 def mse(y_label, y_predict):
+    """
+    Calculate the mean squared error (MSE).
+    .. math::
+        \\text{MSE} = \\frac{1}{n}\\sum_{t=1}^n (y_t-\\hat{y_t})^2
+    :param y_label: Array-like of shape = (n_samples, \*).
+           Ground truth (correct) target values.
+    :param y_predict: Array-like of shape = (n_samples, \*).
+           Estimated target values.
+    :return: Ndarray of floats.
+             An array of non-negative floating point values (the best value is 0.0).
+    """
     y_label=np.array(y_label)
     y_predict=np.array(y_predict)
     result= np.mean((y_label-y_predict)**2)
@@ -50,15 +60,48 @@ def mse(y_label, y_predict):
 
 
 def rmse(y_label, y_predict):
+    """
+    Calculate square root of the mean squared error (RMSE).
+    .. math::
+        \\text{RMSE} = \\sqrt{(\\frac{1}{n}\\sum_{t=1}^n (y_t-\\hat{y_t})^2)}
+    :param y_label: Array-like of shape = (n_samples, \*).
+           Ground truth (correct) target values.
+    :param y_predict: Array-like of shape = (n_samples, \*).
+           Estimated target values.
+    :return: Ndarray of floats.
+             An array of non-negative floating point values (the best value is 0.0).
+    """
     return np.sqrt(mse(y_label, y_predict))
 
 
 def mape(y_label, y_predict):
+    """
+    Calculate mean absolute percentage error (MAPE).
+    .. math::
+        \\text{MAPE} = \\frac{100\%}{n}\\sum_{t=1}^n  |\\frac{y_t-\\hat{y_t}}{y_t}|
+    :param y_label: Array-like of shape = (n_samples, \*).
+           Ground truth (correct) target values.
+    :param y_predict: Array-like of shape = (n_samples, \*).
+           Estimated target values.
+    :return: Ndarray of floats.
+             An array of non-negative floating point values (the best value is 0.0).
+    """
     y_label, y_predict = np.array(y_label), np.array(y_predict)
     return np.mean(np.abs((y_label - y_predict) / y_label))
 
 
 def smape(y_label, y_predict):
+    """
+    Calculate Symmetric mean absolute percentage error (sMAPE).
+    .. math::
+        \\text{sMAPE} = \\frac{100\%}{n} \\sum_{t=1}^n \\frac{|y_t-\\hat{y_t}|}{|y_t|+|\\hat{y_t}|}
+    :param y_label: Array-like of shape = (n_samples, \*).
+           Ground truth (correct) target values.
+    :param y_predict: Array-like of shape = (n_samples, \*).
+           Estimated target values.
+    :return: Ndarray of floats.
+             An array of non-negative floating point values (the best value is 0.0).
+    """
     abs_diff = np.abs(y_predict - y_label)
     abs_per_error = abs_diff / (np.abs(y_predict) + np.abs(y_label) + EPSILON)
     sum_abs_per_error = np.mean(abs_per_error)
@@ -66,6 +109,17 @@ def smape(y_label, y_predict):
 
 
 def r2(y_label, y_predict):
+    """
+    Calculate the r2 score.
+    .. math::
+        R^2 = 1-\\frac{\\sum_{t=1}^n (y_t-\\hat{y_t})^2}{\\sum_{t=1}^n (y_t-\\bar{y})^2}
+    :param y_label: Array-like of shape = (n_samples, \*).
+           Ground truth (correct) target values.
+    :param y_predict: Array-like of shape = (n_samples, \*).
+           Estimated target values.
+    :return: Ndarray of floats.
+             An array of non-negative floating point values (the best value is 1.0).
+    """
     y_label, y_predict = np.array(y_label), np.array(y_predict)
     return 1 - np.sum((y_label - y_predict)**2) / np.sum((y_label - np.mean(y_label))**2)
 
