@@ -254,7 +254,7 @@
     	</dependency>
 	<dependency>
     	    <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-actor_2.11</artifactId>
+            <artifactId>akka-actor_${scala.major.version}</artifactId>
             <version>2.5.32</version>
 	</dependency>
         <dependency>
