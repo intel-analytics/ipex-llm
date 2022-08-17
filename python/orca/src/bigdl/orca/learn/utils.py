@@ -462,18 +462,13 @@ def data_length(data):
 
 
 def save_pkl(data, path):
-    if path.startswith("hdfs"):  # hdfs://url:port/file_path
-        import pyarrow as pa
-        host_port = path.split("://")[1].split("/")[0].split(":")
-        classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
-                                     stdout=subprocess.PIPE).communicate()[0]
-        os.environ["CLASSPATH"] = classpath.decode("utf-8")
-        if len(host_port) > 1:
-            fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
-        else:
-            fs = pa.hdfs.connect(host=host_port[0])
-        with fs.open(path, 'wb') as f:
+    if path.startswith("hdfs"):  # hdfs://url:port/
+        import uuid
+        file_name = str(uuid.uuid1()) + ".pkl"
+        temp_path = os.path.join(tempfile.gettempdir(), file_name)
+        with open(temp_path, 'wb') as f:
             pickle.dump(data, f)
+        put_local_file_to_remote(temp_path, path)
     elif path.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
