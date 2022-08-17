@@ -340,9 +340,7 @@ class BasePytorchForecaster(Forecaster):
             # numpy data shape checking
             if isinstance(data, tuple):
                 check_data(data[0], data[1], self.data_config)
-            else:
-                warnings.warn("Data shape checking is not supported by dataloader input.")
-
+ 
             # data transformation
             if isinstance(data, tuple):
                 data = np_to_dataloader(data, batch_size, self.num_processes)
