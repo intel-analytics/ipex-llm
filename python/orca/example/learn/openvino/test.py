@@ -15,8 +15,9 @@ sc = init_orca_context(cores=4, memory="5g", conf={"spark.driver.maxResultSize":
 
 spark1 = OrcaContext.get_spark_session()
 
-rdd = sc.range(0, 4, numSlices=2)
+rdd = sc.range(0, 16, numSlices=2)
 df = rdd.map(lambda x: [x, np.random.rand(907500).tolist()]).toDF(["index", "input"])
+df.show()
 
 
 def reshape(x):
@@ -36,10 +37,11 @@ df = df.withColumn("input", reshape_udf(df.input))
 # # arr_images4 = np.append(arr_images3, arr_images2,axis=0)
 # # len(arr_images4)
 # # arr_images = np.squeeze(np.array(df.select('input').collect()))
+OrcaContext._eager_mode = False
 est = Estimator.from_openvino(
-    model_path='/Users/yita/Documents/intel/myissue/openvino_model/FP32/model_float32.xml')  # load model
+    model_path='/home/yina/Documents/data/myissue/openvino_model/FP32/model_float32.xml')  # load model
 
-result_df = est.predict(df, feature_cols=["input"])
+result_df = est.predict(df, feature_cols=["input"], batch_size=4)
 result_df.show()
 
 # arr_images = np.squeeze(np.array(df.select('input').collect()))
