@@ -15,14 +15,13 @@ LSTMforecaster without specifying future_seq_len, because lstm is a single-step 
 ```
 
 ### 2. create a forecaster.
-We provide two methods for creating Forecaster.
-#### 1. Create a Forecaster using Forecaster.from_tsdataset(Highly recommended)
-`from_tsdataset` is a class method, so you can call `Forecsater.from_tsdataset` directly, then enter a `TSDataset` instance.
-`TSDataset` is a built-in time series preprocessing class, more info please refer to [how to use TSDataset and get_public_dataset](xxxx).
-If your tsdataset has used the `roll` or `to_torch_data_loader` methods,
-you do not need to specify `past_seq_len` and `future_seq_len` for from_tsdataset, otherwise you must specify both.
-You can also specify the hyperparameters of the model, such as lr, dropout etc.
-The simplest usage of "from_tsdataset" is given below. More info, please refer to [from_tsdataset](xxxx).
+We provide two ways to create a Forecaster.
+
+#### Create a Forecaster using Forecaster.from_tsdataset(Highly recommended)
+`from_tsdataset` is a classmethod, so you can call `Forecsater.from_tsdataset`, then input a `TSDataset` instance.
+`TSDataset` is a built-in time series preprocessing class.
+If your tsdataset has used the `roll` or `to_torch_data_loader` methods, you do not need to specify `past_seq_len` and `future_seq_len` for from_tsdataset, otherwise you must specify both.
+You can also specify the hyperparameters of the model, such as lr, dropout etc. The simplest usage of "from_tsdataset" is given below.
 
 ```python
 from bigdl.chronos.forecaster import TCNForecaster
@@ -32,18 +31,17 @@ tsdataset = TSDataset.from_pandas(df, ...)  # df is a pandas.DataFrame
 tcn = TCNForecaster.from_tsdataset(tsdataset,
                                    past_seq_len=48,
                                    future_seq_len=5)
-
 tcn.fit(tsdataset)
 
 # Call roll or to_torch_dataloader, do not specify past_seq_len and future_seq_len
 loader = tsdataset.to_torch_data_loader(...)
 tcn = TCNForecaster.from_tsdataset(tsdataset)
-
 tcn.fit(loader)
 ```
 
-#### 2. Create a forecaster directly
-You can also create TCNForecaster directly.
+#### Create a forecaster directly
+You can also create TCNForecaster directly, the parameters mentioned above still need to be specified.
+
 ```python
 from bigdl.chronos.forecaster import TCNForecaster
 # prepare dataset
@@ -58,6 +56,6 @@ tcn.fit(timeseries)
 ```
 
 ### 3. further reading
-training: After you have created the forecaster, you can train your model, Please refer to [how to train]()
-distributed: When your data volume is large and it is difficult to complete on a single machine, we also provide distributed training, please refer to [train model distributed on a cluster]()
-forecaster.load: 
+training: After you have created the forecaster, you can train your model.
+distributed: When your data volume is large and it is difficult to complete on a single machine, we also provide distributed training.
+load: When you have trained and saved the model locally, you can load a model.
