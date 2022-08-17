@@ -248,8 +248,8 @@ class TestTSPipeline(TestCase):
     def test_tsppl_quantize_public_dataset(self):
         tsppl_tcn = TSPipeline.load(os.path.join(self.resource_path,
                                                  "tsppl_ckpt/tcn_tsppl_ckpt"))
-        from bigdl.chronos.data.repo_dataset import get_public_dataset
-        train_tsdata, _, test_tsdata = get_public_dataset('network_traffic', val_ratio=0)
+        train_tsdata = get_test_tsdataset()
+        test_tsdata = get_test_tsdataset()
         train_tsdata.roll(lookback=10, horizon=2)
         test_tsdata.roll(lookback=10, horizon=2)
         # mixed data
