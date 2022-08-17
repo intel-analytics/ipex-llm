@@ -125,7 +125,8 @@ class SparkTFEstimator():
         """
         sc = OrcaContext.get_spark_context()
 
-        # dataframe change to xshard, num_partition >= num_workers
+        # After converting Spark DataFrame to SparkXShards,
+        # we must have num_partition >= num_workers
         data, validation_data = maybe_dataframe_to_xshards(data, validation_data,
                                                            feature_cols, label_cols,
                                                            mode="fit",
@@ -167,7 +168,6 @@ class SparkTFEstimator():
             data_config=data_config
         )
 
-        # In this case, data partitions must be >= num_workers
         if isinstance(data, SparkXShards):
             # set train/validation data
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
@@ -184,7 +184,7 @@ class SparkTFEstimator():
 
                 rdd = data.rdd
                 if rdd.getNumPartitions() > self.num_workers:
-                    rdd = rdd.coalesce(self.num_workers)  # Use coalesce to avoid repartition
+                    rdd = rdd.repartition(self.num_workers)  # coalesce can be used with barrier
                 res = rdd.barrier().mapPartitions(
                     lambda iter: transform_func(iter, init_params, params)).collect()
             else:
@@ -200,7 +200,7 @@ class SparkTFEstimator():
                 val_rdd = validation_data.rdd.mapPartitions(lambda iter: [list(iter)])
                 zip_rdd = train_rdd.zip(val_rdd)
                 if zip_rdd.getNumPartitions() > self.num_workers:
-                    zip_rdd = zip_rdd.coalesce(self.num_workers)
+                    zip_rdd = zip_rdd.repartition(self.num_workers)
                 res = zip_rdd.barrier().mapPartitions(
                     lambda iter: transform_func(iter, init_params, params)).collect()
         else:
@@ -251,7 +251,6 @@ class SparkTFEstimator():
         sc = OrcaContext.get_spark_context()
         logger.info("Starting validation step.")
 
-        # dataframe change to xshard, num_partition >= num_workers
         data, _ = maybe_dataframe_to_xshards(data, validation_data=None,
                                              feature_cols=feature_cols,
                                              label_cols=label_cols,
@@ -301,7 +300,7 @@ class SparkTFEstimator():
 
             rdd = data.rdd
             if rdd.getNumPartitions() > self.num_workers:
-                rdd = rdd.coalesce(self.num_workers)
+                rdd = rdd.repartition(self.num_workers)
             res = rdd.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
         else:
