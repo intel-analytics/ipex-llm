@@ -24,6 +24,8 @@ if os.getenv("LD_PRELOAD", "null") != "null":
                   "Please run `source bigdl-nano-unset-env` "
                   "in your bash terminal")
 
-# TODO: make this a LazyImport
-TSPipeline = LazyImport('bigdl.chronos.autots.tspipeline.TSPipeline')
-AutoTSEstimator = LazyImport('bigdl.chronos.autots.tspipeline.AutoTSEstimator')
+try:
+    TSPipeline = LazyImport('bigdl.chronos.autots.tspipeline.TSPipeline')
+    AutoTSEstimator = LazyImport('bigdl.chronos.autots.autotsestimator.AutoTSEstimator')
+except:
+    pass

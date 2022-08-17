@@ -20,7 +20,6 @@ torch = LazyImport('torch')
 import tensorflow as tf
 =======
 from bigdl.chronos.utils import LazyImport
-Dataset = LazyImport('torch.utils.data.Dataset')
 DataLoader = LazyImport('torch.utils.data.DataLoader')
 torch = LazyImport('torch')
 tf = LazyImport('tensorflow')
@@ -31,6 +30,7 @@ import numpy as np
 from unittest import TestCase
 import pytest
 import tempfile
+from torch.utils.data import Dataset
 
 <<<<<<< HEAD
 from ... import op_all, op_onnxrt16
@@ -68,7 +68,6 @@ def gen_RandomDataset():
         def __getitem__(self, idx):
             return self.x[idx], self.y[idx]
     return RandomDataset
-
 
 def train_dataloader_creator(config):
     import torch

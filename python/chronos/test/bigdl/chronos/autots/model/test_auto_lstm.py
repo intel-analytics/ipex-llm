@@ -13,31 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-<<<<<<< HEAD
-
-from bigdl.chronos.utils import LazyImport
-torch = LazyImport('torch')
-import tensorflow as tf
-=======
->>>>>>> installation options autots
 import numpy as np
 from unittest import TestCase
 import pytest
 import tempfile
 
-<<<<<<< HEAD
-from ... import op_all, op_onnxrt16
-
-from bigdl.chronos.autots.model.auto_lstm import AutoLSTM
-from bigdl.orca.automl import hp
-=======
 from bigdl.chronos.utils import LazyImport
 torch = LazyImport('torch')
 tf = LazyImport('tensorflow')
 AutoLSTM = LazyImport('bigdl.chronos.autots.model.auto_lstm.AutoLSTM')
 hp = LazyImport('bigdl.orca.automl.hp')
+DataLoader = LazyImport('torch.utils.data.DataLoader')
+from torch.utils.data import Dataset
 from ... import op_all, op_distributed, op_onnxrt16, op_tf2, op_torch
->>>>>>> installation options autots
 
 input_feature_dim = 10
 output_feature_dim = 2
@@ -50,8 +38,18 @@ def get_x_y(size):
     y = np.random.randn(size, future_seq_len, output_feature_dim)
     return x.astype(np.float32), y.astype(np.float32)
 
+class RandomDataset(Dataset):
+    def __init__(self, size=1000):
+        x, y = get_x_y(size)
+        self.x = torch.from_numpy(x).float()
+        self.y = torch.from_numpy(y).float()
 
-<<<<<<< HEAD
+    def __len__(self):
+        return self.x.shape[0]
+
+    def __getitem__(self, idx):
+        return self.x[idx], self.y[idx]
+
 def gen_RandomDataset():
     import torch
     from torch.utils.data import Dataset
@@ -73,7 +71,7 @@ def train_dataloader_creator(config):
     import torch
     from torch.utils.data import DataLoader
     RandomDataset = gen_RandomDataset()
-=======
+
 def train_dataloader_creator(config):
     from torch.utils.data import DataLoader, Dataset
     class RandomDataset(Dataset):
@@ -88,18 +86,11 @@ def train_dataloader_creator(config):
         def __getitem__(self, idx):
             return self.x[idx], self.y[idx]
 
->>>>>>> installation options autots
-    return DataLoader(RandomDataset(size=1000),
-                      batch_size=config["batch_size"],
-                      shuffle=True)
-
 
 def valid_dataloader_creator(config):
-<<<<<<< HEAD
     import torch
     from torch.utils.data import DataLoader
     RandomDataset = gen_RandomDataset()
-=======
     from torch.utils.data import DataLoader, Dataset
     class RandomDataset(Dataset):
         def __init__(self, size=1000):
@@ -112,7 +103,7 @@ def valid_dataloader_creator(config):
     
         def __getitem__(self, idx):
             return self.x[idx], self.y[idx]
->>>>>>> installation options autots
+
     return DataLoader(RandomDataset(size=400),
                       batch_size=config["batch_size"],
                       shuffle=True)
@@ -193,18 +184,16 @@ class TestAutoLSTM(TestCase):
     @op_torch
     def test_predict_evaluation(self):
         auto_lstm = get_auto_estimator()
-        auto_lstm.fit(data=train_dataloader_creator(config={"batch_size": 64}),
+        train = train_dataloader_creator(config={"batch_size": 64})
+        valid = valid_dataloader_creator(config={"batch_size": 64})
+        auto_lstm.fit(data=train,
                       epochs=1,
-                      validation_data=valid_dataloader_creator(config={"batch_size": 64}),
+                      validation_data=valid,
                       n_sampling=1)
         test_data_x, test_data_y = get_x_y(size=100)
         auto_lstm.predict(test_data_x)
         auto_lstm.evaluate((test_data_x, test_data_y))
 
-<<<<<<< HEAD
-=======
-    @op_torch
->>>>>>> installation options autots
     @op_all
     @op_onnxrt16
     def test_onnx_methods(self):
@@ -226,10 +215,6 @@ class TestAutoLSTM(TestCase):
         except ImportError:
             pass
 
-<<<<<<< HEAD
-=======
-    @op_torch
->>>>>>> installation options autots
     @op_all
     @op_onnxrt16
     def test_save_load(self):

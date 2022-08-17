@@ -44,7 +44,7 @@ class LazyImport:
         >>> forecaster.from_tsdataset(tsdataset, ...)
         >>> forecaster(...)
     """
-    def __init__(self, module_name: str, pkg=None):
+    def __init__(self, module_name: str, pkg=None, *args, **kwargs):
         """
         :param module_name: Import module name.
         :param pkg: prefix path.
@@ -86,8 +86,6 @@ class LazyImport:
         try:
             module = sys.modules[module_name]
         except KeyError:
-            pass
-
-        module = importlib.import_module(module_name, package=self.pkg)
+            module = importlib.import_module(module_name, package=self.pkg)
         function = getattr(module, function_name)
         return function(*args, **kwargs)

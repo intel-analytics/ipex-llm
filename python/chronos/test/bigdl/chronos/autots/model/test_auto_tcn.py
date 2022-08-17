@@ -13,30 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-<<<<<<< HEAD
 
 from bigdl.chronos.utils import LazyImport
 torch = LazyImport('torch')
 import tensorflow as tf
-=======
-from bigdl.chronos.utils import LazyImport
-Dataset = LazyImport('torch.utils.data.Dataset')
-DataLoader = LazyImport('torch.utils.data.DataLoader')
-torch = LazyImport('torch')
-tf = LazyImport('tensorflow')
-AutoTCN = LazyImport('bigdl.chronos.autots.model.auto_tcn.AutoTCN')
-hp = LazyImport('bigdl.orca.automl.hp')
-
->>>>>>> installation options autots
 import numpy as np
 from unittest import TestCase
 import pytest
 import tempfile
-<<<<<<< HEAD
-
-from ... import op_all, op_onnxrt16
-=======
->>>>>>> installation options autots
 
 from ... import op_all, op_torch, op_tf2, op_distributed, op_onnxrt16
 
@@ -207,25 +191,25 @@ class TestAutoTCN(TestCase):
     @op_torch
     def test_predict_evaluation(self):
         auto_tcn = get_auto_estimator()
-        auto_tcn.fit(data=train_dataloader_creator(config={"batch_size": 64}),
+        train = train_dataloader_creator(config={"batch_size": 64})
+        valid = valid_dataloader_creator(config={"batch_size": 64})
+        auto_tcn.fit(data=train,
                      epochs=1,
-                     validation_data=valid_dataloader_creator(config={"batch_size": 64}),
+                     validation_data=valid,
                      n_sampling=1)
         test_data_x, test_data_y = get_x_y(size=100)
         auto_tcn.predict(test_data_x)
         auto_tcn.evaluate((test_data_x, test_data_y))
 
-<<<<<<< HEAD
-=======
-    @op_torch
->>>>>>> installation options autots
     @op_all
     @op_onnxrt16
     def test_onnx_methods(self):
         auto_tcn = get_auto_estimator()
-        auto_tcn.fit(data=train_dataloader_creator(config={"batch_size": 64}),
+        train = train_dataloader_creator(config={"batch_size": 64})
+        valid = valid_dataloader_creator(config={"batch_size": 64})
+        auto_tcn.fit(data=train,
                      epochs=1,
-                     validation_data=valid_dataloader_creator(config={"batch_size": 64}),
+                     validation_data=valid,
                      n_sampling=1)
         test_data_x, test_data_y = get_x_y(size=100)
         pred = auto_tcn.predict(test_data_x)
@@ -240,17 +224,15 @@ class TestAutoTCN(TestCase):
         except ImportError:
             pass
 
-<<<<<<< HEAD
-=======
-    @op_torch
->>>>>>> installation options autots
     @op_all
     @op_onnxrt16
     def test_save_load(self):
         auto_tcn = get_auto_estimator()
-        auto_tcn.fit(data=train_dataloader_creator(config={"batch_size": 64}),
+        train = train_dataloader_creator(config={"batch_size": 64})
+        valid = valid_dataloader_creator(config={"batch_size": 64})
+        auto_tcn.fit(data=train,
                      epochs=1,
-                     validation_data=valid_dataloader_creator(config={"batch_size": 64}),
+                     validation_data=valid,
                      n_sampling=1)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             auto_tcn.save(tmp_dir_name)
