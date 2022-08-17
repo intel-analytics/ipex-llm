@@ -14,7 +14,7 @@
             <div class="choicebox"><input type="checkbox" class="checkboxes" name="choice" value="forecast">forecast </div>
             <div class="choicebox"><input type="checkbox" class="checkboxes" name="choice" value="anomaly_detection">anomaly detection</div>
             <div class="choicebox"><input type="checkbox" class="checkboxes" name="choice" value="simulation">simulation</div>
-            <div class="choicebox"><input type="checkbox" class="checkboxes" name="choice" value="hyperparameter_tuning">hyperparameter tuning</div>
+            <div class="choicebox style="font-size:15px""><input type="checkbox" class="checkboxes" name="choice" value="hyperparameter_tuning">hyperparameter tuning</div>
         </div>
         <div class="choiceline">
             <div class="choicebox"><input type="checkbox" class="checkboxes" name="choice" value="onnxruntime">onnxruntime </div>
