@@ -14,12 +14,14 @@ Proxy_Modified="sudo docker build \
     --build-arg HTTPS_PROXY_PORT=${HTTPS_PROXY_PORT} \
     --build-arg JDK_VERSION=8u192 \
     --build-arg JDK_URL=${JDK_URL} \
+    --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
     --build-arg no_proxy=x.x.x.x \
     -t intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT -f ./Dockerfile ."
 
 No_Proxy_Modified="sudo docker build \
     --build-arg JDK_VERSION=8u192 \
     --build-arg JDK_URL=${JDK_URL} \
+    --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
     --build-arg no_proxy=x.x.x.x \
     -t intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT -f ./Dockerfile ."
 
