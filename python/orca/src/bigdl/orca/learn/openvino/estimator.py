@@ -53,7 +53,7 @@ class OpenvinoEstimator(SparkEstimator):
         """
         invalidInputError(False, "not implemented")
 
-    def predict(self, data, feature_cols=None, batch_size=4):
+    def predict(self, data, feature_cols=None, batch_size=4, inputs=None):
         """
         Predict input data
 
@@ -73,12 +73,20 @@ class OpenvinoEstimator(SparkEstimator):
         sc = init_nncontext()
         model_bytes_broadcast = sc.broadcast(self.model_bytes)
         weight_bytes_broadcast = sc.broadcast(self.weight_bytes)
+        if inputs is not None:
+            invalidInputError(set(inputs) == set(self.inputs),
+                              "The inputs names need to match the model inputs, the model inputs: "
+                              + ",".join(self.inputs))
+        else:
+            inputs = self.inputs
+        outputs = list(self.output_dict.keys())
+        invalidInputError(len(outputs) != 0, "The number of model outputs should not be 0.")
 
         def partition_inference(partition):
             model_bytes = model_bytes_broadcast.value
             weight_bytes = weight_bytes_broadcast.value
-            partition = list(partition)
-            data_num = len(partition)
+            # partition = list(partition)
+            # data_num = len(partition)
             ie = IECore()
             config = {'CPU_THREADS_NUM': str(self.core_num)}
             ie.set_config(config, 'CPU')
@@ -86,10 +94,8 @@ class OpenvinoEstimator(SparkEstimator):
                                   weights=weight_bytes, init_from_buffer=True)
             net.batch_size = batch_size
             local_model = ie.load_network(network=net, device_name="CPU",
-                                          num_requests=data_num)
-            inputs = list(iter(local_model.requests[0].input_blobs))
-            outputs = list(iter(local_model.requests[0].output_blobs))
-            invalidInputError(len(outputs) != 0, "The number of model outputs should not be 0.")
+                                          num_requests=1)
+            infer_request = local_model.requests[0]
 
             def add_elem(d):
                 d_len = len(d)
@@ -100,8 +106,8 @@ class OpenvinoEstimator(SparkEstimator):
                 else:
                     return d, d_len
 
-            for idx, batch_data in enumerate(partition):
-                infer_request = local_model.requests[idx]
+            # for idx, batch_data in enumerate(partition):
+            for batch_data in partition:
                 input_dict = dict()
                 elem_num = 0
                 if isinstance(batch_data, list):
@@ -143,7 +149,6 @@ class OpenvinoEstimator(SparkEstimator):
 
         if isinstance(data, DataFrame):
             from bigdl.orca.learn.utils import dataframe_to_xshards
-            from bigdl.orca.learn.utils import convert_predict_rdd_to_dataframe
             xshards, _ = dataframe_to_xshards(data,
                                               validation_data=None,
                                               feature_cols=feature_cols,
@@ -151,8 +156,44 @@ class OpenvinoEstimator(SparkEstimator):
                                               mode="predict")
             transformed_data = xshards.transform_shard(predict_transform, batch_size)
             result_rdd = transformed_data.rdd.mapPartitions(lambda iter: partition_inference(iter))
-            c = result_rdd.collect()
-            return convert_predict_rdd_to_dataframe(data, result_rdd.flatMap(lambda data: data))
+
+            def divide(data):
+                if len(data) > 1:
+                    # add batch dim
+                    result = [list(np.expand_dims(output, axis=0).tolist()
+                                   for output in single_result) for single_result in zip(*data)]
+                    return result
+                else:
+                    data
+
+            def add_predict_rdd_to_dataframe(df, prediction_rdd):
+                from pyspark.sql import Row
+                from pyspark.sql.types import StructType, StructField, FloatType, ArrayType
+
+                # Deal with types
+                result_struct = []
+                for key, shape in self.output_dict.items():
+                    struct_type = FloatType()
+                    for _ in range(len(shape)):
+                        struct_type = ArrayType(struct_type)
+                    result_struct.append(StructField(key, struct_type))
+
+                def combine(pair):
+                    # multi-output
+                    if len(result_struct) > 1:
+                        row = Row(*([pair[0][col] for col in pair[0].__fields__] + pair[1]))
+                    # single output
+                    else:
+                        # TODO: scalar may cause error?
+                        row = Row(*([pair[0][col] for col in pair[0].__fields__] + [pair[1]]))
+                    return row
+
+                combined_rdd = df.rdd.zip(prediction_rdd).map(combine)
+                schema = StructType(df.schema.fields + result_struct)
+                result_df = combined_rdd.toDF(schema)
+                return result_df
+
+            return add_predict_rdd_to_dataframe(data, result_rdd.flatMap(lambda data: divide(data)))
         elif isinstance(data, SparkXShards):
             transformed_data = data.transform_shard(predict_transform, batch_size)
             result_rdd = transformed_data.rdd.mapPartitions(lambda iter: partition_inference(iter))
@@ -246,11 +287,8 @@ class OpenvinoEstimator(SparkEstimator):
         ie.set_config(config, 'CPU')
         net = ie.read_network(model=self.model_bytes,
                               weights=self.weight_bytes, init_from_buffer=True)
-        local_model = ie.load_network(network=net, device_name="CPU",
-                                      num_requests=3)
-        inputs = list(iter(local_model.requests[0].input_blobs))
-        outputs = list(iter(local_model.requests[0].output_blobs))
-        outputs
+        self.inputs = list(net.input_info.keys())
+        self.output_dict = {k: v.shape for k, v in net.outputs.items()}
 
     def set_tensorboard(self, log_dir, app_name):
         """
