@@ -136,6 +136,7 @@ jobs:
           $CONDA/bin/conda create -n example-tensorflow -y python==3.7.10 setuptools=58.0.4
           source $CONDA/bin/activate example-tensorflow
           bash python/nano/dev/build_and_install.sh linux default false tensorflow
+          pip install neural-compressor==1.11
           pip install tensorflow-datasets
           source bigdl-nano-init
           bash python/nano/tutorial/training/tensorflow/run-nano-tensorflow-test.sh
