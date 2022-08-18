@@ -56,22 +56,26 @@ Please refer to the [README](https://github.com/alibaba/DeepRec/tree/main/modelz
 - Local mode:
 ```bash
 python wdl.py \
-    --smartstaged false \
-    --ev True \
+    --instances_per_node 3 \
     --data_location /folder/path/to/train/and/test/files \
     --checkpoint /path/to/save/model/checkpoint \
-    --instances_per_node 3
+    --smartstaged False \
+    --ev True \ 
+    --emb_fusion False \
+    --ev_filter counter
 ```
 - K8s mode:
 ```bash
 python wdl.py \
-    --smartstaged false \
-    --ev True \
-    --data_location /folder/path/to/train/and/test/files \
-    --checkpoint /path/to/save/model/checkpoint \
     --cluster_mode k8s \
     --num_nodes 3 \
-    --master k8s://https://ip:port
+    --master k8s://https://ip:port \
+    --data_location /folder/path/to/train/and/test/files \
+    --checkpoint /path/to/save/model/checkpoint \
+    --smartstaged False \
+    --ev True \
+    --emb_fusion False \
+    --ev_filter counter
 ```
 
 For DeepRec related arguments, please refer to the original example for more description.
