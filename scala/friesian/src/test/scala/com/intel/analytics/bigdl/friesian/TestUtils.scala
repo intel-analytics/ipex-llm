@@ -16,10 +16,21 @@
 
 package com.intel.analytics.bigdl.friesian
 
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+
+import scala.util.Random
+
 object TestUtils {
   def conditionFailTest(condition: Boolean, msg: String = null): Unit = {
     // scalastyle:off
     assert(condition, msg)
     // scalastyle:on
+  }
+
+  def generateRankingInput(length: Int, dim: Int): Table = {
+    T.array(
+      Array.fill(length)(
+        Tensor[Float](Array.fill(dim)(Random.nextFloat()), Array(dim))))
   }
 }
