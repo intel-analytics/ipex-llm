@@ -547,7 +547,7 @@ def main(train_dataset, test_dataset=None, tf_config=None, server=None, config=N
 
     # Run model training and evaluation
     train(sess_config, hooks, model, train_init_op, config, tf_config, server)
-    # TODO: the original script won't evaluate in distributed mode, have bug for evaluation
+    # TODO: the original script won't evaluate in distributed mode, has issue in evaluation results
     if not config["no_eval"]:
         eval_acc, eval_auc = eval(sess_config, hooks, model, test_init_op, config['test_steps'],
                                   config['checkpoint_dir'])
@@ -1088,16 +1088,15 @@ def data_processing(args):
     train_file = args.data_location + '/train.csv'
     test_file = args.data_location + '/eval.csv'
     if (not os.path.exists(train_file)) or (not os.path.exists(test_file)):
-        print("Dataset does not exist in the given data_location.")
-        sys.exit()
+        invalidInputError(False, "Dataset does not exist in the given data_location.")
 
     train_tbl = FeatureTable.read_csv(train_file, names=TRAIN_DATA_COLUMNS)
     test_tbl = FeatureTable.read_csv(test_file, names=TRAIN_DATA_COLUMNS)
 
     no_of_training_examples = train_tbl.size()
     no_of_test_examples = test_tbl.size()
-    print("Numbers of training dataset is {}".format(no_of_training_examples))
-    print("Numbers of test dataset is {}".format(no_of_test_examples))
+    print("The size of the training dataset is {}".format(no_of_training_examples))
+    print("The size of the test dataset is {}".format(no_of_test_examples))
 
     # set batch size, epoch & steps
     batch_size = math.ceil(
@@ -1114,7 +1113,7 @@ def data_processing(args):
         train_steps = args.steps
     test_steps = math.ceil(float(no_of_test_examples) / batch_size)
     print("The training steps is {}".format(train_steps))
-    print("The testing steps is {}".format(test_steps))
+    print("The test steps is {}".format(test_steps))
 
     # set directory path for checkpoint_dir
     model_dir = os.path.join(args.output_dir,
