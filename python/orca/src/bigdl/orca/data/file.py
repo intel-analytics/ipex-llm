@@ -377,10 +377,12 @@ def put_local_file_to_remote(local_path, remote_path, filemode=None):
     if remote_path.startswith("hdfs"):  # hdfs://url:port/file_path
         try:
             cmd = 'hdfs dfs -put -f {} {}'.format(local_path, remote_path)
-            subprocess.Popen(cmd, shell=True)
+            process = subprocess.Popen(cmd, shell=True)
+            process.wait()
             if filemode:
                 chmod_cmd = 'hdfs dfs -chmod {} {}'.format(filemode, remote_path)
-                subprocess.Popen(chmod_cmd, shell=True)
+                process = subprocess.Popen(chmod_cmd, shell=True)
+                process.wait()
         except Exception as e:
             logger.error("Cannot upload file {} to {}: error: "
                          .format(local_path, remote_path, str(e)))
