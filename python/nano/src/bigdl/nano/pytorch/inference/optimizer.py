@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+from xml.etree.ElementInclude import include
 from torch import nn
 import subprocess
 from importlib.util import find_spec
@@ -23,39 +24,59 @@ import numpy as np
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch import Trainer
 
+_whole_acceleration_options = ["inc", "ipex", "onnxruntime", "openvino", "pot", 
+                               "bf16", "jit", "channels_last"]
+
+
+class AccelerationOption(object):
+    def __init__(self, *args, **kwargs):
+        '''
+        initialize optimization option
+        '''
+        for option in _whole_acceleration_options:
+            setattr(self, option, kwargs.get(option, False))
+
+    def get_precision(self):
+        if self.inc:
+            return "int8"
+        if self.bf16:
+            return "bf16"
+        return "fp32"
+
+    def get_accelerator(self):
+        if self.onnxruntime:
+            return "onnxruntime"
+        if self.openvino:
+            return "openvino"
+        if self.jit:
+            return "jit"
+        return None
+
 
 # acceleration method combinations, developers may want to register some new
 # combinations here
 ALL_INFERENCE_ACCELERATION_METHOD = \
     {
-        "None_fp32_noipex": {"inc": False, "ipex": False, "onnxruntime": False,
-                             "openvino": False, "pot": False, "bf16": False},
-        "None_fp32_ipex": {"inc": False, "ipex": True, "onnxruntime": False,
-                           "openvino": False, "pot": False, "bf16": False},
-        "None_bf16_noipex": {"inc": False, "ipex": False, "onnxruntime": False,
-                             "openvino": False, "pot": False, "bf16": True},
-        "None_bf16_ipex": {"inc": False, "ipex": True, "onnxruntime": False,
-                           "openvino": False, "pot": False, "bf16": True},
-        "None_int8_noipex": {"inc": True, "ipex": False, "onnxruntime": False,
-                             "openvino": False, "pot": False, "bf16": False},
-        "jit_fp32_noipex": {"inc": False, "ipex": False, "onnxruntime": False,
-                            "openvino": False, "pot": False, "bf16": False},
-        "jit_fp32_ipex": {"inc": False, "ipex": True, "onnxruntime": False,
-                          "openvino": False, "pot": False, "bf16": False},
-        "jit_bf16_noipex": {"inc": False, "ipex": False, "onnxruntime": False,
-                            "openvino": False, "pot": False, "bf16": True},
-        "jit_bf16_ipex": {"inc": False, "ipex": True, "onnxruntime": False,
-                          "openvino": False, "pot": False, "bf16": True},
-        "onnxruntime_fp32_noipex": {"inc": False, "ipex": False, "onnxruntime": True,
-                                    "openvino": False, "pot": False, "bf16": False},
-        "onnxruntime_int8_noipex_qlinear": {"inc": True, "ipex": False, "onnxruntime": True,
-                                            "openvino": False, "pot": False, "bf16": False},
-        "onnxruntime_int8_noipex_integer": {"inc": True, "ipex": False, "onnxruntime": True,
-                                            "openvino": False, "pot": False, "bf16": False},
-        "openvino_fp32_noipex": {"inc": False, "ipex": False, "onnxruntime": False,
-                                 "openvino": True, "pot": False, "bf16": False},
-        "openvino_int8_noipex": {"inc": False, "ipex": False, "onnxruntime": False,
-                                 "openvino": True, "pot": True, "bf16": False},
+        "None_fp32": AccelerationOption(),
+        "None_fp32_ipex": AccelerationOption(ipex=True),
+        "None_bf16": AccelerationOption(bf16=True),
+        "None_bf16_ipex": AccelerationOption(bf16=True, ipex=True),
+        "None_int8": AccelerationOption(inc=True),
+        "jit_fp32": AccelerationOption(jit=True),
+        "jit_fp32_ipex": AccelerationOption(jit=True, ipex=True),
+        "jit_fp32_ipex_clast": AccelerationOption(jit=True, ipex=True, 
+                                                  channels_last=True),
+        "jit_bf16": AccelerationOption(jit=True, bf16=True),
+        "jit_bf16_clast": AccelerationOption(jit=True, bf16=True,
+                                             channels_last=True),
+        "jit_bf16_ipex": AccelerationOption(jit=True, bf16=True, ipex=True),
+        "jit_bf16_ipex_clast": AccelerationOption(jit=True, bf16=True, 
+                                                  ipex=True, channels_last=True),
+        "onnxruntime_fp32": AccelerationOption(onnxtunrime=True),
+        "onnxruntime_int8_qlinear": AccelerationOption(onnxruntime=True, inc=True),
+        "onnxruntime_int8_integer": AccelerationOption(onnxruntime=True, inc=True),
+        "openvino_fp32": AccelerationOption(openvino=True),
+        "openvino_int8": AccelerationOption(openvino=True, inc=True),
     }
 
 
@@ -110,13 +131,12 @@ class Optimizer:
 
         for method, available in available_dict.items():
             if available:
-                # TODO: a much better way to parse the method string
-                split_method = method.split('_')
-                use_ipex = (split_method[2] == "ipex")
-                accelerator = None if split_method[0] == "None" else split_method[0]
-
+                instance = ALL_INFERENCE_ACCELERATION_METHOD[method]
+                use_ipex = instance.ipex
+                accelerator = instance.get_accelerator()
+                precision = instance.get_precision()
                 # if precision is fp32, then we will use trace method
-                if split_method[1] == "fp32":
+                if precision == "fp32":
                     input_sample = tuple(next(iter(training_data))[:-1])
                     try:
                         if accelerator is None and use_ipex is False:
@@ -126,27 +146,31 @@ class Optimizer:
                             accelerated_model = Trainer.trace(model=model,
                                                               accelerator=accelerator,
                                                               use_ipex=use_ipex,
+                                                              channels_last=instance.channels_last,
                                                               input_sample=input_sample)
                         # TODO: 100 trial run is now fixed, we may make it adjusted intelligently.
                         result_map[method] = {}
 
                         def func_test(model, input_sample):
                             model(*input_sample)
+
                         result_map[method]["latency"] =\
                             _throughput_calculate_helper(100, func_test,
                                                          accelerated_model, input_sample)
+
                         if validation_data is not None and metric is not None:
                             result_map[method]["accuracy"] =\
                                 _accuracy_calculate_helper(accelerated_model,
                                                            metric, validation_data)
+
                         result_map[method]["model"] = accelerated_model
+
                     except Exception as e:
                         print(e)
 
                 # if precision is int8 or bf16, then we will use quantize method
-                if split_method[1] == "int8" or split_method[1] == "bf16":
-                    precision = split_method[1]
-                    q_method = None if len(split_method) < 4 else split_method[3]
+                if precision in ("int8", "bf16"):
+                    ort_method = _detect_ort_method(method)
                     try:
                         # TODO: remove the logging of quantization
                         accelerated_model = Trainer.quantize(model=model,
@@ -154,23 +178,28 @@ class Optimizer:
                                                              accelerator=accelerator,
                                                              use_ipex=use_ipex,
                                                              calib_dataloader=training_data,
-                                                             method=q_method)
+                                                             method=ort_method)
                         result_map[method] = {}
 
                         def func_test(model, input_sample):
                             model(*input_sample)
+
                         result_map[method]["latency"] =\
                             _throughput_calculate_helper(100, func_test,
                                                          accelerated_model, input_sample)
+
                         if validation_data is not None and metric is not None:
                             result_map[method]["accuracy"] =\
                                 _accuracy_calculate_helper(accelerated_model,
                                                            metric, validation_data)
+
                         result_map[method]["model"] = accelerated_model
+
                     except Exception as e:
                         print(e)
             else:
                 pass
+
         self.optimized_model_dict = result_map
 
     def get_best_model(self,
@@ -231,6 +260,13 @@ def _bf16_checker():
     return "avx512_bf16" in msg or "amx_bf16" in msg
 
 
+def _detect_ort_method(method_name):
+    method_name = method_name.split("_") [-1]
+    if method_name in ["qlinear", "integer"]:
+        return method_name
+    return None
+    
+
 def _available_acceleration_combination():
     '''
     :return: a dictionary states the availablity (if meet depdencies)
@@ -242,11 +278,11 @@ def _available_acceleration_combination():
                           "pot": _openvino_checker,
                           "bf16": _bf16_checker}
     available_dict = {}
-    for method, dep in ALL_INFERENCE_ACCELERATION_METHOD.items():
+    for method, option in ALL_INFERENCE_ACCELERATION_METHOD.items():
         available_iter = True
-        for name, value in dep.items():
+        for name, value in option.__dict__.items():
             if value:
-                if not dependency_checker[name]():
+                if name in dependency_checker and not dependency_checker[name]():
                     available_iter = False
         available_dict[method] = available_iter
     return available_dict
