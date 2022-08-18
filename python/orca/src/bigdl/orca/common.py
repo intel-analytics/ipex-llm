@@ -217,11 +217,11 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=None, memory="2g
     if not cores:
         if cluster_mode == "local" and runtime == "spark":
             cores = "*"
-            print("Cluster_mode is local and runtime is spark, default to be '*'.")
+            print("For spark local mode, default to use all the cores on the node.")
         else:
             cores = 2
             import warnings
-            warnings.warn("No cores are specified, default to be 2.", Warning)
+            warnings.warn("Cores is not specified, using 2 cores per node by default.", Warning)
             
     if runtime == "ray":
         invalidInputError(cluster_mode is None,
