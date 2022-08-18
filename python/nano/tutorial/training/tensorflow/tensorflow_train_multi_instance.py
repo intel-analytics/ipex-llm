@@ -15,12 +15,12 @@
 
 
 import tensorflow as tf
-from tensorflow.keras import layers, Sequential
+from tensorflow.keras import layers
 from tensorflow.keras.applications import EfficientNetB0
 import tensorflow_datasets as tfds
 
-# Use `Model` in `bigdl.nano.tf.keras` instead of tensorflow's `Model`
-from bigdl.nano.tf.keras import Model
+# Use `Model` and `Sequential` in `bigdl.nano.tf.keras` instead of tensorflow's
+from bigdl.nano.tf.keras import Model, Sequential
 
 
 def create_datasets(img_size, batch_size):
