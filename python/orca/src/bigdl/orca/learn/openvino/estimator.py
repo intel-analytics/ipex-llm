@@ -81,8 +81,8 @@ class OpenvinoEstimator(SparkEstimator):
             inputs = self.inputs
         outputs = list(self.output_dict.keys())
         invalidInputError(len(outputs) != 0, "The number of model outputs should not be 0.")
-        isDF = True
-        schma = None
+        is_df = False
+        schema = None
 
         def partition_inference(partition):
             model_bytes = model_bytes_broadcast.value
@@ -106,47 +106,82 @@ class OpenvinoEstimator(SparkEstimator):
                 else:
                     return d, d_len
 
-            # for idx, batch_data in enumerate(partition):
-            for batch_data in partition:
+            def generate_output_row(batch_input_dict):
                 input_dict = dict()
-                elem_num = 0
-                if isinstance(batch_data, list):
-                    for i, input in enumerate(inputs):
-                        input_dict[input], elem_num = add_elem(batch_data[i])
-                else:
-                    input_dict[inputs[0]], elem_num = add_elem(batch_data)
+                for col, input in zip(feature_cols, inputs):
+                    value = batch_input_dict[col]
+                    feature_type = schema_dict[col]
+                    if isinstance(feature_type, df_types.FloatType):
+                        input_dict[input], elem_num = add_elem(np.array(value).astype(np.float32))
+                    elif isinstance(feature_type, df_types.IntegerType):
+                        input_dict[input], elem_num = add_elem(np.array(value).astype(np.int32))
+                    elif isinstance(feature_type, df_types.StringType):
+                        input_dict[input], elem_num = add_elem(np.array(value).astype(np.str))
+                    elif isinstance(feature_type, df_types.ArrayType):
+                        if isinstance(feature_type.elementType, df_types.StringType):
+                            input_dict[input], elem_num = add_elem(np.array(value).astype(np.str))
+                        else:
+                            input_dict[input], elem_num = add_elem(
+                                np.array(value).astype(np.float32))
+                    elif isinstance(value[0], DenseVector):
+                        input_dict[input], elem_num = add_elem(value.values.astype(np.float32))
+
                 infer_request.infer(input_dict)
                 if len(outputs) == 1:
-                    result = infer_request.output_blobs[outputs[0]].buffer[:elem_num]
+                    pred = infer_request.output_blobs[outputs[0]].buffer[:elem_num]
+                    pred = [[np.expand_dims(output, axis=0).tolist()] for output in pred]
                 else:
-                    result = list(map(lambda output:
-                                      infer_request.output_blobs[output].buffer[:elem_num],
-                                      outputs))
-                print("inference ", elem_num)
-                yield result
+                    pred = list(map(lambda output:
+                                    infer_request.output_blobs[output].buffer[:elem_num],
+                                    outputs))
+                    pred = [list(np.expand_dims(output, axis=0).tolist()
+                                 for output in single_result)
+                            for single_result in zip(*pred)]
+                return pred
 
-            batch_dict = {col: [] for col in feature_cols}
-            cnt = 0
-            schema_dict = {col: schema[col].dataType for col in feature_cols}
-            import pyspark.sql.types as df_types
-            from pyspark.ml.linalg import DenseVector
-            for row in partition:
-                for col in feature_cols:
-                    batch_dict[col].append(row[col])
-
-            for col, value in batch_dict.items():
-                feature_type = schema_dict[col]
-                if isinstance(feature_type, df_types.FloatType):
-                    result.append(np.array(row[name]).astype(np.float32))
-                elif isinstance(feature_type, df_types.IntegerType):
-                    result.append(np.array(row[name]).astype(np.int32))
-                elif isinstance(feature_type, df_types.ArrayType):
-                    if isinstance(feature_type.elementType, df_types.StringType):
-                        result.append(np.array(row[name]).astype(np.str))
+            if not is_df:
+                for batch_data in partition:
+                    input_dict = dict()
+                    elem_num = 0
+                    if isinstance(batch_data, list):
+                        for i, input in enumerate(inputs):
+                            input_dict[input], elem_num = add_elem(batch_data[i])
                     else:
-                        result.append(np.array(row[name]).astype(np.float32))
-                elif isinstance(value[0], DenseVector):
-                    result.append(row[name].values.astype(np.float32))
+                        input_dict[inputs[0]], elem_num = add_elem(batch_data)
+                    infer_request.infer(input_dict)
+                    if len(outputs) == 1:
+                        pred = infer_request.output_blobs[outputs[0]].buffer[:elem_num]
+                    else:
+                        pred = list(map(lambda output:
+                                        infer_request.output_blobs[output].buffer[:elem_num],
+                                        outputs))
+                    yield pred
+            else:
+                batch_dict = {col: [] for col in feature_cols}
+                batch_row = []
+                cnt = 0
+                schema_dict = {col: schema[col].dataType for col in feature_cols}
+                import pyspark.sql.types as df_types
+                from pyspark.ml.linalg import DenseVector
+                from pyspark.sql import Row
+                for row in partition:
+                    cnt += 1
+                    batch_row.append(row)
+                    for col in feature_cols:
+                        batch_dict[col].append(row[col])
+                    if cnt >= batch_size:
+                        pred = generate_output_row(batch_dict)
+                        for r, p in zip(batch_row, pred):
+                            row = Row(*([r[col] for col in r.__fields__] + p))
+                            yield row
+                        batch_dict = {col: [] for col in feature_cols}
+                        batch_row = []
+                        cnt = 0
+                if cnt > 0:
+                    pred = generate_output_row(batch_dict)
+                    for r, p in zip(batch_row, pred):
+                        row = Row(*([r[col] for col in r.__fields__] + p))
+                        yield row
 
         def predict_transform(dict_data, batch_size):
             invalidInputError(isinstance(dict_data, dict), "each shard should be an dict")
@@ -173,55 +208,70 @@ class OpenvinoEstimator(SparkEstimator):
 
         if isinstance(data, DataFrame):
             from bigdl.orca.learn.utils import dataframe_to_xshards
-            from bigdl.orca import OrcaContext
-            OrcaContext._shard_size = batch_size
+            from pyspark.sql.types import StructType, StructField, FloatType, ArrayType
+            is_df = True
             schema = data.schema
-            xshards, _ = dataframe_to_xshards(data,
-                                              validation_data=None,
-                                              feature_cols=feature_cols,
-                                              label_cols=None,
-                                              mode="predict")
-            OrcaContext._shard_size = None
-            transformed_data = xshards.transform_shard(predict_transform, batch_size)
-            result_rdd = transformed_data.rdd.mapPartitions(lambda iter: partition_inference(iter))
+            result = data.rdd.mapPartitions(lambda iter: partition_inference(iter))
 
-            def divide(data):
-                if len(data) > 1:
-                    # add batch dim
-                    result = [list(np.expand_dims(output, axis=0).tolist()
-                                   for output in single_result) for single_result in zip(*data)]
-                    return result
-                else:
-                    data
+            # Deal with types
+            result_struct = []
+            for key, shape in self.output_dict.items():
+                struct_type = FloatType()
+                for _ in range(len(shape)):
+                    struct_type = ArrayType(struct_type)
+                result_struct.append(StructField(key, struct_type))
 
-            def add_predict_rdd_to_dataframe(df, prediction_rdd):
-                from pyspark.sql import Row
-                from pyspark.sql.types import StructType, StructField, FloatType, ArrayType
+            schema = StructType(schema.fields + result_struct)
+            result_df = result.toDF(schema)
+            return result_df
 
-                # Deal with types
-                result_struct = []
-                for key, shape in self.output_dict.items():
-                    struct_type = FloatType()
-                    for _ in range(len(shape)):
-                        struct_type = ArrayType(struct_type)
-                    result_struct.append(StructField(key, struct_type))
 
-                def combine(pair):
-                    # multi-output
-                    if len(result_struct) > 1:
-                        row = Row(*([pair[0][col] for col in pair[0].__fields__] + pair[1]))
-                    # single output
-                    else:
-                        # TODO: scalar may cause error?
-                        row = Row(*([pair[0][col] for col in pair[0].__fields__] + [pair[1]]))
-                    return row
-
-                combined_rdd = df.rdd.zip(prediction_rdd).map(combine)
-                schema = StructType(df.schema.fields + result_struct)
-                result_df = combined_rdd.toDF(schema)
-                return result_df
-
-            return add_predict_rdd_to_dataframe(data, result_rdd.flatMap(lambda data: divide(data)))
+            # xshards, _ = dataframe_to_xshards(data,
+            #                                   validation_data=None,
+            #                                   feature_cols=feature_cols,
+            #                                   label_cols=None,
+            #                                   mode="predict")
+            # OrcaContext._shard_size = None
+            # transformed_data = xshards.transform_shard(predict_transform, batch_size)
+            # result_rdd = transformed_data.rdd.mapPartitions(lambda iter: partition_inference(iter))
+            #
+            # def divide(data):
+            #     if len(data) > 1:
+            #         # add batch dim
+            #         result = [list(np.expand_dims(output, axis=0).tolist()
+            #                        for output in single_result) for single_result in zip(*data)]
+            #         return result
+            #     else:
+            #         data
+            #
+            # def add_predict_rdd_to_dataframe(df, prediction_rdd):
+            #     from pyspark.sql import Row
+            #     from pyspark.sql.types import StructType, StructField, FloatType, ArrayType
+            #
+            #     # Deal with types
+            #     result_struct = []
+            #     for key, shape in self.output_dict.items():
+            #         struct_type = FloatType()
+            #         for _ in range(len(shape)):
+            #             struct_type = ArrayType(struct_type)
+            #         result_struct.append(StructField(key, struct_type))
+            #
+            #     def combine(pair):
+            #         # multi-output
+            #         if len(result_struct) > 1:
+            #             row = Row(*([pair[0][col] for col in pair[0].__fields__] + pair[1]))
+            #         # single output
+            #         else:
+            #             # TODO: scalar may cause error?
+            #             row = Row(*([pair[0][col] for col in pair[0].__fields__] + [pair[1]]))
+            #         return row
+            #
+            #     combined_rdd = df.rdd.zip(prediction_rdd).map(combine)
+            #     schema = StructType(df.schema.fields + result_struct)
+            #     result_df = combined_rdd.toDF(schema)
+            #     return result_df
+            #
+            # return add_predict_rdd_to_dataframe(data, result_rdd.flatMap(lambda data: divide(data)))
         elif isinstance(data, SparkXShards):
             transformed_data = data.transform_shard(predict_transform, batch_size)
             result_rdd = transformed_data.rdd.mapPartitions(lambda iter: partition_inference(iter))

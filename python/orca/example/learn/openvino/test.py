@@ -17,7 +17,7 @@ spark1 = OrcaContext.get_spark_session()
 
 rdd = sc.range(0, 16, numSlices=2)
 df = rdd.map(lambda x: [x, np.random.rand(907500).tolist()]).toDF(["index", "input"])
-df.show()
+# df.show()
 
 
 def reshape(x):
@@ -42,7 +42,12 @@ est = Estimator.from_openvino(
     model_path='/home/yina/Documents/data/myissue/openvino_model/FP32/model_float32.xml')  # load model
 
 result_df = est.predict(df, feature_cols=["input"], batch_size=4)
+# df.show()
 result_df.show()
+# result_df = result_df.drop("input")
+#
+# c = result_df.collect()
+# c
 
 # arr_images = np.squeeze(np.array(df.select('input').collect()))
 # arr_images = np.append(arr_images, arr_images, axis=0)
