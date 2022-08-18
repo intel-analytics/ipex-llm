@@ -172,7 +172,7 @@ def _check_python_micro_version():
                           f"with micro version >= 10 (e.g. 3.{sys.version_info[1]}.10)")
 
 
-def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", num_nodes=1,
+def init_orca_context(cluster_mode=None, runtime="spark", cores=None, memory="2g", num_nodes=1,
                       init_ray_on_spark=False, **kwargs):
     """
     Creates or gets a SparkContext for different Spark cluster modes (and launch Ray services
@@ -210,6 +210,11 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
     print("Initializing orca context")
     import atexit
     atexit.register(stop_orca_context)
+    if not cores:
+        if cluster_mode == "local":
+            cores = "*"
+        else:
+            cores = 2
     if runtime == "ray":
         invalidInputError(cluster_mode is None,
                           "Currently, cluster_mode is not supported for ray runtime and"
