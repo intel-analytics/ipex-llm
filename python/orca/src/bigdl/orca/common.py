@@ -197,9 +197,10 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=None, memory="2g
            arguments master and container_image.
     :param runtime: The runtime for backend. One of "ray" and "spark". Default to be "spark".
     :param cores: The number of cores to be used on each node.
-           For spark local mode, default to use all the cores on the node.
+           For Spark local mode, default to use all the cores on the node.
            For other cluster_mode, default to use 2 cores per node.
-           You are highly recommended to set this value by yourself.
+           You are highly recommended to set this value by yourself,
+           instead of using the default one.
     :param memory: The memory allocated for each node. Default to be '2g'.
     :param num_nodes: The number of nodes to be used in the cluster. Default to be 1.
            For Spark local, num_nodes should always be 1 and you don't need to change it.
@@ -217,11 +218,11 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=None, memory="2g
     if not cores:
         if cluster_mode == "local" and runtime == "spark":
             cores = "*"
-            print("For spark local mode, default to use all the cores on the node.")
+            print("For Spark local mode, default to use all the cores on the node.")
         else:
             cores = 2
             import warnings
-            warnings.warn("Cores is not specified, using 2 cores per node by default.", Warning)
+            warnings.warn("Cores not specified, using 2 cores per node by default.", Warning)
 
     if runtime == "ray":
         invalidInputError(cluster_mode is None,
