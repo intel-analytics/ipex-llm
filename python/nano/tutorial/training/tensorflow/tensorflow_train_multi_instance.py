@@ -26,7 +26,7 @@ from bigdl.nano.tf.keras import Model
 def create_datasets(img_size, batch_size):
     (ds_train, ds_test), ds_info = tfds.load(
         "stanford_dogs",
-        split=['train', 'test'],
+        split=['train[:2048]', 'test[:2048]'],
         with_info=True,
         as_supervised=True
     )
@@ -81,8 +81,8 @@ if __name__ == '__main__':
     ds_train, ds_test, ds_info = create_datasets(img_size=img_size, batch_size=batch_size)
     
     num_classes = ds_info.features['label'].num_classes
-    steps_per_epoch = ds_info.splits['train[:10%]'].num_examples // batch_size
-    validation_steps = ds_info.splits['test[:10%]'].num_examples // batch_size
+    steps_per_epoch = ds_info.splits['train[:2048]'].num_examples // batch_size
+    validation_steps = ds_info.splits['test[:2048]'].num_examples // batch_size
 
     # Multi-Instance Training
     # 

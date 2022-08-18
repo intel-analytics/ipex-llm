@@ -143,8 +143,8 @@ jobs:
             pip install jupyter nbconvert
             pip install neural-compressor==1.11
             pip install tensorflow-datasets
-            bash python/nano/notebooks/tensorflow/tutorial/run-nano-notebooks-tensorflow-tutorial-tests.sh
             bash python/nano/tutorial/training/tensorflow/run-nano-tensorflow-test.sh
+            bash python/nano/notebooks/tensorflow/tutorial/run-nano-notebooks-tensorflow-tutorial-tests.sh
             source $CONDA/bin/deactivate
             $CONDA/bin/conda remove -n notebooks-tutorial-tensorflow --all
         env:
