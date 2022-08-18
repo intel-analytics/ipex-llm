@@ -102,5 +102,5 @@ if __name__ == '__main__':
               steps_per_epoch=steps_per_epoch,
               validation_data=ds_test,
               validation_steps=validation_steps,
-              num_processes=4,
+              num_processes=2,
               backend='multiprocessing')
