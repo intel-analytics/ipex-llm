@@ -13,20 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+import os
+import pytest
 import shutil
 import tempfile
 from unittest import TestCase
-import time
 
-import time
 import numpy as np
-import pytest
 import tensorflow as tf
 
 from bigdl.orca.learn.tf2 import Estimator
 from bigdl.orca import OrcaContext
 
-import os
 
 resource_path = os.path.join(
     os.path.realpath(os.path.dirname(__file__)), "../../../../resources")
@@ -126,7 +125,7 @@ class TestTFEstimator(TestCase):
                 model_creator=model_creator,
                 verbose=True,
                 config=config,
-                workers_per_node=2,
+                workers_per_node=3,
                 backend="spark",
                 model_dir=temp_dir)
 
