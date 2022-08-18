@@ -26,7 +26,7 @@ else
     echo "both /dev/sgx/provision /dev/sgx_provision are not ready, please check the kernel and driver"
 fi
 
-if [ -c "/ppml/trusted-big-data-ml/secured_argvs" ]; then
+if [ -f "/ppml/trusted-big-data-ml/secured_argvs" ]; then
     echo "/ppml/trusted-big-data-ml/secured_argvs is ready"
 else
     echo "/ppml/trusted-big-data-ml/secured_argvs is not ready, please generate it before init.sh"
