@@ -20,15 +20,15 @@ In this example, a news dataset is used to demonstrate the training and testing 
 Each row contains several feature values, timestamps and two labels. Using the timestamp to divide the training and testing sets. 
 The click prediction (classification) and duration time prediction (regression) are two output targets. Original data examples are as follows:
 ```angular2html
-+----------+----------+-------------------+----------+----------+-------------+-----+--------+------+-------+--------+----+------+------+-------------------+-------+-----+-------------+
-|   user_id|article_id|          expo_time|net_status|flush_nums|exop_position|click|duration|device|     os|province|city|   age|gender|              ctime|img_num|cat_1|        cat_2|
-+----------+----------+-------------------+----------+----------+-------------+-----+--------+------+-------+--------+----+------+------+-------------------+-------+-----+-------------+
-|1000541010| 464467760|2021-06-30 09:57:14|         2|         0|           13|    1|      28|V2054A|Android|    上海|上海|A_0_24|female|2021-06-29 14:46:43|      3| 娱乐|娱乐/港台明星|
-|1000541010| 463850913|2021-06-30 09:57:14|         2|         0|           15|    0|       0|V2054A|Android|    上海|上海|A_0_24|female|2021-06-27 22:29:13|     11| 时尚|时尚/女性时尚|
-|1000541010| 464022440|2021-06-30 09:57:14|         2|         0|           17|    0|       0|V2054A|Android|    上海|上海|A_0_24|female|2021-06-28 12:22:54|      7| 农村|农村/农业资讯|
-|1000541010| 464586545|2021-06-30 09:58:31|         2|         1|           20|    0|       0|V2054A|Android|    上海|上海|A_0_24|female|2021-06-29 13:25:06|      5| 娱乐|娱乐/港台明星|
-|1000541010| 465352885|2021-07-03 18:13:03|         5|         0|           18|    0|       0|V2054A|Android|    上海|上海|A_0_24|female|2021-07-02 10:43:51|     18| 娱乐|娱乐/港台明星|
-+----------+----------+-------------------+----------+----------+-------------+-----+--------+------+-------+--------+----+------+------+-------------------+-------+-----+-------------+
++----------+----------+-------------------+----------+----------+-------------+-----+--------+------+-------+--------+--------+------+------+-------------------+-------+-------------+--------------------+
+|   user_id|article_id|          expo_time|net_status|flush_nums|exop_position|click|duration|device|     os|province|    city|   age|gender|              ctime|img_num|        cat_1|               cat_2|
++----------+----------+-------------------+----------+----------+-------------+-----+--------+------+-------+--------+--------+------+------+-------------------+-------+-------------+--------------------+
+|1000541010| 464467760|2021-06-30 09:57:14|         2|         0|           13|    1|      28|V2054A|Android|Shanghai|Shanghai|A_0_24|female|2021-06-29 14:46:43|      3|Entertainment| Entertainment/Stars|
+|1000541010| 463850913|2021-06-30 09:57:14|         2|         0|           15|    0|       0|V2054A|Android|Shanghai|Shanghai|A_0_24|female|2021-06-27 22:29:13|     11|     Fashions|Fashions/Female F...|
+|1000541010| 464022440|2021-06-30 09:57:14|         2|         0|           17|    0|       0|V2054A|Android|Shanghai|Shanghai|A_0_24|female|2021-06-28 12:22:54|      7|        Rural|Rural/Agriculture...|
+|1000541010| 464586545|2021-06-30 09:58:31|         2|         1|           20|    0|       0|V2054A|Android|Shanghai|Shanghai|A_0_24|female|2021-06-29 13:25:06|      5|Entertainment| Entertainment/Stars|
+|1000541010| 465352885|2021-07-03 18:13:03|         5|         0|           18|    0|       0|V2054A|Android|Shanghai|Shanghai|A_0_24|female|2021-07-02 10:43:51|     18|Entertainment| Entertainment/Stars|
++----------+----------+-------------------+----------+----------+-------------+-----+--------+------+-------+--------+--------+------+------+-------------------+-------+-------------+--------------------+
 ```
 
 With the built-in high-level preprocessing operations in FeatureTable, we can easily perform distributed pre-processing for large-scale data.

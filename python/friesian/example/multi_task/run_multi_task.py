@@ -32,7 +32,8 @@ def build_model(model_type, sparse_features, dense_features, feature_max_idx):
     dense_feature_columns = [DenseFeat(feat, 1) for feat in dense_features]
     dnn_features_columns = sparse_feature_columns + dense_feature_columns
     if model_type == 'mmoe':
-        model = MMOE(dnn_features_columns, tower_dnn_hidden_units=[], task_types=['regression', 'binary'],
+        model = MMOE(dnn_features_columns, tower_dnn_hidden_units=[],
+                     task_types=['regression', 'binary'],
                      task_names=['duration', 'click'])
     elif model_type == 'ple':
         model = PLE(dnn_features_columns, shared_expert_num=1, specific_expert_num=1,
@@ -45,7 +46,8 @@ def build_model(model_type, sparse_features, dense_features, feature_max_idx):
 
 
 def model_creator(config):
-    model = build_model(model_type=config['model_type'], sparse_features=config['column_info']['cat_cols'],
+    model = build_model(model_type=config['model_type'],
+                        sparse_features=config['column_info']['cat_cols'],
                         dense_features=config['column_info']['continuous_cols'],
                         feature_max_idx=config['column_info']['feature_max_idx'])
     model.compile(optimizer='adam',
@@ -62,7 +64,8 @@ def feature_cols(column_info):
     return column_info["cat_cols"] + column_info["embed_cols"] + column_info["continuous_cols"]
 
 
-def train_multi_task(train_tbl_data, valid_tbl_data, save_path, model, cat_cols, continuous_cols, feature_max_idx):
+def train_multi_task(train_tbl_data, valid_tbl_data, save_path, model,
+                     cat_cols, continuous_cols, feature_max_idx):
     column_info = {
         "cat_cols": cat_cols,
         "continuous_cols": continuous_cols,
@@ -154,12 +157,13 @@ def _parse_args():
     parser.add_argument('--model_type', type=str, default="mmoe",
                         help='The multi task model, mmoe or ple.')
     parser.add_argument('--train_data_path', type=str,
-                        default='../dataset/news-dataset-parquet/train_processed_processed/',
+                        default='path/to/training/dataset',
                         help='The path for training dataset.')
     parser.add_argument('--test_data_path', type=str,
-                        default='../dataset/news-dataset-parquet/test_processed_processed/',
+                        default='path/to/testing/dataset',
                         help='The path for testing dataset.')
-    parser.add_argument('--model_save_path', type=str, default='./recsys_multi_task/model_ple_10.bin',
+    parser.add_argument('--model_save_path', type=str,
+                        default='path/to/save/the/trained/model',
                         help='The path for saving the trained model.')
     parser.add_argument('--cluster_mode', type=str, default="local",
                         help='The cluster mode, such as local, yarn, standalone or spark-submit.')

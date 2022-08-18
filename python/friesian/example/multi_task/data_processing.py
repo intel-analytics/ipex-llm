@@ -148,9 +148,9 @@ if __name__ == '__main__':
     df_train, df_test = read_and_split(args.input_path, sparse_int_features_,
                                        sparse_string_features_, dense_features_)
     train_tbl_, valid_tbl_ = feature_engineering(df_train, df_test,
-                                               model_path_, model_path_json_,
-                                               sparse_int_features_,
-                                               sparse_string_features_, dense_features_)
+                                                 model_path_, model_path_json_,
+                                                 sparse_int_features_,
+                                                 sparse_string_features_, dense_features_)
     print(train_tbl_.size())
     print(valid_tbl_.size())
     train_tbl_.write_parquet(os.path.join(args.output_path, 'train_processed'))
