@@ -138,7 +138,7 @@ case "$SPARK_K8S_CMD" in
           spark_commnd=$ATTESTATION_COMMAND" && "$spark_commnd
         fi
         echo $spark_commnd && \
-        gramine-argv-serializer bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && export _SPARK_AUTH_SECRET=$_SPARK_AUTH_SECRET && $spark_commnd" > /ppml/trusted-big-data-ml/secured-argvs && \
+        gramine-argv-serializer bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && export _SPARK_AUTH_SECRET=$_SPARK_AUTH_SECRET && $spark_commnd" > /ppml/trusted-big-data-ml/secured_argvs && \
         ./init.sh && \
         gramine-sgx bash  1>&2
     fi
@@ -189,7 +189,7 @@ case "$SPARK_K8S_CMD" in
         spark_commnd=$ATTESTATION_COMMAND" && "$spark_commnd
       fi
       echo $spark_commnd && \
-      gramine-argv-serializer bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && export _SPARK_AUTH_SECRET=$_SPARK_AUTH_SECRET && $spark_commnd" > /ppml/trusted-big-data-ml/secured-argvs && \
+      gramine-argv-serializer bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && export _SPARK_AUTH_SECRET=$_SPARK_AUTH_SECRET && $spark_commnd" > /ppml/trusted-big-data-ml/secured_argvs && \
       ./init.sh && \
       gramine-sgx bash  1>&2
     fi

@@ -138,7 +138,7 @@ spark_submit_command="${spark_submit_command} ${input_args} ${application_args}"
 echo "spark_submit_command $spark_submit_command"
 if [ "$SGX_ENABLED" == "true" ] && [ "$DEPLOY_MODE" != "cluster" ]; then
     ./clean.sh
-    gramine-argv-serializer bash -c "$spark_submit_command" > /ppml/trusted-big-data-ml/secured-argvs
+    gramine-argv-serializer bash -c "$spark_submit_command" > /ppml/trusted-big-data-ml/secured_argvs
 
     ./init.sh
     gramine-sgx bash 2>&1 | tee bigdl-ppml-submit.log
