@@ -19,6 +19,9 @@ from tensorflow.keras import layers, Sequential
 from tensorflow.keras.applications import EfficientNetB0
 import tensorflow_datasets as tfds
 
+# Use `Model` in `bigdl.nano.tf.keras` instead of tensorflow's `Model`
+from bigdl.nano.tf.keras import Model
+
 
 def create_datasets(img_size, batch_size):
     (ds_train, ds_test), ds_info = tfds.load(
@@ -50,9 +53,6 @@ def create_datasets(img_size, batch_size):
 
 
 def create_model(num_classes, img_size, learning_rate=1e-2):
-    # Use `Model` in `bigdl.nano.tf.keras` to replace tensorflow's `Model`
-    from bigdl.nano.tf.keras import Model
-
     inputs = layers.Input(shape = (img_size, img_size, 3))
 
     backbone = EfficientNetB0(include_top=False, input_tensor=inputs)
