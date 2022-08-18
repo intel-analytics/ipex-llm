@@ -76,13 +76,13 @@ def create_model(num_classes, img_size, learning_rate=1e-2):
 if __name__ == '__main__':
     img_size = 224
     batch_size = 32
-    num_epochs = 10
+    num_epochs = 1
     
     ds_train, ds_test, ds_info = create_datasets(img_size=img_size, batch_size=batch_size)
     
     num_classes = ds_info.features['label'].num_classes
-    steps_per_epoch = ds_info.splits['train[:5%]'].num_examples // batch_size
-    validation_steps = ds_info.splits['test[:5%]'].num_examples // batch_size
+    steps_per_epoch = ds_info.splits['train'].num_examples // batch_size
+    validation_steps = ds_info.splits['test'].num_examples // batch_size
 
     # Multi-Instance Training
     # 
@@ -92,7 +92,7 @@ if __name__ == '__main__':
     # BigDL-Nano makes it very easy to conduct multi-instance training correctly.
     # 
     # Use `Model` or `Sequential` in `bigdl.nano.tf.keras` to create model,
-    # then just set the `num_processes` and `backend` parameter in the `fit` method.
+    # then just set the `num_processes` parameter in the `fit` method.
     # BigDL-Nano will launch the specific number of processes to perform data-parallel training.
     #
     model = create_model(num_classes=num_classes, img_size=img_size)
@@ -101,5 +101,4 @@ if __name__ == '__main__':
               steps_per_epoch=steps_per_epoch,
               validation_data=ds_test,
               validation_steps=validation_steps,
-              num_processes=4,
-              backend='multiprocessing')
+              num_processes=4)
