@@ -58,23 +58,23 @@ python wdl.py \
     --instances_per_node 3 \
     --data_location /folder/path/to/train/and/test/files \
     --checkpoint /path/to/save/model/checkpoint \
+    --ev True \
+    --ev_filter counter \
     --smartstaged False \
-    --ev True \ 
-    --emb_fusion False \
-    --ev_filter counter
+    --emb_fusion False
 ```
 - K8s mode:
 ```bash
 python wdl.py \
     --cluster_mode k8s \
-    --num_nodes 3 \
     --master k8s://https://ip:port \
+    --num_nodes 3 \
     --data_location /folder/path/to/train/and/test/files \
     --checkpoint /path/to/save/model/checkpoint \
-    --smartstaged False \
     --ev True \
+    --ev_filter counter \
+    --smartstaged False \
     --emb_fusion False \
-    --ev_filter counter
 ```
 
 For DeepRec related arguments, please refer to the original example for more description.
