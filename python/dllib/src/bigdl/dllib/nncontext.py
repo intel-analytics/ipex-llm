@@ -613,8 +613,8 @@ def init_nncontext(conf=None, cluster_mode="spark-submit", spark_log_level="WARN
                                    executor_memory=memory, **spark_args)
     else:
         invalidInputError(False,
-                          "cluster_mode can only be local, yarn-client, yarn-cluster, standalone "
-                          "or spark-submit, "
+                          "cluster_mode can only be local, yarn-client, yarn-cluster, standalone, "
+                          "spark-submit, spark-submit or bigdl-submit, "
                           "but got: %s".format(cluster_mode))
     return sc
 

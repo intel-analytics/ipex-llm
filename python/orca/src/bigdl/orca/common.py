@@ -180,7 +180,8 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=None, memory="2g
 
     :param runtime: The runtime for backend. One of "ray" and "spark". Default to be "spark".
     :param cluster_mode: The mode for the Spark cluster. One of "local", "yarn-client",
-           "yarn-cluster", "k8s-client", "k8s-cluster" and "standalone".
+           "yarn-cluster", "k8s-client", "k8s-cluster", "standalone", "spark-submit"
+           and "bigdl-submit".
            You are highly recommended to install and run bigdl through pip, which is more
            convenient.
 
@@ -195,7 +196,7 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=None, memory="2g
            For "k8s-client" and "k8s-cluster", you are supposed to additionally specify the
            arguments master and container_image.
     :param runtime: The runtime for backend. One of "ray" and "spark". Default to be "spark".
-    :param cores: The number of cores to be used on each node. Default to be 2.
+    :param cores: The number of cores to be used on each node. Default to be None.
     :param memory: The memory allocated for each node. Default to be '2g'.
     :param num_nodes: The number of nodes to be used in the cluster. Default to be 1.
            For Spark local, num_nodes should always be 1 and you don't need to change it.
@@ -211,10 +212,14 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=None, memory="2g
     import atexit
     atexit.register(stop_orca_context)
     if not cores:
-        if cluster_mode == "local":
+        if cluster_mode == "local" and runtime == "spark":
             cores = "*"
+            print("Cluster_mode is local and runtime is spark, default to be '*'.")
         else:
             cores = 2
+            import warnings
+            warnings.warn("No cores are specified, default to be 2.", Warning)
+            
     if runtime == "ray":
         invalidInputError(cluster_mode is None,
                           "Currently, cluster_mode is not supported for ray runtime and"
