@@ -19,8 +19,9 @@ import numpy as np
 import pandas as pd
 from unittest import TestCase
 
-from bigdl.chronos.forecaster.lstm_forecaster import LSTMForecaster
+from bigdl.chronos.forecaster import LSTMForecaster
 from bigdl.chronos.detector.anomaly import ThresholdDetector
+from ... import op_torch
 
 
 class TestThresholdDetector(TestCase):
@@ -55,6 +56,7 @@ class TestThresholdDetector(TestCase):
             Y.append(data[i + look_back][target_col_indexes])
         return np.array(X).astype(np.float32), np.array(Y).astype(np.float32)
 
+    @op_torch
     def test_fit_score(self):
         look_back = 4
 

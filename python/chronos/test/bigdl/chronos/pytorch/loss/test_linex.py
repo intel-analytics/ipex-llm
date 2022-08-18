@@ -14,12 +14,15 @@
 # limitations under the License.
 #
 
-import torch
-
-from bigdl.chronos.pytorch.loss import LinexLoss
+from bigdl.chronos.utils import LazyImport
+torch = LazyImport('torch')
+LinexLoss = LazyImport('bigdl.chronos.pytorch.loss.LinexLoss')
 from unittest import TestCase
 import pytest
+from ... import op_torch
 
+
+@op_torch
 class TestChronosPytorchLoss(TestCase):
 
     def setUp(self):
