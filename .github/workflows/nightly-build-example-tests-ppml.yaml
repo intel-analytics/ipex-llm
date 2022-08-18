@@ -42,6 +42,9 @@ jobs:
       run: |
         echo "SELECT_RUNNING_EXAMPLE=${{ github.event.inputs.select_running_example || env.DEFAULT_EXAMPLE }} " >> $GITHUB_ENV
         echo "SGX_MEM_SIZE=${{ github.event.inputs.sgx_mem_size || env.DEFAULT_MEM_SIZE }}" >> $GITHUB_ENV
+    - name: debug
+      run: |
+        echo $IMAGE
     - name: build container
       run: |
         set -x
