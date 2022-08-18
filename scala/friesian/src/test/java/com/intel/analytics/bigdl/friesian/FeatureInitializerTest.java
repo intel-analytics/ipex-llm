@@ -24,28 +24,21 @@ import com.intel.analytics.bigdl.friesian.serving.utils.EncodeUtils;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import scala.collection.JavaConverters;
-import scala.collection.Seq;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 
+import static com.intel.analytics.bigdl.friesian.JavaTestUtils.convertListToSeq;
+import static com.intel.analytics.bigdl.friesian.JavaTestUtils.destroyLettuceUtilsInstance;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FeatureInitializerTest {
 
-
-    public static Seq<String> convertListToSeq(String[] inputArray) {
-        return JavaConverters.asScalaIteratorConverter(Arrays.asList(inputArray).iterator()).asScala().toSeq();
-    }
 
     private String generateID(String keyPrefix, String ID) {
         String redisKeyPrefix = NearlineUtils.helper().redisKeyPrefix();
@@ -88,16 +81,10 @@ public class FeatureInitializerTest {
         });
     }
 
-    @BeforeEach
-    public void removeLettuceInstance() throws NoSuchFieldException, IllegalAccessException {
-        Field field = LettuceUtils.class.getDeclaredField("instance");
-        field.setAccessible(true);
-        field.set(null, null);
-    }
-
     @ParameterizedTest
     @ValueSource(strings = {"testConfig/config_feature_init.yaml", "testConfig/config_feature_vec_init.yaml"})
-    public void testFeatureInit(String configPath) throws IOException, InterruptedException {
+    public void testFeatureInit(String configPath)
+            throws IOException, InterruptedException, NoSuchFieldException, IllegalAccessException {
         URL resource = getClass().getClassLoader().getResource(configPath);
         assert resource != null;
         FeatureInitializer.main(new String[]{"-c", resource.getPath()});
@@ -129,5 +116,6 @@ public class FeatureInitializerTest {
             checkRedisRecord(redis, "item", dataset);
         }
         System.out.println("Finish Test");
+        destroyLettuceUtilsInstance();
     }
 }
