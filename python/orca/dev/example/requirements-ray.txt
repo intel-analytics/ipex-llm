@@ -22,3 +22,4 @@ xgboost_ray
 argparse
 Pillow
 pyarrow==4.0.1
+h5py==2.10.0
