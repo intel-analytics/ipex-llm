@@ -15,14 +15,17 @@
 #
 
 from torch import nn
-from bigdl.nano.utils.log4Error import invalidInputError
+import subprocess
 from importlib.util import find_spec
 import time
 import numpy as np
+
+from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch import Trainer
-import subprocess
 
 
+# acceleration method combinations, developers may want to register some new
+# combinations here
 ALL_INFERENCE_ACCELERATION_METHOD = \
     {
         "None_fp32_noipex": {"inc": False, "ipex": False, "onnxruntime": False,
@@ -56,12 +59,14 @@ ALL_INFERENCE_ACCELERATION_METHOD = \
     }
 
 
-class Optimizor:
+class Optimizer:
 
     def __init__(self):
         '''
-        initialize an optimizor
+        initialize an optimizer
         '''
+        # optimized_model_dict handles the optimized model and some metadata
+        # in {"method_name": {"latency": ..., "accuracy": ..., "model": ...}}
         self.optimized_model_dict = {}
 
     def optimize(self, model,
@@ -71,6 +76,10 @@ class Optimizor:
                  direction=None,
                  cpu_num=None):
         '''
+        This function will give all available inference acceleration methods a try
+        and record the latency, accuracy and model instance inside the Optimizer for
+        future usage.
+
         :param model: A nn.module to be optimized
         :param training_data: A pytorch dataloader for training dataset.
                Users should be careful with this parameter since this dataloader
@@ -84,23 +93,30 @@ class Optimizor:
         :param metric: (optional) A callable object takes prediction and target
                and returns a accuracy value in this calling method `metric(pred, target)`
         :param direction: (optional) A string that indicates the higher/lower
-               better for the metric
+               better for the metric, "min" for the lower the better and "max" for the
+               higher the better.
         :param cpu_num: (optional) a int represents how many cores is needed for
                inference.
         '''
         # TODO: direction to be implemented
         # TODO: cpu_num to be implemented
+
+        # check if model is a nn.Module or inherited from a nn.Module
         invalidInputError(isinstance(model, nn.Module), "model should be a nn module.")
 
+        # get the available methods which 
         available_dict = _available_acceleration_combination()
         result_map = {}
 
         for method, available in available_dict.items():
             if available:
+                # TODO: a much better way to parse the method string
                 split_method = method.split('_')
                 use_ipex = (split_method[2] == "ipex")
                 accelerator = None if split_method[0] == "None" else split_method[0]
-                if split_method[1] == "fp32":  # trace
+
+                # if precision is fp32, then we will use trace method
+                if split_method[1] == "fp32":
                     input_sample = tuple(next(iter(training_data))[:-1])
                     try:
                         if accelerator is None and use_ipex is False:
@@ -111,13 +127,14 @@ class Optimizor:
                                                               accelerator=accelerator,
                                                               use_ipex=use_ipex,
                                                               input_sample=input_sample)
+                        # TODO: 100 trial run is now fixed, we may make it adjusted intelligently.
+                        result_map[method] = {}
 
                         def func_test(model, input_sample):
                             model(*input_sample)
-                        # TODO: 100 trial run is now fixed, we may make it adjusted intelligently.
-                        result_map[method] = {"latency":
+                        result_map[method]["latency"] =\
                             _throughput_calculate_helper(100, func_test,
-                                                         accelerated_model, input_sample)}
+                                                         accelerated_model, input_sample)
                         if validation_data is not None and metric is not None:
                             result_map[method]["accuracy"] =\
                                 _accuracy_calculate_helper(accelerated_model,
@@ -126,7 +143,8 @@ class Optimizor:
                     except Exception as e:
                         print(e)
 
-                if split_method[1] == "int8" or split_method[1] == "bf16":  # quantize
+                # if precision is int8 or bf16, then we will use quantize method
+                if split_method[1] == "int8" or split_method[1] == "bf16":
                     precision = split_method[1]
                     q_method = None if len(split_method) < 4 else split_method[3]
                     try:
@@ -137,35 +155,23 @@ class Optimizor:
                                                              use_ipex=use_ipex,
                                                              calib_dataloader=training_data,
                                                              method=q_method)
-                        # TODO: exclude bf16 model if isa is not supported to avoid useless searching
+                        result_map[method] = {}
+
                         def func_test(model, input_sample):
                             model(*input_sample)
-                        result_map[method] = {"latency": _throughput_calculate_helper(100, func_test, accelerated_model, input_sample)}
+                        result_map[method]["latency"] =\
+                            _throughput_calculate_helper(100, func_test,
+                                                         accelerated_model, input_sample)
                         if validation_data is not None and metric is not None:
-                            result_map[method]["accuracy"] = _accuracy_calculate_helper(accelerated_model, metric, validation_data)
+                            result_map[method]["accuracy"] =\
+                                _accuracy_calculate_helper(accelerated_model,
+                                                           metric, validation_data)
                         result_map[method]["model"] = accelerated_model
                     except Exception as e:
                         print(e)
             else:
                 pass
         self.optimized_model_dict = result_map
-
-    def export(self,
-               accelerator=None,
-               precision=None,
-               use_ipex=None,
-               allow_acc=None,):
-        '''
-        :param accelerator: (optional) if not None, then will only find the
-               model with this specific accelerator.
-        :param precision: (optional) if not None, the will only find the
-               model with thie specific precision.
-        :param use_ipex: (optional) if not None, then will only find the
-               model with this specific ipex setting
-        :param allow_acc: (optional) a float represents the accuracy threshold
-               that can be tollerated.
-        '''
-        pass
 
     def get_best_model(self,
                        accelerator=None,

@@ -15,4 +15,4 @@
 #
 
 
-from .optimizor import Optimizor
+from .optimizer import Optimizer
