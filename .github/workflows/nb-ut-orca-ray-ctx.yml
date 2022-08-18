@@ -15,7 +15,7 @@ on:
     branches: [ "main" ]
     paths:
       - 'python/orca/**'
-      - '.github/workflows/orca-ray-ctx.yml'
+      - '.github/workflows/nb-ut-orca-ray-ctx.yml'
   schedule:
     - cron: '0 15 * * *'
   # Allows you to run this workflow manually from the Actions tab
