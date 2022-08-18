@@ -259,4 +259,4 @@ class OxfordIIITPet(torchvision.datasets.OxfordIIITPet):
             img, target = self.transforms(img, target)
 
         img = img.numpy()
-        return img.astype('float32'), target  
+        return img.astype('float32'), target
