@@ -333,7 +333,7 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=None, memory="2g
             else:
                 invalidInputError(False,
                                   "cluster_mode can only be local, yarn-client, yarn-cluster,"
-                                  "k8s-client or standalone, "
+                                  "k8s-client, standalone, spark-submit or bigdl-submit, "
                                   "but got: %s".format(cluster_mode))
         ray_args = {}
         for key in ["redis_port", "password", "object_store_memory", "verbose", "env",
