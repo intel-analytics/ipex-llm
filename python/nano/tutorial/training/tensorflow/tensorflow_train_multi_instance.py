@@ -15,19 +15,19 @@
 
 
 import tensorflow as tf
-from tensorflow.keras import layers
+from tensorflow.keras import layers, Sequential
 from tensorflow.keras.applications import EfficientNetB0
 import tensorflow_datasets as tfds
 
 # Use `Model` and `Sequential` in `bigdl.nano.tf.keras` instead of tensorflow's
-from bigdl.nano.tf.keras import Model, Sequential
+from bigdl.nano.tf.keras import Model
 
 
 def create_datasets(img_size, batch_size):
     (ds_train, ds_test), ds_info = tfds.load(
         "stanford_dogs",
         data_dir="/tmp/data",
-        split=['train', 'test'],
+        split=['train[:10%]', 'test[:10%]'],
         with_info=True,
         as_supervised=True
     )
@@ -77,7 +77,7 @@ def create_model(num_classes, img_size, learning_rate=1e-2):
 if __name__ == '__main__':
     img_size = 224
     batch_size = 32
-    num_epochs = 1
+    num_epochs = 10
     
     ds_train, ds_test, ds_info = create_datasets(img_size=img_size, batch_size=batch_size)
     
@@ -102,5 +102,5 @@ if __name__ == '__main__':
               steps_per_epoch=steps_per_epoch,
               validation_data=ds_test,
               validation_steps=validation_steps,
-              num_processes=2,
+              num_processes=4,
               backend='multiprocessing')
