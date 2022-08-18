@@ -76,7 +76,7 @@ class OpenvinoEstimator(SparkEstimator):
         if inputs is not None:
             invalidInputError(set(inputs) == set(self.inputs),
                               "The inputs names need to match the model inputs, the model inputs: "
-                              + ",".join(self.inputs))
+                              + ", ".join(self.inputs))
         else:
             inputs = self.inputs
         outputs = list(self.output_dict.keys())
@@ -182,6 +182,8 @@ class OpenvinoEstimator(SparkEstimator):
                     for r, p in zip(batch_row, pred):
                         row = Row(*([r[col] for col in r.__fields__] + p))
                         yield row
+            del local_model
+            del net
 
         def predict_transform(dict_data, batch_size):
             invalidInputError(isinstance(dict_data, dict), "each shard should be an dict")
@@ -207,7 +209,6 @@ class OpenvinoEstimator(SparkEstimator):
             return feature_data
 
         if isinstance(data, DataFrame):
-            from bigdl.orca.learn.utils import dataframe_to_xshards
             from pyspark.sql.types import StructType, StructField, FloatType, ArrayType
             is_df = True
             schema = data.schema
@@ -224,54 +225,6 @@ class OpenvinoEstimator(SparkEstimator):
             schema = StructType(schema.fields + result_struct)
             result_df = result.toDF(schema)
             return result_df
-
-
-            # xshards, _ = dataframe_to_xshards(data,
-            #                                   validation_data=None,
-            #                                   feature_cols=feature_cols,
-            #                                   label_cols=None,
-            #                                   mode="predict")
-            # OrcaContext._shard_size = None
-            # transformed_data = xshards.transform_shard(predict_transform, batch_size)
-            # result_rdd = transformed_data.rdd.mapPartitions(lambda iter: partition_inference(iter))
-            #
-            # def divide(data):
-            #     if len(data) > 1:
-            #         # add batch dim
-            #         result = [list(np.expand_dims(output, axis=0).tolist()
-            #                        for output in single_result) for single_result in zip(*data)]
-            #         return result
-            #     else:
-            #         data
-            #
-            # def add_predict_rdd_to_dataframe(df, prediction_rdd):
-            #     from pyspark.sql import Row
-            #     from pyspark.sql.types import StructType, StructField, FloatType, ArrayType
-            #
-            #     # Deal with types
-            #     result_struct = []
-            #     for key, shape in self.output_dict.items():
-            #         struct_type = FloatType()
-            #         for _ in range(len(shape)):
-            #             struct_type = ArrayType(struct_type)
-            #         result_struct.append(StructField(key, struct_type))
-            #
-            #     def combine(pair):
-            #         # multi-output
-            #         if len(result_struct) > 1:
-            #             row = Row(*([pair[0][col] for col in pair[0].__fields__] + pair[1]))
-            #         # single output
-            #         else:
-            #             # TODO: scalar may cause error?
-            #             row = Row(*([pair[0][col] for col in pair[0].__fields__] + [pair[1]]))
-            #         return row
-            #
-            #     combined_rdd = df.rdd.zip(prediction_rdd).map(combine)
-            #     schema = StructType(df.schema.fields + result_struct)
-            #     result_df = combined_rdd.toDF(schema)
-            #     return result_df
-            #
-            # return add_predict_rdd_to_dataframe(data, result_rdd.flatMap(lambda data: divide(data)))
         elif isinstance(data, SparkXShards):
             transformed_data = data.transform_shard(predict_transform, batch_size)
             result_rdd = transformed_data.rdd.mapPartitions(lambda iter: partition_inference(iter))
