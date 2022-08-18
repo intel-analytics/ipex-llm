@@ -24,7 +24,7 @@ from os.path import split, join, realpath
 import cv2
 from logging import warning
 import os
-from bigdl.nano.pytorch.vision.datasets import OxfordIIITPet
+from bigdl.nano.pytorch.vision.oxfordpet_datasets import OxfordIIITPet
 
 
 class MyLightningModule(pl.LightningModule):
