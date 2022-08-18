@@ -165,8 +165,6 @@ class AutoformerForecaster(Forecaster):
                     **self.loss_config, **self.data_config})
 
         if not has_space:
-            if self.use_hpo:
-                warnings.warn("HPO is enabled but no spaces is specified, so disable HPO.")
             self.use_hpo = False
             self.internal = model_creator(self.model_config)
 

@@ -1,7 +1,7 @@
 # Run DeepRec with BigDL
 Here we demonstrate how to integrate [DeepRec](https://github.com/alibaba/DeepRec) into BigDL so as to easily build end-to-end recommendation pipelines for Spark data processing and DeepRec model training.
 
-See [here](https://github.com/alibaba/DeepRec/tree/main/modelzoo/WDL) for the original Wide & Deep training example in DeepRec. This BigDL example addes BigDL Friesian for recommendation feature engineering and BigDL Orca for launching DeepRec distributed training on the Kubernetes cluster.
+See [here](https://github.com/alibaba/DeepRec/tree/main/modelzoo/WDL) for the original Wide & Deep training example in DeepRec. This BigDL example uses BigDL Friesian for distribtued feature engineering and BigDL Orca for launching DeepRec distributed training on the Kubernetes cluster.
 
 ## 1. Environment Preparation
 1. Enter the client node of the k8s cluster.
@@ -56,22 +56,26 @@ Please refer to the [README](https://github.com/alibaba/DeepRec/tree/main/modelz
 - Local mode:
 ```bash
 python wdl.py \
-    --smartstaged false \
-    --ev True \
+    --instances_per_node 3 \
     --data_location /folder/path/to/train/and/test/files \
     --checkpoint /path/to/save/model/checkpoint \
-    --instances_per_node 3
+    --smartstaged False \
+    --ev True \ 
+    --emb_fusion False \
+    --ev_filter counter
 ```
 - K8s mode:
 ```bash
 python wdl.py \
-    --smartstaged false \
-    --ev True \
-    --data_location /folder/path/to/train/and/test/files \
-    --checkpoint /path/to/save/model/checkpoint \
     --cluster_mode k8s \
     --num_nodes 3 \
-    --master k8s://https://ip:port
+    --master k8s://https://ip:port \
+    --data_location /folder/path/to/train/and/test/files \
+    --checkpoint /path/to/save/model/checkpoint \
+    --smartstaged False \
+    --ev True \
+    --emb_fusion False \
+    --ev_filter counter
 ```
 
 For DeepRec related arguments, please refer to the original example for more description.

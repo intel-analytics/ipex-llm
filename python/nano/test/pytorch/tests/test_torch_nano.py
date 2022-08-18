@@ -43,6 +43,10 @@ class ResNet18(nn.Module):
     def forward(self, x):
         return self.model(x)
 
+    def do_nothing(self):
+        # test whether we can access this method after calling `self.setup`
+        pass
+
 
 class MyNano(TorchNano):
     def train(self):
@@ -106,6 +110,17 @@ class MyNanoCorrectness(TorchNano):
             f"wrong weights: {origin_model.fc1.weight.data}"
 
 
+class MyNanoAccess(TorchNano):
+    def train(self):
+        model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+        train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
+        model, optimizer, train_loader = self.setup(model, optimizer, train_loader)
+
+        # access a custom attribute
+        model.do_nothing()
+
+
 class TestLite(TestCase):
     def setUp(self):
         test_dir = os.path.dirname(__file__)
@@ -131,6 +146,9 @@ class TestLite(TestCase):
 
     def test_torch_nano_subprocess_correctness(self):
         MyNanoCorrectness(num_processes=2, strategy="subprocess").train(0.5)
+
+    def test_torch_nano_attribute_access(self):
+        MyNanoAccess().train()
 
 
 if __name__ == '__main__':
