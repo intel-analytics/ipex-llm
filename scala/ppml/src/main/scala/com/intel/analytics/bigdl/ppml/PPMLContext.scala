@@ -199,7 +199,7 @@ object PPMLContext{
    */
   def initPPMLContext(sparkSession: SparkSession): PPMLContext = {
     val conf = sparkSession.sparkContext.getConf
-    val kmsType = conf.get("spark.bigdl.kms.type")
+    val kmsType = conf.get("spark.bigdl.kms.type", defaultValue = "SimpleKeyManagementService")
     val kms = kmsType match {
       case KMS_CONVENTION.MODE_EHSM_KMS =>
         val ip = conf.get("spark.bigdl.kms.ehs.ip")
@@ -208,9 +208,9 @@ object PPMLContext{
         val appKey = conf.get("spark.bigdl.kms.ehs.key")
         new EHSMKeyManagementService(ip, port, appId, appKey)
       case KMS_CONVENTION.MODE_SIMPLE_KMS =>
-        val id = conf.get("spark.bigdl.kms.simple.id")
+        val id = conf.get("spark.bigdl.kms.simple.id", defaultValue = "simpleAPPID")
         // println(id + "=-------------------")
-        val key = conf.get("spark.bigdl.kms.simple.key")
+        val key = conf.get("spark.bigdl.kms.simple.key", defaultValue = "simpleAPPKEY")
         // println(key + "=-------------------")
         SimpleKeyManagementService(id, key)
       case KMS_CONVENTION.MODE_AZURE_KMS =>

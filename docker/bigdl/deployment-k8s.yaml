@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: bigdl-notebook
-  namespace: default
+  namespace: bigdl
 spec:
   replicas: 1
   selector:
@@ -16,10 +16,10 @@ spec:
         appType: bigdl
     spec:
       containers:
-        - image: intelanalytics/bigdl:default
+        - image: intelanalytics/bigdl-spark-3.1.2:latest
           ports:
             - name: jupyter-address
-              containerPort: 8888
+              containerPort: 12345
           name: bigdl-notebook
           imagePullPolicy: Always
           env:
@@ -43,6 +43,11 @@ spec:
                 configMapKeyRef:
                   name: bigdl-notebook-config
                   key: spark.kubernetes.authenticate.driver.serviceAccountName
+            - name: NAMESPACE
+              valueFrom:
+                configMapKeyRef:
+                  name: bigdl-notebook-config
+                  key: spark.kubernetes.namespace
             - name: CONTAINER_NAME
               valueFrom:
                 configMapKeyRef:
@@ -78,6 +83,11 @@ spec:
                 configMapKeyRef:
                   name: bigdl-notebook-config
                   key: spark.executor.instances
+            - name: RUNTIME_TOTAL_EXECUTOR_CORES
+              valueFrom:
+                configMapKeyRef:
+                  name: bigdl-notebook-config
+                  key: total.executor.cores
             - name: NFS_CLAIMNAME
               valueFrom:
                 configMapKeyRef:
@@ -109,6 +119,7 @@ spec:
           args: ["
                   export SPARK_DRIVER_HOST=$( hostname -I | awk '{print $1}' );
                   ray start --head --port=6379;
+                  tensorboard --logdir \"/data/jupyter/train\" --port 6006 &
                   bash /opt/work/start-notebook-k8s.sh
                 "]
       volumes:
@@ -129,25 +140,48 @@ apiVersion: v1
 kind: Service
 metadata:
   name: bigdl-notebook
-  namespace: default
+  namespace: bigdl
   labels:
     app: bigdl-notebook
 spec:
   ports:
-    - port: 8888
+    - port: 12345
       protocol: TCP
       name: jupyter-address
+    - port: 6006
+      protocol: TCP
+      name: tensorboard
   type: NodePort
   selector:
     app: bigdl-notebook
 
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: spark
+  namespace: bigdl
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: spark-role
+  namespace: bigdl
+subjects:
+- kind: ServiceAccount
+  name: spark
+roleRef:
+  kind: ClusterRole
+  name: edit
+  apiGroup: rbac.authorization.k8s.io
 
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: bigdl-notebook-config
-  namespace: default
+  namespace: bigdl
   labels:
     app: bigdl-notebook
 data:
@@ -155,14 +189,16 @@ data:
   mode: client
   name: bigdl-notebook
   spark.kubernetes.authenticate.driver.serviceAccountName: spark
-  spark.kubernetes.container.image: intelanalytics/bigdl-spark-3.1.2:202206222
+  spark.kubernetes.namespace: bigdl
+  spark.kubernetes.container.image: intelanalytics/bigdl-k8s-spark-3.1.2:latest
   spark.driver.cores: "4"
   spark.driver.memory: 20g
   spark.executor.cores: "4"
   spark.executor.memory: 20g
   spark.executor.instances: "4"
-  token: 1234qwer
+  total.executor.cores: "4"
+  token: "" # To specific the token value
   spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName: nfsvolumeclaim
   spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path: /data/jupyter
   spark.pyspark.driver.python: python
-  spark.pyspark.python: /usr/local/envs/bigdl/python
+  spark.pyspark.python: /usr/local/envs/bigdl/bin/python

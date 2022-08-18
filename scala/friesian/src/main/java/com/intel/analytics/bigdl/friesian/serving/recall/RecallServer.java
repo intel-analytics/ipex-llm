@@ -20,15 +20,25 @@ import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.MetricAttribute;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import com.google.common.primitives.Floats;
 import com.google.protobuf.Empty;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureGrpc;
-import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallGrpc;
-import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.*;
-import com.intel.analytics.bigdl.grpc.JacksonJsonSerializer;
-import com.intel.analytics.bigdl.grpc.GrpcServerBase;
-import com.intel.analytics.bigdl.friesian.serving.recall.faiss.swighnswlib.floatArray;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs;
+import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallGrpc;
+import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates;
+import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item;
+import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query;
+import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage;
+import com.intel.analytics.bigdl.friesian.serving.recall.faiss.swighnswlib.floatArray;
+import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics;
+import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics$;
+import com.intel.analytics.bigdl.friesian.serving.utils.Utils;
+import com.intel.analytics.bigdl.friesian.serving.utils.feature.FeatureUtils;
+import com.intel.analytics.bigdl.friesian.serving.utils.gRPCHelper;
+import com.intel.analytics.bigdl.friesian.serving.utils.recall.RecallUtils;
+import com.intel.analytics.bigdl.grpc.GrpcServerBase;
+import com.intel.analytics.bigdl.grpc.JacksonJsonSerializer;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.ServerInterceptors;
@@ -38,12 +48,6 @@ import io.grpc.stub.StreamObserver;
 import io.prometheus.client.exporter.HTTPServer;
 import me.dinowernli.grpc.prometheus.Configuration;
 import me.dinowernli.grpc.prometheus.MonitoringServerInterceptor;
-import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics;
-import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics$;
-import com.intel.analytics.bigdl.friesian.serving.utils.Utils;
-import com.intel.analytics.bigdl.friesian.serving.utils.feature.FeatureUtils;
-import com.intel.analytics.bigdl.friesian.serving.utils.gRPCHelper;
-import com.intel.analytics.bigdl.friesian.serving.utils.recall.RecallUtils;
 import org.apache.commons.cli.Option;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -51,7 +55,10 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -65,6 +72,21 @@ public class RecallServer extends GrpcServerBase {
         options.addOption(new Option("p", "port", true,
                 "The port to create the server"));
         Configurator.setLevel("org", Level.ERROR);
+    }
+
+    /**
+     * Main method.  This comment makes the linter happy.
+     */
+    public static void main(String[] args) throws Exception {
+        RecallServer recallServer = new RecallServer(args);
+        recallServer.parseConfig();
+        recallServer.build();
+        if (Utils.runMonitor()) {
+            new HTTPServer.Builder()
+                    .withPort(Utils.helper().monitorPort()).build();
+        }
+        recallServer.start();
+        recallServer.blockUntilShutdown();
     }
 
     @Override
@@ -90,28 +112,14 @@ public class RecallServer extends GrpcServerBase {
         serverServices.add(new HealthStatusManager().getHealthService());
     }
 
-    /**
-     * Main method.  This comment makes the linter happy.
-     */
-    public static void main(String[] args) throws Exception {
-        RecallServer indexingServer = new RecallServer(args);
-        indexingServer.build();
-        if (Utils.runMonitor()) {
-            new HTTPServer.Builder()
-                    .withPort(Utils.helper().monitorPort()).build();
-        }
-        indexingServer.start();
-        indexingServer.blockUntilShutdown();
-    }
-
     private static class RecallService extends RecallGrpc.RecallImplBase {
-        private IndexService indexService;
-        private FeatureGrpc.FeatureBlockingStub featureServiceStub;
         MetricRegistry metrics = new MetricRegistry();
         Timer overallTimer = metrics.timer("indexing.overall");
         Timer featureTimer = metrics.timer("indexing.feature");
         Timer decodeTimer = metrics.timer("indexing.decode");
         Timer faissTimer = metrics.timer("indexing.faiss");
+        private final IndexService indexService;
+        private final FeatureGrpc.FeatureBlockingStub featureServiceStub;
 
         RecallService() {
             ManagedChannel featureServiceChannel =
@@ -120,7 +128,7 @@ public class RecallServer extends GrpcServerBase {
             featureServiceStub = FeatureGrpc.newBlockingStub(featureServiceChannel);
             // load faiss index
             indexService = new IndexService(Utils.helper().indexDim());
-            assert(Utils.helper().getIndexPath() != null): "indexPath must be provided";
+            assert (Utils.helper().getIndexPath() != null) : "indexPath must be provided";
             indexService.load(Utils.helper().getIndexPath());
             System.out.printf("Index service nTotal = %d\n", this.indexService.getNTotal());
             if (Utils.helper().logInterval() > 0) {
@@ -200,7 +208,7 @@ public class RecallServer extends GrpcServerBase {
             faissContext.stop();
             Candidates.Builder result = Candidates.newBuilder();
             // TODO: length < k
-            for (int i = 0; i < k; i ++) {
+            for (int i = 0; i < k; i++) {
                 result.addCandidate(candidates[i]);
             }
             overallContext.stop();
@@ -209,7 +217,9 @@ public class RecallServer extends GrpcServerBase {
 
         private Empty addItemToIndex(Item msg) {
             // TODO: multi server synchronize
+            // TODO: add to index
             System.out.printf("Index service nTotal before = %d\n", this.indexService.getNTotal());
+            addToIndex(msg.getItemID(), Floats.toArray(msg.getItemVectorList()));
             System.out.printf("Index service nTotal after = %d\n", this.indexService.getNTotal());
             return Empty.newBuilder().build();
         }
