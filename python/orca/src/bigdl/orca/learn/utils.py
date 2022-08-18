@@ -462,7 +462,7 @@ def data_length(data):
 
 
 def save_pkl(data, path):
-    if path.startswith("hdfs"):  # hdfs://url:port/
+    if path.startswith("hdfs"):  # hdfs://url:port/file_path
         import uuid
         file_name = str(uuid.uuid1()) + ".pkl"
         temp_path = os.path.join(tempfile.gettempdir(), file_name)
