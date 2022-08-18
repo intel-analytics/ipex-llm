@@ -29,8 +29,9 @@ subtrees:
       - file: doc/Nano/QuickStart/tensorflow_train
       - file: doc/Nano/QuickStart/tensorflow_inference
       - file: doc/Nano/QuickStart/hpo
-      - file: doc/Nano/Overview/known_issues
       - file: doc/Nano/QuickStart/index
+      - file: doc/Nano/Howto/index
+      - file: doc/Nano/Overview/known_issues
 
   - caption: DLlib
     entries:
