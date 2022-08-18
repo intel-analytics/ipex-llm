@@ -779,17 +779,17 @@ class RayDeepRecCluster:
         # as ps should not consume data.
         print("Train data partitions:", train_df.rdd.getNumPartitions())
         print("Test data partitions:", test_df.rdd.getNumPartitions())
+        if train_df.rdd.getNumPartitions() < self.num_workers:
+            train_df = train_df.repartition(self.num_workers)
+        if test_df and test_df.rdd.getNumPartitions() < self.num_workers:
+            test_df = test_df.repartition(self.num_workers)
         if not in_memory:
-            if train_df.rdd.getNumPartitions() < self.num_workers:
-                train_df = train_df.repartition(self.num_workers)
             train_sizes = train_df.rdd.mapPartitions(lambda it: [sum(1 for _ in it)]).collect()
             train_processed_folder = self.config['data_location'] + "/train_processed"
             train_df.write.csv(path=train_processed_folder, mode="overwrite", header=False, sep=",")
             train_files_dict = self.divide_files(train_processed_folder, train_sizes)
             test_files_dict = None
             if test_df:
-                if test_df.rdd.getNumPartitions() < self.num_workers:
-                    test_df = test_df.repartition(self.num_workers)
                 test_sizes = test_df.rdd.mapPartitions(lambda it: [sum(1 for _ in it)]).collect()
                 test_processed_folder = \
                     self.config['data_location'] + "/test_processed"
@@ -799,10 +799,6 @@ class RayDeepRecCluster:
             worker_stats = ray.get([worker.step_file.remote(train_files_dict, test_files_dict)
                                     for worker in self.remote_workers])
         else:
-            # TODO: without repartition to_ray_xshards will crash on k8s
-            # TODO: do not fix repartition size
-            train_df = train_df.repartition(10)
-            test_df = test_df.repartition(10)
             train_dataset, test_dataset = maybe_dataframe_to_xshards(train_df, test_df,
                                                                      feature_cols, label_cols,
                                                                      mode="fit",
