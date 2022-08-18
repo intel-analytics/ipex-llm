@@ -16,6 +16,6 @@
 
 from torchvision.datasets import *
 del ImageFolder
+del OxfordIIITPet
 
-
-from .datasets import ImageFolder, SegmentationImageFolder
+from .datasets import ImageFolder, SegmentationImageFolder, OxfordIIITPet
