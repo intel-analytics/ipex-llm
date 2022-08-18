@@ -222,7 +222,7 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=None, memory="2g
             cores = 2
             import warnings
             warnings.warn("Cores is not specified, using 2 cores per node by default.", Warning)
-            
+
     if runtime == "ray":
         invalidInputError(cluster_mode is None,
                           "Currently, cluster_mode is not supported for ray runtime and"
@@ -336,7 +336,8 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=None, memory="2g
             else:
                 invalidInputError(False,
                                   "cluster_mode can only be local, yarn-client, yarn-cluster,"
-                                  "k8s-client, k8s-cluster, standalone, spark-submit or bigdl-submit, "
+                                  "k8s-client, k8s-cluster, standalone,"
+                                  "spark-submit or bigdl-submit, "
                                   "but got: %s".format(cluster_mode))
         ray_args = {}
         for key in ["redis_port", "password", "object_store_memory", "verbose", "env",
