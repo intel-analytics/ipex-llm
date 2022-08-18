@@ -843,7 +843,8 @@ class RayDeepRecCluster:
         files_dict = dict()
         for worker in self.remote_workers:
             index = ray.get(worker.get_task_index.remote())
-            worker_files = file_with_sizes[index*num_files_per_worker:(index+1)*num_files_per_worker]
+            worker_files = \
+                file_with_sizes[index*num_files_per_worker:(index+1)*num_files_per_worker]
             if extra_files:
                 worker_files += [extra_files.pop()]
             files_dict[index] = worker_files
