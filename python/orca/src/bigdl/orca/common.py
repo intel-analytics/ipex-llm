@@ -196,7 +196,10 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=None, memory="2g
            For "k8s-client" and "k8s-cluster", you are supposed to additionally specify the
            arguments master and container_image.
     :param runtime: The runtime for backend. One of "ray" and "spark". Default to be "spark".
-    :param cores: The number of cores to be used on each node. Default to be None.
+    :param cores: The number of cores to be used on each node.
+           For spark local mode, default to use all the cores on the node.
+           For other cluster_mode, default to use 2 cores per node.
+           You are highly recommended to set this value by yourself.
     :param memory: The memory allocated for each node. Default to be '2g'.
     :param num_nodes: The number of nodes to be used in the cluster. Default to be 1.
            For Spark local, num_nodes should always be 1 and you don't need to change it.
