@@ -88,6 +88,11 @@ class LazyImport:
         except KeyError:
             pass
 
-        module = importlib.import_module(module_name, package=self.pkg)
+        try:
+            module = importlib.import_module(module_name, package=self.pkg)
+        except ModuleNotFoundError:
+            spec = importlib.util.find_spec(module_name)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
         function = getattr(module, function_name)
         return function(*args, **kwargs)

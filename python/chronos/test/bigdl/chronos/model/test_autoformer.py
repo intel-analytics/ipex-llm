@@ -25,6 +25,7 @@ import tempfile
 import os
 import torch
 from torch.utils.data import TensorDataset, DataLoader
+from .. import op_torch, op_all
 
 def get_ts_df():
     sample_num = np.random.randint(400, 500)
@@ -41,6 +42,8 @@ def get_tsdata(mode="train"):
           .roll(lookback=48, horizon=12, time_enc=True, label_len=12)
     return tsdata
 
+
+@op_torch
 class TestAutoformerPytorch(TestCase):
     def test_fit(self):
         tsdata = get_tsdata()

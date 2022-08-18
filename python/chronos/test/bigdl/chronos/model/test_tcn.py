@@ -19,6 +19,7 @@ from bigdl.chronos.model.tcn import TCNPytorch
 import numpy as np
 import tempfile
 import os
+from .. import op_torch
 
 
 def create_data():
@@ -41,6 +42,7 @@ def create_data():
     return train_data, val_data, test_data
 
 
+@op_torch
 class TestTcn(TestCase):
     train_data, val_data, test_data = create_data()
     model = TCNPytorch()

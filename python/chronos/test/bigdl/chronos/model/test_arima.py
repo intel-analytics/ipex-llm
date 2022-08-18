@@ -17,13 +17,16 @@
 import pytest
 
 from unittest import TestCase
-from bigdl.chronos.model.arima import ARIMAModel
+from bigdl.chronos.utils import LazyImport
+ARIMAModel = LazyImport('bigdl.chronos.model.arima.ARIMAModel')
 import numpy as np
 import os
 from numpy.testing import assert_array_almost_equal
 import pandas as pd
+from .. import op_all
 
 
+@op_all
 class TestARIMAModel(TestCase):
 
     def setup_method(self, method):

@@ -21,6 +21,7 @@ import numpy as np
 import tempfile
 import os
 import random
+from .. import op_torch
 
 
 def create_data(loader=False):
@@ -43,6 +44,7 @@ def create_data(loader=False):
     return train_data, val_data, test_data
 
 
+@op_torch
 class TestVanillaLSTMPytorch(TestCase):
     train_data, val_data, test_data = create_data()
 

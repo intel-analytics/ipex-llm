@@ -21,6 +21,7 @@ import numpy as np
 import tempfile
 import os
 import torch
+from .. import op_torch
 
 
 def create_data(loader=False):
@@ -55,6 +56,7 @@ def create_data(loader=False):
         return train_data, val_data, test_data
 
 
+@op_torch
 class TestNbeatsPytorch(TestCase):
     train_data, val_data, test_data = create_data(loader=True)
 
