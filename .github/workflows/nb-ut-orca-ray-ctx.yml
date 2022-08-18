@@ -86,6 +86,7 @@ jobs:
     - name: Run Test
       #run: python -m build
       run: |
+        export SPARK_LOCAL_HOSTNAME=localhost
         chmod a+x python/orca/dev/test/run-pytests-ray-ctx.sh
         python/orca/dev/test/run-pytests-ray-ctx.sh
       env:
