@@ -1095,8 +1095,8 @@ def data_processing(args):
 
     no_of_training_examples = train_tbl.size()
     no_of_test_examples = test_tbl.size()
-    print("Numbers of training dataset is {}".format(no_of_training_examples))
-    print("Numbers of test dataset is {}".format(no_of_test_examples))
+    print("The size of the training dataset is {}".format(no_of_training_examples))
+    print("The size of the test dataset is {}".format(no_of_test_examples))
 
     # set batch size, epoch & steps
     batch_size = math.ceil(
@@ -1113,7 +1113,7 @@ def data_processing(args):
         train_steps = args.steps
     test_steps = math.ceil(float(no_of_test_examples) / batch_size)
     print("The training steps is {}".format(train_steps))
-    print("The testing steps is {}".format(test_steps))
+    print("The test steps is {}".format(test_steps))
 
     # set directory path for checkpoint_dir
     model_dir = os.path.join(args.output_dir,
