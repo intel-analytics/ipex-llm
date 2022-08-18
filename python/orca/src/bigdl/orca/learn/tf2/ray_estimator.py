@@ -25,7 +25,7 @@ import ray
 
 from bigdl.dllib.utils import log4Error
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, \
-    is_local_path, put_local_file_to_remote, put_local_dir_tree_to_remote
+    is_local_path
 
 from bigdl.orca.data.ray_xshards import RayXShards
 from bigdl.orca.learn.dl_cluster import RayDLCluster
@@ -34,6 +34,7 @@ from bigdl.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
     process_xshards_of_pandas_dataframe, make_data_creator
+from bigdl.orca.data.file import put_local_file_to_remote, put_local_dir_tree_to_remote
 from bigdl.orca.data.utils import process_spark_xshards
 from bigdl.dllib.utils.log4Error import *
 from bigdl.orca.ray import OrcaRayContext
