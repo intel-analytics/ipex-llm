@@ -36,7 +36,6 @@ jobs:
       with:
         java-version: '8'
         distribution: 'temurin'
-        # server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         settings-path: ${{ github.workspace }} # location for the settings.xml file
 
     - name: Set up Maven
@@ -78,8 +77,8 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install --upgrade setuptools==58.0.4
 
+        pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r python/orca/dev/example/requirements-ray.txt 
         pip install pytest
-        pip install protobuf==3.20.*
         pip install tensorflow==2.8.0
         pip install ray==1.11.0
         pip install --pre --upgrade bigdl-orca
