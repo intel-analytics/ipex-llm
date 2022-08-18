@@ -86,11 +86,15 @@ if __name__ == '__main__':
 
     # Multi-Instance Training
     # 
+    # It is often beneficial to use multiple instances for training
+    # if a server contains multiple sockets or many cores, 
+    # so that the workload can make full use of all CPU cores.
     # BigDL-Nano makes it very easy to conduct multi-instance training correctly.
     # 
     # Use `Model` or `Sequential` in `bigdl.nano.tf.keras` to create model,
     # then just set the `num_processes` and `backend` parameter in the `fit` method.
     # BigDL-Nano will launch the specific number of processes to perform data-parallel training.
+    #
     model = create_model(num_classes=num_classes, img_size=img_size)
     model.fit(ds_train,
               epochs=num_epochs,
