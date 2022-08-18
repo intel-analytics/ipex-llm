@@ -9,8 +9,8 @@
 name: Nightly Build Orca Ray Ctx
 
 on:
-  release:
-   types: [published]
+  # release:
+  #  types: [published]
   pull_request:
     branches: [ "main" ]
     paths:
