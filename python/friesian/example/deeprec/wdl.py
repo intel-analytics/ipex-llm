@@ -777,8 +777,8 @@ class RayDeepRecCluster:
             label_cols=None):
         # ps has already be launched and waiting and thus it is removed when training
         # as ps should not consume data.
-        print("train partitions:", train_df.rdd.getNumPartitions())
-        print("test partitions:", test_df.rdd.getNumPartitions())
+        print("Train data partitions:", train_df.rdd.getNumPartitions())
+        print("Test data partitions:", test_df.rdd.getNumPartitions())
         if not in_memory:
             if train_df.rdd.getNumPartitions() < self.num_workers:
                 train_df = train_df.repartition(self.num_workers)
