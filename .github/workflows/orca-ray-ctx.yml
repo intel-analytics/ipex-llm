@@ -23,7 +23,6 @@ on:
 
 jobs:
   build:
-
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
     permissions:
       contents: read
@@ -31,12 +30,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+
     - name: Set up JDK 8
       uses: actions/setup-java@v3
       with:
         java-version: '8'
         distribution: 'temurin'
-        #server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
+        # server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         settings-path: ${{ github.workspace }} # location for the settings.xml file
 
     - name: Set up Maven
@@ -67,15 +67,18 @@ jobs:
       run: |
         apt-get update
         apt-get install wget
+    
     - name: Set up Python 
       uses: actions/setup-python@v2
       with:
         python-version: '3.7'
+    
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         python -m pip install --upgrade setuptools==58.0.4
 
+        pip install pytest
         pip install protobuf==3.20.*
         pip install tensorflow==2.8.0
         pip install ray==1.11.0
