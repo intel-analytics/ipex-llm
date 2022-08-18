@@ -777,21 +777,25 @@ class RayDeepRecCluster:
             label_cols=None):
         # ps has already be launched and waiting and thus it is removed when training
         # as ps should not consume data.
-        # TODO: without repartition to_ray_xshards will crash on k8s
-        # TODO: do not fix repartition size
-        train_df = train_df.repartition(10)
-        test_df = test_df.repartition(10)
+        print("Train data partitions:", train_df.rdd.getNumPartitions())
+        print("Test data partitions:", test_df.rdd.getNumPartitions())
+        if train_df.rdd.getNumPartitions() < self.num_workers:
+            train_df = train_df.repartition(self.num_workers)
+        if test_df and test_df.rdd.getNumPartitions() < self.num_workers:
+            test_df = test_df.repartition(self.num_workers)
         if not in_memory:
+            train_sizes = train_df.rdd.mapPartitions(lambda it: [sum(1 for _ in it)]).collect()
             train_processed_folder = self.config['data_location'] + "/train_processed"
             train_df.write.csv(path=train_processed_folder, mode="overwrite", header=False, sep=",")
-            train_files_dict = self.divide_files(train_processed_folder)
+            train_files_dict = self.divide_files(train_processed_folder, train_sizes)
             test_files_dict = None
             if test_df:
+                test_sizes = test_df.rdd.mapPartitions(lambda it: [sum(1 for _ in it)]).collect()
                 test_processed_folder = \
                     self.config['data_location'] + "/test_processed"
                 test_df.write.csv(
                     path=test_processed_folder, mode="overwrite", header=False, sep=",")
-                test_files_dict = self.divide_files(test_processed_folder)
+                test_files_dict = self.divide_files(test_processed_folder, test_sizes)
             worker_stats = ray.get([worker.step_file.remote(train_files_dict, test_files_dict)
                                     for worker in self.remote_workers])
         else:
@@ -825,22 +829,26 @@ class RayDeepRecCluster:
                                                                       zip_func)
         return worker_stats
 
-    def divide_files(self, folder):
+    def divide_files(self, folder, sizes):
         import glob
 
+        # Each file is of format: /path/to/processed/part-id-***.csv
         files = glob.glob(folder + "/*.csv")
+        file_with_sizes = [(file, sizes[int(file.split("/")[-1].split("-")[1])])for file in files]
         num_files_per_worker = len(files) // self.num_workers
         num_remain_files = len(files) % self.num_workers
         extra_files = []
         if num_remain_files > 0:
-            extra_files = files[-num_remain_files:]
+            extra_files = file_with_sizes[-num_remain_files:]
         files_dict = dict()
         for worker in self.remote_workers:
             index = ray.get(worker.get_task_index.remote())
-            worker_files = files[index*num_files_per_worker:(index+1)*num_files_per_worker]
+            worker_files = \
+                file_with_sizes[index*num_files_per_worker:(index+1)*num_files_per_worker]
             if extra_files:
                 worker_files += [extra_files.pop()]
             files_dict[index] = worker_files
+        # key is worker id; value is list of (file, size) tuple.
         return files_dict
 
     def get_ps(self):
@@ -1047,7 +1055,7 @@ def to_tensor_slice_dataset(data, label, config):
     return dataset
 
 
-def to_textline_dataset(files, config):
+def to_textline_dataset(files_with_sizes, config):
 
     def parse_csv(value):
         cont_defaults = [[0.0] for i in range(1, 14)]
@@ -1065,12 +1073,9 @@ def to_textline_dataset(files, config):
                 tf.cast(features[CATEGORICAL_COLUMNS[j]], dtype=tf.int64)
         return features, labels
 
-    print(files)
-    # TODO: do not read files to get data size
-    data_size = 0
-    for filename in files:
-        with open(filename) as f:
-            data_size += sum(1 for line in f)
+    print(files_with_sizes)
+    files = [pair[0] for pair in files_with_sizes]
+    data_size = sum([pair[1] for pair in files_with_sizes])
 
     dataset = tf.data.TextLineDataset(files)
     dataset = dataset.shuffle(buffer_size=20000,
