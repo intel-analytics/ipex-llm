@@ -44,7 +44,7 @@ class LazyImport:
         >>> forecaster.from_tsdataset(tsdataset, ...)
         >>> forecaster(...)
     """
-    def __init__(self, module_name: str, pkg=None, *args, **kwargs):
+    def __init__(self, module_name: str, pkg=None):
         """
         :param module_name: Import module name.
         :param pkg: prefix path.

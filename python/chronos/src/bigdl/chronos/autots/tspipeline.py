@@ -21,7 +21,6 @@ import types
 import numpy as np
 
 from bigdl.chronos.data import TSDataset
-import torch
 from bigdl.chronos.metric.forecast_metrics import Evaluator
 
 DEFAULT_MODEL_INIT_DIR = "model_init.ckpt"
