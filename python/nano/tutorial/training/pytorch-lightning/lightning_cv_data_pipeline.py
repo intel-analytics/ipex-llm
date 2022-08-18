@@ -106,4 +106,3 @@ if __name__ == "__main__":
     trainer = Trainer(max_epochs=5)
     trainer.fit(model, train_dataloaders=train_loader)
     trainer.validate(model, dataloaders=val_loader)
-
