@@ -82,8 +82,8 @@ if __name__ == '__main__':
     ds_train, ds_test, ds_info = create_datasets(img_size=img_size, batch_size=batch_size)
     
     num_classes = ds_info.features['label'].num_classes
-    steps_per_epoch = ds_info.splits['train'].num_examples // batch_size
-    validation_steps = ds_info.splits['test'].num_examples // batch_size
+    steps_per_epoch = ds_info.splits['train[:10%]'].num_examples // batch_size
+    validation_steps = ds_info.splits['test[:10%]'].num_examples // batch_size
 
     # Multi-Instance Training
     # 
