@@ -125,8 +125,14 @@ class SparkTFEstimator():
         """
         sc = OrcaContext.get_spark_context()
 
-        # After converting Spark DataFrame to SparkXShards,
-        # we must have num_partition >= num_workers
+        # Data partition should be equal to num workers.
+        # Repartition Spark DataFrame before converting to SparkXShards.
+        # Repartition on SparkXShards will result in empty partitions.
+        if isinstance(data, DataFrame) or isinstance(data, SparkXShards):
+            if data.rdd.getNumPartitions() != self.num_workers:
+                data = data.repartition(self.num_workers)
+            if validation_data and validation_data.rdd.getNumPartitions() != self.num_workers:
+                validation_data = validation_data.repartition(self.num_workers)
         data, validation_data = maybe_dataframe_to_xshards(data, validation_data,
                                                            feature_cols, label_cols,
                                                            mode="fit",
@@ -182,10 +188,7 @@ class SparkTFEstimator():
                     param["data_creator"] = make_data_creator(partition_data)
                     return SparkRunner(**init_param).step(**param)
 
-                rdd = data.rdd
-                if rdd.getNumPartitions() > self.num_workers:
-                    rdd = rdd.repartition(self.num_workers)  # coalesce can be used with barrier
-                res = rdd.barrier().mapPartitions(
+                res = data.rdd.barrier().mapPartitions(
                     lambda iter: transform_func(iter, init_params, params)).collect()
             else:
                 def transform_func(iter, init_param, param):
@@ -198,10 +201,7 @@ class SparkTFEstimator():
 
                 train_rdd = data.rdd.mapPartitions(lambda iter: [list(iter)])
                 val_rdd = validation_data.rdd.mapPartitions(lambda iter: [list(iter)])
-                zip_rdd = train_rdd.zip(val_rdd)
-                if zip_rdd.getNumPartitions() > self.num_workers:
-                    zip_rdd = zip_rdd.repartition(self.num_workers)
-                res = zip_rdd.barrier().mapPartitions(
+                res = train_rdd.zip(val_rdd).barrier().mapPartitions(
                     lambda iter: transform_func(iter, init_params, params)).collect()
         else:
             params["data_creator"] = data
@@ -251,6 +251,9 @@ class SparkTFEstimator():
         sc = OrcaContext.get_spark_context()
         logger.info("Starting validation step.")
 
+        if isinstance(data, DataFrame) or isinstance(data, SparkXShards):
+            if data.rdd.getNumPartitions() != self.num_workers:
+                data = data.repartition(self.num_workers)
         data, _ = maybe_dataframe_to_xshards(data, validation_data=None,
                                              feature_cols=feature_cols,
                                              label_cols=label_cols,
@@ -298,10 +301,7 @@ class SparkTFEstimator():
                 param["data_creator"] = make_data_creator(partition_data)
                 return SparkRunner(**init_param).validate(**param)
 
-            rdd = data.rdd
-            if rdd.getNumPartitions() > self.num_workers:
-                rdd = rdd.repartition(self.num_workers)
-            res = rdd.barrier().mapPartitions(
+            res = data.rdd.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
         else:
             params["data_creator"] = data
