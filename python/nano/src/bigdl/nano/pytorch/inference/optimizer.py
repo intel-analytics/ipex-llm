@@ -49,7 +49,7 @@ ALL_INFERENCE_ACCELERATION_METHOD = \
         "onnxruntime_fp32_noipex": {"inc": False, "ipex": False, "onnxruntime": True,
                                     "openvino": False, "pot": False, "bf16": False},
         "onnxruntime_int8_noipex_qlinear": {"inc": True, "ipex": False, "onnxruntime": True,
-                                            "openvino":False, "pot": False, "bf16": False},
+                                            "openvino": False, "pot": False, "bf16": False},
         "onnxruntime_int8_noipex_integer": {"inc": True, "ipex": False, "onnxruntime": True,
                                             "openvino": False, "pot": False, "bf16": False},
         "openvino_fp32_noipex": {"inc": False, "ipex": False, "onnxruntime": False,
@@ -104,7 +104,7 @@ class Optimizer:
         # check if model is a nn.Module or inherited from a nn.Module
         invalidInputError(isinstance(model, nn.Module), "model should be a nn module.")
 
-        # get the available methods which 
+        # get the available methods whose dep is met
         available_dict = _available_acceleration_combination()
         result_map = {}
 
@@ -241,7 +241,7 @@ def _available_acceleration_combination():
                           "openvino": _openvino_checker,
                           "pot": _openvino_checker,
                           "bf16": _bf16_checker}
-    available_dict={}
+    available_dict = {}
     for method, dep in ALL_INFERENCE_ACCELERATION_METHOD.items():
         available_iter = True
         for name, value in dep.items():
