@@ -14,6 +14,7 @@ elif [ -c "/dev/sgx_enclave" ]; then
     ln -s /dev/sgx_enclave /dev/sgx/enclave
 else
     echo "both /dev/sgx/enclave /dev/sgx_enclave are not ready, please check the kernel and driver"
+    exit 1
 fi
 
 if [ -c "/dev/sgx/provision" ]; then
@@ -24,12 +25,14 @@ elif [ -c "/dev/sgx_provision" ]; then
     ln -s /dev/sgx_provision /dev/sgx/provision
 else
     echo "both /dev/sgx/provision /dev/sgx_provision are not ready, please check the kernel and driver"
+    exit 1
 fi
 
 if [ -f "/ppml/trusted-big-data-ml/secured_argvs" ]; then
     echo "/ppml/trusted-big-data-ml/secured_argvs is ready"
 else
     echo "/ppml/trusted-big-data-ml/secured_argvs is not ready, please generate it before init.sh"
+    exit 1
 fi
 
 ls -al /dev/sgx
