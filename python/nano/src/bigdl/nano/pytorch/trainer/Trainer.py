@@ -105,8 +105,8 @@ class Trainer(pl.Trainer):
         self.use_ipex = use_ipex
         enable_bf16 = self.use_ipex and kwargs.get('precision', None) == 'bf16'
 
-        # Set 'precision' for strategy without precision_plugin,
-        # Strategy > accelerator/precision/plugin
+        # Strategy has a higher priority than accelerator/precision/plugin,
+        # set precision for strategy without precision_plugin(e.g. ddp-spawn, ddp-subprocess)
         # torch must be greater or equal to 1.10 to use native amp for bfloat16 precision
         if TORCH_VERSION_LESS_1_10 and enable_bf16:
             kwargs['precision'] = 32
@@ -120,8 +120,11 @@ class Trainer(pl.Trainer):
             elif enable_bf16:
                 warning("Enable IPEX bfloat16 in a cpu instruction set"
                         " without avx512 will crash. "
-                        "Will use PyTorch Lightning Native AMP for BFloat16 precision")
+                        "Using 32-bit precision")
                 enable_bf16 = False
+                # IPEX-optimized model is incompatible with PL Native AMP,
+                # so fall back to 32-bit precision instead of staying at bfloat16 precision
+                kwargs['precision'] = 32
 
         if num_processes == 1:
             from bigdl.nano.pytorch.strategies import create_IPEXStrategy

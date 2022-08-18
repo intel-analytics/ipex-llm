@@ -66,8 +66,8 @@ class TorchNano(LightningLite):
         self.use_ipex = use_ipex
         self.enable_bf16 = self.use_ipex and kwargs.get('precision', None) == 'bf16'
 
-        # Set 'precision' for strategy without precision_plugin,
-        # Strategy > accelerator/precision/plugin
+        # Strategy has a higher priority than accelerator/precision/plugin,
+        # set precision for strategy without precision_plugin(e.g. ddp-spawn, ddp-subprocess)
         # torch must be greater or equal to 1.10 to use native amp for bfloat16 precision
         if TORCH_VERSION_LESS_1_10 and self.enable_bf16:
             kwargs['precision'] = 32
@@ -83,6 +83,7 @@ class TorchNano(LightningLite):
                         " without avx512 will crash. "
                         "Will use PyTorch Lightning Native AMP for BFloat16 precision")
                 self.enable_bf16 = False
+                kwargs['precision'] = 32
 
         if self.num_processes == 1:
             if self.use_ipex:
@@ -136,7 +137,9 @@ class TorchNano(LightningLite):
 
         model, optimizers = self._strategy._setup_model_and_optimizers(model, list(optimizers))
 
-        # add IPEX 1.11's optimization
+        # IPEX bfloat16 optimization will cast model parameters to `torch.bfloat16`
+        # which is not supported by ddp currently,
+        # so add IPEX 1.11's optimization after `_setup_model`
         if self.use_ipex and not TORCH_VERSION_LESS_1_10:
             dtype = torch.bfloat16 if self.enable_bf16 else None
             if len(optimizers) == 0:
