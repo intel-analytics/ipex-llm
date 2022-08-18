@@ -25,6 +25,7 @@ import torch
 from logging import warning
 from os.path import split, join, realpath
 from PIL import Image
+from typing import Any
 
 local_libturbo_path = None
 _turbo_path = realpath(join(split(realpath(__file__))[0],
@@ -34,8 +35,8 @@ if os.path.exists(_turbo_path):
 else:
     warning("libturbojpeg.so.0 not found in bigdl-nano, try to load from system.")
 
-# These images in the pet dataset that don't have a proper format. 
-# Some of them are actually .png files instead .jpg, 
+# These images in the pet dataset that don't have a proper format.
+# Some of them are actually .png files instead .jpg,
 # even though they are in .jpg extension.
 SPECIAL_IMAGES = [
     "oxford-iiit-pet/images/Egyptian_Mau_14.jpg",
@@ -205,6 +206,8 @@ class SegmentationImageFolder:
 
 
 class OxfordIIITPet(torchvision.datasets.OxfordIIITPet):
+    """A optimzied OxfordIIITPet using libjpeg_turbo to load jpg images."""
+
     def __init__(
         self,
         root: str,
@@ -212,12 +215,23 @@ class OxfordIIITPet(torchvision.datasets.OxfordIIITPet):
         target_transform: Optional[Callable] = None,
         download: bool = False,
     ):
-        super(OxfordIIITPet, self).__init__(root, transform=transform, target_transform=target_transform, download=download)
+        """
+        Create a OxfordIIITPet.
+
+        :param root: A string represting the root directory path.
+        :param transform: A function/transform that takes in an ndarray image
+            and returns a transformed version. E.g, ``transforms.RandomCrop``
+        :param target_transform: A function/transform that takes in the
+            target and transforms it.
+        :param download: If True, downloads the dataset from the internet
+        """
+        super(OxfordIIITPet, self).__init__(root, transform=transform,
+                                            target_transform=target_transform, download=download)
         self.jpeg: Optional[TurboJPEG] = None
         self.special_images = []
         for image in SPECIAL_IMAGES:
-            self.special_images.append(os.path.join(root,image))
-        
+            self.special_images.append(os.path.join(root, image))
+
     def _read_image_to_bytes(self, path: str):
         fd = open(path, 'rb')
         img_str = fd.read()
@@ -238,17 +252,17 @@ class OxfordIIITPet(torchvision.datasets.OxfordIIITPet):
                 target.append(self._labels[idx])
             else:  # target_type == "segmentation"
                 target.append(Image.open(self._segs[idx]))
-        
+
         if not target:
             target = None
         elif len(target) == 1:
             target = target[0]
         else:
             target = tuple(target)
-            
+
         if path in self.special_images:
             img = Image.open(path).convert("RGB")
-        else:        
+        else:
             if path.endswith(".jpg") or path.endswith(".jpeg"):
                 img_str = self._read_image_to_bytes(path)
                 img = self._decode_img_libjpeg_turbo(img_str)
