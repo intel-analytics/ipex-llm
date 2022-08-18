@@ -8,12 +8,14 @@ function showTutorials(ids){
 }
 
 //func when click the checkboxes
-$(".checkboxes").click(function(){
+function checkEvent(){
     //get all checked values
     var vals = [];
     $('input:checkbox:checked').each(function (index, item) {
         vals.push($(this).val());
     });
+
+    console.log(vals);
 
     //reset display
     $("#tutorial details").css("display","none");
@@ -30,7 +32,7 @@ $(".checkboxes").click(function(){
         var ids = ["ChronosForecaster","TuneaForecasting","AutoTSEstimator","AutoWIDE",
         "MultvarWIDE","MultstepWIDE","LSTMForecaster","AutoProphet","AnomalyDetection",
         "DeepARmodel","TFTmodel","hyperparameter","taxiDataset","distributedFashion",
-        "ONNXRuntime","Quantize","TCMFForecaster"];
+        "ONNX","Quantize","TCMFForecaster"];
         showTutorials(ids);
     }
     if(vals.includes("anomaly_detection")){
@@ -43,11 +45,11 @@ $(".checkboxes").click(function(){
     }
     if(vals.includes("hyperparameter_tuning")){
         var ids = ["TuneaForecasting","AutoTSEstimator","AutoWIDE","AutoProphet",
-        "hyperparameter","taxiDataset","ONNXRuntime"];
+        "hyperparameter","taxiDataset","ONNX"];
         showTutorials(ids);
     }
     if(vals.includes("onnxruntime")){
-        var ids = ["ONNXRuntime"];
+        var ids = ["ONNX"];
         showTutorials(ids);
     }
     if(vals.includes("quantization")){
@@ -62,4 +64,13 @@ $(".checkboxes").click(function(){
         var ids = ["AutoTSEstimator","DeepARmodel","TFTmodel"];
         showTutorials(ids);
     }
-});
+}
+
+$(".checkboxes").click(checkEvent);
+
+//func when click the tags
+$("details p button").click(function(){
+    var id = $(this).val();
+    $("#"+id).trigger("click");
+    console.log("succ");
+})
