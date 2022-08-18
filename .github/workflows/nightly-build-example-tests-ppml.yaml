@@ -76,6 +76,7 @@ jobs:
         -e https_proxy=$HTTPS_PROXY \
         $IMAGE bash
     - name: spark arrow test
+      run: |
         if [ ${SECELT_RUNNING_EXAMPLE} = "spark_arrow" ]; then
         docker exec -i $CONTAINER_NAME bash -c " cd /ppml/trusted-big-data-ml && \
         /graphene/Tools/argv_serializer bash -c "export PYSPARK_PYTHON=/usr/bin/python && \
