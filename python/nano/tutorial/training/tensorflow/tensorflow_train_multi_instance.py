@@ -76,7 +76,7 @@ def create_model(num_classes, img_size, learning_rate=1e-2):
 if __name__ == '__main__':
     img_size = 224
     batch_size = 64
-    num_epochs = 15
+    num_epochs = 1
     
     ds_train, ds_test, ds_info = create_datasets(img_size=img_size, batch_size=batch_size)
     
