@@ -2,3 +2,15 @@ Nano How-to Guides
 =========================
 
 In Nano How-to Guides, you could expect to find multiple task-oriented, executable, and bite-sized examples. These examples will show you various tasks that BigDL-Nano could help you accomplish smoothly.
+
+PyTorch Inference
+-------------------------
+
+* `How to accelerate a PyTorch inference pipeline through ONNXRuntime <accelerate_pytorch_inference_onnx.html>`_
+
+
+.. toctree::
+    :maxdepth: 1
+    :hidden:
+
+    accelerate_pytorch_inference_onnx
