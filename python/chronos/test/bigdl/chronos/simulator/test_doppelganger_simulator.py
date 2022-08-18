@@ -83,7 +83,13 @@ class TestDoppelganer(TestCase):
             [Output(type_=OutputType.CONTINUOUS, dim=2, normalization=None)]
 
     def test_init_doppelganer(self):
-        df = get_train_data()
+        # The environment variable FTP_URI is only available in Jenkins,
+        # thus this unit test can be directly skipped when not in Jenkins
+        try:
+            df = get_train_data()
+        except:
+            return
+
         feature_outputs = [Output(type_=OutputType.CONTINUOUS,
                                   dim=1,
                                   normalization=Normalization.MINUSONE_ONE)]
