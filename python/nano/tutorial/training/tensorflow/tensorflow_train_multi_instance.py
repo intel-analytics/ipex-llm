@@ -15,17 +15,17 @@
 
 
 import tensorflow as tf
-from tensorflow.keras import layers
+from tensorflow.keras import layers, Sequential
 from tensorflow.keras.applications import EfficientNetB0
 import tensorflow_datasets as tfds
 
-from bigdl.nano.tf.keras import Model, Sequential
+from bigdl.nano.tf.keras import Model
 
 
 def create_datasets(img_size, batch_size):
     (ds_train, ds_test), ds_info = tfds.load(
         "stanford_dogs",
-        data_dir="../data/",
+        data_dir="/tmp/data",
         split=['train', 'test'],
         with_info=True,
         as_supervised=True
@@ -73,22 +73,10 @@ def create_model(num_classes, img_size, learning_rate=1e-2):
     return model
 
 
-def unfreeze_model(model):
-    for layer in model.layers[-20:]:
-        if not isinstance(layer, layers.BatchNormalization):
-            layer.trainable = True
-    
-    optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4)
-    model.compile(
-        loss="categorical_crossentropy", optimizer=optimizer, metrics=['accuracy']
-    )
-
-
 if __name__ == '__main__':
     img_size = 224
     batch_size = 64
-    freezed_epochs = 15
-    unfreeze_epochs = 10
+    num_epochs = 15
     
     ds_train, ds_test, ds_info = create_datasets(img_size=img_size, batch_size=batch_size)
     
@@ -96,16 +84,18 @@ if __name__ == '__main__':
     steps_per_epoch = ds_info.splits['train'].num_examples // batch_size
     validation_steps = ds_info.splits['test'].num_examples // batch_size
 
-    model_default = create_model(num_classes=10, img_size=img_size)
-    
-    model_default.fit(ds_train,
-                      epochs=freezed_epochs,
-                      steps_per_epoch=steps_per_epoch,
-                      validation_data=ds_test,
-                      validation_steps=validation_steps)
-    unfreeze_model(model_default)
-    his_default = model_default.fit(ds_train,
-                                    epochs=unfreeze_epochs,
-                                    steps_per_epoch=steps_per_epoch,
-                                    validation_data=ds_test,
-                                    validation_steps=validation_steps)
+    # Multi-Instance Training
+    # 
+    # BigDL-Nano makes it very easy to conduct multi-instance training correctly.
+    # 
+    # Use `Model` or `Sequential` in `bigdl.nano.tf.keras` to create model,
+    # then just set the `num_processes` and `backend` parameter in the `fit` method.
+    # BigDL-Nano will launch the specific number of processes to perform data-parallel training.
+    model = create_model(num_classes=num_classes, img_size=img_size)
+    model.fit(ds_train,
+              epochs=num_epochs,
+              steps_per_epoch=steps_per_epoch,
+              validation_data=ds_test,
+              validation_steps=validation_steps,
+              num_processes=4,
+              backend='multiprocessing')
