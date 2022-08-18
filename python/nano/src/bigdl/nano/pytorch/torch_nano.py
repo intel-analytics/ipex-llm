@@ -34,6 +34,15 @@ from bigdl.nano.pytorch.strategies import create_IPEXStrategy, DDPSpawnStrategy,
     DDPSubprocessStrategy, create_RayStrategy
 
 
+class _TorchNanoModule(_LiteModule):
+    def __getattr__(self, name: str):
+        # automatically unwrap attributes access of _LiteModule
+        try:
+            return super().__getattr__(name)
+        except AttributeError:
+            return getattr(self.module, name)
+
+
 class TorchNano(LightningLite):
     """
     TorchNano for BigDL-Nano pytorch.
@@ -128,7 +137,7 @@ class TorchNano(LightningLite):
         model, optimizers = self._strategy._setup_model_and_optimizers(model, list(optimizers))
         if move_to_device:
             model = self._move_model_to_device(model=model, optimizers=list(optimizers))
-        model = _LiteModule(model, self._precision_plugin)
+        model = _TorchNanoModule(model, self._precision_plugin)
         optimizers = [_LiteOptimizer(optimizer=optimizer, strategy=self._strategy)  # type: ignore
                       for optimizer in optimizers]
         self._models_setup += 1
