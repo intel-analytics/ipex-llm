@@ -98,7 +98,7 @@ init_instance() {
         fi
     fi
 
-    # check occlum log level
+    # check occlum log level for docker
     export ENABLE_SGX_DEBUG=false
     export OCCLUM_LOG_LEVEL=off
     if [[ -z "$SGX_LOG_LEVEL" ]]; then
