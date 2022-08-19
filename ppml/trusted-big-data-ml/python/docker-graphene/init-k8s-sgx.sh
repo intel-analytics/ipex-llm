@@ -30,3 +30,5 @@ else
 fi
 
 ls -al /dev/sgx
+/graphene/Pal/src/host/Linux-SGX/signer/pal-sgx-get-token -output /ppml/trusted-big-data-ml/bash.token -sig /ppml/trusted-big-data-ml/bash.sig
+chmod +x /ppml/trusted-big-data-ml/bash.token

@@ -16,7 +16,6 @@ RUN cd /ppml/trusted-big-data-ml && \
 FROM $BIGDL_IMAGE_NAME:$BIGDL_IMAGE_VERSION
 
 COPY --from=temp /ppml/trusted-big-data-ml/bash.manifest.sgx /ppml/trusted-big-data-ml/bash.manifest.sgx
-COPY --from=temp /ppml/trusted-big-data-ml/bash.token /ppml/trusted-big-data-ml/bash.token
 COPY --from=temp /ppml/trusted-big-data-ml/bash.sig /ppml/trusted-big-data-ml/bash.sig
 COPY --from=temp /ppml/trusted-big-data-ml/bash.manifest /ppml/trusted-big-data-ml/bash.manifest
 

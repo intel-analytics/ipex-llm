@@ -3,15 +3,15 @@ export HTTP_PROXY_PORT=your_http_proxy_port
 export HTTPS_PROXY_HOST=your_https_proxy_host
 export HTTPS_PROXY_PORT=your_https_proxy_port
 export JDK_URL=http://your-http-url-to-download-jdk
-export IMAGE_MODE=bigdl_base_image_or_user_image
-export BIGDL_IMAGE_NAME=your_bigdl_base_image_name_used_to_build_user_image
-export BIGDL_IMAGE_VERSION=your_bigdl_base_image_version_used_to_build_user_image
-export USER_IMAGE_TAG=your_user_image_tag
+export IMAGE_MODE=bigdl_base_image_or_customer_image
+export BIGDL_IMAGE_NAME=your_bigdl_base_image_name_used_to_build_customer_image
+export BIGDL_IMAGE_VERSION=your_bigdl_base_image_version_used_to_build_ucustomer_image
+export CUSTOMER_IMAGE_TAG=your_customer_image_tag
 export LOCAL_IP=your_local_IP
 
-if [ "$IMAGE_MODE" == "bigdl_base_image_or_user_image" ]
+if [ "$IMAGE_MODE" == "bigdl_base_image_or_customer_image" ]
 then
-    echo "Please modify the mode of image to build, you can choose bigdl_base_image or user_image. The user_image is built on top of bigdl_base_image, where the user_image is a user-specific one signed by your enclave-key.pem."
+    echo "Please modify the mode of image to build, you can choose bigdl_base_image or customer_image. The customer_image is built on top of bigdl_base_image, where the customer_image is a customer-specific one signed by your enclave-key.pem."
 else
     if [ "$IMAGE_MODE" == "bigdl_base_image" ]
     then
@@ -47,9 +47,9 @@ else
             fi
         fi
     else
-    if [ "$IMAGE_MODE" == "user_image" ]
+    if [ "$IMAGE_MODE" == "customer_image" ]
     then
-        if [ "$BIGDL_IMAGE_NAME" == "your_bigdl_base_image_name_used_to_build_user_image" ] || [ "$BIGDL_IMAGE_VERSION" == "your_bigdl_base_image_version_used_to_build_user_image" ] || [ "$USER_IMAGE_TAG" == "your_user_image_tag" ]
+        if [ "$BIGDL_IMAGE_NAME" == "your_bigdl_base_image_name_used_to_build_user_image" ] || [ "$BIGDL_IMAGE_VERSION" == "your_bigdl_base_image_version_used_to_build_user_image" ] || [ "$CUSTOMER_IMAGE_TAG" == "your_user_image_tag" ]
         then
             echo "Please specific name and version of your bigdl base name, and tag of your user image to use."
         else
@@ -57,7 +57,7 @@ else
                     --build-arg BIGDL_IMAGE_NAME=$BIGDL_IMAGE_NAME \
                     --build-arg BIGDL_IMAGE_VERSION=$BIGDL_IMAGE_VERSION \
                     --build-arg LOCAL_IP=$LOCAL_IP \
-                    -t $USER_IMAGE_TAG -f ./UserImageDockerfile .
+                    -t $CUSTOMER_IMAGE_TAG -f ./UserImageDockerfile .
         fi
      fi
   fi
