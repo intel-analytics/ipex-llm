@@ -425,11 +425,12 @@ class SparkXShards(XShards):
     def assembleFeatureLabelCols(self, featureCols, labelCols):
         """
         The api is used to merge/convert one or multiple feature columns into a numpy array,
-         merge/convert one or multiple label columns into a numpy array.
+        merge/convert one or multiple label columns into a numpy array.
+
         :param featureCols: a list of feature columns.
         :param labelCols: a list of label columns.
         :return: SparkXShards of dictionary, key is assembled feature numpy array, value is
-         assembled lable numpy array
+         assembled label numpy array
 
         eg:
         shards: SparkXShards of pandas data frame with 9 cols ['f1', 'f2', 'f3', 'f4', 'f5', 'f6',
