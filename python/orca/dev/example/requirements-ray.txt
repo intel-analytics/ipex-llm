@@ -20,3 +20,4 @@ argparse
 Pillow
 pyarrow==4.0.1
 fsspec==2021.9.0
+scikit-optimize==0.8.1
