@@ -19,3 +19,4 @@ xgboost_ray
 argparse
 Pillow
 pyarrow==4.0.1
+fsspec==2021.9.0
