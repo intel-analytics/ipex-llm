@@ -9,7 +9,7 @@
 
     <div id="tutorial">
         <h3 style="text-align:left">Filter:</h3>
-        <p>Please check what you want to show the related tutorials. If nothing is checked, all the tutorials will be displayed. You can click buttons following <span style="font-weight:bold;">Tag</span> to show related tutorials as well.</p>
+        <p>Please <span style="font-weight:bold;">check</span> the checkboxes or <span style="font-weight:bold;">click</span> tag buttons to show the related tutorials. Reclick or uncheck will hide corresponding tutorials. If nothing is checked or clicked, all the tutorials will be displayed. </p>
         <div class="border">
             <div class="choiceline">
                 <div class="choicebox"><input type="checkbox" class="checkboxes" name="choice" value="forecast" id="forecast">forecast </div>
