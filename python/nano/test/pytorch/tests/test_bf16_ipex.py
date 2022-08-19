@@ -94,7 +94,7 @@ class Pytorch1_11:
         bf16_model._max_bf16_isa = MagicMock(return_value="AVX512")
         y_hat = bf16_model(x)
 
-        assert y_hat.shape == (10, 10) and y_hat.dtype == torch.float16
+        assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
 
 
 class Pytorch1_12(Pytorch1_11):
@@ -135,7 +135,7 @@ if not check_avx512():
 elif TORCH_VERSION_LESS_1_10:
     print("pytorch 1.9")
     TORCH_VERSION_CLS = Pytorch1_9
-else:
+elif TORCH_VERSION_LESS_1_12:
     print("pytorch 1.11")
     TORCH_VERSION_CLS = Pytorch1_11
 

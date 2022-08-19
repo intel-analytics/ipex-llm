@@ -17,18 +17,19 @@
 import contextlib
 import subprocess
 import io
+import os
 from logging import info, warning
 
 from ...utils.log4Error import invalidInputError
 
 import intel_extension_for_pytorch as ipex
 from .ipex_inference_model import PytorchIPEXJITModel
-from bigdl.nano.pytorch.amp.bfloat16 import BF16Model, autocast
+from bigdl.nano.pytorch.amp.bfloat16 import autocast, RedirectStream
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 import torch
 
 
-class PytorchIPEXJITBF16Model(PytorchIPEXJITModel, BF16Model):
+class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
     def __init__(self, model, input_sample=None, use_ipex=False,
                  use_jit=False, channels_last=None, from_load=False):
         '''
@@ -53,6 +54,16 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel, BF16Model):
                                      channels_last=channels_last, from_load=from_load)
 
     @property
+    def _allow_non_bf16(self):
+        """
+        ALLOW_NON_BF16_ISA indicates if we restrict bf16 instructions support to be available.
+        ALLOW_NON_BF16_ISA='1' sometimes helps debug and test cases without AVX512 or AMX
+
+        :return: The bool value of ALLOW_NON_BF16_ISA
+        """
+        return os.environ.get("ALLOW_NON_BF16_ISA", None) == '1'
+
+    @property
     def _has_bf16_isa(self):
         # Require torch>= 1.10 to obtain IPEX BF16 acceleration
         invalidInputError(
@@ -64,9 +75,10 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel, BF16Model):
 
     def _max_bf16_isa(self, *args, **kwargs):
         # can not capture dnnl log
-        with io.StringIO() as dnnl_log, contextlib.redirect_stdout(dnnl_log), ipex.verbose(1):
+        dnnl_log = io.StringIO()
+        with RedirectStream(target=dnnl_log), ipex.verbose(1):
             self.model(*args, *kwargs)
-            dnnl_log = dnnl_log.getvalue()
+        dnnl_log = dnnl_log.getvalue()
         max_bf16_isa = None
         # IPEX 1.11 BF16 support AVX512
         # IPEX 1.12 BF16 support AMX, AVX512_BF16, AVX512_VNNI, AVX512
@@ -102,7 +114,10 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel, BF16Model):
 
     @autocast()
     def forward_step(self, *inputs):
-        return super().forward_step(*inputs)
+        if self.channels_last:
+            inputs = tuple(map(lambda x: x.to(memory_format=torch.channels_last), inputs))
+        self._bf16_check(*inputs)
+        return self.model(*inputs)
 
     @property
     def status(self):
