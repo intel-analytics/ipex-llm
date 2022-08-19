@@ -31,14 +31,14 @@ ray stop -f
 ray start --head
 
 echo "Running Ray Estimator tests"
-python -m pytest -v test/bigdl/orca/learn/ray/pytorch/test_estimator_ray_runtime.py
+python test/bigdl/orca/learn/ray/pytorch/test_estimator_ray_runtime.py
 exit_status_2=$?
 if [ $exit_status_2 -ne 0 ];
 then
     exit $exit_status_2
 fi
 
-python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf2estimator_ray_runtime.py
+python test/bigdl/orca/learn/ray/tf/test_tf2estimator_ray_runtime.py
 exit_status_3=$?
 if [ $exit_status_3 -ne 0 ];
 then
