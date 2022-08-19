@@ -14,19 +14,21 @@
 # limitations under the License.
 #
 
-from xml.etree.ElementInclude import include
+from collections import namedtuple
+import torch
 from torch import nn
 import subprocess
 from importlib.util import find_spec
 import time
 import numpy as np
 
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
 from bigdl.nano.pytorch import Trainer
 
 _whole_acceleration_options = ["inc", "ipex", "onnxruntime", "openvino", "pot", 
                                "bf16", "jit", "channels_last"]
 
+CompareMetric = namedtuple("CompareMetric", ["method_name", "latency", "accuracy"])
 
 class AccelerationOption(object):
     def __init__(self, *args, **kwargs):
@@ -57,7 +59,7 @@ class AccelerationOption(object):
 # combinations here
 ALL_INFERENCE_ACCELERATION_METHOD = \
     {
-        "None_fp32": AccelerationOption(),
+        "original": AccelerationOption(),
         "None_fp32_ipex": AccelerationOption(ipex=True),
         "None_bf16": AccelerationOption(bf16=True),
         "None_bf16_ipex": AccelerationOption(bf16=True, ipex=True),
@@ -92,10 +94,10 @@ class Optimizer:
 
     def optimize(self, model,
                  training_data,
-                 validation_data=None,
-                 metric=None,
-                 direction=None,
-                 cpu_num=None):
+                 validation_data = None,
+                 metric = None,
+                 cpu_num: int = None,
+                 trials: int = 100):
         '''
         This function will give all available inference acceleration methods a try
         and record the latency, accuracy and model instance inside the Optimizer for
@@ -113,20 +115,17 @@ class Optimizer:
                This is only needed when users care about the possible accuracy drop.
         :param metric: (optional) A callable object takes prediction and target
                and returns a accuracy value in this calling method `metric(pred, target)`
-        :param direction: (optional) A string that indicates the higher/lower
-               better for the metric, "min" for the lower the better and "max" for the
-               higher the better.
         :param cpu_num: (optional) a int represents how many cores is needed for
                inference.
+        :param trials: (optional) a int represents the number of repetitions to calculate
+               the average latency. The default value is 100.
         '''
-        # TODO: direction to be implemented
-        # TODO: cpu_num to be implemented
-
         # check if model is a nn.Module or inherited from a nn.Module
         invalidInputError(isinstance(model, nn.Module), "model should be a nn module.")
 
         # get the available methods whose dep is met
         available_dict = _available_acceleration_combination()
+        default_threads = torch.get_num_threads()
         result_map = {}
 
         for method, available in available_dict.items():
@@ -148,15 +147,16 @@ class Optimizer:
                                                               use_ipex=use_ipex,
                                                               channels_last=instance.channels_last,
                                                               input_sample=input_sample)
-                        # TODO: 100 trial run is now fixed, we may make it adjusted intelligently.
                         result_map[method] = {}
 
                         def func_test(model, input_sample):
                             model(*input_sample)
 
+                        torch.set_num_threads(cpu_num)
                         result_map[method]["latency"] =\
-                            _throughput_calculate_helper(100, func_test,
-                                                         accelerated_model, input_sample)
+                            _throughput_calculate_helper(trials, func_test,
+                                                        accelerated_model, input_sample)
+                        torch.set_num_threads(default_threads)
 
                         if validation_data is not None and metric is not None:
                             result_map[method]["accuracy"] =\
@@ -185,7 +185,7 @@ class Optimizer:
                             model(*input_sample)
 
                         result_map[method]["latency"] =\
-                            _throughput_calculate_helper(100, func_test,
+                            _throughput_calculate_helper(trials, func_test,
                                                          accelerated_model, input_sample)
 
                         if validation_data is not None and metric is not None:
@@ -203,23 +203,73 @@ class Optimizer:
         self.optimized_model_dict = result_map
 
     def get_best_model(self,
-                       accelerator=None,
-                       precision=None,
-                       use_ipex=None,
-                       allow_acc=None,):
+                       accelerator: str = None,
+                       precision: str = None,
+                       use_ipex: bool = None,
+                       accuracy_criterion: float = None,
+                       direction: str = "max"):
         '''
-        :param accelerator: (optional) if not None, then will only find the
+        :param accelerator: (optional) Use accelerator 'None', 'onnxruntime',
+               'openvino', 'jit', defaults to None. If not None, then will only find the
                model with this specific accelerator.
-        :param precision: (optional) if not None, the will only find the
-               model with thie specific precision.
+        :param precision: (optional) Supported type: 'int8', 'bf16',
+               defaults to None which represents 'fp32'. If not None, the will
+               only find the model with thie specific precision.
         :param use_ipex: (optional) if not NOne, then will only find the
                model with this specific ipex setting
-        :param allow_acc: (optional) a float represents the accuracy threshold
-               that can be tollerated.
-
-        :return: best model
+        :param :param accuracy_criterion: (optional) a float represents tolerable
+               accuracy drop percentage, defaults to None meaning no accuracy control.
+        :param direction: (optional) A string that indicates the higher/lower
+               better for the metric, "min" for the lower the better and "max" for the
+               higher the better. Default value is "max".
+        :return: best model, corresponding acceleration option
         '''
-        pass
+        invalidOperationError(len(self.optimized_model_dict) > 0, 
+                              "There is no optimized model. You should call .optimize() \
+                              before get_best_model()")
+        invalidInputError(accelerator in [None, 'onnxruntime', 'openvino', 'jit'],
+                          "Only support accelerator 'onnxruntime', 'openvino' and 'jit'.")
+        # TODO: include fp16?
+        invalidInputError(precision in [None, 'int8', 'bf16'],
+                          "Only support precision 'int8', 'bf16'.")
+        invalidInputError(direction in ['min', 'max'],
+                          "Only support direction 'min', 'max'.")
+
+        best_model = self.optimized_model_dict["original"]["model"]
+        best_metric = CompareMetric("original",
+                                    self.optimized_model_dict["original"]["latency"],
+                                    self.optimized_model_dict["original"]["accuracy"])
+
+        for method in self.optimized_model_dict.keys():
+            if method == "original":
+                continue
+            option = ALL_INFERENCE_ACCELERATION_METHOD[method]
+            if accelerator is not None:
+                if not getattr(option, accelerator):
+                    continue
+            if precision is not None:
+                if not getattr(option, precision):
+                    continue
+            if use_ipex:
+                if not getattr(option, "ipex"):
+                    continue
+
+            if accuracy_criterion is not None:
+                accuracy = option["accuracy"]
+                compare_acc = best_metric.accuracy
+                if direction == "min":
+                    if (accuracy - compare_acc)/compare_acc > accuracy_criterion:
+                        continue
+                else:
+                    if (compare_acc - accuracy)/compare_acc > accuracy_criterion:
+                        continue
+
+            # After the above conditions are met, the latency comparison is performed
+            if option["latency"] < best_metric.latency:
+                best_model = option["model"]
+                best_metric = CompareMetric(method, option["latency"], option["accuracy"])
+
+        return best_model, _format_acceleration_info(best_metric["method_name"])
 
 
 def _inc_checker():
@@ -297,7 +347,9 @@ def _throughput_calculate_helper(iterrun, func, *args):
         st = time.time()
         func(*args)
         time_list.append(time.time() - st)
-    # TODO: remove first and last 10 percent
+    time_list.sort()
+    # remove top and least 10% data.
+    time_list = time_list[int(0.1*iterrun): int(0.9*iterrun)]
     return np.median(time_list) * 1000
 
 
@@ -307,6 +359,21 @@ def _accuracy_calculate_helper(model, metric, data):
     '''
     metric_list = []
     # TODO: data should have same batchsize
+    # TODO: or we control this
     for i, (data_input, target) in enumerate(data):
         metric_list.append(metric(model(data_input), target).numpy())
     return np.mean(metric_list)
+
+
+def _format_acceleration_info(method_name):
+    '''
+    Get a string represation for current method's acceleration option
+    '''
+    option = ALL_INFERENCE_ACCELERATION_METHOD[method_name]
+    repr_str = ""
+    for key, value in option.__dict__.items():
+        if value:
+            repr_str = repr_str + key + " + "
+    if len(repr_str) > 0:
+        repr_str = repr_str[:-2]
+    return repr_str
