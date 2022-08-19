@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 
+# python check_ev_ckpt.py --checkpoint ./result > ckpt.txt
+
 import argparse
 from tensorflow.contrib.framework.python.framework import checkpoint_utils
 
@@ -41,4 +43,5 @@ checkpoint_dir = args.checkpoint
 # xxxxx/Adagrad are the backward embedding gradients.
 # xxxxx-versions are the most recent global steps of each feature.
 for name, shape in checkpoint_utils.list_variables(checkpoint_dir):
-    print('loading...', name, shape, checkpoint_utils.load_variable(checkpoint_dir, name))
+    if "embedding" in name:
+        print(name, shape, checkpoint_utils.load_variable(checkpoint_dir, name))
