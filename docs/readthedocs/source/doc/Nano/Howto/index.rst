@@ -7,6 +7,7 @@ PyTorch Inference
 -------------------------
 
 * `How to accelerate a PyTorch inference pipeline through ONNXRuntime <accelerate_pytorch_inference_onnx.html>`_
+* `How to accelerate a PyTorch inference pipeline through OpenVINO <accelerate_pytorch_inference_openvino.html>`_
 
 
 .. toctree::
@@ -14,3 +15,4 @@ PyTorch Inference
     :hidden:
 
     accelerate_pytorch_inference_onnx
+    accelerate_pytorch_inference_openvino
