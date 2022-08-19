@@ -22,18 +22,18 @@ import torch.nn as nn
 import torch.optim as optim
 
 from bigdl.orca import init_orca_context, stop_orca_context
-from bigdl.orca.learn.pytorch import Estimator
-from bigdl.orca.learn.metrics import Accuracy
 import bigdl.orca.data.pandas
 from bigdl.orca.data.transformer import *
+from bigdl.orca.learn.pytorch import Estimator
+from bigdl.orca.learn.metrics import Accuracy
 
 init_orca_context(cluster_mode="local", cores=4, memory="3g")
 
 # Load data
-file_path = './train.csv'
+file_path = '/home/yansu/Desktop/yxy/data_example/train.csv'
 data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
-# Duplicate the dataframe
+# Drop duplicate columns
 data_shard = data_shard.deduplicates()
 
 # Labelencode y
@@ -49,8 +49,8 @@ def trans_func2(df):
 data_shard = data_shard.transform_shard(trans_func2)
 
 # Split train and test set
-RANDOM_STATE = 2021
 def split_train_test(data):
+    RANDOM_STATE = 2021
     train, test = train_test_split(data, test_size=0.2, random_state=RANDOM_STATE)
     return train, test
 train_shard, val_shard = data_shard.transform_shard(split_train_test).split()
@@ -75,7 +75,7 @@ val_shard = val_shard.transform_shard(trans_func3)
 torch.manual_seed(0)
 BATCH_SIZE = 64
 NUM_CLASSES = 4
-NUM_EPOCHS = 100
+NUM_EPOCHS = 1
 NUM_FEATURES = 50
 
 def linear_block(in_features, out_features, p_drop, *args, **kwargs):
@@ -89,7 +89,7 @@ class TPS05ClassificationSeq(nn.Module):
     def __init__(self):
         super(TPS05ClassificationSeq, self).__init__()
         num_feature = NUM_FEATURES
-        num_class = 4
+        num_class = NUM_CLASSES
         self.linear = nn.Sequential(
             linear_block(num_feature, 100, 0.3),
             linear_block(100, 250, 0.3),
@@ -113,13 +113,13 @@ def optim_creator(model, config):
 
 criterion = nn.CrossEntropyLoss()
 
-est = Estimator.from_torch(model=model_creator, optimizer=optim_creator, loss=criterion, metrics=[Accuracy()],
-                           backend="ray")
+est = Estimator.from_torch(model=model_creator, optimizer=optim_creator,
+                           loss=criterion, metrics=[Accuracy()], backend="ray")
 
-est.fit(data=train_shard, feature_cols=['x_scaled'], label_cols=['target'], validation_data=val_shard, epochs=1,
-        batch_size=BATCH_SIZE)
+est.fit(data=train_shard, feature_cols=['x_scaled'], label_cols=['target'],
+        validation_data=val_shard, epochs=NUM_EPOCHS, batch_size=BATCH_SIZE)
 
-result = est.evaluate(data=val_shard, feature_cols=['x_scaled'], label_cols=['target'], batch_size=1)
+result = est.evaluate(data=val_shard, feature_cols=['x_scaled'], label_cols=['target'], batch_size=BATCH_SIZE)
 
 for r in result:
     print(r, ":", result[r])
