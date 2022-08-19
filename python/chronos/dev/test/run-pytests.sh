@@ -43,7 +43,7 @@ fi
 
 if [ $RUN_PART1 = 1 ]; then
 echo "Running chronos tests Part 1"
-python -m pytest -v -m "not tf1 and not onnxrt16" test/bigdl/chronos/model \
+python -m pytest -v -m "not onnxrt16 and not tf1" test/bigdl/chronos/model \
                                                   test/bigdl/chronos/forecaster \
                                                   test/bigdl/chronos/metric \
                                                   test/bigdl/chronos/pytorch \
@@ -57,7 +57,7 @@ fi
 
 if [ $RUN_PART2 = 1 ]; then
 echo "Running chronos tests Part 2"
-python -m pytest -v -m "not tf1 and not onnxrt16" test/bigdl/chronos/autots\
+python -m pytest -v -m "not onnxrt16 and not tf1" test/bigdl/chronos/autots\
                                                   test/bigdl/chronos/data \
                                                   test/bigdl/chronos/simulator \
                                                   test/bigdl/chronos/detector \
