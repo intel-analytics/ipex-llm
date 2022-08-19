@@ -31,7 +31,7 @@ class Pytorch1_9:
 
         with pytest.raises(
             RuntimeError,
-            match="Require torch>=1.10 to obtain IPEX BF16 acceleration."
+            match="torch version should >=1.10 to use ipex"
         ):
             trainer.quantize(model, precision='bf16', use_ipex=True)
 
@@ -45,7 +45,7 @@ class CaseWithoutAVX512:
         y = torch.ones((10,), dtype=torch.long)
 
         with pytest.raises(RuntimeError,
-                           match="Your cpu does not support AVX512"):
+                           match="Your machine or OS doesn't support BF16 instructions."):
             bf16_model = trainer.quantize(model, precision='bf16', use_ipex=True)
 
     @patch.dict('os.environ', {'ALLOW_NON_BF16_ISA': "1"})
@@ -65,8 +65,8 @@ class CaseWithoutAVX512:
         assert y_hat.shape == (10, 10) and y_hat.dtype == torch.float32
 
 
-class Pytorch1_11:
-    @patch("bigdl.nano.pytorch.amp.bfloat16.BF16Model._max_bf16_isa", return_value=None)
+class Pytorch1_11(CaseWithoutAVX512):
+    @patch("bigdl.nano.deps.ipex.ipex_inference_bf16_model.PytorchIPEXJITBF16Model._max_bf16_isa", return_value=None)
     def test_not_executed_on_bf16(self, mocked_max_bf16_isa):
         mocked_max_bf16_isa.return_value = None
 
@@ -133,10 +133,10 @@ if not check_avx512():
     print("IPEX Inference Model Without AVX512")
     TORCH_VERSION_CLS = CaseWithoutAVX512
 elif TORCH_VERSION_LESS_1_10:
-    print("pytorch 1.9")
+    print("ipex 1.9")
     TORCH_VERSION_CLS = Pytorch1_9
 elif TORCH_VERSION_LESS_1_12:
-    print("pytorch 1.11")
+    print("ipex 1.11")
     TORCH_VERSION_CLS = Pytorch1_11
 
 

@@ -48,7 +48,11 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                the parameter will be ignored if use_ipex is False.
         :param from_load: this will only be set by _load method.
         '''
-        dtype = None if not self._has_bf16_isa and self._allow_non_bf16 else torch.bfloat16
+        invalidInputError(
+            self._has_bf16_isa or self._allow_non_bf16,
+            errMsg="Your machine or OS doesn't support BF16 instructions."
+        )
+        dtype = torch.bfloat16 if self._has_bf16_isa else None
         PytorchIPEXJITModel.__init__(self, model, input_sample=input_sample, use_ipex=use_ipex,
                                      dtype=dtype, use_jit=use_jit,
                                      channels_last=channels_last, from_load=from_load)
@@ -65,11 +69,6 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
 
     @property
     def _has_bf16_isa(self):
-        # Require torch>= 1.10 to obtain IPEX BF16 acceleration
-        invalidInputError(
-            not TORCH_VERSION_LESS_1_10,
-            errMsg="Require torch>=1.10 to obtain IPEX BF16 acceleration."
-        )
         msg = subprocess.check_output(["lscpu"]).decode("utf-8")
         return 'avx512' in msg or 'amx' in msg
 
