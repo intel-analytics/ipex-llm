@@ -23,7 +23,7 @@ torch = LazyImport('torch')
 Seq2SeqForecaster = LazyImport('bigdl.chronos.forecaster.seq2seq_forecaster.Seq2SeqForecaster')
 from unittest import TestCase
 import pytest
-from .. import op_torch, op_distributed, op_all
+from .. import op_torch, op_distributed, op_all, op_onnxrt16
 
 
 def create_data(loader=False):
@@ -97,6 +97,7 @@ def create_tsdataset_val(roll=True, horizon=5):
     return train, val, test
 
 
+@op_all
 @op_torch
 class TestChronosModelSeq2SeqForecaster(TestCase):
 
@@ -120,7 +121,6 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         test_mse = forecaster.evaluate(test_data)
         assert test_mse[0].shape == test_data[1].shape[1:]
 
-    @op_all
     @op_onnxrt16
     def test_s2s_forecaster_fit_loader(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
@@ -138,7 +138,6 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         forecaster.evaluate_with_onnx(test_loader)
         forecaster.evaluate_with_onnx(test_loader, batch_size=32)
 
-    @op_all
     @op_onnxrt16
     def test_s2s_forecaster_onnx_methods(self):
         train_data, val_data, test_data = create_data()
@@ -168,7 +167,6 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         except ImportError:
             pass
 
-    @op_all
     def test_s2s_forecaster_openvino_methods(self):
         train_data, val_data, test_data = create_data()
         forecaster = Seq2SeqForecaster(past_seq_len=24,
@@ -278,7 +276,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
             distributed_eval = forecaster.evaluate(val_data)
         stop_orca_context()
 
-    @op_all
+    @op_distributed
     @op_onnxrt16
     def test_s2s_forecaster_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context
@@ -421,7 +419,6 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         _, y_test = test.to_numpy()
         assert yhat.shape == y_test.shape
 
-    @op_all
     @op_onnxrt16
     def test_forecaster_from_tsdataset_data_loader_onnx(self):
         train, test = create_tsdataset(roll=False)

@@ -23,7 +23,7 @@ from unittest import TestCase
 import numpy as np
 from bigdl.chronos.utils import LazyImport
 tf = LazyImport('tensorflow')
-from test.bigdl.chronos import op_tf2
+from test.bigdl.chronos import op_tf2, op_all
 
 
 def create_data(tf_data=False, batch_size=32):
@@ -73,7 +73,7 @@ def create_tsdataset(roll=True):
     return train, test
 
 
-@op_tf2
+@op_all
 class TestLSTMForecaster(TestCase):
     def setUp(self):
         from bigdl.chronos.forecaster.tf.lstm_forecaster import LSTMForecaster

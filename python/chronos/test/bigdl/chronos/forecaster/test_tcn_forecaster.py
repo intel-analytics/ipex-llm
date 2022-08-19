@@ -23,7 +23,8 @@ torch = LazyImport('torch')
 TCNForecaster = LazyImport('bigdl.chronos.forecaster.tcn_forecaster.TCNForecaster')
 from unittest import TestCase
 import pytest
-from .. import op_torch, op_all, op_distributed, op_automl
+from .. import op_torch, op_all, op_distributed, op_automl, op_onnxrt16
+
 
 def create_data(loader=False):
     num_train_samples = 1000
@@ -109,6 +110,7 @@ def create_tsdataset_val(roll=True, horizon=5):
     return train, val, test
 
 
+@op_all
 @op_torch
 class TestChronosModelTCNForecaster(TestCase):
 
@@ -134,7 +136,6 @@ class TestChronosModelTCNForecaster(TestCase):
         test_mse = forecaster.evaluate(test_data)
         assert test_mse[0].shape == test_data[1].shape[1:]
 
-    @op_all
     @op_onnxrt16
     def test_tcn_forecaster_fit_loader(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
@@ -198,7 +199,7 @@ class TestChronosModelTCNForecaster(TestCase):
                         direction=None,
                         directions=["minimize", "minimize"])
 
-    @op_all
+    @op_automl
     @op_onnxrt16
     def test_tcn_forecaster_multi_objective_tune_acceleration(self):
         import bigdl.nano.automl.hpo.space as space
@@ -218,7 +219,7 @@ class TestChronosModelTCNForecaster(TestCase):
                         directions=["minimize", "minimize"],
                         acceleration=True, direction=None)
 
-    @op_all
+    @op_automl
     @op_onnxrt16
     def test_tcn_forecaster_mo_tune_acceleration_fit_input(self):
         import bigdl.nano.automl.hpo.space as space
@@ -240,7 +241,7 @@ class TestChronosModelTCNForecaster(TestCase):
         with self.assertRaises(Exception):
             forecaster.fit(train_data, epochs=2)
 
-    @op_all
+    @op_automl
     @op_onnxrt16
     def test_tcn_forecaster_mo_tune_acceleration_fit(self):
         import bigdl.nano.automl.hpo.space as space
@@ -261,7 +262,6 @@ class TestChronosModelTCNForecaster(TestCase):
                         acceleration=True, direction=None)
         forecaster.fit(train_data, epochs=2, use_trial_id=0)
 
-    @op_all
     @op_onnxrt16
     def test_tcn_forecaster_onnx_methods(self):
         train_data, val_data, test_data = create_data()
@@ -292,7 +292,6 @@ class TestChronosModelTCNForecaster(TestCase):
         except ImportError:
             pass
 
-    @op_all
     def test_tcn_forecaster_openvino_methods(self):
         train_data, val_data, test_data = create_data()
         forecaster = TCNForecaster(past_seq_len=24,
@@ -389,7 +388,6 @@ class TestChronosModelTCNForecaster(TestCase):
         with pytest.raises(RuntimeError):
             forecaster.quantize(train_data, approach="dynamic")
 
-    @op_all
     def test_tcn_forecaster_quantization(self):
         train_data, val_data, test_data = create_data()
         forecaster = TCNForecaster(past_seq_len=24,
@@ -424,7 +422,6 @@ class TestChronosModelTCNForecaster(TestCase):
         np.testing.assert_almost_equal(test_pred_save, test_pred_load)
         np.testing.assert_almost_equal(test_pred_save_q, test_pred_load_q)
 
-    @op_all
     @op_onnxrt16
     def test_tcn_forecaster_quantization_onnx(self):
         train_data, val_data, test_data = create_data()
@@ -441,7 +438,6 @@ class TestChronosModelTCNForecaster(TestCase):
         pred_q = forecaster.predict_with_onnx(test_data[0], quantize=True)
         eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
 
-    @op_all
     @op_onnxrt16
     def test_tcn_forecaster_quantization_onnx_tuning(self):
         train_data, val_data, test_data = create_data()
@@ -564,6 +560,7 @@ class TestChronosModelTCNForecaster(TestCase):
         stop_orca_context()
 
     @op_all
+    @op_distributed
     @op_onnxrt16
     def test_tcn_forecaster_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context
@@ -709,7 +706,6 @@ class TestChronosModelTCNForecaster(TestCase):
         _, y_test = test.to_numpy()
         assert yhat.shape == y_test.shape
 
-    @op_all
     @op_onnxrt16
     def test_forecaster_from_tsdataset_data_loader_onnx(self):
         train, test = create_tsdataset(roll=False)

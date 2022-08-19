@@ -24,7 +24,8 @@ from bigdl.chronos.forecaster.tf.seq2seq_forecaster import Seq2SeqForecaster
 
 from bigdl.chronos.utils import LazyImport
 tf = LazyImport('tensorflow')
-from test.bigdl.chronos import op_tf2
+from test.bigdl.chronos import op_tf2, op_all
+
 
 def create_data(tf_data=False, batch_size=32):
     train_num_samples = 1000
@@ -73,6 +74,7 @@ def create_tsdataset(roll=True):
     return train, test
 
 
+@op_all
 @op_tf2
 class TestSeq2SeqForecaster(TestCase):
     

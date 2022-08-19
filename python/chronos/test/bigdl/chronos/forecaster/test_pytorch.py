@@ -16,9 +16,10 @@
 
 from unittest import TestCase
 from bigdl.chronos.utils import LazyImport
-from .. import op_torch
+from .. import op_torch, op_all
 
 
+@op_all
 @op_torch
 class TestChronosModelPytorch(TestCase):
 

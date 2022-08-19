@@ -24,7 +24,7 @@ import numpy as np
 from bigdl.chronos.forecaster.tf.tcn_forecaster import TCNForecaster
 from bigdl.chronos.utils import LazyImport
 tf = LazyImport('tensorflow')
-from test.bigdl.chronos import op_tf2
+from test.bigdl.chronos import op_tf2, op_all
 
 
 def create_data(tf_data=False, batch_size=32):
@@ -55,7 +55,6 @@ def create_data(tf_data=False, batch_size=32):
     return train_data, test_data
 
 
-<<<<<<< HEAD
 def create_tsdataset(roll=True):
     from bigdl.chronos.data import TSDataset
     import pandas as pd
@@ -76,7 +75,7 @@ def create_tsdataset(roll=True):
     return train, test
 
 
-@op_tf2
+@op_all
 class TestTCNForecaster(TestCase):
     def setUp(self):
         from bigdl.chronos.forecaster.tf.tcn_forecaster import TCNForecaster
