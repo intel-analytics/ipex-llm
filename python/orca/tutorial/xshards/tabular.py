@@ -35,7 +35,7 @@ from bigdl.orca.data.transformer import *
 sc = init_orca_context(cluster_mode="local", cores=4, memory="10g", num_nodes=1)
 
 # Load data
-file_path = '/home/yansu/Desktop/yxy/data_example/train.csv'
+file_path = './train.csv'
 data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
 # Duplicate the dataframe
