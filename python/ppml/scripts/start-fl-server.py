@@ -14,10 +14,49 @@
 # limitations under the License.
 #
 
+import sys
+import os
+import fnmatch
+import getopt
+
+for files in os.listdir('/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/'):
+    if fnmatch.fnmatch(files, 'bigdl-ppml-*-python-api.zip'):
+        sys.path.append('/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/' + files)
+        sys.path.append('/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/' + files + '/bigdl/ppml/fl/nn/generated')
+
+if '/usr/lib/python3.6' in sys.path:
+    sys.path.remove('/usr/lib/python3.6')
+if '/usr/lib/python3.6/lib-dynload' in sys.path:
+    sys.path.remove('/usr/lib/python3.6/lib-dynload')
+if '/usr/local/lib/python3.6/dist-packages' in sys.path:
+    sys.path.remove('/usr/local/lib/python3.6/dist-packages')
+if '/usr/lib/python3/dist-packages' in sys.path:
+    sys.path.remove('/usr/lib/python3/dist-packages')
+
 from bigdl.ppml.fl.nn.fl_server import FLServer
 
 if __name__ == '__main__':
-    fl_server = FLServer()
+
+    client_num = 2
+    port = 8980
+    
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "hc:p:", ["client-num=", "port="])
+    except getopt.GetoptError:
+        print("start_fl_server.py -c <client-num> -p <port>")
+        sys.exit(2)
+    
+    for opt, arg in opts:
+        if opt == '-h':
+            print("start_fl_server.py -c <client-num> -p <port>")
+        elif opt in ("-c", "--client-num"):
+            client_num = arg
+        elif opt in ("-p", "--port"):
+            port = arg
+
+    fl_server = FLServer(client_num)
+    fl_server.set_port(port)
     fl_server.build()
     fl_server.start()
+
     fl_server.wait_for_termination()

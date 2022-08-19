@@ -3,7 +3,6 @@
 import grpc
 
 import psi_service_pb2 as psi__service__pb2
-from bigdl.dllib.utils.log4Error import invalidInputError
 
 
 class PSIServiceStub(object):
@@ -40,19 +39,19 @@ class PSIServiceServicer(object):
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
-        invalidInputError(False, 'Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
     def uploadSet(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
-        invalidInputError(False, 'Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
     def downloadIntersection(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
-        invalidInputError(False, 'Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
 
 def add_PSIServiceServicer_to_server(servicer, server):
