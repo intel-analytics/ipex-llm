@@ -30,7 +30,7 @@ from bigdl.orca.learn.metrics import Accuracy
 init_orca_context(cluster_mode="local", cores=4, memory="3g")
 
 # Load data
-file_path = '/home/yansu/Desktop/yxy/data_example/train.csv'
+file_path = 'train.csv'
 data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
 # Drop duplicate columns
@@ -41,8 +41,8 @@ def change_col_name(df):
     df = df.rename(columns={'id': 'id0'})
     return df
 data_shard = data_shard.transform_shard(change_col_name)
-scale = StringIndexer(inputCol='target')
-data_shard = scale.fit_transform(data_shard)
+encode = StringIndexer(inputCol='target')
+data_shard = encode.fit_transform(data_shard)
 def change_val(df):
     df['target'] = df['target']-1
     return df
