@@ -65,8 +65,6 @@ class FLServer(object):
                          ( (private_key, certificate_chain), ) )
                 if 'serverPort' in conf:
                     self.port = conf['serverPort']
-                if 'clientNum' in conf:
-                    self.client_num = conf['clientNum']
 
         except yaml.YAMLError as e:
             logging.warn('Loading config failed, using default config ')
