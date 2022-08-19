@@ -37,16 +37,16 @@ data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 data_shard = data_shard.deduplicates()
 
 # Labelencode y
-def trans_func1(df):
+def change_col_name(df):
     df = df.rename(columns={'id': 'id0'})
     return df
-data_shard = data_shard.transform_shard(trans_func1)
+data_shard = data_shard.transform_shard(change_col_name)
 scale = StringIndexer(inputCol='target')
 data_shard = scale.fit_transform(data_shard)
-def trans_func2(df):
+def change_val(df):
     df['target'] = df['target']-1
     return df
-data_shard = data_shard.transform_shard(trans_func2)
+data_shard = data_shard.transform_shard(change_val)
 
 # Split train and test set
 def split_train_test(data):
@@ -64,12 +64,12 @@ train_shard = scale.fit_transform(train_shard)
 val_shard = scale.transform(val_shard)
 
 # Change data types
-def trans_func3(df):
+def change_data_type(df):
     df['x_scaled'] = df['x_scaled'].apply(lambda x: np.array(x, dtype=np.float32))
     df['target'] = df['target'].apply(lambda x: np.long(x))
     return df
-train_shard = train_shard.transform_shard(trans_func3)
-val_shard = val_shard.transform_shard(trans_func3)
+train_shard = train_shard.transform_shard(change_data_type)
+val_shard = val_shard.transform_shard(change_data_type)
 
 # Model
 torch.manual_seed(0)
