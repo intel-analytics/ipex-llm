@@ -36,10 +36,10 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, Dataset}
 import org.apache.spark.sql.types._
 import org.json4s.DefaultFormats
-import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMClassifier => MLightGBMClassifier}
-import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMClassificationModel => MLightGBMClassificationModel}
-import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMRegressor => MLightGBMRegressor}
-import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMRegressionModel => MLightGBMRegressionModel}
+//import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMClassifier => MLightGBMClassifier}
+//import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMClassificationModel => MLightGBMClassificationModel}
+//import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMRegressor => MLightGBMRegressor}
+//import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMRegressionModel => MLightGBMRegressionModel}
 
 import scala.reflect.ClassTag
 
@@ -719,175 +719,175 @@ object XGBRegressorModel {
   }
 }
 
-/**
- * [[lightGBM wrapper]]
- */
-class LightGBMClassifier () {
-  val sc = SparkSession.active.sparkContext
-  sc.getConf.set("spark.task.cpus", Engine.coreNumber().toString)
-  private val model = new MLightGBMClassifier()
-
-  def setFeaturesCol(featuresColName: String): this.type = {
-    model.setFeaturesCol(featuresColName)
-    this
-  }
-
-  def setLabelCol(labelColName: String): this.type = {
-    model.setLabelCol(labelColName)
-    this
-  }
-
-  def setObjective(value: String): this.type = {
-    model.setObjective(value)
-    this
-  }
-
-  def fit(df: DataFrame): LightGBMClassifierModel = {
-    df.repartition(Engine.nodeNumber())
-    val lightgbmmodel = model.fit(df)
-    new LightGBMClassifierModel(lightgbmmodel)
-  }
-}
-
-/**
- * [[LightGBMClassifierModel]] is a trained LightGBM classification model.
- * The prediction column will have the prediction results.
- *
- * @param model trained MLightGBMClassificationModel to use in prediction.
- */
-class LightGBMClassifierModel private[bigdl](
-                                         val model: MLightGBMClassificationModel) {
-  private var featuresCols: String = "features"
-  private var predictionCol: String = "prediction"
-
-  def setFeaturesCol(featuresColName: String): this.type = {
-    featuresCols = featuresColName
-    this
-  }
-
-  def setPredictionCol(value: String): this.type = {
-    predictionCol = value
-    this
-  }
-
-  def transform(dataset: DataFrame): DataFrame = {
-    Log4Error.invalidInputError(featuresCols!=None, "Please set feature columns before transform")
-    model.setFeaturesCol(featuresCols)
-    var output = model.transform(dataset)
-    if(predictionCol != null) {
-      output = output.withColumnRenamed("prediction", predictionCol)
-    }
-    output
-  }
-
-  def save(path: String): Unit = {
-    model.write.overwrite().save(path)
-  }
-}
-
-object LightGBMClassifierModel {
-  def load(path: String): LightGBMClassifierModel = {
-    new LightGBMClassifierModel(MLightGBMClassificationModel.load(path))
-  }
-}
-
-/**
- * [[XGBRegressor]] xgboost wrapper of XGBRegressor.
- */
-class LightGBMRegressor () {
-
-  private val model = new MLightGBMRegressor()
-
-  def setLabelCol(labelColName : String) : this.type = {
-    model.setLabelCol(labelColName)
-    this
-  }
-
-  def setFeaturesCol(featuresColName: String): this.type = {
-    model.setFeaturesCol(featuresColName)
-    this
-  }
-
-  def fit(df: DataFrame): LightGBMRegressorModel = {
-    df.repartition(Engine.nodeNumber())
-    val lightGBMModel = model.fit(df)
-    new LightGBMRegressorModel(lightGBMModel)
-  }
-
-  def setMaxDepth(value: Int): this.type = {
-    model.setMaxDepth(value)
-    this
-  }
-
-  def setMaxDeltaStep(value: Double): this.type = {
-    model.setMaxDeltaStep(value)
-    this
-  }
-
-  def setAlpha(value: Double): this.type = {
-    model.setAlpha(value)
-    this
-  }
-
-  def setSkipDrop(value: Double): this.type = {
-    model.setSkipDrop(value)
-    this
-  }
-
-
-  def setObjective(value: String): this.type = {
-    model.setObjective(value)
-    this
-  }
-}
-
-/**
- * [[LightGBMRegressorModel]] lightGBM wrapper of LightGBMRegressorModel.
- */
-class LightGBMRegressorModel private[bigdl](val model: MLightGBMRegressionModel) {
-  var predictionCol: String = null
-  var featuresCol: String = "features"
-  var featurearray: Array[String] = Array("features")
-  def setPredictionCol(value: String): this.type = {
-    predictionCol = value
-    this
-  }
-
-  def setFeaturesCol(value: String): this.type = {
-    model.setFeaturesCol(value)
-    featuresCol = value
-    this
-  }
-
-  def transform(dataset: DataFrame): DataFrame = {
-    val featureVectorAssembler = new VectorAssembler()
-      .setInputCols(featurearray)
-      .setOutputCol("featureAssembledVector")
-    val assembledDF = featureVectorAssembler.transform(dataset)
-    import org.apache.spark.sql.functions.{col, udf}
-    import org.apache.spark.ml.linalg.Vector
-    val asDense = udf((v: Vector) => v.toDense)
-    val xgbInput = assembledDF.withColumn("DenseFeatures", asDense(col("featureAssembledVector")))
-    model.setFeaturesCol("DenseFeatures")
-    var output = model.transform(xgbInput).drop("DenseFeatures", "featureAssembledVector")
-    if(predictionCol != null) {
-      output = output.withColumnRenamed("prediction", predictionCol)
-    }
-    output
-  }
-
-  def save(path: String): Unit = {
-    model.write.overwrite().save(path)
-  }
-}
-
-object LightGBMRegressorModel {
-  /**
-   * Load pretrained Zoo XGBRegressorModel.
-   */
-  def load(path: String): LightGBMRegressorModel = {
-    new LightGBMRegressorModel(MLightGBMRegressionModel.load(path))
-  }
-}
+///**
+// * [[lightGBM wrapper]]
+// */
+//class LightGBMClassifier () {
+//  val sc = SparkSession.active.sparkContext
+//  sc.getConf.set("spark.task.cpus", Engine.coreNumber().toString)
+//  private val model = new MLightGBMClassifier()
+//
+//  def setFeaturesCol(featuresColName: String): this.type = {
+//    model.setFeaturesCol(featuresColName)
+//    this
+//  }
+//
+//  def setLabelCol(labelColName: String): this.type = {
+//    model.setLabelCol(labelColName)
+//    this
+//  }
+//
+//  def setObjective(value: String): this.type = {
+//    model.setObjective(value)
+//    this
+//  }
+//
+//  def fit(df: DataFrame): LightGBMClassifierModel = {
+//    df.repartition(Engine.nodeNumber())
+//    val lightgbmmodel = model.fit(df)
+//    new LightGBMClassifierModel(lightgbmmodel)
+//  }
+//}
+//
+///**
+// * [[LightGBMClassifierModel]] is a trained LightGBM classification model.
+// * The prediction column will have the prediction results.
+// *
+// * @param model trained MLightGBMClassificationModel to use in prediction.
+// */
+//class LightGBMClassifierModel private[bigdl](
+//                                         val model: MLightGBMClassificationModel) {
+//  private var featuresCols: String = "features"
+//  private var predictionCol: String = "prediction"
+//
+//  def setFeaturesCol(featuresColName: String): this.type = {
+//    featuresCols = featuresColName
+//    this
+//  }
+//
+//  def setPredictionCol(value: String): this.type = {
+//    predictionCol = value
+//    this
+//  }
+//
+//  def transform(dataset: DataFrame): DataFrame = {
+//    Log4Error.invalidInputError(featuresCols!=None, "Please set feature columns before transform")
+//    model.setFeaturesCol(featuresCols)
+//    var output = model.transform(dataset)
+//    if(predictionCol != null) {
+//      output = output.withColumnRenamed("prediction", predictionCol)
+//    }
+//    output
+//  }
+//
+//  def save(path: String): Unit = {
+//    model.write.overwrite().save(path)
+//  }
+//}
+//
+//object LightGBMClassifierModel {
+//  def load(path: String): LightGBMClassifierModel = {
+//    new LightGBMClassifierModel(MLightGBMClassificationModel.load(path))
+//  }
+//}
+//
+///**
+// * [[XGBRegressor]] xgboost wrapper of XGBRegressor.
+// */
+//class LightGBMRegressor () {
+//
+//  private val model = new MLightGBMRegressor()
+//
+//  def setLabelCol(labelColName : String) : this.type = {
+//    model.setLabelCol(labelColName)
+//    this
+//  }
+//
+//  def setFeaturesCol(featuresColName: String): this.type = {
+//    model.setFeaturesCol(featuresColName)
+//    this
+//  }
+//
+//  def fit(df: DataFrame): LightGBMRegressorModel = {
+//    df.repartition(Engine.nodeNumber())
+//    val lightGBMModel = model.fit(df)
+//    new LightGBMRegressorModel(lightGBMModel)
+//  }
+//
+//  def setMaxDepth(value: Int): this.type = {
+//    model.setMaxDepth(value)
+//    this
+//  }
+//
+//  def setMaxDeltaStep(value: Double): this.type = {
+//    model.setMaxDeltaStep(value)
+//    this
+//  }
+//
+//  def setAlpha(value: Double): this.type = {
+//    model.setAlpha(value)
+//    this
+//  }
+//
+//  def setSkipDrop(value: Double): this.type = {
+//    model.setSkipDrop(value)
+//    this
+//  }
+//
+//
+//  def setObjective(value: String): this.type = {
+//    model.setObjective(value)
+//    this
+//  }
+//}
+//
+///**
+// * [[LightGBMRegressorModel]] lightGBM wrapper of LightGBMRegressorModel.
+// */
+//class LightGBMRegressorModel private[bigdl](val model: MLightGBMRegressionModel) {
+//  var predictionCol: String = null
+//  var featuresCol: String = "features"
+//  var featurearray: Array[String] = Array("features")
+//  def setPredictionCol(value: String): this.type = {
+//    predictionCol = value
+//    this
+//  }
+//
+//  def setFeaturesCol(value: String): this.type = {
+//    model.setFeaturesCol(value)
+//    featuresCol = value
+//    this
+//  }
+//
+//  def transform(dataset: DataFrame): DataFrame = {
+//    val featureVectorAssembler = new VectorAssembler()
+//      .setInputCols(featurearray)
+//      .setOutputCol("featureAssembledVector")
+//    val assembledDF = featureVectorAssembler.transform(dataset)
+//    import org.apache.spark.sql.functions.{col, udf}
+//    import org.apache.spark.ml.linalg.Vector
+//    val asDense = udf((v: Vector) => v.toDense)
+//    val xgbInput = assembledDF.withColumn("DenseFeatures", asDense(col("featureAssembledVector")))
+//    model.setFeaturesCol("DenseFeatures")
+//    var output = model.transform(xgbInput).drop("DenseFeatures", "featureAssembledVector")
+//    if(predictionCol != null) {
+//      output = output.withColumnRenamed("prediction", predictionCol)
+//    }
+//    output
+//  }
+//
+//  def save(path: String): Unit = {
+//    model.write.overwrite().save(path)
+//  }
+//}
+//
+//object LightGBMRegressorModel {
+//  /**
+//   * Load pretrained Zoo XGBRegressorModel.
+//   */
+//  def load(path: String): LightGBMRegressorModel = {
+//    new LightGBMRegressorModel(MLightGBMRegressionModel.load(path))
+//  }
+//}
 
 

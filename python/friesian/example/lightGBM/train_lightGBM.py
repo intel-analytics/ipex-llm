@@ -7,6 +7,7 @@ import os
 from bigdl.dllib.feature.dataset import movielens
 from bigdl.orca.data.file import exists, makedirs
 import pandas as pd
+from pyspark.ml.evaluation import BinaryClassificationEvaluator, MulticlassClassificationEvaluator
 
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
@@ -122,5 +123,15 @@ model = LightGBMClassifier(objective="binary", featuresCol="features", labelCol=
 
 model = model.fit(train.df)
 predictions = model.transform(test.df)
+evaluator = BinaryClassificationEvaluator(labelCol="label",
+                                          rawPredictionCol="rawPrediction")
+auc = evaluator.evaluate(predictions, {evaluator.metricName: "areaUnderROC"})
+
+evaluator2 = MulticlassClassificationEvaluator(labelCol="label",
+                                               predictionCol="prediction")
+acc = evaluator2.evaluate(predictions, {evaluator2.metricName: "accuracy"})
 predictions.show(100)
 print(predictions.count())
+print("AUC: %.2f" % (auc * 100.0))
+print("Accuracy: %.2f" % (acc * 100.0))
+
