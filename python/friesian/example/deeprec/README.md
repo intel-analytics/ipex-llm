@@ -74,7 +74,7 @@ python wdl.py \
     --ev True \
     --ev_filter counter \
     --smartstaged False \
-    --emb_fusion False \
+    --emb_fusion False
 ```
 
 For DeepRec related arguments, please refer to the original example for more description.
