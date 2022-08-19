@@ -203,7 +203,7 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=None, memory="2g
            instead of using the default one.
     :param memory: The memory allocated for each node. Default to be '2g'.
     :param num_nodes: The number of nodes to be used in the cluster. Default to be 1.
-           For Spark local, num_nodes should always be 1 and you don't need to change it.
+           For Spark local mode, num_nodes should always be 1 and you don't need to change it.
     :param init_ray_on_spark: Whether to launch Ray services across the cluster.
            Default to be False and in this case the Ray cluster would be launched lazily when
            Ray is involved in Project Orca.
