@@ -304,9 +304,15 @@ arrays2pandas = partial(arrays2others, generate_func=_generate_output_pandas_df)
 def transform_to_shard_dict(data, feature_cols, label_cols=None):
     def to_shard_dict(df):
         result = dict()
-        result["x"] = [df[feature_col].to_numpy() for feature_col in feature_cols]
+        if len(feature_cols) == 1:
+            featureLists = df[feature_cols[0]].tolist()
+            result["x"] = np.stack(featureLists, axis=0)
+        else:
+            result["x"] = [df[feature_col].to_numpy() for feature_col in feature_cols]
+
         if label_cols:
             result["y"] = df[label_cols[0]].to_numpy()
+
         return result
 
     data = data.transform_shard(to_shard_dict)
