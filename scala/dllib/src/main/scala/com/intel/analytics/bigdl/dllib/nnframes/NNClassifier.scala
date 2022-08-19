@@ -814,11 +814,6 @@ class LightGBMRegressor () {
     new LightGBMRegressorModel(lightGBMModel)
   }
 
-  def setSeed(value: Int): this.type = {
-    model.setSeed(value)
-    this
-  }
-
   def setMaxDepth(value: Int): this.type = {
     model.setMaxDepth(value)
     this
