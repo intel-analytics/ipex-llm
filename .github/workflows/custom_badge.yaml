@@ -1,0 +1,22 @@
+name: Build Badges
+
+on: [push]
+
+jobs:
+  answer-badge:
+    name: Create Answer Badge
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get the Numbers
+        run: echo "ANSWER=42" >> $GITHUB_ENV
+      - name: Create the Badge
+        uses: schneegans/dynamic-badges-action@master
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: 4f79dfdd46bd086d4a00287006ba9eaa
+          filename: answer.json
+          label: The Answer
+          message: is ${{ env.ANSWER }}
+          valColorRange: ${{ env.ANSWER }}
+          maxColorRange: 100
+          minColorRange: 0
