@@ -35,9 +35,9 @@ def mae(y_label, y_predict):
     :return: Ndarray of floats.
              An array of non-negative floating point values (the best value is 0.0).
     """
-    y_label=np.array(y_label)
-    y_predict=np.array(y_predict)
-    result= np.mean(np.abs(y_label-y_predict))
+    y_label = np.array(y_label)
+    y_predict = np.array(y_predict)
+    result= np.mean(np.abs(y_label - y_predict))
     return result
 
 
@@ -53,9 +53,9 @@ def mse(y_label, y_predict):
     :return: Ndarray of floats.
              An array of non-negative floating point values (the best value is 0.0).
     """
-    y_label=np.array(y_label)
-    y_predict=np.array(y_predict)
-    result= np.mean((y_label-y_predict)**2)
+    y_label = np.array(y_label)
+    y_predict = np.array(y_predict)
+    result = np.mean((y_label - y_predict) ** 2)
     return result
 
 
@@ -124,7 +124,14 @@ def r2(y_label, y_predict):
     return 1 - np.sum((y_label - y_predict)**2) / np.sum((y_label - np.mean(y_label))**2)
 
 
-REGRESSION_MAP = {'mae', 'mse', 'rmse', 'mape', 'smape', 'r2'}
+REGRESSION_MAP = {
+    'mae': mae,
+    'mse': mse,
+    'rmse': rmse,
+    'mape': mape,
+    'smape': smape,
+    'r2': r2,
+}
 
 
 def _standard_input(metrics, y_true, y_pred):
@@ -137,8 +144,8 @@ def _standard_input(metrics, y_true, y_pred):
         metrics = [metrics]
     if isinstance(metrics[0], str):
         metrics = list(map(lambda x: x.lower(), metrics))
-        invalidInputError(all(metric in REGRESSION_MAP for metric in metrics),
-                          f"metric should be one of {REGRESSION_MAP},"
+        invalidInputError(all(metric in REGRESSION_MAP.keys() for metric in metrics),
+                          f"metric should be one of {REGRESSION_MAP.keys()},"
                           f" but get {metrics}.")
         invalidInputError(type(y_true) is type(y_pred) and isinstance(y_pred, ndarray),
                           "y_pred and y_true type must be numpy.ndarray,"
@@ -186,14 +193,15 @@ class Evaluator(object):
 
         res_list = []
         for metric in metrics:
+            metric_func = REGRESSION_MAP[metric]
             if len(original_shape) in [2, 3] and aggregate is None:
                 res = np.zeros(y_true.shape[-1])
                 for i in range(y_true.shape[-1]):
-                    res[i] = eval(metric)(y_true[..., i], y_pred[..., i])
+                    res[i] = metric_func(y_true[..., i], y_pred[..., i])
                 res = res.reshape(original_shape[1:])
                 res_list.append(res)
             else:
-                res = eval(metric)(y_true, y_pred)
+                res = metric_func(y_true, y_pred)
                 res_list.append(res)
         return res_list
 
