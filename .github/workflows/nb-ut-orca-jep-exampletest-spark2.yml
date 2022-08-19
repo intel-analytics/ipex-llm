@@ -3,8 +3,8 @@ name: Nightly Build Orca Jep ExampleTest Py37 Spark2
 on:
   #release:
    # types: [published]
-  pull_request:
-    branches: [ "main" ]
+  #pull_request:
+    #branches: [ "main" ]
     #paths:
       #- 'python/orca/**'
       #- '.github/workflows/orca-python-exampletest-ray.yml'
