@@ -16,23 +16,18 @@
 # This example is adapted from
 # https://www.kaggle.com/code/remekkinas/tps-5-pytorch-nn-for-tabular-step-by-step/notebook
 
-import numpy as np
-import pandas as pd
-
-from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
 import torch
 import torch.nn as nn
 import torch.optim as optim
+
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.metrics import Accuracy
-import bigdl.orca.data
 import bigdl.orca.data.pandas
 from bigdl.orca.data.transformer import *
 
-# cluster_mode can be "local", "k8s" or "yarn"
-sc = init_orca_context(cluster_mode="local", cores=4, memory="10g", num_nodes=1)
+init_orca_context(cluster_mode="local", cores=4, memory="3g")
 
 # Load data
 file_path = './train.csv'
@@ -58,23 +53,23 @@ RANDOM_STATE = 2021
 def split_train_test(data):
     train, test = train_test_split(data, test_size=0.2, random_state=RANDOM_STATE)
     return train, test
-shards_train, shards_val = data_shard.transform_shard(split_train_test).split()
+train_shard, val_shard = data_shard.transform_shard(split_train_test).split()
 
 # Transform the feature columns
 feature_list = []
 for i in range(50):
     feature_list.append('feature_' + str(i))
 scale = MinMaxScaler(inputCol=feature_list, outputCol="x_scaled")
-shards_train = scale.fit_transform(shards_train)
-shards_val = scale.transform(shards_val)
+train_shard = scale.fit_transform(train_shard)
+val_shard = scale.transform(val_shard)
 
 # Change data types
 def trans_func3(df):
-    df['x_scaled'] = df['x_scaled'].apply(lambda x : np.array(x, dtype=np.float32))
-    df['target'] = df['target'].apply(lambda x : np.long(x))
+    df['x_scaled'] = df['x_scaled'].apply(lambda x: np.array(x, dtype=np.float32))
+    df['target'] = df['target'].apply(lambda x: np.long(x))
     return df
-shards_train = shards_train.transform_shard(trans_func3)
-shards_val = shards_val.transform_shard(trans_func3)
+train_shard = train_shard.transform_shard(trans_func3)
+val_shard = val_shard.transform_shard(trans_func3)
 
 # Model
 torch.manual_seed(0)
@@ -89,7 +84,6 @@ def linear_block(in_features, out_features, p_drop, *args, **kwargs):
         nn.ReLU(),
         nn.Dropout(p=p_drop)
     )
-
 
 class TPS05ClassificationSeq(nn.Module):
     def __init__(self):
@@ -119,11 +113,13 @@ def optim_creator(model, config):
 
 criterion = nn.CrossEntropyLoss()
 
-est = Estimator.from_torch(model=model_creator, optimizer=optim_creator, loss=criterion, metrics=[Accuracy()], backend="ray")
+est = Estimator.from_torch(model=model_creator, optimizer=optim_creator, loss=criterion, metrics=[Accuracy()],
+                           backend="ray")
 
-est.fit(data=shards_train, feature_cols=['x_scaled'], label_cols=['target'], validation_data=shards_val, epochs=1, batch_size=BATCH_SIZE)
+est.fit(data=train_shard, feature_cols=['x_scaled'], label_cols=['target'], validation_data=val_shard, epochs=1,
+        batch_size=BATCH_SIZE)
 
-result = est.evaluate(data=shards_val, feature_cols=['x_scaled'], label_cols=['target'], batch_size=1)
+result = est.evaluate(data=val_shard, feature_cols=['x_scaled'], label_cols=['target'], batch_size=1)
 
 for r in result:
     print(r, ":", result[r])
