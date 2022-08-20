@@ -549,6 +549,9 @@ class SparkXShards(XShards):
         rdd = self.rdd.mapPartitions(f)
         column = self.rdd.mapPartitions(getSchema).first()
         df = rdd.toDF(list(column))
+        df.cache()
+        df.count()
+        self.uncache()
         return df
 
     def __len__(self):
