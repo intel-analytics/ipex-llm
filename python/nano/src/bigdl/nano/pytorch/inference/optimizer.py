@@ -21,6 +21,7 @@ import subprocess
 from importlib.util import find_spec
 import time
 import numpy as np
+from copy import deepcopy
 
 from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
 from bigdl.nano.pytorch import Trainer
@@ -68,17 +69,11 @@ ALL_INFERENCE_ACCELERATION_METHOD = \
         "jit_fp32_ipex": AccelerationOption(jit=True, ipex=True),
         "jit_fp32_ipex_clast": AccelerationOption(jit=True, ipex=True, 
                                                   channels_last=True),
-        "jit_bf16": AccelerationOption(jit=True, bf16=True),
-        "jit_bf16_clast": AccelerationOption(jit=True, bf16=True,
-                                             channels_last=True),
-        "jit_bf16_ipex": AccelerationOption(jit=True, bf16=True, ipex=True),
-        "jit_bf16_ipex_clast": AccelerationOption(jit=True, bf16=True, 
-                                                  ipex=True, channels_last=True),
-        "onnxruntime_fp32": AccelerationOption(onnxtunrime=True),
-        "onnxruntime_int8_qlinear": AccelerationOption(onnxruntime=True, inc=True),
-        "onnxruntime_int8_integer": AccelerationOption(onnxruntime=True, inc=True),
         "openvino_fp32": AccelerationOption(openvino=True),
         "openvino_int8": AccelerationOption(openvino=True, inc=True),
+        "onnxruntime_fp32": AccelerationOption(onnxtunrime=True),
+        "onnxruntime_int8_qlinear": AccelerationOption(onnxruntime=True, inc=True),
+        # "onnxruntime_int8_integer": AccelerationOption(onnxruntime=True, inc=True),
     }
 
 
@@ -125,7 +120,10 @@ class Optimizer:
 
         # get the available methods whose dep is met
         available_dict = _available_acceleration_combination()
+        
         default_threads = torch.get_num_threads()
+        cpu_num = default_threads if cpu_num is None else int(cpu_num)
+        
         result_map = {}
 
         for method, available in available_dict.items():
@@ -142,61 +140,59 @@ class Optimizer:
                             accelerated_model = model
                         else:
                             # TODO: remove the logging of tracing
-                            accelerated_model = Trainer.trace(model=model,
-                                                              accelerator=accelerator,
-                                                              use_ipex=use_ipex,
-                                                              channels_last=instance.channels_last,
-                                                              input_sample=input_sample)
-                        result_map[method] = {}
-
-                        def func_test(model, input_sample):
-                            model(*input_sample)
-
-                        torch.set_num_threads(cpu_num)
-                        result_map[method]["latency"] =\
-                            _throughput_calculate_helper(trials, func_test,
-                                                        accelerated_model, input_sample)
-                        torch.set_num_threads(default_threads)
-
-                        if validation_data is not None and metric is not None:
-                            result_map[method]["accuracy"] =\
-                                _accuracy_calculate_helper(accelerated_model,
-                                                           metric, validation_data)
-
-                        result_map[method]["model"] = accelerated_model
-
+                            if accelerator in ("jit", None):
+                                accelerated_model = Trainer.trace(model=model,
+                                                                accelerator=accelerator,
+                                                                use_ipex=use_ipex,
+                                                                channels_last=instance.channels_last,
+                                                                input_sample=input_sample)
+                            else:
+                                accelerated_model = Trainer.trace(model=model,
+                                                                accelerator=accelerator,
+                                                                input_sample=input_sample)
                     except Exception as e:
                         print(e)
+                        continue
 
                 # if precision is int8 or bf16, then we will use quantize method
-                if precision in ("int8", "bf16"):
+                elif precision in ("int8", "bf16"):
                     ort_method = _detect_ort_method(method)
                     try:
                         # TODO: remove the logging of quantization
-                        accelerated_model = Trainer.quantize(model=model,
-                                                             precision=precision,
-                                                             accelerator=accelerator,
-                                                             use_ipex=use_ipex,
-                                                             calib_dataloader=training_data,
-                                                             method=ort_method)
-                        result_map[method] = {}
-
-                        def func_test(model, input_sample):
-                            model(*input_sample)
-
-                        result_map[method]["latency"] =\
-                            _throughput_calculate_helper(trials, func_test,
-                                                         accelerated_model, input_sample)
-
-                        if validation_data is not None and metric is not None:
-                            result_map[method]["accuracy"] =\
-                                _accuracy_calculate_helper(accelerated_model,
-                                                           metric, validation_data)
-
-                        result_map[method]["model"] = accelerated_model
-
+                        accelerated_model = Trainer.quantize(model=deepcopy(model),
+                                                            precision=precision,
+                                                            accelerator=accelerator,
+                                                            use_ipex=use_ipex,
+                                                            calib_dataloader=training_data,
+                                                            method=ort_method)
                     except Exception as e:
                         print(e)
+                        continue
+
+                result_map[method] = {}
+
+                def func_test(model, input_sample):
+                    # with torch.cpu.amp.autocast():
+                    model(*input_sample)
+
+                torch.set_num_threads(cpu_num)
+                try:
+                    result_map[method]["latency"] =\
+                        _throughput_calculate_helper(trials, func_test,
+                                                    accelerated_model, input_sample)
+                except Exception as e:
+                    result_map.pop(method)
+                    torch.set_num_threads(default_threads)
+                    continue
+
+                torch.set_num_threads(default_threads)
+                if validation_data is not None and metric is not None:
+                    result_map[method]["accuracy"] =\
+                        _accuracy_calculate_helper(accelerated_model,
+                                                    metric, validation_data)
+
+                result_map[method]["model"] = accelerated_model
+
             else:
                 pass
 
@@ -244,18 +240,21 @@ class Optimizer:
             if method == "original":
                 continue
             option = ALL_INFERENCE_ACCELERATION_METHOD[method]
+            result = self.optimized_model_dict[method]
             if accelerator is not None:
                 if not getattr(option, accelerator):
                     continue
             if precision is not None:
-                if not getattr(option, precision):
+                if precision == 'bf16' and not option.bf16:
+                    continue
+                if precision == 'int8' and not option.inc:
                     continue
             if use_ipex:
-                if not getattr(option, "ipex"):
+                if not option.ipex:
                     continue
 
             if accuracy_criterion is not None:
-                accuracy = option["accuracy"]
+                accuracy = result["accuracy"]
                 compare_acc = best_metric.accuracy
                 if direction == "min":
                     if (accuracy - compare_acc)/compare_acc > accuracy_criterion:
@@ -265,11 +264,11 @@ class Optimizer:
                         continue
 
             # After the above conditions are met, the latency comparison is performed
-            if option["latency"] < best_metric.latency:
-                best_model = option["model"]
-                best_metric = CompareMetric(method, option["latency"], option["accuracy"])
+            if result["latency"] < best_metric.latency:
+                best_model = result["model"]
+                best_metric = CompareMetric(method, result["latency"], result["accuracy"])
 
-        return best_model, _format_acceleration_info(best_metric["method_name"])
+        return best_model, _format_acceleration_info(best_metric.method_name)
 
 
 def _inc_checker():
@@ -299,7 +298,7 @@ def _openvino_checker():
     '''
     check if openvino-dev is installed
     '''
-    return not find_spec("openvino-dev") is None
+    return not find_spec("openvino") is None
 
 
 def _bf16_checker():
@@ -315,7 +314,7 @@ def _detect_ort_method(method_name):
     if method_name in ["qlinear", "integer"]:
         return method_name
     return None
-    
+
 
 def _available_acceleration_combination():
     '''
@@ -359,7 +358,6 @@ def _accuracy_calculate_helper(model, metric, data):
     '''
     metric_list = []
     # TODO: data should have same batchsize
-    # TODO: or we control this
     for i, (data_input, target) in enumerate(data):
         metric_list.append(metric(model(data_input), target).numpy())
     return np.mean(metric_list)
