@@ -19,9 +19,12 @@ package org.apache.spark.sql
 import java.io.FileInputStream
 
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import org.apache.spark.TaskContext
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.sql.api.python.PythonSQLUtils
 import org.apache.spark.sql.execution.arrow.ArrowConverters
+import org.apache.spark.sql.types.{DataType, StructType}
+import org.apache.spark.util.Utils
 
 import scala.reflect.ClassTag
 
@@ -33,16 +36,19 @@ object PythonOrcaSQLUtils {
 }
 
 class PythonOrcaSQLUtils[T: ClassTag](implicit ev: TensorNumeric[T]) {
-  def readArrowStreamFromFile(file: String): Array[Array[Byte]] = {
-    org.apache.spark.util.Utils.tryWithResource(new FileInputStream(file)) { fileStream =>
-      // Create array to consume iterator so that we can safely close the file
-      ArrowConverters.getBatchesFromStream(fileStream.getChannel).toArray
+  def orcaToDataFrame(jrdd: JavaRDD[String], schemaString: String,
+  sqlContext: SQLContext): DataFrame = {
+    val schema = DataType.fromJson(schemaString).asInstanceOf[StructType]
+    val timeZoneId = sqlContext.sessionState.conf.sessionLocalTimeZone
+    val rdd = jrdd.rdd.mapPartitions { iter =>
+      val context = TaskContext.get()
+      val file = iter.next()
+      Utils.tryWithResource(new FileInputStream(file)) { fileStream =>
+        // Create array to consume iterator so that we can safely close the file
+        val batches = ArrowConverters.getBatchesFromStream(fileStream.getChannel)
+        ArrowConverters.fromBatchIterator(batches, schema, timeZoneId, context)
+      }
     }
-  }
-
-  def orcaToDataFrame(arrowBatchRDD: JavaRDD[Array[Byte]],
-                  schemaString: String,
-                  sqlContext: SQLContext): DataFrame = {
-    PythonSQLUtils.toDataFrame(arrowBatchRDD, schemaString, sqlContext)
+    sqlContext.internalCreateDataFrame(rdd.setName("arrow"), schema)
   }
 }

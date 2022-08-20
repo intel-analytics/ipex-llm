@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import numpy
 from py4j.protocol import Py4JError
 
 from bigdl.orca.data.utils import *
@@ -25,6 +24,13 @@ from bigdl.dllib.utils.log4Error import *
 
 import numpy as np
 
+import pyarrow as pa
+from pyspark.sql.pandas.types import from_arrow_type, to_arrow_type
+
+from pyspark.sql.types import StructType
+from pyspark.sql.pandas.serializers import ArrowStreamPandasSerializer
+from tempfile import NamedTemporaryFile
+from pyspark.context import SparkContext
 
 class XShards(object):
     """
@@ -551,14 +557,6 @@ class SparkXShards(XShards):
             invalidInputError(False,
                               "Currently only support to_spark_df on XShards of Pandas DataFrame")
 
-        import pyarrow as pa
-        from pyspark.sql.pandas.types import from_arrow_type, to_arrow_type
-
-        from pyspark.sql.types import StructType
-        from pyspark.sql.pandas.serializers import ArrowStreamPandasSerializer
-        from tempfile import NamedTemporaryFile
-        from pyspark.context import SparkContext
-        import os
 
         def getSchemaStructType(iter):
             for pdf in iter:
@@ -585,30 +583,21 @@ class SparkXShards(XShards):
 
         def f(iter):
             for pdf in iter:
-                SparkContext._ensure_initialized()
-                jvm = SparkContext._jvm
                 arrow_types = [to_arrow_type(f.dataType) for f in schema.fields]
 
                 arrow_data = [[(c, t) for (_, c), t in zip(pdf.iteritems(), arrow_types)]]
-                col_by_name = True  # col by name only applies to StructType columns, can't happen here
+                col_by_name = True
                 safecheck = False
                 ser = ArrowStreamPandasSerializer(timezone, safecheck, col_by_name)
 
-                def reader_func(temp_filename):
-                    return jvm.PythonOrcaSQLUtils.ofFloat().readArrowStreamFromFile(temp_filename)
-
                 tempFile = NamedTemporaryFile(delete=False, dir=tmpFile)
                 try:
-                    try:
-                        ser.dump_stream(arrow_data, tempFile)
-                    finally:
-                        tempFile.close()
-                    return reader_func(tempFile.name)
+                    ser.dump_stream(arrow_data, tempFile)
                 finally:
-                    os.unlink(tempFile.name)
+                    tempFile.close()
+                return [tempFile.name]
 
         jiter = self.rdd.mapPartitions(f)
-
         from bigdl.dllib.utils.file_utils import callZooFunc
         df = callZooFunc("float", "orcaToDataFrame", jiter, schema.json(), sqlContext)
         return df
