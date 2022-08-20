@@ -1,4 +1,4 @@
-name: Nightly Build Example Tests PPML
+name: Nightly Build Example Tests PPML Spark Local on Graphen
 
 on:
   # schedule:
@@ -38,11 +38,11 @@ jobs:
     - name: set variable
       env:
         DEFAULT_EXAMPLE: 'ALL'
-        DEFAULT_MEM_SIZE: 32G
+        DEFAULT_SGX_MEM_SIZE: 32G
       run: |
         echo "SELECT_RUNNING_EXAMPLE=${{ github.event.inputs.select_running_example || env.DEFAULT_EXAMPLE }} " >> $GITHUB_ENV
         echo "SGX_MEM_SIZE=${{ github.event.inputs.sgx_mem_size || env.DEFAULT_MEM_SIZE }}" >> $GITHUB_ENV
-    - name: build container
+    - name: start container
       run: |
         set -x
         docker pull ${IMAGE}
