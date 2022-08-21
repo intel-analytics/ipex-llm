@@ -15,15 +15,7 @@
 #
 import warnings
 from bigdl.nano.utils.log4Error import invalidInputError
-import os
 
-
-if os.getenv("LD_PRELOAD", "null") != "null":
-    invalidInputError(False,
-                      errMsg="Users of `bigdl.chronos.autots` should "
-                             "unset bigdl-nano environment variables!",
-                      fixMsg="Please run `source bigdl-nano-unset-env` "
-                             "in your bash terminal")
 
 try:
     # TODO: make this a LazyImport
