@@ -25,6 +25,12 @@ on:
         - 32G
         - 64G
         - 128G
+      image:
+        description: 'docker image version'
+        required: true
+        default: 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:devel
+        type: string
+
   
 jobs:
   example-tests-ppml:
@@ -39,9 +45,11 @@ jobs:
       env:
         DEFAULT_EXAMPLE: 'ALL'
         DEFAULT_SGX_MEM_SIZE: 32G
+        DEFAULT_IMAGE: 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:devel
       run: |
         echo "SELECT_RUNNING_EXAMPLE=${{ github.event.inputs.select_running_example || env.DEFAULT_EXAMPLE }} " >> $GITHUB_ENV
         echo "SGX_MEM_SIZE=${{ github.event.inputs.sgx_mem_size || env.DEFAULT_MEM_SIZE }}" >> $GITHUB_ENV
+        echo "IMAGE=${{ github.event.inputs.image || DEFAULT_IMAGE }}" >>$GITHUB_ENV
     - name: start container
       run: |
         set -x
