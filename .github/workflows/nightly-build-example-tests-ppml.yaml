@@ -49,7 +49,7 @@ jobs:
       run: |
         echo "SELECT_RUNNING_EXAMPLE=${{ github.event.inputs.select_running_example || env.DEFAULT_EXAMPLE }} " >> $GITHUB_ENV
         echo "SGX_MEM_SIZE=${{ github.event.inputs.sgx_mem_size || env.DEFAULT_MEM_SIZE }}" >> $GITHUB_ENV
-        echo "IMAGE=${{ github.event.inputs.image || DEFAULT_IMAGE }}" >>$GITHUB_ENV
+        echo "IMAGE=${{ github.event.inputs.image || env.DEFAULT_IMAGE }}" >>$GITHUB_ENV
     - name: start container
       run: |
         set -x
