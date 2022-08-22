@@ -58,15 +58,18 @@ def create_datasets():
         output_mode="int",
         output_sequence_length=500,
     )
+    
+    text_ds = raw_train_ds.map(lambda x, y: x)
+    vectorize_layer.adapt(text_ds)
 
     def vectorize_text(text, label):
         text = tf.expand_dims(text, -1)
         return vectorize_layer(text), label
 
-    # Vectorize the data and do prefetching / buffering.
-    train_ds = raw_train_ds.map(vectorize_text).cache().prefetch(buffer_size=10)
-    val_ds = raw_val_ds.map(vectorize_text).cache().prefetch(buffer_size=10)
-    test_ds = raw_test_ds.map(vectorize_text).cache().prefetch(buffer_size=10)
+    # Vectorize the data
+    train_ds = raw_train_ds.map(vectorize_text)
+    val_ds = raw_val_ds.map(vectorize_text)
+    test_ds = raw_test_ds.map(vectorize_text)
 
     return train_ds, val_ds, test_ds
 
