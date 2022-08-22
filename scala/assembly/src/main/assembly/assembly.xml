@@ -149,8 +149,11 @@
       </includes>
     </fileSet>
     <fileSet>
-      <outputDirectory>/fl</outputDirectory>
+      <outputDirectory>/python</outputDirectory>
       <directory>${project.parent.basedir}/../../../../../python/ppml/scripts</directory>
+      <includes>
+          <include>start-fl-server.py</include>
+      </includes>
     </fileSet>
   </fileSets>
   <dependencySets>
