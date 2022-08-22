@@ -30,6 +30,7 @@ from bigdl.nano.tf.keras import Model
 def create_datasets(img_size, batch_size):
     (ds_train, ds_test), ds_info = tfds.load(
         "stanford_dogs",
+        data_dir="/tmp/data",
         split=['train', 'test'],
         with_info=True,
         as_supervised=True
