@@ -30,7 +30,7 @@ We encapsulate host PCCS service into a docker image, which enables a user-frien
 Download image as below:
 
 ```bash
-docker pull intelanalytics/pccs:0.3.0 # 0.3.0 is the latest version when writting (to do)
+docker pull intelanalytics/pccs:0.3.0-SNAPSHOT
 ```
 
 Or you are allowed to build the image manually:
