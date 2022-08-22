@@ -150,7 +150,7 @@
     </fileSet>
     <fileSet>
       <outputDirectory>/python</outputDirectory>
-      <directory>${project.parent.basedir}/../../../../../python/ppml/scripts</directory>
+      <directory>${project.parent.basedir}/../python/ppml/scripts</directory>
       <includes>
           <include>start-fl-server.py</include>
       </includes>
