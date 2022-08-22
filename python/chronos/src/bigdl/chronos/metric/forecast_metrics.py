@@ -35,9 +35,7 @@ def mae(y_label, y_predict):
     :return: Ndarray of floats.
              An array of non-negative floating point values (the best value is 0.0).
     """
-    y_label = np.array(y_label)
-    y_predict = np.array(y_predict)
-    result= np.mean(np.abs(y_label - y_predict))
+    result = np.mean(np.abs(y_label - y_predict))
     return result
 
 
@@ -53,8 +51,6 @@ def mse(y_label, y_predict):
     :return: Ndarray of floats.
              An array of non-negative floating point values (the best value is 0.0).
     """
-    y_label = np.array(y_label)
-    y_predict = np.array(y_predict)
     result = np.mean((y_label - y_predict) ** 2)
     return result
 
@@ -86,8 +82,7 @@ def mape(y_label, y_predict):
     :return: Ndarray of floats.
              An array of non-negative floating point values (the best value is 0.0).
     """
-    y_label, y_predict = np.array(y_label), np.array(y_predict)
-    return np.mean(np.abs((y_label - y_predict) / y_label))
+    return np.mean(np.abs((y_label - y_predict) / (y_label + EPSILON)))
 
 
 def smape(y_label, y_predict):
@@ -120,7 +115,6 @@ def r2(y_label, y_predict):
     :return: Ndarray of floats.
              An array of non-negative floating point values (the best value is 1.0).
     """
-    y_label, y_predict = np.array(y_label), np.array(y_predict)
     return 1 - np.sum((y_label - y_predict)**2) / np.sum((y_label - np.mean(y_label))**2)
 
 
@@ -193,7 +187,10 @@ class Evaluator(object):
 
         res_list = []
         for metric in metrics:
-            metric_func = REGRESSION_MAP[metric]
+            if callable(metric):
+                metric_func = metric
+            else:
+                metric_func = REGRESSION_MAP[metric]
             if len(original_shape) in [2, 3] and aggregate is None:
                 res = np.zeros(y_true.shape[-1])
                 for i in range(y_true.shape[-1]):
