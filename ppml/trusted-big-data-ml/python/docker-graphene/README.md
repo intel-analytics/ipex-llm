@@ -123,6 +123,92 @@ The result should be similar to
 
 > numpy.dot: 0.034211914986371994 sec
 
+## Run Python code with dependencies
+
+It usually happens that your code needs to depend on some other packages. In this section, we will show how to inject python dependencies into the ppml running environment.
+
+
+The code used in this example can be found [here](https://spark.apache.org/docs/latest/api/python/user_guide/python_packaging.html).
+
+#### 1. Prepare conda environment and pacakge
+
+##### Prepare conda environment
+Run the following command in the terminal with **conda installed**.
+
+```bash
+conda create -y -n pyspark_conda_env -c conda-forge pyarrow pandas conda-pack
+```
+
+At this step, please add any dependencies you need when creating the conda environment.  We use pyarrow and pandas here because our example code only needs these two packages.
+
+##### Pack the conda environment
+Run the following command in the terminal to pack the environment
+
+```bash
+conda activate pyspark_conda_env # activate the conda environment
+conda pack -f -o pyspark_conda_env.tar.gz
+```
+
+#### 2. Start the client container
+The detailed instructions on how to build/start the client container can be found [here](https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/prepare_environment.md#start-bigdl-ppml-client-container).
+
+After you have booted up the client container, you can load your app.py and pyspark_conda_env.tar.gz into the container by putting them into the **$DATA_PATH**.
+
+Please be noted that we have mapped **$DATA_PATH** to path **/ppml/trusted-big-data-ml/work/data** within the container.
+
+Alternatively, you can use the **docker cp** command if you only want to try this feature.
+
+
+#### 3. Submit the task and watch the result
+##### Get into the client container
+You can get into your container and acquire a terminal by the following command:
+```bash
+docker exec -it bigdl-ppml-client-k8s /bin/bash
+```
+
+
+##### Submit your task
+The following bash command shows an example on how to submit task in cluster mode with sgx enabled. Plsase be noted that this example is only for test purpose, and you should configure the parameters accordingly when using it in your environment.
+
+For detailed explaination of the following command, please check [here](https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/submit_job.md#ppml-cli).
+
+```bash
+#!/bin/bash
+export secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
+bash bigdl-ppml-submit.sh \
+        --master $RUNTIME_SPARK_MASTER \
+        --deploy-mode cluster \
+        --sgx-enabled true \
+        --sgx-log-level error \
+        --sgx-driver-memory 64g \
+        --sgx-driver-jvm-memory 12g \
+        --sgx-executor-memory 64g \
+        --sgx-executor-jvm-memory 12g \
+        --driver-memory 32g \
+        --driver-cores 8 \
+        --executor-memory 32g \
+        --executor-cores 8 \
+        --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
+        --num-executors 2 \
+        --name spark-test \
+        --verbose \
+        --archives local:///ppml/trusted-big-data-ml/work/pyspark_conda_env.tar.gz#pyspark_conda_env \
+        local:///ppml/trusted-big-data-ml/work/data/app.py
+```
+
+We can get the result of the command by either checking the driver pod's log or using the **tee** command to store the output into a file.
+
+
+```bash
+kubectl logs $(kubectl get pods | grep spark-test | grep driver | awk '{print $1}') | egrep "^\[Row"
+```
+
+The result should be
+
+>[Row(id=1, mean_udf(v)=1.5), Row(id=2, mean_udf(v)=6.0)]
+
+which, indicates that the dependency **pyarrow** and **pandas** has been successfully loaded into the running environment.
+
 ## Run as Spark Local Mode
 
 #### 1. Start the container to run spark applications in spark local mode
