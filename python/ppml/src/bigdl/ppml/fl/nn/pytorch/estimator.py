@@ -25,6 +25,8 @@ from bigdl.ppml.fl.nn.utils import file_chunk_generate, tensor_map_to_ndarray_ma
 import os
 import tempfile
 
+from nn_service_pb2 import LoadModelRequest, SaveModelRequest
+
 
 
 class PytorchEstimator:
@@ -49,6 +51,14 @@ class PytorchEstimator:
         if server_model is not None:
             self.__add_server_model(server_model, loss_fn, optimizer_cls, optimizer_args)
     
+    def save_server_model(self, model_path):
+        self.fl_client.nn_stub.save_server_model(
+            SaveModelRequest(model_path=model_path, backend='pt'))
+
+    def load_server_model(self, model_path):
+        self.fl_client.nn_stub.load_server_model(
+            LoadModelRequest(model_path=model_path, backend='pt'))
+
     @staticmethod
     def load_model_as_bytes(model):
         model_path = os.path.join(tempfile.mkdtemp(), "vfl_server_model")

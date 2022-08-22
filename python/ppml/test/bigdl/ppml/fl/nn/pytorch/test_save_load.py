@@ -15,6 +15,7 @@
 #
 
 from multiprocessing import Process
+import time
 from typing import List
 import unittest
 import numpy as np
@@ -34,21 +35,28 @@ from torch.utils.data import DataLoader
 from torchvision import datasets
 from torchvision.transforms import ToTensor
 from bigdl.ppml.fl.utils import FLTest
+import shutil
 
 resource_path = os.path.join(os.path.dirname(__file__), "../../resources")
 
 
-class TestMnist(FLTest):
+class TestSaveLoad(FLTest):
     fmt = '%(asctime)s %(levelname)s {%(module)s:%(lineno)d} - %(message)s'
     logging.basicConfig(format=fmt, level=logging.INFO)
+    server_model_path = '/tmp/vfl_server_model'
+    client_model_path = '/tmp/vfl_client_model'
     def setUp(self) -> None:
-        self.fl_server = FLServer()
+        self.fl_server = FLServer(client_num=1)
         self.fl_server.set_port(self.port)
         self.fl_server.build()
         self.fl_server.start()
     
     def tearDown(self) -> None:
         self.fl_server.stop()
+        if os.path.exists(TestSaveLoad.server_model_path):
+            shutil.rmtree(TestSaveLoad.server_model_path)
+        if os.path.exists(TestSaveLoad.client_model_path):
+            os.remove(TestSaveLoad.client_model_path)
 
     def test_mnist(self) -> None:
         """
@@ -82,7 +90,6 @@ class TestMnist(FLTest):
             break
 
         model = NeuralNetwork()
-        set_one_like_parameter(model)
         loss_fn = nn.CrossEntropyLoss()
         optimizer = torch.optim.SGD(model.parameters(), lr=1e-3)
 
@@ -106,12 +113,10 @@ class TestMnist(FLTest):
                     pytorch_loss_list.append(np.array(loss))
                     print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
 
-        
-        train(train_dataloader, model, loss_fn, optimizer)
+        # for i in range(2):
+        #     train(train_dataloader, model, loss_fn, optimizer)
         vfl_model_1 = NeuralNetworkPart1()
-        set_one_like_parameter(vfl_model_1)
         vfl_model_2 = NeuralNetworkPart2()
-        set_one_like_parameter(vfl_model_2)
         vfl_client_ppl = Estimator.from_torch(client_model=vfl_model_1,
                                               client_id="1",
                                               loss_fn=loss_fn,
@@ -120,8 +125,23 @@ class TestMnist(FLTest):
                                               target=self.target,
                                               server_model=vfl_model_2)
         vfl_client_ppl.fit(train_dataloader)
-        assert np.allclose(pytorch_loss_list, vfl_client_ppl.loss_history), \
-            "Validation failed, correctness of PPML and native Pytorch not the same"
+        vfl_client_ppl.save_server_model(TestSaveLoad.server_model_path)
+        torch.save(vfl_client_ppl.model, TestSaveLoad.client_model_path)
+        self.fl_server.stop()
+        self.setUp()
+        client_model_loaded = torch.load(TestSaveLoad.client_model_path)
+        ppl_from_file = Estimator.from_torch(client_model=client_model_loaded,
+                                              client_id="1",
+                                              loss_fn=loss_fn,
+                                              optimizer_cls=torch.optim.SGD,
+                                              optimizer_args={'lr':1e-3},
+                                              target=self.target)
+        ppl_from_file.load_server_model(TestSaveLoad.server_model_path)
+        ppl_from_file.fit(train_dataloader)
+
+        assert ppl_from_file.loss_history[-1] < 2, \
+            f"Validation failed, incremental training loss does not meet requirement, \
+            required < 2, current {ppl_from_file.loss_history[-1]}"
     
 
 class NeuralNetwork(nn.Module):
