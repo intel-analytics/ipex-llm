@@ -32,6 +32,7 @@ from pyspark.sql.pandas.serializers import ArrowStreamPandasSerializer
 from tempfile import NamedTemporaryFile
 from pyspark.context import SparkContext
 
+
 class XShards(object):
     """
 
@@ -560,7 +561,6 @@ class SparkXShards(XShards):
         if self._get_class_name() != 'pandas.core.frame.DataFrame':
             invalidInputError(False,
                               "Currently only support to_spark_df on XShards of Pandas DataFrame")
-
 
         def getSchemaStructType(iter):
             for pdf in iter:
