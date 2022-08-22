@@ -139,7 +139,7 @@ jobs:
           pip install neural-compressor==1.11
           pip install tensorflow-datasets
           source bigdl-nano-init
-          bash python/nano/tutorial/inference/tensorflow/run-nano-tensorflow-inference-test.sh
+          # bash python/nano/tutorial/inference/tensorflow/run-nano-tensorflow-inference-test.sh
           bash python/nano/tutorial/training/tensorflow/run-nano-tensorflow-test.sh
           source $CONDA/bin/deactivate
           $CONDA/bin/conda remove -n example-tensorflow --all
