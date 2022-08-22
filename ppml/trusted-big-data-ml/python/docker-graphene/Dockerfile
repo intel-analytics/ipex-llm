@@ -166,6 +166,7 @@ RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2
     chmod a+x ./download-bigdl.sh
 RUN ./download-bigdl.sh && \
     rm bigdl*.zip
+ADD ${BIGDL_HOME}/fl /ppml/trusted-big-data-ml/fl
 
 # stage.4 ppml
 FROM ubuntu:20.04
@@ -277,7 +278,6 @@ ADD ./test-suites /ppml/trusted-big-data-ml/work/test-suites
 ADD ./_dill.py.patch ./_dill.py.patch
 ADD ./python-uuid.patch ./python-uuid.patch
 ADD ./python-pslinux.patch ./python-pslinux.patch
-ADD ../../../../python/ppml/scripts/start-fl-server.py /ppml/trusted-big-data-ml/work/examples
 
 RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ./tracker.py && \
     patch /usr/local/lib/python3.7/dist-packages/dill/_dill.py ./_dill.py.patch && \
@@ -324,3 +324,4 @@ ADD azure /ppml/trusted-big-data-ml/azure
 WORKDIR /ppml/trusted-big-data-ml
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
+

@@ -148,6 +148,10 @@
           <include>bigdl-ppml*-jar-with-dependencies.jar</include>
       </includes>
     </fileSet>
+    <fileSet>
+      <outputDirectory>/fl</outputDirectory>
+      <directory>${project.parent.basedir}/../../../../../python/ppml/scripts</directory>
+    </fileSet>
   </fileSets>
   <dependencySets>
     <dependencySet>
@@ -176,3 +180,4 @@
     </dependencySet>
   </dependencySets>
 </assembly>
+
