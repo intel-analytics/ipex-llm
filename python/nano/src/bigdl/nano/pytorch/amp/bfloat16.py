@@ -49,20 +49,25 @@ class autocast(torch.cpu.amp.autocast):  # noqa
 
 
 class RedirectStream(object):
+    """Context manager to capture output of shared library"""
     def __init__(self, stream=sys.stdout, target=None):
-        self.origin_strema = stream
+        self.origin_stream = stream
         self.origin_stream_fileno = stream.fileno()
         self.target = io.StringIO() if target is None else target
+        # Create a pipe to capture the stream
         self.pipe_out, self.pipe_in = os.pipe()
 
     def __enter__(self):
+        # Save a copy of the original stream
         self.origin_stream_fileno_dup = os.dup(self.origin_stream_fileno)
+        # Replace the original stream with the write pipe
         os.dup2(self.pipe_in, self.origin_stream_fileno)
         os.close(self.pipe_in)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self.origin_strema.flush()
+        self.origin_stream.flush()
+        # Make pipe_out non-blocking
         fcntl.fcntl(self.pipe_out, fcntl.F_SETFL, os.O_NONBLOCK)
         while True:
             try:

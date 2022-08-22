@@ -69,11 +69,16 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
 
     @property
     def _has_bf16_isa(self):
+        """Indicator to verify if bf16 instructions are available."""
         msg = subprocess.check_output(["lscpu"]).decode("utf-8")
         return 'avx512' in msg or 'amx' in msg
 
     def _max_bf16_isa(self, *args, **kwargs):
-        # can not capture dnnl log
+        """
+        Run inference once and check the log to confirm if bf16 instructions are used.
+
+        :return: AMX/AVX512_BF16/AVX512/None
+        """
         dnnl_log = io.StringIO()
         with RedirectStream(target=dnnl_log), ipex.verbose(1):
             self.model(*args, *kwargs)
@@ -112,10 +117,12 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                     " The performance will be quite low.")
 
     def autocast_context_manager(self):
+        """Create autocast context"""
         return autocast(enabled=self._has_bf16_isa)
 
     @contextlib.contextmanager
     def forward_context(self):
+        """Enable autocast context"""
         with self.autocast_context_manager():
             yield
 
