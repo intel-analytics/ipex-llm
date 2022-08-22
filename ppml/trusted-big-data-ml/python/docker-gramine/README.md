@@ -37,7 +37,7 @@ sudo docker run -itd \
     --device=/dev/gsgx \
     --device=/dev/sgx/enclave \
     --device=/dev/sgx/provision \
-    -v $ENCLAVE_KEY_PATH:/graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
+    -v $ENCLAVE_KEY_PATH:/root/.config/gramine/enclave-key.pem \
     -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
     -v $SSL_KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
     --name=gramine-test \

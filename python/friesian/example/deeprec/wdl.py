@@ -547,7 +547,8 @@ def main(train_dataset, test_dataset=None, tf_config=None, server=None, config=N
 
     # Run model training and evaluation
     train(sess_config, hooks, model, train_init_op, config, tf_config, server)
-    if not config["no_eval"]:  # TODO: the original script won't evaluate in distributed mode
+    # TODO: the original script won't evaluate in distributed mode, has issue in evaluation results
+    if not config["no_eval"]:
         eval_acc, eval_auc = eval(sess_config, hooks, model, test_init_op, config['test_steps'],
                                   config['checkpoint_dir'])
         return eval_acc, eval_auc
@@ -776,21 +777,25 @@ class RayDeepRecCluster:
             label_cols=None):
         # ps has already be launched and waiting and thus it is removed when training
         # as ps should not consume data.
-        # TODO: without repartition to_ray_xshards will throw error
-        # TODO: do not fix repartition size
-        train_df = train_df.repartition(10)
-        test_df = test_df.repartition(10)
+        print("Train data partitions:", train_df.rdd.getNumPartitions())
+        print("Test data partitions:", test_df.rdd.getNumPartitions())
+        if train_df.rdd.getNumPartitions() < self.num_workers:
+            train_df = train_df.repartition(self.num_workers)
+        if test_df and test_df.rdd.getNumPartitions() < self.num_workers:
+            test_df = test_df.repartition(self.num_workers)
         if not in_memory:
+            train_sizes = train_df.rdd.mapPartitions(lambda it: [sum(1 for _ in it)]).collect()
             train_processed_folder = self.config['data_location'] + "/train_processed"
             train_df.write.csv(path=train_processed_folder, mode="overwrite", header=False, sep=",")
-            train_files_dict = self.divide_files(train_processed_folder)
+            train_files_dict = self.divide_files(train_processed_folder, train_sizes)
             test_files_dict = None
             if test_df:
+                test_sizes = test_df.rdd.mapPartitions(lambda it: [sum(1 for _ in it)]).collect()
                 test_processed_folder = \
                     self.config['data_location'] + "/test_processed"
                 test_df.write.csv(
                     path=test_processed_folder, mode="overwrite", header=False, sep=",")
-                test_files_dict = self.divide_files(test_processed_folder)
+                test_files_dict = self.divide_files(test_processed_folder, test_sizes)
             worker_stats = ray.get([worker.step_file.remote(train_files_dict, test_files_dict)
                                     for worker in self.remote_workers])
         else:
@@ -824,22 +829,26 @@ class RayDeepRecCluster:
                                                                       zip_func)
         return worker_stats
 
-    def divide_files(self, folder):
+    def divide_files(self, folder, sizes):
         import glob
 
+        # Each file is of format: /path/to/processed/part-id-***.csv
         files = glob.glob(folder + "/*.csv")
+        file_with_sizes = [(file, sizes[int(file.split("/")[-1].split("-")[1])])for file in files]
         num_files_per_worker = len(files) // self.num_workers
         num_remain_files = len(files) % self.num_workers
         extra_files = []
         if num_remain_files > 0:
-            extra_files = files[-num_remain_files:]
+            extra_files = file_with_sizes[-num_remain_files:]
         files_dict = dict()
         for worker in self.remote_workers:
             index = ray.get(worker.get_task_index.remote())
-            worker_files = files[index*num_files_per_worker:(index+1)*num_files_per_worker]
+            worker_files = \
+                file_with_sizes[index*num_files_per_worker:(index+1)*num_files_per_worker]
             if extra_files:
                 worker_files += [extra_files.pop()]
             files_dict[index] = worker_files
+        # key is worker id; value is list of (file, size) tuple.
         return files_dict
 
     def get_ps(self):
@@ -872,15 +881,20 @@ class RayDeepRecCluster:
             "worker": worker_ips
         }
         print(cluster_info)
-        result_refs = [worker.setup_distributed.remote(cluster_info, self.protocol)
-                       for worker in self.remote_instances]
+        ps_chief_refs = [worker.setup_distributed.remote(cluster_info, self.protocol)
+                         for worker in self.remote_ps]
+        ps_chief_refs += [self.remote_workers[0]
+                              .setup_distributed.remote(cluster_info, self.protocol)]
         # Use ray.wait since ps server.join process won't terminate by itself and
         # thus using ray.get on all results would hang.
-        # By using ray.wait, we just wait for all the workers to finish the distributed setting
-        # and we don't need to manually kill the ps process at the very end.
-        # This also makes sure that ps is launched earlier than workers.
-        finished, unfinished = ray.wait(result_refs, num_returns=self.num_workers)
+        # By using ray.wait, we wait for the chief to finish the distributed setting and proceed.
+        # In this case, we don't need to manually kill the ps process at the very end.
+        # This also tries to make sure that ps and chief is launched earlier than ordinary workers.
+        finished, unfinished = ray.wait(ps_chief_refs, num_returns=1)
         print(ray.get(finished))
+        worker_refs = [worker.setup_distributed.remote(cluster_info, self.protocol)
+                       for worker in self.remote_workers[1:]]
+        print(ray.get(worker_refs))
 
 
 class RayWorker:
@@ -913,6 +927,9 @@ class RayWorker:
 
         if self.task_type == 'chief':
             task_type = 'worker'
+            # Make sure ps is launched earlier than the chief
+            # TODO: any better way to do this?
+            time.sleep(2)
 
         print("ps hosts: ", ps_hosts)
         print("worker hosts: ", worker_hosts)
@@ -927,10 +944,6 @@ class RayWorker:
             print("Launching parameter server")
             self.server.join()
         else:
-            # Make sure ps is first launched, then chief, then other workers
-            time.sleep(2)
-            if self.task_index != 0:
-                time.sleep(2)
             print("Launching worker")
             self.config["task_index"] = self.task_index
             self.tf_config = {
@@ -1042,7 +1055,7 @@ def to_tensor_slice_dataset(data, label, config):
     return dataset
 
 
-def to_textline_dataset(files, config):
+def to_textline_dataset(files_with_sizes, config):
 
     def parse_csv(value):
         cont_defaults = [[0.0] for i in range(1, 14)]
@@ -1060,12 +1073,9 @@ def to_textline_dataset(files, config):
                 tf.cast(features[CATEGORICAL_COLUMNS[j]], dtype=tf.int64)
         return features, labels
 
-    print(files)
-    # TODO: do not read files to get data size
-    data_size = 0
-    for filename in files:
-        with open(filename) as f:
-            data_size += sum(1 for line in f)
+    print(files_with_sizes)
+    files = [pair[0] for pair in files_with_sizes]
+    data_size = sum([pair[1] for pair in files_with_sizes])
 
     dataset = tf.data.TextLineDataset(files)
     dataset = dataset.shuffle(buffer_size=20000,
@@ -1083,16 +1093,15 @@ def data_processing(args):
     train_file = args.data_location + '/train.csv'
     test_file = args.data_location + '/eval.csv'
     if (not os.path.exists(train_file)) or (not os.path.exists(test_file)):
-        print("Dataset does not exist in the given data_location.")
-        sys.exit()
+        invalidInputError(False, "Dataset does not exist in the given data_location.")
 
     train_tbl = FeatureTable.read_csv(train_file, names=TRAIN_DATA_COLUMNS)
     test_tbl = FeatureTable.read_csv(test_file, names=TRAIN_DATA_COLUMNS)
 
     no_of_training_examples = train_tbl.size()
     no_of_test_examples = test_tbl.size()
-    print("Numbers of training dataset is {}".format(no_of_training_examples))
-    print("Numbers of test dataset is {}".format(no_of_test_examples))
+    print("The size of the training dataset is {}".format(no_of_training_examples))
+    print("The size of the test dataset is {}".format(no_of_test_examples))
 
     # set batch size, epoch & steps
     batch_size = math.ceil(
@@ -1109,7 +1118,7 @@ def data_processing(args):
         train_steps = args.steps
     test_steps = math.ceil(float(no_of_test_examples) / batch_size)
     print("The training steps is {}".format(train_steps))
-    print("The testing steps is {}".format(test_steps))
+    print("The test steps is {}".format(test_steps))
 
     # set directory path for checkpoint_dir
     model_dir = os.path.join(args.output_dir,
@@ -1170,7 +1179,7 @@ elif args.cluster_mode == "yarn":
 elif args.cluster_mode == "local":
     invalidInputError(
         args.instances_per_node >= 2,
-        "For local cluster_mode, workers_per_node must no less than 2")
+        "For local cluster_mode, instances_per_node needs to be no less than 2")
     invalidInputError(args.num_nodes == 1, "For local cluster mode, num_nodes must be equal to 1")
     init_orca_context(cores=args.cores, memory="20g", init_ray_on_spark=True)
 else:

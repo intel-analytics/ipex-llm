@@ -8,9 +8,16 @@ ARG SPARK_JAR_REPO_URL=your_spark_jar_repo_url
 # stage.1 graphene
 FROM ubuntu:20.04 AS graphene
 
+ARG HTTP_PROXY_HOST
+ARG HTTP_PROXY_PORT
+ARG HTTPS_PROXY_HOST
+ARG HTTPS_PROXY_PORT
+
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     env DEBIAN_FRONTEND=noninteractive apt-get install -y autoconf bison build-essential coreutils gawk git libcurl4-openssl-dev libprotobuf-c-dev protobuf-c-compiler python3-protobuf wget
-RUN git clone https://github.com/analytics-zoo/graphene.git /graphene
+RUN git config --global http.proxy http://$HTTP_PROXY_HOST:$HTTP_PROXY_PORT && \
+    git config --global https.proxy https://$HTTPS_PROXY_HOST:$HTTPS_PROXY_PORT && \
+    git clone https://github.com/analytics-zoo/graphene.git /graphene
 RUN cd /graphene && \
     git fetch origin branch-0.7 && \
     git checkout branch-0.7
@@ -119,6 +126,8 @@ RUN cd /opt && \
     make install && \
     protoc --version && \
     cd /opt && \
+    git config --global http.proxy http://$HTTP_PROXY_HOST:$HTTP_PROXY_PORT && \
+    git config --global https.proxy https://$HTTPS_PROXY_HOST:$HTTPS_PROXY_PORT && \    
     git clone https://github.com/analytics-zoo/hadoop.git && \
     cd hadoop && \
     git checkout branch-3.2.0-ppml && \
@@ -156,7 +165,8 @@ RUN apt-get update --fix-missing && \
 RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2.0/docker/hyperzoo/download-bigdl.sh && \
     chmod a+x ./download-bigdl.sh
 RUN ./download-bigdl.sh && \
-    rm bigdl*.zip
+    rm bigdl*.zip && \
+    cp ${BIGDL_HOME}/python/start-fl-server.py /ppml/trusted-big-data-ml/fl
 
 # stage.4 ppml
 FROM ubuntu:20.04
@@ -314,3 +324,4 @@ ADD azure /ppml/trusted-big-data-ml/azure
 WORKDIR /ppml/trusted-big-data-ml
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
+

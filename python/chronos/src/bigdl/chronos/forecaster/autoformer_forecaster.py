@@ -165,8 +165,6 @@ class AutoformerForecaster(Forecaster):
                     **self.loss_config, **self.data_config})
 
         if not has_space:
-            if self.use_hpo:
-                warnings.warn("HPO is enabled but no spaces is specified, so disable HPO.")
             self.use_hpo = False
             self.internal = model_creator(self.model_config)
 
@@ -417,8 +415,11 @@ class AutoformerForecaster(Forecaster):
         self.trainer = Trainer(logger=False, max_epochs=1,
                                checkpoint_callback=self.checkpoint_callback, num_processes=1,
                                use_ipex=self.use_ipex, distributed_backend="spawn")
-        args = _transform_config_to_namedtuple(self.model_config)
-        self.internal = AutoFormer.load_from_checkpoint(checkpoint_file, configs=args)
+        checkpoint = torch.load(checkpoint_file)
+        config = checkpoint["hyper_parameters"]
+        args = _transform_config_to_namedtuple(config)
+        internal = AutoFormer.load_from_checkpoint(checkpoint_file, configs=args)
+        self.internal = internal
 
     def save(self, checkpoint_file):
         """
@@ -426,6 +427,8 @@ class AutoformerForecaster(Forecaster):
 
         :param checkpoint_file: The checkpoint file location you want to load the forecaster.
         """
+        if self.use_hpo:
+            self.trainer.model = self.trainer.model.model
         self.trainer.save_checkpoint(checkpoint_file)
 
 
