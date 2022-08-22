@@ -22,7 +22,6 @@ import org.apache.logging.log4j.LogManager
  * Verify SGX quote with SGX SDK
  */
 class SGXDCAPQuoteVerifierImpl extends QuoteVerifier with Serializable {
-
   val logger = LogManager.getLogger(getClass)
 
   @throws(classOf[AttestationRuntimeException])
