@@ -94,7 +94,7 @@ class SparkTFEstimator():
         is_local = sc.master.startswith("local")
         self.need_to_log_to_driver = (not is_local) and log_to_driver
         if self.need_to_log_to_driver:
-            start_log_server(self.ip, self.port)
+            self.log_server_thread = start_log_server(self.ip, self.port)
 
     def _get_cluster_info(self, sc):
         cluster_info = self.workerRDD.barrier().mapPartitions(find_ip_and_free_port).collect()
@@ -528,3 +528,32 @@ class SparkTFEstimator():
     @property
     def _model_saved_path(self):
         return os.path.join(self.model_dir, "{}_model.h5".format(self.application_id))
+
+    def shutdown(self):
+        """
+        Shutdown estimator and release resources.
+        """
+        if self.log_server_thread.is_alive():
+            import inspect
+            import ctypes
+            import zmq
+
+            def _async_raise(tid, exctype):
+                tid = ctypes.c_long(tid)
+                if not inspect.isclass(exctype):
+                    exctype = type(exctype)
+                res = ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, ctypes.py_object(exctype))
+                if res == 0:
+                    raise ValueError("invalid thread id")
+                elif res != 1:
+                    ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, None)
+                    raise SystemError("PyThreadState_SetAsyncExc failed")
+
+            def stop_thread(thread):
+                _async_raise(thread.ident, SystemExit)
+
+            context = zmq.Context()
+            socket = context.socket(zmq.REQ)
+            socket.connect("tcp://{}:{}".format(self.ip, self.port))
+            socket.send_string("shutdown log server")
+            stop_thread(self.log_server_thread)
