@@ -21,10 +21,7 @@ import tensorflow_recommenders as tfrs
 from tensorflow_recommenders.tasks import base
 from bigdl.dllib.utils import log4Error
 
-from typing import TYPE_CHECKING, Dict, Union, Tuple
-
-if TYPE_CHECKING:
-    from tensorflow import Tensor
+from typing import Dict
 
 
 class TFRSModel(tf.keras.Model):
@@ -55,7 +52,7 @@ class TFRSModel(tf.keras.Model):
     def call(self, features):
         return self.model.call(features)
 
-    def train_step(self, inputs) -> Dict[str, "tf.Tensor"]:
+    def train_step(self, inputs) -> Dict[str, tf.Tensor]:
         """
         Custom train step using the `compute_loss` method.
 
@@ -89,7 +86,7 @@ class TFRSModel(tf.keras.Model):
 
         return metrics
 
-    def test_step(self, inputs) -> Dict[str, "tf.Tensor"]:
+    def test_step(self, inputs) -> Dict[str, tf.Tensor]:
         """
         Custom test step using the `compute_loss` method.
 

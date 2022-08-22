@@ -72,7 +72,10 @@ def median(df: "SparkDataFrame",
     return callZooFunc("float", "median", df, columns, relative_error)
 
 
-def cross_columns(df, cross_column_list, bucket_sizes):
+# TODO: ADD UTS
+def cross_columns(df,
+                  cross_column_list: Union[List[str], List[List[str]], str],
+                  bucket_sizes: int):
     return callZooFunc("float", "crossColumns", df, cross_column_list, bucket_sizes)
 
 
@@ -163,7 +166,7 @@ def check_col_str_list_exists(df: "SparkDataFrame",
 
 
 def get_nonnumeric_col_type(df: "SparkDataFrame",
-                                columns: Optional[Union[str, List[str]]]) \
+                            columns: Optional[Union[str, List[str]]]) \
         -> List[Union[Tuple[str, str], Any]]:
     return list(filter(
         lambda x: x[0] in columns and not (x[1] == "smallint" or x[1] == "int" or

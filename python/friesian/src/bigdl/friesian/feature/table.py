@@ -76,7 +76,7 @@ class Table:
         return df
 
     @staticmethod
-    def _read_json(paths: str, cols: Union[List, str]) -> "SparkDataFrame":
+    def _read_json(paths: str, cols: Union[List[str], str]) -> "SparkDataFrame":
         if not isinstance(paths, list):
             paths = [paths]
         spark = OrcaContext.get_spark_session()
@@ -96,7 +96,7 @@ class Table:
         paths: str,
         delimiter: str = ",",
         header: bool = False,
-        names: Optional[List[str]] = None,
+        names: Optional[Union[List[str], str]] = None,
         dtype: Optional[Union[List[str], Dict[str, str], str]]=None
     ) -> "SparkDataFrame":
         if not isinstance(paths, list):
@@ -162,7 +162,7 @@ class Table:
         """
         self.df = broadcast(self.df)
 
-    def select(self, *cols: Union[List, str]) -> "Table":
+    def select(self, *cols: Union[List[str], str]) -> "Table":
         """
         Select specific columns.
 
@@ -178,7 +178,7 @@ class Table:
                               "cols should be str or a list of str, but got None.")
         return self._clone(self.df.select(*cols))
 
-    def drop(self, *cols: Union[List, str]) -> "Table":
+    def drop(self, *cols: Union[List[str], str]) -> "Table":
         """
         Returns a new Table that drops the specified column.
         This is a no-op if schema doesn't contain the given column name(s).
@@ -251,7 +251,7 @@ class Table:
 
     def dropna(
         self,
-        columns: List[str],
+        columns: Optional[Union[List[str], str]],
         how: str = "any",
         thresh: Optional[int] = None
     ) -> "Table":
@@ -311,7 +311,7 @@ class Table:
 
     def clip(
         self,
-        columns: Optional[List[str]],
+        columns: Optional[Union[List[str], str]] = None,
         min: Optional[NUMERIC_TYPE] = None,
         max: Optional[NUMERIC_TYPE] = None
     ) -> "Table":
@@ -340,7 +340,7 @@ class Table:
 
     def log(
         self,
-        columns: List[str],
+        columns: Optional[Union[List[str], str]] = None,
         clipping: bool = True
     ) -> "Table":
         """
@@ -361,7 +361,7 @@ class Table:
         check_col_exists(self.df, columns)
         return self._clone(log_with_clip(self.df, columns, clipping))
 
-    def fill_median(self, columns: List[str]) -> "Table":
+    def fill_median(self, columns: Optional[Union[List[str], str]]=None) -> "Table":
         """
         Replaces null values with the median in the specified numeric columns. Any column to be
         filled should not contain only null values.
@@ -394,7 +394,9 @@ class Table:
             check_col_exists(self.df, columns)
         return self._clone(median(self.df, columns))
 
-    def merge_cols(self, columns: List[str], target: str) -> "Table":
+    def merge_cols(self,
+                   columns: Union[List[str], str],
+                   target: str) -> "Table":
         """
         Merge the target column values as a list to a new column.
         The original columns will be dropped.
@@ -484,7 +486,7 @@ class Table:
             stats[column] = values[0] if len(values) == 1 else values
         return stats
 
-    def min(self, columns: Optional[Union[str, List[str]]]) -> "Table":
+    def min(self, columns: Optional[Union[str, List[str]]]=None) -> "Table":
         """
         Returns a new Table that has two columns, `column` and `min`, containing the column
         names and the minimum values of the specified numeric columns.
@@ -501,7 +503,7 @@ class Table:
         spark = OrcaContext.get_spark_session()
         return self._clone(spark.createDataFrame(data, schema))
 
-    def max(self, columns: Optional[Union[str, List[str]]]) -> "Table":
+    def max(self, columns: Optional[Union[str, List[str]]]=None) -> "Table":
         """
         Returns a new Table that has two columns, `column` and `max`, containing the column
         names and the maximum values of the specified numeric columns.
@@ -547,7 +549,7 @@ class Table:
             result[column] = [row[i] for row in rows]
         return result
 
-    def add(self, columns: List[str], value: NUMERIC_TYPE=1) -> "Table":
+    def add(self, columns: Union[List[str], str], value: NUMERIC_TYPE=1) -> "Table":
         """
         Increase all of values of the target numeric column(s) by a constant value.
 
@@ -622,7 +624,7 @@ class Table:
         """
         write_parquet(self.df, path, mode)
 
-    def cast(self, columns: Union[str, List[str]], dtype: str) -> "StringIndex":
+    def cast(self, columns: Optional[Union[List[str], str]], dtype: str) -> "StringIndex":
         """
         Cast columns to the specified type.
 
@@ -735,7 +737,7 @@ class Table:
 
     def drop_duplicates(
         self,
-        subset: Optional[List[str]]=None,
+        subset: Optional[Union[List[str], str]]=None,
         sort_cols: Optional[Union[List[str], str]]=None,
         keep: str="min"
     ) -> "Table":
@@ -891,7 +893,7 @@ class Table:
 
 class FeatureTable(Table):
     @classmethod
-    def read_parquet(cls, paths: str) -> "FeatureTable":
+    def read_parquet(cls, paths: Union[List[str], str]) -> "FeatureTable":
         """
         Loads Parquet files as a FeatureTable.
 
@@ -1103,7 +1105,7 @@ class FeatureTable(Table):
     def cross_hash_encode(
         self,
         cross_columns: Union[List[str], List[List[str]], str],
-        bin_sizes: Union[int, List[int]],
+        bin_sizes: List[int],
         cross_col_names: Optional[Union[List[str], str, List[int]]]=None,
         method: str = 'md5'
     ) -> "FeatureTable":
@@ -1650,7 +1652,7 @@ class FeatureTable(Table):
         cols: Union[str, List[str]],
         seq_len: int = 100,
         mask_cols: Union[str, List[str]]=None,
-        mask_token: Union[int, str]=0
+        mask_token: Union[NUMERIC_TYPE, str]=0
     ) -> "FeatureTable":
         """
         Add padding on specified column(s).
