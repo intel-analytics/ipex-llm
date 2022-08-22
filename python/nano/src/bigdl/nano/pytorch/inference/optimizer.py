@@ -26,6 +26,9 @@ from copy import deepcopy
 from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
 from bigdl.nano.pytorch import Trainer
 
+import os
+os.environ['LOGLEVEL'] = 'ERROR' # remove parital output of inc
+
 _whole_acceleration_options = ["inc", "ipex", "onnxruntime", "openvino", "pot",
                                "bf16", "jit", "channels_last"]
 
@@ -141,7 +144,6 @@ class Optimizer:
                         if accelerator is None and use_ipex is False:
                             accelerated_model = model
                         else:
-                            # TODO: remove the logging of tracing
                             if accelerator in ("jit", None):
                                 accelerated_model = Trainer.trace(model=model,
                                                                   accelerator=accelerator,
@@ -151,7 +153,8 @@ class Optimizer:
                             else:
                                 accelerated_model = Trainer.trace(model=model,
                                                                   accelerator=accelerator,
-                                                                  input_sample=input_sample)
+                                                                  input_sample=input_sample,
+                                                                  logging=False)  # remove parital output of openvino
                     except Exception as e:
                         print(e)
                         continue
@@ -166,7 +169,8 @@ class Optimizer:
                                                              accelerator=accelerator,
                                                              use_ipex=use_ipex,
                                                              calib_dataloader=training_data,
-                                                             method=ort_method)
+                                                             method=ort_method,
+                                                             logging=False)  # remove parital output of openvino
                     except Exception as e:
                         print(e)
                         continue
