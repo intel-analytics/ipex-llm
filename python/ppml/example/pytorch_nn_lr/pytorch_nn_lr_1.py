@@ -52,7 +52,7 @@ if __name__ == '__main__':
     # fl_server = FLServer(2)
     # fl_server.build()
     # fl_server.start()
-    df_train = pd.read_csv('./python/ppml/example/pytorch_nn_lr/data/diabetes-vfl-1.csv')    
+    df_train = pd.read_csv('.data/diabetes-vfl-1.csv')    
     
     # this should wait for the merge of 2 FLServer (Py4J Java gRPC and Python gRPC)
     # df_train['ID'] = df_train['ID'].astype(str)
