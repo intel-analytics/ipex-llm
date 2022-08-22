@@ -45,9 +45,13 @@ from bigdl.orca import OrcaContext
 from bigdl.orca.learn.pytorch.callbacks.model_checkpoint import ModelCheckpoint
 from bigdl.orca.learn.pytorch.constants import SCHEDULER_STEP, NUM_STEPS
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
+from bigdl.orca.learn.pytorch.training_operator_lightning import TrainingOperatorLightning
 from bigdl.orca.learn.pytorch import utils
 from bigdl.orca.learn.pytorch.utils import get_filesystem
 from bigdl.dllib.utils.log4Error import *
+
+import pytorch_lightning as pl
+from pytorch_lightning.callbacks import Callback as callback_lightning
 
 try:
     from collections.abc import Iterable
@@ -196,8 +200,9 @@ class TorchRunner:
                           ("All models must be PyTorch models: {}.".format(self.models)))
 
         self.logger.debug("Creating optimizer.")
-        self.optimizers = self.optimizer_creator(self.given_models,
-                                                 self.config)
+        if self.optimizer_creator is not None:
+            self.optimizers = self.optimizer_creator(self.given_models,
+                                                    self.config)
         if not isinstance(self.optimizers, Iterable):
             self.optimizers = [self.optimizers]
 
@@ -211,17 +216,26 @@ class TorchRunner:
         else:
             self.dist_backend = TorchDistBackend()
 
-        self.training_operator = \
-            self.training_operator_cls(
-                self.config,
-                models=training_models,
-                optimizers=self.optimizers,
-                criterion=self.criterion,
-                world_rank=self.rank,
-                schedulers=self.schedulers,
-                use_tqdm=self.use_tqdm,
-                sync_stats=self.sync_stats,
-                dist_backend=self.dist_backend)
+        if isinstance(self.models[0], pl.LightningModule):
+            self.training_operator = \
+                TrainingOperatorLightning(
+                    self.config,
+                    models_ori=self.models,
+                    models=training_models,
+                    world_rank=self.rank
+                )
+        else:
+            self.training_operator = \
+                self.training_operator_cls(
+                    self.config,
+                    models=training_models,
+                    optimizers=self.optimizers,
+                    criterion=self.criterion,
+                    world_rank=self.rank,
+                    schedulers=self.schedulers,
+                    use_tqdm=self.use_tqdm,
+                    sync_stats=self.sync_stats,
+                    dist_backend=self.dist_backend)
 
     def with_sampler(self, loader):
         self.logger.debug("Wrapping DistributedSampler on DataLoader")
@@ -302,15 +316,23 @@ class TorchRunner:
 
         if callbacks is not None:
             for callback in callbacks:
-                callback.set_model(self.given_models)
-                if hasattr(callback, "set_trainer"):
-                    callback.set_trainer(self)
-                callback.on_train_begin()
+                if isinstance(callback, callback_lightning):
+                    invalidInputError(isinstance(self.models[0], pl.LightningModule),
+                                      "Must provide a lightning model")
+                    callback.on_train_start(pl.Trainer(), self.models[0])
+                else:
+                    callback.set_model(self.given_models)
+                    if hasattr(callback, "set_trainer"):
+                        callback.set_trainer(self)
+                    callback.on_train_begin()
         stats_list = list()
         for i in range(epochs):
             if callbacks is not None:
                 for callback in callbacks:
-                    callback.on_epoch_begin(epoch=self.epochs)
+                    if isinstance(callback, callback_lightning):
+                        callback.on_train_epoch_start(pl.Trainer(), self.models[0])
+                    else:
+                        callback.on_epoch_begin(epoch=self.epochs)
             stats = self.train_epoch(loader, profile=profile, info=info, callbacks=callbacks,
                                      val_loader=val_loader, val_steps=val_steps)
             if self.rank == 0:
@@ -324,10 +346,16 @@ class TorchRunner:
             self.epochs_stats = stats
             if callbacks is not None:
                 for callback in callbacks:
-                    callback.on_epoch_end(epoch=self.epochs, logs=self.epochs_stats)
+                    if isinstance(callback, callback_lightning):
+                        callback.on_train_epoch_end(pl.Trainer(), self.models[0])
+                    else:
+                        callback.on_epoch_end(epoch=self.epochs, logs=self.epochs_stats)
         if callbacks is not None:
             for callback in callbacks:
-                callback.on_train_end(logs=self.epochs_stats)
+                if isinstance(callback, callback_lightning):
+                    callback.on_train_end(pl.Trainer(), self.models[0])
+                else:
+                    callback.on_train_end(logs=self.epochs_stats)
         return stats_list
 
     def train_epoch(self,
@@ -380,7 +408,7 @@ class TorchRunner:
         return stats
 
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
-                 info=None, wrap_dataloader=None):
+                 info=None, wrap_dataloader=None, callbacks=None):
         """Evaluates the model on the validation data set."""
         config = self.config.copy()
         info = info or {}
@@ -399,12 +427,24 @@ class TorchRunner:
         elif wrap_dataloader is True:
             loader = self.with_sampler(loader)
         loader = iter(loader)
+
+        if callbacks is not None:
+            for callback in callbacks:
+                if isinstance(callback, callback_lightning):
+                    callback.on_validation_epoch_start(pl.Trainer(), self.models[0])
+
         if num_steps:
             loader = itertools.islice(loader, num_steps)
         with self.timers.record("validation"):
             validation_stats = self.training_operator.validate(loader,
                                                                info=info,
                                                                metrics=self.metrics)
+
+        if callbacks is not None:
+            for callback in callbacks:
+                if isinstance(callback, callback_lightning):
+                    callback.on_validation_epoch_end(pl.Trainer(), self.models[0])
+
         if profile:
             validation_stats.update(profile=self.timers.stats())
         return validation_stats
