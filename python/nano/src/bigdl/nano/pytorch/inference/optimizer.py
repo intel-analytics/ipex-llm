@@ -129,10 +129,11 @@ class Optimizer:
 
         for method, available in available_dict.items():
             if available:
-                instance = ALL_INFERENCE_ACCELERATION_METHOD[method]
-                use_ipex = instance.ipex
-                accelerator = instance.get_accelerator()
-                precision = instance.get_precision()
+                option = ALL_INFERENCE_ACCELERATION_METHOD[method]
+                use_ipex = option.ipex
+                use_channels_last = option.channels_last
+                accelerator = option.get_accelerator()
+                precision = option.get_precision()
                 # if precision is fp32, then we will use trace method
                 if precision == "fp32":
                     input_sample = tuple(next(iter(training_data))[:-1])
@@ -142,7 +143,6 @@ class Optimizer:
                         else:
                             # TODO: remove the logging of tracing
                             if accelerator in ("jit", None):
-                                use_channels_last = instance.channels_last
                                 accelerated_model = Trainer.trace(model=model,
                                                                   accelerator=accelerator,
                                                                   use_ipex=use_ipex,
