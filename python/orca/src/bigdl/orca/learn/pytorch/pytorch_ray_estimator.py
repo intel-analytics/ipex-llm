@@ -127,7 +127,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         # todo remove ray_ctx to run on workers
         ray_ctx = OrcaRayContext.get()
         if not (isinstance(model_creator, types.FunctionType) and
-                (isinstance(optimizer_creator, types.FunctionType) or isinstance(self.model_creator(self.config), pl.LightningModule))):  # Torch model is also callable.
+                (isinstance(optimizer_creator, types.FunctionType) or isinstance(model_creator(config), pl.LightningModule))):  # Torch model is also callable.
             invalidInputError(False,
                               "Must provide a function for both model_creator and"
                               " optimizer_creator")
