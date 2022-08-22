@@ -61,7 +61,8 @@ python wdl.py \
     --ev True \
     --ev_filter counter \
     --smartstaged False \
-    --emb_fusion False
+    --emb_fusion False \
+    --optimizer adam
 ```
 - K8s mode:
 ```bash
@@ -74,10 +75,11 @@ python wdl.py \
     --ev True \
     --ev_filter counter \
     --smartstaged False \
-    --emb_fusion False
+    --emb_fusion False \
+    --optimizer adam
 ```
 
-For DeepRec related arguments, please refer to the original example for more description.
+For DeepRec related arguments, please refer to the original example for more description. If we use DeepRec EmbeddingVariable, we cannot use the default optimizer. This is a DeepRec bug in adamasync optimizer and has not been resolved yet.
 
 We put data in NFS and save the model checkpoint to NFS as well. You need to change the data_location and checkpoint paths in the above command.
 
