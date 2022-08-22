@@ -30,6 +30,7 @@ from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xsha
 from bigdl.orca.ray import OrcaRayContext
 from bigdl.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save
+from bigdl.orca.learn.pytorch.utils import find_free_port
 
 import ray
 from ray.exceptions import RayActorError
@@ -88,6 +89,15 @@ def partition_refs_to_creator(partition_refs):
         return data_loader
 
     return data_creator
+
+
+def get_driver_node_ip():
+    """
+    Returns the IP address of the current node.
+
+    :return: the IP address of the current node.
+    """
+    return ray._private.services.get_node_ip_address()
 
 
 class PyTorchRayEstimator(OrcaRayEstimator):
@@ -166,8 +176,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 for i, worker in enumerate(self.remote_workers)
             ])
 
-            head_worker = self.remote_workers[0]
-            driver_ip, driver_tcp_store_port = ray.get(head_worker.get_node_ip_port.remote())
+            driver_ip = get_driver_node_ip()
+            driver_tcp_store_port = find_free_port()
 
             _ = dist.TCPStore(driver_ip, driver_tcp_store_port, -1, True,
                               dist.constants.default_pg_timeout)

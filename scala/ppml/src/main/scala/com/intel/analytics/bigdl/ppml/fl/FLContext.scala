@@ -30,6 +30,18 @@ object FLContext {
   var flClient: FLClient = null
   var sparkSession: SparkSession = null
 
+  def resetFLContext(): Unit = {
+    flClient = null
+  }
+
+  def setPsiSalt(psiSalt: String): Unit = {
+    flClient.psiSalt = psiSalt
+  }
+
+  def getPsiSalt(): String = {
+      flClient.psiSalt
+  }
+
   def initFLContext(id: String, target: String = null): Unit = {
     createSparkSession()
     Engine.init

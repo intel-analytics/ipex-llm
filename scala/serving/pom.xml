@@ -23,7 +23,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>18.0</version>
+            <version>31.0.1-jre</version>
         </dependency>
         <dependency>
             <groupId>com.intel.analytics.bigdl</groupId>
@@ -44,7 +44,7 @@
         <dependency>
             <groupId>org.json4s</groupId>
             <artifactId>json4s-jackson_${scala.major.version}</artifactId>
-            <version>3.5.3</version>
+            <version>3.7.0-M5</version>
         </dependency>
         <dependency>
             <groupId>com.google.protobuf</groupId>
@@ -145,17 +145,17 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.12.2</version>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
-            <version>2.12.2</version>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-scala_${scala.major.version}</artifactId>
-            <version>2.12.2</version>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>

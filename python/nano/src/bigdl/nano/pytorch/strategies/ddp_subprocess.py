@@ -116,6 +116,10 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
                 else:
                     cloudpickle.dump((self._wrapping_function, args, error_queue), f)
 
+            # we also need to pass sys.path to subprocess
+            with open(os.path.join(temp_dir, "sys_path.pkl"), "wb") as f:
+                cloudpickle.dump(sys.path, f)
+
             processes = []
             cwd_path = os.path.split(os.path.realpath(__file__))[0]
             for i in range(self._strategy.num_processes):

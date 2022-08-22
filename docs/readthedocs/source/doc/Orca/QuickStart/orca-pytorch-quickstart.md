@@ -2,7 +2,7 @@
 
 ---
 
-![](../../../../image/colab_logo_32px.png)[Run in Google Colab](https://colab.research.google.com/github/intel-analytics/BigDL/blob/branch-2.0/python/orca/colab-notebook/quickstart/pytorch_lenet_mnist.ipynb) &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/orca/colab-notebook/quickstart/pytorch_lenet_mnist.ipynb)
+![](../../../../image/colab_logo_32px.png)[Run in Google Colab](https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/orca/colab-notebook/quickstart/pytorch_lenet_mnist.ipynb) &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/main/python/orca/colab-notebook/quickstart/pytorch_lenet_mnist.ipynb)
 
 ---
 
@@ -106,7 +106,7 @@ test_loader = torch.utils.data.DataLoader(
     batch_size=test_batch_size, shuffle=False)
 ```
 
-Alternatively, we can also use a [Data Creator Function](https://github.com/intel-analytics/BigDL/blob/branch-2.0/docs/docs/colab-notebook/orca/quickstart/pytorch_lenet_mnist_data_creator_func.ipynb) or [Orca XShards](../Overview/data-parallel-processing) as the input data, especially when the data size is very large)
+Alternatively, we can also use a [Data Creator Function](https://github.com/intel-analytics/BigDL/blob/main/docs/docs/colab-notebook/orca/quickstart/pytorch_lenet_mnist_data_creator_func.ipynb) or [Orca XShards](../Overview/data-parallel-processing) as the input data, especially when the data size is very large)
 
 ### **Step 4: Fit with Orca Estimator**
 

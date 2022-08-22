@@ -90,8 +90,11 @@ extensions = [
     'recommonmark',
     'sphinx_markdown_tables',
     'sphinx_tabs.tabs',
+    'sphinx_design',
+    'sphinx_external_toc',
+    'sphinx_design',
+    'nbsphinx'
 ]
-
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -151,6 +154,14 @@ html_static_path = ['_static']
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'BigDL Documentation'
 
+
+
+# -- Options for external TOC tree ---
+external_toc_exclude_missing = False
+external_toc_path = "_toc.yml"
+
+# this is to surpresswarnings about explicit "toctree" directives
+suppress_warnings = ["etoc.toctree"]
 
 # -- Options for LaTeX output ------------------------------------------------
 
@@ -234,3 +245,6 @@ def setup(app):
         'enable_auto_doc_ref': True,
     }, True)
     app.add_transform(AutoStructify)
+
+# disable notebook execution
+nbsphinx_execute = 'never'

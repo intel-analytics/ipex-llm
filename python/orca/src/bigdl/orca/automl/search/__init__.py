@@ -15,7 +15,6 @@
 #
 
 from .base import *
-from .tensorboardlogger import TensorboardLogger
 
 
 class SearchEngineFactory:

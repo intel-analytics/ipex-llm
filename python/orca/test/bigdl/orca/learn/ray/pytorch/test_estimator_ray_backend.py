@@ -92,6 +92,7 @@ class IdentityNet(nn.Module):
     def forward(self, input_):
         return input_
 
+
 class LinearModel(nn.Module):
     def __init__(self):
         super().__init__()
@@ -139,7 +140,7 @@ class CustomCallback(Callback):
         assert self.model
 
     def on_epoch_end(self, epoch, logs=None):
-        assert "train_loss" in logs 
+        assert "train_loss" in logs
         assert "val_loss" in logs
         assert self.model
 
@@ -175,12 +176,16 @@ def get_zero_optimizer(model, config):
     return torch.optim.SGD(model.parameters(), lr=0.0)
 
 
+def customized_metric(pred, target):
+    return torch.sum((pred - target) ** 4)
+
+
 def get_estimator(workers_per_node=1, model_fn=get_model, sync_stats=False,
-                  log_level=logging.INFO, loss=nn.BCELoss(), optimizer=get_optimizer):
+                  log_level=logging.INFO, loss=nn.BCELoss(), optimizer=get_optimizer, metrics=Accuracy()):
     estimator = Estimator.from_torch(model=model_fn,
                                      optimizer=optimizer,
                                      loss=loss,
-                                     metrics=Accuracy(),
+                                     metrics=metrics,
                                      config={"lr": 1e-2},
                                      workers_per_node=workers_per_node,
                                      backend="ray",
@@ -252,8 +257,8 @@ class TestPyTorchEstimator(TestCase):
 
         val_rdd = sc.range(0, 40)
         val_df = val_rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
-                             [int(np.random.randint(0, 2, size=()))])
-                            ).toDF(["feature", "label"])
+                                        [int(np.random.randint(0, 2, size=()))])
+                             ).toDF(["feature", "label"])
 
         estimator = get_estimator(workers_per_node=2)
         estimator.fit(df, batch_size=4, epochs=2,
@@ -318,7 +323,7 @@ class TestPyTorchEstimator(TestCase):
     def test_xshards_predict(self):
 
         sc = init_nncontext()
-        rdd = sc.range(0, 110).map(lambda x: np.array([x]*50))
+        rdd = sc.range(0, 110).map(lambda x: np.array([x] * 50))
         shards = rdd.mapPartitions(lambda iter: chunks(iter, 5)).map(lambda x: {"x": np.stack(x)})
         shards = SparkXShards(shards)
 
@@ -379,7 +384,7 @@ class TestPyTorchEstimator(TestCase):
         # and loss on worker 1 is always 1.0
 
         df = rdd.mapPartitionsWithIndex(lambda idx, iter: [([float(idx)], [0.0]) for _ in iter]
-                        ).toDF(["feature", "label"])
+                                        ).toDF(["feature", "label"])
 
         estimator = get_estimator(workers_per_node=2,
                                   model_fn=lambda config: LinearModel(),
@@ -399,7 +404,7 @@ class TestPyTorchEstimator(TestCase):
         # and loss on worker 1 is always 1.0
 
         df = rdd.mapPartitionsWithIndex(lambda idx, iter: [([float(idx)], [0.0]) for _ in iter]
-                        ).toDF(["feature", "label"])
+                                        ).toDF(["feature", "label"])
 
         estimator = get_estimator(workers_per_node=2,
                                   model_fn=lambda config: LinearModel(),
@@ -430,7 +435,7 @@ class TestPyTorchEstimator(TestCase):
         # and loss on worker 1 is always 1.0
 
         df = rdd.mapPartitionsWithIndex(lambda idx, iter: [([float(idx)], [0.0]) for _ in iter]
-                     ).toDF(["feature", "label"])
+                                        ).toDF(["feature", "label"])
 
         estimator = get_estimator(workers_per_node=2,
                                   model_fn=lambda config: LinearModel(),
@@ -468,7 +473,7 @@ class TestPyTorchEstimator(TestCase):
         #    avg_grad = avg([0, 0, 1, 1]) = 0.5
         #    weight = 0.5 - 0.5 * avg_grad = 0.25
         df = rdd.mapPartitionsWithIndex(lambda idx, iter: [([float(idx)], [0.0]) for _ in iter][:2]
-                        ).toDF(["feature", "label"])
+                                        ).toDF(["feature", "label"])
 
         def get_optimizer(model, config):
             return torch.optim.SGD(model.parameters(), lr=0.5)
@@ -596,8 +601,13 @@ class TestPyTorchEstimator(TestCase):
     def test_custom_callback(self):
         estimator = get_estimator(workers_per_node=2)
         callbacks = [CustomCallback()]
-        estimator.fit(train_data_loader, epochs=4, batch_size=128, 
+        estimator.fit(train_data_loader, epochs=4, batch_size=128,
                       validation_data=val_data_loader, callbacks=callbacks)
+
+    def test_customized_metric(self):
+        estimator = get_estimator(metrics=customized_metric, workers_per_node=2)
+        estimator.fit(train_data_loader, epochs=4, batch_size=128,
+                      validation_data=val_data_loader)
 
 
 if __name__ == "__main__":

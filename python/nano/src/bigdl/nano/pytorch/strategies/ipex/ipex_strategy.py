@@ -43,9 +43,6 @@ class IPEXStrategy(SingleDeviceStrategy):
         :param precision_plugin: the plugin to handle precision-specific parts
         """
         self.enable_bf16 = enable_bf16
-        if enable_bf16:
-            # Automatically mix precision
-            ipex.enable_auto_mixed_precision(mixed_dtype=torch.bfloat16)
 
         super().__init__(accelerator=accelerator, precision_plugin=precision_plugin)
 

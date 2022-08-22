@@ -19,7 +19,7 @@ import logging
 import pickle
 import grpc
 from numpy import ndarray
-from bigdl.ppml.fl.nn.generated.nn_service_pb2 import TrainRequest, UploadMetaRequest
+from bigdl.ppml.fl.nn.generated.nn_service_pb2 import TrainRequest, PredictRequest, UploadMetaRequest
 from bigdl.ppml.fl.nn.generated.nn_service_pb2_grpc import *
 from bigdl.ppml.fl.nn.utils import ndarray_map_to_tensor_map
 import yaml
@@ -52,6 +52,18 @@ class FLClient(object):
                                      algorithm=self.aggregator)
         
         response = self.nn_stub.train(train_request)
+        if response.code == 1:
+            invalidInputError(False,
+                              response.response)
+        return response
+
+    def predict(self, x):
+        tensor_map = ndarray_map_to_tensor_map(x)
+        predict_request = PredictRequest(clientuuid=self.client_uuid,
+                                     data=tensor_map,
+                                     algorithm=self.aggregator)
+        
+        response = self.nn_stub.predict(predict_request)
         if response.code == 1:
             invalidInputError(False,
                               response.response)

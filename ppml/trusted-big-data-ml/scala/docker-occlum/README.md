@@ -1,5 +1,19 @@
 # Trusted Big Data ML with Occlum
 
+## Resource Configuration Guide
+These configuration values must be tuned on a per-application basis.
+You can refer to [here](https://github.com/occlum/occlum/blob/master/docs/resource_config_guide.md?plain=1) for more information.
+``` bash
+#start-spark-local.sh
+-e SGX_MEM_SIZE=24GB  // means the whole image memory you can use, the same as resource_limits.user_space_size
+-e SGX_THREAD=512  // means the whole thread you can use, the same as resource_limits.max_num_of_threads
+-e SGX_HEAP=512MB  // means each process init malloc memory, the same as process.default_heap_size
+-e SGX_KERNEL_HEAP=1GB // means occlum in kernel state using memory, the same as resource_limits.kernel_space_heap_size
+```
+the log of Occlum can be turned on by setting the `OCCLUM_LOG_LEVEL` environment variable (e.g.,
+`OCCLUM_LOG_LEVEL=error`, `OCCLUM_LOG_LEVEL=info`, `OCCLUM_LOG_LEVEL=trace`).
+You can add 'OCCLUM_LOG_LEVEL=trace' in [run_spark_on_occlum_glibc.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/run_spark_on_occlum_glibc.sh#L3) and change set this [config](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/run_spark_on_occlum_glibc.sh#L46) true without " ".
+
 ## Prerequisites
 
 Pull image from dockerhub.
@@ -42,9 +56,9 @@ bash start-spark-local.sh pi
 You can change the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
 ``` bash
 #start-spark-local.sh
--e SGX_MEM_SIZE=24GB \
+-e SGX_MEM_SIZE=6GB \
 -e SGX_THREAD=512 \
--e SGX_HEAP=512MB \
+-e SGX_HEAP=1GB \
 -e SGX_KERNEL_HEAP=1GB \
 ```
 
@@ -103,19 +117,14 @@ The examples are run in the docker container. Attach it and see the results (`do
 
 ## Spark TPC-H example
 
-### Rebuild Image
 
-Enlarge these four configurations in [run_spark_on_occlum_glibc.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/run_spark_on_occlum_glibc.sh#L19) to:
-```
-.resource_limits.max_num_of_threads = 4096 |
-.process.default_heap_size = "4096MB" |
-.resource_limits.kernel_space_heap_size="4096MB" |
-```
-
-Then build the docker image:
-
+You can change the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
 ``` bash
-bash build-docker-image.sh
+#start-spark-local.sh
+-e SGX_MEM_SIZE=16GB \
+-e SGX_THREAD=1024 \
+-e SGX_HEAP=1GB \
+-e SGX_KERNEL_HEAP=1GB \
 ```
 
 ### Generate Data
@@ -126,9 +135,9 @@ cd zoo-tutorials/tpch-spark/dbgen && \
 make
 ```
 
-Then you can generate 100G size data by:
+Then you can generate 1G size data by:
 ```
-./dbgen -s 100
+./dbgen -s 1
 ```
 
 Then mount `/path/to/zoo-tutorials/tpch-spark/dbgen` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
@@ -193,6 +202,17 @@ You can enlarge the configuration in [start-spark-local.sh](https://github.com/i
 -e SGX_THREAD=1024 \
 -e SGX_HEAP=1GB \
 -e SGX_KERNEL_HEAP=1GB \
+```
+
+You can change the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+``` bash
+#start-spark-local.sh
+-i /host/data        // -i means inputpath of training data
+-s /host/data/model  // -s means savepath of model
+-t 2                 // -t means threads num
+-r 100               // -r means Round num
+-d 2                 // -d means maxdepth
+-w 1                 // -w means Workers num
 ```
 
 Start run BigDL Spark XGBoost example:

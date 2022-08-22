@@ -16,17 +16,17 @@
 
 package com.intel.analytics.bigdl.friesian
 
-import java.net.URL
 import com.intel.analytics.bigdl.dllib.NNContext
 import com.intel.analytics.bigdl.friesian.python.PythonFriesian
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.core.config.Configurator
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types.{StructField, _}
+import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Row, SQLContext}
 import org.apache.spark.{SparkConf, SparkContext, SparkException}
 
+import java.net.URL
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 
@@ -187,7 +187,7 @@ class FriesianSpec extends ZooSpecHelper {
     TestUtils.conditionFailTest(dft.filter("size(history_list) = 4").count() == 3)
     TestUtils.conditionFailTest(
       dft.filter(dft("name") === "rose").select("history").collect()(0)(0).toString()
-      == "WrappedArray(1, 2, 0, 0)")
+        == "WrappedArray(1, 2, 0, 0)")
   }
 
   "postpad Double" should "work properly" in {
@@ -213,7 +213,7 @@ class FriesianSpec extends ZooSpecHelper {
     TestUtils.conditionFailTest(dft.filter("size(history_list) = 4").count() == 3)
     TestUtils.conditionFailTest(
       dft.filter(dft("name") === "rose").select("history").collect()(0)(0).toString()
-      == "WrappedArray(1.0, 2.0, 6.5, 6.5)")
+        == "WrappedArray(1.0, 2.0, 6.5, 6.5)")
   }
 
   "postpad Long" should "work properly" in {
@@ -229,12 +229,12 @@ class FriesianSpec extends ZooSpecHelper {
     val df = sqlContext.createDataFrame(data, schema)
     val dft = friesian.postPad(df, Array("history", "history_list").toList.asJava, 4, 5.6)
     dft.show(3, false)
-//    dft.schema.fields.map(x => x.dataType).foreach(println(_))
+    //    dft.schema.fields.map(x => x.dataType).foreach(println(_))
     TestUtils.conditionFailTest(dft.filter("size(history) = 4").count() == 3)
     TestUtils.conditionFailTest(dft.filter("size(history_list) = 4").count() == 3)
     TestUtils.conditionFailTest(
       dft.filter(dft("name") === "rose").select("history").collect()(0)(0).toString()
-      == "WrappedArray(1, 2, 5, 5)")
+        == "WrappedArray(1, 2, 5, 5)")
   }
 
   "postpad String" should "work properly" in {

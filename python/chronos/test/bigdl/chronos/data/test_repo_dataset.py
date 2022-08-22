@@ -17,11 +17,11 @@ import pytest
 import pandas as pd
 import random
 
-from bigdl.orca.test_zoo_utils import ZooTestCase
+from unittest import TestCase
 from bigdl.chronos.data.repo_dataset import get_public_dataset
 
 
-class TestRepoDataset(ZooTestCase):
+class TestRepoDataset(TestCase):
     def setup_method(self, method):
         pass
 

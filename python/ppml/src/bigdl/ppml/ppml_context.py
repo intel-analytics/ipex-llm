@@ -20,6 +20,7 @@ from enum import Enum
 
 from pyspark.sql import SparkSession
 
+
 def check(ppml_args, arg_name):
     try:
         value = ppml_args[arg_name]
@@ -29,10 +30,13 @@ def check(ppml_args, arg_name):
 
 
 class PPMLContext(JavaValue):
-    def __init__(self, app_name, ppml_args):
+    def __init__(self, app_name, ppml_args=None, spark_conf=None):
         self.bigdl_type = "float"
         conf = {"spark.app.name": app_name,
                 "spark.hadoop.io.compression.codecs": "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec"}
+        if spark_conf:
+            for (k, v) in spark_conf.getAll():
+                conf[k] = v
         if ppml_args:
             kms_type = ppml_args.get("kms_type", "SimpleKeyManagementService")
             conf["spark.bigdl.kms.type"] = kms_type
@@ -97,6 +101,9 @@ class EncryptedDataFrameReader:
     def parquet(self, path):
         return callBigDlFunc(self.bigdl_type, "parquet", self.df_reader, path)
 
+    def json(self, path):
+        return callBigDlFunc(self.bigdl_type, "json", self.df_reader, path)
+
 
 class EncryptedDataFrameWriter:
     support_mode = {"overwrite", "append", "ignore", "error", "errorifexists"}
@@ -121,6 +128,9 @@ class EncryptedDataFrameWriter:
 
     def parquet(self, path):
         return callBigDlFunc(self.bigdl_type, "parquet", self.df_writer, path)
+
+    def json(self, path):
+        return callBigDlFunc(self.bigdl_type, "json", self.df_writer, path)
 
 
 class CryptoMode(Enum):

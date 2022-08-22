@@ -121,7 +121,7 @@ class PreProcessing()
     } else {
       java.util.Base64.getDecoder.decode(s)
     }
-    val mat = OpenCVMethod.fromImageBytes(byteBuffer, Imgcodecs.IMREAD_UNCHANGED)
+    val mat = OpenCVMethod.fromImageBytes(byteBuffer, Imgcodecs.IMREAD_COLOR)
     if (helper.imageResize != "") {
       val hw = helper.imageResize.split(",")
       Log4Error.invalidOperationError(hw.length == 2, "Image dim must be 2")

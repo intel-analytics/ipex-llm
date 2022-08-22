@@ -13,20 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+import os
+import pytest
 import shutil
 import tempfile
 from unittest import TestCase
-import time
 
-import time
 import numpy as np
-import pytest
 import tensorflow as tf
 
 from bigdl.orca.learn.tf2 import Estimator
 from bigdl.orca import OrcaContext
 
-import os
 
 resource_path = os.path.join(
     os.path.realpath(os.path.dirname(__file__)), "../../../../resources")
@@ -126,7 +125,7 @@ class TestTFEstimator(TestCase):
                 model_creator=model_creator,
                 verbose=True,
                 config=config,
-                workers_per_node=2,
+                workers_per_node=3,
                 backend="spark",
                 model_dir=temp_dir)
 
@@ -595,6 +594,32 @@ class TestTFEstimator(TestCase):
             assert np.array_equal(expect_res, pred_res)
         finally:
             shutil.rmtree(temp_dir)
+    
+    def test_save_load_model_architecture(self):
+        config = {
+            "lr": 0.2
+        }
+        import uuid
+        model_path = os.path.join(tempfile.gettempdir(), str(uuid.uuid1()) + ".json")
+        try:
+            model = simple_model(config)
+            with open(model_path, "w") as f:
+                f.write(model.to_json())
+        
+            from bigdl.dllib.utils.file_utils import enable_hdfs_load
+
+            @enable_hdfs_load
+            def load_model_architecture(path):
+                with open(path, "rb") as f:
+                    model = tf.keras.models.model_from_json(f.read())
+                return model
+
+            model_load = load_model_architecture(model_path)
+            assert model.summary() == model_load.summary()
+        finally:
+            if os.path.exists(model_path):
+                os.remove(model_path)
+
 
 
 if __name__ == "__main__":

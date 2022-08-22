@@ -15,10 +15,12 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.kubernetes.file.upload.path=file:///tmp \
     --conf spark.kubernetes.executor.podNamePrefix="sparktpch" \
     --conf spark.kubernetes.sgx.log.level=off \
-    --num-executors 1 \
-    --executor-cores 8 \
-    --executor-memory 16g \
-    --driver-memory 16g \
+    --num-executors 2 \
+    --executor-cores 4 \
+    --executor-memory 4g \
+    --driver-memory 1g \
+    --conf spark.kubernetes.driverEnv.SGX_DRIVER_JVM_MEM_SIZE="1G" \
+    --conf spark.executorEnv.SGX_EXECUTOR_JVM_MEM_SIZE="4G" \
     --verbose \
     local:/opt/spark/jars/spark-tpc-h-queries_2.12-1.0.jar \
     /host/data/tpch_data/ /host/data/tpch_output/

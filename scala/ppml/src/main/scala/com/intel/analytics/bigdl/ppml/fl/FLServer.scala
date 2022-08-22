@@ -50,6 +50,8 @@ class FLServer private[ppml](val _args: Array[String] = null) extends GrpcServer
   private val logger = LogManager.getLogger(classOf[FLServer])
   configPath = "ppml-conf.yaml"
   var clientNum: Int = 1
+  val fgBoostConfig = new FLConfig()
+  parseConfig()
 
   def setClientNum(clientNum: Int): Unit = {
     this.clientNum = clientNum
@@ -63,12 +65,22 @@ class FLServer private[ppml](val _args: Array[String] = null) extends GrpcServer
       clientNum = flHelper.clientNum
       certChainFilePath = flHelper.certChainFilePath
       privateKeyFilePath = flHelper.privateKeyFilePath
+      fgBoostConfig.setModelPath(flHelper.fgBoostServerModelPath)
     }
+  }
 
-    // start all services without providing service list
-    // start all services without providing service list
+  override def build(): Unit = {
+    addService()
+    super.build()
+  }
+
+  override def buildWithTls(): Unit = {
+    addService()
+    super.buildWithTls()
+  }
+  def addService(): Unit = {
     serverServices.add(new PSIServiceImpl(clientNum))
     serverServices.add(new NNServiceImpl(clientNum))
-    serverServices.add(new FGBoostServiceImpl(clientNum))
+    serverServices.add(new FGBoostServiceImpl(clientNum, fgBoostConfig))
   }
 }

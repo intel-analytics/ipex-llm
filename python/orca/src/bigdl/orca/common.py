@@ -172,7 +172,7 @@ def _check_python_micro_version():
                           f"with micro version >= 10 (e.g. 3.{sys.version_info[1]}.10)")
 
 
-def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", num_nodes=1,
+def init_orca_context(cluster_mode=None, runtime="spark", cores=None, memory="2g", num_nodes=1,
                       init_ray_on_spark=False, **kwargs):
     """
     Creates or gets a SparkContext for different Spark cluster modes (and launch Ray services
@@ -180,7 +180,8 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
 
     :param runtime: The runtime for backend. One of "ray" and "spark". Default to be "spark".
     :param cluster_mode: The mode for the Spark cluster. One of "local", "yarn-client",
-           "yarn-cluster", "k8s-client", "k8s-cluster" and "standalone".
+           "yarn-cluster", "k8s-client", "k8s-cluster", "standalone", "spark-submit"
+           and "bigdl-submit".
            You are highly recommended to install and run bigdl through pip, which is more
            convenient.
 
@@ -195,10 +196,14 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
            For "k8s-client" and "k8s-cluster", you are supposed to additionally specify the
            arguments master and container_image.
     :param runtime: The runtime for backend. One of "ray" and "spark". Default to be "spark".
-    :param cores: The number of cores to be used on each node. Default to be 2.
+    :param cores: The number of cores to be used on each node.
+           For Spark local mode, default to use all the cores on the node.
+           For other cluster_mode, default to use 2 cores per node.
+           You are highly recommended to set this value by yourself,
+           instead of using the default one.
     :param memory: The memory allocated for each node. Default to be '2g'.
     :param num_nodes: The number of nodes to be used in the cluster. Default to be 1.
-           For Spark local, num_nodes should always be 1 and you don't need to change it.
+           For Spark local mode, num_nodes should always be 1 and you don't need to change it.
     :param init_ray_on_spark: Whether to launch Ray services across the cluster.
            Default to be False and in this case the Ray cluster would be launched lazily when
            Ray is involved in Project Orca.
@@ -210,6 +215,15 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
     print("Initializing orca context")
     import atexit
     atexit.register(stop_orca_context)
+    if not cores:
+        if cluster_mode == "local" and runtime == "spark":
+            cores = "*"
+            print("For Spark local mode, default to use all the cores on the node.")
+        else:
+            cores = 2
+            import warnings
+            warnings.warn("Cores not specified, using 2 cores per node by default.", Warning)
+
     if runtime == "ray":
         invalidInputError(cluster_mode is None,
                           "Currently, cluster_mode is not supported for ray runtime and"
@@ -250,6 +264,11 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
                 sc = init_spark_on_local(cores, **spark_args)
             elif cluster_mode == "spark-submit":
                 from bigdl.dllib.nncontext import init_nncontext
+                if "conf" in spark_args and spark_args["conf"] is not None:
+                    warnings.warn("For spark-submit cluster_mode, all conf should be "
+                                  + "specified in the spark-submit command, but got "
+                                  + repr(spark_args["conf"]) + ", ignored", Warning)
+                    spark_args["conf"] = None
                 sc = init_nncontext(**spark_args)
             elif cluster_mode.startswith("yarn"):  # yarn, yarn-client or yarn-cluster
                 hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
@@ -318,7 +337,8 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
             else:
                 invalidInputError(False,
                                   "cluster_mode can only be local, yarn-client, yarn-cluster,"
-                                  "k8s-client or standalone, "
+                                  "k8s-client, k8s-cluster, standalone,"
+                                  "spark-submit or bigdl-submit, "
                                   "but got: %s".format(cluster_mode))
         ray_args = {}
         for key in ["redis_port", "password", "object_store_memory", "verbose", "env",

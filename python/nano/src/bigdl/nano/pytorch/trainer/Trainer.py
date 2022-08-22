@@ -16,28 +16,28 @@
 import copy
 from logging import warning
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Union
 import pytorch_lightning as pl
 import torch
-from pytorch_lightning import LightningModule
 from torch import nn
 from torch.nn.modules.loss import _Loss
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from torch.optim.lr_scheduler import _LRScheduler
 import yaml
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11, \
-    LIGHTNING_VERSION_LESS_1_6
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11
 from bigdl.nano.pytorch.utils import ChannelsLastCallback
+from bigdl.nano.pytorch.algorithms import SelectiveBackprop
 from bigdl.nano.pytorch.amp import BF16Model
-from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
+from bigdl.nano.pytorch.lightning import LightningModule
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
 from bigdl.nano.pytorch.plugins.ddp_subprocess import DDPSubprocessPlugin
 
 from bigdl.nano.deps.automl.hpo_api import create_hpo_searcher, check_hpo_status
 from bigdl.nano.deps.ray.ray_api import distributed_ray
-from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, create_IPEXAccelerator_1_9
-from bigdl.nano.openvino import PytorchOpenVINOModel, load_openvino_model
+from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel, load_openvino_model
+from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, create_IPEXAccelerator_1_9, \
+    PytorchIPEXJITModel, PytorchIPEXJITBF16Model, load_ipexjit_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import PytorchONNXRuntimeModel, \
     load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model, quantize as inc_quantize
@@ -62,12 +62,13 @@ class Trainer(pl.Trainer):
                  cpu_for_each_process: Optional[List[List[int]]] = None,
                  use_hpo=False,
                  channels_last: bool = False,
+                 auto_lr: Union[int, bool] = True,
                  *args: Any, **kwargs: Any) -> None:
         """
         A pytorch lightning trainer that uses bigdl-nano optimization.
 
         :param num_processes: number of processes in distributed training. default: 4.
-        :param use_ipex: whether we use ipex as accelerator for trainer. default: True.
+        :param use_ipex: whether we use ipex as accelerator for trainer. default: False.
         :param cpu_for_each_process: A list of length `num_processes`, each containing a list of
             indices of cpus each process will be using. default: None, and the cpu will be
             automatically and evenly distributed among processes.
@@ -92,6 +93,9 @@ class Trainer(pl.Trainer):
 
         accelerator = None
 
+        if "algorithms" in kwargs:
+            kwargs = self._add_algorithms(kwargs)
+
         if channels_last:
             callbacks = kwargs.get("callbacks")
             if callbacks:
@@ -108,18 +112,10 @@ class Trainer(pl.Trainer):
         self.use_ipex = use_ipex
 
         if num_processes == 1:
-            if LIGHTNING_VERSION_LESS_1_6:
-                if self.use_ipex:
-                    if TORCH_VERSION_LESS_1_10:
-                        accelerator = create_IPEXAccelerator_1_9(enable_bf16=enable_bf16)
-                    else:
-                        accelerator = create_IPEXAccelerator(enable_bf16=enable_bf16)
-                super().__init__(accelerator=accelerator, *args, **kwargs)  # type: ignore
-            else:
-                from bigdl.nano.pytorch.strategies import create_IPEXStrategy
-                strategy = create_IPEXStrategy(enable_bf16=enable_bf16) if self.use_ipex else None
-                kwargs["strategy"] = strategy
-                super().__init__(*args, **kwargs)
+            from bigdl.nano.pytorch.strategies import create_IPEXStrategy
+            strategy = create_IPEXStrategy(enable_bf16=enable_bf16) if self.use_ipex else None
+            kwargs["strategy"] = strategy
+            super().__init__(*args, **kwargs)
         else:
             plugin = None
             invalidInputError(distributed_backend in distributed_backends,
@@ -131,54 +127,45 @@ class Trainer(pl.Trainer):
                                       f"`checkpoint_callback` set to False. "
                                       f"Currently, disable checkpoint callback make "
                                       f"distributed training backend work incorrect")
-            if LIGHTNING_VERSION_LESS_1_6:
-                if distributed_backend == "spawn":
-                    plugin = DDPSpawnPlugin(num_processes=num_processes,
+            if distributed_backend == "spawn":
+                from bigdl.nano.pytorch.strategies import DDPSpawnStrategy
+                strategy = DDPSpawnStrategy(num_processes=num_processes,
                                             cpu_for_each_process=cpu_for_each_process,
                                             use_ipex=self.use_ipex,
-                                            enable_bf16=enable_bf16)
-                elif distributed_backend == "subprocess":
-                    plugin = DDPSubprocessPlugin(num_processes=num_processes,
+                                            enable_bf16=enable_bf16,
+                                            auto_lr=auto_lr)
+            elif distributed_backend == "subprocess":
+                from bigdl.nano.pytorch.strategies import DDPSubprocessStrategy
+                strategy = DDPSubprocessStrategy(num_processes=num_processes,
                                                  cpu_for_each_process=cpu_for_each_process,
                                                  use_ipex=self.use_ipex,
-                                                 enable_bf16=enable_bf16)
-                elif distributed_backend == "ray":
-                    # Import RayPlugins may entangle with openmp even if it has not been used,
-                    # which leads to an unacceptably low performance.
-                    # So we import when we need.
-                    plugin = distributed_ray(num_workers=num_processes,  # type: ignore
-                                             use_ipex=self.use_ipex,
-                                             enable_bf16=enable_bf16)
-                if self.use_ipex and TORCH_VERSION_LESS_1_10:
-                    accelerator = create_IPEXAccelerator_1_9(training_type_plugin=plugin,
-                                                             enable_bf16=enable_bf16)
-                super().__init__(accelerator=accelerator, plugins=[plugin],  # type: ignore
-                                 *args, **kwargs)
-            else:
-                if distributed_backend == "spawn":
-                    from bigdl.nano.pytorch.strategies import DDPSpawnStrategy
-                    strategy = DDPSpawnStrategy(num_processes=num_processes,
-                                                cpu_for_each_process=cpu_for_each_process,
-                                                use_ipex=self.use_ipex,
-                                                enable_bf16=enable_bf16)
-                elif distributed_backend == "subprocess":
-                    from bigdl.nano.pytorch.strategies import DDPSubprocessStrategy
-                    strategy = DDPSubprocessStrategy(num_processes=num_processes,
-                                                     cpu_for_each_process=cpu_for_each_process,
-                                                     use_ipex=self.use_ipex,
-                                                     enable_bf16=enable_bf16)
-                elif distributed_backend == "ray":
-                    from bigdl.nano.pytorch.strategies import create_RayStrategy
-                    strategy = create_RayStrategy(num_workers=num_processes,
-                                                  use_ipex=self.use_ipex,
-                                                  enable_bf16=enable_bf16)
-                kwargs["strategy"] = strategy
-                super().__init__(*args, **kwargs)
+                                                 enable_bf16=enable_bf16,
+                                                 auto_lr=auto_lr)
+            elif distributed_backend == "ray":
+                from bigdl.nano.pytorch.strategies import create_RayStrategy
+                strategy = create_RayStrategy(num_workers=num_processes,
+                                              use_ipex=self.use_ipex,
+                                              enable_bf16=enable_bf16,
+                                              auto_lr=auto_lr)
+            kwargs["strategy"] = strategy
+            super().__init__(*args, **kwargs)
 
         if use_hpo:
             self.hposearcher = create_hpo_searcher(trainer=self, num_processes=num_processes)
         else:
             self.hposearcher = None
+
+    def _add_algorithms(self, kwargs):
+        callbacks = kwargs.get("callbacks")
+        for algorithm in kwargs['algorithms']:
+            if isinstance(algorithm, SelectiveBackprop):
+                if callbacks:
+                    callbacks.append(algorithm)
+                else:
+                    kwargs["callbacks"] = [algorithm]
+        del kwargs['algorithms']
+
+        return kwargs
 
     @staticmethod
     def compile(model: nn.Module,
@@ -211,7 +198,7 @@ class Trainer(pl.Trainer):
                               " is a pytorch-lightning model.")
             pl_model = model
         else:
-            pl_model = LightningModuleFromTorch(model, loss, optimizer, scheduler, metrics)
+            pl_model = LightningModule(model, loss, optimizer, scheduler, metrics)
 
         return pl_model
 
@@ -220,6 +207,8 @@ class Trainer(pl.Trainer):
                resume: bool = False,
                target_metric=None,
                n_parallels=1,
+               acceleration=False,
+               input_sample=None,
                **kwargs):
         """
         Run HPO search. It will be called in Trainer.search().
@@ -230,6 +219,11 @@ class Trainer(pl.Trainer):
         :param target_metric: the object metric to optimize,
             defaults to None.
         :param n_parallels: the number of parallel processes for running trials.
+        :param acceleration: Whether to automatically consider the model after
+            inference acceleration in the search process. It will only take
+            effect if target_metric contains "latency". Default value is False.
+        :param input_sample: A set of inputs for trace, defaults to None if you have
+            trace before or model is a LightningModule with any dataloader attached.
         :return: the model with study meta info attached.
         """
         if not check_hpo_status(self.hposearcher):
@@ -240,6 +234,8 @@ class Trainer(pl.Trainer):
                                        resume=resume,
                                        target_metric=target_metric,
                                        n_parallels=n_parallels,
+                                       acceleration=acceleration,
+                                       input_sample=input_sample,
                                        **kwargs)
 
     def search_summary(self):
@@ -257,6 +253,7 @@ class Trainer(pl.Trainer):
     def quantize(model,  # remove the type requirement for type checking
                  precision: str = 'int8',
                  accelerator=None,
+                 use_ipex=False,
                  calib_dataloader: DataLoader = None,
                  metric: Metric = None,
                  accuracy_criterion: dict = None,
@@ -317,6 +314,15 @@ class Trainer(pl.Trainer):
         """
         if precision == 'bf16':
             if accelerator is None:
+                if use_ipex:
+                    invalidInputError(not TORCH_VERSION_LESS_1_10,
+                                      "torch version should >=1.10 to use ipex")
+                    use_jit = (accelerator == "jit")
+                    channels_last = export_kwargs["channels_last"] \
+                        if "channels_last" in export_kwargs else None
+                    return PytorchIPEXJITBF16Model(model, input_sample=input_sample,
+                                                   use_ipex=use_ipex, use_jit=use_jit,
+                                                   channels_last=channels_last)
                 bf16_model = BF16Model(model)
                 return bf16_model
             else:
@@ -348,7 +354,6 @@ class Trainer(pl.Trainer):
                             model,
                             input_sample=input_sample,
                             accelerator='onnxruntime',
-                            onnxruntime_session_options=onnxruntime_session_options,
                             **export_kwargs)
                 """
                 If accelerator==None, quantized model returned should be an object of PytorchModel
@@ -364,7 +369,8 @@ class Trainer(pl.Trainer):
                                     tuning_strategy=tuning_strategy,
                                     accuracy_criterion=accuracy_criterion,
                                     timeout=timeout,
-                                    max_trials=max_trials)
+                                    max_trials=max_trials,
+                                    onnxruntime_session_options=onnxruntime_session_options)
 
             elif accelerator == 'openvino':
                 model_type = type(model).__name__
@@ -411,6 +417,7 @@ class Trainer(pl.Trainer):
     def trace(model: nn.Module,
               input_sample=None,
               accelerator=None,
+              use_ipex=False,
               onnxruntime_session_options=None,
               **export_kwargs):
         """
@@ -422,39 +429,54 @@ class Trainer(pl.Trainer):
         :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
                              model is a LightningModule with any dataloader attached.
         :param accelerator: The accelerator to use, defaults to None meaning staying in Pytorch
-                            backend. 'openvino' and 'onnxruntime' are supported for now.
+                            backend. 'openvino', 'onnxruntime' and 'jit' are supported for now.
+        :param use_ipex: whether we use ipex as accelerator for inferencing. default: False.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
-        :param **export_kwargs: will be passed to torch.onnx.export function.
-        :return: Model with different acceleration(OpenVINO/ONNX Runtime).
+        :param **kwargs: other extra advanced settings include
+                         1. those be passed to torch.onnx.export function, only valid when
+                         accelerator='onnxruntime'/'openvino', otherwise will be ignored.
+                         2. if channels_last is set and use_ipex=True, we will transform the
+                         data to be channels last according to the setting. Defaultly, channels_last
+                         will be set to True if use_ipex=True.
+        :return: Model with different acceleration.
         """
         invalidInputError(
             isinstance(model, nn.Module) and not isinstance(model, AcceleratedLightningModule),
             "Expect a nn.Module instance that is not traced or quantized"
             "but got type {}".format(type(model))
         )
-        if accelerator == 'openvino':
+        if accelerator == 'openvino':  # openvino backend will not care about ipex usage
             return PytorchOpenVINOModel(model, input_sample, **export_kwargs)
-        if accelerator == 'onnxruntime':
+        if accelerator == 'onnxruntime':  # onnxruntime backend will not care about ipex usage
             return PytorchONNXRuntimeModel(model, input_sample, onnxruntime_session_options,
                                            **export_kwargs)
+        if accelerator == 'jit' or use_ipex:
+            if use_ipex:
+                invalidInputError(not TORCH_VERSION_LESS_1_10,
+                                  "torch version should >=1.10 to use ipex")
+            use_jit = (accelerator == "jit")
+            channels_last = export_kwargs["channels_last"]\
+                if "channels_last" in export_kwargs else None
+            return PytorchIPEXJITModel(model, input_sample=input_sample, use_ipex=use_ipex,
+                                       use_jit=use_jit, channels_last=channels_last)
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
     @staticmethod
-    def save(model: LightningModule, path):
+    def save(model: pl.LightningModule, path):
         """
         Save the model to local file.
 
-        :param model: Any model of torch.nn.Module, including PytorchOpenVINOModel,
-         PytorchONNXModel.
+        :param model: Any model of torch.nn.Module, including all models accelareted by
+               Trainer.trace/Trainer.quantize.
         :param path: Path to saved model. Path should be a directory.
         """
         path = Path(path)
-        Path.mkdir(path, exist_ok=True)
+        path.mkdir(parents=path.parent, exist_ok=True)
         if hasattr(model, '_save'):
             model._save(path)
         else:
-            # typically for models of nn.Module, LightningModule and LightningModuleFromTorch type
+            # typically for models of nn.Module, pl.LightningModule type
             meta_path = Path(path) / "nano_model_meta.yml"
             with open(meta_path, 'w+') as f:
                 metadata = {
@@ -466,13 +488,15 @@ class Trainer(pl.Trainer):
             torch.save(model.state_dict(), checkpoint_path)
 
     @staticmethod
-    def load(path, model: LightningModule = None):
+    def load(path, model: pl.LightningModule = None):
         """
         Load a model from local.
 
         :param path: Path to model to be loaded. Path should be a directory.
-        :param model: Required FP32 model to load pytorch model. Optional for ONNX/OpenVINO.
-        :return: Model with different acceleration(None/OpenVINO/ONNX Runtime) or
+        :param model: Required FP32 model to load pytorch model, it is needed if you accelerated
+               the model with accelerator=None by Trainer.trace/Trainer.quantize. model
+               should be set to None if you choose accelerator="onnxruntime"/"openvino"/"jit".
+        :return: Model with different acceleration(None/OpenVINO/ONNX Runtime/JIT) or
                  precision(FP32/FP16/BF16/INT8).
         """
         path = Path(path)
@@ -494,8 +518,10 @@ class Trainer(pl.Trainer):
             return load_onnxruntime_model(path)
         if model_type == 'PytorchQuantizedModel':
             return load_inc_model(path, model, 'pytorch')
+        if model_type == 'PytorchIPEXJITModel':
+            return load_ipexjit_model(path, model)
         if isinstance(model, nn.Module):
-            # typically for models of nn.Module, LightningModule and LightningModuleFromTorch type
+            # typically for models of nn.Module, pl.LightningModule type
             model = copy.deepcopy(model)
             checkpoint_path = metadata.get('checkpoint', None)
             if checkpoint_path:
@@ -521,12 +547,6 @@ class Trainer(pl.Trainer):
         if self.use_ipex and TORCH_VERSION_LESS_1_10 and not weights_only:
             self.model.to('cpu')
 
-        if LIGHTNING_VERSION_LESS_1_6:
-            super().save_checkpoint(filepath, weights_only)
-        else:
-            super().save_checkpoint(filepath, weights_only, storage_options)    # type: ignore
+        super().save_checkpoint(filepath, weights_only, storage_options)    # type: ignore
         if self.use_ipex and TORCH_VERSION_LESS_1_10 and not weights_only:
-            if LIGHTNING_VERSION_LESS_1_6:
-                self.model.to(self.training_type_plugin.root_device)
-            else:
-                self.model.to(self.strategy.root_device)    # type: ignore
+            self.model.to(self.strategy.root_device)    # type: ignore
