@@ -111,12 +111,20 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
             warning("You are not running BF16 model with ISA support."
                     " The performance will be quite low.")
 
-    @autocast()
+    def autocast_context_manager(self):
+        return autocast(enabled=self.dtype == torch.bfloat16)
+
+    @contextlib.contextmanager
+    def forward_context(self):
+        with self.autocast_context_manager():
+            yield
+
     def forward_step(self, *inputs):
-        if self.channels_last:
-            inputs = tuple(map(lambda x: x.to(memory_format=torch.channels_last), inputs))
-        self._bf16_check(*inputs)
-        return self.model(*inputs)
+        with self.forward_context():
+            if self.channels_last:
+                inputs = tuple(map(lambda x: x.to(memory_format=torch.channels_last), inputs))
+            self._bf16_check(*inputs)
+            return self.model(*inputs)
 
     @property
     def status(self):
