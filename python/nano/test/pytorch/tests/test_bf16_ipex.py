@@ -37,7 +37,9 @@ class Pytorch1_9:
 
 
 class CaseWithoutAVX512:
-    def test_unsupported_HW_or_OS(self):
+    @patch('bigdl.nano.deps.ipex.ipex_inference_bf16_model.PytorchIPEXJITBF16Model._has_bf16_isa', new_callable=PropertyMock)
+    def test_unsupported_HW_or_OS(self, mocked_has_bf16_isa):
+        mocked_has_bf16_isa.return_value = False
         trainer = Trainer(max_epochs=1)
         model = resnet18(num_classes=10)
 
@@ -49,10 +51,12 @@ class CaseWithoutAVX512:
             bf16_model = trainer.quantize(model, precision='bf16', use_ipex=True)
 
     @patch.dict('os.environ', {'ALLOW_NON_BF16_ISA': "1"})
-    def test_bf16_common(self):
+    @patch('bigdl.nano.deps.ipex.ipex_inference_bf16_model.PytorchIPEXJITBF16Model._has_bf16_isa', new_callable=PropertyMock)
+    def test_bf16_common(self, mocked_has_bf16_isa):
         """
         Debug mode. Allow run model without IPEX BF16 optimization.
         """
+        mocked_has_bf16_isa.return_value = False
         trainer = Trainer(max_epochs=1)
         model = resnet18(num_classes=10)
 
@@ -91,7 +95,6 @@ class Pytorch1_11(CaseWithoutAVX512):
         y = torch.ones((10,), dtype=torch.long)
 
         bf16_model = trainer.quantize(model, precision='bf16', use_ipex=True)
-        bf16_model._max_bf16_isa = MagicMock(return_value="AVX512")
         y_hat = bf16_model(x)
 
         assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
