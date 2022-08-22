@@ -29,6 +29,7 @@ from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xsha
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
     process_xshards_of_pandas_dataframe, make_data_creator
 from bigdl.orca.data.utils import process_spark_xshards
+from bigdl.orca.data.file import put_local_file_to_remote, put_local_files_with_prefix_to_remote
 from bigdl.orca.ray import RayContext
 
 logger = logging.getLogger(__name__)
@@ -480,7 +481,6 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
         return model
 
-    @enable_multi_fs_save
     def save_weights(self, filepath, overwrite=True, save_format=None, options=None):
         """
         Save the model weights at the provided filepath.
@@ -499,12 +499,28 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         :return:
         """
         model = self.get_model()
-        model.save_weights(filepath, overwrite, save_format, options)
+        if is_local_path(filepath):
+            model.save_weights(filepath, overwrite, save_format, options)
+        else:
+            file_name = os.path.basename(filepath)
+            temp_dir = tempfile.mkdtemp()
+            temp_path = os.path.join(temp_dir, file_name)
+            try:
+                model.save_weights(filepath, overwrite, save_format, options)
+                if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
+                # hdf5 format
+                    put_local_file_to_remote(temp_path, filepath, over_write=overwrite)
+                else:
+                    # tf format
+                    remote_dir = os.path.dirname(filepath)
+                    put_local_files_with_prefix_to_remote(temp_path, remote_dir,
+                                                          over_write=overwrite)
+            finally:
+                shutil.rmtree(temp_dir)    
 
-    @enable_multi_fs_load
-    def load_weights(self, filepath, by_name=False, skip_mismatch=False, option=None):
+    def load_weights(self, filepath, by_name=False, skip_mismatch=False, options=None):
         """
-        Load the model weights at the provided filepath.
+        Load tensorflow keras model weights from the provided path.
 
         param filepath: String, path to the weights file to load. For weight files in TensorFlow
               format, this is the file prefix (the same as was passed to save_weights). This can
@@ -518,8 +534,16 @@ class TensorFlow2Estimator(OrcaRayEstimator):
               weights.
         :return:
         """
-        results = [
-            worker.load_weights.remote(filepath, by_name, skip_mismatch, option)
-            for worker in self.remote_workers
-        ]
-        ray.get(results)
+        params = dict(
+            filepath=filepath,
+            by_name=by_name,
+            skip_mismatch=skip_mismatch,
+            options=options
+        )
+        if is_local_path(filepath):
+            ray.get([worker.load_weights.remote(**params)
+                     for worker in self.remote_workers])
+        else:
+            ray.get([worker.load_remote_weights.remote(**params)
+                     for worker in self.remote_workers])
+
