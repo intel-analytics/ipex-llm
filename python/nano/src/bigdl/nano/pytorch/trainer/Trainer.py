@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from cmath import log
 import copy
 from logging import warning
 from pathlib import Path
@@ -282,6 +283,7 @@ class Trainer(pl.Trainer):
                  max_trials: int = None,
                  input_sample=None,
                  onnxruntime_session_options=None,
+                 logging=True,
                  **export_kwargs):
         """
         Calibrate a Pytorch-Lightning model for post-training quantization.
@@ -326,6 +328,8 @@ class Trainer(pl.Trainer):
         :param input_sample:      An input example to convert pytorch model into ONNX/OpenVINO.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
+        :param logging: whether to log detailed information of model conversion, only valid when
+                        accelerator='openvino', otherwise will be ignored. default: True.
         :param **export_kwargs: will be passed to torch.onnx.export function.
         :return:            A accelerated Pytorch-Lightning Model if quantization is sucessful.
         """
@@ -398,6 +402,7 @@ class Trainer(pl.Trainer):
                     model = Trainer.trace(model,
                                           input_sample=input_sample,
                                           accelerator='openvino',
+                                          logging=logging,
                                           **export_kwargs)
                 invalidInputError(type(model).__name__ == 'PytorchOpenVINOModel',
                                   "Invalid model to quantize. Please use a nn.Module or a model "
@@ -436,6 +441,7 @@ class Trainer(pl.Trainer):
               accelerator=None,
               use_ipex=False,
               onnxruntime_session_options=None,
+              logging=True,
               **export_kwargs):
         """
         Trace a pytorch model and convert it into an accelerated module for inference.
@@ -450,6 +456,8 @@ class Trainer(pl.Trainer):
         :param use_ipex: whether we use ipex as accelerator for inferencing. default: False.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
+        :param logging: whether to log detailed information of model conversion, only valid when
+                        accelerator='openvino', otherwise will be ignored. default: True.
         :param **kwargs: other extra advanced settings include
                          1. those be passed to torch.onnx.export function, only valid when
                          accelerator='onnxruntime'/'openvino', otherwise will be ignored.
@@ -464,7 +472,7 @@ class Trainer(pl.Trainer):
             "but got type {}".format(type(model))
         )
         if accelerator == 'openvino':  # openvino backend will not care about ipex usage
-            return PytorchOpenVINOModel(model, input_sample, **export_kwargs)
+            return PytorchOpenVINOModel(model, input_sample, logging, **export_kwargs)
         if accelerator == 'onnxruntime':  # onnxruntime backend will not care about ipex usage
             return PytorchONNXRuntimeModel(model, input_sample, onnxruntime_session_options,
                                            **export_kwargs)
