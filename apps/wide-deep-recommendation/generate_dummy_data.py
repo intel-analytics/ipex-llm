@@ -18,8 +18,8 @@ import random
 import os
 from argparse import ArgumentParser
 from pyspark.sql.types import StructType, StructField, StringType, LongType, BooleanType
-from bigdl.friesian.feature import FeatureTable
 from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
+from bigdl.friesian.feature import FeatureTable
 
 id_list = ["0", "1", "2", "3", "4", "5", "6", "7", "8",
            "9", "A", "B", "C", "D", "E", "F", "G", "H",
