@@ -77,6 +77,7 @@ def run_client(load_model):
                                    optimizer_cls=torch.optim.SGD,
                                    optimizer_args={'lr':1e-5},
                                    target='localhost:8980')
+        ppl.load_server_model('/tmp/pytorch_server_model')
         response = ppl.fit(x, y, 5)
     else:
         model = LocalModel(len(df_x.columns))
@@ -91,6 +92,7 @@ def run_client(load_model):
                                    server_model=server_model)
         response = ppl.fit(x, y, 5)
         torch.save(ppl.model, '/tmp/pytorch_client_model_1.pt')
+        ppl.save_server_model('/tmp/pytorch_server_model')
     result = ppl.predict(x)
     print(result[:5])
 
