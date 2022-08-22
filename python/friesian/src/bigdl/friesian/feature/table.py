@@ -44,6 +44,7 @@ from typing import (
     Tuple,
     Union,
 )
+NUMERIC_TYPE = TypeVar('NUMERIC_TYPE', int, float, complex)
 
 if TYPE_CHECKING:
     from pandas.core.frame import DataFrame as PandasDataFrame
@@ -51,7 +52,6 @@ if TYPE_CHECKING:
     from pyspark.sql import Row
     from pyspark.sql.dataframe import DataFrame as SparkDataFrame
     from pyspark.sql.types import StructType
-    NUMERIC_TYPE = TypeVar('NUMERIC_TYPE', int, float, complex)
 
 
 JAVA_INT_MIN = -2147483648
@@ -96,7 +96,7 @@ class Table:
         paths: str,
         delimiter: str = ",",
         header: bool = False,
-        names: Optional[Union[List[str], str]] = None,
+        names: Optional[Union[List[str], str]]=None,
         dtype: Optional[Union[List[str], Dict[str, str], str]]=None
     ) -> "SparkDataFrame":
         if not isinstance(paths, list):
@@ -311,7 +311,7 @@ class Table:
 
     def clip(
         self,
-        columns: Optional[Union[List[str], str]] = None,
+        columns: Optional[Union[List[str], str]]=None,
         min: Optional[NUMERIC_TYPE] = None,
         max: Optional[NUMERIC_TYPE] = None
     ) -> "Table":
@@ -340,7 +340,7 @@ class Table:
 
     def log(
         self,
-        columns: Optional[Union[List[str], str]] = None,
+        columns: Optional[Union[List[str], str]]=None,
         clipping: bool = True
     ) -> "Table":
         """

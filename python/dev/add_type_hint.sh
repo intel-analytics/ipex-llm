@@ -17,43 +17,38 @@
 #
 
 
-# set -ex
-# . `dirname $0`/../prepare_env.sh
+hint_module_name="friesian"
+if [ "$1" ]; then
+    hint_module_name=$1
+    echo hint_module_name:${hint_module_name}
+fi
+
+hint_submodule_name="feature"
+if [ "$2" ]; then
+    hint_submodule_name=$2
+    echo hint_submodule_name:${hint_submodule_name}
+fi
 
 cd "`dirname $0`"
-export MT_DB_PATH="$(pwd)/friesian_hint.sqlite3"
+export MT_DB_PATH="$(pwd)/${hint_module_name}_hint.sqlite3"
 echo $MT_DB_PATH
 
 export PYSPARK_PYTHON=python
 export PYSPARK_DRIVER_PYTHON=python
 
-cd ../../
+cd ../${hint_module_name}
 echo "Automatically Add Type Hint"
-
-test_dir_name="data"
-if [ "$1" ]; then
-    test_dir_name=$1
-    echo test_dir_name:${test_dir_name}
-fi
 
 
 if [ -f $MT_DB_PATH ];then
     rm $MT_DB_PATH
 fi
 
-for file in $(find test/bigdl/friesian/${test_dir_name}  -maxdepth 1 -name test_*.py)
+for file in $(find test/bigdl/${hint_module_name}/${hint_submodule_name} -name test_*.py)
 do
     echo $file
     monkeytype run $file
 done
 
 cd -
-# for module in $add_hint_modules
-# do
-#     monkeytype apply $module
-# done
-
-# if [ -f $MT_DB_PATH ];then
-#     rm $MT_DB_PATH
-# fi
 unset MT_DB_PATH
