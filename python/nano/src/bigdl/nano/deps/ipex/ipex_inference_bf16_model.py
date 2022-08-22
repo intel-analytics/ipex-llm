@@ -112,7 +112,7 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                     " The performance will be quite low.")
 
     def autocast_context_manager(self):
-        return autocast(enabled=self.dtype == torch.bfloat16)
+        return autocast(enabled=self._has_bf16_isa)
 
     @contextlib.contextmanager
     def forward_context(self):

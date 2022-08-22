@@ -132,12 +132,12 @@ class Pytorch1_12(Pytorch1_11):
 
 TORCH_VERSION_CLS = Pytorch1_12
 
-if not check_avx512():
-    print("IPEX Inference Model Without AVX512")
-    TORCH_VERSION_CLS = CaseWithoutAVX512
-elif TORCH_VERSION_LESS_1_10:
+if TORCH_VERSION_LESS_1_10:
     print("ipex 1.9")
     TORCH_VERSION_CLS = Pytorch1_9
+elif not check_avx512():
+    print("IPEX Inference Model Without AVX512")
+    TORCH_VERSION_CLS = CaseWithoutAVX512
 elif TORCH_VERSION_LESS_1_12:
     print("ipex 1.11")
     TORCH_VERSION_CLS = Pytorch1_11
