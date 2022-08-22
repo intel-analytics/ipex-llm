@@ -41,7 +41,7 @@ from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xsha
 from bigdl.orca.learn.log_monitor import start_log_server
 from bigdl.orca.data.shard import SparkXShards
 from bigdl.orca import OrcaContext
-from bigdl.dllib.utils.log4Error import invalidInputError
+from bigdl.dllib.utils.log4Error import invalidInputError, invalidOperationError
 
 logger = logging.getLogger(__name__)
 
@@ -544,10 +544,10 @@ class SparkTFEstimator():
                     exctype = type(exctype)
                 res = ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, ctypes.py_object(exctype))
                 if res == 0:
-                    raise ValueError("invalid thread id")
+                    invalidInputError(False, "invalid thread id")
                 elif res != 1:
                     ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, None)
-                    raise SystemError("PyThreadState_SetAsyncExc failed")
+                    invalidOperationError(False, "PyThreadState_SetAsyncExc failed")
 
             def stop_thread(thread):
                 _async_raise(thread.ident, SystemExit)
