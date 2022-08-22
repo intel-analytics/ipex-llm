@@ -32,9 +32,9 @@ VERSION = open(os.path.join(BIGDL_PYTHON_HOME, 'version.txt'), 'r').read().strip
 
 
 lib_urls = [
-    "https://github.com/yangw1234/jemalloc/releases/download/v5.2.1-binary/libjemalloc.so",
-    "https://github.com/leonardozcm/libjpeg-turbo/releases/download/2.1.1/libturbojpeg.so.0.2.0",
-    "https://github.com/leonardozcm/tcmalloc/releases/download/v1/libtcmalloc.so"
+    "https://github.com/analytics-zoo/jemalloc/releases/download/v5.3.0/libjemalloc.so",
+    "https://github.com/analytics-zoo/libjpeg-turbo/releases/download/v2.1.4/libturbojpeg.so.0.2.0",
+    "https://github.com/analytics-zoo/tcmalloc/releases/download/v1/libtcmalloc.so"
 ]
 
 
