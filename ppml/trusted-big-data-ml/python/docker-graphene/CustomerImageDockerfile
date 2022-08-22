@@ -1,25 +1,54 @@
 ARG BIGDL_IMAGE_NAME
 ARG BIGDL_IMAGE_VERSION
+ARG KMS_UTILS_IMAGE_NAME
+ARG KMS_UTILS_IMAGE_VERSION
 
-# stage 1. make SGX and sign in a temp image
+# stage 1. generate SGX secrets and prepare KMS env
 FROM $BIGDL_IMAGE_NAME:$BIGDL_IMAGE_VERSION as temp
 
 ADD ./enclave-key.pem /graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem
+
+# 1.1 make SGX and sign in a temp image
 RUN cd /ppml/trusted-big-data-ml && \
     echo LOCAL_IP:$LOCAL_IP && \
     echo SGX_MEM_SIZE:$SGX_MEM_SIZE && \
     echo SGX_LOG_LEVEL:$SGX_LOG_LEVEL && \
     make SGX=1 GRAPHENEDIR=/graphene THIS_DIR=/ppml/trusted-big-data-ml  SPARK_LOCAL_IP=$LOCAL_IP SPARK_USER=root G_SGX_SIZE=$SGX_MEM_SIZE G_LOG_LEVEL=$SGX_LOG_LEVEL && \
-    rm /graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem
+    rm /graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem && \
+# 1.2 install requirement tools
+    apt-get update --fix-missing && \
+    env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y tzdata && \
+    apt-get install -y vim autoconf automake build-essential cmake curl debhelper git libcurl4-openssl-dev libprotobuf-dev libssl-dev libtool lsb-release ocaml ocamlbuild protobuf-compiler python wget libcurl4 libprotobuf17 libssl1.1 make kmod g++ libjsoncpp-dev uuid-dev openjdk-8-jdk && \
+# 1.3 install Intel SGX SDK
+    mkdir /opt/intel && cd /opt/intel && \
+    wget https://download.01.org/intel-sgx/sgx-dcap/1.13/linux/distro/ubuntu20.04-server/sgx_linux_x64_sdk_2.16.100.4.bin && \
+    chmod a+x ./sgx_linux_x64_sdk_2.16.100.4.bin && \
+    printf "no\n/opt/intel\n"|./sgx_linux_x64_sdk_2.16.100.4.bin && \
+    . /opt/intel/sgxsdk/environment && \
+# 1.4 DCAP repository setup
+    wget https://download.01.org/intel-sgx/sgx-dcap/1.12.1/linux/distro/ubuntu20.04-server/sgx_debian_local_repo.tgz && \
+    tar xzf sgx_debian_local_repo.tgz && \
+    echo 'deb [trusted=yes arch=amd64] file:///opt/intel/sgx_debian_local_repo focal main' | tee /etc/apt/sources.list.d/intel-sgx.list && \
+    wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add - && \
+    apt-get update --fix-missing && \
+    apt-get install -y libsgx-enclave-common-dev libsgx-ae-qe3 libsgx-ae-qve libsgx-urts libsgx-dcap-ql libsgx-dcap-default-qpl libsgx-dcap-quote-verify-dev libsgx-dcap-default-qpl-dev libsgx-quote-ex-dev libsgx-uae-service libsgx-ra-network libsgx-ra-uefi libsgx-dcap-ql-dev && \
+# 1.5 build enroll app from source
+    cd /opt && \
+    git clone -b $EHSM_KMS_BRANCH_VERSION https://github.com/analytics-zoo/ehsm.git && cd ehsm && wget https://download.01.org/intel-sgx/sgx-linux/2.16/as.ld.objdump.r4.tar.gz && tar -zxf as.ld.objdump.r4.tar.gz && cp external/toolset/ubuntu20.04/* /usr/local/bin && make && cd out/ehsm-kms_enroll_app && ls ehsm-kms_enroll_app
 
-# stage 2. copy sign etc. files from temp into bigdl base image
+
+# stage 2. copy sign etc. secrets from temp into bigdl base image and generate KMS secrets
 FROM $BIGDL_IMAGE_NAME:$BIGDL_IMAGE_VERSION
 
+ADD ./kms-utils.sh /opt/kms-utils.sh
 COPY --from=temp /ppml/trusted-big-data-ml/bash.manifest.sgx /ppml/trusted-big-data-ml/bash.manifest.sgx
 COPY --from=temp /ppml/trusted-big-data-ml/bash.sig /ppml/trusted-big-data-ml/bash.sig
 COPY --from=temp /ppml/trusted-big-data-ml/bash.manifest /ppml/trusted-big-data-ml/bash.manifest
 
-RUN ln -s /graphene/Runtime/pal_loader /ppml/trusted-big-data-ml/pal_loader
+RUN ln -s /graphene/Runtime/pal_loader /ppml/trusted-big-data-ml/pal_loader && \
+# enroll and save appid and apikey
+    chmod -x /opt/kms-utils.sh && \
+    bash /opt/kms-utils.sh enroll > enrollResult
 
 WORKDIR /ppml/trusted-big-data-ml
 
