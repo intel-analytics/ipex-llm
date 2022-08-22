@@ -213,8 +213,7 @@ class SparkTFEstimator():
             try:
                 temp_dir = tempfile.mkdtemp()
                 get_remote_file_to_local(os.path.join(self.model_dir, "state.pkl"),
-                                         os.path.join(temp_dir, "state.pkl"),
-                                         over_write=True)
+                                         os.path.join(temp_dir, "state.pkl"))
                 import pickle
                 with open(os.path.join(temp_dir, "state.pkl"), 'rb') as f:
                     state = pickle.load(f)
