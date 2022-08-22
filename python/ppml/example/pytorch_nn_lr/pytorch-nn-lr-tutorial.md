@@ -98,29 +98,12 @@ FL Server is required before running any federated applications. Check [Start FL
 ### 3.1 Start FL Server in SGX
 #### 3.1.1 Start the container
 Before running FL Server in SGX, please prepaer keys and start the BigDL PPML container first. Check  [3.1 BigDL PPML Hello World](https://github.com/intel-analytics/BigDL/tree/main/ppml#31-bigdl-ppml-hello-world) for details.
-#### 3.1.2 Run start_fl_server.py
-First, enter the container.
+#### 3.1.2 Run FL Server in SGX
+You can run FL Server in SGX with the following command:
 ```bash
-docker exec -it YOUR_CONTAINER bash
-cd /ppml/trusted-big-data-ml
+bash start-python-fl-server-sgx.sh -p 8980 -c 2
 ```
-Then, write the following commands into a start-python-fl-server-sgx.sh.
-```bash
-#!/bin/bash
-cd /ppml/trusted-big-data-ml
-/graphene/Tools/argv_serializer bash -c " /opt/jdk8/bin/java     -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*'     -Xmx10g org.apache.spark.deploy.SparkSubmit     --master 'local[4]'   start-fl-server.py -p 8980 -c 2" > /ppml/trusted-big-data-ml/secured-argvs
-./init.sh
-SGX=1 ./pal_loader bash 2>&1 | tee fl-server.log
-```
-You can set port with `-p` or `--port` and set client number with `-c` or `--client-num` while the default settings are `port=8980` and `client-num=2`.
-Then run the script,
-```bash
-bash start-python-fl-server-sgx.sh
-```
-or run it outside of the container.
-```bash
-docker exec -it YOUR_CONTAINER bash start-python-fl-server-sgx.sh
-```
+You can set port with `-p` and set client number with `-c`  while the default settings are `port=8980` and `client-num=2`.
 ### 3.2 Start FGBoost Clients
 Modify the config file `ppml-conf.yaml`
 ```yaml
