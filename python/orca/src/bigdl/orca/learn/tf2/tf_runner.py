@@ -509,7 +509,7 @@ class TFRunner:
         temp_path = os.path.join(tempfile.mkdtemp(), file_name)
         if is_file(filepath):
             # h5 format
-            get_remote_file_to_local(file_path, temp_path)
+            get_remote_file_to_local(filepath, temp_path)
         else:
             # savemodel format
             if os.path.exists(temp_path):
