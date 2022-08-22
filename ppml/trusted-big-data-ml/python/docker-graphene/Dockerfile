@@ -165,7 +165,8 @@ RUN apt-get update --fix-missing && \
 RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2.0/docker/hyperzoo/download-bigdl.sh && \
     chmod a+x ./download-bigdl.sh
 RUN ./download-bigdl.sh && \
-    rm bigdl*.zip
+    rm bigdl*.zip && \
+    cp ${BIGDL_HOME}/python/start-fl-server.py /ppml/trusted-big-data-ml/fl
 
 # stage.4 ppml
 FROM ubuntu:20.04
@@ -323,3 +324,4 @@ ADD azure /ppml/trusted-big-data-ml/azure
 WORKDIR /ppml/trusted-big-data-ml
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
+
