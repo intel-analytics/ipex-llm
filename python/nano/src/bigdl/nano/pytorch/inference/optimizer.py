@@ -23,11 +23,14 @@ import time
 import numpy as np
 from copy import deepcopy
 
+from torch.utils.data import DataLoader
+from torchmetrics.metric import Metric
+
 from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
 from bigdl.nano.pytorch import Trainer
 
 import os
-os.environ['LOGLEVEL'] = 'ERROR' # remove parital output of inc
+os.environ['LOGLEVEL']='ERROR'  # remove parital output of inc
 
 _whole_acceleration_options = ["inc", "ipex", "onnxruntime", "openvino", "pot",
                                "bf16", "jit", "channels_last"]
@@ -275,6 +278,40 @@ class Optimizer:
                 best_metric = CompareMetric(method, result["latency"], result["accuracy"])
 
         return best_model, _format_acceleration_info(best_metric.method_name)
+
+    @staticmethod
+    def trace(model: nn.Module,
+              input_sample=None,
+              accelerator=None,
+              use_ipex=False,
+              onnxruntime_session_options=None,
+              logging=True,
+              **export_kwargs):
+        return Trainer.trace(model, input_sample, accelerator, use_ipex, 
+                             onnxruntime_session_options, logging, **export_kwargs)
+
+    @staticmethod
+    def quantize(model,  # remove the type requirement for type checking
+                 precision: str = 'int8',
+                 accelerator=None,
+                 use_ipex=False,
+                 calib_dataloader: DataLoader = None,
+                 metric: Metric = None,
+                 accuracy_criterion: dict = None,
+                 approach: str = 'static',
+                 method: str = None,
+                 conf: str = None,
+                 tuning_strategy: str = None,
+                 timeout: int = None,
+                 max_trials: int = None,
+                 input_sample=None,
+                 onnxruntime_session_options=None,
+                 logging=True,
+                 **export_kwargs):
+        return Trainer.quantize(model, precision, accelerator, use_ipex, calib_dataloader,
+                                metric, accuracy_criterion, approach, method, conf, 
+                                tuning_strategy, timeout, max_trials, input_sample, 
+                                onnxruntime_session_options, logging, **export_kwargs)
 
 
 def _inc_checker():
