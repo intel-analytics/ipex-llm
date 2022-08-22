@@ -26,10 +26,11 @@ from copy import deepcopy
 from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
 from bigdl.nano.pytorch import Trainer
 
-_whole_acceleration_options = ["inc", "ipex", "onnxruntime", "openvino", "pot", 
+_whole_acceleration_options = ["inc", "ipex", "onnxruntime", "openvino", "pot",
                                "bf16", "jit", "channels_last"]
 
 CompareMetric = namedtuple("CompareMetric", ["method_name", "latency", "accuracy"])
+
 
 class AccelerationOption(object):
     def __init__(self, *args, **kwargs):
@@ -67,13 +68,13 @@ ALL_INFERENCE_ACCELERATION_METHOD = \
         "None_int8": AccelerationOption(inc=True),
         "jit_fp32": AccelerationOption(jit=True),
         "jit_fp32_ipex": AccelerationOption(jit=True, ipex=True),
-        "jit_fp32_ipex_clast": AccelerationOption(jit=True, ipex=True, 
+        "jit_fp32_ipex_clast": AccelerationOption(jit=True, ipex=True,
                                                   channels_last=True),
         "openvino_fp32": AccelerationOption(openvino=True),
         "openvino_int8": AccelerationOption(openvino=True, inc=True),
         "onnxruntime_fp32": AccelerationOption(onnxtunrime=True),
         "onnxruntime_int8_qlinear": AccelerationOption(onnxruntime=True, inc=True),
-        # "onnxruntime_int8_integer": AccelerationOption(onnxruntime=True, inc=True),
+        "onnxruntime_int8_integer": AccelerationOption(onnxruntime=True, inc=True),
     }
 
 
@@ -89,10 +90,10 @@ class Optimizer:
 
     def optimize(self, model,
                  training_data,
-                 validation_data = None,
-                 metric = None,
-                 cpu_num: int = None,
-                 trials: int = 100):
+                 validation_data=None,
+                 metric=None,
+                 cpu_num: int=None,
+                 trials: int=100):
         '''
         This function will give all available inference acceleration methods a try
         and record the latency, accuracy and model instance inside the Optimizer for
@@ -120,10 +121,10 @@ class Optimizer:
 
         # get the available methods whose dep is met
         available_dict = _available_acceleration_combination()
-        
+
         default_threads = torch.get_num_threads()
         cpu_num = default_threads if cpu_num is None else int(cpu_num)
-        
+
         result_map = {}
 
         for method, available in available_dict.items():
@@ -141,15 +142,16 @@ class Optimizer:
                         else:
                             # TODO: remove the logging of tracing
                             if accelerator in ("jit", None):
+                                use_channels_last = instance.channels_last
                                 accelerated_model = Trainer.trace(model=model,
-                                                                accelerator=accelerator,
-                                                                use_ipex=use_ipex,
-                                                                channels_last=instance.channels_last,
-                                                                input_sample=input_sample)
+                                                                  accelerator=accelerator,
+                                                                  use_ipex=use_ipex,
+                                                                  channels_last=use_channels_last,
+                                                                  input_sample=input_sample)
                             else:
                                 accelerated_model = Trainer.trace(model=model,
-                                                                accelerator=accelerator,
-                                                                input_sample=input_sample)
+                                                                  accelerator=accelerator,
+                                                                  input_sample=input_sample)
                     except Exception as e:
                         print(e)
                         continue
@@ -160,11 +162,11 @@ class Optimizer:
                     try:
                         # TODO: remove the logging of quantization
                         accelerated_model = Trainer.quantize(model=deepcopy(model),
-                                                            precision=precision,
-                                                            accelerator=accelerator,
-                                                            use_ipex=use_ipex,
-                                                            calib_dataloader=training_data,
-                                                            method=ort_method)
+                                                             precision=precision,
+                                                             accelerator=accelerator,
+                                                             use_ipex=use_ipex,
+                                                             calib_dataloader=training_data,
+                                                             method=ort_method)
                     except Exception as e:
                         print(e)
                         continue
@@ -179,7 +181,7 @@ class Optimizer:
                 try:
                     result_map[method]["latency"] =\
                         _throughput_calculate_helper(trials, func_test,
-                                                    accelerated_model, input_sample)
+                                                     accelerated_model, input_sample)
                 except Exception as e:
                     result_map.pop(method)
                     torch.set_num_threads(default_threads)
@@ -189,7 +191,7 @@ class Optimizer:
                 if validation_data is not None and metric is not None:
                     result_map[method]["accuracy"] =\
                         _accuracy_calculate_helper(accelerated_model,
-                                                    metric, validation_data)
+                                                   metric, validation_data)
 
                 result_map[method]["model"] = accelerated_model
 
@@ -220,7 +222,7 @@ class Optimizer:
                higher the better. Default value is "max".
         :return: best model, corresponding acceleration option
         '''
-        invalidOperationError(len(self.optimized_model_dict) > 0, 
+        invalidOperationError(len(self.optimized_model_dict) > 0,
                               "There is no optimized model. You should call .optimize() \
                               before get_best_model()")
         invalidInputError(accelerator in [None, 'onnxruntime', 'openvino', 'jit'],
@@ -257,10 +259,10 @@ class Optimizer:
                 accuracy = result["accuracy"]
                 compare_acc = best_metric.accuracy
                 if direction == "min":
-                    if (accuracy - compare_acc)/compare_acc > accuracy_criterion:
+                    if (accuracy - compare_acc) / compare_acc > accuracy_criterion:
                         continue
                 else:
-                    if (compare_acc - accuracy)/compare_acc > accuracy_criterion:
+                    if (compare_acc - accuracy) / compare_acc > accuracy_criterion:
                         continue
 
             # After the above conditions are met, the latency comparison is performed
@@ -310,7 +312,7 @@ def _bf16_checker():
 
 
 def _detect_ort_method(method_name):
-    method_name = method_name.split("_") [-1]
+    method_name = method_name.split("_")[-1]
     if method_name in ["qlinear", "integer"]:
         return method_name
     return None
@@ -348,7 +350,7 @@ def _throughput_calculate_helper(iterrun, func, *args):
         time_list.append(time.time() - st)
     time_list.sort()
     # remove top and least 10% data.
-    time_list = time_list[int(0.1*iterrun): int(0.9*iterrun)]
+    time_list = time_list[int(0.1 * iterrun): int(0.9 * iterrun)]
     return np.median(time_list) * 1000
 
 
