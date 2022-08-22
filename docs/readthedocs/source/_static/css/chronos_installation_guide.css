@@ -1,0 +1,51 @@
+/* Border styles */
+#table-1 tr, #table-1 td, #table-1 th  {
+    border-width: 2px;
+    border-style: solid;
+    border-color: white ;
+    padding: 5px;
+    }
+
+    #table-1 {
+    border-bottom-width: 0px;
+    }
+    
+    /* Padding and font style */
+    #table-1 td, #table-1 th {
+    font-size: 16px;
+    font-family: Verdana;
+    color: rgb(15, 24, 33);
+    }
+    
+    /* Alternating background colors */
+    #table-1 tr, td{
+        background-color: rgb(240, 241, 245);
+        height: 30px;
+    }
+    
+    .displayed {
+        display: block;
+        text-align: center;
+        margin-left: auto;
+        margin-right: auto }
+
+    /* setting div id=cmd width */
+    #cmd {
+        width: 450px;
+        height: 35px;
+        overflow:unset;
+    }
+
+    td, th {
+        text-align: center;
+    }
+
+    #table-1 button {
+        border-color: transparent;
+        width: 100%;
+        height: 100%;
+        background-color: transparent;
+        cursor: pointer;
+        font-size: 16px;
+    }
+

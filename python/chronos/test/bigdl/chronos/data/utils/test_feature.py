@@ -18,12 +18,12 @@ import pytest
 import pandas as pd
 import numpy as np
 
-from bigdl.orca.test_zoo_utils import ZooTestCase
+from unittest import TestCase
 from bigdl.chronos.data.utils.feature import generate_dt_features, generate_global_features
 import tsfresh
 
 
-class TestFeature(ZooTestCase):
+class TestFeature(TestCase):
     def setup_method(self, method):
         pass
 

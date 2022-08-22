@@ -43,6 +43,10 @@ class ResNet18(nn.Module):
     def forward(self, x):
         return self.model(x)
 
+    def do_nothing(self):
+        # test whether we can access this method after calling `self.setup`
+        pass
+
 
 class MyNano(TorchNano):
     def train(self):
@@ -106,6 +110,45 @@ class MyNanoCorrectness(TorchNano):
             f"wrong weights: {origin_model.fc1.weight.data}"
 
 
+class MyNanoAccess(TorchNano):
+    def train(self):
+        model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+        train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
+        model, optimizer, train_loader = self.setup(model, optimizer, train_loader)
+
+        # access a custom attribute
+        model.do_nothing()
+
+
+class MyNanoMultiOptimizer(TorchNano):
+    def train(self):
+        model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
+        loss_func = nn.CrossEntropyLoss()
+        optimizers = [torch.optim.Adam(model.parameters(), lr=0.005),
+                      torch.optim.Adam(model.parameters(), lr=0.01)]
+        train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
+
+        model, optimizers, train_loader = self.setup(model, optimizers, train_loader)
+
+        model.train()
+
+        num_epochs = 1
+        for _i in range(num_epochs):
+            total_loss, num = 0, 0
+            for X, y in train_loader:
+                for optimizer in optimizers:
+                    optimizer.zero_grad()
+                loss = loss_func(model(X), y)
+                self.backward(loss)
+                for optimizer in optimizers:
+                    optimizer.step()
+                
+                total_loss += loss.sum()
+                num += 1
+            print(f'avg_loss: {total_loss / num}')
+
+
 class TestLite(TestCase):
     def setUp(self):
         test_dir = os.path.dirname(__file__)
@@ -131,6 +174,12 @@ class TestLite(TestCase):
 
     def test_torch_nano_subprocess_correctness(self):
         MyNanoCorrectness(num_processes=2, strategy="subprocess").train(0.5)
+
+    def test_torch_nano_attribute_access(self):
+        MyNanoAccess().train()
+
+    def test_torch_nano_multi_optimizer(self):
+        MyNanoMultiOptimizer().train()
 
 
 if __name__ == '__main__':

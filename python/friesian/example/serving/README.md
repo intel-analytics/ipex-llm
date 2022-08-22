@@ -1,4 +1,4 @@
-# Recommend items using Friesian-Serving Framewrok
+# Recommend items using Friesian-Serving Framework
 
 This example demonstrates item similarity recommendation using Friesian.
 
@@ -9,7 +9,7 @@ pip install grpcio
 pip install protobuf
 ```
 2. Prepare features and embeddings
-   Follow example of [Friesian](https://github.com/intel-analytics/BigDL/tree/main/python/friesian/example/two_towe) to train a two tower model, generate item embeddings.
+   Follow the example [here](../two_tower) to train a two tower model and generate item embeddings.
 3. Follow [instructions](https://github.com/intel-analytics/BigDL/tree/main/scala/friesian#quick-start) to Pull docker image and start container
 4. Load item embeddings into redis
 ```

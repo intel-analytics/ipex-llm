@@ -2,7 +2,7 @@
 
 ## Resource Configuration Guide
 some configuration in *.yaml is introduced in [here](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/README.md), you can refer to it for more information.
-
+The two new configs 'spark.kubernetes.driverEnv.SGX_DRIVER_JVM_MEM_SIZE' and 'spark.executorEnv.SGX_EXECUTOR_JVM_MEM_SIZE' are the same as driver-memory and executor-memory in spark. We use original driver-memory and original executor-memory to alloc extra common memory for libos.   You can refer to [this](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-graphene#configuration-explainations) for more information.
 ## Prerequisite
 
 * Check Kubernetes env or Install Kubernetes from [wiki](https://kubernetes.io/zh/docs/setup/production-environment)
@@ -178,17 +178,67 @@ You can find source code [here](https://github.com/intel-analytics/BigDL/tree/ma
 
 ### Run Spark TPC-H example
 
-Modify the following configuration in `driver.yaml` and `executor.yaml`.
+Generate 1g Data like [this](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/scala/docker-occlum#generate-data), and you can use hdfs to replace the mount way, and you can just excute one query by adding [query_number] from 1 to 22 behind output_dir.For example:
+"hdfs:///input/dbgen hdfs:///output/dbgen 13" means excute query 13.
+
+Modify the following configuration in 'driver.yaml' and 'executor.yaml' and 'run_spark_tpch.sh'.
 
 ```yaml
+#driver.yaml
 env:
+- name: DRIVER_MEMORY
+  value: "1g"
+- name: SGX_MEMORY_SIZE
+  value: "10GB"
 - name: SGX_THREAD
-  value: "256"
+  value: "1024"
 - name: SGX_HEAP
+  value: "1GB"
+- name: SGX_KERNEL_HEAP
   value: "2GB"
+- name: META_SPACE
+  value: "1024m"
+```
+
+```yaml
+#excutor.yaml
+env:
+- name: SGX_MEMORY_SIZE
+  value: "10GB"
+- name: SGX_THREAD
+  value: "1024"
+- name: SGX_HEAP
+  value: "1GB"
 - name: SGX_KERNEL_HEAP
   value: "2GB"
 ```
+
+```bash
+#run_spark_tpch.sh
+--num-executors 2 \
+--executor-cores 4 \
+--executor-memory 4g \
+```
+
+Or you can directly add the following configuration in [run_spark_tpch.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/kubernetes/run_spark_tpch.sh) and it will overwrite the changes in *.yaml.
+
+```bash
+#run_spark_tpch.sh
+    --conf spark.kubernetes.driverEnv.DRIVER_MEMORY=1g \
+    --conf spark.kubernetes.driverEnv.SGX_MEM_SIZE="10GB" \
+    --conf spark.kubernetes.driverEnv.META_SPACE=1024m \
+    --conf spark.kubernetes.driverEnv.SGX_HEAP="1GB" \
+    --conf spark.kubernetes.driverEnv.SGX_KERNEL_HEAP="2GB" \
+    --conf spark.kubernetes.driverEnv.SGX_THREAD="1024" \
+    --conf spark.executorEnv.SGX_MEM_SIZE="10GB" \
+    --conf spark.executorEnv.SGX_KERNEL_HEAP="1GB" \
+    --conf spark.executorEnv.SGX_HEAP="1GB" \
+    --conf spark.executorEnv.SGX_THREAD="1024" \
+    --num-executors 2 \
+    --executor-cores 4 \
+    --executor-memory 4g \
+```
+
 
 Then run the script.
 

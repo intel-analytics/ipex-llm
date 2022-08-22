@@ -33,6 +33,7 @@ message Candidates {
 
 message Item {
     int32 itemID = 1;
+    repeated float itemVector = 2;
 }
 
 message ServerMessage {

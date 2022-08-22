@@ -1,7 +1,7 @@
 # Tutorial for Vertically Federated XGBoost
 This example provides a step-by-step tutorial of running a FGBoost Regression task with 2 parties.
 ## 1. Key Concepts
-### 1.1 FGBoost 
+### 1.1 FGBoost
 **FGBoost** implements a Vertical Federated Learning algorithm for XGBoost. It allows multiple parties to run a federated gradient boosted decision tree application.
 ### 1.2 PSI
 **PSI** stands for Private Set Intersection algorithm. It compute the intersection of data from different parties and return the common data IDs that all the parties holds so that parties know which data they could collaborate with.
@@ -58,7 +58,7 @@ We provide a `preprocess` method in the code, including normalization and one-ho
 df_train = preprocess(df_train)
 ```
 ### 2.4 FGBoost Instance
-Create the FGBoost instance `FGBoostRegression` with default parameters 
+Create the FGBoost instance `FGBoostRegression` with default parameters
 ```
 fgboost_regression = FGBoostRegression()
 ```
@@ -73,7 +73,7 @@ fgboost_regression.fit(df_train, feature_columns=df_train.columns, num_round=10)
 fgboost_regression.fit(df_x, df_y, feature_columns=df_x.columns, label_columns=['SalePrice'], num_round=10)
 ```
 ### 2.6 Save & Load
-Save the model and load it back
+Save the client model and load it back
 
 ```python
 fgboost_regression.save_model(model_path)
@@ -95,9 +95,14 @@ Copy the configuration file `ppml/scripts/ppml-conf.yaml` to the current directo
 # the port server gRPC uses
 serverPort: 8980
 
+# the path server uses to save server model checkpoints
+fgBoostServerModelPath: /tmp/fgboost_server_model
+
 # the number of clients in this federated learning application
 clientNum: 2
 ```
+Note that we also set `fgBoostServerModelPath` which will be used in incremental training in [Section 3.4](#34-incremental-training)
+
 Then start the FL Server
 ```
 ./ppml/scripts/start-fl-server.sh 
@@ -110,12 +115,9 @@ clientTarget: localhost:8980
 ```
 Run client applications
 
-Start Client 1:
 ```bash
+# run following commands in 2 different terminals
 python fgboost_regression_party_1.py
-```
-Start Client 2:
-```bash
 python fgboost_regression_party_2.py
 ```
 ### 3.3 Get Results
@@ -127,3 +129,26 @@ The first 5 prediction results are printed
 3-th result of FGBoost predict: 9.793853759765625
 4-th result of FGBoost predict: 9.793853759765625
 ```
+### 3.4 Incremental Training
+Incremental training is supported, as long as `fgBoostServerModelPath` is specified in FL Server config, the server automatically saves the model checkpoints. Thus, we just need to use the same configurations and start FL Server again.
+
+In SGX container, start FL Server
+```
+./ppml/scripts/start-fl-server.sh 
+```
+For client applications, we change from creating model to directly loading. This is already implemented in example code, we just need to run client applications with an argument
+
+```bash
+# run following commands in 2 different terminals
+python fgboost_regression_party_1.py true
+python fgboost_regression_party_2.py true
+```
+The result based on new boosted trees are printed
+```
+0-th result of FGBoost predict: 7.993928909301758
+1-th result of FGBoost predict: 7.993928909301758
+2-th result of FGBoost predict: 7.993928909301758
+3-th result of FGBoost predict: 7.993928909301758
+4-th result of FGBoost predict: 7.993928909301758
+```
+and you can see the loss continues to drop from the log of [Section 3.3](#33-get-results)

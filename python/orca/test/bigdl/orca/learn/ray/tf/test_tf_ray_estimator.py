@@ -567,7 +567,7 @@ class TestTFRayEstimator(TestCase):
 
         assert np.allclose(expected, result)
 
-    def test_save_and_load(self):
+    def test_save_and_load_checkpoint(self):
         def model_creator(config):
             import tensorflow as tf
             model = tf.keras.Sequential([
@@ -603,11 +603,43 @@ class TestTFRayEstimator(TestCase):
                               batch_size=batch_size,
                               steps_per_epoch=5)
             print("start saving")
-            est.save("/tmp/cifar10_keras.ckpt")
-            est.load("/tmp/cifar10_keras.ckpt")
+            est.save_checkpoint("/tmp/cifar10_keras.ckpt")
+            est.load_checkpoint("/tmp/cifar10_keras.ckpt")
             print("save success")
         finally:
             os.remove("/tmp/cifar10_keras.ckpt")
+    
+    def test_save_and_load_h5(self):
+        batch_size = 320
+        try:
+            est = Estimator.from_keras(model_creator=model_creator, workers_per_node=2)
+
+            history = est.fit(create_train_datasets,
+                              epochs=1,
+                              batch_size=batch_size,
+                              steps_per_epoch=5)
+            print("start saving")
+            est.save("/tmp/cifar10_keras.h5", save_format="h5")
+            est.load("/tmp/cifar10_keras.h5")
+            print("save success")
+        finally:
+            os.remove("/tmp/cifar10_keras.h5")
+
+    def test_save_and_load_tf(self):
+        batch_size = 320
+        try:
+            est = Estimator.from_keras(model_creator=model_creator, workers_per_node=2)
+
+            history = est.fit(create_train_datasets,
+                              epochs=1,
+                              batch_size=batch_size,
+                              steps_per_epoch=5)
+            print("start saving")
+            est.save("/tmp/cifar10_model", save_format="tf")
+            est.load("/tmp/cifar10_model")
+            print("save success")
+        finally:
+            shutil.rmtree("/tmp/cifar10_model")
 
     def test_string_input(self):
 

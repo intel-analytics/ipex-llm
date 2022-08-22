@@ -47,7 +47,6 @@ public class IndexService {
     }
 
     public void addWithIds(float[] data, int[] ids) {
-        assert(ids.length == data.length);
         int dataNum = ids.length;
         longArray idsInput = convertIdsToLongArray(ids);
         floatArray dataInput = vectorToFloatArray(data);

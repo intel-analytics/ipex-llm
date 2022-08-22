@@ -26,8 +26,7 @@ from logging import warning
 TORCH_VERSION_LESS_1_10 = _compare_version("torch", operator.lt, "1.10")
 TORCH_VERSION_LESS_1_11 = _compare_version("torch", operator.lt, "1.11")
 TORCH_VERSION_LESS_1_12 = _compare_version("torch", operator.lt, "1.12")
-
-LIGHTNING_VERSION_LESS_1_6 = _compare_version("pytorch_lightning", operator.lt, "1.6")
+TORCHVISION_VERSION_LESS_1_12 = _compare_version("torchvision", operator.lt, "0.12.0")
 
 
 def batch_call(func):
@@ -61,7 +60,7 @@ class ChannelsLastCallback(pl.Callback):
         """Override hook setup to convert model to channels_last and wrap DataHook."""
         # TODO: Add check for module_states
         try:
-            pl_module.model = pl_module.model.to(memory_format=torch.channels_last)
+            pl_module = pl_module.to(memory_format=torch.channels_last)
         except Exception as e:
             warning(f"Convert model to channels last failed, \
                     fall back to origin memory format. Exception msg: {e}")

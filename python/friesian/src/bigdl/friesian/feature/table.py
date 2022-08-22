@@ -2242,6 +2242,77 @@ class FeatureTable(Table):
 
         return FeatureTable(df)
 
+    def string_embed(self, columns, bert_model='distilbert-base-uncased', reduce_dim=None,
+                     replace=True):
+        """
+        Convert the columns of string to bert embeddings in FeatureTable. The columns should be of
+        string type.
+
+        >>> tbl
+        +------------------------+
+        |sentence                |
+        +------------------------+
+        |hello BigDL, how are you|
+        |Thanks for visiting     |
+        +------------------------+
+        >>> tbl.string_embed("sentence", reduce_dim=4)
+        +----------------------------------------------------------------------------------+
+        |sentence                                                                          |
+        +----------------------------------------------------------------------------------+
+        |[6.552382655553642, 0.4968299244945677, 0.2790670453414006, -0.2955769430562254]  |
+        |[-4.4477494247704845, 0.4968299244945722, 0.2790670453414017, -0.2955769430562234]|
+        +----------------------------------------------------------------------------------+
+        :param columns: str or a list of str. Columns to convert to sampled list. Each column
+                should be of string type.
+        :param bert_model: str. The pretrained bert model to be used.
+               from https://huggingface.co/sentence-transformers
+        :param reduce_dim: int. PCA will be called to reduce the embedding dimension it's not None.
+               Default: None.
+        :param replace: bool. Indicates whether to replace the original columns. If replace=False,
+                 a corresponding column columname + "_embds" will be generated for each column.
+
+        :return: A FeatureTable with desired columns transformed to embeddings.
+        """
+        cols = str_to_list(columns, "cols")
+        schema = self.schema
+        for c in cols:
+            invalidInputError(c in self.df.columns, "Column '" + c +
+                              "' does not exist in this FeatureTable.")
+            c_type = schema[c].dataType
+            invalidInputError(isinstance(c_type, StringType),
+                              "Each column should be of string type, but the type of column '" + c +
+                              "' is " + c_type.simpleString())
+
+        from sentence_transformers import SentenceTransformer
+
+        sc = OrcaContext.get_spark_context()
+        model = SentenceTransformer(bert_model)
+        model_br = sc.broadcast(model)
+        sentence2embd_udf = udf(lambda x: model_br.value.encode(x).tolist(),
+                                ArrayType(DoubleType()))
+
+        df = self.df
+        for c in cols:
+            df = df.withColumn(c + "_embds", sentence2embd_udf(pyspark_col(c)))
+
+        if reduce_dim:
+            from pyspark.ml.feature import PCA
+            from pyspark.ml.linalg import Vectors, VectorUDT
+            tolist = udf(lambda x: x.toArray().tolist(), ArrayType(DoubleType()))
+            tovec = udf(lambda x: Vectors.dense(x), VectorUDT())
+            for c in cols:
+                df = df.withColumn(c + "_embds", tovec(c + "_embds"))
+                pca = PCA(k=reduce_dim, inputCol=c + "_embds", outputCol=c + "_pcaFeatures")
+                pca_model = pca.fit(df)
+                result = pca_model.transform(df)
+                df = result.drop(c + "_embds")\
+                    .withColumnRenamed(c + "_pcaFeatures", c + "_embds")\
+                    .withColumn(c + "_embds", tolist(c + "_embds"))
+
+        if replace:
+            df = df.drop(c).withColumnRenamed(c + "_embds", c)
+        return FeatureTable(df)
+
 
 class StringIndex(Table):
     def __init__(self, df, col_name):

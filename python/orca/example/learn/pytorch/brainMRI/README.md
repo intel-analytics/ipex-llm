@@ -16,6 +16,7 @@ pip install scikit-learn
 pip install opencv-python
 pip install matplotlib
 pip install tqdm
+pip install pyarrow
 
 # For ray backend:
 pip install --pre --upgrade bigdl-orca[ray]

@@ -23,6 +23,8 @@ from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.dllib.utils import nest
 from bigdl.dllib.utils.log4Error import *
 
+import numpy as np
+
 
 class XShards(object):
     """
@@ -238,7 +240,7 @@ class SparkXShards(XShards):
                              .values.tolist())\
                     .partitionBy(num_partitions)
 
-                schema = self._get_schema()
+                schema = self.get_schema()
 
                 def merge_rows(iter):
                     data = [value[1] for value in list(iter)]
@@ -352,7 +354,7 @@ class SparkXShards(XShards):
         """
         if self._get_class_name() == 'pandas.core.frame.DataFrame':
             import pandas as pd
-            schema = self._get_schema()
+            schema = self.get_schema()
             # if partition by a column
             if isinstance(cols, str):
                 if cols not in schema['columns']:
@@ -419,6 +421,61 @@ class SparkXShards(XShards):
             # we may support numpy or other types later
             invalidInputError(False,
                               "Currently only support dedup() on XShards of Pandas DataFrame")
+
+    def assembleFeatureLabelCols(self, featureCols, labelCols):
+        """
+        The api is used to merge/convert one or multiple feature columns into a numpy array,
+        merge/convert one or multiple label columns into a numpy array.
+
+        :param featureCols: a list of feature columns.
+        :param labelCols: a list of label columns.
+        :return: SparkXShards of dictionary, key is assembled feature numpy array, value is
+         assembled label numpy array
+
+        eg:
+        shards: SparkXShards of pandas data frame with 9 cols ['f1', 'f2', 'f3', 'f4', 'f5', 'f6',
+         'f7', 'f8', 'lable']
+            f1   f2  f3  f4   f5    f6     f7  f8  label
+             6  148  72  35    0  33.6  0.627  50      1
+             1   85  66  29    0  26.6  0.351  31      0
+             8  183  64   0    0  23.3  0.672  32      1
+             1   89  66  23   94  28.1  0.167  21      0
+             0  137  40  35  168  43.1  2.288  33      1
+
+        transform_shards =
+          shards.assembleFeatureLabelCols(featureCols=['f1', 'f2', 'f3', 'f4', 'f5', 'f6',
+           'f7', 'f8'], labelCols=['label'])
+
+        transform_shards will be SparkXShards of dictionary. key will be a stacked numpy array
+        (stack feature columns), value will be a numpy array
+        {'x': array([[  6.   , 148.   ,  72.   , ...,  33.6  ,   0.627,  50.   ],
+           [  1.   ,  85.   ,  66.   , ...,  26.6  ,   0.351,  31.   ],
+           [  8.   , 183.   ,  64.   , ...,  23.3  ,   0.672,  32.   ],
+           [  1.   , 89.   ,  66.   , ...,  28.1  ,   0.167,  21.   ],
+           [  0.   , 137.   ,  40.   , ...,  43.1  ,  2.288, 33.   ]]),
+         'y': array([[1],
+           [0],
+           [1],
+           [0],
+           [1]
+        """
+        if self._get_class_name() != 'pandas.core.frame.DataFrame':
+            invalidInputError(False,
+                              "Currently only support assembleFeatureLabelCols() on"
+                              " XShards of Pandas DataFrame")
+
+        def to_shard_dict(df):
+            featureLists = [df[feature_col].to_numpy() for feature_col in featureCols]
+            labelLists = [df[label_col].to_numpy() for label_col in labelCols]
+            result = {
+                "x": np.stack(featureLists, axis=1),
+                "y": np.stack(labelLists, axis=1)}
+            return result
+
+        invalidInputError(type(featureCols) == list, "expect featureCols is a list")
+        invalidInputError(type(labelCols) == list, "expect labelCols is a list")
+        transformed_shard = self.transform_shard(to_shard_dict)
+        return transformed_shard
 
     def split(self):
         """
@@ -492,6 +549,9 @@ class SparkXShards(XShards):
         rdd = self.rdd.mapPartitions(f)
         column = self.rdd.mapPartitions(getSchema).first()
         df = rdd.toDF(list(column))
+        df.cache()
+        df.count()
+        self.uncache()
         return df
 
     def __len__(self):
@@ -535,7 +595,7 @@ class SparkXShards(XShards):
         result_rdd = self.rdd.map(lambda x: utility_func(x, func, *args, **kwargs))
         return result_rdd
 
-    def _get_schema(self):
+    def get_schema(self):
         if 'schema' in self.type:
             return self.type['schema']
         else:
