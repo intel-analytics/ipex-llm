@@ -157,7 +157,7 @@ class Optimizer:
                                 accelerated_model = Trainer.trace(model=model,
                                                                   accelerator=accelerator,
                                                                   input_sample=input_sample,
-                                                                  # remove parital output of openvino
+                                                                  # remove output of openvino
                                                                   logging=False)
                     except Exception as e:
                         print(e)
@@ -173,7 +173,7 @@ class Optimizer:
                                                              use_ipex=use_ipex,
                                                              calib_dataloader=training_data,
                                                              method=ort_method,
-                                                             # remove parital output of openvino
+                                                             # remove output of openvino
                                                              logging=False)
                     except Exception as e:
                         print(e)
