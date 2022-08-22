@@ -2,7 +2,7 @@ name: Nightly Build Docker Publish BigDL-PPML
 
 on:
   pull_request:
-      branches: [main]
+    branches: [main]
     paths:
       - 'ppml/trusted-big-data-ml/python/docker-gramine/**'
   workflow_dispatch:
