@@ -9,10 +9,19 @@ PyTorch Inference
 * `How to accelerate a PyTorch inference pipeline through ONNXRuntime <accelerate_pytorch_inference_onnx.html>`_
 * `How to accelerate a PyTorch inference pipeline through OpenVINO <accelerate_pytorch_inference_openvino.html>`_
 
-
 .. toctree::
     :maxdepth: 1
     :hidden:
 
     accelerate_pytorch_inference_onnx
     accelerate_pytorch_inference_openvino
+
+Install
+-------------------------
+* `How to install BigDL-Nano in Google Colab <install_in_colab.html>`_
+
+.. toctree::
+    :maxdepth: 1
+    :hidden:
+
+    install_in_colab

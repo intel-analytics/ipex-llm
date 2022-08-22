@@ -44,6 +44,6 @@ An executable version of the example above could be found [here](https://github.
 .. card:: Relative Readings
 
     * `How to install BigDL-Nano <../Overview/nano.html#install>`_
-    * How to import BigDL-Nano on Google Colab
+    * `How to install BigDL-Nano in Google Colab <install_in_colab.html>`_
     * How to load/save optimized models
 ```
