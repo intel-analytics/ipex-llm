@@ -30,7 +30,7 @@ from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
 from bigdl.nano.pytorch import Trainer
 
 import os
-os.environ['LOGLEVEL']='ERROR'  # remove parital output of inc
+os.environ['LOGLEVEL'] = 'ERROR'  # remove parital output of inc
 
 _whole_acceleration_options = ["inc", "ipex", "onnxruntime", "openvino", "pot",
                                "bf16", "jit", "channels_last"]
@@ -157,7 +157,8 @@ class Optimizer:
                                 accelerated_model = Trainer.trace(model=model,
                                                                   accelerator=accelerator,
                                                                   input_sample=input_sample,
-                                                                  logging=False)  # remove parital output of openvino
+                                                                  # remove parital output of openvino
+                                                                  logging=False)
                     except Exception as e:
                         print(e)
                         continue
@@ -166,14 +167,14 @@ class Optimizer:
                 elif precision in ("int8", "bf16"):
                     ort_method = _detect_ort_method(method)
                     try:
-                        # TODO: remove the logging of quantization
                         accelerated_model = Trainer.quantize(model=deepcopy(model),
                                                              precision=precision,
                                                              accelerator=accelerator,
                                                              use_ipex=use_ipex,
                                                              calib_dataloader=training_data,
                                                              method=ort_method,
-                                                             logging=False)  # remove parital output of openvino
+                                                             # remove parital output of openvino
+                                                             logging=False)
                     except Exception as e:
                         print(e)
                         continue
@@ -287,7 +288,7 @@ class Optimizer:
               onnxruntime_session_options=None,
               logging=True,
               **export_kwargs):
-        return Trainer.trace(model, input_sample, accelerator, use_ipex, 
+        return Trainer.trace(model, input_sample, accelerator, use_ipex,
                              onnxruntime_session_options, logging, **export_kwargs)
 
     @staticmethod
@@ -309,8 +310,8 @@ class Optimizer:
                  logging=True,
                  **export_kwargs):
         return Trainer.quantize(model, precision, accelerator, use_ipex, calib_dataloader,
-                                metric, accuracy_criterion, approach, method, conf, 
-                                tuning_strategy, timeout, max_trials, input_sample, 
+                                metric, accuracy_criterion, approach, method, conf,
+                                tuning_strategy, timeout, max_trials, input_sample,
                                 onnxruntime_session_options, logging, **export_kwargs)
 
 
