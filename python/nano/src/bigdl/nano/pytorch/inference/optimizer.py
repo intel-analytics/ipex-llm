@@ -92,8 +92,8 @@ class Optimizer:
                  training_data,
                  validation_data=None,
                  metric=None,
-                 cpu_num: int=None,
-                 trials: int=100):
+                 cpu_num: int = None,
+                 trials: int = 100):
         '''
         This function will give all available inference acceleration methods a try
         and record the latency, accuracy and model instance inside the Optimizer for
