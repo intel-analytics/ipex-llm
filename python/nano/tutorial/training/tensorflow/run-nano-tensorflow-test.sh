@@ -4,6 +4,6 @@ export NANO_TUTORIAL_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/tutorial/trainin
 
 set -e
 
-export num_epochs=1
+export NUM_EPOCHS=1
 python $NANO_TUTORIAL_TEST_DIR/tensorflow_sparse_embedding.py
 python $NANO_TUTORIAL_TEST_DIR/tensorflow_train_multi_instance.py

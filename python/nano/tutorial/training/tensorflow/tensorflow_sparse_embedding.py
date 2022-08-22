@@ -101,7 +101,7 @@ def make_model():
 
 
 if __name__=='__main__':
-    num_epochs = int(os.environ.get('num_epochs', 10))
+    num_epochs = int(os.environ.get('NUM_EPOCHS', 10))
 
     train_ds, val_ds, test_ds = create_datasets()
 

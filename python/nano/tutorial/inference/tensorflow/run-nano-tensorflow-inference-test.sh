@@ -4,4 +4,5 @@ export NANO_TUTORIAL_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/tutorial/inferen
 
 set -e
 
+export NUM_SHARDS=4
 python $NANO_TUTORIAL_TEST_DIR/tensorflow_quantization.py

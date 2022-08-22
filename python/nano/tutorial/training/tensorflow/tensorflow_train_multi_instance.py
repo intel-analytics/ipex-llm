@@ -81,7 +81,7 @@ def create_model(num_classes, img_size, learning_rate=1e-2):
 if __name__ == '__main__':
     img_size = 224
     batch_size = 32
-    num_epochs = int(os.environ.get('num_epochs', 10))
+    num_epochs = int(os.environ.get('NUM_EPOCHS', 10))
     
     ds_train, ds_test, ds_info = create_datasets(img_size=img_size, batch_size=batch_size)
     
