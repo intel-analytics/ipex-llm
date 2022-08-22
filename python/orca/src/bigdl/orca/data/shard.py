@@ -604,6 +604,9 @@ class SparkXShards(XShards):
         jiter = self.rdd.mapPartitions(f)
         from bigdl.dllib.utils.file_utils import callZooFunc
         df = callZooFunc("float", "orcaToDataFrame", jiter, schema.json(), sqlContext)
+        df.cache()
+        df.count()
+        self.uncache()
         return df
 
     def __len__(self):
