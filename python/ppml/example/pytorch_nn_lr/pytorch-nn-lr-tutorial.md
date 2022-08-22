@@ -88,10 +88,29 @@ Then call `fit` method to train
 ```python
 response = ppl.fit(x, y)
 ```
-### 2.7 Predict
+
+### 2.6 Predict
 ```python
 result = ppl.predict(x)
 ```
+
+### 2.7 Save/Load
+After training, save the client and server model by
+```python
+torch.save(ppl.model, model_path)
+ppl.save_server_model(server_model_path)
+```
+To start a new application to continue training
+```python
+client_model = torch.load(model_path)
+# we do not pass server model this time, instead, we load it directly from server machine
+ppl = Estimator.from_torch(client_model=model,
+                           client_id=client_id,
+                           loss_fn=loss_fn,
+                           optimizer_cls=torch.optim.SGD,
+                           optimizer_args={'lr':1e-3},
+                           target='localhost:8980')
+ppl.load_server_model(server_model_path)
 
 ## 3 Run FGBoost
 FL Server is required before running any federated applications. Check [Start FL Server]() section for details.
@@ -103,8 +122,6 @@ Modify the config file `ppml-conf.yaml`
 # the port server gRPC uses
 serverPort: 8980
 
-# the path server uses to save server model checkpoints
-pytorchModelPath: /tmp/pytorch_server_model.pt
 
 # the number of clients in this federated learning application
 clientNum: 2
@@ -139,7 +156,7 @@ The first 5 predict results are printed
  [0.0000000e+00]]
 ```
 ### 3.4 Incremental Training
-Incremental training is supported, as long as `pytorchModelPath` is specified in FL Server config, the server automatically saves the model checkpoints (every 100 aggregations by default). Thus, we just need to use the same configurations and start FL Server again.
+Incremental training is supported, we just need to use the same configurations and start FL Server again.
 
 In SGX container, start FL Server
 ```
