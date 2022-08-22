@@ -16,25 +16,10 @@
 
 package com.intel.analytics.bigdl.ppml.attestation
 
-import org.apache.logging.log4j.LogManager
-
 abstract class QuoteVerifier {
 
-  val logger = LogManager.getLogger(getClass)
-
   def verifyQuote(quote: Array[Byte]): Int = {
-
-    try {
-      val verifyQuoteResult = Attestation.sdkVerifyQuote(quote)
-      return verifyQuoteResult
-    } catch {
-      case e: Exception =>
-        logger.error(s"Failed to verify quote, ${e}")
-        throw new AttestationRuntimeException("Failed " +
-          "to verify quote", e)
-    }
-
-    throw new AttestationRuntimeException("Unexpected workflow when verifying Quote!")
+    1
   }
 
   def verifyQuote(quote: Array[Byte], policy: Policy): Int = {
