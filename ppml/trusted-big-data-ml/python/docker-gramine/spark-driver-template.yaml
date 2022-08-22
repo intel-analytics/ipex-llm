@@ -22,7 +22,7 @@ spec:
       #      key: app_key
     volumeMounts:
       - name: enclave-key
-        mountPath: ~/.config/gramine/enclave-key.pem
+        mountPath: /root/.config/gramine/enclave-key.pem
         subPath: enclave-key.pem
       - name: device-plugin
         mountPath: /var/lib/kubelet/device-plugins
