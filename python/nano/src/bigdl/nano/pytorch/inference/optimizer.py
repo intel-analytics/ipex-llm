@@ -123,9 +123,11 @@ class Optimizer:
                higher the better. Default value is "max".
         :param cpu_num: (optional) a int represents how many cores is needed for
                inference.
-        :param latency_sample_num: (optional) a int represents the number of repetitions to calculate
-               the average latency. The default value is 100.
+        :param latency_sample_num: (optional) a int represents the number of repetitions
+               to calculate the average latency. The default value is 100.
         '''
+        # TODO: may support accuracy_criterion
+
         # check if model is a nn.Module or inherited from a nn.Module
         invalidInputError(isinstance(model, nn.Module), "model should be a nn module.")
         invalidInputError(direction in ['min', 'max'],
@@ -134,7 +136,7 @@ class Optimizer:
         # get the available methods whose dep is met
         available_dict = _available_acceleration_combination()
 
-        self.direction = direction # save direction as attr
+        self.direction = direction  # save direction as attr
 
         default_threads = torch.get_num_threads()
         cpu_num = default_threads if cpu_num is None else int(cpu_num)
@@ -174,7 +176,8 @@ class Optimizer:
                                 acce_model = Optimizer.trace(model=model,
                                                              accelerator=accelerator,
                                                              input_sample=input_sample,
-                                                             onnxruntime_session_options=sessionoptions,
+                                                             onnxruntime_session_options=
+                                                             sessionoptions,
                                                              # remove output of openvino
                                                              logging=False)
                     except Exception as e:
