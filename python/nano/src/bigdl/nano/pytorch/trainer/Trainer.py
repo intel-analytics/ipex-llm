@@ -73,8 +73,8 @@ class Trainer(pl.Trainer):
             indices of cpus each process will be using. default: None, and the cpu will be
             automatically and evenly distributed among processes.
         :param precision: Double precision (64), full precision (32), half precision (16)
-            or bfloat16 precision (bf16). Enable ipex bfloat16 weight prepack when `use_ipex=True`
-            and `precision='bf16'`
+            or bfloat16 precision (bf16), defaults to 32.
+            Enable ipex bfloat16 weight prepack when `use_ipex=True` and `precision='bf16'`
         """
         # Check keyword arguments
         if "accelerator" in kwargs:

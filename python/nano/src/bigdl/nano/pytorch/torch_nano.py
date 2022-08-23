@@ -62,6 +62,9 @@ class TorchNano(LightningLite):
         :param use_ipex: whether use ipex acceleration, defaults to False
         :param strategy: use which backend in distributed mode, defaults to "subprocess", \
             now avaiable strategies are 'spawn', 'subprocess' and 'ray'
+        :param precision: Double precision (64), full precision (32), half precision (16)
+            or bfloat16 precision (bf16), defaults to 32.
+            Enable ipex bfloat16 weight prepack when `use_ipex=True` and `precision='bf16'`
         """
         self.num_processes = num_processes
         self.use_ipex = use_ipex
@@ -136,7 +139,7 @@ class TorchNano(LightningLite):
         # so we copy the codes and swap their order.
         self._validate_setup(model, optimizers)
 
-        model, optimizers = self._strategy._setup_model_and_optimizers(model, list(optimizers))
+        model, optimizers = self._strategy._setup_model_and_optimizers(model, optimizers)
 
         # IPEX bfloat16 optimization will cast model parameters to `torch.bfloat16`
         # which is not supported by ddp currently,
