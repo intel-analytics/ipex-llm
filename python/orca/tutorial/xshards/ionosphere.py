@@ -31,6 +31,7 @@ from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.metrics import Accuracy
 from bigdl.orca.data.transformer import StringIndexer
 
+
 class MLP(Module):
     # define model elements
     def __init__(self, n_inputs):
@@ -53,7 +54,7 @@ class MLP(Module):
         # input to first hidden layer
         X = self.hidden1(X)
         X = self.act1(X)
-         # second hidden layer
+        # second hidden layer
         X = self.hidden2(X)
         X = self.act2(X)
         # third hidden layer and output
@@ -70,6 +71,7 @@ column = data_shard.get_schema()['columns']
 
 label_encoder = StringIndexer(inputCol=column[-1])
 data_shard = label_encoder.fit_transform(data_shard)
+
 
 def update_label_to_zero_base(df):
     df['_c34'] = df['_c34'] - 1
@@ -90,3 +92,4 @@ data_shard = data_shard.assembleFeatureLabelCols(featureCols=list(column[:-1]),
                                                  labelCols=[column[-1]])
 
 orca_estimator.fit(data=data_shard, epochs=100, batch_size=32)
+stop_orca_context()

@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from typing import Any
+from typing import Any, Union, List
 from logging import warning
 from functools import partial
 from abc import abstractmethod
@@ -104,7 +104,7 @@ class TorchNano(LightningLite):
     def _setup(
         self,
         model: nn.Module,
-        *optimizers: Optimizer,
+        optimizers: List[Optimizer],
         move_to_device: bool = True,
     ) -> Any:
         """Used to replace LightningLite's setup method."""
@@ -134,34 +134,40 @@ class TorchNano(LightningLite):
         # so we copy the codes and swap their order.
         self._validate_setup(model, optimizers)
 
-        model, optimizers = self._strategy._setup_model_and_optimizers(model, list(optimizers))
+        model, optimizers = self._strategy._setup_model_and_optimizers(model, optimizers)
         if move_to_device:
-            model = self._move_model_to_device(model=model, optimizers=list(optimizers))
+            model = self._move_model_to_device(model=model, optimizers=optimizers)
         model = _TorchNanoModule(model, self._precision_plugin)
         optimizers = [_LiteOptimizer(optimizer=optimizer, strategy=self._strategy)  # type: ignore
                       for optimizer in optimizers]
         self._models_setup += 1
         if optimizers:
             # join both types in a list for API convenience
-            return [model] + optimizers  # type: ignore
+            return model, optimizers  # type: ignore
         return model
 
-    def setup(self, model: nn.Module, optimizer: Optimizer,     # type: ignore[override]
+    def setup(self, model: nn.Module,    # type: ignore[override]
+              optimizer: Union[Optimizer, List[Optimizer]],
               *dataloaders: DataLoader, move_to_device: bool = True):
         """
-        Setup model, optimizer, loss function and dataloaders for accelerated training.
+        Setup model, optimizers and dataloaders for accelerated training.
 
         :param model: A model to setup
-        :param optimizer: The optimizer to setup
+        :param optimizer: The optimizer(s) to setup
         :param *dataloaders: The dataloader(s) to setup
         :param move_to_device: If set ``True`` (default), moves the model to the correct device. \
             Set this to ``False`` and alternatively use :meth:`to_device` manually.
         :return: The tuple of the wrapped model, optimizer, loss_func and dataloaders, \
             in the same order they were passed in.
         """
-        model, optimizer = self._setup(model, optimizer, move_to_device=move_to_device)
+        # convert single optimizer to a optimizer list
+        optimizers = [optimizer] if isinstance(optimizer, Optimizer) else optimizer
+
+        model, optimizers = self._setup(model, optimizers, move_to_device=move_to_device)
         dataloaders = self.setup_dataloaders(*dataloaders,  # type: ignore
                                              move_to_device=move_to_device)
+        # convert optimizer list to single optimizer
+        optimizer = optimizers[0] if isinstance(optimizer, Optimizer) else optimizers
         return model, optimizer, dataloaders
 
     @abstractmethod
