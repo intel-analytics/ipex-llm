@@ -2,7 +2,7 @@ name: Nightly Build
 
 on:
   schedule:
-    - cron: '0 17 * * *'
+    - cron: '53 7 * * *'
   pull_request:
   push:
   workflow_dispatch:
@@ -54,7 +54,7 @@ jobs:
         GITHUB_CONTEXT: ${{ toJson(github) }}
       run: |
         echo "$GITHUB_CONTEXT"
-        
+
   docker-build-bigdl:
     if: ${{ github.event.inputs.artifact == 'bigdl' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Shire]
