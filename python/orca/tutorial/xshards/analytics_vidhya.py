@@ -16,11 +16,10 @@
 # This example is adapted from
 # https://www.kaggle.com/code/prashant111/comprehensive-data-analysis-with-pandas/notebook
 
-from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
+from bigdl.orca import init_orca_context, stop_orca_context
 import bigdl.orca.data.pandas
 
 init_orca_context(cluster_mode="local", cores=4, memory="3g")
-OrcaContext.pandas_read_backend = "pandas"
 
 # read
 file_path = "train.csv"
@@ -47,5 +46,7 @@ def map_func(df):
     df = df['City_Category'].map({'A': 'Beijing', 'B': 'Shanghai', 'C': 'Guangzhou'})
     return df
 data_shard = data_shard.transform_shard(map_func)
+
+data_shard.save_pickle('./result')
 
 stop_orca_context()

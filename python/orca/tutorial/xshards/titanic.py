@@ -16,10 +16,9 @@
 # This example is adapted from
 # https://www.kaggle.com/code/chuanguy/titanic-data-processing-with-python-0-813/notebook
 
-from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
+from bigdl.orca import init_orca_context, stop_orca_context
 import bigdl.orca.data.pandas
 
-OrcaContext.pandas_read_backend = "pandas"
 init_orca_context(cluster_mode="local", cores=4, memory="3g")
 
 file_path = "train.csv"
@@ -54,6 +53,8 @@ def change_val(data):
     return data
 data_shard = data_shard.transform_shard(change_val)
 
+# save
+data_shard.save_pickle('./result')
 
 stop_orca_context()
 
