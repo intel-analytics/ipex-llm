@@ -8,7 +8,7 @@ export BIGDL_IMAGE_NAME=your_bigdl_base_image_name_used_to_build_customer_image
 export BIGDL_IMAGE_VERSION=your_bigdl_base_image_version_used_to_build_ucustomer_image
 export CUSTOMER_IMAGE_TAG=your_customer_image_tag
 export LOCAL_IP=your_local_IP
-export PCCS_URL=your_pccs_url_used_by_customer_image # format like https://x.x.x.x:xxxx/sgx/certification/v3/
+
 
 if [ "$IMAGE_MODE" == "bigdl_base_image_or_customer_image" ]
 then
@@ -50,15 +50,14 @@ else
     else
     if [ "$IMAGE_MODE" == "customer_image" ]
     then
-        if [[ "$BIGDL_IMAGE_NAME" == "your_bigdl_base_image_name_used_to_build_user_image" ]] || [[ "$BIGDL_IMAGE_VERSION" == "your_bigdl_base_image_version_used_to_build_user_image" ]] || [[ "$CUSTOMER_IMAGE_TAG" == "your_user_image_tag" ]] || [[ "$PCCS_URL" == "your_pccs_url" ]]
+        if [[ "$BIGDL_IMAGE_NAME" == "your_bigdl_base_image_name_used_to_build_user_image" ]] || [[ "$BIGDL_IMAGE_VERSION" == "your_bigdl_base_image_version_used_to_build_user_image" ]] || [[ "$CUSTOMER_IMAGE_TAG" == "your_user_image_tag" ]]
         then
-            echo "Please specific name and version of your bigdl base name, tag of your user image to use and pccs url."
+            echo "Please specific name and version of your bigdl base name, tag of your user image to use."
         else
             sudo docker build \
                     --build-arg BIGDL_IMAGE_NAME=$BIGDL_IMAGE_NAME \
                     --build-arg BIGDL_IMAGE_VERSION=$BIGDL_IMAGE_VERSION \
                     --build-arg LOCAL_IP=$LOCAL_IP \
-		    --build-arg PCCS_URL=$PCCS_URL \
                     -t $CUSTOMER_IMAGE_TAG -f ./CustomerImageDockerfile .
         fi
      fi
