@@ -84,7 +84,7 @@ spec:
           - name: aesm-socket
             mountPath: /var/run/aesmd/aesm.socket
           - name: enclave-key
-            mountPath: /graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem
+            mountPath: /root/.config/gramine/enclave-key.pem
             subPath: enclave-key.pem
           - name: secure-keys
             mountPath: /ppml/trusted-big-data-ml/work/keys
