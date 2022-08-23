@@ -36,6 +36,11 @@ def create_datasets(img_size, batch_size):
         with_info=True,
         as_supervised=True
     )
+    
+    # Create a Dataset that includes only 1/num_shards of full dataset.
+    num_shards = int(os.environ.get('NUM_SHARDS', 1))
+    ds_train = ds_train.shard(num_shards, index=0)
+    ds_test = ds_test.shard(num_shards, index=0)
 
     num_classes = ds_info.features['label'].num_classes
 
@@ -56,27 +61,6 @@ def create_datasets(img_size, batch_size):
 
     return ds_train, ds_test, ds_info
 
-
-# def create_model(num_classes, img_size, learning_rate=1e-2):
-#     inputs = layers.Input(shape = (img_size, img_size, 3))
-
-#     backbone = EfficientNetB0(include_top=False, input_tensor=inputs)
-
-#     backbone.trainable = False
-
-#     x = layers.GlobalAveragePooling2D(name='avg_pool')(backbone.output)
-#     x = layers.BatchNormalization()(x)
-
-#     top_dropout_rate = 0.2
-#     x = layers.Dropout(top_dropout_rate, name="top_dropout")(x)
-#     outputs = layers.Dense(num_classes, activation="softmax", name="pred")(x)
-
-#     model = Model(inputs, outputs, name='EfficientNet')
-#     optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
-#     model.compile(
-#         loss="categorical_crossentropy", optimizer=optimizer, metrics=['accuracy']
-#     )
-#     return model
 
 def create_model(num_classes, img_size):
     inputs = tf.keras.layers.Input(shape=(img_size, img_size, 3))
