@@ -30,7 +30,7 @@ from bigdl.orca.learn.metrics import Accuracy
 init_orca_context(cluster_mode="local", cores=4, memory="3g")
 
 # Load data
-file_path = 'train.csv'
+file_path = '/home/yansu/Desktop/yxy/data_example/train.csv'
 data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
 # Drop duplicate columns
