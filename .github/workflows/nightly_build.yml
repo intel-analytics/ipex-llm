@@ -45,6 +45,16 @@ permissions:
   packages: write
 
 jobs:
+  printJob:    
+    name: Print event
+    runs-on: ubuntu-latest
+    steps:
+    - name: Dump GitHub context
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: |
+        echo "$GITHUB_CONTEXT"
+        
   docker-build-bigdl:
     if: ${{ github.event.inputs.artifact == 'bigdl' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Shire]
