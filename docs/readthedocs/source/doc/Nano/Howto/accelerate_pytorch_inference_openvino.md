@@ -1,14 +1,17 @@
 # Accelerate PyTorch Inference using OpenVINO
 
-To accelerate your PyTorch inference pipeline through OpenVINO as backend engine, BigDL-Nano provides you with `Trainer.trace(accelerator='openvino')` API. Based on that, the optimization could be implemented by applying very few lines of code changes.
+You can use `Trainer.trace(accelerator='openvino')` API to enable the OpenVINO acceleration for PyTorch inference. It only takes a few lines.
 
-Let us suppose we have a [ResNet-18 model](https://pytorch.org/vision/main/models/generated/torchvision.models.resnet18.html) pretrained on ImageNet dataset, and would like to do the inference on a randomly generated test dataset. The model would be like: 
+Let's take an [ResNet-18 model](https://pytorch.org/vision/main/models/generated/torchvision.models.resnet18.html) pretrained on ImageNet dataset as an example. First, we load the model:
 
 ```python
 from torchvision.models import resnet18
 
 model_ft = resnet18(pretrained=True)
-# set the model in evaluation (inference) mode
+```
+
+Then we set it in evaluation mode:
+```python
 model_ft.eval()
 ```
 
@@ -38,7 +41,7 @@ predictions = y_hat.argmax(dim=1)
 print(predictions)
 ```
 
-An executable version of the example above could be found [here](https://github.com/intel-analytics/BigDL/blob/main/python/nano/tutorial/inference/pytorch/pytorch_inference_openvino.py).
+A short runnable example to demonstrate this functionality can be found [here](https://github.com/intel-analytics/BigDL/blob/main/python/nano/tutorial/inference/pytorch/pytorch_inference_openvino.py).
 
 ```eval_rst
 .. card:: Relative Readings
