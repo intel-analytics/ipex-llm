@@ -89,3 +89,20 @@ jobs:
 
       - name: Serving style checking
         run: bash python/serving/dev/lint-python
+
+      - name: "Set time variable"
+        run: |
+          export NOW=$( date '+%F_%H:%M:%S' )
+          echo "TIME=${NOW}" >> $GITHUB_ENV
+          
+      - name: "Create Badge"
+        uses: schneegans/dynamic-badges-action@v1.4.0
+        with:
+          auth: ${{ secrets.GIST_KEY }}
+          gistID: 19e7ba12a69b1ca0f5f461e002490fca
+          filename: python-style-check.json
+          label: Time
+          message: is ${{ env.TIME }}
+          valColorRange: ${{ env.TIME }}
+          maxColorRange: 100
+          minColorRange: 0

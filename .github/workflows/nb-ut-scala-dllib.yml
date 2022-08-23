@@ -67,3 +67,20 @@ jobs:
           #need python requirements
           #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.keras" "-Dtest=com.intel.analytics.bigdl.dllib.keras.*Test" test -P spark_3.x -Dspark.version=3.1.2 
           #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.nn.mkldnn" "-Dtest=com.intel.analytics.bigdl.dllib.nn.mkldnn.*Test" test -P spark_3.x -Dspark.version=3.1.2 
+
+      - name: "Set time variable"
+        run: |
+          export NOW=$( date '+%F_%H:%M:%S' )
+          echo "TIME=${NOW}" >> $GITHUB_ENV
+          
+      - name: "Create Badge"
+        uses: schneegans/dynamic-badges-action@v1.4.0
+        with:
+          auth: ${{ secrets.GIST_KEY }}
+          gistID: 99a21d6945d775b609384a71f25b2882
+          filename: nb-ut-scala-dllib.json
+          label: Time
+          message: is ${{ env.TIME }}
+          valColorRange: ${{ env.TIME }}
+          maxColorRange: 100
+          minColorRange: 0

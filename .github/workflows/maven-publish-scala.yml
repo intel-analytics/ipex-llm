@@ -142,6 +142,22 @@ jobs:
           mv scala/ppml/pom.xml.origin scala/ppml/pom.xml
           mv scala/assembly/pom.xml.origin scala/assembly/pom.xml
 
+      - name: "Set time variable"
+        run: |
+          export NOW=$( date '+%F_%H:%M:%S' )
+          echo "TIME=${NOW}" >> $GITHUB_ENV
+          
+      - name: "Create Badge"
+        uses: schneegans/dynamic-badges-action@v1.4.0
+        with:
+          auth: ${{ secrets.GIST_KEY }}
+          gistID: 546a8b80c58f80afde45d1de1d8f622f
+          filename: maven-publish-scala.json
+          label: Time
+          message: is ${{ env.TIME }}
+          valColorRange: ${{ env.TIME }}
+          maxColorRange: 100
+          minColorRange: 0
 
 #    - name: Publish to GitHub Packages Apache Maven
 #      run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml

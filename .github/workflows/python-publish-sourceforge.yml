@@ -162,3 +162,20 @@ jobs:
         sshpass -p 'abcd1234!@#$QWER' \
         scp ./python/chronos/src/dist/bigdl_chronos*-py3-none-macosx_10_11_x86_64.whl \
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/chronos-py-spark3
+
+     - name: "Set time variable"
+        run: |
+          export NOW=$( date '+%F_%H:%M:%S' )
+          echo "TIME=${NOW}" >> $GITHUB_ENV
+          
+      - name: "Create Badge"
+        uses: schneegans/dynamic-badges-action@v1.4.0
+        with:
+          auth: ${{ secrets.GIST_KEY }}
+          gistID: d0ed454f23f76b387d448a35dfec7c6d
+          filename: python-publish-sourceforge.json
+          label: Time
+          message: is ${{ env.TIME }}
+          valColorRange: ${{ env.TIME }}
+          maxColorRange: 100
+          minColorRange: 0

@@ -88,3 +88,20 @@ jobs:
           cd scala
           mvn "-DwildcardSuites=com.intel.analytics.bigdl.friesian" "-Dtest=com.intel.analytics.bigdl.friesian.*Test" test -P spark_2.x -Dspark.version=2.4.6 "-Dspark.master=local[*]"
           mvn "-DwildcardSuites=com.intel.analytics.bigdl.friesian" "-Dtest=com.intel.analytics.bigdl.friesian.*Test" test -P spark_3.x -Dspark.version=3.1.2 "-Dspark.master=local[*]"
+          
+      - name: "Set time variable"
+        run: |
+          export NOW=$( date '+%F_%H:%M:%S' )
+          echo "TIME=${NOW}" >> $GITHUB_ENV
+          
+      - name: "Create Badge"
+        uses: schneegans/dynamic-badges-action@v1.4.0
+        with:
+          auth: ${{ secrets.GIST_KEY }}
+          gistID: 2a8b8bfeb7f228f56efce60551ca53c3
+          filename: nb-ut-scala-friesian.json
+          label: Time
+          message: is ${{ env.TIME }}
+          valColorRange: ${{ env.TIME }}
+          maxColorRange: 100
+          minColorRange: 0

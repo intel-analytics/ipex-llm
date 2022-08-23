@@ -67,3 +67,20 @@ jobs:
         docker tag ${IMAGE}-spark-3.1.2:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${TAG}
         docker push 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${TAG}
         docker rmi -f ${IMAGE}-spark-3.1.2:${TAG}
+
+    - name: "Set time variable"
+      run: |
+        export NOW=$( date '+%F_%H:%M:%S' )
+        echo "TIME=${NOW}" >> $GITHUB_ENV
+        
+    - name: "Create Badge"
+      uses: schneegans/dynamic-badges-action@v1.4.0
+      with:
+        auth: ${{ secrets.GIST_KEY }}
+        gistID: 69f93f4bb98ebe1cf724a1f4fdfd0664
+        filename: docker-publish-bigdl.json
+        label: Time
+        message: is ${{ env.TIME }}
+        valColorRange: ${{ env.TIME }}
+        maxColorRange: 100
+        minColorRange: 0

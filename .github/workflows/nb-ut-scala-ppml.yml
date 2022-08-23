@@ -57,3 +57,15 @@ jobs:
           export KERAS_BACKEND=tensorflow
           cd scala
           mvn "-DwildcardSuites=com.intel.analytics.bigdl.ppml" "-Dtest=com.intel.analytics.bigdl.ppml.*Test" test -P spark_3.x -Dspark.version=3.1.2 -Ddata-store-url=http://10.239.45.10:8081/repository/raw
+
+      - name: "Create Badge"
+        uses: schneegans/dynamic-badges-action@v1.4.0
+        with:
+          auth: ${{ secrets.GIST_KEY }}
+          gistID: 82414db069ee0367ff103a41e511f028
+          filename: nb-ut-scala-ppml.json
+          label: Time
+          message: is ${{ env.TIME }}
+          valColorRange: ${{ env.TIME }}
+          maxColorRange: 100
+          minColorRange: 0

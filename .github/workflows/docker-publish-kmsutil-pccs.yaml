@@ -56,3 +56,20 @@ jobs:
         docker tag ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
         docker push 10.239.45.10/arda/${IMAGE}:${TAG}
         docker rmi -f ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
+
+    - name: "Set time variable"
+      run: |
+        export NOW=$( date '+%F_%H:%M:%S' )
+        echo "TIME=${NOW}" >> $GITHUB_ENV
+        
+    - name: "Create Badge"
+      uses: schneegans/dynamic-badges-action@v1.4.0
+      with:
+        auth: ${{ secrets.GIST_KEY }}
+        gistID: cf03d51e8deddebdb546d986d24f3cd5
+        filename: docker-publish-kmsutil-pccs.json
+        label: Time
+        message: is ${{ env.TIME }}
+        valColorRange: ${{ env.TIME }}
+        maxColorRange: 100
+        minColorRange: 0

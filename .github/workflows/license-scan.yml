@@ -28,3 +28,20 @@ jobs:
         with:
           api-key: ${{ secrets.FOSSAAPIKEY }}
           run-tests: true
+
+      - name: "Set time variable"
+        run: |
+          export NOW=$( date '+%F_%H:%M:%S' )
+          echo "TIME=${NOW}" >> $GITHUB_ENV
+          
+      - name: "Create Badge"
+        uses: schneegans/dynamic-badges-action@v1.4.0
+        with:
+          auth: ${{ secrets.GIST_KEY }}
+          gistID: 23967bd68c41e388292692ae5dea3aa3
+          filename: license-scan.json
+          label: Time
+          message: is ${{ env.TIME }}
+          valColorRange: ${{ env.TIME }}
+          maxColorRange: 100
+          minColorRange: 0

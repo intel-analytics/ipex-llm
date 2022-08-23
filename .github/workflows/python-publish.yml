@@ -91,3 +91,20 @@ jobs:
   #    with:
    #     user: __token__
     #    password: ${{ secrets.PYPI_API_TOKEN }}
+
+      - name: "Set time variable"
+        run: |
+          export NOW=$( date '+%F_%H:%M:%S' )
+          echo "TIME=${NOW}" >> $GITHUB_ENV
+          
+      - name: "Create Badge"
+        uses: schneegans/dynamic-badges-action@v1.4.0
+        with:
+          auth: ${{ secrets.GIST_KEY }}
+          gistID: 579d442d1e61d5e24dc7cd21f77863ef
+          filename: python-publish.json
+          label: Time
+          message: is ${{ env.TIME }}
+          valColorRange: ${{ env.TIME }}
+          maxColorRange: 100
+          minColorRange: 0
