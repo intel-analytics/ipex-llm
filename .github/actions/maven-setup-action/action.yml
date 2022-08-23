@@ -1,9 +1,9 @@
 name: 'Setup Maven'
 description: 'setup maven'
-inputs:
-  arda_nexus:
-    description: 'arda nexus secret'
-    required: true
+# inputs:
+#   arda_nexus:
+#     description: 'arda nexus secret'
+#     required: true
 runs:
   using: "composite"
   steps:
@@ -37,4 +37,4 @@ runs:
               }
             }
           ]
-        mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${{ inputs.arda_nexus }}" }]'
+        mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${NEXUS_URL}" }]'

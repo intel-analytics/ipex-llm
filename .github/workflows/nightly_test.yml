@@ -23,8 +23,7 @@ jobs:
 
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
-      with:
-        arda_nexus: ${{ secrets.ARDA_NEXUS }}
+
     - name: Setup Env
       run: |
         apt-get update
@@ -68,8 +67,7 @@ jobs:
 
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
-      with:
-        arda_nexus: ${{ secrets.ARDA_NEXUS }}
+
     - name: Setup Env
       run: |
         apt-get update
@@ -110,8 +108,7 @@ jobs:
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
-      with:
-        arda_nexus: ${{ secrets.ARDA_NEXUS }}
+
     - name: Setup Env
       run: |
         apt-get update
@@ -158,8 +155,7 @@ jobs:
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
-      with:
-        arda_nexus: ${{ secrets.ARDA_NEXUS }}
+
     - name: Set up Python 
       uses: actions/setup-python@v2
       with:
@@ -194,8 +190,7 @@ jobs:
         uses: ./.github/actions/jdk-setup-action
       - name: Set up maven
         uses: ./.github/actions/maven-setup-action
-        with:
-          arda_nexus: ${{ secrets.ARDA_NEXUS }}
+
       - name: Run tests
         run: |
           export SPARK_LOCAL_HOSTNAME=localhost
@@ -222,8 +217,7 @@ jobs:
         uses: ./.github/actions/jdk-setup-action
       - name: Set up maven
         uses: ./.github/actions/maven-setup-action
-        with:
-          arda_nexus: ${{ secrets.ARDA_NEXUS }}
+
       - name: Set up redis
         run: |
           sudo mkdir -p /usr/share/keyrings
@@ -268,8 +262,6 @@ jobs:
         uses: ./.github/actions/jdk-setup-action
       - name: Set up maven
         uses: ./.github/actions/maven-setup-action
-        with:
-          arda_nexus: ${{ secrets.ARDA_NEXUS }}
       - name: Run tests
         run: |
           export SPARK_LOCAL_HOSTNAME=localhost
