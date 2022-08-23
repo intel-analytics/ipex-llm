@@ -17,11 +17,9 @@
 
 
 import os
-
 import tensorflow as tf
-from tensorflow.keras import layers, Sequential
+from tensorflow.keras import layers
 from tensorflow.keras.applications import ResNet50
-from tensorflow.keras.applications import EfficientNetB0
 import tensorflow_datasets as tfds
 
 # Use `Model` and `Sequential` in `bigdl.nano.tf.keras` instead of tensorflow's
@@ -29,44 +27,28 @@ from bigdl.nano.tf.keras import Model
 
 
 def create_datasets(img_size, batch_size):
-    (ds_train, ds_test), ds_info = tfds.load(
-        "stanford_dogs",
-        data_dir="/tmp/data",
-        split=['train', 'test'],
-        with_info=True,
-        as_supervised=True
-    )
+    (train_ds, test_ds), info = tfds.load('imagenette/320px-v2',
+                                          data_dir='/tmp/data',
+                                          split=['train', 'validation'],
+                                          with_info=True,
+                                          as_supervised=True)
     
-    # Create a Dataset that includes only 1/num_shards of full dataset.
-    num_shards = int(os.environ.get('NUM_SHARDS', 1))
-    ds_train = ds_train.shard(num_shards, index=0)
-    ds_test = ds_test.shard(num_shards, index=0)
-
-    num_classes = ds_info.features['label'].num_classes
-
-    data_augmentation = Sequential([
-        layers.RandomFlip(),
-        layers.RandomRotation(factor=0.15),
-    ])
-
+    num_classes = info.features['label'].num_classes
+    
     def preprocessing(img, label):
-        img, label =  tf.image.resize(img, (img_size, img_size)), tf.one_hot(label, num_classes)
-        return data_augmentation(img), label
+        return tf.image.resize(img, (img_size, img_size)), \
+               tf.one_hot(label, num_classes)
 
-    AUTOTUNE = tf.data.AUTOTUNE
-    ds_train = ds_train.cache().repeat().map(preprocessing). \
-        batch(batch_size, drop_remainder=True).prefetch(AUTOTUNE)
-    ds_test = ds_test.map(preprocessing). \
-        batch(batch_size, drop_remainder=True).prefetch(AUTOTUNE)
-
-    return ds_train, ds_test, ds_info
+    train_ds = train_ds.repeat().map(preprocessing).batch(batch_size)
+    test_ds = test_ds.map(preprocessing).batch(batch_size)
+    return train_ds, test_ds, info
 
 
 def create_model(num_classes, img_size):
     inputs = tf.keras.layers.Input(shape=(img_size, img_size, 3))
     x = tf.cast(inputs, tf.float32)
     x = tf.keras.applications.resnet50.preprocess_input(x)
-    backbone = ResNet50()
+    backbone = ResNet50(weights='imagenet')
     backbone.trainable = False
     x = backbone(x)
     x = layers.Dense(512, activation='relu')(x)
@@ -81,12 +63,12 @@ if __name__ == '__main__':
     img_size = 224
     batch_size = 32
     num_epochs = int(os.environ.get('NUM_EPOCHS', 10))
-    
-    ds_train, ds_test, ds_info = create_datasets(img_size=img_size, batch_size=batch_size)
-    
+
+    train_ds, test_ds, ds_info = create_datasets(img_size, batch_size)
+
     num_classes = ds_info.features['label'].num_classes
+
     steps_per_epoch = ds_info.splits['train'].num_examples // batch_size
-    validation_steps = ds_info.splits['test'].num_examples // batch_size
 
     # Multi-Instance Training
     # 
@@ -99,10 +81,8 @@ if __name__ == '__main__':
     # then just set the `num_processes` parameter in the `fit` method.
     # BigDL-Nano will launch the specific number of processes to perform data-parallel training.
     #
-    model = create_model(num_classes=num_classes, img_size=img_size)
-    model.fit(ds_train,
+    model = create_model(num_classes, img_size)
+    model.fit(train_ds,
               epochs=num_epochs,
               steps_per_epoch=steps_per_epoch,
-              validation_data=ds_test,
-              validation_steps=validation_steps,
-              num_processes=4)
+              num_processes=2)

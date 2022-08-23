@@ -6,5 +6,4 @@ set -e
 
 export NUM_EPOCHS=1
 python $NANO_TUTORIAL_TEST_DIR/tensorflow_sparse_embedding.py
-export NUM_SHARDS=4
 python $NANO_TUTORIAL_TEST_DIR/tensorflow_train_multi_instance.py
