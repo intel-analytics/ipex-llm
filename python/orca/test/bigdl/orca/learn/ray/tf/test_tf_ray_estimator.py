@@ -15,6 +15,7 @@
 #
 import os
 import shutil
+import tempfile
 from unittest import TestCase
 
 import numpy as np
