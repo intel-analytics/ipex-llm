@@ -38,10 +38,10 @@ from bigdl.orca.learn.utils import find_free_port, find_ip_and_free_port
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, make_data_creator, load_model, \
     save_model, process_xshards_of_pandas_dataframe
-from bigdl.orca.learn.log_monitor import start_log_server
+from bigdl.orca.learn.log_monitor import start_log_server, stop_log_server
 from bigdl.orca.data.shard import SparkXShards
 from bigdl.orca import OrcaContext
-from bigdl.dllib.utils.log4Error import invalidInputError, invalidOperationError
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 logger = logging.getLogger(__name__)
 
@@ -533,27 +533,4 @@ class SparkTFEstimator():
         """
         Shutdown estimator and release resources.
         """
-        if self.log_server_thread.is_alive():
-            import inspect
-            import ctypes
-            import zmq
-
-            def _async_raise(tid, exctype):
-                tid = ctypes.c_long(tid)
-                if not inspect.isclass(exctype):
-                    exctype = type(exctype)
-                res = ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, ctypes.py_object(exctype))
-                if res == 0:
-                    invalidInputError(False, "invalid thread id")
-                elif res != 1:
-                    ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, None)
-                    invalidOperationError(False, "PyThreadState_SetAsyncExc failed")
-
-            def stop_thread(thread):
-                _async_raise(thread.ident, SystemExit)
-
-            context = zmq.Context()
-            socket = context.socket(zmq.REQ)
-            socket.connect("tcp://{}:{}".format(self.ip, self.port))
-            socket.send_string("shutdown log server")
-            stop_thread(self.log_server_thread)
+        stop_log_server(self.log_server_thread, self.ip, self.port)
