@@ -170,6 +170,7 @@ export MALLOC_CONF="oversize_threshold:1,background_thread:true,metadata_thp:aut
 # Set LD_PRELOAD
 if [ -z "${LD_PRELOAD:-}" ]; then
 	echo "Setting LD_PRELOAD..."
+	ENABLE_JEMALLOC_VAR=1
 	if [[ $OPENMP -eq 1 && -z "${DISABLE_OPENMP_VAR:-}" ]]; then
 		export LD_PRELOAD="${LIB_DIR}/libiomp5.so"
 	fi
