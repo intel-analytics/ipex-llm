@@ -1,0 +1,44 @@
+name: 'Setup Maven'
+description: 'setup maven'
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/cache@v2
+      with:
+        path: ~/.m2/repository
+        key: maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: maven-
+    
+    - name: Set up Maven
+      uses: stCarolas/setup-maven@v4.4
+      with:
+        maven-version: 3.8.2
+
+    - name: Set up Maven Settings
+      uses: s4u/maven-settings-action@v2.6.0
+      with:
+        sonatypeSnapshots: true
+        apacheSnapshots: true
+        servers: |
+          [
+            {
+              "id": "central",
+              "configuration": {
+                "httpConfiguration": {
+                  "all": {
+                    "connectionTimeout": "3600000",
+                    "readTimeout": "3600000"
+                  }    
+                }
+              }
+            },
+            {
+              "id": "ossrh",
+              "username": "${{ secrets.OSSRH_USERNAME }}",
+              "password": "${{ secrets.OSSRH_PASSWORD }}",
+              "configuration": {
+                "timeout": "3600000"
+              }
+            }
+          ]
+        mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${{ secrets.ARDA_NEXUS }}" }]'
