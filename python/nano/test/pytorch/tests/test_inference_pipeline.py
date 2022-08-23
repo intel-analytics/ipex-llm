@@ -28,7 +28,13 @@ from bigdl.nano.pytorch.inference import Optimizer
 import torchmetrics
 import torch
 import torch.nn.functional as F
-from test.pytorch.utils._train_torch_lightning import data_transform, create_data_loader
+from test.pytorch.utils._train_torch_lightning import create_data_loader
+
+
+data_transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+    ])
 
 
 class Net(nn.Module):
