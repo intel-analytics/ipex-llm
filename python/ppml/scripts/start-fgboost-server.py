@@ -14,11 +14,10 @@
 # limitations under the License.
 #
 
-from bigdl.nano.pytorch.utils import TORCHVISION_VERSION_LESS_1_12
-from torchvision.datasets import *
-del ImageFolder
-if not TORCHVISION_VERSION_LESS_1_12:
-    del OxfordIIITPet
-    from .oxfordpet_datasets import OxfordIIITPet
+from bigdl.ppml.fl.fl_server import FLServer
 
-from .datasets import ImageFolder, SegmentationImageFolder
+if __name__ == '__main__':
+    fl_server = FLServer()
+    fl_server.build()
+    fl_server.start()
+    fl_server.wait_for_termination()

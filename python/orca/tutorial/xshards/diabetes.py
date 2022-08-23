@@ -33,7 +33,6 @@ model.add(Dense(12, input_shape=(8,), activation='relu'))
 model.add(Dense(8, activation='relu'))
 model.add(Dense(1, activation='sigmoid'))
 
-# compile the keras model
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
 data_shard = data_shard.assembleFeatureLabelCols(featureCols=['f1', 'f2', 'f3',
@@ -44,3 +43,4 @@ est = Estimator.from_keras(keras_model=model)
 est.fit(data=data_shard,
         batch_size=16,
         epochs=150)
+stop_orca_context()

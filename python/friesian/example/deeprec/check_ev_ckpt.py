@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 
+# python check_ev_ckpt.py --checkpoint ./result > ckpt.txt
+
 import argparse
 from tensorflow.contrib.framework.python.framework import checkpoint_utils
 
@@ -30,15 +32,16 @@ parser = get_arg_parser()
 args = parser.parse_args()
 checkpoint_dir = args.checkpoint
 
-# After using EmbeddingVariable, the characteristics of features can be viewed through ckpt
+# After using EmbeddingVariable, the characteristics of feature ids can be viewed through ckpt
 
-# xxxxx-freqs are the features that have been admitted.
-# xxxxx-freqs_filtered are the features that have been filtered,
-# corresponding to xxxxx-freqs_filtered.
-# xxxxx-keys are the id that has been admitted.
-# xxxxx-keys_filtered correspond to xxxxx-freqs_filteredr.
+# xxxxx-freqs are the frequencies of the features that have been admitted.
+# xxxxx-freqs_filtered are the frequencies of the features that have been filtered.
+# xxxxx-keys are the features that have been admitted, corresponding to xxxxx-freqs.
+# xxxxx-keys_filtered are the features that have been filtered,
+#                     corresponding to xxxxx-freqs_filtered.
 # xxxxx-values are the embedding vectors of the admitted features.
 # xxxxx/Adagrad are the backward embedding gradients.
 # xxxxx-versions are the most recent global steps of each feature.
 for name, shape in checkpoint_utils.list_variables(checkpoint_dir):
-    print('loading...', name, shape, checkpoint_utils.load_variable(checkpoint_dir, name))
+    if "embedding" in name:
+        print(name, shape, checkpoint_utils.load_variable(checkpoint_dir, name))

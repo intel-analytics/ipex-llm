@@ -20,7 +20,7 @@ jobs:
   # This workflow contains a single job called "build"
   style-check:
     # The type of runner that the job will run on
-    runs-on: ubuntu-20.04
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
     strategy:
       matrix:
         python-version: [3.7]
