@@ -16,16 +16,12 @@
 
 import contextlib
 import subprocess
-import io
-import os
 from logging import info, warning
 
 from ...utils.log4Error import invalidInputError
 
-import intel_extension_for_pytorch as ipex
 from .ipex_inference_model import PytorchIPEXJITModel
-from bigdl.nano.pytorch.amp.bfloat16 import autocast, RedirectStream
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
+from bigdl.nano.pytorch.amp.bfloat16 import autocast
 import torch
 
 
