@@ -561,7 +561,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                            options)
                 if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
                     # hdf5 format
-                    put_local_file_to_remote(temp_path, filepath, over_write=overwrite)
+                    put_local_file_to_remote(temp_path, filepath)
                 else:
                     # tf format
                     put_local_dir_tree_to_remote(temp_path, filepath)
