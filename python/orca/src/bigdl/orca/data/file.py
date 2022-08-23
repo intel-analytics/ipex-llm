@@ -537,3 +537,31 @@ def get_remote_files_with_prefix_to_local(remote_path_prefix, local_dir):
         except Exception as e:
             invalidOperationError(False, str(e), cause=e)
     return os.path.join(local_dir, prefix)
+
+
+def enable_multi_fs_load(load_func):
+
+    @functools.wraps(load_func)
+    def multi_fs_load(path, *args, **kwargs):
+        from bigdl.dllib.utils.file_utils import is_local_path
+        if is_local_path(path):
+            return load_func(path, *args, **kwargs)
+        else:
+            file_name = str(uuid.uuid1())
+            file_name = append_suffix(file_name, path.strip("/").split("/")[-1])
+            temp_path = os.path.join(tempfile.gettempdir(), file_name)
+            if is_file(path):
+                get_remote_file_to_local(path, temp_path)
+            else:
+                os.mkdir(temp_path)
+                get_remote_dir_to_local(path, temp_path)
+            try:
+                return load_func(temp_path, *args, **kwargs)
+            finally:
+                if os.path.isdir(temp_path):
+                    import shutil
+                    shutil.rmtree(temp_path)
+                else:
+                    os.remove(temp_path)
+
+    return multi_fs_load
