@@ -67,7 +67,7 @@ You could follow below steps to workaround:
 
 ### **OSError: Unable to load libhdfs: ./libhdfs.so: cannot open shared object file: No such file or directory**
 
-This error is because that PyArrow fails to locate `libhdfs.so` in default path of `$HADOOP_HOME/lib/native`.
+This error is because PyArrow fails to locate `libhdfs.so` in default path of `$HADOOP_HOME/lib/native` when you run with YARN on Cloudera.
 To solve this issue, you need to set the path of `libhdfs.so` in Cloudera to the environment variable of `ARROW_LIBHDFS_DIR` on Spark driver and executors with the following steps:
 
 1. Run `locate libhdfs.so` on the client node to find `libhdfs.so`
