@@ -98,8 +98,9 @@ class Optimizer:
                  training_data,
                  validation_data=None,
                  metric=None,
+                 direction: str = "max",
                  cpu_num: int = None,
-                 trials: int = 100):
+                 latency_sample_num: int = 100):
         '''
         This function will give all available inference acceleration methods a try
         and record the latency, accuracy and model instance inside the Optimizer for
@@ -117,19 +118,34 @@ class Optimizer:
                This is only needed when users care about the possible accuracy drop.
         :param metric: (optional) A callable object takes prediction and target
                and returns a accuracy value in this calling method `metric(pred, target)`
+        :param direction: (optional) A string that indicates the higher/lower
+               better for the metric, "min" for the lower the better and "max" for the
+               higher the better. Default value is "max".
         :param cpu_num: (optional) a int represents how many cores is needed for
                inference.
-        :param trials: (optional) a int represents the number of repetitions to calculate
+        :param latency_sample_num: (optional) a int represents the number of repetitions to calculate
                the average latency. The default value is 100.
         '''
         # check if model is a nn.Module or inherited from a nn.Module
         invalidInputError(isinstance(model, nn.Module), "model should be a nn module.")
+        invalidInputError(direction in ['min', 'max'],
+                          "Only support direction 'min', 'max'.")
 
         # get the available methods whose dep is met
         available_dict = _available_acceleration_combination()
 
+        self.direction = direction # save direction as attr
+
         default_threads = torch.get_num_threads()
         cpu_num = default_threads if cpu_num is None else int(cpu_num)
+
+        # set cpu num for onnxruntime
+        if _onnxruntime_checker():
+            import onnxruntime
+            sessionoptions = onnxruntime.SessionOptions()
+            sessionoptions.intra_op_num_threads = cpu_num
+            sessionoptions.inter_op_num_threads = cpu_num
+        # TODO: set cpu num for openvino
 
         result_map = {}
 
@@ -145,36 +161,39 @@ class Optimizer:
                     input_sample = tuple(next(iter(training_data))[:-1])
                     try:
                         if accelerator is None and use_ipex is False:
-                            accelerated_model = model
+                            acce_model = model
                         else:
                             if accelerator in ("jit", None):
-                                accelerated_model = Trainer.trace(model=model,
-                                                                  accelerator=accelerator,
-                                                                  use_ipex=use_ipex,
-                                                                  channels_last=use_channels_last,
-                                                                  input_sample=input_sample)
+                                acce_model = Optimizer.trace(model=model,
+                                                             accelerator=accelerator,
+                                                             use_ipex=use_ipex,
+                                                             # channels_last is only for jit
+                                                             channels_last=use_channels_last,
+                                                             input_sample=input_sample)
                             else:
-                                accelerated_model = Trainer.trace(model=model,
-                                                                  accelerator=accelerator,
-                                                                  input_sample=input_sample,
-                                                                  # remove output of openvino
-                                                                  logging=False)
+                                acce_model = Optimizer.trace(model=model,
+                                                             accelerator=accelerator,
+                                                             input_sample=input_sample,
+                                                             onnxruntime_session_options=sessionoptions,
+                                                             # remove output of openvino
+                                                             logging=False)
                     except Exception as e:
                         print(e)
                         continue
 
                 # if precision is int8 or bf16, then we will use quantize method
                 elif precision in ("int8", "bf16"):
-                    ort_method = _detect_ort_method(method)
+                    ort_method = _detect_quantization_method(method)
                     try:
-                        accelerated_model = Trainer.quantize(model=deepcopy(model),
-                                                             precision=precision,
-                                                             accelerator=accelerator,
-                                                             use_ipex=use_ipex,
-                                                             calib_dataloader=training_data,
-                                                             method=ort_method,
-                                                             # remove output of openvino
-                                                             logging=False)
+                        acce_model = Optimizer.quantize(model=deepcopy(model),
+                                                        precision=precision,
+                                                        accelerator=accelerator,
+                                                        use_ipex=use_ipex,
+                                                        calib_dataloader=training_data,
+                                                        method=ort_method,
+                                                        onnxruntime_session_options=sessionoptions,
+                                                        # remove output of openvino
+                                                        logging=False)
                     except Exception as e:
                         print(e)
                         continue
@@ -188,8 +207,8 @@ class Optimizer:
                 torch.set_num_threads(cpu_num)
                 try:
                     result_map[method]["latency"] =\
-                        _throughput_calculate_helper(trials, func_test,
-                                                     accelerated_model, input_sample)
+                        _throughput_calculate_helper(latency_sample_num, func_test,
+                                                     acce_model, input_sample)
                 except Exception as e:
                     result_map.pop(method)
                     torch.set_num_threads(default_threads)
@@ -198,10 +217,10 @@ class Optimizer:
                 torch.set_num_threads(default_threads)
                 if validation_data is not None and metric is not None:
                     result_map[method]["accuracy"] =\
-                        _accuracy_calculate_helper(accelerated_model,
+                        _accuracy_calculate_helper(acce_model,
                                                    metric, validation_data)
 
-                result_map[method]["model"] = accelerated_model
+                result_map[method]["model"] = acce_model
 
             else:
                 pass
@@ -212,8 +231,7 @@ class Optimizer:
                        accelerator: str = None,
                        precision: str = None,
                        use_ipex: bool = None,
-                       accuracy_criterion: float = None,
-                       direction: str = "max"):
+                       accuracy_criterion: float = None):
         '''
         :param accelerator: (optional) Use accelerator 'None', 'onnxruntime',
                'openvino', 'jit', defaults to None. If not None, then will only find the
@@ -225,9 +243,6 @@ class Optimizer:
                model with this specific ipex setting
         :param :param accuracy_criterion: (optional) a float represents tolerable
                accuracy drop percentage, defaults to None meaning no accuracy control.
-        :param direction: (optional) A string that indicates the higher/lower
-               better for the metric, "min" for the lower the better and "max" for the
-               higher the better. Default value is "max".
         :return: best model, corresponding acceleration option
         '''
         invalidOperationError(len(self.optimized_model_dict) > 0,
@@ -238,8 +253,6 @@ class Optimizer:
         # TODO: include fp16?
         invalidInputError(precision in [None, 'int8', 'bf16'],
                           "Only support precision 'int8', 'bf16'.")
-        invalidInputError(direction in ['min', 'max'],
-                          "Only support direction 'min', 'max'.")
 
         best_model = self.optimized_model_dict["original"]["model"]
         best_metric = CompareMetric("original",
@@ -266,7 +279,7 @@ class Optimizer:
             if accuracy_criterion is not None:
                 accuracy = result["accuracy"]
                 compare_acc = best_metric.accuracy
-                if direction == "min":
+                if self.direction == "min":
                     if (accuracy - compare_acc) / compare_acc > accuracy_criterion:
                         continue
                 else:
@@ -288,11 +301,16 @@ class Optimizer:
               onnxruntime_session_options=None,
               logging=True,
               **export_kwargs):
-        return Trainer.trace(model, input_sample, accelerator, use_ipex,
-                             onnxruntime_session_options, logging, **export_kwargs)
+        return Trainer.trace(model=model,
+                             input_sample=input_sample,
+                             accelerator=accelerator,
+                             use_ipex=use_ipex,
+                             onnxruntime_session_options=onnxruntime_session_options,
+                             logging=logging,
+                             **export_kwargs)
 
     @staticmethod
-    def quantize(model,  # remove the type requirement for type checking
+    def quantize(model,
                  precision: str = 'int8',
                  accelerator=None,
                  use_ipex=False,
@@ -309,10 +327,23 @@ class Optimizer:
                  onnxruntime_session_options=None,
                  logging=True,
                  **export_kwargs):
-        return Trainer.quantize(model, precision, accelerator, use_ipex, calib_dataloader,
-                                metric, accuracy_criterion, approach, method, conf,
-                                tuning_strategy, timeout, max_trials, input_sample,
-                                onnxruntime_session_options, logging, **export_kwargs)
+        return Trainer.quantize(model=model,
+                                precision=precision,
+                                accelerator=accelerator,
+                                use_ipex=use_ipex,
+                                calib_dataloader=calib_dataloader,
+                                metric=metric,
+                                accuracy_criterion=accuracy_criterion,
+                                approach=approach,
+                                method=method,
+                                conf=conf,
+                                tuning_strategy=tuning_strategy,
+                                timeout=timeout,
+                                max_trials=max_trials,
+                                input_sample=input_sample,
+                                onnxruntime_session_options=onnxruntime_session_options,
+                                logging=logging,
+                                **export_kwargs)
 
 
 def _inc_checker():
@@ -342,7 +373,7 @@ def _openvino_checker():
     '''
     check if openvino-dev is installed
     '''
-    return not find_spec("openvino") is None
+    return not find_spec("openvino-dev") is None
 
 
 def _bf16_checker():
@@ -353,7 +384,7 @@ def _bf16_checker():
     return "avx512_bf16" in msg or "amx_bf16" in msg
 
 
-def _detect_ort_method(method_name):
+def _detect_quantization_method(method_name):
     method_name = method_name.split("_")[-1]
     if method_name in ["qlinear", "integer"]:
         return method_name
@@ -393,7 +424,7 @@ def _throughput_calculate_helper(iterrun, func, *args):
     time_list.sort()
     # remove top and least 10% data.
     time_list = time_list[int(0.1 * iterrun): int(0.9 * iterrun)]
-    return np.median(time_list) * 1000
+    return np.mean(time_list) * 1000
 
 
 def _accuracy_calculate_helper(model, metric, data):
