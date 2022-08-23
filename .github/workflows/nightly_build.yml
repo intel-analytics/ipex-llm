@@ -5,13 +5,6 @@ on:
     - cron: '0 17 * * *'
   workflow_dispatch:
     inputs:
-      tag:
-        description: 'e.g. 2.1.0-SNAPSHOT'
-        required: true
-        default: 'latest'
-        type: string
-  workflow_dispatch:
-    inputs:
       artifact:
         description: 'select which job to run("all" will make all jobs run)'
         required: true
