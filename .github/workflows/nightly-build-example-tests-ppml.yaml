@@ -45,7 +45,7 @@ jobs:
       env:
         DEFAULT_EXAMPLE: 'ALL'
         DEFAULT_SGX_MEM_SIZE: 32G
-        DEFAULT_IMAGE: 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:devel
+        DEFAULT_IMAGE: 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:latest
       run: |
         echo "SELECT_RUNNING_EXAMPLE=${{ github.event.inputs.select_running_example || env.DEFAULT_EXAMPLE }} " >> $GITHUB_ENV
         echo "SGX_MEM_SIZE=${{ github.event.inputs.sgx_mem_size || env.DEFAULT_MEM_SIZE }}" >> $GITHUB_ENV
