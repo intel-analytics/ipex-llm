@@ -16,15 +16,17 @@
 
 package com.intel.analytics.bigdl.ppml.attestation
 
+import com.intel.analytics.bigdl.dllib.common.zooUtils
 import java.io.{BufferedOutputStream, BufferedInputStream};
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import org.apache.logging.log4j.LogManager
 import org.scalatest.{FlatSpec, Matchers}
-import com.intel.analytics.bigdl.dllib.common.zooUtils
+import scala.io.Source
 import scala.language.postfixOps
 import sys.env
+import sys.process._
 
 class SGXDCAPQuoteVerifierImplSpec extends FlatSpec with Matchers {
 
@@ -32,17 +34,16 @@ class SGXDCAPQuoteVerifierImplSpec extends FlatSpec with Matchers {
   var tmpDir: File = _
   val sGXDCAPQuoteVerifierImplSpec = new SGXDCAPQuoteVerifierImpl()
 
-  // val quoteUrl = if (env.contains("FTP_URI")) {
-  //   env("FTP_URI").toString
-  // }  
+  val quoteUrl = if (env.contains("FTP_URI")) {
+    env("FTP_URI").toString
+  }
 
-  // tmpDir = zooUtils.createTmpDir("ZooPPML").toFile()
-  // val dir = new File(s"${tmpDir.getAbsolutePath}/SGXDCAPQuoteVerifierImplSpec").getCanonicalPath
-  // s"wget -nv -P $dir $quoteUrl" !;
-  // val quotePath = s"$dir/quote.dat"
+  tmpDir = zooUtils.createTmpDir("ZooPPML").toFile()
+  val dir = new File(s"${tmpDir.getAbsolutePath}/SGXDCAPQuoteVerifierImplSpec").getCanonicalPath
+  s"wget -nv -P $dir $quoteUrl" !;
+  val quotePath = s"$dir/sgxdcap_quote.dat"
 
-  val quotePath = "/home/xiangyu/workspace/BigDL/scala/quote.dat"
-
+  // SGXDCAPQuoteVerifierImplSpec
   "SGX DCAP verify Quote " should "work" in {
     val quoteFile = new File(quotePath)
     val in = new FileInputStream(quoteFile)
