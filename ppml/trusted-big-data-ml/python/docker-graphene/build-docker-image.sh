@@ -5,7 +5,7 @@ export HTTPS_PROXY_PORT=your_https_proxy_port
 export JDK_URL=http://your-http-url-to-download-jdk
 export IMAGE_MODE=bigdl_base_image_or_customer_image
 export BIGDL_IMAGE_NAME=your_bigdl_base_image_name_used_to_build_customer_image
-export BIGDL_IMAGE_VERSION=your_bigdl_base_image_version_used_to_build_ucustomer_image
+export BIGDL_IMAGE_VERSION=your_bigdl_base_image_version_used_to_build_customer_image
 export CUSTOMER_IMAGE_TAG=your_customer_image_tag
 export LOCAL_IP=your_local_IP
 
