@@ -40,7 +40,7 @@ CompareMetric = namedtuple("CompareMetric", ["method_name", "latency", "accuracy
 
 
 class AccelerationOption(object):
-    __slot__ =  _whole_acceleration_options
+    __slot__ = _whole_acceleration_options
 
     def __init__(self, *args, **kwargs):
         '''
