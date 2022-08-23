@@ -35,7 +35,7 @@ class LocalModel(nn.Module):
 
 
 if __name__ == '__main__':
-    df_train = pd.read_csv('./python/ppml/example/pytorch_nn_lr/data/diabetes-vfl-2.csv')
+    df_train = pd.read_csv('.data/diabetes-vfl-2.csv')
 
     # this should wait for the merge of 2 FLServer (Py4J Java gRPC and Python gRPC)
     # df_train['ID'] = df_train['ID'].astype(str)

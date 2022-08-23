@@ -13,19 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import warnings
-import os
 
+from bigdl.ppml.fl.fl_server import FLServer
 
-if os.getenv("LD_PRELOAD", "null") != "null":
-    warnings.warn("Users of `bigdl.chronos.autots` should "
-                  "unset bigdl-nano environment variables!"
-                  "Please run `source bigdl-nano-unset-env` "
-                  "in your bash terminal")
-
-try:
-    # TODO: make this a LazyImport
-    from .autotsestimator import AutoTSEstimator
-    from .tspipeline import TSPipeline
-except ImportError:
-    pass
+if __name__ == '__main__':
+    fl_server = FLServer()
+    fl_server.build()
+    fl_server.start()
+    fl_server.wait_for_termination()

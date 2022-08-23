@@ -61,7 +61,8 @@ python wdl.py \
     --ev True \
     --ev_filter counter \
     --smartstaged False \
-    --emb_fusion False
+    --emb_fusion False \
+    --optimizer adam
 ```
 - K8s mode:
 ```bash
@@ -74,7 +75,8 @@ python wdl.py \
     --ev True \
     --ev_filter counter \
     --smartstaged False \
-    --emb_fusion False
+    --emb_fusion False \
+    --optimizer adam
 ```
 
 For DeepRec related arguments, please refer to the original example for more description.
