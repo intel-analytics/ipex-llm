@@ -38,6 +38,5 @@ class SGXDCAPQuoteVerifierImpl extends QuoteVerifier with Serializable {
     }
 
     throw new AttestationRuntimeException("Unexpected workflow when verifying Quote!")
-
   }
 }
