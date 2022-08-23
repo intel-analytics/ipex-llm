@@ -3,6 +3,8 @@ name: Nightly Build
 on:
   schedule:
     - cron: '0 17 * * *'
+  pull_request:
+  push:
   workflow_dispatch:
     inputs:
       artifact:
