@@ -165,6 +165,7 @@ def start_log_server(ip, port):
     logger_thread.start()
     return logger_thread
 
+
 def stop_log_server(thread, ip, port):
     if thread.is_alive():
         import inspect
