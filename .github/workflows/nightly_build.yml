@@ -24,17 +24,17 @@ on:
         - docker-bigdl-ppml-trusted-big-data-ml-scala-occlum
         - docker-bigdl-ppml-trusted-realtime-ml-scala-occlum
         - docker-kms
-      bigdl_tag:
+      bigdlTag:
         description: 'e.g. 2.1.0-SNAPSHOT'
         required: true
         default: 'latest'
         type: string
-      bigdl_ppml_tag:
+      bigdlPpmlTag:
         description: 'e.g. 2.1.0-SNAPSHOT'
         required: true
         default: 'latest'
         type: string
-      kms_tag:
+      kmsTag:
         description: 'e.g. 0.3.0'
         required: true
         default: '0.3.0'
@@ -55,7 +55,7 @@ jobs:
       env:
         DEFAULT_TAG: 'latest'
       run: |
-        echo "TAG=${{ github.event.inputs.bigdl_tag || env.DEFAULT_TAG }} " >> $GITHUB_ENV
+        echo "TAG=${{ github.event.inputs.bigdlTag || env.DEFAULT_TAG }} " >> $GITHUB_ENV
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -112,7 +112,7 @@ jobs:
         DEFAULT_TAG: 'latest'
         DEFAULT_ARTIFACT: 'all'
       run: |
-        echo "TAG=${{ github.event.inputs.bigdl_ppml_tag || env.DEFAULT_TAG }} " >> $GITHUB_ENV
+        echo "TAG=${{ github.event.inputs.bigdlPpmlTag || env.DEFAULT_TAG }} " >> $GITHUB_ENV
         echo "ARTIFACT=${{ github.event.inputs.artifact || env.DEFAULT_ARTIFACT }}" >> $GITHUB_ENV
     - name: bigdl-ppml-trusted-big-data-ml-python-gramine
       run: |
@@ -252,7 +252,7 @@ jobs:
     - name: Set the variable
       env:
         DEFAULT_TAG: '0.3.0'
-      run: echo "TAG=${{ github.event.inputs.kms_tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
+      run: echo "TAG=${{ github.event.inputs.kmsTag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
     - name: docker deploy kms-util
       run: |
         export IMAGE=intelanalytics/kms-utils
