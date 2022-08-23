@@ -22,6 +22,7 @@ from importlib.util import find_spec
 import time
 import numpy as np
 from copy import deepcopy
+from typing import Dict
 
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
@@ -39,6 +40,8 @@ CompareMetric = namedtuple("CompareMetric", ["method_name", "latency", "accuracy
 
 
 class AccelerationOption(object):
+    __slot__ =  _whole_acceleration_options
+
     def __init__(self, *args, **kwargs):
         '''
         initialize optimization option
@@ -151,7 +154,7 @@ class Optimizer:
             sessoption = None
         # TODO: set cpu num for openvino
 
-        result_map = {}
+        result_map: Dict[str, Dict] = {}
 
         for method, available in available_dict.items():
             if available:

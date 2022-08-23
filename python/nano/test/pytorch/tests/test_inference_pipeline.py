@@ -61,7 +61,7 @@ class TestInferencePipeline(TestCase):
     num_workers = 0
     data_dir = os.path.join(os.path.dirname(__file__), "data")
     metric = torchmetrics.Accuracy(num_classes=10, top_k=1)
-    max_epochs = 1
+    max_epochs = 10
 
     model = Net()
     test_loader = create_data_loader(data_dir, 1, num_workers, data_transform, subset=10, shuffle=False)
@@ -86,9 +86,9 @@ class TestInferencePipeline(TestCase):
         acc_model, option = inference_opt.get_best_model()
         print(option)
         acc_model, option = inference_opt.get_best_model(accelerator="onnxruntime")
-        assert option == "" or "onnxruntime" in  option
+        assert option == "" or "onnxruntime" in option
         acc_model, option = inference_opt.get_best_model(precision="int8")
-        assert option == "" or "inc" in  option
+        assert option == "" or "inc" in option
         acc_model, option = inference_opt.get_best_model(accuracy_criterion=0.1)
 
 if __name__ == "__main__":
