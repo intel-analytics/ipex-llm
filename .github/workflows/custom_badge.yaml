@@ -1,22 +1,32 @@
 name: Build Badges
 
-on: [push]
-
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+  
 jobs:
-  answer-badge:
-    name: Create Answer Badge
+  print-time:
     runs-on: ubuntu-latest
     steps:
-      - name: Get the Numbers
-        run: echo "ANSWER=42" >> $GITHUB_ENV
+      - uses: actions/checkout@v3
+      - name: print time
+        run: |
+          set -x
+          export NOW=$( date '+%F_%H:%M:%S' )
+          echo "TIME=${NOW}" >> $GITHUB_ENV
       - name: Create the Badge
-        uses: schneegans/dynamic-badges-action@master
+        uses: schneegans/dynamic-badges-action@v1.4.0
         with:
-          auth: ${{ secrets.GIST_SECRET }}
-          gistID: 4f79dfdd46bd086d4a00287006ba9eaa
-          filename: answer.json
-          label: The Answer
-          message: is ${{ env.ANSWER }}
-          valColorRange: ${{ env.ANSWER }}
+          auth: ${{ secrets.GIST_KEY }}
+          gistID: 5798b7a65a0d2e271d5ee492cdcb3617
+          filename: test.json
+          label: Time
+          message: is ${{ env.TIME }}
+          valColorRange: ${{ env.TIME }}
           maxColorRange: 100
           minColorRange: 0
+      - name: purge
+        run: |
+          curl -X PURGE https://gist.githubusercontent.com/liu-shaojun/4f79dfdd46bd086d4a00287006ba9eaa/raw/test.json
+          curl -X PURGE https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/liu-shaojun/4f79dfdd46bd086d4a00287006ba9eaa/raw/test.json
