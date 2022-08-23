@@ -140,7 +140,7 @@ Save the Estimator state (including model and optimizer) to the provided model p
 est.save("mnist_model")
 ```
 
-Load the Estimator state (model and possibly with optimizer) from provided model path.
+Load the Estimator state (model and possibly with optimizer) from the provided model path.
 
 ```python
 est.load("mnist_model")
