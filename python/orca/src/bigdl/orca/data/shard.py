@@ -552,9 +552,6 @@ class SparkXShards(XShards):
         rdd = self.rdd.mapPartitions(f)
         column = self.get_schema()['columns']
         df = rdd.toDF(list(column))
-        df.cache()
-        df.count()
-        self.uncache()
         return df
 
     def to_spark_df(self):
@@ -578,15 +575,14 @@ class SparkXShards(XShards):
         schema = self.rdd.mapPartitions(getSchemaStructType).first()
         sqlContext = get_spark_sql_context(get_spark_context())
         timezone = sqlContext._conf.sessionLocalTimeZone()
-        # create temp dir
-        jvm = SparkContext._jvm
-        local_dir = jvm.org.apache.spark.util.Utils.getLocalDir(sqlContext._jsc.sc().conf())
-        tmpFile = jvm.org.apache.spark.util.Utils.createTempDir(
-            local_dir, "pyspark"
-        ).getAbsolutePath()
 
         def f(iter):
             for pdf in iter:
+                import os
+                import uuid
+                tmpFile = "/tmp/" + str(uuid.uuid1())
+                os.mkdir(tmpFile)
+
                 arrow_types = [to_arrow_type(f.dataType) for f in schema.fields]
 
                 arrow_data = [[(c, t) for (_, c), t in zip(pdf.iteritems(), arrow_types)]]
@@ -604,9 +600,6 @@ class SparkXShards(XShards):
         jiter = self.rdd.mapPartitions(f)
         from bigdl.dllib.utils.file_utils import callZooFunc
         df = callZooFunc("float", "orcaToDataFrame", jiter, schema.json(), sqlContext)
-        df.cache()
-        df.count()
-        self.uncache()
         return df
 
     def __len__(self):
