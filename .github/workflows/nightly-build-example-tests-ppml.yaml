@@ -28,7 +28,7 @@ on:
       image:
         description: 'docker image version'
         required: true
-        default: 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:devel
+        default: 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:latest
         type: string
 
   
