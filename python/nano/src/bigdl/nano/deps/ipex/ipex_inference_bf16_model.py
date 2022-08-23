@@ -76,10 +76,7 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
 
     def forward_step(self, *inputs):
         with self.forward_context():
-            if self.channels_last:
-                inputs = tuple(map(lambda x: x.to(memory_format=torch.channels_last), inputs))
-            self._bf16_check(*inputs)
-            return self.model(*inputs)
+            return super().forward_step(*inputs)
 
     @property
     def status(self):
