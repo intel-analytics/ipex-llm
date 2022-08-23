@@ -19,7 +19,7 @@ import torch
 from bigdl.nano.pytorch import Trainer
 from torchvision.models.resnet import resnet18
 from unittest.mock import MagicMock, Mock, PropertyMock, patch
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11, TORCH_VERSION_LESS_1_12
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11
 from bigdl.nano.common import check_avx512
 
 
@@ -37,56 +37,18 @@ class Pytorch1_9:
 
 
 class CaseWithoutAVX512:
-    @patch('bigdl.nano.deps.ipex.ipex_inference_bf16_model.PytorchIPEXJITBF16Model._has_bf16_isa', new_callable=PropertyMock)
-    def test_unsupported_HW_or_OS(self, mocked_has_bf16_isa):
-        mocked_has_bf16_isa.return_value = False
+    @patch('bigdl.nano.deps.ipex.ipex_inference_bf16_model.PytorchIPEXJITBF16Model._check_cpu_isa', new_callable=PropertyMock)
+    def test_unsupported_HW_or_OS(self, mocked_check_cpu_isa):
+        mocked_check_cpu_isa.return_value = False
         trainer = Trainer(max_epochs=1)
         model = resnet18(num_classes=10)
-
-        x = torch.rand((10, 3, 256, 256))
-        y = torch.ones((10,), dtype=torch.long)
 
         with pytest.raises(RuntimeError,
-                           match="Your machine or OS doesn't support BF16 instructions."):
+                           match="Applying IPEX BF16 optimization needs the cpu support avx512."):
             bf16_model = trainer.quantize(model, precision='bf16', use_ipex=True)
-
-    @patch.dict('os.environ', {'ALLOW_NON_BF16_ISA': "1"})
-    @patch('bigdl.nano.deps.ipex.ipex_inference_bf16_model.PytorchIPEXJITBF16Model._has_bf16_isa', new_callable=PropertyMock)
-    def test_bf16_common(self, mocked_has_bf16_isa):
-        """
-        Debug mode. Allow run model without IPEX BF16 optimization.
-        """
-        mocked_has_bf16_isa.return_value = False
-        trainer = Trainer(max_epochs=1)
-        model = resnet18(num_classes=10)
-
-        x = torch.rand((10, 3, 256, 256))
-        y = torch.ones((10,), dtype=torch.long)
-
-        bf16_model = trainer.quantize(model, precision='bf16', use_ipex=True)
-        # Debug mode to test functionality, make sure forward is called sucessfully
-        y_hat = bf16_model(x)
-        assert y_hat.shape == (10, 10) and y_hat.dtype == torch.float32
 
 
 class Pytorch1_11(CaseWithoutAVX512):
-    @patch("bigdl.nano.deps.ipex.ipex_inference_bf16_model.PytorchIPEXJITBF16Model._max_bf16_isa", return_value=None)
-    def test_not_executed_on_bf16(self, mocked_max_bf16_isa):
-        mocked_max_bf16_isa.return_value = None
-
-        trainer = Trainer(max_epochs=1)
-        model = resnet18(num_classes=10)
-
-        x = torch.rand((10, 3, 256, 256))
-
-        bf16_model = trainer.quantize(model, precision='bf16', use_ipex=True)
-        with pytest.raises(
-            RuntimeError,
-            match="BF16 ISA support is not enabled under current context."
-        ):
-            y_hat = bf16_model(x)
-            assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
-
     def test_bf16_with_avx512_core(self):
         trainer = Trainer(max_epochs=1)
         model = resnet18(num_classes=10)
@@ -100,37 +62,7 @@ class Pytorch1_11(CaseWithoutAVX512):
         assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
 
 
-class Pytorch1_12(Pytorch1_11):
-    def test_bf16_with_avx512_bf16(self):
-        trainer = Trainer(max_epochs=1)
-        model = resnet18(num_classes=10)
-
-        x = torch.rand((10, 3, 256, 256))
-        y = torch.ones((10,), dtype=torch.long)
-
-        bf16_model = trainer.quantize(model, precision='bf16', use_ipex=True)
-
-        bf16_model._max_bf16_isa = MagicMock(return_value="AVX512_BF16")
-        y_hat = bf16_model(x)
-
-        assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
-
-    def test_bf16_with_amx(self):
-        trainer = Trainer(max_epochs=1)
-        model = resnet18(num_classes=10)
-
-        x = torch.rand((10, 3, 256, 256))
-        y = torch.ones((10,), dtype=torch.long)
-
-        bf16_model = trainer.quantize(model, precision='bf16', use_ipex=True)
-
-        bf16_model._max_bf16_isa = MagicMock(return_value="AMX")
-        y_hat = bf16_model(x)
-
-        assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
-
-
-TORCH_VERSION_CLS = Pytorch1_12
+TORCH_VERSION_CLS = Pytorch1_11
 
 if TORCH_VERSION_LESS_1_10:
     print("ipex 1.9")
@@ -138,12 +70,9 @@ if TORCH_VERSION_LESS_1_10:
 elif not check_avx512():
     print("IPEX Inference Model Without AVX512")
     TORCH_VERSION_CLS = CaseWithoutAVX512
-elif TORCH_VERSION_LESS_1_12:
-    print("ipex 1.11")
-    TORCH_VERSION_CLS = Pytorch1_11
 
 
-class TestBF16(TORCH_VERSION_CLS, TestCase):
+class TestIPEXBF16(TORCH_VERSION_CLS, TestCase):
     pass
 
 

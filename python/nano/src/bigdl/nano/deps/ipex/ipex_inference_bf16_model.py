@@ -48,77 +48,25 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                the parameter will be ignored if use_ipex is False.
         :param from_load: this will only be set by _load method.
         '''
-        invalidInputError(
-            self._has_bf16_isa or self._allow_non_bf16,
-            errMsg="Your machine or OS doesn't support BF16 instructions."
-        )
-        dtype = torch.bfloat16 if self._has_bf16_isa else None
+        if use_ipex:
+            invalidInputError(
+                self._check_cpu_isa,
+                errMsg="Applying IPEX BF16 optimization needs the cpu support avx512.",
+                fixMsg="Please set use_ipex to False or not set precision to bf16."
+            )
         PytorchIPEXJITModel.__init__(self, model, input_sample=input_sample, use_ipex=use_ipex,
-                                     dtype=dtype, use_jit=use_jit,
+                                     dtype=torch.bfloat16, use_jit=use_jit,
                                      channels_last=channels_last, from_load=from_load)
 
     @property
-    def _allow_non_bf16(self):
-        """
-        ALLOW_NON_BF16_ISA indicates if we restrict bf16 instructions support to be available.
-        ALLOW_NON_BF16_ISA='1' sometimes helps debug and test cases without AVX512 or AMX
-
-        :return: The bool value of ALLOW_NON_BF16_ISA
-        """
-        return os.environ.get("ALLOW_NON_BF16_ISA", None) == '1'
-
-    @property
-    def _has_bf16_isa(self):
+    def _check_cpu_isa(self):
         """Indicator to verify if bf16 instructions are available."""
         msg = subprocess.check_output(["lscpu"]).decode("utf-8")
         return 'avx512' in msg or 'amx' in msg
 
-    def _max_bf16_isa(self, *args, **kwargs):
-        """
-        Run inference once and check the log to confirm if bf16 instructions are used.
-
-        :return: AMX/AVX512_BF16/AVX512/None
-        """
-        dnnl_log = io.StringIO()
-        with RedirectStream(target=dnnl_log), ipex.verbose(1):
-            self.model(*args, *kwargs)
-        dnnl_log = dnnl_log.getvalue()
-        max_bf16_isa = None
-        # IPEX 1.11 BF16 support AVX512
-        # IPEX 1.12 BF16 support AMX, AVX512_BF16, AVX512_VNNI, AVX512
-        if 'amx_bf16' in dnnl_log:
-            max_bf16_isa = 'AMX'
-        elif 'avx512_core_bf16' in dnnl_log:
-            max_bf16_isa = 'AVX512_BF16'
-        elif 'avx512_core' in dnnl_log:
-            max_bf16_isa = 'AVX512'
-        return max_bf16_isa
-
-    def _bf16_check(self, *args, **kwargs):
-        if getattr(self, "_is_bf16", None) is not None:
-            return
-        max_bf16_isa = self._max_bf16_isa(*args, **kwargs)
-        if max_bf16_isa:
-            info(f"{max_bf16_isa} BF16 support is enabled in this model.")
-            self._is_bf16 = True
-        else:
-            if self._allow_non_bf16:
-                self._is_bf16 = False
-            else:
-                invalidInputError(
-                    False,
-                    errMsg="BF16 ISA support is not enabled under current context.",
-                    fixMsg="Please try to upgrade your pytorch version to obtain"
-                           " BF16 acceleration."
-                )
-
-        if not self._is_bf16:
-            warning("You are not running BF16 model with ISA support."
-                    " The performance will be quite low.")
-
     def autocast_context_manager(self):
         """Create autocast context"""
-        return autocast(enabled=self._has_bf16_isa)
+        return autocast(enabled=self._check_cpu_isa)
 
     @contextlib.contextmanager
     def forward_context(self):
