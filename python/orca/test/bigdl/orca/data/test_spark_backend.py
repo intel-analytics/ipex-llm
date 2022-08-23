@@ -221,6 +221,17 @@ class TestSparkBackend(TestCase):
         df = data_shard.to_spark_df()
         df.show()
 
+    def test_spark_df_to_shards(self):
+        file_path = os.path.join(self.resource_path, "orca/data/csv")
+        from pyspark.sql import SparkSession
+        spark = SparkSession.builder.master("local[1]")\
+            .appName('test_spark_backend')\
+            .config("spark.driver.memory", "6g").getOrCreate()
+        df = spark.read.csv(file_path)
+
+        from bigdl.orca.data.utils import *
+        data_shards = spark_df_to_pd_sparkxshards(df)
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
