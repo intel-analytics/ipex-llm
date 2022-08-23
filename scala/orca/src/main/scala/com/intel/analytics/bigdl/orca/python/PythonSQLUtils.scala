@@ -16,14 +16,20 @@
 
 package org.apache.spark.sql
 
-import java.io.FileInputStream
+import java.io.{DataOutputStream, FileInputStream, FileOutputStream}
 
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import org.apache.spark.TaskContext
+import org.apache.arrow.vector.VectorSchemaRoot
+import org.apache.arrow.vector.ipc.ArrowStreamWriter
+import org.apache.spark.{SparkEnv, TaskContext}
 import org.apache.spark.api.java.JavaRDD
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.api.python.PythonSQLUtils
-import org.apache.spark.sql.execution.arrow.ArrowConverters
+import org.apache.spark.sql.catalyst.{CatalystTypeConverters, InternalRow}
+import org.apache.spark.sql.execution.arrow.{ArrowConverters, ArrowWriter}
+import org.apache.spark.sql.execution.python.BatchIterator
 import org.apache.spark.sql.types.{DataType, StructType}
+import org.apache.spark.sql.util.ArrowUtils
 import org.apache.spark.util.Utils
 
 import scala.reflect.ClassTag
@@ -50,5 +56,63 @@ class PythonOrcaSQLUtils[T: ClassTag](implicit ev: TensorNumeric[T]) {
       }
     }
     sqlContext.internalCreateDataFrame(rdd.setName("arrow"), schema)
+  }
+
+  def sparkdfTopdf(sdf: DataFrame, sqlContext: SQLContext, batchSize: Int = -1): RDD[String] = {
+    val schemaCaptured = sdf.schema
+    val maxRecordsPerBatch = if (batchSize == -1) {
+      sqlContext.sessionState.conf.arrowMaxRecordsPerBatch
+    } else batchSize
+    val timeZoneId = sqlContext.sessionState.conf.sessionLocalTimeZone
+
+
+    val schema = sdf.schema
+    sdf.rdd.mapPartitions {iter =>
+      val batchIter = if (maxRecordsPerBatch > 0) {
+        new BatchIterator(iter, maxRecordsPerBatch)
+      } else Iterator(iter)
+
+      val arrowSchema = ArrowUtils.toArrowSchema(schema, timeZoneId)
+      val allocator = ArrowUtils.rootAllocator.newChildAllocator("ItertoFile", 0, Long.MaxValue)
+      val root = VectorSchemaRoot.create(arrowSchema, allocator)
+
+      val conf = SparkEnv.get.conf
+      val sparkFilesDir =
+        Utils.createTempDir(Utils.getLocalDir(conf), "arrowCommunicate").getAbsolutePath
+
+      val filename = sparkFilesDir + "/arrowdata"
+      val fos = new FileOutputStream(filename)
+      val dataOutput = new DataOutputStream(fos)
+
+      Utils.tryWithSafeFinally {
+        val arrowWriter = ArrowWriter.create(root)
+        val writer = new ArrowStreamWriter(root, null, dataOutput)
+        writer.start()
+
+        while (batchIter.hasNext) {
+          val nextBatch = batchIter.next()
+
+          while (nextBatch.hasNext) {
+            val nxtIternalRow = CatalystTypeConverters.convertToCatalyst(nextBatch.next())
+            arrowWriter.write(nxtIternalRow.asInstanceOf[InternalRow])
+          }
+
+          arrowWriter.finish()
+          writer.writeBatch()
+          arrowWriter.reset()
+        }
+        writer.end()
+      } {
+        root.close()
+        allocator.close()
+        if (dataOutput != null) {
+          dataOutput.close()
+        }
+        if (fos != null) {
+          fos.close()
+        }
+      }
+      Iterator(filename)
+    }
   }
 }
