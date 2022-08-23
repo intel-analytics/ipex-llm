@@ -46,7 +46,6 @@ To enable OpenVINO acceleration, you need to install the OpenVINO toolkit:
 # Please remember to restart runtime to use packages with newly-installed version
 ```
 
-
 ```eval_rst
 .. note::
     If you meet ``ValueError: numpy.ndarray size changed, may indicate binary incompatibility. Expected 88 from C header, got 80 from PyObject`` when using ``Trainer.trace`` function, you could try to solve it by upgrading ``numpy`` through:
@@ -55,4 +54,23 @@ To enable OpenVINO acceleration, you need to install the OpenVINO toolkit:
 
             !pip install --upgrade numpy
             # Please remember to restart runtime to use numpy with newly-installed version
+```
+
+### Intel Neural Compressor (INC)
+To use INC as your quantization backend, you need to install it:
+
+```eval_rst
+.. tabs::
+
+    .. tab:: With no Extra Runtime Acceleration
+
+        .. code-block:: python
+
+            !pip install neural-compressor==1.11.0
+
+    .. tab:: With Extra ONNXRuntime Acceleration
+
+        .. code-block:: python
+
+            !pip install neural-compressor==1.11.0 onnx onnxruntime onnxruntime_extensions
 ```
