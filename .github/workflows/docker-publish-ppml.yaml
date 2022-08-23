@@ -1,8 +1,6 @@
 name: Nightly Build Docker Publish BigDL-PPML
 
 on:
-  pull_request:
-    branches: [ main ]
   workflow_dispatch:
     inputs:
       artifact:
