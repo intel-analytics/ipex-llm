@@ -58,6 +58,8 @@ else
                     --build-arg BIGDL_IMAGE_NAME=$BIGDL_IMAGE_NAME \
                     --build-arg BIGDL_IMAGE_VERSION=$BIGDL_IMAGE_VERSION \
                     --build-arg LOCAL_IP=$LOCAL_IP \
+		    --build-arg http_proxy=http://${HTTP_PROXY_HOST}:${HTTP_PROXY_PORT} \
+                    --build-arg https_proxy=http://${HTTPS_PROXY_HOST}:${HTTPS_PROXY_PORT} \
                     -t $CUSTOMER_IMAGE_TAG -f ./CustomerImageDockerfile .
         fi
      fi

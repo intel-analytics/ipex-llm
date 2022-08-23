@@ -18,6 +18,11 @@ RUN cd /ppml/trusted-big-data-ml && \
 # stage 2. copy sign etc. secrets from temp into bigdl base image and generate KMS secrets
 FROM $BIGDL_IMAGE_NAME:$BIGDL_IMAGE_VERSION
 
+ARG EHSM_KMS_BRANCH_VERSION=main
+ARG http_proxy
+ARG https_proxy
+
+
 ADD ./kms-utils.sh /opt/kms-utils.sh
 COPY --from=temp /ppml/trusted-big-data-ml/bash.manifest.sgx /ppml/trusted-big-data-ml/bash.manifest.sgx
 COPY --from=temp /ppml/trusted-big-data-ml/bash.sig /ppml/trusted-big-data-ml/bash.sig
