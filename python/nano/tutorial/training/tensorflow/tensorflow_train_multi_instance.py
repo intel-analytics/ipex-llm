@@ -20,6 +20,7 @@ import os
 
 import tensorflow as tf
 from tensorflow.keras import layers, Sequential
+from tensorflow.keras.applications import ResNet50
 from tensorflow.keras.applications import EfficientNetB0
 import tensorflow_datasets as tfds
 
@@ -56,25 +57,39 @@ def create_datasets(img_size, batch_size):
     return ds_train, ds_test, ds_info
 
 
-def create_model(num_classes, img_size, learning_rate=1e-2):
-    inputs = layers.Input(shape = (img_size, img_size, 3))
+# def create_model(num_classes, img_size, learning_rate=1e-2):
+#     inputs = layers.Input(shape = (img_size, img_size, 3))
 
-    backbone = EfficientNetB0(include_top=False, input_tensor=inputs)
+#     backbone = EfficientNetB0(include_top=False, input_tensor=inputs)
 
+#     backbone.trainable = False
+
+#     x = layers.GlobalAveragePooling2D(name='avg_pool')(backbone.output)
+#     x = layers.BatchNormalization()(x)
+
+#     top_dropout_rate = 0.2
+#     x = layers.Dropout(top_dropout_rate, name="top_dropout")(x)
+#     outputs = layers.Dense(num_classes, activation="softmax", name="pred")(x)
+
+#     model = Model(inputs, outputs, name='EfficientNet')
+#     optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+#     model.compile(
+#         loss="categorical_crossentropy", optimizer=optimizer, metrics=['accuracy']
+#     )
+#     return model
+
+def create_model(num_classes, img_size):
+    inputs = tf.keras.layers.Input(shape=(img_size, img_size, 3))
+    x = tf.cast(inputs, tf.float32)
+    x = tf.keras.applications.resnet50.preprocess_input(x)
+    backbone = ResNet50()
     backbone.trainable = False
+    x = backbone(x)
+    x = layers.Dense(512, activation='relu')(x)
+    outputs = layers.Dense(num_classes, activation='softmax')(x)
 
-    x = layers.GlobalAveragePooling2D(name='avg_pool')(backbone.output)
-    x = layers.BatchNormalization()(x)
-
-    top_dropout_rate = 0.2
-    x = layers.Dropout(top_dropout_rate, name="top_dropout")(x)
-    outputs = layers.Dense(num_classes, activation="softmax", name="pred")(x)
-
-    model = Model(inputs, outputs, name='EfficientNet')
-    optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
-    model.compile(
-        loss="categorical_crossentropy", optimizer=optimizer, metrics=['accuracy']
-    )
+    model = Model(inputs=inputs, outputs=outputs)
+    model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=['accuracy'])
     return model
 
 
