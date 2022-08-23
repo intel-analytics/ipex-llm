@@ -287,6 +287,17 @@ The data source `Boston_Housing.csv` can be found at [here](https://github.com/s
 
 Before running the example, make sure that `Boston_Housing.csv` is under `work/data` directory or the same path in the command. Run the example with SGX spark local mode with the following command in the terminal. Replace `your_IP_address` with your IP address and `path_of_boston_housing_csv` with your path of `Boston_Housing.csv`.
 
+
+Also, please be noted that the data within Boston_Housing.csv needs to be processed beforing handing to xgboost_exmaple.py.
+
+The data for column "chas" is in type "string" and we need to delete all the quotation marks so that the xgboost_example.py can successfully load the data.
+
+Before changing:
+> 0.00632,18,2.31,**"0"**,0.538,6.575,65.2,4.09,1,296,15.3,396.9,4.98,24
+
+After changing:
+> 0.00632,18,2.31,**0**,0.538,6.575,65.2,4.09,1,296,15.3,396.9,4.98,24
+
 ```bash
 /graphene/Tools/argv_serializer bash -c "export RABIT_TRACKER_IP=your_IP_address && /opt/jdk8/bin/java -cp \
     '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
