@@ -120,7 +120,7 @@ class Trainer(pl.Trainer):
                         " without avx512 will crash."
                         "Fall back to regular pytorch.")
                 self.use_ipex = False
-            elif dtype == torch.float16:
+            elif dtype == torch.bfloat16:
                 warning("Enable IPEX bfloat16 in a cpu instruction set"
                         " without avx512 will crash. "
                         "Using 32-bit precision")

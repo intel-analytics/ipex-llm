@@ -71,7 +71,7 @@ class TorchNano(LightningLite):
         self.dtype = None
         if self.use_ipex and precision == 'bf16':
             # Enable ipex bfloat16 weight prepack and disable native AMP
-            self.dtype = torch.float16
+            self.dtype = torch.bfloat16
             precision = 32
 
         # Confirm if cpu supports AVX512
