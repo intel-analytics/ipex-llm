@@ -79,6 +79,7 @@ class TestInferencePipeline(TestCase):
                                training_data=self.train_loader,
                                validation_data=self.test_loader, 
                                metric=self.metric,
+                               direction="max",
                                cpu_num=1)
         for key, value in inference_opt.optimized_model_dict.items():
             print(key, value["latency"], value["accuracy"])
@@ -88,8 +89,7 @@ class TestInferencePipeline(TestCase):
         assert option == "" or "onnxruntime" in  option
         acc_model, option = inference_opt.get_best_model(precision="int8")
         assert option == "" or "inc" in  option
-        acc_model, option = inference_opt.get_best_model(accuracy_criterion=0.1,
-                                                         direction="max")
+        acc_model, option = inference_opt.get_best_model(accuracy_criterion=0.1)
 
 if __name__ == "__main__":
     test = TestInferencePipeline()
