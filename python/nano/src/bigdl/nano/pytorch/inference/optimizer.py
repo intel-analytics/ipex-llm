@@ -144,9 +144,11 @@ class Optimizer:
         # set cpu num for onnxruntime
         if _onnxruntime_checker():
             import onnxruntime
-            sessionoptions = onnxruntime.SessionOptions()
-            sessionoptions.intra_op_num_threads = cpu_num
-            sessionoptions.inter_op_num_threads = cpu_num
+            sess_options = onnxruntime.SessionOptions()
+            sess_options.intra_op_num_threads = cpu_num
+            sess_options.inter_op_num_threads = cpu_num
+        else:
+            sess_options = None
         # TODO: set cpu num for openvino
 
         result_map = {}
@@ -176,8 +178,7 @@ class Optimizer:
                                 acce_model = Optimizer.trace(model=model,
                                                              accelerator=accelerator,
                                                              input_sample=input_sample,
-                                                             onnxruntime_session_options=
-                                                             sessionoptions,
+                                                             onnxruntime_session_options=sess_options,
                                                              # remove output of openvino
                                                              logging=False)
                     except Exception as e:
@@ -194,7 +195,7 @@ class Optimizer:
                                                         use_ipex=use_ipex,
                                                         calib_dataloader=training_data,
                                                         method=ort_method,
-                                                        onnxruntime_session_options=sessionoptions,
+                                                        onnxruntime_session_options=sess_options,
                                                         # remove output of openvino
                                                         logging=False)
                     except Exception as e:
