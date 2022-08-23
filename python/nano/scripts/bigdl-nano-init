@@ -56,9 +56,9 @@ function display-help {
         echo "    -h, --help                Display this help message and exit."
         echo "    -o, --disable-openmp      Disable openMP and unset related variables"
         # echo "    -j, --enable-jemalloc     Enable jemalloc and unset related variables"
-		# echo "    -c, --disable-tcmalloc    Disable tcmalloc and unset related variables"
-		echo "    -t, --enable-tcmalloc     Enable tcmalloc and unset related variables"
-		echo "    -d, --disable-jemalloc    Disable jemalloc and unset related variables"
+        # echo "    -c, --disable-tcmalloc    Disable tcmalloc and unset related variables"
+        echo "    -t, --enable-tcmalloc     Enable tcmalloc and unset related variables"
+        echo "    -d, --disable-jemalloc    Disable jemalloc and unset related variables"
 }
 
 # set jemalloc as the default allocator
