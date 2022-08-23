@@ -62,6 +62,7 @@ class Trainer(pl.Trainer):
                  use_hpo=False,
                  channels_last: bool = False,
                  auto_lr: Union[int, bool] = True,
+                 precision: Union[str, int] = 32,
                  *args: Any, **kwargs: Any) -> None:
         """
         A pytorch lightning trainer that uses bigdl-nano optimization.
@@ -71,6 +72,9 @@ class Trainer(pl.Trainer):
         :param cpu_for_each_process: A list of length `num_processes`, each containing a list of
             indices of cpus each process will be using. default: None, and the cpu will be
             automatically and evenly distributed among processes.
+        :param precision: Double precision (64), full precision (32), half precision (16)
+            or bfloat16 precision (bf16). Enable ipex bfloat16 weight prepack when `use_ipex=True`
+            and `precision='bf16'`
         """
         # Check keyword arguments
         if "accelerator" in kwargs:
@@ -103,32 +107,30 @@ class Trainer(pl.Trainer):
                 kwargs["callbacks"] = [ChannelsLastCallback()]
 
         self.use_ipex = use_ipex
-        enable_bf16 = self.use_ipex and kwargs.get('precision', None) == 'bf16'
+        dtype = None
+        if self.use_ipex and precision == 'bf16':
+            # Enable ipex bfloat16 weight prepack and disable pytorch-lightning native AMP
+            dtype = torch.bfloat16
+            precision = 32
 
-        # Strategy has a higher priority than accelerator/precision/plugin,
-        # set precision for strategy without precision_plugin(e.g. ddp-spawn, ddp-subprocess)
-        # torch must be greater or equal to 1.10 to use native amp for bfloat16 precision
-        if TORCH_VERSION_LESS_1_10 and enable_bf16:
-            kwargs['precision'] = 32
-
+        # Confirm if cpu supports avx512
         if self.use_ipex and not check_avx512():
             if TORCH_VERSION_LESS_1_11:
-                warning("Enable ipex<=1.10 in a cpu instruction set"
+                warning("Enable ipex<=1.11 in a cpu instruction set"
                         " without avx512 will crash."
                         "Fall back to regular pytorch.")
                 self.use_ipex = False
-            elif enable_bf16:
+            elif dtype == torch.float16:
                 warning("Enable IPEX bfloat16 in a cpu instruction set"
                         " without avx512 will crash. "
                         "Using 32-bit precision")
-                enable_bf16 = False
-                # IPEX-optimized model is incompatible with PL Native AMP,
-                # so fall back to 32-bit precision instead of staying at bfloat16 precision
-                kwargs['precision'] = 32
+                dtype = None
+
+        kwargs['precision'] = precision
 
         if num_processes == 1:
             from bigdl.nano.pytorch.strategies import create_IPEXStrategy
-            strategy = create_IPEXStrategy(enable_bf16=enable_bf16) if self.use_ipex else None
+            strategy = create_IPEXStrategy(dtype=dtype) if self.use_ipex else None
             kwargs["strategy"] = strategy
             super().__init__(*args, **kwargs)
         else:
@@ -147,20 +149,20 @@ class Trainer(pl.Trainer):
                 strategy = DDPSpawnStrategy(num_processes=num_processes,
                                             cpu_for_each_process=cpu_for_each_process,
                                             use_ipex=self.use_ipex,
-                                            enable_bf16=enable_bf16,
+                                            dtype=dtype,
                                             auto_lr=auto_lr)
             elif distributed_backend == "subprocess":
                 from bigdl.nano.pytorch.strategies import DDPSubprocessStrategy
                 strategy = DDPSubprocessStrategy(num_processes=num_processes,
                                                  cpu_for_each_process=cpu_for_each_process,
                                                  use_ipex=self.use_ipex,
-                                                 enable_bf16=enable_bf16,
+                                                 dtype=dtype,
                                                  auto_lr=auto_lr)
             elif distributed_backend == "ray":
                 from bigdl.nano.pytorch.strategies import create_RayStrategy
                 strategy = create_RayStrategy(num_workers=num_processes,
                                               use_ipex=self.use_ipex,
-                                              enable_bf16=enable_bf16,
+                                              dtype=dtype,
                                               auto_lr=auto_lr)
             kwargs["strategy"] = strategy
             super().__init__(*args, **kwargs)

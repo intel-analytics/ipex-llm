@@ -27,7 +27,7 @@ from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_12
 import pytorch_lightning as pl
 from pytorch_lightning.strategies import SingleDeviceStrategy
 from pytorch_lightning.accelerators.accelerator import Accelerator
-from pytorch_lightning.plugins.precision import PrecisionPlugin, MixedPrecisionPlugin
+from pytorch_lightning.plugins.precision import PrecisionPlugin
 from pytorch_lightning.utilities import AMPType
 
 from bigdl.nano.utils.log4Error import invalidInputError
@@ -46,7 +46,7 @@ class IPEXStrategy(SingleDeviceStrategy):
         self,
         accelerator: Accelerator = IPEXAccelerator(),
         precision_plugin: PrecisionPlugin = PrecisionPlugin(),
-        enable_bf16=False,
+        dtype=None,
     ) -> None:
         """
         Create a IPEXStrategy.
@@ -54,9 +54,9 @@ class IPEXStrategy(SingleDeviceStrategy):
         :param accelerator: the accelerator to handle hardware
         :param precision_plugin: the plugin to handle precision-specific parts
         """
-        self.enable_bf16 = enable_bf16
+        self.dtype = dtype
 
-        if enable_bf16 and isinstance(precision_plugin, PrecisionPlugin):
+        if self.dtype == torch.bfloat16 and isinstance(precision_plugin, PrecisionPlugin):
             precision_plugin = IPEXBF16Precision()
         super().__init__(accelerator=accelerator, precision_plugin=precision_plugin)
 
@@ -70,28 +70,22 @@ class IPEXStrategy(SingleDeviceStrategy):
         """
         super().setup(trainer)
 
-        dtype = torch.bfloat16 if self.enable_bf16 else None
         if len(self.optimizers) == 0:
-            ipex.optimize(self.model, inplace=True, dtype=dtype)
+            ipex.optimize(self.model, inplace=True, dtype=self.dtype)
         elif len(self.optimizers) == 1:
-            ipex.optimize(self.model, optimizer=self.optimizers[0], inplace=True, dtype=dtype)
+            ipex.optimize(self.model, optimizer=self.optimizers[0], inplace=True, dtype=self.dtype)
         else:
             invalidInputError(False, "Ipex does not support more than one optimizers.")
 
 
-class IPEXBF16Precision(MixedPrecisionPlugin):
+class IPEXBF16Precision(PrecisionPlugin):
     """Create Precision Plugin for IPEX BFloat16."""
 
-    backend: "AMPType" = AMPType.NATIVE
     precision: Union[str, int] = 'bf16'
 
     @contextmanager
     def forward_context(self):
         """AMP for managing model forward/training_step/evaluation_step/predict_step."""
-        # Using IPEX bf16 and torch.autocast(...) reports a segmentation fault
-        # in PyTorch 1.11.
-        # torch.autocast("cpu", args...) is equivalent to torch.cpu.amp.autocast(args...)
-        # in PyTorch 1.12.
         with torch.cpu.amp.autocast():
             yield
 
@@ -122,6 +116,9 @@ class IPEXBF16Precision(MixedPrecisionPlugin):
             warning("Seems like you are using a custom optimizer,"
                     "please make sure that 'optimizer.step(closure)'"
                     " does not need to be called in training stage")
+
+        # For optimizer not in IPEX_FUSED_OPTIMIZER_LIST,
+        # `closure()` needs to be called to backward the loss to avoid `.grad` being None
         closure_result = closure()
         optimizer.step(**kwargs)
 

@@ -176,7 +176,7 @@ class RayStrategy(DDPSpawnStrategy):
                  num_cpus_per_worker: int = 1,
                  use_gpu: bool = False,
                  use_ipex: bool = False,
-                 enable_bf16: bool = False,
+                 dtype=None,
                  init_hook: Callable = None,
                  auto_lr: Union[bool, dict] = True,
                  **ddp_kwargs: Any):
@@ -207,7 +207,7 @@ class RayStrategy(DDPSpawnStrategy):
         self.num_cpus_per_worker = num_cpus_per_worker
         self.use_gpu = use_gpu
         self.use_ipex = use_ipex
-        self.enable_bf16 = enable_bf16
+        self.dtype = dtype
         self.auto_lr = auto_lr
 
         invalidInputError(not self.use_gpu or not self.use_ipex,
@@ -328,14 +328,12 @@ class RayStrategy(DDPSpawnStrategy):
                     ]
 
         if self.use_ipex and not TORCH_VERSION_LESS_1_10:
-            dtype = torch.bfloat16 if self.enable_bf16 else None
             num_optimizers = len(self.optimizers)
-
             if num_optimizers == 1:
                 optimizer = self.optimizers[0]
-                ipex_optimize(self.model, optimizer=optimizer, inplace=True, dtype=dtype)
+                ipex_optimize(self.model, optimizer=optimizer, inplace=True, dtype=self.dtype)
             elif num_optimizers == 0:
-                ipex_optimize(self.model, inplace=True, dtype=dtype)
+                ipex_optimize(self.model, inplace=True, dtype=self.dtype)
             else:
                 warnings.warn(f"IPEX currently only support single optimizers, "
                               f"but got {num_optimizers}. Skip IPEX")

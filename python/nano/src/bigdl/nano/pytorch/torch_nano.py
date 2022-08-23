@@ -53,6 +53,7 @@ class TorchNano(LightningLite):
     def __init__(self, num_processes: int = 1,
                  use_ipex: bool = False,
                  strategy: str = "subprocess",
+                 precision: Union[str, int] = 32,
                  *args, **kwargs) -> None:
         """
         Create a TorchNano with nano acceleration.
@@ -64,44 +65,44 @@ class TorchNano(LightningLite):
         """
         self.num_processes = num_processes
         self.use_ipex = use_ipex
-        self.enable_bf16 = self.use_ipex and kwargs.get('precision', None) == 'bf16'
+        self.dtype = None
+        if self.use_ipex and precision == 'bf16':
+            # Enable ipex bfloat16 weight prepack and disable native AMP
+            self.dtype = torch.float16
+            precision = 32
 
-        # Strategy has a higher priority than accelerator/precision/plugin,
-        # set precision for strategy without precision_plugin(e.g. ddp-spawn, ddp-subprocess)
-        # torch must be greater or equal to 1.10 to use native amp for bfloat16 precision
-        if TORCH_VERSION_LESS_1_10 and self.enable_bf16:
-            kwargs['precision'] = 32
-
+        # Confirm if cpu supports AVX512
         if self.use_ipex and not check_avx512():
             if TORCH_VERSION_LESS_1_11:
                 warning("Enable ipex<=1.10 in a cpu instruction set"
                         " without avx512 will crash."
                         "Fall back to regular pytorch.")
                 self.use_ipex = False
-            elif self.enable_bf16:
+            elif self.dtype == torch.bfloat16:
                 warning("Enable IPEX bfloat16 in a cpu instruction set"
                         " without avx512 will crash. "
-                        "Will use PyTorch Lightning Native AMP for BFloat16 precision")
-                self.enable_bf16 = False
-                kwargs['precision'] = 32
+                        "Using 32-bit precision")
+                self.dtype = None
+
+        kwargs['precision'] = precision
 
         if self.num_processes == 1:
             if self.use_ipex:
-                strategy = create_IPEXStrategy(enable_bf16=self.enable_bf16)
+                strategy = create_IPEXStrategy(dtype=self.dtype)
             else:
                 strategy = None     # type: ignore
         elif strategy == "spawn":
             strategy = DDPSpawnStrategy(num_processes=self.num_processes,   # type: ignore
                                         use_ipex=self.use_ipex,
-                                        enable_bf16=self.enable_bf16)
+                                        dtype=self.dtype)
         elif strategy == "subprocess":
             strategy = DDPSubprocessStrategy(num_processes=self.num_processes,  # type: ignore
                                              use_ipex=self.use_ipex,
-                                             enable_bf16=self.enable_bf16)
+                                             dtype=self.dtype)
         elif strategy == "ray":
             strategy = create_RayStrategy(num_workers=self.num_processes,
                                           use_ipex=self.use_ipex,
-                                          enable_bf16=self.enable_bf16)
+                                          dtype=self.dtype)
         else:
             warning(f"Bigdl-nano doesn't support '{strategy}' strategy now, "
                     f"'{strategy}' strategy of pytorch_lightning will be used. "
@@ -141,11 +142,10 @@ class TorchNano(LightningLite):
         # which is not supported by ddp currently,
         # so add IPEX 1.11's optimization after `_setup_model`
         if self.use_ipex and not TORCH_VERSION_LESS_1_10:
-            dtype = torch.bfloat16 if self.enable_bf16 else None
             if len(optimizers) == 0:
-                ipex_optimize(model, inplace=True, dtype=dtype)
+                ipex_optimize(model, inplace=True, dtype=self.dtype)
             elif len(optimizers) == 1:
-                ipex_optimize(model, optimizer=optimizers[0], inplace=True, dtype=dtype)
+                ipex_optimize(model, optimizer=optimizers[0], inplace=True, dtype=self.dtype)
             else:
                 invalidInputError(False, "Ipex does not support more than one optimizers.")
 
