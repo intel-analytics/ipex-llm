@@ -13,25 +13,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import os
 import shutil
 from unittest import TestCase
 
 import numpy as np
 import pytest
 import tensorflow as tf
-
-from bigdl.dllib.nncontext import init_nncontext
-from bigdl.orca.data import XShards
+import ray
 
 import bigdl.orca.data.pandas
+from bigdl.dllib.nncontext import init_nncontext
+from bigdl.orca.data import XShards
 from bigdl.orca.learn.tf2 import Estimator
 from bigdl.orca.ray import OrcaRayContext
-import ray
+from bigdl.orca import OrcaContext
+
 
 NUM_TRAIN_SAMPLES = 1000
 NUM_TEST_SAMPLES = 400
-
-import os
 
 resource_path = os.path.join(
     os.path.realpath(os.path.dirname(__file__)), "../../../resources")
