@@ -297,7 +297,8 @@ jobs:
 
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
-
+      with:
+        arda_nexus: ${{ secrets.ARDA_NEXUS }}
     - name: Build with Maven
       run: |
           ls
@@ -386,7 +387,8 @@ jobs:
 
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
-
+      with:
+        arda_nexus: ${{ secrets.ARDA_NEXUS }}
     - name: Set up Python 
       uses: actions/setup-python@v2
       with:
@@ -425,7 +427,8 @@ jobs:
 
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
-
+      with:
+        arda_nexus: ${{ secrets.ARDA_NEXUS }}
     - name: Set up Python 
       uses: actions/setup-python@v2
       with:
