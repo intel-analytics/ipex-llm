@@ -37,6 +37,16 @@ class Pytorch1_9:
 
 
 class CaseWithoutAVX512:
+    def test_unsupported_HW_or_OS(self):
+        trainer = Trainer(max_epochs=1)
+        model = resnet18(num_classes=10)
+
+        with pytest.raises(RuntimeError,
+                           match="Applying IPEX BF16 optimization needs the cpu support avx512."):
+            bf16_model = trainer.quantize(model, precision='bf16', use_ipex=True)
+
+
+class Pytorch1_11:
     @patch('bigdl.nano.deps.ipex.ipex_inference_bf16_model.PytorchIPEXJITBF16Model._check_cpu_isa', new_callable=PropertyMock)
     def test_unsupported_HW_or_OS(self, mocked_check_cpu_isa):
         mocked_check_cpu_isa.return_value = False
@@ -47,8 +57,6 @@ class CaseWithoutAVX512:
                            match="Applying IPEX BF16 optimization needs the cpu support avx512."):
             bf16_model = trainer.quantize(model, precision='bf16', use_ipex=True)
 
-
-class Pytorch1_11(CaseWithoutAVX512):
     def test_bf16_with_avx512_core(self):
         trainer = Trainer(max_epochs=1)
         model = resnet18(num_classes=10)

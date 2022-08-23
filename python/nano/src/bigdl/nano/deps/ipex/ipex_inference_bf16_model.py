@@ -56,7 +56,7 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
 
     @property
     def _check_cpu_isa(self):
-        """Indicator to verify if bf16 instructions are available."""
+        """Indicator to verify if cpu supports avx512"""
         msg = subprocess.check_output(["lscpu"]).decode("utf-8")
         return 'avx512' in msg or 'amx' in msg
 
