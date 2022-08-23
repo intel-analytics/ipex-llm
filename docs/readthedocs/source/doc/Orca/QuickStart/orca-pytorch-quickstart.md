@@ -132,15 +132,15 @@ for r in result:
     print(r, ":", result[r])
 ```
 
-### **Step 5: Save and Load the Model **
+### **Step 5: Save and Load the Model**
 
-Save the Estimator state (including model and optimizer) to the provided model path.
+Save the Estimator states (including model and optimizer) to the provided model path.
 
 ```python
 est.save("mnist_model")
 ```
 
-Load the Estimator state (model and possibly with optimizer) from the provided model path.
+Load the Estimator states (model and possibly with optimizer) from the provided model path.
 
 ```python
 est.load("mnist_model")
