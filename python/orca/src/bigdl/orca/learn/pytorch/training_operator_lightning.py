@@ -32,15 +32,11 @@
 # https://github.com/ray-project/ray/blob/master/python/ray/util/sgd/torch/training_operator.py
 
 import collections
-import torch
-import numpy as np
 
-from bigdl.orca.learn.metrics import Metric
 from bigdl.orca.learn.pytorch.utils import (TimerCollection, AverageMeterCollection,
                                             NUM_SAMPLES)
 from bigdl.orca.learn.pytorch.constants import (SCHEDULER_STEP_EPOCH, NUM_STEPS,
                                                 SCHEDULER_STEP_BATCH, SCHEDULER_STEP)
-from torch.nn.parallel import DistributedDataParallel as DDP
 from bigdl.dllib.utils.log4Error import *
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import Callback as callback_lightning
