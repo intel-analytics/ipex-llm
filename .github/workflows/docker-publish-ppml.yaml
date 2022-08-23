@@ -1,10 +1,6 @@
 name: Nightly Build Docker Publish BigDL-PPML
 
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - 'ppml/trusted-big-data-ml/python/docker-gramine/**'
   workflow_dispatch:
     inputs:
       artifact:
@@ -40,8 +36,8 @@ jobs:
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
     - name: Set the variable
       env:
-        DEFAULT_TAG: 'devel'
-        DEFAULT_ARTIFACT: 'bigdl-ppml-trusted-big-data-ml-python-gramine'
+        DEFAULT_TAG: 'latest'
+        DEFAULT_ARTIFACT: 'all'
       run: |
         echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }} " >> $GITHUB_ENV
         echo "ARTIFACT=${{ github.event.inputs.artifact || env.DEFAULT_ARTIFACT }}" >> $GITHUB_ENV
