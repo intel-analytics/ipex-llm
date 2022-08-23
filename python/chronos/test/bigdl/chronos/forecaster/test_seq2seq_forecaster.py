@@ -75,6 +75,25 @@ def create_tsdataset(roll=True, horizon=5):
             tsdata.roll(lookback=24, horizon=horizon)
     return train, test
 
+def create_tsdataset_val(roll=True, horizon=5):
+    from bigdl.chronos.data import TSDataset
+    import pandas as pd
+    timeseries = pd.date_range(start='2020-01-01', freq='D', periods=1000)
+    df = pd.DataFrame(np.random.rand(1000, 2),
+                      columns=['value1', 'value2'],
+                      index=timeseries)
+    df.reset_index(inplace=True)
+    df.rename(columns={'index': 'timeseries'}, inplace=True)
+    train, val, test = TSDataset.from_pandas(df=df,
+                                           dt_col='timeseries',
+                                           target_col=['value1', 'value2'],
+                                           with_split=True,
+                                           val_ratio = 0.1)
+    if roll:
+        for tsdata in [train, val, test]:
+            tsdata.roll(lookback=24, horizon=horizon)
+    return train, val, test
+
 
 class TestChronosModelSeq2SeqForecaster(TestCase):
 
@@ -471,3 +490,33 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                                   repetition_times=5)
         assert y_pred.shape == test_data[1].shape
         assert y_pred.shape == std.shape
+
+    def test_forecaster_fit_val_from_tsdataset(self):
+        train, val, test = create_tsdataset_val()
+        s2s = Seq2SeqForecaster.from_tsdataset(train,
+                                               lstm_hidden_dim=16,
+                                               lstm_layer_num=1)
+        s2s.fit(train, val,
+                epochs=2,
+                batch_size=32)
+        yhat = s2s.predict(test, batch_size=32)
+        test.roll(lookback=s2s.data_config['past_seq_len'],
+                  horizon=s2s.data_config['future_seq_len'])
+        _, y_test = test.to_numpy()
+        assert yhat.shape == y_test.shape
+
+        del s2s
+        train, val, test = create_tsdataset_val(roll=False, horizon=[1, 3, 5])
+        s2s = Seq2SeqForecaster.from_tsdataset(train,
+                                               past_seq_len=24,
+                                               future_seq_len=2,
+                                               lstm_hidden_dim=16,
+                                               lstm_layer_num=1)
+        s2s.fit(train, val,
+                epochs=2,
+                batch_size=32)
+        yhat = s2s.predict(test, batch_size=None)
+        test.roll(lookback=s2s.data_config['past_seq_len'],
+                  horizon=s2s.data_config['future_seq_len'])
+        _, y_test = test.to_numpy()
+        assert yhat.shape == y_test.shape

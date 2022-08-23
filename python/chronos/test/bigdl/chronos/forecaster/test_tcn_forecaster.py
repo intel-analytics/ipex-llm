@@ -87,6 +87,27 @@ def create_tsdataset(roll=True, horizon=5, val_ratio=0):
         return train, val, test
 
 
+def create_tsdataset_val(roll=True, horizon=5):
+    from bigdl.chronos.data import TSDataset
+    import pandas as pd
+    timeseries = pd.date_range(start='2020-01-01', freq='D', periods=1000)
+    df = pd.DataFrame(np.random.rand(1000, 2),
+                      columns=['value1', 'value2'],
+                      index=timeseries,
+                      dtype=np.float32)
+    df.reset_index(inplace=True)
+    df.rename(columns={'index': 'timeseries'}, inplace=True)
+    train, val, test = TSDataset.from_pandas(df=df,
+                                             dt_col='timeseries',
+                                             target_col=['value1', 'value2'],
+                                             with_split=True,
+                                             val_ratio = 0.1)
+    if roll:
+        for tsdata in [train, test]:
+            tsdata.roll(lookback=24, horizon=horizon)
+    return train, val, test
+
+
 class TestChronosModelTCNForecaster(TestCase):
 
     def setUp(self):
@@ -756,3 +777,30 @@ class TestChronosModelTCNForecaster(TestCase):
         with pytest.raises(RuntimeError):
             y_pred, std = forecaster.predict_interval(data=test_data[0],
                                                       repetition_times=5)
+    def test_forecaster_fit_val_from_tsdataset(self):
+        train, val, test = create_tsdataset_val()
+        tcn = TCNForecaster.from_tsdataset(train,
+                                           num_channels=[16]*3)
+        tcn.fit(train, val,
+                epochs=2,
+                batch_size=32)
+        yhat = tcn.predict(test, batch_size=32)
+        test.roll(lookback=tcn.data_config['past_seq_len'],
+                  horizon=tcn.data_config['future_seq_len'])
+        _, y_test = test.to_numpy()
+        assert yhat.shape == y_test.shape
+
+        del tcn
+        train, val, test = create_tsdataset_val(roll=False, horizon=[1, 3, 5])
+        tcn = TCNForecaster.from_tsdataset(train,
+                                           past_seq_len=24,
+                                           future_seq_len=5,
+                                           num_channels=[16]*3)
+        tcn.fit(train, val,
+                epochs=2,
+                batch_size=32)
+        yhat = tcn.predict(test, batch_size=None)
+        test.roll(lookback=tcn.data_config['past_seq_len'],
+                  horizon=tcn.data_config['future_seq_len'])
+        _, y_test = test.to_numpy()
+        assert yhat.shape == y_test.shape
