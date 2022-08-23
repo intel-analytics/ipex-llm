@@ -7,11 +7,12 @@ description: 'setup maven'
 runs:
   using: "composite"
   steps:
-    - uses: actions/cache@v2
-      with:
-        path: ~/.m2/repository
-        key: maven-${{ hashFiles('**/pom.xml') }}
-        restore-keys: maven-
+    #pls use cache only on github owned runners 
+    # - uses: actions/cache@v2
+    #   with:
+    #     path: ~/.m2/repository
+    #     key: maven-${{ hashFiles('**/pom.xml') }}
+    #     restore-keys: maven-
     
     - name: Set up Maven
       uses: stCarolas/setup-maven@v4.4
