@@ -29,3 +29,13 @@ Install
     :hidden:
 
     install_in_colab
+
+[Test] syncronization with py files
+-------------------------
+* `How to accelerate a PyTorch inference pipeline through ONNXRuntime (sync through marks in py files) <accelerate_pytorch_inference_onnx_sync_mark.html>`_
+
+.. toctree::
+    :maxdepth: 1
+    :hidden:
+
+    accelerate_pytorch_inference_onnx_sync_mark

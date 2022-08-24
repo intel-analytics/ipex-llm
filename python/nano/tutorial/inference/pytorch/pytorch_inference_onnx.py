@@ -21,29 +21,40 @@
 # ```
 
 import torch
-import torch
-from torchvision.models import resnet18
 
 if __name__ == "__main__":
 
+    # >>> import a pretrained ResNet-18 model >>>
+    from torchvision.models import resnet18
+
     model_ft = resnet18(pretrained=True)
+    # <<< import a pretrained ResNet-18 model <<<
 
     # Normal Inference
     x = torch.rand(2, 3, 224, 224)
+    # >>> set the model in evaluation mode >>>
     model_ft.eval()
+    # <<< set the model in evaluation mode <<<
     y_hat = model_ft(x)
     predictions = y_hat.argmax(dim=1)
     print(predictions)
 
     # Accelerated Inference Using ONNX Runtime
+    # >>> import BigDL-Nano Trainer, and trace the model for acceleration >>>
     from bigdl.nano.pytorch import Trainer
+
     ort_model = Trainer.trace(model_ft,
                               accelerator="onnxruntime",
                               input_sample=torch.rand(1, 3, 224, 224))
+    # <<< import BigDL-Nano Trainer, and trace the model for acceleration <<<
 
+    # >>> do normal inference steps with the optimized model >>>
+    x = torch.rand(2, 3, 224, 224)
+    # use the optimized model here
     y_hat = ort_model(x)
     predictions = y_hat.argmax(dim=1)
     print(predictions)
+    # <<< do normal inference steps with the optimized model <<<
 
     # Save Optimized Model
     Trainer.save(ort_model, "./optimized_model")
