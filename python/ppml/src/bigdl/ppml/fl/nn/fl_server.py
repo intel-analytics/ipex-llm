@@ -17,10 +17,14 @@
 from concurrent import futures
 import grpc
 from bigdl.ppml.fl import *
-from bigdl.ppml.fl.nn.generated.nn_service_pb2_grpc import *
+
 from bigdl.ppml.fl.nn.nn_service import NNServiceImpl
 import yaml
-import logging
+
+from ..psi.psi_service import PSIServiceImpl
+from .generated.nn_service_pb2_grpc import *
+from .generated.psi_service_pb2_grpc import *
+
 
 
 class FLServer(object):
@@ -38,9 +42,8 @@ class FLServer(object):
         self.port = port
         
     def build(self):
-        add_NNServiceServicer_to_server(
-            NNServiceImpl(conf=self.conf),            
-            self.server)
+        add_NNServiceServicer_to_server(NNServiceImpl(conf=self.conf), self.server)
+        add_PSIServiceServicer_to_server(PSIServiceImpl(conf=self.conf), self.server)
         if self.secure:
             self.server.add_secure_port(f'[::]:{self.port}', self.server_credentials)
         else:
