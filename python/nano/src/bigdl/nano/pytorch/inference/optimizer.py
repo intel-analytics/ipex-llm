@@ -80,9 +80,9 @@ ALL_INFERENCE_ACCELERATION_METHOD = \
         "openvino_fp32": AccelerationOption(openvino=True),
         "openvino_int8": AccelerationOption(openvino=True, pot=True),
         "onnxruntime_fp32": AccelerationOption(onnxtunrime=True),
-        "onnxruntime_int8_qlinear": AccelerationOption(onnxruntime=True, inc=True, 
+        "onnxruntime_int8_qlinear": AccelerationOption(onnxruntime=True, inc=True,
                                                        method="qlinear"),
-        "onnxruntime_int8_integer": AccelerationOption(onnxruntime=True, inc=True, 
+        "onnxruntime_int8_integer": AccelerationOption(onnxruntime=True, inc=True,
                                                        method="integer"),
     }
 
