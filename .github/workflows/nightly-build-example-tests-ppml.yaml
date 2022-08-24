@@ -1,4 +1,4 @@
-name: Nightly Build Example Tests PPML Spark Local on Graphen
+name: Nightly Build Example Tests PPML Spark Local on Graphene
 
 on:
   schedule:
