@@ -168,7 +168,7 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
         num_processes: int = 1,
         cpu_for_each_process: Optional[List[List[int]]] = None,
         use_ipex=False,
-        enable_bf16=False,
+        dtype=None,
         auto_lr=False,
         **kwargs: Any
     ):
@@ -180,14 +180,24 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
         if use_ipex and TORCH_VERSION_LESS_1_10 and 'accelerator' not in kwargs:
             super().__init__(accelerator=create_IPEXAccelerator(),
                              parallel_devices=parallel_devices,
-                             cluster_environment=cluster_environment, **kwargs)
+                             cluster_environment=cluster_environment,
+                             **kwargs)
+            if dtype == torch.bfloat16:
+                import intel_pytorch_extension as ipex
+                # Automatically mix precision
+                ipex.enable_auto_mixed_precision(mixed_dtype=torch.bfloat16)
+        elif use_ipex and dtype == torch.bfloat16 and 'precision_plugin' not in kwargs:
+            from bigdl.nano.pytorch.strategies.ipex.ipex_strategy import IPEXBF16Precision
+            super().__init__(parallel_devices=parallel_devices,
+                             cluster_environment=cluster_environment,
+                             precision_plugin=IPEXBF16Precision(), **kwargs)
         else:
             super().__init__(parallel_devices=parallel_devices,
                              cluster_environment=cluster_environment, **kwargs)
         self.cpu_for_each_process = cpu_for_each_process
         self.is_distributed = True
         self.use_ipex = use_ipex
-        self.enable_bf16 = enable_bf16
+        self.dtype = dtype
         self.auto_lr = auto_lr
 
     def _configure_launcher(self):
@@ -249,14 +259,13 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
                     ]
 
         if self.use_ipex and not TORCH_VERSION_LESS_1_10:
-            dtype = torch.bfloat16 if self.enable_bf16 else None
             num_optimizers = len(self.optimizers)
 
             if num_optimizers == 1:
                 optimizer = self.optimizers[0]
-                ipex_optimize(self.model, optimizer=optimizer, inplace=True, dtype=dtype)
+                ipex_optimize(self.model, optimizer=optimizer, inplace=True, dtype=self.dtype)
             elif num_optimizers == 0:
-                ipex_optimize(self.model, inplace=True, dtype=dtype)
+                ipex_optimize(self.model, inplace=True, dtype=self.dtype)
             else:
                 warnings.warn(f"IPEX currently only support single optimizers, "
                               f"but got {num_optimizers}. Skip IPEX")
