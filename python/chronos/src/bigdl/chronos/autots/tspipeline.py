@@ -501,9 +501,9 @@ class TSPipeline:
         calib_data = preprocess_quantize_data(self, calib_data)
 
         # map metric str to function
-        from bigdl.chronos.metric.forecast_metrics import TORCHMETRICS_REGRESSION_MAP
+        from bigdl.chronos.metric.forecast_metrics import REGRESSION_MAP
         if isinstance(metric, str):
-            metric = TORCHMETRICS_REGRESSION_MAP[metric]
+            metric = REGRESSION_MAP[metric]
 
         # init acc criterion
         accuracy_criterion = None

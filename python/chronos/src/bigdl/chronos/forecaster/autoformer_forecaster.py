@@ -438,6 +438,6 @@ class AutoformerForecaster(Forecaster):
 def _str2metric(metric):
     # map metric str to function
     if isinstance(metric, str):
-        from bigdl.chronos.metric.forecast_metrics import TORCHMETRICS_REGRESSION_MAP
-        metric = TORCHMETRICS_REGRESSION_MAP[metric]
+        from bigdl.chronos.metric.forecast_metrics import REGRESSION_MAP
+        metric = REGRESSION_MAP[metric]
     return metric
