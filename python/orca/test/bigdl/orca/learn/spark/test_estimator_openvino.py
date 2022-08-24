@@ -112,9 +112,9 @@ class TestEstimatorForOpenVINO(TestCase):
         assert result.shape == (32, 2)
         with self.assertRaises(Exception):
             self.est.predict(input_data, feature_cols=["feature"],
-                             inputs=["a", 'input_ids', 'token_type_ids'])
+                             input_cols=["a", 'input_ids', 'token_type_ids'])
         result2 = self.est.predict(input_data,
-                                   inputs=['input_ids', 'token_type_ids', 'attention_mask'])
+                                   input_cols=['input_ids', 'token_type_ids', 'attention_mask'])
         assert isinstance(result2, np.ndarray)
         assert result2.shape == (32, 2)
         assert not np.allclose(result, result2)

@@ -53,7 +53,7 @@ class OpenvinoEstimator(SparkEstimator):
         """
         invalidInputError(False, "not implemented")
 
-    def predict(self, data, feature_cols=None, batch_size=4, inputs=None):
+    def predict(self, data, feature_cols=None, batch_size=4, input_cols=None):
         """
         Predict input data
 
@@ -63,9 +63,9 @@ class OpenvinoEstimator(SparkEstimator):
                feature}, where feature(label) is a numpy array or a list of numpy arrays.
         :param feature_cols: Feature column name(s) of data. Only used when data is a Spark
                DataFrame. Default: None.
-        :param inputs: Str or List of str. The model input list(order related). Users can specify
-               the input order using the `inputs` parameter. If inputs=None, The default OpenVINO
-               model input list will be used. Default: None.
+        :param input_cols: Str or List of str. The model input list(order related). Users can
+               specify the input order using the `inputs` parameter. If inputs=None, The default
+               OpenVINO model input list will be used. Default: None.
         :return: predicted result.
                  If the input data is XShards, the predict result is a XShards, each partition
                  of the XShards is a dictionary of {'prediction': result}, where the result is a
@@ -76,14 +76,14 @@ class OpenvinoEstimator(SparkEstimator):
         sc = init_nncontext()
         model_bytes_broadcast = sc.broadcast(self.model_bytes)
         weight_bytes_broadcast = sc.broadcast(self.weight_bytes)
-        if inputs:
-            if not isinstance(inputs, list):
-                inputs = [inputs]
-            invalidInputError(set(inputs) == set(self.inputs),
+        if input_cols:
+            if not isinstance(input_cols, list):
+                input_cols = [input_cols]
+            invalidInputError(set(input_cols) == set(self.inputs),
                               "The inputs names need to match the model inputs, the model inputs: "
                               + ", ".join(self.inputs))
         else:
-            inputs = self.inputs
+            input_cols = self.inputs
         outputs = list(self.output_dict.keys())
         invalidInputError(len(outputs) != 0, "The number of model outputs should not be 0.")
         is_df = False
@@ -113,7 +113,7 @@ class OpenvinoEstimator(SparkEstimator):
 
             def generate_output_row(batch_input_dict):
                 input_dict = dict()
-                for col, input in zip(feature_cols, inputs):
+                for col, input in zip(feature_cols, input_cols):
                     value = batch_input_dict[col]
                     feature_type = schema_dict[col]
                     if isinstance(feature_type, df_types.FloatType):
@@ -149,10 +149,10 @@ class OpenvinoEstimator(SparkEstimator):
                     input_dict = dict()
                     elem_num = 0
                     if isinstance(batch_data, list):
-                        for i, input in enumerate(inputs):
+                        for i, input in enumerate(input_cols):
                             input_dict[input], elem_num = add_elem(batch_data[i])
                     else:
-                        input_dict[inputs[0]], elem_num = add_elem(batch_data)
+                        input_dict[input_cols[0]], elem_num = add_elem(batch_data)
                     infer_request.infer(input_dict)
                     if len(outputs) == 1:
                         pred = infer_request.output_blobs[outputs[0]].buffer[:elem_num]
