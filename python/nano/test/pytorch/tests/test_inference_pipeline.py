@@ -24,7 +24,7 @@ from torchvision.datasets import CIFAR10
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SequentialSampler
 from bigdl.nano.pytorch import Trainer
-from bigdl.nano.pytorch.inference import Optimizer
+from bigdl.nano.pytorch.inference import InferenceOptimizer
 import torchmetrics
 import torch
 import torch.nn.functional as F
@@ -74,7 +74,7 @@ class TestInferencePipeline(TestCase):
     trainer.fit(model, train_loader)
 
     def test_pipeline(self):
-        inference_opt = Optimizer()
+        inference_opt = InferenceOptimizer()
         inference_opt.optimize(model=self.model, 
                                training_data=self.train_loader,
                                validation_data=self.test_loader, 

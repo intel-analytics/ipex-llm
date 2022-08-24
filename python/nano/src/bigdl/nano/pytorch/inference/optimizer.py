@@ -23,15 +23,12 @@ import time
 import numpy as np
 from copy import deepcopy
 from typing import Dict
-
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
-
 from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
 from bigdl.nano.pytorch import Trainer
-
 import os
-os.environ['LOGLEVEL'] = 'ERROR'  # remove parital output of inc
+
 
 _whole_acceleration_options = ["inc", "ipex", "onnxruntime", "openvino", "pot",
                                "bf16", "jit", "channels_last"]
@@ -48,9 +45,10 @@ class AccelerationOption(object):
         '''
         for option in _whole_acceleration_options:
             setattr(self, option, kwargs.get(option, False))
+        self.method = kwargs.get("method", None)
 
     def get_precision(self):
-        if self.inc:
+        if self.inc or self.pot:
             return "int8"
         if self.bf16:
             return "bf16"
@@ -71,23 +69,23 @@ class AccelerationOption(object):
 ALL_INFERENCE_ACCELERATION_METHOD = \
     {
         "original": AccelerationOption(),
-        "None_fp32_ipex": AccelerationOption(ipex=True),
-        "None_bf16": AccelerationOption(bf16=True),
-        "None_bf16_ipex": AccelerationOption(bf16=True, ipex=True),
-        "None_int8": AccelerationOption(inc=True),
+        "fp32_ipex": AccelerationOption(ipex=True),
+        "bf16": AccelerationOption(bf16=True),
+        "bf16_ipex": AccelerationOption(bf16=True, ipex=True),
+        "int8": AccelerationOption(inc=True),
         "jit_fp32": AccelerationOption(jit=True),
         "jit_fp32_ipex": AccelerationOption(jit=True, ipex=True),
         "jit_fp32_ipex_clast": AccelerationOption(jit=True, ipex=True,
                                                   channels_last=True),
         "openvino_fp32": AccelerationOption(openvino=True),
-        "openvino_int8": AccelerationOption(openvino=True, inc=True),
+        "openvino_int8": AccelerationOption(openvino=True, pot=True),
         "onnxruntime_fp32": AccelerationOption(onnxtunrime=True),
-        "onnxruntime_int8_qlinear": AccelerationOption(onnxruntime=True, inc=True),
-        "onnxruntime_int8_integer": AccelerationOption(onnxruntime=True, inc=True),
+        "onnxruntime_int8_qlinear": AccelerationOption(onnxruntime=True, inc=True, method="qlinear"),
+        "onnxruntime_int8_integer": AccelerationOption(onnxruntime=True, inc=True, method="integer"),
     }
 
 
-class Optimizer:
+class InferenceOptimizer:
 
     def __init__(self):
         '''
@@ -103,6 +101,7 @@ class Optimizer:
                  metric=None,
                  direction: str = "max",
                  cpu_num: int = None,
+                 logging: bool = False,
                  latency_sample_num: int = 100):
         '''
         This function will give all available inference acceleration methods a try
@@ -126,6 +125,8 @@ class Optimizer:
                higher the better. Default value is "max".
         :param cpu_num: (optional) a int represents how many cores is needed for
                inference.
+        :param logging: whether to log detailed information of model conversion. 
+               default: False.
         :param latency_sample_num: (optional) a int represents the number of repetitions
                to calculate the average latency. The default value is 100.
         '''
@@ -135,6 +136,9 @@ class Optimizer:
         invalidInputError(isinstance(model, nn.Module), "model should be a nn module.")
         invalidInputError(direction in ['min', 'max'],
                           "Only support direction 'min', 'max'.")
+
+        if not logging:
+            os.environ['LOGLEVEL'] = 'ERROR'  # remove parital output of inc
 
         # get the available methods whose dep is met
         available_dict = _available_acceleration_combination()
@@ -171,28 +175,31 @@ class Optimizer:
                             acce_model = model
                         else:
                             if accelerator in ("jit", None):
-                                acce_model = Optimizer.trace(model=model,
+                                acce_model = \
+                                    InferenceOptimizer.trace(model=model,
                                                              accelerator=accelerator,
                                                              use_ipex=use_ipex,
                                                              # channels_last is only for jit
                                                              channels_last=use_channels_last,
                                                              input_sample=input_sample)
                             else:
-                                acce_model = Optimizer.trace(model=model,
+                                acce_model = \
+                                    InferenceOptimizer.trace(model=model,
                                                              accelerator=accelerator,
                                                              input_sample=input_sample,
                                                              onnxruntime_session_options=sessoption,
                                                              # remove output of openvino
-                                                             logging=False)
+                                                             logging=logging)
                     except Exception as e:
                         print(e)
                         continue
 
                 # if precision is int8 or bf16, then we will use quantize method
                 elif precision in ("int8", "bf16"):
-                    ort_method = _detect_quantization_method(method)
+                    ort_method = option.method
                     try:
-                        acce_model = Optimizer.quantize(model=deepcopy(model),
+                        acce_model = \
+                            InferenceOptimizer.quantize(model=deepcopy(model),
                                                         precision=precision,
                                                         accelerator=accelerator,
                                                         use_ipex=use_ipex,
@@ -200,7 +207,7 @@ class Optimizer:
                                                         method=ort_method,
                                                         onnxruntime_session_options=sessoption,
                                                         # remove output of openvino
-                                                        logging=False)
+                                                        logging=logging)
                     except Exception as e:
                         print(e)
                         continue
@@ -277,7 +284,7 @@ class Optimizer:
             if precision is not None:
                 if precision == 'bf16' and not option.bf16:
                     continue
-                if precision == 'int8' and not option.inc:
+                if precision == 'int8' and not (option.inc or option.pot):
                     continue
             if use_ipex:
                 if not option.ipex:
@@ -304,9 +311,9 @@ class Optimizer:
     def trace(model: nn.Module,
               input_sample=None,
               accelerator=None,
-              use_ipex=False,
+              use_ipex: bool= False,
               onnxruntime_session_options=None,
-              logging=True,
+              logging: bool = True,
               **export_kwargs):
         return Trainer.trace(model=model,
                              input_sample=input_sample,
@@ -332,7 +339,7 @@ class Optimizer:
                  max_trials: int = None,
                  input_sample=None,
                  onnxruntime_session_options=None,
-                 logging=True,
+                 logging: bool = True,
                  **export_kwargs):
         return Trainer.quantize(model=model,
                                 precision=precision,
@@ -380,7 +387,7 @@ def _openvino_checker():
     '''
     check if openvino-dev is installed
     '''
-    return not find_spec("openvino-dev") is None
+    return not find_spec("openvino") is None
 
 
 def _bf16_checker():
@@ -389,13 +396,6 @@ def _bf16_checker():
     '''
     msg = subprocess.check_output(["lscpu"]).decode("utf-8")
     return "avx512_bf16" in msg or "amx_bf16" in msg
-
-
-def _detect_quantization_method(method_name):
-    method_name = method_name.split("_")[-1]
-    if method_name in ["qlinear", "integer"]:
-        return method_name
-    return None
 
 
 def _available_acceleration_combination():
@@ -412,7 +412,7 @@ def _available_acceleration_combination():
     for method, option in ALL_INFERENCE_ACCELERATION_METHOD.items():
         available_iter = True
         for name, value in option.__dict__.items():
-            if value:
+            if value is True:
                 if name in dependency_checker and not dependency_checker[name]():
                     available_iter = False
         available_dict[method] = available_iter
@@ -429,7 +429,7 @@ def _throughput_calculate_helper(iterrun, func, *args):
         func(*args)
         time_list.append(time.time() - st)
     time_list.sort()
-    # remove top and least 10% data.
+    # remove top and least 10% data.ni
     time_list = time_list[int(0.1 * iterrun): int(0.9 * iterrun)]
     return np.mean(time_list) * 1000
 
@@ -452,8 +452,10 @@ def _format_acceleration_info(method_name):
     option = ALL_INFERENCE_ACCELERATION_METHOD[method_name]
     repr_str = ""
     for key, value in option.__dict__.items():
-        if value:
+        if value is True:
             repr_str = repr_str + key + " + "
+        elif isinstance(value, str):
+            repr_str = repr_str + value + " + "
     if len(repr_str) > 0:
         repr_str = repr_str[:-2]
     return repr_str

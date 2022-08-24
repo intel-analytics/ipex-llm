@@ -282,7 +282,7 @@ class Trainer(pl.Trainer):
                  max_trials: int = None,
                  input_sample=None,
                  onnxruntime_session_options=None,
-                 logging=True,
+                 logging: bool = True,
                  **export_kwargs):
         """
         Calibrate a Pytorch-Lightning model for post-training quantization.
@@ -438,9 +438,9 @@ class Trainer(pl.Trainer):
     def trace(model: nn.Module,
               input_sample=None,
               accelerator=None,
-              use_ipex=False,
+              use_ipex: bool = False,
               onnxruntime_session_options=None,
-              logging=True,
+              logging: bool = True,
               **export_kwargs):
         """
         Trace a pytorch model and convert it into an accelerated module for inference.
