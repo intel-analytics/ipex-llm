@@ -54,7 +54,6 @@ jobs:
           fi
           pip install pytest
           pip install openvino-dev
-          pip install numpy==1.21.6
           source bigdl-nano-init
           bash python/nano/test/run-nano-tf-openvino-tests.sh
           source $CONDA/bin/deactivate
