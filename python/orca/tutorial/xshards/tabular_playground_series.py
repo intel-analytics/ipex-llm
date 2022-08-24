@@ -29,9 +29,11 @@ from bigdl.orca.data.transformer import *
 from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.metrics import Accuracy
 
+init_orca_context(cluster_mode="local", cores=4, memory="3g")
+
 # Load data
 file_path = 'train.csv'
-data_shard = bigdl.orca.data.pandas.read_csv(opt.path)
+data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
 # Drop duplicate columns
 data_shard = data_shard.deduplicates()
