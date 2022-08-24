@@ -235,8 +235,9 @@ RUN apt-get update --fix-missing && \
     apt-get install -y libsm6 make build-essential && \
     apt-get install -y autoconf gawk bison libcurl4-openssl-dev python3-protobuf libprotobuf-c-dev protobuf-c-compiler && \
     apt-get install -y netcat net-tools && \
-    mkdir -p /ppml/trusted-big-data-ml/fl && \
-    cp ${BIGDL_HOME}/python/start-fl-server.py /ppml/trusted-big-data-ml/fl
+    mkdir -p /ppml/trusted-big-data-ml/fl
+
+COPY --from=bigdl /bigdl-${BIGDL_VERSION}/python/start-fl-server.py /ppml/trusted-big-data-ml/fl
 
 #python
 RUN apt install software-properties-common -y && \
