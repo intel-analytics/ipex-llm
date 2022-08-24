@@ -17,13 +17,13 @@
 from concurrent import futures
 import grpc
 from bigdl.ppml.fl import *
-from bigdl.ppml.fl.nn.generated.nn_service_pb2_grpc import *
+
 from bigdl.ppml.fl.nn.nn_service import NNServiceImpl
 import yaml
 
 from ..psi.psi_service import PSIServiceImpl
-
-from .generated.psi_service_pb2_grpc import add_PSIServiceServicer_to_server
+from .generated.nn_service_pb2_grpc import *
+from .generated.psi_service_pb2_grpc import *
 
 
 
