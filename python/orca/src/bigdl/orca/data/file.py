@@ -548,7 +548,7 @@ def multi_fs_load(load_func):
     This decorator can load on each worker while @enable_multi_fs_load can only load on driver.
 
     :param load_func: load file or directory function
-    :return: load file or directory funtion for specific file system
+    :return: load file or directory function for the specific file system
     """
     @functools.wraps(load_func)
     def fs_load(path, *args, **kwargs):
