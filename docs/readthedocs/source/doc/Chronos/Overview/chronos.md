@@ -29,7 +29,7 @@ You can use _Chronos_ to do:
                 <th colspan="1"><button id="tensorflow"
                         title="Use Tensorflow as deep learning models' backend.">Tensorflow</button></th>
                 <th colspan="1"><button id="prophet" title="For Prophet model.">Prophet</button></th>
-                <th colspan="1"><button id="pmdarima" title="For ARIMA model.">pmdarima</button></th>
+                <th colspan="1"><button id="pmdarima" title="For ARIMA model.">ARIMA</button></th>
             </thead>
             <tbody>
 

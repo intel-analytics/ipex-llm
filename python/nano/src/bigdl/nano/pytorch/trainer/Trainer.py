@@ -472,7 +472,7 @@ class Trainer(pl.Trainer):
         :param path: Path to saved model. Path should be a directory.
         """
         path = Path(path)
-        Path.mkdir(path, exist_ok=True)
+        path.mkdir(parents=path.parent, exist_ok=True)
         if hasattr(model, '_save'):
             model._save(path)
         else:

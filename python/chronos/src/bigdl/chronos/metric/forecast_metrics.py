@@ -15,11 +15,14 @@
 #
 
 import torch
+import numpy as np
 from torch import Tensor
 from numpy import ndarray
 from functools import partial
 from torchmetrics.functional import mean_squared_error, mean_absolute_error,\
     mean_absolute_percentage_error, r2_score
+from bigdl.nano.utils.log4Error import invalidInputError
+from timeit import repeat
 
 
 EPSILON = 1e-10
@@ -54,7 +57,6 @@ def _standard_input(metrics, y_true, y_pred):
         metrics = [metrics]
     if isinstance(metrics[0], str):
         metrics = list(map(lambda x: x.lower(), metrics))
-        from bigdl.nano.utils.log4Error import invalidInputError
         invalidInputError(all(metric in TORCHMETRICS_REGRESSION_MAP.keys() for metric in metrics),
                           f"metric should be one of {TORCHMETRICS_REGRESSION_MAP.keys()},"
                           f" but get {metrics}.")
@@ -63,7 +65,6 @@ def _standard_input(metrics, y_true, y_pred):
                           f" but found {type(y_pred)} and {type(y_true)}.")
         y_true, y_pred = torch.from_numpy(y_true), torch.from_numpy(y_pred)
 
-    from bigdl.nano.utils.log4Error import invalidInputError
     invalidInputError(y_true.shape == y_pred.shape,
                       "y_true and y_pred should have the same shape, "
                       f"but get {y_true.shape} and {y_pred.shape}.")
@@ -129,3 +130,42 @@ class Evaluator(object):
                     res = metric_func(y_pred, y_true)
                     res_list.append(res.numpy())
         return res_list
+
+    def get_latency(func, *args, num_running=100, **kwargs):
+        """
+        Return the time cost in milliseconds of a specific function by running multiple times.
+
+        :param func: The function to be tested for latency.
+        :param args: arguments for the tested function.
+        :param num_running: Int and the value is positive. Specify the running number of
+               the function and the value defaults to 100.
+        :param kwargs: other arguments for the tested function.
+
+        :return: Dictionary of str:float.
+                 Show the information of the time cost in milliseconds.
+
+        Example:
+            >>> # to get the inferencing performance of a trained TCNForecaster
+            >>> x = next(iter(test_loader))[0]
+            >>> # run forecaster.predict(x.numpy()) for len(tsdata_test.df) times
+            >>> # to evaluate the time cost
+            >>> latency = Evaluator.get_latency(forecaster.predict, x.numpy(),\
+                          num_running = len(tsdata_test.df))
+            >>> # an example output:
+            >>> # {"p50": 3.853, "p90": 3.881, "p95": 3.933, "p99": 4.107}
+        """
+        invalidInputError(isinstance(num_running, int), "num_running type must be int, "
+                          f"but found {type(num_running)}.")
+        if num_running < 0:
+            invalidInputError(False, "num_running value must be positive, "
+                              f"but found {num_running}.")
+
+        time_list = repeat(lambda: func(*args, **kwargs), number=1, repeat=num_running)
+        sorted_time = np.sort(time_list)
+
+        latency_list = {"p50": round(1000 * np.median(time_list), 3),
+                        "p90": round(1000 * sorted_time[int(0.90 * num_running)], 3),
+                        "p95": round(1000 * sorted_time[int(0.95 * num_running)], 3),
+                        "p99": round(1000 * sorted_time[int(0.99 * num_running)], 3)}
+
+        return latency_list

@@ -8,7 +8,19 @@ This is a tutorial about how to use `PPMLContext` in python to read/write files 
 
 So before you read/write files, you need to create a PPMLConext first. 
 
-#### 1.1 create with app_name & ppml_args
+#### 1.1 create with app_name
+
+This is the simplest way to create a `PPMLContext`. When you don't need to read/write encrypted files, you can use this way to create a `PPMLContext`.
+
+```python
+from bigdl.ppml.ppml_context import *
+   
+sc = PPMLContext("MyApp")
+```
+
+If you want to read/write encrypted files, then you need to provide more information.
+
+#### 1.2 create with app_name & ppml_args
 
 `ppml_args` is a dict, you need to provide the following parameters
 
@@ -46,6 +58,27 @@ args = {"kms_type": "SimpleKeyManagementService",
        }
 
 sc = PPMLContext("MyApp", args)
+```
+
+#### 1.3 create with app_name & ppml_args & spark_conf
+
+If you need to set Spark configurations, you can provide a `SparkConf` with Spark configurations to create a `PPMLContext`.
+
+```python
+from bigdl.ppml.ppml_context import *
+from pyspark import SparkConf
+   
+ppml_args = {"kms_type": "SimpleKeyManagementService",
+             "simple_app_id": "your_app_id",
+             "simple_app_key": "your_app_key",
+             "primary_key_path": "/your/primary/key/path/primaryKey",
+             "data_key_path": "/your/data/key/path/dataKey"
+            }
+   
+conf = SparkConf()
+conf.setMaster("local[4]")
+
+sc = PPMLContext("MyApp", ppml_args, conf)
 ```
 
 ### 2.Read & Write Files
