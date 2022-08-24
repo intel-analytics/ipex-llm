@@ -21,9 +21,6 @@ spec:
       #      name: kms-secret
       #      key: app_key
     volumeMounts:
-      - name: enclave-key
-        mountPath: /graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem
-        subPath: enclave-key.pem
       - name: device-plugin
         mountPath: /var/lib/kubelet/device-plugins
       - name: aesm-socket
@@ -49,9 +46,6 @@ spec:
         #sgx.intel.com/enclave: 10
         #sgx.intel.com/provision: 10
   volumes:
-    - name: enclave-key
-      secret:
-        secretName: enclave-key
     - name: device-plugin
       hostPath:
         path: /var/lib/kubelet/device-plugins
