@@ -18,6 +18,7 @@ import os
 import subprocess
 import logging
 import shutil
+import functools
 import glob
 from distutils.dir_util import copy_tree
 from bigdl.dllib.utils.log4Error import *
@@ -537,3 +538,43 @@ def get_remote_files_with_prefix_to_local(remote_path_prefix, local_dir):
         except Exception as e:
             invalidOperationError(False, str(e), cause=e)
     return os.path.join(local_dir, prefix)
+
+
+def multi_fs_load(load_func):
+    """
+
+    Enable loading file or directory in multiple file systems.
+    It supports local, hdfs, s3 file systems.
+    Note: this decorator is different from dllib decorator @enable_multi_fs_load.
+    This decorator can load on each worker while @enable_multi_fs_load can only load on driver.
+
+    :param load_func: load file or directory function
+    :return: load file or directory function for the specific file system
+    """
+    @functools.wraps(load_func)
+    def fs_load(path, *args, **kwargs):
+        from bigdl.dllib.utils.file_utils import is_local_path
+        if is_local_path(path):
+            return load_func(path, *args, **kwargs)
+        else:
+            import uuid
+            import tempfile
+            from bigdl.dllib.utils.file_utils import append_suffix
+            file_name = str(uuid.uuid1())
+            file_name = append_suffix(file_name, path.strip("/").split("/")[-1])
+            temp_path = os.path.join(tempfile.gettempdir(), file_name)
+            if is_file(path):
+                get_remote_file_to_local(path, temp_path)
+            else:
+                os.mkdir(temp_path)
+                get_remote_dir_to_local(path, temp_path)
+            try:
+                return load_func(temp_path, *args, **kwargs)
+            finally:
+                if os.path.isdir(temp_path):
+                    import shutil
+                    shutil.rmtree(temp_path)
+                else:
+                    os.remove(temp_path)
+
+    return fs_load
