@@ -75,6 +75,7 @@ def create_tsdataset(roll=True, horizon=5):
             tsdata.roll(lookback=24, horizon=horizon)
     return train, test
 
+
 def create_tsdataset_val(roll=True, horizon=5):
     from bigdl.chronos.data import TSDataset
     import pandas as pd
