@@ -21,8 +21,8 @@ jobs:
       - name: Create the Badge
         uses: schneegans/dynamic-badges-action@v1.4.0
         with:
-          auth: ${{ secrets.GIST_KEY }}
-          gistID: 5798b7a65a0d2e271d5ee492cdcb3617
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: 4f79dfdd46bd086d4a00287006ba9eaa
           filename: test.json
           label: Time
           message: is ${{ env.TIME }}
