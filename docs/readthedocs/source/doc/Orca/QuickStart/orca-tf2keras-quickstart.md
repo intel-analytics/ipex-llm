@@ -130,20 +130,20 @@ You could also save the model to Keras H5 format by passing `save_format='h5'` 
 
 ```python
 # save model in SavedModel format
-estimator.save("/tmp/cifar10_model")
+est.save("/tmp/cifar10_model")
 
 # load model
-estimator.load("/tmp/cifar10_model")
+est.load("/tmp/cifar10_model")
 ```
 
 **2. HDF5 format**
 
 ```python
 # save model in H5 format
-estimator.save("/tmp/cifar10_model.h5", save_format='h5')
+est.save("/tmp/cifar10_model.h5", save_format='h5')
 
 # load model
-estimator.load("/tmp/cifar10_model.h5")
+est.load("/tmp/cifar10_model.h5")
 ```
 
 That's it, the same code can run seamlessly in your local laptop and to distribute K8s or Hadoop cluster.
