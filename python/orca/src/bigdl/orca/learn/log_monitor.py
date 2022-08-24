@@ -164,3 +164,30 @@ def start_log_server(ip, port):
     logger_thread.daemon = True
     logger_thread.start()
     return logger_thread
+
+
+def stop_log_server(thread, ip, port):
+    if thread.is_alive():
+        import inspect
+        import ctypes
+        import zmq
+
+        def _async_raise(tid, exctype):
+            tid = ctypes.c_long(tid)
+            if not inspect.isclass(exctype):
+                exctype = type(exctype)
+            res = ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, ctypes.py_object(exctype))
+            if res == 0:
+                invalidInputError(False, "invalid thread id")
+            elif res != 1:
+                ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, None)
+                invalidOperationError(False, "PyThreadState_SetAsyncExc failed")
+
+        def stop_thread(thread):
+            _async_raise(thread.ident, SystemExit)
+
+        context = zmq.Context()
+        socket = context.socket(zmq.REQ)
+        socket.connect("tcp://{}:{}".format(ip, port))
+        socket.send_string("shutdown log server")
+        stop_thread(thread)

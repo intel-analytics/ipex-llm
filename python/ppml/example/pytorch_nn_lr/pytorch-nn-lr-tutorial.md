@@ -88,28 +88,43 @@ Then call `fit` method to train
 ```python
 response = ppl.fit(x, y)
 ```
-### 2.7 Predict
+
+### 2.6 Predict
 ```python
 result = ppl.predict(x)
 ```
 
+### 2.7 Save/Load
+After training, save the client and server model by
+```python
+torch.save(ppl.model, model_path)
+ppl.save_server_model(server_model_path)
+```
+To start a new application to continue training
+```python
+client_model = torch.load(model_path)
+# we do not pass server model this time, instead, we load it directly from server machine
+ppl = Estimator.from_torch(client_model=model,
+                           client_id=client_id,
+                           loss_fn=loss_fn,
+                           optimizer_cls=torch.optim.SGD,
+                           optimizer_args={'lr':1e-3},
+                           target='localhost:8980')
+ppl.load_server_model(server_model_path)
+
 ## 3 Run FGBoost
 FL Server is required before running any federated applications. Check [Start FL Server]() section for details.
 ### 3.1 Start FL Server in SGX
-// TODO: add this section after running FL Server in SGX succesfully in this example.
 
-Modify the config file `ppml-conf.yaml`
-```yaml
-# the port server gRPC uses
-serverPort: 8980
+#### 3.1.1 Start the container
+Before running FL Server in SGX, please prepare keys and start the BigDL PPML container first. Check  [3.1 BigDL PPML Hello World](https://github.com/intel-analytics/BigDL/tree/main/ppml#31-bigdl-ppml-hello-world) for details.
+#### 3.1.2 Run FL Server in SGX
+You can run FL Server in SGX with the following command:
 
-# the number of clients in this federated learning application
-clientNum: 2
-```
-Then start the FL Server
 ```bash
-python BigDL/python/ppml/src/bigdl/ppml/fl/nn/fl_server.py
+bash start-python-fl-server-sgx.sh -p 8980 -c 2
 ```
+You can set port with `-p` and set client number with `-c`  while the default settings are `port=8980` and `client-num=2`.
 ### 3.2 Start FGBoost Clients
 Modify the config file `ppml-conf.yaml`
 ```yaml
@@ -135,3 +150,26 @@ The first 5 predict results are printed
  [1.2120417e-23]
  [0.0000000e+00]]
 ```
+### 3.4 Incremental Training
+Incremental training is supported, we just need to use the same configurations and start FL Server again.
+
+In SGX container, start FL Server
+```
+./ppml/scripts/start-fl-server.sh 
+```
+For client applications, we change from creating model to directly loading. This is already implemented in example code, we just need to run client applications with an argument
+
+```bash
+# run following commands in 2 different terminals
+python pytorch_nn_lr_1.py true
+python pytorch_nn_lr_2.py true
+```
+The result based on new boosted trees are printed
+```
+[[1.8799074e-36]
+ [1.7512805e-25]
+ [4.6501680e-30]
+ [1.4828590e-27]
+ [0.0000000e+00]]
+```
+and you can see the loss continues to drop from the log of [Section 3.3](#33-get-results)

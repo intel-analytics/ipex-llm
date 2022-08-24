@@ -35,8 +35,7 @@ conda create --name bigdl python=3.7
 ```bash
 conda activate bigdl
 
-pip install --pre --upgrade bigdl-orca-spark3[ray]
-pip install --pre --upgrade bigdl-friesian-spark3
+pip install --pre --upgrade bigdl-friesian-spark3[train]
 pip install protobuf==3.19.4
 pip install numpy==1.18.5
 ```
@@ -56,22 +55,28 @@ Please refer to the [README](https://github.com/alibaba/DeepRec/tree/main/modelz
 - Local mode:
 ```bash
 python wdl.py \
-    --smartstaged false \
-    --ev True \
+    --instances_per_node 3 \
     --data_location /folder/path/to/train/and/test/files \
     --checkpoint /path/to/save/model/checkpoint \
-    --instances_per_node 3
+    --ev True \
+    --ev_filter counter \
+    --smartstaged False \
+    --emb_fusion False \
+    --optimizer adam
 ```
 - K8s mode:
 ```bash
 python wdl.py \
-    --smartstaged false \
-    --ev True \
+    --cluster_mode k8s \
+    --master k8s://https://ip:port \
+    --num_nodes 3 \
     --data_location /folder/path/to/train/and/test/files \
     --checkpoint /path/to/save/model/checkpoint \
-    --cluster_mode k8s \
-    --num_nodes 3 \
-    --master k8s://https://ip:port
+    --ev True \
+    --ev_filter counter \
+    --smartstaged False \
+    --emb_fusion False \
+    --optimizer adam
 ```
 
 For DeepRec related arguments, please refer to the original example for more description.

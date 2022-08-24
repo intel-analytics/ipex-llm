@@ -35,14 +35,18 @@ class Estimator:
                    optimizer_cls,
                    optimizer_args={},                   
                    target="localhost:8980",
-                   server_model=None):
+                   server_model=None,
+                   client_model_path=None,
+                   server_model_path=None):
         estimator = PytorchEstimator(model=client_model, 
-                                     loss_fn=loss_fn, 
+                                     loss_fn=loss_fn,
                                      optimizer_cls=optimizer_cls,
                                      optimizer_args=optimizer_args,
                                      client_id=client_id,
                                      target=target,
-                                     server_model=server_model)
+                                     server_model=server_model,
+                                     client_model_path=client_model_path,
+                                     server_model_path=server_model_path)
         return estimator
 
     @staticmethod

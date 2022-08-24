@@ -165,8 +165,6 @@ class AutoformerForecaster(Forecaster):
                     **self.loss_config, **self.data_config})
 
         if not has_space:
-            if self.use_hpo:
-                warnings.warn("HPO is enabled but no spaces is specified, so disable HPO.")
             self.use_hpo = False
             self.internal = model_creator(self.model_config)
 
@@ -370,6 +368,9 @@ class AutoformerForecaster(Forecaster):
         """
         if self.distributed:
             invalidInputError(False, "distributed is not support in Autoformer")
+        invalidInputError(isinstance(data, tuple) or isinstance(data, DataLoader),
+                          "The input data to predict() support formats: numpy ndarray tuple"
+                          f" and pytorch dataloader, but found {type(data)}.")
         if isinstance(data, tuple):
             data = DataLoader(TensorDataset(torch.from_numpy(data[0]),
                                             torch.from_numpy(data[1]),

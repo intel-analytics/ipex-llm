@@ -14,6 +14,12 @@
 # limitations under the License.
 #
 
+import contextlib
+import subprocess
+from logging import info, warning
+
+from ...utils.log4Error import invalidInputError
+
 from .ipex_inference_model import PytorchIPEXJITModel
 from bigdl.nano.pytorch.amp.bfloat16 import autocast
 import torch
@@ -38,13 +44,35 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                the parameter will be ignored if use_ipex is False.
         :param from_load: this will only be set by _load method.
         '''
+        if use_ipex:
+            invalidInputError(
+                self._check_cpu_isa,
+                errMsg="Applying IPEX BF16 optimization needs the cpu support avx512.",
+                fixMsg="Please set use_ipex to False or not set precision to bf16."
+            )
         PytorchIPEXJITModel.__init__(self, model, input_sample=input_sample, use_ipex=use_ipex,
                                      dtype=torch.bfloat16, use_jit=use_jit,
                                      channels_last=channels_last, from_load=from_load)
 
-    @autocast()
+    @property
+    def _check_cpu_isa(self):
+        """Indicator to verify if cpu supports avx512"""
+        msg = subprocess.check_output(["lscpu"]).decode("utf-8")
+        return 'avx512' in msg or 'amx' in msg
+
+    def autocast_context_manager(self):
+        """Create autocast context"""
+        return autocast(enabled=self._check_cpu_isa)
+
+    @contextlib.contextmanager
+    def forward_context(self):
+        """Enable autocast context"""
+        with self.autocast_context_manager():
+            yield
+
     def forward_step(self, *inputs):
-        return super().forward_step(*inputs)
+        with self.forward_context():
+            return super().forward_step(*inputs)
 
     @property
     def status(self):
