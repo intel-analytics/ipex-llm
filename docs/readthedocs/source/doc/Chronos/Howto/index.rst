@@ -2,6 +2,13 @@ Chronos How-to Guides
 =========================
 How-to guides are bite-sized, executable examples where users could check when meeting with some specific topic during the usage.
 
+
+Create a Forecasting
+-------------------------
+* `Create a forecaster <how-to-create-forecaster.html>`__
+
+    In this guidance, we demonstrate **How to create a Forecaster**. Including two ways of creating a forecaster and an explanation of some important parameters.
+
 Forecasting
 -------------------------
 * `Train forecaster on single node <how_to_train_forecaster_on_one_node.html>`__
@@ -13,10 +20,11 @@ Forecasting
     In this guidance, we demonstrate **how to tune forecaster on single node**. In tuning process, forecaster will find the best hyperparameter combination among user-defined search space, which is a common process if users pursue a forecaster with higher accuracy.
 
 
+
 .. toctree::
     :maxdepth: 1
     :hidden:
 
+    how-to-create-forecaster
     how_to_train_forecaster_on_one_node
-
     how_to_tune_forecaster_model
