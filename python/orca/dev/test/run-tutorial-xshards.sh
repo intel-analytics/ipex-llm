@@ -26,4 +26,14 @@ ray stop -f
 
 cd ../../
 echo "Running RayOnSpark tests"
-python tutorial/xshards/tabular_playground_series.py --path './tutorial/xshards/train.csv'
+
+if [ -f ${BIGDL_ROOT}/python/orca/tutorial/xshards/train.csv ]
+then
+    echo "train.csv already exists"
+else
+    wget -nv $FTP_URI/xshards/train.csv -P ${BIGDL_ROOT}/python/orca/tutorial/xshards/
+fi
+
+#sed -i "s/train.csv/train.csv/g" ${BIGDL_ROOT}/python/orca/tutorial/xshards/tabular_playground_series.py
+
+python tutorial/xshards/tabular_playground_series.py
