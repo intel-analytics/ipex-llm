@@ -452,7 +452,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                         output_feature_num=1,
                                         loss="mae",
                                         lstm_hidden_dim=space.Categorical(32, 64, 128),
-                                        lr=space.Real(0.1, 0.001, log=True))
+                                        lr=space.Real(0.001, 0.1, log=True))
         forecaster.tune(train_data, val_data, epochs=10,
                         n_trials=3, target_metric="mse",
                         direction="minimize")
