@@ -1,11 +1,24 @@
 name: Nightly Test
 
 on:
-  pull_request:
-  push:
   schedule:
     - cron: '0 15 * * *'
   workflow_dispatch:
+    inputs:
+      artifact:
+        description: 'select which job to run("all" will make all jobs run)'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - Orca-Python-ExampleTest-Py37-Spark3
+        - Orca-Python-ExampleTest-Ray-Py37-Spark3
+        - Orca-Jep-ExampleTest-Py37-Spark2
+        - Scala-App
+        - Dllib-Scala-UT
+        - Friesian-Scala-UT
+        - PPML-Scala-UT
 
 permissions:
   contents: read
@@ -13,7 +26,7 @@ permissions:
 
 jobs:
   Orca-Python-ExampleTest-Py37-Spark3:
-
+    if: ${{ github.event.inputs.artifact == 'Orca-Python-ExampleTest-Py37-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -56,7 +69,7 @@ jobs:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
   Orca-Python-ExampleTest-Ray-Py37-Spark3:
-
+    if: ${{ github.event.inputs.artifact == 'Orca-Python-ExampleTest-Ray-Py37-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -99,7 +112,7 @@ jobs:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
   Orca-Jep-ExampleTest-Py37-Spark2:
-
+    if: ${{ github.event.inputs.artifact == 'Orca-Jep-ExampleTest-Py37-Spark2' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -146,7 +159,7 @@ jobs:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
   Scala-App:
-
+    if: ${{ github.event.inputs.artifact == 'Scala-App' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -181,7 +194,7 @@ jobs:
           apps/run-scala-app-test.sh
 
   Dllib-Scala-UT:
-
+    if: ${{ github.event.inputs.artifact == 'Dllib-Scala-UT' || github.event.inputs.artifact == 'all' }} 
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
     steps:
@@ -209,6 +222,7 @@ jobs:
           #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.nn.mkldnn" "-Dtest=com.intel.analytics.bigdl.dllib.nn.mkldnn.*Test" test -P spark_3.x -Dspark.version=3.1.2 
 
   Friesian-Scala-UT:
+    if: ${{ github.event.inputs.artifact == 'Friesian-Scala-UT' || github.event.inputs.artifact == 'all' }} 
     runs-on: [ self-hosted, ubuntu-20.04-lts, CLX, AVX512, Ettenmoors ]
 
     steps:
@@ -253,7 +267,7 @@ jobs:
           mvn "-DwildcardSuites=com.intel.analytics.bigdl.friesian" "-Dtest=com.intel.analytics.bigdl.friesian.*Test" test -P spark_3.x -Dspark.version=3.1.2 "-Dspark.master=local[*]"
 
   PPML-Scala-UT:
-
+    if: ${{ github.event.inputs.artifact == 'PPML-Scala-UT' || github.event.inputs.artifact == 'all' }} 
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
     steps:

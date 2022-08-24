@@ -1,0 +1,54 @@
+name: Nightly Build
+
+on:
+  schedule:
+    - cron: '5 * * * *'
+  workflow_dispatch:
+    inputs:
+      artifact:
+        description: 'select which job to run("all" will make all jobs run)'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - scala
+        - python
+        - python-sourceforge
+        - docker-bigdl
+        - docker-bigdl-ppml-trusted-big-data-ml-python-gramine
+        - docker-bigdl-ppml-trusted-big-data-ml-python-graphene
+        - docker-bigdl-ppml-trusted-realtime-ml-scala-graphene
+        - docker-bigdl-ppml-trusted-big-data-ml-scala-occlum
+        - docker-bigdl-ppml-trusted-realtime-ml-scala-occlum
+        - docker-kms
+      bigdlTag:
+        description: 'e.g. 2.1.0-SNAPSHOT'
+        required: true
+        default: 'latest'
+        type: string
+      bigdlPpmlTag:
+        description: 'e.g. 2.1.0-SNAPSHOT'
+        required: true
+        default: 'latest'
+        type: string
+      kmsTag:
+        description: 'e.g. 0.3.0'
+        required: true
+        default: '0.3.0'
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  printJob:    
+    name: Print event
+    runs-on: ubuntu-latest
+    steps:
+    - name: Dump GitHub context
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: |
+        echo "$GITHUB_CONTEXT"
