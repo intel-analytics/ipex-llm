@@ -166,6 +166,7 @@ RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2
     chmod a+x ./download-bigdl.sh
 RUN ./download-bigdl.sh && \
     rm bigdl*.zip && \
+    mkdir -p /ppml/trusted-big-data-ml/fl && \
     cp ${BIGDL_HOME}/python/start-fl-server.py /ppml/trusted-big-data-ml/fl
 
 # stage.4 ppml
