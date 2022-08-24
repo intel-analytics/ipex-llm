@@ -7,7 +7,10 @@ on:
   
 jobs:
   print-time:
+    name: print-time
     runs-on: ubuntu-latest
+    outputs:
+      job-status: ${{ job.status }}
     steps:
       - uses: actions/checkout@v3
       - name: print time
@@ -28,5 +31,12 @@ jobs:
           minColorRange: 0
       - name: purge
         run: |
-          curl -X PURGE https://gist.githubusercontent.com/liu-shaojun/4f79dfdd46bd086d4a00287006ba9eaa/raw/test.json
-          curl -X PURGE https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/liu-shaojun/4f79dfdd46bd086d4a00287006ba9eaa/raw/test.json
+          echo job-status: ${{ job.status }}
+  job1:
+    runs-on: ubuntu-latest
+    needs: print-time
+    name: job1
+    steps:
+      - run: |
+          echo ${{ needs.print-time.outputs.job-status }}
+    
