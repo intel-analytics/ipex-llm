@@ -20,13 +20,14 @@ from bigdl.ppml.fl import *
 from bigdl.ppml.fl.nn.generated.nn_service_pb2_grpc import *
 from bigdl.ppml.fl.nn.nn_service import NNServiceImpl
 import yaml
-
+import logging
 
 
 class FLServer(object):
     def __init__(self, client_num=None):
         self.server = grpc.server(futures.ThreadPoolExecutor(max_workers=5))
-        self.port = 8980 # TODO: set from config file
+        self.port = 8980
+        self.client_num = client_num
         self.secure = False
         self.load_config()
         # a chance to overwrite client num

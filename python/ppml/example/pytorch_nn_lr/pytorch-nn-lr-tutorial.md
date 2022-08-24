@@ -115,21 +115,16 @@ ppl.load_server_model(server_model_path)
 ## 3 Run FGBoost
 FL Server is required before running any federated applications. Check [Start FL Server]() section for details.
 ### 3.1 Start FL Server in SGX
-// TODO: add this section after running FL Server in SGX succesfully in this example.
 
-Modify the config file `ppml-conf.yaml`
-```yaml
-# the port server gRPC uses
-serverPort: 8980
+#### 3.1.1 Start the container
+Before running FL Server in SGX, please prepare keys and start the BigDL PPML container first. Check  [3.1 BigDL PPML Hello World](https://github.com/intel-analytics/BigDL/tree/main/ppml#31-bigdl-ppml-hello-world) for details.
+#### 3.1.2 Run FL Server in SGX
+You can run FL Server in SGX with the following command:
 
-
-# the number of clients in this federated learning application
-clientNum: 2
-```
-Then start the FL Server
 ```bash
-python BigDL/python/ppml/src/bigdl/ppml/fl/nn/fl_server.py
+bash start-python-fl-server-sgx.sh -p 8980 -c 2
 ```
+You can set port with `-p` and set client number with `-c`  while the default settings are `port=8980` and `client-num=2`.
 ### 3.2 Start FGBoost Clients
 Modify the config file `ppml-conf.yaml`
 ```yaml

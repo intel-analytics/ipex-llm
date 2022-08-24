@@ -38,6 +38,7 @@ class FLClient(val _args: Array[String]) extends GrpcClientBase(_args) {
   var fgbostStub: FGBoostStub = null
   var psiSalt: String = null
   privateKeyFilePath = null
+  parseConfig()
 
   def this() {
     this(null)
@@ -58,7 +59,6 @@ class FLClient(val _args: Array[String]) extends GrpcClientBase(_args) {
       psiSalt = flHelper.psiSalt
       privateKeyFilePath = flHelper.privateKeyFilePath
     }
-    super.parseConfig()
   }
 
   override def loadServices(): Unit = {

@@ -111,7 +111,6 @@ We only need the following steps:
 - copy all lines of code into the `train` method of `MyNano`
 - add one line to setup model, optimizer and dataloader
 - replace the `loss.backward()` with `self.backward(loss)`
-- (**optional, only required when you use custom fields or methods of the model**) after calling `self.setup`, the returned model is a wrapper module around the original one which only has some common methods, such as `train`, `forward`, etc. if you need to access other fields or methods of the original model, you can replace the `model.xxxx` with `model.module.xxxx`
 
 ```python
 import os

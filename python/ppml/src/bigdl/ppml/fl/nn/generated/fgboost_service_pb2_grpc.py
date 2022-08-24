@@ -4,7 +4,6 @@ import grpc
 
 import fgboost_service_pb2 as fgboost__service__pb2
 
-
 class FGBoostServiceStub(object):
     """Missing associated documentation comment in .proto file."""
 

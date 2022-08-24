@@ -55,6 +55,7 @@ subtrees:
       - file: doc/Chronos/Overview/windows_guide
       - file: doc/Chronos/Overview/quick-tour
       - file: doc/Chronos/Overview/deep_dive
+      - file: doc/Chronos/Howto/index
       - file: doc/Chronos/QuickStart/index
       - file: doc/Chronos/Overview/chronos_known_issue
 

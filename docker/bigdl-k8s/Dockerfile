@@ -101,8 +101,6 @@ ENV BIGDL_VERSION                       ${BIGDL_VERSION}
 ENV SPARK_HOME                          ${SPARK_HOME}
 ENV SPARK_VERSION                       ${SPARK_VERSION}
 ENV OMP_NUM_THREADS                     4
-ENV NOTEBOOK_PORT                       12345
-ENV NOTEBOOK_TOKEN                      1234qwer
 ENV RUNTIME_SPARK_MASTER                local[4]
 ENV RUNTIME_K8S_SERVICE_ACCOUNT         spark
 ENV RUNTIME_K8S_SPARK_IMAGE             intelanalytics/bigdl-k8s:${BIGDL_VERSION}-${SPARK_VERSION}
