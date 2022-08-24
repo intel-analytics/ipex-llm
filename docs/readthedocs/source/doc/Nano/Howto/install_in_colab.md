@@ -38,8 +38,8 @@ To enable ONNXRuntime acceleration, you need to install corresponding onnx packa
 !pip install onnx onnxruntime
 ```
 
-### OpenVINO
-To enable OpenVINO acceleration, you need to install the OpenVINO toolkit:
+### OpenVINO / Post-training Optimization Tools (POT)
+To enable OpenVINO acceleration, or use POT for quantization, you need to install the OpenVINO toolkit:
 
 ```python
 !pip install openvino-dev
@@ -48,7 +48,7 @@ To enable OpenVINO acceleration, you need to install the OpenVINO toolkit:
 
 ```eval_rst
 .. note::
-    If you meet ``ValueError: numpy.ndarray size changed, may indicate binary incompatibility. Expected 88 from C header, got 80 from PyObject`` when using ``Trainer.trace`` function, you could try to solve it by upgrading ``numpy`` through:
+    If you meet ``ValueError: numpy.ndarray size changed, may indicate binary incompatibility. Expected 88 from C header, got 80 from PyObject`` when using ``Trainer.trace`` or ``Trainer.quantize`` function, you could try to solve it by upgrading ``numpy`` through:
     
     .. code-block:: python
 

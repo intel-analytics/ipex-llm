@@ -9,6 +9,7 @@ PyTorch Inference
 * `How to accelerate a PyTorch inference pipeline through ONNXRuntime <accelerate_pytorch_inference_onnx.html>`_
 * `How to accelerate a PyTorch inference pipeline through OpenVINO <accelerate_pytorch_inference_openvino.html>`_
 * `How to quantize your PyTorch model for inference using Intel Neural Compressor <quantize_pytorch_inference_inc.html>`_
+* `How to quantize your PyTorch model for inference using Post-training Optimization Tools <quantize_pytorch_inference_pot.html>`_
 
 .. toctree::
     :maxdepth: 1
@@ -17,6 +18,7 @@ PyTorch Inference
     accelerate_pytorch_inference_onnx
     accelerate_pytorch_inference_openvino
     quantize_pytorch_inference_inc
+    quantize_pytorch_inference_pot
 
 Install
 -------------------------
