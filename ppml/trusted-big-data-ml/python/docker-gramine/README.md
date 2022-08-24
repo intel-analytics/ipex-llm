@@ -274,7 +274,7 @@ gramine-argv-serializer bash -c "secure_password=`openssl rsautl -inkey /ppml/tr
         local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar" > /ppml/trusted-big-data-ml/secured_argvs
 ```
 
-Init Graphene command.
+Init Gramine command.
 
 ```bash
 ./init.sh
