@@ -63,6 +63,9 @@ class OpenvinoEstimator(SparkEstimator):
                feature}, where feature(label) is a numpy array or a list of numpy arrays.
         :param feature_cols: Feature column name(s) of data. Only used when data is a Spark
                DataFrame. Default: None.
+        :param inputs: Str or List of str. The model input list(order related). Users can specify
+               the input order using the `inputs` parameter. If inputs=None, The default OpenVINO
+               model input list will be used. Default: None.
         :return: predicted result.
                  If the input data is XShards, the predict result is a XShards, each partition
                  of the XShards is a dictionary of {'prediction': result}, where the result is a
@@ -73,7 +76,9 @@ class OpenvinoEstimator(SparkEstimator):
         sc = init_nncontext()
         model_bytes_broadcast = sc.broadcast(self.model_bytes)
         weight_bytes_broadcast = sc.broadcast(self.weight_bytes)
-        if inputs is not None:
+        if inputs:
+            if not isinstance(inputs, list):
+                inputs = [inputs]
             invalidInputError(set(inputs) == set(self.inputs),
                               "The inputs names need to match the model inputs, the model inputs: "
                               + ", ".join(self.inputs))
