@@ -38,7 +38,7 @@ from bigdl.orca.learn.utils import find_free_port, find_ip_and_free_port
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, make_data_creator, load_model, \
     save_model, process_xshards_of_pandas_dataframe
-from bigdl.orca.learn.log_monitor import start_log_server
+from bigdl.orca.learn.log_monitor import start_log_server, stop_log_server
 from bigdl.orca.data.shard import SparkXShards
 from bigdl.orca import OrcaContext
 from bigdl.dllib.utils.log4Error import invalidInputError
@@ -94,7 +94,7 @@ class SparkTFEstimator():
         is_local = sc.master.startswith("local")
         self.need_to_log_to_driver = (not is_local) and log_to_driver
         if self.need_to_log_to_driver:
-            start_log_server(self.ip, self.port)
+            self.log_server_thread = start_log_server(self.ip, self.port)
 
     def _get_cluster_info(self, sc):
         cluster_info = self.workerRDD.barrier().mapPartitions(find_ip_and_free_port).collect()
@@ -528,3 +528,9 @@ class SparkTFEstimator():
     @property
     def _model_saved_path(self):
         return os.path.join(self.model_dir, "{}_model.h5".format(self.application_id))
+
+    def shutdown(self):
+        """
+        Shutdown estimator and release resources.
+        """
+        stop_log_server(self.log_server_thread, self.ip, self.port)
