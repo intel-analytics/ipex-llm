@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.ppml.attestation
 
+
 abstract class QuoteVerifier {
 
   def verifyQuote(quote: Array[Byte]): Int = {
