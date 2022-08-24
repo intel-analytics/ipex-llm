@@ -24,7 +24,7 @@ export PYSPARK_DRIVER_PYTHON=python
 
 ray stop -f
 
-cd ../../
+cd ../../tutorial/xshards
 echo "Running RayOnSpark tests"
 
 if [ -f ${BIGDL_ROOT}/python/orca/tutorial/xshards/train.csv ]
@@ -36,4 +36,4 @@ fi
 
 #sed -i "s/train.csv/train.csv/g" ${BIGDL_ROOT}/python/orca/tutorial/xshards/tabular_playground_series.py
 
-python tutorial/xshards/tabular_playground_series.py
+python tabular_playground_series.py
