@@ -93,6 +93,7 @@ jobs:
           export SPARK_LOCAL_HOSTNAME=localhost
           export KERAS_BACKEND=tensorflow
           python --version
+          pip install numpy==1.19.5
           pip install scipy==1.5.4
           bash python/chronos/dev/test/run-pytests.sh
         env:
