@@ -31,7 +31,9 @@ q_model = Trainer.quantize(model,
 .. note::
     For POT, only **static** post-training quantization is supported. So ``calib_dataloader`` (for calibration data) is always required when ``accelerator='openvino'``. 
     
-    For ``calib_dataloader``, batch size is not important as it intends to read 100 data. And there could be no label in calibration data.
+    For ``calib_dataloader``, batch size is not important as it intends to read 100 samples. And there could be no label in calibration data.
+
+    Please refer to `API documentation <../../PythonAPI/Nano/pytorch.html#bigdl.nano.pytorch.Trainer.quantize>`_ for more information on ``Trainer.quantize``.
 ```
 
 You could then do the normal inference steps with the quantized model:
@@ -46,8 +48,9 @@ print(predictions)
 
 A short runnable example to demonstrate this functionality can be found [here](https://github.com/intel-analytics/BigDL/blob/main/python/nano/tutorial/inference/pytorch/pytorch_quantization.py).
 
+
 ```eval_rst
-.. card:: Relative Readings
+.. card:: Related Readings
 
     * `How to install BigDL-Nano <../Overview/nano.html#install>`_
     * `How to install BigDL-Nano in Google Colab <install_in_colab.html>`_

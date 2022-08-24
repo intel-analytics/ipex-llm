@@ -44,9 +44,11 @@ To enable quantization using INC for inference, you could simply **import BigDL-
 
 ```eval_rst
 .. note::
-    ``Trainer`` will by default quantize your PyTorch ``nn.Module`` through **static** post-training quantization. For this case, ``calib_dataloader`` (for calibration data) is required. Batch size is not important to ``calib_dataloader``, as it intends to read 100 data. And there could be no label in calibration data.
+    ``Trainer`` will by default quantize your PyTorch ``nn.Module`` through **static** post-training quantization. For this case, ``calib_dataloader`` (for calibration data) is required. Batch size is not important to ``calib_dataloader``, as it intends to read 100 samples. And there could be no label in calibration data.
 
     If you would like to implement dynamic post-training quantization, you could set parameter ``approach='dynamic'``. In this case, ``calib_dataloader`` should be ``None``. Compared to dynamic quantization, static quantization could lead to faster inference as it eliminates the data conversion costs between layers.
+
+    Please refer to `API documentation <../../PythonAPI/Nano/pytorch.html#bigdl.nano.pytorch.Trainer.quantize>`_ for more information on ``Trainer.quantize``.
 ```
 
 You could then do the normal inference steps with the quantized model:
@@ -62,7 +64,7 @@ print(predictions)
 A short runnable example to demonstrate this functionality can be found [here](https://github.com/intel-analytics/BigDL/blob/main/python/nano/tutorial/inference/pytorch/pytorch_quantization.py) with no runtime acceleration, and [here](https://github.com/intel-analytics/BigDL/blob/main/python/nano/tutorial/inference/pytorch/pytorch_quantization_onnx.py) with extra ONNXRuntime acceleration.
 
 ```eval_rst
-.. card:: Relative Readings
+.. card:: Related Readings
 
     * `How to install BigDL-Nano <../Overview/nano.html#install>`_
     * `How to install BigDL-Nano in Google Colab <install_in_colab.html>`_

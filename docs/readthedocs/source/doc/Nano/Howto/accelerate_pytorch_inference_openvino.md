@@ -26,9 +26,11 @@ ov_model = Trainer.trace(model_ft,
 ```
 ```eval_rst
 .. note::
-    ``input_sample`` is the parameter for OpenVINO accelerator to know the **shape** of the model input. So both the batch size and the specific values are not important to ``input_sample``. 
-    
-    If we want our test dataset to consist of images with :math:`224 \times 224` pixels, we could use ``torch.rand(1, 3, 224, 224)`` for ``input_sample`` here.
+    ``input_sample`` is the parameter for ONNXRuntime accelerator to know the **shape** of the model input. So both the batch size and the specific values are not important to ``input_sample``. If we want our test dataset to consist of images with :math:`224 \times 224` pixels, we could use ``torch.rand(1, 3, 224, 224)`` for ``input_sample`` here.
+
+    ``input_sample`` is not required if you have used an instance of ``Trainer`` to fit your model before, or the model is a ``LightningModule`` with any dataloader attached.
+
+    Please refer to `API documentation <../../PythonAPI/Nano/pytorch.html#bigdl.nano.pytorch.Trainer.trace>`_ for more information on ``Trainer.trace``.
 ```
 
 You could then do the normal inference steps with the model optimized by OpenVINO:
@@ -44,7 +46,7 @@ print(predictions)
 A short runnable example to demonstrate this functionality can be found [here](https://github.com/intel-analytics/BigDL/blob/main/python/nano/tutorial/inference/pytorch/pytorch_inference_openvino.py).
 
 ```eval_rst
-.. card:: Relative Readings
+.. card:: Related Readings
 
     * `How to install BigDL-Nano <../Overview/nano.html#install>`_
     * `How to install BigDL-Nano in Google Colab <install_in_colab.html>`_
