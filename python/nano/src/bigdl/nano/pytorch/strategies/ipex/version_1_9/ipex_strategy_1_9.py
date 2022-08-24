@@ -39,7 +39,7 @@ class IPEXStrategy(SingleDeviceStrategy):
         self,
         accelerator: Accelerator = IPEXAccelerator(),   # type: ignore
         precision_plugin: PrecisionPlugin = PrecisionPlugin(),
-        enable_bf16=False,
+        dtype=None,
     ) -> None:
         """
         Create a IPEXStrategy.
@@ -47,7 +47,7 @@ class IPEXStrategy(SingleDeviceStrategy):
         :param accelerator: the accelerator to handle hardware
         :param precision_plugin: the plugin to handle precision-specific parts
         """
-        if enable_bf16:
+        if dtype == torch.bfloat16:
             # Automatically mix precision
             ipex.enable_auto_mixed_precision(mixed_dtype=torch.bfloat16)
 
