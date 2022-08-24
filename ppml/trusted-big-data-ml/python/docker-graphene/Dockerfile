@@ -255,6 +255,7 @@ RUN apt install software-properties-common -y && \
 ADD ./bash.manifest.template /ppml/trusted-big-data-ml/bash.manifest.template
 ADD ./Makefile /ppml/trusted-big-data-ml/Makefile
 ADD ./init.sh /ppml/trusted-big-data-ml/init.sh
+ADD ./init-k8s-sgx.sh /ppml/trusted-big-data-ml/init-k8s-sgx.sh
 ADD ./clean.sh /ppml/trusted-big-data-ml/clean.sh
 ADD ./examples /ppml/trusted-big-data-ml/work/examples
 ADD ./standalone/check-status.sh /ppml/trusted-big-data-ml/standalone/check-status.sh
@@ -279,6 +280,7 @@ RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION
     sed -i 's/examples/\/ppml\/trusted-big-data-ml\/work\/spark-3.1.2\/examples/' /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/hive.py && \
     sed -i 's/spark-warehouse/\/ppml\/trusted-big-data-ml\/work\/spark-warehouse/' /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/hive.py && \
     chmod a+x /ppml/trusted-big-data-ml/init.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/init-k8s-sgx.sh && \
     chmod a+x /ppml/trusted-big-data-ml/clean.sh && \
     chmod a+x /ppml/trusted-big-data-ml/standalone/* && \
     chmod a+x /ppml/trusted-big-data-ml/bigdl-ppml-submit.sh && \
