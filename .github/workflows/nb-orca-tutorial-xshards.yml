@@ -14,11 +14,9 @@ on:
   pull_request:
     branches: [ "main" ]
     paths:
-      - 'python/orca/src/bigdl/orca/data/**'
-      - 'python/orca/src/bigdl/orca/learn/metrics.py'
-      - 'python/orca/src/bigdl/orca/learn/util.py'
-      - 'python/orca/src/bigdl/orca/learn/ray_estimator.py'
-      - 'python/orca/src/bigdl/orca/learn/pytorch/**'
+      - 'python/orca/src/bigdl/**'
+      - 'python/orca/tutorial/**'
+      - '.github/workflows/nb-orca-tutorial-xshards.yml'
   schedule:
     - cron: '0 15 * * *'
   # Allows you to run this workflow manually from the Actions tab
