@@ -1,10 +1,8 @@
 name: Nightly Build Example Tests PPML Spark Local on Graphen
 
 on:
-  # schedule:
-  #   - cron: '0 17 * * *'
-  pull_request:
-    branches: [main]
+  schedule:
+    - cron: '0 17 * * *'
   workflow_dispatch:
     inputs:
       select_running_example:
