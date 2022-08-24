@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+export FTP_URI=$FTP_URI
 set -ex
 
 cd "`dirname $0`"
@@ -25,4 +26,4 @@ ray stop -f
 
 cd ../../
 echo "Running RayOnSpark tests"
-python tutorial/xshards/tabular_playground_series.py
+python tutorial/xshards/tabular_playground_series.py --path './xshards/train.csv'
