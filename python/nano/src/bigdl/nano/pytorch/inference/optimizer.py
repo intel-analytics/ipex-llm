@@ -80,8 +80,10 @@ ALL_INFERENCE_ACCELERATION_METHOD = \
         "openvino_fp32": AccelerationOption(openvino=True),
         "openvino_int8": AccelerationOption(openvino=True, pot=True),
         "onnxruntime_fp32": AccelerationOption(onnxtunrime=True),
-        "onnxruntime_int8_qlinear": AccelerationOption(onnxruntime=True, inc=True, method="qlinear"),
-        "onnxruntime_int8_integer": AccelerationOption(onnxruntime=True, inc=True, method="integer"),
+        "onnxruntime_int8_qlinear": AccelerationOption(onnxruntime=True, inc=True, 
+                                                       method="qlinear"),
+        "onnxruntime_int8_integer": AccelerationOption(onnxruntime=True, inc=True, 
+                                                       method="integer"),
     }
 
 
@@ -125,7 +127,7 @@ class InferenceOptimizer:
                higher the better. Default value is "max".
         :param cpu_num: (optional) a int represents how many cores is needed for
                inference.
-        :param logging: whether to log detailed information of model conversion. 
+        :param logging: whether to log detailed information of model conversion.
                default: False.
         :param latency_sample_num: (optional) a int represents the number of repetitions
                to calculate the average latency. The default value is 100.
@@ -311,7 +313,7 @@ class InferenceOptimizer:
     def trace(model: nn.Module,
               input_sample=None,
               accelerator=None,
-              use_ipex: bool= False,
+              use_ipex: bool = False,
               onnxruntime_session_options=None,
               logging: bool = True,
               **export_kwargs):
