@@ -2,7 +2,7 @@ name: Print Time
 
 on:
   schedule:
-    - cron: '32/1 * * * *'
+    - cron: '1/1 * * * *'
   workflow_dispatch:
     inputs:
       artifact:
