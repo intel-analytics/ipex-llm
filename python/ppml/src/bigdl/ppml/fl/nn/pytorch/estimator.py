@@ -39,12 +39,16 @@ class PytorchEstimator:
                  bigdl_type="float", 
                  target="localhost:8980", 
                  fl_client=None,
-                 server_model=None):
+                 server_model=None,
+                 client_model_path=None,
+                 server_model_path=None):
         self.bigdl_type = bigdl_type
         self.model = model
         self.loss_fn = loss_fn
         self.optimizer = optimizer_cls(model.parameters(), **optimizer_args)
         self.version = 0
+        self.client_model_path = client_model_path
+        self.server_model_path = server_model_path
         self.fl_client = fl_client if fl_client is not None \
             else FLClient(client_id=client_id, aggregator='pt', target=target)
         self.loss_history = []
@@ -138,6 +142,10 @@ class PytorchEstimator:
             else:
                 invalidInputError(False,
                                   f'got unsupported data input type: {type(x)}')
+            if self.server_model_path is not None:
+                self.save_server_model(self.server_model_path)
+            if self.client_model_path is not None:
+                torch.save(self.model, self.client_model_path)
             
 
     def predict(self, x):

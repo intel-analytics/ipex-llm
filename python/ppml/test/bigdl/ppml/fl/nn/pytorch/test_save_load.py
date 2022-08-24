@@ -123,10 +123,10 @@ class TestSaveLoad(FLTest):
                                               optimizer_cls=torch.optim.SGD,
                                               optimizer_args={'lr':1e-3},
                                               target=self.target,
-                                              server_model=vfl_model_2)
+                                              server_model=vfl_model_2,
+                                              server_model_path=TestSaveLoad.server_model_path,
+                                              client_model_path=TestSaveLoad.client_model_path)
         vfl_client_ppl.fit(train_dataloader)
-        vfl_client_ppl.save_server_model(TestSaveLoad.server_model_path)
-        torch.save(vfl_client_ppl.model, TestSaveLoad.client_model_path)
         self.fl_server.stop()
         self.setUp()
         client_model_loaded = torch.load(TestSaveLoad.client_model_path)

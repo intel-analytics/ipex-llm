@@ -57,7 +57,8 @@ def run_client(load_model):
                                    loss_fn=loss_fn,
                                    optimizer_cls=torch.optim.SGD,
                                    optimizer_args={'lr':1e-5},
-                                   target='localhost:8980')
+                                   target='localhost:8980',
+                                   client_model_path='/tmp/pytorch_client_model_2.pt')
         response = ppl.fit(x, y, 5)
     else:
         model = LocalModel(len(df_x.columns))
@@ -66,9 +67,9 @@ def run_client(load_model):
                                    loss_fn=loss_fn,
                                    optimizer_cls=torch.optim.SGD,
                                    optimizer_args={'lr':1e-5},
-                                   target='localhost:8980')
+                                   target='localhost:8980',
+                                   client_model_path='/tmp/pytorch_client_model_2.pt')
         response = ppl.fit(x, y, 5)
-        torch.save(ppl.model, '/tmp/pytorch_client_model_2.pt')
     result = ppl.predict(x)
     print(result[:5])
 

@@ -76,7 +76,9 @@ def run_client(load_model):
                                    loss_fn=loss_fn,
                                    optimizer_cls=torch.optim.SGD,
                                    optimizer_args={'lr':1e-5},
-                                   target='localhost:8980')
+                                   target='localhost:8980',
+                                   server_model_path='/tmp/pytorch_server_model',
+                                   client_model_path='/tmp/pytorch_client_model_1.pt')
         ppl.load_server_model('/tmp/pytorch_server_model')
         response = ppl.fit(x, y, 5)
     else:
@@ -89,10 +91,10 @@ def run_client(load_model):
                                    optimizer_cls=torch.optim.SGD,
                                    optimizer_args={'lr':1e-5},
                                    target='localhost:8980',
-                                   server_model=server_model)
+                                   server_model=server_model,
+                                   server_model_path='/tmp/pytorch_server_model',
+                                   client_model_path='/tmp/pytorch_client_model_1.pt')
         response = ppl.fit(x, y, 5)
-        torch.save(ppl.model, '/tmp/pytorch_client_model_1.pt')
-        ppl.save_server_model('/tmp/pytorch_server_model')
     result = ppl.predict(x)
     print(result[:5])
 
