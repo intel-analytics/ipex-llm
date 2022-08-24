@@ -16,8 +16,6 @@
 # This example is adapted from
 # https://www.kaggle.com/code/remekkinas/tps-5-pytorch-nn-for-tabular-step-by-step/notebook
 
-import argparse
-
 from sklearn.model_selection import train_test_split
 import torch
 import torch.nn as nn
@@ -116,7 +114,7 @@ def optim_creator(model, config):
 criterion = nn.CrossEntropyLoss()
 
 est = Estimator.from_torch(model=model_creator, optimizer=optim_creator,
-                            loss=criterion, metrics=[Accuracy()], backend="ray")
+                           loss=criterion, metrics=[Accuracy()], backend="ray")
 
 est.fit(data=train_shard, feature_cols=['x_scaled'], label_cols=['target'],
         validation_data=val_shard, epochs=NUM_EPOCHS, batch_size=BATCH_SIZE)
