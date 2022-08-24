@@ -45,6 +45,7 @@ permissions:
 jobs:
 
   docker-build-bigdl:
+    needs: scala-build
     if: ${{ github.event.inputs.artifact == 'bigdl' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Shire]
 
@@ -98,6 +99,7 @@ jobs:
         docker rmi -f ${IMAGE}-spark-3.1.2:${TAG}
   
   docker-build-ppml:
+    needs: scala-build
     if: ${{ !github.event.schedule && (github.event.inputs.artifact == 'docker-bigdl-ppml-trusted-big-data-ml-python-gramine' || github.event.inputs.artifact == 'docker-bigdl-ppml-trusted-big-data-ml-python-graphene' || github.event.inputs.artifact == 'docker-bigdl-ppml-trusted-realtime-ml-scala-graphene' || github.event.inputs.artifact == 'docker-bigdl-ppml-trusted-big-data-ml-scala-occlum' || github.event.inputs.artifact == 'docker-bigdl-ppml-trusted-realtime-ml-scala-occlum' || github.event.inputs.artifact == 'all') }}
     runs-on: [self-hosted, Shire]
 
@@ -243,6 +245,7 @@ jobs:
         fi
   
   docker-build-kms:
+    needs: scala-build
     if: ${{ github.event.schedule == '0 17 * * 1' || github.event.inputs.artifact == 'docker-kms' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
 
