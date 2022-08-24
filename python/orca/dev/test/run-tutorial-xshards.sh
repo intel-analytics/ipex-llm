@@ -26,4 +26,4 @@ ray stop -f
 
 cd ../../
 echo "Running RayOnSpark tests"
-python tutorial/xshards/tabular_playground_series.py --path 'tutorial/xshards/train.csv'
+python tutorial/xshards/tabular_playground_series.py --path './tutorial/xshards/train.csv'
