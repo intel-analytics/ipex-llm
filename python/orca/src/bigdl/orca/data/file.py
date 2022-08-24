@@ -18,6 +18,7 @@ import os
 import subprocess
 import logging
 import shutil
+import functools
 import glob
 from distutils.dir_util import copy_tree
 from bigdl.dllib.utils.log4Error import *
