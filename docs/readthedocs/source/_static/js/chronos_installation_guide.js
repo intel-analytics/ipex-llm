@@ -270,11 +270,13 @@ $(document).on('click',"button",function(){
 //func to add button hover effect
 $(document).on({
     mouseenter: function () {
-        $(this).parent().css("background-color","rgb(74, 106, 237)");
-        $(this).css("color","white");
+        if($(this).prop("disabled")!=true){
+            $(this).parent().css("background-color","rgb(74, 106, 237)");
+            $(this).css("color","white");
+        }
     },
     mouseleave: function () {
-        if(!$(this).hasClass("isset")){
+        if(!$(this).hasClass("isset") && $(this).prop("disabled")!=true){
             $(this).parent().css("background-color","transparent");
             $(this).css("color","black");
         }
