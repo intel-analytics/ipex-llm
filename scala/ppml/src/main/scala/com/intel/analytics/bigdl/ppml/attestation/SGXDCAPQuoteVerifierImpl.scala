@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.ppml.attestation
 
-import com.intel.analytics.bigdl.ppml.attestation.Attestation
+import com.intel.analytics.bigdl.ppml.dcap.Attestation
 import org.apache.logging.log4j.LogManager
 
 /**
