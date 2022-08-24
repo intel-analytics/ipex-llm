@@ -1,4 +1,4 @@
-name: Nightly Build
+name: Print Time
 
 on:
   schedule:
