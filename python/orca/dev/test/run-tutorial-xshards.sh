@@ -14,17 +14,18 @@
 # limitations under the License.
 #
 
-export FTP_URI=$FTP_URI
+
 set -ex
 
-cd "`dirname $0`"
-
+export FTP_URI=$FTP_URI
 export PYSPARK_PYTHON=python
 export PYSPARK_DRIVER_PYTHON=python
 
 ray stop -f
 
+cd "`dirname $0`"
 cd ../../tutorial/xshards
+
 echo "Running RayOnSpark tests"
 
 if [ -f ${BIGDL_ROOT}/python/orca/tutorial/xshards/train.csv ]
@@ -33,7 +34,5 @@ then
 else
     wget -nv $FTP_URI/analytics-zoo-data/xshards/train.csv -P ${BIGDL_ROOT}/python/orca/tutorial/xshards/
 fi
-
-#sed -i "s/train.csv/train.csv/g" ${BIGDL_ROOT}/python/orca/tutorial/xshards/tabular_playground_series.py
 
 python tabular_playground_series.py
