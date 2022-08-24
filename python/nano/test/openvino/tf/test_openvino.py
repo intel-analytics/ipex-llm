@@ -13,14 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import pytest
 from unittest import TestCase
 import tensorflow as tf
 from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
 import numpy as np
+from bigdl.nano.tf.utils import KERAS_VERSION_GREATER_2_7
 from bigdl.nano.tf.keras import Model
 
 
-class TestOpenVINO(TestCase):
+class TF_2_7:
     def test_model_trace_openvino(self):
         model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
         model = Model(inputs=model.inputs, outputs=model.outputs)
@@ -38,3 +40,24 @@ class TestOpenVINO(TestCase):
 
         openvino_model.compile(metrics=[tf.keras.metrics.CategoricalAccuracy()])
         acc = openvino_model.evaluate(train_dataset, return_dict=True)['categorical_accuracy']
+
+
+class TF_GREATER_2_7(TF_2_7):
+    def test_model_trace_openvino(self):
+        # when using tf>2.7, we expect that it will raise an error
+        try:
+            super().test_model_trace_openvino()
+            raise Exception("using openvino with tf>2.7 doesn't raise an error")
+        except RuntimeError:
+            pass
+    
+
+TF_VERSION_CLS = TF_2_7 if not KERAS_VERSION_GREATER_2_7 else TF_GREATER_2_7
+
+
+class TestOpenVINO(TF_VERSION_CLS, TestCase):
+    pass
+
+
+if __name__ == '__main__':
+    pytest.main([__file__])
