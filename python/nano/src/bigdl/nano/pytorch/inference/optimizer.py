@@ -389,7 +389,7 @@ def _openvino_checker():
     '''
     check if openvino-dev is installed
     '''
-    return not find_spec("openvino") is None
+    return not find_spec("openvino-dev") is None
 
 
 def _bf16_checker():
