@@ -95,17 +95,17 @@ To enable attestation in BigDL PPML, you need to ensure you have correct access 
 
 ### 3.2 Attestation Configurations
 
-1. Set APP_ID and APP_KEY in [kms-secret.yaml](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/kubernetes/kms-secret.yaml). Apply this secret.
-2. Mount APP_ID and APP_KEY in [spark-driver-template.yaml](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/spark-driver-template.yaml#L13) and [spark-executor-template.yaml](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/spark-executor-template.yaml#L13).
-3. Change ATTESTATION to `true` in [spark-driver-template.yaml](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/spark-driver-template.yaml#L10) and [spark-executor-template.yaml](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/spark-executor-template.yaml#L10), and set ATTESTATION_URL, e.g., `http://192.168.0.8:9000`.
+1. Set APP_ID and APP_KEY in [kms-secret.yaml](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-gramine/kubernetes/kms-secret.yaml). Apply this secret.
+2. Mount APP_ID and APP_KEY in [spark-driver-template.yaml](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-gramine/spark-driver-template.yaml#L13) and [spark-executor-template.yaml](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-gramine/spark-executor-template.yaml#L13).
+3. Change ATTESTATION to `true` in [spark-driver-template.yaml](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-gramine/spark-driver-template.yaml#L10) and [spark-executor-template.yaml](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-gramine/spark-executor-template.yaml#L10), and set ATTESTATION_URL, e.g., `http://192.168.0.8:9000`.
 
 ### 3.2 Test with examples
 
 After updating `spark-driver-template.yaml` and `spark-executor-template.yaml`, attestation will by automatically added to BigDL PPML pipe line. That means PPML applications will be automatically attested by attestation service when they start in Kubernetes Pod. They will prevent malicious Pod from getting sensitive information in applications.
 
-You can test attestation with [Spark Pi](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-graphene#143-spark-pi-example) or other Kubernetes examples.
+You can test attestation with [Spark Pi](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-gramine#143-spark-pi-example) or other Kubernetes examples.
 
 
 [devicePluginK8sQuickStart]: https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html
-[keysNpassword]: https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-graphene#2-prepare-data-key-and-password
+[keysNpassword]: https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-gramine#2-prepare-data-key-and-password
 [helmsite]: https://helm.sh/
