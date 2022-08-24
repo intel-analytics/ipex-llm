@@ -31,7 +31,7 @@ if [ -f ${BIGDL_ROOT}/python/orca/tutorial/xshards/train.csv ]
 then
     echo "train.csv already exists"
 else
-    wget -nv $FTP_URI/xshards/train.csv -P ${BIGDL_ROOT}/python/orca/tutorial/xshards/
+    wget -nv $FTP_URI/analytics-zoo-data/xshards/train.csv -P ${BIGDL_ROOT}/python/orca/tutorial/xshards/
 fi
 
 #sed -i "s/train.csv/train.csv/g" ${BIGDL_ROOT}/python/orca/tutorial/xshards/tabular_playground_series.py
