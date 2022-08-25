@@ -34,6 +34,7 @@ jobs:
           curl -x xxx
           echo job-status: ${{ job.status }}
       - name: echo
+        if: ${{ always() }}
         run: |
           echo job-status: ${{ job.status }}
   job1:
