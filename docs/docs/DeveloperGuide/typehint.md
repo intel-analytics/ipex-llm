@@ -4,7 +4,7 @@ This page describes how to add type annotations to unmarked code efficiently.
 
 ## Introduction
 
-we need to declare that the python runtime does not enforce function and variable [type annotations](https://docs.python.org/3/library/typing.html#module-typing). But they can actually be used by third party tools such as type checkers, IDEs, linters, etc.
+We need to declare that the python runtime does not enforce function and variable [type annotations](https://docs.python.org/3/library/typing.html#module-typing). But they can actually be used by third party tools such as type checkers, IDEs, linters, etc.
 
 **Python Enhancement Proposals(PEPs)** are widely accepted python standards, and [PEP 484](https://peps.python.org/pep-0484/) introduced syntax for function annotations, for example:
 ```python
@@ -79,12 +79,12 @@ which indicates the annotations involved in the UTs. More usages about stub see 
 
 3. Apply type annotaions manually (recommended) or use `monkeytype apply some.module`.
 
-4. **Check again if annotations consistent with comments or documents.(IMPORTANT)**
+4. **Manually** check again if annotations **are** consistent
 
 ## Notes
 1. `monkeytype apply` may not work for some cases. 
 
-For example, `friesian.feature.table` invokes two kinds of DataFrame in this module:` pyspark.sql.dataframe.DataFrame `and `pandas.core.frame.DataFrame`. To avoid ambiguity of type `DataFrame`, we rename `pyspark.sql.dataframe.DataFrame t` o SparkDataFrame like:
+For example, `friesian.feature.table` invokes two kinds of DataFrame in this module:` pyspark.sql.dataframe.DataFrame `and `pandas.core.frame.DataFrame`. To avoid ambiguity of type `DataFrame`, we rename `pyspark.sql.dataframe.DataFrame` o SparkDataFrame like:
 ```
 from pyspark.sql.dataframe import DataFrame as SparkDataFrame
 ```

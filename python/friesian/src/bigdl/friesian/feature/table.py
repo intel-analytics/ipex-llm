@@ -68,7 +68,7 @@ class Table:
         return self.df.schema
 
     @staticmethod
-    def _read_parquet(paths: Union[List[str], str]) -> "SparkDataFrame":
+    def _read_parquet(paths: Union[str, List[str]]) -> "SparkDataFrame":
         if not isinstance(paths, list):
             paths = [paths]
         spark = OrcaContext.get_spark_session()
@@ -76,7 +76,7 @@ class Table:
         return df
 
     @staticmethod
-    def _read_json(paths: str, cols: Union[List[str], str]) -> "SparkDataFrame":
+    def _read_json(paths: Union[str, List[str]], cols: Union[str, List[str]]) -> "SparkDataFrame":
         if not isinstance(paths, list):
             paths = [paths]
         spark = OrcaContext.get_spark_session()
@@ -96,7 +96,7 @@ class Table:
         paths: str,
         delimiter: str = ",",
         header: bool = False,
-        names: Optional[Union[List[str], str]]=None,
+        names: Optional[Union[str, List[str]]]=None,
         dtype: Optional[Union[List[str], Dict[str, str], str]]=None
     ) -> "SparkDataFrame":
         if not isinstance(paths, list):
@@ -162,7 +162,7 @@ class Table:
         """
         self.df = broadcast(self.df)
 
-    def select(self, *cols: Union[List[str], str]) -> "Table":
+    def select(self, *cols: Union[str, List[str]]) -> "Table":
         """
         Select specific columns.
 
@@ -178,7 +178,7 @@ class Table:
                               "cols should be str or a list of str, but got None.")
         return self._clone(self.df.select(*cols))
 
-    def drop(self, *cols: Union[List[str], str]) -> "Table":
+    def drop(self, *cols: Union[str, List[str]]) -> "Table":
         """
         Returns a new Table that drops the specified column.
         This is a no-op if schema doesn't contain the given column name(s).
@@ -222,7 +222,7 @@ class Table:
     def fillna(
         self,
         value: Union[int, float, str, bool],
-        columns: Optional[Union[List[str], str]]
+        columns: Optional[Union[str, List[str]]]
     ) -> "FeatureTable":
         """
         Replace null values.
@@ -251,7 +251,7 @@ class Table:
 
     def dropna(
         self,
-        columns: Optional[Union[List[str], str]],
+        columns: Optional[Union[str, List[str]]],
         how: str = "any",
         thresh: Optional[int] = None
     ) -> "Table":
@@ -311,7 +311,7 @@ class Table:
 
     def clip(
         self,
-        columns: Optional[Union[List[str], str]]=None,
+        columns: Optional[Union[str, List[str]]]=None,
         min: Optional[NUMERIC_TYPE] = None,
         max: Optional[NUMERIC_TYPE] = None
     ) -> "Table":
@@ -340,7 +340,7 @@ class Table:
 
     def log(
         self,
-        columns: Optional[Union[List[str], str]]=None,
+        columns: Optional[Union[str, List[str]]]=None,
         clipping: bool = True
     ) -> "Table":
         """
@@ -361,7 +361,7 @@ class Table:
         check_col_exists(self.df, columns)
         return self._clone(log_with_clip(self.df, columns, clipping))
 
-    def fill_median(self, columns: Optional[Union[List[str], str]]=None) -> "Table":
+    def fill_median(self, columns: Optional[Union[str, List[str]]]=None) -> "Table":
         """
         Replaces null values with the median in the specified numeric columns. Any column to be
         filled should not contain only null values.
@@ -395,7 +395,7 @@ class Table:
         return self._clone(median(self.df, columns))
 
     def merge_cols(self,
-                   columns: Union[List[str], str],
+                   columns: Union[str, List[str]],
                    target: str) -> "Table":
         """
         Merge the target column values as a list to a new column.
@@ -440,9 +440,9 @@ class Table:
 
     def get_stats(
         self,
-        columns: Optional[Union[List[str], str]],
+        columns: Optional[Union[str, List[str]]],
         aggr: Union[Dict[str, List[str]], List[str], Dict[str, str], str]
-    ) -> Dict[str, Union[List[Union[float, int]], int, float]]:
+    ) -> Dict[str, Union[List[NUMERIC_TYPE], NUMERIC_TYPE]]:
         """
         Calculate the statistics of the values over the target column(s).
 
@@ -549,7 +549,7 @@ class Table:
             result[column] = [row[i] for row in rows]
         return result
 
-    def add(self, columns: Union[List[str], str], value: NUMERIC_TYPE=1) -> "Table":
+    def add(self, columns: Union[str, List[str]], value: NUMERIC_TYPE=1) -> "Table":
         """
         Increase all of values of the target numeric column(s) by a constant value.
 
@@ -624,7 +624,7 @@ class Table:
         """
         write_parquet(self.df, path, mode)
 
-    def cast(self, columns: Optional[Union[List[str], str]], dtype: str) -> "StringIndex":
+    def cast(self, columns: Optional[Union[str, List[str]]], dtype: str) -> "Table":
         """
         Cast columns to the specified type.
 
@@ -737,9 +737,9 @@ class Table:
 
     def drop_duplicates(
         self,
-        subset: Optional[Union[List[str], str]]=None,
-        sort_cols: Optional[Union[List[str], str]]=None,
-        keep: str="min"
+        subset: Optional[Union[str, List[str]]]=None,
+        sort_cols: Optional[Union[str, List[str]]]=None,
+        keep: str = "min"
     ) -> "Table":
         """
         Return a new Table with duplicate rows removed.
@@ -893,7 +893,7 @@ class Table:
 
 class FeatureTable(Table):
     @classmethod
-    def read_parquet(cls, paths: Union[List[str], str]) -> "FeatureTable":
+    def read_parquet(cls, paths: Union[str, List[str]]) -> "FeatureTable":
         """
         Loads Parquet files as a FeatureTable.
 
@@ -925,7 +925,7 @@ class FeatureTable(Table):
         delimiter: str = ",",
         header: bool = False,
         names: Optional[Union[str, List[str]]]=None,
-        dtype: Optional[Union[List[str], str, Dict[str, str]]]=None
+        dtype: Optional[Union[str, List[str], Dict[str, str]]]=None
     ) -> "FeatureTable":
         """
         Loads csv files as a FeatureTable.
@@ -981,7 +981,7 @@ class FeatureTable(Table):
 
     def encode_string(
         self,
-        columns: Union[List[str], str],
+        columns: Union[str, List[str]],
         indices: Union["StringIndex", List[Dict[str, int]], List["StringIndex"]],
         broadcast: bool = True,
         do_split: bool = False,
@@ -1078,7 +1078,7 @@ class FeatureTable(Table):
 
     def hash_encode(
         self,
-        columns: Union[List[str], str],
+        columns: Union[str, List[str]],
         bins: int,
         method: str = 'md5'
     ) -> "FeatureTable":
@@ -1104,9 +1104,9 @@ class FeatureTable(Table):
 
     def cross_hash_encode(
         self,
-        cross_columns: Union[List[str], List[List[str]], str],
-        bin_sizes: List[int],
-        cross_col_names: Optional[Union[List[str], str, List[int]]]=None,
+        cross_columns: Union[List[str], List[List[str]]],
+        bin_sizes: Union[int, List[int]],
+        cross_col_names: Optional[Union[str, List[str]]]=None,
         method: str = 'md5'
     ) -> "FeatureTable":
         """
@@ -1169,7 +1169,7 @@ class FeatureTable(Table):
     def category_encode(
         self,
         columns: Union[str, List[str]],
-        freq_limit: Optional[Union[int, Dict]]=None,
+        freq_limit: Optional[Union[int, Dict[str, int]]]=None,
         order_by_freq: bool = False,
         do_split: bool = False,
         sep: str = ',',
@@ -1674,7 +1674,7 @@ class FeatureTable(Table):
 
     def apply(
         self,
-        in_col: Union[List[str], str],
+        in_col: Union[str, List[str]],
         out_col: str,
         func: Callable,
         dtype: str = "string"
@@ -1739,8 +1739,8 @@ class FeatureTable(Table):
 
     def add_value_features(
         self,
-        columns: Union[List[str], str],
-        dict_tbl: "FeatureTable",
+        columns: Union[str, List[str]],
+        dict_tbl: "Table",
         key: str,
         value: str
     ) -> "FeatureTable":
@@ -1765,7 +1765,7 @@ class FeatureTable(Table):
     def reindex(
         self,
         columns: Union[str, List[str]]=[],
-        index_tbls: Union["FeatureTable", List["FeatureTable"]]=[]
+        index_tbls: Union["Table", List["Table"]]=[]
     ) -> "FeatureTable":
         """
         Replace the value using index_dicts for each col in columns, set 0 for default
@@ -1826,7 +1826,7 @@ class FeatureTable(Table):
 
     def group_by(
         self,
-        columns: Union[List[str], str]=[],
+        columns: Union[str, List[str]]=[],
         agg: Union[Dict[str, List[str]], List[str], Dict[str, str], str]="count",
         join: bool = False
     ) -> "FeatureTable":
@@ -1903,8 +1903,8 @@ class FeatureTable(Table):
     def target_encode(
         self,
         cat_cols: Union[List[str], List[List[str]], str],
-        target_cols: Union[List[str], str],
-        target_mean: Optional[Dict[str, Union[int, float, str]]]=None,
+        target_cols: Union[str, List[str]],
+        target_mean: Optional[Dict[str, NUMERIC_TYPE]]=None,
         smooth: int = 20,
         kfold: int = 2,
         fold_seed: Optional[int] = None,
@@ -2118,7 +2118,7 @@ class FeatureTable(Table):
     def encode_target(
         self,
         targets: Union["TargetCode", List["TargetCode"]],
-        target_cols: Union[List[str], str]=None,
+        target_cols: Union[str, List[str]]=None,
         drop_cat: bool = True
     ) -> "FeatureTable":
         """
@@ -2159,10 +2159,10 @@ class FeatureTable(Table):
 
     def difference_lag(
         self,
-        columns: Union[List[str], str],
-        sort_cols: Union[List[str], str],
+        columns: Union[str, List[str]],
+        sort_cols: Union[str, List[str]],
         shifts: Union[int, List[int]]=1,
-        partition_cols: Optional[List[str]] = None,
+        partition_cols: Optional[Union[str, List[str]]]=None,
         out_cols: Optional[Union[List[str], List[List[str]], str]]=None
     ) -> "FeatureTable":
         """
@@ -2253,10 +2253,10 @@ class FeatureTable(Table):
 
     def cut_bins(
         self,
-        columns: Union[List[str], str],
-        bins: Union[Dict[str, List[int]], int, List[int]],
+        columns: Union[str, List[str]],
+        bins: Union[Dict[str, Union[int, List[int]]], int, List[int]],
         labels: Optional[Union[List[str], Dict[str, List[str]]]]=None,
-        out_cols: Optional[Union[List[str], str]]=None,
+        out_cols: Optional[Union[str, List[str]]]=None,
         drop: bool = True
     ) -> "FeatureTable":
         """
@@ -2363,7 +2363,7 @@ class FeatureTable(Table):
         columns: Union[str, List[str]],
         num_sampled_list: int,
         num_sampled_item: int,
-        random_seed: int = None,
+        random_seed: Optional[int] = None,
         replace: bool = True
     ) -> "FeatureTable":
         """
@@ -2476,7 +2476,7 @@ class FeatureTable(Table):
 
     def string_embed(
         self,
-        columns: Union[List[str], str],
+        columns: Union[str, List[str]],
         bert_model: str = 'distilbert-base-uncased',
         reduce_dim: Optional[int] = None,
         replace: bool = True
@@ -2563,7 +2563,7 @@ class StringIndex(Table):
 
     @classmethod
     def read_parquet(cls,
-                     paths: Union[List[str], str],
+                     paths: Union[str, List[str]],
                      col_name: Optional[str] = None) -> "StringIndex":
         """
         Loads Parquet files as a StringIndex.
@@ -2653,8 +2653,8 @@ class TargetCode(Table):
     def __init__(
         self,
         df: "SparkDataFrame",
-        cat_col: Union[List[str], str],
-        out_target_mean: Dict[str, Tuple[str, Union[str, float, int]]]
+        cat_col: Union[str, List[str]],
+        out_target_mean: Dict[str, Tuple[str, NUMERIC_TYPE]]
     ) -> None:
         """
         Target Encoding output used for encoding new FeatureTables, which consists of the encoded
