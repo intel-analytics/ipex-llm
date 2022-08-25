@@ -30,6 +30,9 @@ class OpenVINOModel:
     def forward_step(self, *inputs):
         return self._infer_request.infer(list(inputs))
 
+    def __call__(self, *inputs, **kwargs):
+        return self.forward_step(*inputs, **kwargs)
+
     @property
     def forward_args(self):
         return self._forward_args

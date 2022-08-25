@@ -46,6 +46,9 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
             OpenVINOModel.__init__(self, ov_model_path)
             AcceleratedLightningModule.__init__(self, None)
 
+    def __call__(self, *inputs, **kwargs):
+        return AcceleratedLightningModule.__call__(self, *inputs, **kwargs)
+
     def on_forward_start(self, inputs):
         if self.ie_network is None:
             invalidInputError(False,
