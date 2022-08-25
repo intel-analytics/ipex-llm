@@ -180,7 +180,7 @@ jobs:
 
   docker-build-bigdl:
     needs: scala-build
-    if: ${{ github.event.inputs.artifact == 'bigdl' || github.event.inputs.artifact == 'all' }} 
+#     if: ${{ github.event.inputs.artifact == 'bigdl' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Shire]
 
     steps:
