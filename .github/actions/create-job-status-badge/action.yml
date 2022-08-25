@@ -1,0 +1,37 @@
+name: 'Create Job Status Badge'
+description: 'In a workflow with multiple jobs, create a badge that can display the completion time and status of the job'
+inputs:
+  secret:
+    description: 'use to access gist'
+    required: true
+  gist-id:
+    description: 'gist-id'
+    required: true
+  file-name:
+    description: 'gist file name(.json)'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: print time
+      shell: bash
+      run: |
+        export NOW=$( date '+%F_%H:%M:%S' )
+        echo "TIME=${NOW}" >> $GITHUB_ENV
+        
+    - name: get job status
+      shell: bash
+      run: |
+        echo "JOB-STATUS=${{ job.status }}" >>$GITHUB_ENV
+    
+    - name: Create the Badge
+      uses: schneegans/dynamic-badges-action@v1.4.0
+      with:
+        auth: ${{ inputs.secret }}
+        gistID: ${{ inputs.gist-id }}
+        filename: ${{ inputs.file-name }}
+        label: Time is ${{ env.TIME }}
+        message: ${{ env.JOB-STATUS }}
+        valColorRange: ${{ env.TIME }}
+        maxColorRange: 100
+        minColorRange: 0
