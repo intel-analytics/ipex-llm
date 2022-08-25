@@ -26,7 +26,7 @@ ray stop -f
 cd "`dirname $0`"
 cd ../../tutorial/xshards
 
-echo "Running Xshards tests 1"
+echo "Running Xshards tests"
 
 #timer
 start=$(date "+%s")
@@ -43,7 +43,7 @@ python tabular_playground_series.py
 now=$(date "+%s")
 time1=$((now - start))
 
-echo "Running Xshards tests 1 time used: $time1 seconds"
+echo "Running Xshards tests time used: $time1 seconds"
 
 echo "Running Xshards tests 2"
 

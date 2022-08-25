@@ -25,10 +25,10 @@ file_path = "titanic.csv"
 data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
 # drop
-def drop_func(df):
+def drop_passenger(df):
     df = df.drop(['PassengerId'], axis=1)
     return df
-data_shard = data_shard.transform_shard(drop_func)
+data_shard = data_shard.transform_shard(drop_passenger)
 
 
 # fillna, apply, replace, map
@@ -45,16 +45,15 @@ data_shard = data_shard.transform_shard(process_cabin)
 
 
 # astype, loc
-def change_val(data):
+def encode(data):
     data['Sex'] = data['Sex'].map({'female': 1, 'male': 0})
     data['Pclass'] = data['Pclass'].map({1: 3, 2: 2, 3: 1}).astype(int)
     data.loc[data['Sex'] == 0, 'SexByPclass'] = data.loc[data['Sex'] == 0, 'Pclass']
     data.loc[data['Sex'] == 1, 'SexByPclass'] = data.loc[data['Sex'] == 1, 'Pclass'] + 3
     return data
-data_shard = data_shard.transform_shard(change_val)
+data_shard = data_shard.transform_shard(encode)
 
 # save
 data_shard.save_pickle('./result')
 
 stop_orca_context()
-
