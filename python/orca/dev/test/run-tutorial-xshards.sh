@@ -40,15 +40,6 @@ fi
 
 python tabular_playground_series.py
 
-now=$(date "+%s")
-time1=$((now - start))
-
-echo "Running Xshards tests time used: $time1 seconds"
-
-echo "Running Xshards tests 2"
-
-#timer
-start=$(date "+%s")
 
 if [ -f ${BIGDL_ROOT}/python/orca/tutorial/xshards/titanic.csv ]
 then
@@ -62,6 +53,6 @@ python titanic.py
 rm -rf result
 
 now=$(date "+%s")
-time2=$((now - start))
+time1=$((now - start))
 
-echo "Running Xshards tests 1 time used: $time2 seconds"
+echo "Running Xshards tests time used: $time1 seconds"
