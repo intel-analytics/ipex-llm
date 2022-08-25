@@ -23,7 +23,7 @@ torch = LazyImport('torch')
 Seq2SeqForecaster = LazyImport('bigdl.chronos.forecaster.seq2seq_forecaster.Seq2SeqForecaster')
 from unittest import TestCase
 import pytest
-from .. import op_torch, op_distributed, op_all, op_onnxrt16
+from .. import op_torch, op_distributed, op_all, op_onnxrt16, op_automl
 
 
 def create_data(loader=False):
@@ -470,6 +470,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         val_loss = forecaster.fit(train_data, val_data,
                                   validation_mode='best_epoch', epochs=10)
 
+    @op_automl
     def test_s2s_forecaster_tune_fit(self):
         train_data, val_data, _ = create_data()
         import bigdl.nano.automl.hpo.space as space

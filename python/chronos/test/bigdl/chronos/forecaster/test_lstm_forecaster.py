@@ -23,7 +23,7 @@ torch = LazyImport('torch')
 LSTMForecaster = LazyImport('bigdl.chronos.forecaster.lstm_forecaster.LSTMForecaster')
 from unittest import TestCase
 import pytest
-from .. import op_torch, op_distributed, op_all, op_onnxrt16
+from .. import op_torch, op_distributed, op_all, op_onnxrt16, op_automl
 
 
 def create_data(loader=False):
@@ -555,6 +555,7 @@ class TestChronosModelLSTMForecaster(TestCase):
                                     lr=0.01)
         val_loss = forecaster.fit(train_data, val_data, validation_mode='best_epoch', epochs=10)
 
+    @op_automl
     def test_lstm_forecaster_tune_fit(self):
         train_data, val_data, _ = create_data()
         import bigdl.nano.automl.hpo.space as space

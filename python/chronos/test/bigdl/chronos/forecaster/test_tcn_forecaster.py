@@ -770,6 +770,7 @@ class TestChronosModelTCNForecaster(TestCase):
                                    lr=0.01)
         val_loss = forecaster.fit(train_data, val_data, validation_mode='best_epoch', epochs=10)
 
+    @op_automl
     def test_tcn_forecaster_tune_save_load(self):
         import bigdl.nano.automl.hpo.space as space
         train_data, val_data, test_data = create_data()

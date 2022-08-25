@@ -233,6 +233,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
             evaluate2 = forecaster.evaluate(val_loader)
         assert evaluate[0]['val_loss'] == evaluate2[0]['val_loss']
 
+    @op_automl
     def test_autoformer_forecaster_tune_save_load(self):
         import bigdl.nano.automl.hpo.space as space
         train_data, val_data, _ = create_data(loader=False)
