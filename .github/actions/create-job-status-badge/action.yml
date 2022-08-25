@@ -13,23 +13,23 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: print time
+    - name: print-time
       run: |
         export NOW=$( date '+%F_%H:%M:%S' )
         echo "TIME=${NOW}" >> $GITHUB_ENV
         
-    - name: get job status
-        run: |
-          echo "STATUS = ${{ job.status }}" >>$GITHUB_ENV
+    - name: get-job-status
+      run: |
+        echo "STATUS = ${{ job.status }}" >>$GITHUB_ENV
     
-    - name: Create the Badge
-        uses: schneegans/dynamic-badges-action@v1.4.0
-        with:
-          auth: ${{ inputs.secret }}
-          gistID: ${{ inputs.gist-id }}
-          filename: ${{ inputs.file-name }}
-          label: Time: ${{ env.TIME }}
-          message: ${{ env.STATUS }}
-          valColorRange: ${{ env.TIME }}
-          maxColorRange: 100
-          minColorRange: 0
+    - name: create-the-Badge
+      uses: schneegans/dynamic-badges-action@v1.4.0
+      with:
+        auth: ${{ inputs.secret }}
+        gistID: ${{ inputs.gist-id }}
+        filename: ${{ inputs.file-name }}
+        label: Time: ${{ env.TIME }}
+        message: ${{ env.STATUS }}
+        valColorRange: ${{ env.TIME }}
+        maxColorRange: 100
+        minColorRange: 0
