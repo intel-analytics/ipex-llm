@@ -30,7 +30,8 @@ ray stop -f
 MOPTIONS=$1
 
 echo "Running chronos tests TF1 and Deprecated API"
-python -m pytest -v -m $MOPTIONS test/bigdl/chronos/forecaster/
+echo $MOPTIONS
+python -m pytest -v -m "${MOPTIONS}" test/bigdl/chronos/forecaster
 
 exit_status_0=$?
 if [ $exit_status_0 -ne 0 ];
