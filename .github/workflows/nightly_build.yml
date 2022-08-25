@@ -171,6 +171,7 @@ jobs:
           
     - name: Create Job Badge
       uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET }}
         gist-id: 7495dccc42118020c12de5a095cfa2a6
@@ -232,6 +233,7 @@ jobs:
         docker rmi -f ${IMAGE}-spark-3.1.2:${TAG}
         
     - name: Create Job Badge
+      if: ${{ always() }}
       uses: ./.github/actions/create-job-status-badge
       with:
         secret: ${{ secrets.GIST_SECRET }}
@@ -385,6 +387,7 @@ jobs:
         fi
         
     - name: Create Job Badge
+      if: ${{ always() }}
       uses: ./.github/actions/create-job-status-badge
       with:
         secret: ${{ secrets.GIST_SECRET }}
@@ -435,6 +438,7 @@ jobs:
         docker rmi -f ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
         
     - name: Create Job Badge
+      if: ${{ always() }}
       uses: ./.github/actions/create-job-status-badge
       with:
         secret: ${{ secrets.GIST_SECRET }}
@@ -481,6 +485,7 @@ jobs:
         bash python/dev/release_default_mac.sh ${nb_version} true
         
     - name: Create Job Badge
+      if: ${{ always() }}
       uses: ./.github/actions/create-job-status-badge
       with:
         secret: ${{ secrets.GIST_SECRET }}
@@ -602,6 +607,7 @@ jobs:
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/chronos-py-spark3
         
     - name: Create Job Badge
+      if: ${{ always() }}
       uses: ./.github/actions/create-job-status-badge
       with:
         secret: ${{ secrets.GIST_SECRET }}
