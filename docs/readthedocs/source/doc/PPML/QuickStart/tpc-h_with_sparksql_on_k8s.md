@@ -114,7 +114,7 @@ spec:
         path: /path/to/kuberconfig
 ```
 6. Run PPML TPC-H
-bash```
+```bash
 secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin` && \
 export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
 export SPARK_LOCAL_IP=$LOCAL_IP && \
