@@ -562,6 +562,7 @@ class SparkXShards(XShards):
 
         try:
             import pyarrow as pa
+
             def getSchemaStructType(iter):
                 for pdf in iter:
                     schema = [str(x) if not isinstance(x, str) else x for x in pdf.columns]
