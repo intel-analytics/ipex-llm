@@ -225,8 +225,10 @@ class SparkTFEstimator():
                     self.model_weights = state['weights']
             finally:
                 shutil.rmtree(temp_dir)
+        else:
+            self.model_weights = res[1]
 
-        return res[0]
+        return res[0][0]
 
     def evaluate(self, data, batch_size=32, num_steps=None, verbose=1,
                  sample_weight=None, callbacks=None, data_config=None,
