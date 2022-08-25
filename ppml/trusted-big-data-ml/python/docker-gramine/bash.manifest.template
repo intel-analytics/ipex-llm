@@ -3,6 +3,9 @@ loader.entrypoint = "file:{{ gramine.libos }}"
 loader.pal_internal_mem_size = "512M"
 loader.log_level = "{{ log_level }}"
 
+loader.insecure__use_host_env = 1
+loader.env.LD_PRELOAD  = ""
+
 #loader.insecure__use_cmdline_argv = true
 loader.insecure_disable_aslr = true
 loader.argv_src_file = "file:/ppml/trusted-big-data-ml/secured_argvs"

@@ -2,10 +2,6 @@
 
 set -x
 
-local_ip=$LOCAL_IP
-sgx_mem_size=$SGX_MEM_SIZE
-sgx_log_level=$SGX_LOG_LEVEL
-
 if [ -c "/dev/sgx/enclave" ]; then
     echo "/dev/sgx/enclave is ready"
 elif [ -c "/dev/sgx_enclave" ]; then
@@ -28,13 +24,9 @@ else
     exit 1
 fi
 
-if [ -f "/ppml/trusted-big-data-ml/secured_argvs" ]; then
-    echo "/ppml/trusted-big-data-ml/secured_argvs is ready"
-else
-    echo "/ppml/trusted-big-data-ml/secured_argvs is not ready, please generate it before init.sh"
-    exit 1
-fi
-
 ls -al /dev/sgx
 
-make SGX=1 DEBUG=1 THIS_DIR=/ppml/trusted-big-data-ml  SPARK_LOCAL_IP=$local_ip SPARK_USER=root G_SGX_SIZE=$sgx_mem_size G_LOG_LEVEL=$sgx_log_level
+/graphene/Pal/src/host/Linux-SGX/signer/pal-sgx-get-token -output /ppml/trusted-big-data-ml/bash.token -sig /ppml/trusted-big-data-ml/bash.sig
+
+chmod +x /ppml/trusted-big-data-ml/bash.token
+

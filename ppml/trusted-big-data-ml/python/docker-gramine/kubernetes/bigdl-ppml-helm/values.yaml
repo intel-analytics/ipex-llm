@@ -14,9 +14,7 @@ executorMem: "1g"
 executorInstances: "2"
 sgx: "true"
 sgxLog: "error"
-sgxDriverMem: "32g"
 sgxDriverJvmMem: "8g"
-sgxExecutorMem: "32g"
 sgxExecutorJvmMem: "12g"
 
 entrypoint: >
@@ -26,11 +24,8 @@ entrypoint: >
         --deploy-mode {{ .Values.deployMode }}
         --sgx-enabled {{ .Values.sgx }}
         --sgx-log-level {{ .Values.sgxLog }}
-        --sgx-driver-memory {{ .Values.sgxDriverMem }}
         --sgx-driver-jvm-memory {{ .Values.sgxDriverJvmMem }}
-        --sgx-executor-memory {{ .Values.sgxExecutorMem }}
         --sgx-executor-jvm-memory {{ .Values.sgxExecutorJvmMem }}
-        --driver-memory {{ .Values.driverMem }}
         --driver-cores {{ .Values.driverCores }}
         --executor-memory {{ .Values.executorMem }}
         --executor-cores {{ .Values.executorCores }}
