@@ -166,6 +166,14 @@ jobs:
           mv scala/serving/pom.xml.origin scala/serving/pom.xml
           mv scala/ppml/pom.xml.origin scala/ppml/pom.xml
           mv scala/assembly/pom.xml.origin scala/assembly/pom.xml
+          
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      with:
+        secret: ${{ secrets.GIST_SECRET }}
+        gist-id: 7495dccc42118020c12de5a095cfa2a6
+        file-name: nb-scala-build.json
+        
 
   docker-build-bigdl:
     needs: scala-build
@@ -220,6 +228,13 @@ jobs:
         docker tag ${IMAGE}-spark-3.1.2:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${TAG}
         docker push 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${TAG}
         docker rmi -f ${IMAGE}-spark-3.1.2:${TAG}
+        
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      with:
+        secret: ${{ secrets.GIST_SECRET }}
+        gist-id: aaee1abb17ed9aad37e19256787c52b2
+        file-name: nb-docker-build-bigdl.json
   
   docker-build-ppml:
     needs: scala-build
@@ -366,6 +381,13 @@ jobs:
         docker push 10.239.45.10/arda/${image}:${TAG}
         docker rmi -f ${image}:${TAG}
         fi
+        
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      with:
+        secret: ${{ secrets.GIST_SECRET }}
+        gist-id: bc8a699b455bced4a1aef138ad5df07e
+        file-name: nb-docker-build-ppml.json
   
   docker-build-kms:
     needs: scala-build
@@ -409,6 +431,13 @@ jobs:
         docker tag ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
         docker push 10.239.45.10/arda/${IMAGE}:${TAG}
         docker rmi -f ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
+        
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      with:
+        secret: ${{ secrets.GIST_SECRET }}
+        gist-id: 966d4c0bf23c67662120d1bf4b1c88dc
+        file-name: nb-docker-build-kms.json
     
   python-build:
     if: ${{ github.event.inputs.artifact == 'python' || github.event.inputs.artifact == 'all' }} 
@@ -448,6 +477,13 @@ jobs:
 
         ## mac ##
         bash python/dev/release_default_mac.sh ${nb_version} true
+        
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      with:
+        secret: ${{ secrets.GIST_SECRET }}
+        gist-id: 983672c70e351381418fdf6f9076637a
+        file-name: nb-python-build.json
 
   python-build-sourceforge:
     if: ${{ github.event.inputs.artifact == 'python-sourceforge' || github.event.inputs.artifact == 'all' }} 
@@ -562,6 +598,13 @@ jobs:
         sshpass -p 'abcd1234!@#$QWER' \
         scp ./python/chronos/src/dist/bigdl_chronos*-py3-none-macosx_10_11_x86_64.whl \
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/chronos-py-spark3
+        
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      with:
+        secret: ${{ secrets.GIST_SECRET }}
+        gist-id: 6d878630c0c8f50c388bb7e196354ca8
+        file-name: nb-python-sourceforge-build.json
 
 
 
