@@ -14,16 +14,21 @@
 # limitations under the License.
 #
 
+import unittest
+from uuid import uuid4
 
-import hashlib
 
-def to_hex_string(ids, salt, padding_size=32):
-    hashing = hashlib.sha384()
-    hex_string = []
-    for ch in ids:
-        hashing.update(bytearray(ch, 'utf-8') + bytearray(salt, 'utf-8'))
-        ch = hashing.hexdigest()
-        while len(ch) < padding_size:
-            ch.insert(0, '0')
-        hex_string.append(ch)
-    return hex_string
+from bigdl.ppml.fl.psi.utils import *
+
+from bigdl.ppml.fl.utils import FLTest
+
+class TestHashing(FLTest):           
+    def test_hashing(self):        
+        ids = ['1', '2', '4', '5']
+        salt = str(uuid4())
+        hex_string = to_hex_string(ids, salt)
+        hex_string
+
+
+if __name__ == '__main__':
+    unittest.main()
