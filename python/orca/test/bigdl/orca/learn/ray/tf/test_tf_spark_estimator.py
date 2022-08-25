@@ -80,8 +80,7 @@ class TestTFEstimator(TestCase):
                 verbose=True,
                 config=config,
                 workers_per_node=2,
-                backend="spark",
-                model_dir=temp_dir)
+                backend="spark")
 
             res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
                               feature_cols=["feature"],
@@ -516,8 +515,7 @@ class TestTFEstimator(TestCase):
                 verbose=True,
                 config=config,
                 workers_per_node=2,
-                backend="spark",
-                model_dir=temp_dir)
+                backend="spark")
 
             res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
                               feature_cols=["feature"],
@@ -566,8 +564,7 @@ class TestTFEstimator(TestCase):
                 verbose=True,
                 config=config,
                 workers_per_node=2,
-                backend="spark",
-                model_dir=temp_dir)
+                backend="spark")
 
             res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
                               feature_cols=["feature"],
