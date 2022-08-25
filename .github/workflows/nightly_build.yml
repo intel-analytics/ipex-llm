@@ -47,7 +47,7 @@ permissions:
 jobs:
 
   scala-build:
-    if: ${{ github.event.inputs.artifact == 'scala' || github.event.inputs.artifact == 'all' }}
+#     if: ${{ github.event.inputs.artifact == 'scala' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Linux, Bree]
 
     steps:
@@ -240,7 +240,7 @@ jobs:
   
   docker-build-ppml:
     needs: scala-build
-    if: ${{ !github.event.schedule && (github.event.inputs.artifact == 'docker-bigdl-ppml-trusted-big-data-ml-python-gramine' || github.event.inputs.artifact == 'docker-bigdl-ppml-trusted-big-data-ml-python-graphene' || github.event.inputs.artifact == 'docker-bigdl-ppml-trusted-realtime-ml-scala-graphene' || github.event.inputs.artifact == 'docker-bigdl-ppml-trusted-big-data-ml-scala-occlum' || github.event.inputs.artifact == 'docker-bigdl-ppml-trusted-realtime-ml-scala-occlum' || github.event.inputs.artifact == 'all') }}
+#     if: ${{ !github.event.schedule && (github.event.inputs.artifact == 'docker-bigdl-ppml-trusted-big-data-ml-python-gramine' || github.event.inputs.artifact == 'docker-bigdl-ppml-trusted-big-data-ml-python-graphene' || github.event.inputs.artifact == 'docker-bigdl-ppml-trusted-realtime-ml-scala-graphene' || github.event.inputs.artifact == 'docker-bigdl-ppml-trusted-big-data-ml-scala-occlum' || github.event.inputs.artifact == 'docker-bigdl-ppml-trusted-realtime-ml-scala-occlum' || github.event.inputs.artifact == 'all') }}
     runs-on: [self-hosted, Shire]
 
     steps:
@@ -393,7 +393,7 @@ jobs:
   
   docker-build-kms:
     needs: scala-build
-    if: ${{ github.event.schedule == '0 17 * * 1' || github.event.inputs.artifact == 'docker-kms' || github.event.inputs.artifact == 'all' }}
+#     if: ${{ github.event.schedule == '0 17 * * 1' || github.event.inputs.artifact == 'docker-kms' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
 
     steps:
@@ -442,7 +442,7 @@ jobs:
         file-name: nb-docker-build-kms.json
     
   python-build:
-    if: ${{ github.event.inputs.artifact == 'python' || github.event.inputs.artifact == 'all' }} 
+#     if: ${{ github.event.inputs.artifact == 'python' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, ubuntu-20.04-lts, Bree]
 
     steps:
@@ -488,7 +488,7 @@ jobs:
         file-name: nb-python-build.json
 
   python-build-sourceforge:
-    if: ${{ github.event.inputs.artifact == 'python-sourceforge' || github.event.inputs.artifact == 'all' }} 
+#     if: ${{ github.event.inputs.artifact == 'python-sourceforge' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted,alpha,Bree,ubuntu-20.04-lts]
 
     steps:
