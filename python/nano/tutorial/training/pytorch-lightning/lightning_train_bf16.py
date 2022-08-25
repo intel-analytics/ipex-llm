@@ -100,9 +100,6 @@ if __name__ == "__main__":
     # improve numerical stability than FP16 while delivering increased performance
     # and reducing memory usage.
     #
-    # Intel Extension for Pytorch (a.k.a IPEX) support optimizer fusion that can reduce
-    # the number of operators that will be excuted, and reduces overhead time for FP32/BF16
-    #
     # In BigDL-Nano, you can easily enable both IPEX optimizer fusion
     # and BFloat16 Mixed precision by setting use_ipex=True and precision='bf16'
     trainer = Trainer(max_epochs=5, use_ipex=True, precision='bf16')
