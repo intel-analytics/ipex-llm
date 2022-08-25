@@ -406,7 +406,7 @@ class BasePytorchForecaster(Forecaster):
                                                          horizon=self.data_config['future_seq_len'],
                                                          feature_col=validation_data.roll_feature,
                                                          target_col=validation_data.roll_target,
-                                                         shuffle=True)
+                                                         shuffle=False)
                 if isinstance(validation_data, tuple):
                     validation_data = np_to_dataloader(validation_data, batch_size,
                                                        self.num_processes)
