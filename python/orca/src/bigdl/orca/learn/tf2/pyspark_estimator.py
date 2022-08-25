@@ -213,6 +213,7 @@ class SparkTFEstimator():
 
             res = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
+        result = res[0]
 
         if self.model_dir:
             try:
@@ -228,7 +229,7 @@ class SparkTFEstimator():
         else:
             self.model_weights = res[1]
 
-        return res[0][0]
+        return result[0]
 
     def evaluate(self, data, batch_size=32, num_steps=None, verbose=1,
                  sample_weight=None, callbacks=None, data_config=None,
