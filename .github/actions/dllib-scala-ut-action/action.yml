@@ -4,6 +4,7 @@ runs:
   using: "composite"
   steps:
     - name: Run tests
+      shell: bash
       run: |
         export SPARK_LOCAL_HOSTNAME=localhost
         export KERAS_BACKEND=tensorflow

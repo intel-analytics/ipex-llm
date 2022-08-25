@@ -4,6 +4,7 @@ runs:
   using: "composite"
   steps:
     - name: Set up redis
+      shell: bash
       run: |
           sudo mkdir -p /usr/share/keyrings
           curl -fsSL https://packages.redis.io/gpg | sudo -E gpg --yes --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
@@ -14,6 +15,7 @@ runs:
           redis-cli ping
 
     - name: Set up mkl
+      shell: bash
       run: |
         cd /tmp
         curl -O http://10.239.45.10:8081/repository/raw/analytics-zoo-data/faiss-lib.zip
@@ -23,6 +25,7 @@ runs:
         sudo ln -fs /lib/libmkl_intel_lp64.so /lib/libmkl_intel_lp64.so.2
 
     - name: Prepare data
+      shell: bash
       run: |
         mkdir -p /tmp/friesian-unittest
         cd /tmp/friesian-unittest
@@ -30,6 +33,7 @@ runs:
         tar -zxf friesian-serving-upload.tar.gz
 
     - name: Run tests
+      shell: bash
       run: |
         export SPARK_LOCAL_HOSTNAME=localhost
         export KERAS_BACKEND=tensorflow
