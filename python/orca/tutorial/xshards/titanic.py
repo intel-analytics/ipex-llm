@@ -21,7 +21,7 @@ import bigdl.orca.data.pandas
 
 init_orca_context(cluster_mode="local", cores=4, memory="3g")
 
-file_path = "train.csv"
+file_path = "titanic.csv"
 data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
 # drop

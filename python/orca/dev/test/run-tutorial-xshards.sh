@@ -59,7 +59,9 @@ fi
 
 python titanic.py
 
-now=$(date "+%s")
-time1=$((now - start))
+rm -rf result
 
-echo "Running Xshards tests 1 time used: $time1 seconds"
+now=$(date "+%s")
+time2=$((now - start))
+
+echo "Running Xshards tests 1 time used: $time2 seconds"
