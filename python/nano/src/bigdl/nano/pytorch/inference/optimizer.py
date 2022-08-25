@@ -22,7 +22,7 @@ from importlib.util import find_spec
 import time
 import numpy as np
 from copy import deepcopy
-from typing import Dict, Callable
+from typing import Dict, Callable, Tuple
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
@@ -215,7 +215,6 @@ class InferenceOptimizer:
                 result_map[method] = {}
 
                 def func_test(model, input_sample):
-                    # with torch.cpu.amp.autocast():
                     model(*input_sample)
 
                 torch.set_num_threads(cpu_num)
@@ -245,7 +244,7 @@ class InferenceOptimizer:
                        accelerator: str = None,
                        precision: str = None,
                        use_ipex: bool = None,
-                       accuracy_criterion: float = None):
+                       accuracy_criterion: float = None) -> Tuple[nn.Module, str]:
         '''
         :param accelerator: (optional) Use accelerator 'None', 'onnxruntime',
                'openvino', 'jit', defaults to None. If not None, then will only find the
@@ -314,7 +313,7 @@ class InferenceOptimizer:
               use_ipex: bool = False,
               onnxruntime_session_options=None,
               logging: bool = True,
-              **export_kwargs):
+              **export_kwargs) -> nn.Module:
         return Trainer.trace(model=model,
                              input_sample=input_sample,
                              accelerator=accelerator,
@@ -340,7 +339,7 @@ class InferenceOptimizer:
                  input_sample=None,
                  onnxruntime_session_options=None,
                  logging: bool = True,
-                 **export_kwargs):
+                 **export_kwargs) -> nn.Module:
         return Trainer.quantize(model=model,
                                 precision=precision,
                                 accelerator=accelerator,
