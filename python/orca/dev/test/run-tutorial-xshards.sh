@@ -26,7 +26,7 @@ ray stop -f
 cd "`dirname $0`"
 cd ../../tutorial/xshards
 
-echo "Running Xshards tests"
+echo "Running Xshards tests 1"
 
 #timer
 start=$(date "+%s")
@@ -43,4 +43,23 @@ python tabular_playground_series.py
 now=$(date "+%s")
 time1=$((now - start))
 
-echo "Running Xshards tests time used: $time1 seconds"
+echo "Running Xshards tests 1 time used: $time1 seconds"
+
+echo "Running Xshards tests 2"
+
+#timer
+start=$(date "+%s")
+
+if [ -f ${BIGDL_ROOT}/python/orca/tutorial/xshards/titanic.csv ]
+then
+    echo "titanic.csv already exists"
+else
+    wget -nv $FTP_URI/analytics-zoo-data/xshards/titanic.csv -P ${BIGDL_ROOT}/python/orca/tutorial/xshards/
+fi
+
+python titanic.py
+
+now=$(date "+%s")
+time1=$((now - start))
+
+echo "Running Xshards tests 1 time used: $time1 seconds"
