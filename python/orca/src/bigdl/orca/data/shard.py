@@ -24,7 +24,6 @@ from bigdl.dllib.utils.log4Error import *
 
 import numpy as np
 
-import pyarrow as pa
 from pyspark.sql.pandas.types import from_arrow_type, to_arrow_type
 
 from pyspark.sql.types import StructType
@@ -554,12 +553,15 @@ class SparkXShards(XShards):
         df = rdd.toDF(list(column))
         return df
 
+    # to_spark_df adapted from pyspark
+    # https://github.com/apache/spark/blob/master/python/pyspark/sql/pandas/conversion.py
     def to_spark_df(self):
         if self._get_class_name() != 'pandas.core.frame.DataFrame':
             invalidInputError(False,
                               "Currently only support to_spark_df on XShards of Pandas DataFrame")
 
         try:
+            import pyarrow as pa
             def getSchemaStructType(iter):
                 for pdf in iter:
                     schema = [str(x) if not isinstance(x, str) else x for x in pdf.columns]
@@ -603,8 +605,8 @@ class SparkXShards(XShards):
             df = callZooFunc("float", "orcaToDataFrame", jiter, schema.json(), sqlContext)
             return df
         except Exception as e:
-            print("Failed to convert shards to spark dataframe with shards with arrow optim,"
-                  "will do the convertion without arrow")
+            print(f"createDataFrame from shards attempted Arrow optimization failed as: {str(e)},"
+                  f"Will try without Arrow optimization")
             return to_spark_df_without_arrow()
 
     def __len__(self):
