@@ -31,6 +31,10 @@ jobs:
           minColorRange: 0
       - name: purge
         run: |
+          curl -x xxx
+          echo job-status: ${{ job.status }}
+      - name: echo
+        run: |
           echo job-status: ${{ job.status }}
   job1:
     runs-on: ubuntu-latest
