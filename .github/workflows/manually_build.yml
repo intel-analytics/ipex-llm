@@ -33,7 +33,7 @@ env:
 jobs:
 
   docker-build-ppml:
-    runs-on: [self-hosted]
+    runs-on: ubuntu-latest
 
     steps:
     - name: echo the variable
