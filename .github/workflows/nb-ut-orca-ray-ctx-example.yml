@@ -80,7 +80,7 @@ jobs:
         pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r python/orca/dev/example/requirements-ray.txt 
         pip install pytest
 
-        pip install cmake==3.16.0
+        pip install cmake==3.16.3
         pip install tensorflow==2.3.0
         HOROVOD_WITH_TENSORFLOW=1; HOROVOD_WITH_GLOO=1; pip install --no-cache-dir horovod==0.19.2
 
