@@ -47,7 +47,7 @@ class TestPSI(FLTest):
         psi.upload_set(key, salt)
         intersection = psi.download_intersection()
         assert (isinstance(intersection, list))
-        self.assertEqual(len(intersection), 2)
+        self.assertEqual(key, intersection)
 
 if __name__ == '__main__':
     unittest.main()
