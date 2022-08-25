@@ -218,7 +218,6 @@ class Table:
         return self._clone(self.df.withColumn("partitionId", spark_partition_id())
                            .groupBy("partitionId").count())
 
-    # TODO: UTs on `value` of boolean
     def fillna(
         self,
         value: Union[int, float, str, bool],
@@ -982,7 +981,7 @@ class FeatureTable(Table):
     def encode_string(
         self,
         columns: Union[str, List[str]],
-        indices: Union["StringIndex", List[Dict[str, int]], List["StringIndex"]],
+        indices: Union["StringIndex", Dict[str,int], List[Dict[str, int]], List["StringIndex"]],
         broadcast: bool = True,
         do_split: bool = False,
         sep: str = ',',
@@ -2342,7 +2341,7 @@ class FeatureTable(Table):
         return self._clone(df_buck)
 
     # TODO: Add UT
-    def get_vocabularies(self, columns: Union[str, List[str]]) -> Dict[str, Union[str, List[str]]]:
+    def get_vocabularies(self, columns: Union[str, List[str]]) -> Dict[str, List[str]]:
         """
         Create vocabulary for each column, and return dict of vocabularies
 
@@ -2357,7 +2356,6 @@ class FeatureTable(Table):
                 .distinct().rdd.map(lambda row: row[col]).collect()
         return vocabularies
 
-    # TODO: Add UT when columns is str
     def sample_listwise(
         self,
         columns: Union[str, List[str]],
