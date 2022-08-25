@@ -981,7 +981,7 @@ class FeatureTable(Table):
     def encode_string(
         self,
         columns: Union[str, List[str]],
-        indices: Union["StringIndex", Dict[str,int], List[Dict[str, int]], List["StringIndex"]],
+        indices: Union["StringIndex", Dict[str, int], List[Dict[str, int]], List["StringIndex"]],
         broadcast: bool = True,
         do_split: bool = False,
         sep: str = ',',
