@@ -205,48 +205,6 @@ jobs:
         docker push 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${TAG}
         docker rmi -f ${IMAGE}-spark-3.1.2:${TAG}
   
-
-    needs: scala-build
-    if: ${{ github.event.schedule == '0 12 * * 1' || github.event.inputs.artifact == 'docker-kms' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Shire]
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set the variable
-      env:
-        DEFAULT_TAG: '0.3.0'
-      run: echo "TAG=${{ github.event.inputs.kmsTag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
-    - name: docker deploy kms-util
-      run: |
-        export IMAGE=intelanalytics/kms-utils
-        cd ppml/services/kms-utils/docker
-        echo "########################################"
-        echo "############## kms-utils ###############"
-        echo "########################################"
-        docker build \
-          --no-cache=true \
-          --build-arg http_proxy=${HTTP_PROXY} \
-          --build-arg https_proxy=${HTTPS_PROXY} \
-          --build-arg JDK_URL=${JDK_URL} \
-          -t $IMAGE:$TAG -f ./Dockerfile .
-        docker tag ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
-        docker push 10.239.45.10/arda/${IMAGE}:${TAG}
-        docker rmi -f ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
-    - name: docker deploy pccs
-      run: |
-        export IMAGE=intelanalytics/pccs
-        cd ppml/services/pccs/docker
-        echo "########################################"
-        echo "################# PCCS #################"
-        echo "########################################"
-        docker build \
-          --no-cache=true \
-          --build-arg http_proxy=${HTTP_PROXY} \
-          --build-arg https_proxy=${HTTPS_PROXY} \
-          -t $IMAGE:$TAG -f ./Dockerfile .
-        docker tag ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
-        docker push 10.239.45.10/arda/${IMAGE}:${TAG}
-        docker rmi -f ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
     
   python-build:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'python-build' || github.event.inputs.artifact == 'all' }} 
