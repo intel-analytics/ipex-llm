@@ -1,0 +1,43 @@
+name: Manually Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      artifact:
+        description: 'select which job to run("all" will make all jobs run)'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - docker-bigdl-ppml-trusted-big-data-ml-python-gramine
+        - docker-bigdl-ppml-trusted-big-data-ml-python-graphene
+        - docker-bigdl-ppml-trusted-big-data-ml-scala-occlum
+        - docker-bigdl-ppml-trusted-realtime-ml-scala-graphene
+        - docker-bigdl-ppml-trusted-realtime-ml-scala-occlum
+        - docker-kmsutil
+        - docker-pccs
+      tag:
+        description: 'docker image tag (e.g. 2.1.0-SNAPSHOT)'
+        required: true
+        default: 'latest'
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+  
+env:
+  DEFAULT_TAG: ${{ github.event.inputs.tag }}
+
+jobs:
+
+  docker-build-ppml:
+    needs: scala-build
+    if: ${{ !github.event.schedule && (github.event.inputs.artifact == 'docker-bigdl-ppml-trusted-big-data-ml-python-gramine' || github.event.inputs.artifact == 'docker-bigdl-ppml-trusted-big-data-ml-python-graphene' || github.event.inputs.artifact == 'docker-bigdl-ppml-trusted-realtime-ml-scala-graphene' || github.event.inputs.artifact == 'docker-bigdl-ppml-trusted-big-data-ml-scala-occlum' || github.event.inputs.artifact == 'docker-bigdl-ppml-trusted-realtime-ml-scala-occlum' || github.event.inputs.artifact == 'all') }}
+    runs-on: [self-hosted]
+
+    steps:
+    - name: echo the variable
+      run: |
+        echo "TAG=${{ env.DEFAULT_TAG }}
