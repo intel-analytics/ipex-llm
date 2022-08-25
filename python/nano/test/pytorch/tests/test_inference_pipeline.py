@@ -20,11 +20,8 @@ import torch
 from unittest import TestCase
 
 import torchvision.transforms as transforms
-from torchvision.datasets import CIFAR10
-from torch.utils.data import DataLoader
-from torch.utils.data.sampler import SequentialSampler
 from bigdl.nano.pytorch import Trainer
-from bigdl.nano.pytorch.inference import InferenceOptimizer
+from bigdl.nano.pytorch import InferenceOptimizer
 import torchmetrics
 import torch
 import torch.nn.functional as F

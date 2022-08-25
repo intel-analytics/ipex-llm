@@ -22,12 +22,13 @@ from importlib.util import find_spec
 import time
 import numpy as np
 from copy import deepcopy
-from typing import Dict
+from typing import Dict, Callable
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
 from bigdl.nano.pytorch import Trainer
 import os
+os.environ['LOGLEVEL'] = 'ERROR'  # remove parital output of inc
 
 
 _whole_acceleration_options = ["inc", "ipex", "onnxruntime", "openvino", "pot",
@@ -97,14 +98,14 @@ class InferenceOptimizer:
         # in {"method_name": {"latency": ..., "accuracy": ..., "model": ...}}
         self.optimized_model_dict = {}
 
-    def optimize(self, model,
-                 training_data,
-                 validation_data=None,
-                 metric=None,
+    def optimize(self, model: nn.Module,
+                 training_data: DataLoader,
+                 validation_data: DataLoader = None,
+                 metric: Callable = None,
                  direction: str = "max",
                  cpu_num: int = None,
                  logging: bool = False,
-                 latency_sample_num: int = 100):
+                 latency_sample_num: int = 100) -> None:
         '''
         This function will give all available inference acceleration methods a try
         and record the latency, accuracy and model instance inside the Optimizer for
@@ -139,16 +140,13 @@ class InferenceOptimizer:
         invalidInputError(direction in ['min', 'max'],
                           "Only support direction 'min', 'max'.")
 
-        if not logging:
-            os.environ['LOGLEVEL'] = 'ERROR'  # remove parital output of inc
-
         # get the available methods whose dep is met
-        available_dict = _available_acceleration_combination()
+        available_dict: Dict = _available_acceleration_combination()
 
-        self.direction = direction  # save direction as attr
+        self.direction: str = direction  # save direction as attr
 
-        default_threads = torch.get_num_threads()
-        cpu_num = default_threads if cpu_num is None else int(cpu_num)
+        default_threads: int = torch.get_num_threads()
+        cpu_num: int = default_threads if cpu_num is None else int(cpu_num)
 
         # set cpu num for onnxruntime
         if _onnxruntime_checker():
@@ -164,11 +162,11 @@ class InferenceOptimizer:
 
         for method, available in available_dict.items():
             if available:
-                option = ALL_INFERENCE_ACCELERATION_METHOD[method]
-                use_ipex = option.ipex
-                use_channels_last = option.channels_last
-                accelerator = option.get_accelerator()
-                precision = option.get_precision()
+                option: AccelerationOption = ALL_INFERENCE_ACCELERATION_METHOD[method]
+                use_ipex: bool = option.ipex
+                use_channels_last: bool = option.channels_last
+                accelerator: str = option.get_accelerator()
+                precision: str = option.get_precision()
                 # if precision is fp32, then we will use trace method
                 if precision == "fp32":
                     input_sample = tuple(next(iter(training_data))[:-1])
@@ -198,7 +196,7 @@ class InferenceOptimizer:
 
                 # if precision is int8 or bf16, then we will use quantize method
                 elif precision in ("int8", "bf16"):
-                    ort_method = option.method
+                    ort_method: str = option.method
                     try:
                         acce_model = \
                             InferenceOptimizer.quantize(model=deepcopy(model),
@@ -241,7 +239,7 @@ class InferenceOptimizer:
             else:
                 pass
 
-        self.optimized_model_dict = result_map
+        self.optimized_model_dict: Dict = result_map
 
     def get_best_model(self,
                        accelerator: str = None,
@@ -278,8 +276,8 @@ class InferenceOptimizer:
         for method in self.optimized_model_dict.keys():
             if method == "original":
                 continue
-            option = ALL_INFERENCE_ACCELERATION_METHOD[method]
-            result = self.optimized_model_dict[method]
+            option: AccelerationOption = ALL_INFERENCE_ACCELERATION_METHOD[method]
+            result: Dict = self.optimized_model_dict[method]
             if accelerator is not None:
                 if not getattr(option, accelerator):
                     continue
@@ -293,8 +291,8 @@ class InferenceOptimizer:
                     continue
 
             if accuracy_criterion is not None:
-                accuracy = result["accuracy"]
-                compare_acc = best_metric.accuracy
+                accuracy: float = result["accuracy"]
+                compare_acc: float = best_metric.accuracy
                 if self.direction == "min":
                     if (accuracy - compare_acc) / compare_acc > accuracy_criterion:
                         continue
@@ -312,7 +310,7 @@ class InferenceOptimizer:
     @staticmethod
     def trace(model: nn.Module,
               input_sample=None,
-              accelerator=None,
+              accelerator: str = None,
               use_ipex: bool = False,
               onnxruntime_session_options=None,
               logging: bool = True,
@@ -326,10 +324,10 @@ class InferenceOptimizer:
                              **export_kwargs)
 
     @staticmethod
-    def quantize(model,
+    def quantize(model: nn.Module,
                  precision: str = 'int8',
-                 accelerator=None,
-                 use_ipex=False,
+                 accelerator: str = None,
+                 use_ipex: bool = False,
                  calib_dataloader: DataLoader = None,
                  metric: Metric = None,
                  accuracy_criterion: dict = None,
