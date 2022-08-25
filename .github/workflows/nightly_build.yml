@@ -242,7 +242,7 @@ jobs:
   
   docker-build-ppml:
     needs: scala-build
-#     if: ${{ !github.event.schedule && (github.event.inputs.artifact == 'docker-bigdl-ppml-trusted-big-data-ml-python-gramine' || github.event.inputs.artifact == 'docker-bigdl-ppml-trusted-big-data-ml-python-graphene' || github.event.inputs.artifact == 'docker-bigdl-ppml-trusted-realtime-ml-scala-graphene' || github.event.inputs.artifact == 'docker-bigdl-ppml-trusted-big-data-ml-scala-occlum' || github.event.inputs.artifact == 'docker-bigdl-ppml-trusted-realtime-ml-scala-occlum' || github.event.inputs.artifact == 'all') }}
+    if: ${{ !github.event.schedule && (github.event.inputs.artifact == 'docker-bigdl-ppml-trusted-big-data-ml-python-gramine' || github.event.inputs.artifact == 'docker-bigdl-ppml-trusted-big-data-ml-python-graphene' || github.event.inputs.artifact == 'docker-bigdl-ppml-trusted-realtime-ml-scala-graphene' || github.event.inputs.artifact == 'docker-bigdl-ppml-trusted-big-data-ml-scala-occlum' || github.event.inputs.artifact == 'docker-bigdl-ppml-trusted-realtime-ml-scala-occlum' || github.event.inputs.artifact == 'all') }}
     runs-on: [self-hosted, Shire]
 
     steps:
