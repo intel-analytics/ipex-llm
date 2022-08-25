@@ -240,6 +240,3 @@ class TestChronosModelAutoformerForecaster(TestCase):
         evaluate = forecaster.evaluate(val_loader)
         pred = forecaster.predict(test_loader)
         evaluate_list.append(evaluate)
-
-test = TestChronosModelAutoformerForecaster()
-test.test_autoformer_forecaster_even_kernel()
