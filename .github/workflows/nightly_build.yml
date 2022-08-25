@@ -2,7 +2,7 @@ name: Nightly Build
 
 on:
   schedule:
-    - cron: '0 17 * * *'
+    - cron: '0 12 * * *' # GMT time, 12:00 GMT == 20:00 China
   workflow_dispatch:
     inputs:
       artifact:
@@ -45,7 +45,7 @@ permissions:
 jobs:
 
   scala-build:
-    if: ${{ github.event.inputs.artifact == 'scala' || github.event.inputs.artifact == 'all' }}
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'scala' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Linux, Bree]
 
     steps:
@@ -169,7 +169,7 @@ jobs:
 
   docker-build-bigdl:
     needs: scala-build
-    if: ${{ github.event.inputs.artifact == 'bigdl' || github.event.inputs.artifact == 'all' }} 
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'bigdl' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Shire]
 
     steps:
@@ -369,7 +369,7 @@ jobs:
   
   docker-build-kms:
     needs: scala-build
-    if: ${{ github.event.schedule == '0 17 * * 1' || github.event.inputs.artifact == 'docker-kms' || github.event.inputs.artifact == 'all' }}
+    if: ${{ github.event.schedule == '0 12 * * 1' || github.event.inputs.artifact == 'docker-kms' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
 
     steps:
@@ -411,7 +411,7 @@ jobs:
         docker rmi -f ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
     
   python-build:
-    if: ${{ github.event.inputs.artifact == 'python' || github.event.inputs.artifact == 'all' }} 
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'python' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, ubuntu-20.04-lts, Bree]
 
     steps:
@@ -450,7 +450,7 @@ jobs:
         bash python/dev/release_default_mac.sh ${nb_version} true
 
   python-build-sourceforge:
-    if: ${{ github.event.inputs.artifact == 'python-sourceforge' || github.event.inputs.artifact == 'all' }} 
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'python-sourceforge' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted,alpha,Bree,ubuntu-20.04-lts]
 
     steps:
