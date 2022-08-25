@@ -45,7 +45,7 @@ jobs:
           fi
           pip install pytest
           pip install openvino-dev
-          source bigdl-nano-init
+          source bigdl-nano-init -j
           bash python/nano/test/run-nano-tf-openvino-tests.sh
           source $CONDA/bin/deactivate
           $CONDA/bin/conda remove -n openvino-tensorflow --all
