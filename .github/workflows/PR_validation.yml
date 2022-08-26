@@ -20,9 +20,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: print github.event.path
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+          GITHUB_EVENT_PATH_CONTEXT: ${{ toJson(github.event.path) }}
         run: |
-          echo ${{ github.event.path }}
+          echo "$GITHUB_CONTEXT"
+          echo "$GITHUB_EVENT_PATH_CONTEXT"
+      # - name: print github.event.path
+      #   run: |
+      #     echo ${{ github.event.path }}
       # - name: do something when Path1 directory has a commit
       #   if: github.event.path == '**/**'
       #   run: <do something>
