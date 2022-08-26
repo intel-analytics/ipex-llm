@@ -38,7 +38,7 @@ from bigdl.ppml.fl.utils import FLTest
 resource_path = os.path.join(os.path.dirname(__file__), "../../resources")
 
 
-class TestCorrectness(FLTest):
+class TestMnist(FLTest):
     fmt = '%(asctime)s %(levelname)s {%(module)s:%(lineno)d} - %(message)s'
     logging.basicConfig(format=fmt, level=logging.INFO)
     def setUp(self) -> None:

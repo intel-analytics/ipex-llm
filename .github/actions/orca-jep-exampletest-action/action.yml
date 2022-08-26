@@ -1,60 +1,10 @@
-name: Nightly Build Orca Jep ExampleTest Py37 Spark2
-
-on:
-  #release:
-   # types: [published]
-  #pull_request:
-    #branches: [ "main" ]
-    #paths:
-      #- 'python/orca/**'
-      #- '.github/workflows/orca-python-exampletest-ray.yml'
-  schedule:
-    - cron: '0 16 * * *'
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-jobs:
-  build:
-
-    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
-    permissions:
-      contents: read
-      packages: write
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK 8
-      uses: actions/setup-java@v3
-      with:
-        java-version: '8'
-        distribution: 'temurin'
-        settings-path: ${{ github.workspace }} # location for the settings.xml file
-    
-    - name: Set up Maven
-      uses: stCarolas/setup-maven@v4.4
-      with:
-        maven-version: 3.8.2
-
-    - name: Set up Maven Settings
-      uses: s4u/maven-settings-action@v2.6.0
-      with:
-        sonatypeSnapshots: true
-        apacheSnapshots: true
-        servers: |
-          [{
-            "id": "central",
-            "configuration": {
-              "httpConfiguration": {
-                "all": {
-                  "connectionTimeout": "3600000",
-                  "readTimeout": "3600000"
-                  }
-                }
-              }
-          }]
-        mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${NEXUS_URL}" }]'
-
+name: 'Run Orca Jep ExampleTest'
+description: 'Run Orca Jep ExampleTest'
+runs:
+  using: "composite"
+  steps:
     - name: Setup Env
+      shell: bash
       run: |
         apt-get update
         apt-get install wget
@@ -63,6 +13,7 @@ jobs:
       with:
         python-version: '3.7'
     - name: Install dependencies
+      shell: bash
       run: |
         python -m pip install --upgrade pip
         python -m pip install --upgrade setuptools==58.0.4
@@ -72,8 +23,8 @@ jobs:
         pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r python/orca/dev/example/requirements-jep.txt
         pip uninstall -y opencv-python-headless
         pip install opencv-python-headless
-
     - name: Run Test
+      shell: bash
       run: |
         export SPARK_LOCAL_HOSTNAME=localhost
         chmod a+x python/orca/dev/example/run-example-tests-jep.sh

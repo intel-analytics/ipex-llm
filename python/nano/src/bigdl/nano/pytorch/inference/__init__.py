@@ -15,4 +15,4 @@
 #
 
 
-from .optimizer import Optimizer
+from .optimizer import InferenceOptimizer

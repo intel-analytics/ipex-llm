@@ -21,7 +21,6 @@ from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.data.transformer import *
 from bigdl.orca.learn.tf.estimator import Estimator
 
-import pandas as pd
 import tensorflow.compat.v1 as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
@@ -81,3 +80,4 @@ est = Estimator.from_keras(keras_model=model)
 est.fit(data=shards_train,
         batch_size=16,
         epochs=EPOCHS, feature_cols=['scaled_vec'], label_cols=['MPG'])
+stop_orca_context()

@@ -17,13 +17,12 @@
 from typing import List
 import numpy as np
 import pandas as pd
+import click
 
 import torch
 from torch import Tensor, nn
 from bigdl.ppml.fl.estimator import Estimator
-from bigdl.ppml.fl.algorithms.psi import PSI
-from bigdl.ppml.fl.nn.fl_server import FLServer
-from bigdl.ppml.fl.nn.pytorch.utils import set_one_like_parameter
+from bigdl.ppml.fl.psi.psi import PSI
 
 
 class LocalModel(nn.Module):
@@ -48,17 +47,16 @@ class ServerModel(nn.Module):
         return x
 
 
-if __name__ == '__main__':
-    # fl_server = FLServer(2)
-    # fl_server.build()
-    # fl_server.start()
-    df_train = pd.read_csv('.data/diabetes-vfl-1.csv')    
+
+@click.command()
+@click.option('--load_model', default=False)
+def run_client(load_model):
+    df_train = pd.read_csv('./data/diabetes-vfl-1.csv')    
     
-    # this should wait for the merge of 2 FLServer (Py4J Java gRPC and Python gRPC)
-    # df_train['ID'] = df_train['ID'].astype(str)
-    # psi = PSI()
-    # intersection = psi.get_intersection(list(df_train['ID']))
-    # df_train = df_train[df_train['ID'].isin(intersection)]
+    df_train['ID'] = df_train['ID'].astype(str)
+    psi = PSI()
+    intersection = psi.get_intersection(list(df_train['ID']))
+    df_train = df_train[df_train['ID'].isin(intersection)]
 
     df_x = df_train.drop('Outcome', 1)
     df_y = df_train['Outcome']
@@ -66,16 +64,36 @@ if __name__ == '__main__':
     x = df_x.to_numpy(dtype="float32")
     y = np.expand_dims(df_y.to_numpy(dtype="float32"), axis=1)
     
-    model = LocalModel(len(df_x.columns))
     loss_fn = nn.BCELoss()
-    server_model = ServerModel()
-    ppl = Estimator.from_torch(client_model=model,
-                               client_id='1',
-                               loss_fn=loss_fn,
-                               optimizer_cls=torch.optim.SGD,
-                               optimizer_args={'lr':1e-5},
-                               target='localhost:8980',
-                               server_model=server_model)
-    response = ppl.fit(x, y)
+
+    if load_model:
+        model = torch.load('/tmp/pytorch_client_model_1.pt')
+        ppl = Estimator.from_torch(client_model=model,
+                                   client_id='1',
+                                   loss_fn=loss_fn,
+                                   optimizer_cls=torch.optim.SGD,
+                                   optimizer_args={'lr':1e-5},
+                                   target='localhost:8980',
+                                   server_model_path='/tmp/pytorch_server_model',
+                                   client_model_path='/tmp/pytorch_client_model_1.pt')
+        ppl.load_server_model('/tmp/pytorch_server_model')
+        response = ppl.fit(x, y, 5)
+    else:
+        model = LocalModel(len(df_x.columns))
+        
+        server_model = ServerModel()
+        ppl = Estimator.from_torch(client_model=model,
+                                   client_id='1',
+                                   loss_fn=loss_fn,
+                                   optimizer_cls=torch.optim.SGD,
+                                   optimizer_args={'lr':1e-5},
+                                   target='localhost:8980',
+                                   server_model=server_model,
+                                   server_model_path='/tmp/pytorch_server_model',
+                                   client_model_path='/tmp/pytorch_client_model_1.pt')
+        response = ppl.fit(x, y, 5)
     result = ppl.predict(x)
     print(result[:5])
+
+if __name__ == '__main__':
+    run_client()
