@@ -28,8 +28,6 @@ runs:
     - name: Run Test
       shell: bash
       run: |
-        export MAVEN_OPTS="-XX:MaxPermSize=3G -Xmx100G -XX:ReservedCodeCacheSize=512m"
-        export _JAVA_OPTIONS="-Xmx100G -XX:MaxPermSize=3G"
         export SPARK_LOCAL_HOSTNAME=localhost
         chmod a+x python/orca/dev/test/run-pytests-ray
         python/orca/dev/test/run-pytests-ray
