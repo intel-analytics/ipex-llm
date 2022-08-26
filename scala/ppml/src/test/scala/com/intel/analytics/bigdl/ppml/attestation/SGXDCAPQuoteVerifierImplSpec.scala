@@ -53,8 +53,8 @@ class SGXDCAPQuoteVerifierImplSpec extends FlatSpec with Matchers {
     in.close()
     logger.info(quote)
 
-    if (env.contains("SGXSDK")){
-      if (env("SGXSDK").toBoolean == true){
+    if (env.contains("SGXSDK")) {
+      if (env("SGXSDK").toBoolean == true) {
         val verifyQuoteResult = sGXDCAPQuoteVerifierImplSpec.verifyQuote(quote)
         verifyQuoteResult shouldNot equal(-1)
         logger.info(verifyQuoteResult)
