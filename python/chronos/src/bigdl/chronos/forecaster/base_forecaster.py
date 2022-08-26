@@ -449,7 +449,8 @@ class BasePytorchForecaster(Forecaster):
                                              horizon=self.data_config['future_seq_len'],
                                              feature_col=data.roll_feature,
                                              target_col=data.roll_target,
-                                             shuffle=False)
+                                             shuffle=False,
+                                             is_predict=True)
         # data transform
         is_local_data = isinstance(data, (np.ndarray, DataLoader))
         if is_local_data and self.distributed:
@@ -542,7 +543,8 @@ class BasePytorchForecaster(Forecaster):
                                              horizon=self.data_config['future_seq_len'],
                                              feature_col=data.roll_feature,
                                              target_col=data.roll_target,
-                                             shuffle=False)
+                                             shuffle=False,
+                                             is_predict=True)
         if quantize:
             return _pytorch_fashion_inference(model=self.onnxruntime_int8,
                                               input_data=data,
@@ -1150,6 +1152,11 @@ class BasePytorchForecaster(Forecaster):
                           f"but found {past_seq_len, future_seq_len}.",
                           fixMsg="Do not specify past_seq_len and future seq_len "
                           "or call tsdataset.roll method again and specify time step")
+
+        if tsdataset.id_sensitive:
+            _id_list_len = len(tsdataset.id_col)
+            input_feature_num *= _id_list_len
+            output_feature_num *= _id_list_len
 
         return cls(past_seq_len=past_seq_len,
                    future_seq_len=future_seq_len,

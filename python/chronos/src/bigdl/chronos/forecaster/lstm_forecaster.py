@@ -198,6 +198,11 @@ class LSTMForecaster(BasePytorchForecaster):
                           fixMsg="Do not specify past_seq_len "
                           "or call tsdataset.roll method again and specify time step.")
 
+        if tsdataset.id_sensitive:
+            _id_list_len = len(tsdataset._id_list)
+            input_feature_num *= _id_list_len
+            output_feature_num *= _id_list_len
+
         return cls(past_seq_len=past_seq_len,
                    input_feature_num=input_feature_num,
                    output_feature_num=output_feature_num,
