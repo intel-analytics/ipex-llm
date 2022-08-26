@@ -39,13 +39,11 @@ jobs:
           $CONDA/bin/conda create -n openvino-tensorflow -y python==3.7.10 setuptools=58.0.4
           source $CONDA/bin/activate openvino-tensorflow
           $CONDA/bin/conda info
-          bash python/nano/dev/build_and_install.sh linux default false tensorflow
-          if [ ! -z "${{matrix.tf-version}}" ]; then
-            pip install ${{matrix.tf-version}}
-          fi
+          pip install python/nano
+          pip install tensorflow-cpu==2.8 keras==2.8.0 tensorflow-estimator==2.8.0
           pip install pytest
           pip install openvino-dev
-          source bigdl-nano-init -j
+          pip install numpy==1.21
           bash python/nano/test/run-nano-tf-openvino-tests.sh
           source $CONDA/bin/deactivate
           $CONDA/bin/conda remove -n openvino-tensorflow --all
