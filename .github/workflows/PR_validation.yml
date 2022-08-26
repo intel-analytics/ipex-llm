@@ -28,7 +28,7 @@ jobs:
         with:
           filters: |
             src:
-              - '**/**'
+              - 'scala/friesian/**'
               - '.github/workflows/PR_validation1.yml'
 
   build:
