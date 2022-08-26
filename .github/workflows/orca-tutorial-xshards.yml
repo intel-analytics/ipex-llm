@@ -82,7 +82,7 @@ jobs:
         pip install tensorflow==1.15.0
         pip install sklearn
         pip install pandas
-        pip install jep
+        pip install jep==3.9.0
         pip install cloudpickle
     - name: Run Test
       #run: python -m build
