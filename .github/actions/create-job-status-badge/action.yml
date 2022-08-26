@@ -23,6 +23,7 @@ runs:
       shell: bash
       run: |
         echo "JOB-STATUS=${{ job.status }}" >>$GITHUB_ENV
+        if [ ${STATUS} == "success" ] ; then echo "COLOR=green" >> $GITHUB_ENV ; else echo "COLOR=red" >> $GITHUB_ENV; fi
     
     - name: Create the Badge
       uses: schneegans/dynamic-badges-action@v1.4.0
@@ -32,6 +33,4 @@ runs:
         filename: ${{ inputs.file-name }}
         label: Time is ${{ env.TIME }}
         message: ${{ env.JOB-STATUS }}
-        valColorRange: ${{ env.TIME }}
-        maxColorRange: 100
-        minColorRange: 0
+        color: ${{ env.COLOR }}
