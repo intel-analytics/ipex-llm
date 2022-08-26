@@ -10,7 +10,7 @@ conda activate bigdl
 pip install --pre --upgrade bigdl-orca[ray]
 ```
 
-## Data Preparation
+## Prepare the data
 - For auto_mpg.py, the dataset can be downloaded from [here](http://archive.ics.uci.edu/ml/machine-learning-databases/auto-mpg/auto-mpg.data).
 - For diabetes.py, the dataset can be downloaded from [here](https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv).
 - For ionosphere.py, the dataset can be downloaded from [here](https://raw.githubusercontent.com/jbrownlee/Datasets/master/ionosphere.csv).
