@@ -23,7 +23,7 @@ runs:
       shell: bash
       run: |
         echo "JOB-STATUS=${{ job.status }}" >>$GITHUB_ENV
-        if [ ${STATUS} == "success" ] ; then echo "COLOR=green" >> $GITHUB_ENV ; else echo "COLOR=red" >> $GITHUB_ENV; fi
+        if [ ${JOB-STATUS} == "success" ] ; then echo "COLOR=green" >> $GITHUB_ENV ; else echo "COLOR=red" >> $GITHUB_ENV; fi
     
     - name: Create the Badge
       uses: schneegans/dynamic-badges-action@v1.4.0
