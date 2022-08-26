@@ -86,15 +86,7 @@ class NNServiceImpl(NNServiceServicer):
             loss_fn = pickle.loads(request.loss_fn)
             client_id = request.client_uuid
             aggregator = self.aggregator_map[request.aggregator]
-            aggregator.load_uploaded_model(client_id, self.model_path)
-            if request.aggregator == 'pt':
-                os.rename(self.model_path, f'{self.model_path}.pt')                
-                aggregator.model = torch.jit.load(f'{self.model_path}.pt')
-            elif request.aggregator == 'tf':
-                os.rename(self.model_path, f'{self.model_path}.h5')
-                aggregator.model = tf.keras.models.load_model(f'{self.model_path}.h5')
-            else:
-                invalidInputError(False, f"Invalid aggregator, got {request.aggregator}")
+            aggregator.load_uploaded_model(client_id, self.model_path)            
 
             aggregator.set_meta(loss_fn, request.optimizer)
             msg = "Upload meta success, server model is ready."
