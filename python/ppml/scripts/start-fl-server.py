@@ -24,15 +24,6 @@ for files in os.listdir('/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/pyt
         sys.path.append('/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/' + files)
         sys.path.append('/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/' + files + '/bigdl/ppml/fl/nn/generated')
 
-if '/usr/lib/python3.6' in sys.path:
-    sys.path.remove('/usr/lib/python3.6')
-if '/usr/lib/python3.6/lib-dynload' in sys.path:
-    sys.path.remove('/usr/lib/python3.6/lib-dynload')
-if '/usr/local/lib/python3.6/dist-packages' in sys.path:
-    sys.path.remove('/usr/local/lib/python3.6/dist-packages')
-if '/usr/lib/python3/dist-packages' in sys.path:
-    sys.path.remove('/usr/lib/python3/dist-packages')
-
 from bigdl.ppml.fl.nn.fl_server import FLServer
 
 if __name__ == '__main__':
