@@ -493,7 +493,7 @@ class SparkTFEstimator():
             saving to SavedModel.
         """
         # get current model
-        if exists(self._model_saved_path):
+        if self.model_dir is not None and exists(self._model_saved_path):
             model = load_model(self._model_saved_path)
         else:
             model = self.get_model()
