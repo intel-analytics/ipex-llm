@@ -172,8 +172,7 @@ class SparkXShards(XShards):
                 yield func(x, *args)
 
         transformed_shard = SparkXShards(self.rdd.mapPartitions(lambda iter:
-                                                                transform(iter, func, *args)),
-                                         class_name=self.class_name)
+                                                                transform(iter, func, *args)))
         self._uncache()
         return transformed_shard
 
