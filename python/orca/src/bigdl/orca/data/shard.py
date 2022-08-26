@@ -158,7 +158,6 @@ class SparkXShards(XShards):
         if class_name:
             self.type['class_name'] = class_name
 
-
     def transform_shard(self, func, *args):
         """
 
@@ -174,7 +173,7 @@ class SparkXShards(XShards):
 
         transformed_shard = SparkXShards(self.rdd.mapPartitions(lambda iter:
                                                                 transform(iter, func, *args)),
-                                         class_name = self.class_name)
+                                         class_name=self.class_name)
         self._uncache()
         return transformed_shard
 
