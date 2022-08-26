@@ -119,5 +119,5 @@ time5=$((now - start))
 echo "#1 Running run-tabular_playground_series time used: $time1 seconds"
 echo "#2 Running titanic time used: $time2 seconds"
 echo "#3 Running diabetes time used: $time3 seconds"
-echo "# 4Running ionosphere time used: $time4 seconds"
+echo "#4 Running ionosphere time used: $time4 seconds"
 echo "#5 Running auto-mpg time used: $time5 seconds"
