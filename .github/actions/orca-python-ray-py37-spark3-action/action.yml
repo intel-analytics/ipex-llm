@@ -23,6 +23,7 @@ runs:
         pip uninstall -r python/orca/dev/example/requirements-ray.txt -y
         pip install -i https://pypi.org/simple --pre --upgrade bigdl-orca-spark3
         pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r python/orca/dev/example/requirements-ray.txt 
+        pip install pytest
         pip uninstall -y opencv-python-headless
         pip install opencv-python-headless
     - name: Run Test
