@@ -96,7 +96,7 @@ We will also show how to use the saved model to resume training or predict in [2
 Then call `fit` method to train
 
 ```python
-response = ppl.fit(x, y)
+response = ppl.fit(x, y, epoch=5)
 ```
 
 ### 2.6 Predict
@@ -117,16 +117,20 @@ To start a new application to resume training or predict
 client_model = torch.load(model_path) # load client model first
 
 # create estimator using the loaded client model
+# the server_model_path should be consistant with the one in 2.4
+# because server would load model from this path if model exists
 ppl = Estimator.from_torch(client_model=model,
                            client_id=client_id,
                            loss_fn=loss_fn,
                            optimizer_cls=torch.optim.SGD,
                            optimizer_args={'lr':1e-3},
-                           target='localhost:8980')
+                           target='localhost:8980',
+                           server_model_path=/path/to/model/on/server,
+                           client_model_path=/path/to/model/on/client)
 ppl.load_server_model(server_model_path) # trigger model loading on server
 
 # Then you can use the loaded model to resume training or predict
-ppl.fit(x, y, 5)
+ppl.fit(x, y, epoch=5)
 result = ppl.predict(x)
 ```
 
