@@ -93,7 +93,7 @@ class Table:
 
     @staticmethod
     def _read_csv(
-        paths: str,
+        paths: Union[str, List[str]],
         delimiter: str = ",",
         header: bool = False,
         names: Optional[Union[str, List[str]]]=None,
