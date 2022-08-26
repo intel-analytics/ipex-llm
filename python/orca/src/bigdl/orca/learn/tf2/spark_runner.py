@@ -353,7 +353,10 @@ class SparkRunner:
 
             if self.need_to_log_to_driver:
                 LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
-            return [stats], weights
+            if self.model_dir is not None:
+                return [stats]
+            else:
+                return [stats], weights
         else:
             temp_dir = tempfile.mkdtemp()
             try:
