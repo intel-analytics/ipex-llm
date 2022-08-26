@@ -84,7 +84,7 @@ which indicates the annotations involved in the UTs. More usages about stub see 
 ## Notes
 1. `monkeytype apply` may not work for some cases. 
 
-For example, `friesian.feature.table` invokes two kinds of DataFrame in this module:` pyspark.sql.dataframe.DataFrame `and `pandas.core.frame.DataFrame`. To avoid ambiguity of type `DataFrame`, we rename `pyspark.sql.dataframe.DataFrame` o SparkDataFrame like:
+For example, `friesian.feature.table` invokes two kinds of DataFrame in this module:` pyspark.sql.dataframe.DataFrame `and `pandas.core.frame.DataFrame`. To avoid ambiguity of type `DataFrame`, we rename `pyspark.sql.dataframe.DataFrame` to SparkDataFrame like:
 ```
 from pyspark.sql.dataframe import DataFrame as SparkDataFrame
 ```
