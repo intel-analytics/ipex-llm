@@ -3,8 +3,6 @@
 import grpc
 
 import fgboost_service_pb2 as fgboost__service__pb2
-from bigdl.dllib.utils.log4Error import invalidInputError
-
 
 class FGBoostServiceStub(object):
     """Missing associated documentation comment in .proto file."""
@@ -59,43 +57,43 @@ class FGBoostServiceServicer(object):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
-        invalidInputError(False, 'Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
     def downloadLabel(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
-        invalidInputError(False, 'Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
     def split(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
-        invalidInputError(False, 'Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
     def register(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
-        invalidInputError(False, 'Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
     def uploadTreeLeaf(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
-        invalidInputError(False, 'Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
     def evaluate(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
-        invalidInputError(False, 'Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
     def predict(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
-        invalidInputError(False, 'Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
 
 def add_FGBoostServiceServicer_to_server(servicer, server):

@@ -1,0 +1,154 @@
+name: Nightly Test
+
+on:
+  schedule:
+    - cron: '0 13 * * *' # GMT time, 13:00 GMT == 21:00 China
+  workflow_dispatch:
+    inputs:
+      artifact:
+        description: 'select which job to run("all" will make all jobs run)'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - Orca-Python-ExampleTest-Py37-Spark3
+        - Orca-Python-ExampleTest-Ray-Py37-Spark3
+        - Orca-Jep-ExampleTest-Py37-Spark2
+        - Scala-App
+        - Dllib-Scala-UT
+        - Friesian-Scala-UT
+        - PPML-Scala-UT
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  Orca-Python-ExampleTest-Py37-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-ExampleTest-Py37-Spark3' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Run test
+      uses: ./.github/actions/orca-python-exampletest-action
+
+
+  Orca-Python-ExampleTest-Ray-Py37-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-ExampleTest-Ray-Py37-Spark3' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Run test
+      uses: ./.github/actions/orca-python-exampletest-ray-action
+
+  Orca-Jep-ExampleTest-Py37-Spark2:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Jep-ExampleTest-Py37-Spark2' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Run test
+      uses: ./.github/actions/orca-jep-exampletest-action
+
+  Scala-App:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Scala-App' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Set up Python 
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install numpy
+        pip install tensorflow==1.15.0
+        pip install jupyter
+        apt-get update
+        apt-get install wget 
+
+        wget https://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz
+        gunzip scala-2.11.8.tgz
+        tar -xf scala-2.11.8.tar -C /opt
+        rm scala-2.11.8.tar
+        ln -s /opt/scala-2.11.8 /opt/scala
+    - name: Run Test
+      run: |
+          export SCALA_HOME=/opt/scala
+          chmod a+x apps/run-scala-app-test.sh
+          apps/run-scala-app-test.sh
+
+  Dllib-Scala-UT:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Dllib-Scala-UT' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK8
+        uses: ./.github/actions/jdk-setup-action
+      - name: Set up maven
+        uses: ./.github/actions/maven-setup-action
+      - name: Run test
+        uses: ./.github/actions/dllib-scala-ut-action
+      
+  Friesian-Scala-UT:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Friesian-Scala-UT' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [ self-hosted, ubuntu-20.04-lts, CLX, AVX512, Ettenmoors ]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK8
+        uses: ./.github/actions/jdk-setup-action
+      - name: Set up maven
+        uses: ./.github/actions/maven-setup-action
+      - name: Run test
+        uses: ./.github/actions/friesian-scala-ut-action
+      
+  PPML-Scala-UT:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Scala-UT' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK8
+        uses: ./.github/actions/jdk-setup-action
+      - name: Set up maven
+        uses: ./.github/actions/maven-setup-action
+      - name: Run test
+        uses: ./.github/actions/ppml-scala-ut-action
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+

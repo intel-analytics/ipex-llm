@@ -283,7 +283,20 @@ The result should be similar to
 
 ##### Example 5: XGBoost Regressor
 
+The data source `Boston_Housing.csv` can be found at [here](https://github.com/selva86/datasets/blob/master/BostonHousing.csv).
+
 Before running the example, make sure that `Boston_Housing.csv` is under `work/data` directory or the same path in the command. Run the example with SGX spark local mode with the following command in the terminal. Replace `your_IP_address` with your IP address and `path_of_boston_housing_csv` with your path of `Boston_Housing.csv`.
+
+
+Note that data in `Boston_Housing.csv` needs to be pre-processed, before training with `xgboost_example.py`.
+
+The data for column "chas" is in type "string" and we need to delete all the **quotation marks(")** so that the `xgboost_example.py` can successfully load the data.
+
+Before changing:
+> 0.00632,18,2.31,**"0"**,0.538,6.575,65.2,4.09,1,296,15.3,396.9,4.98,24
+
+After changing:
+> 0.00632,18,2.31,**0**,0.538,6.575,65.2,4.09,1,296,15.3,396.9,4.98,24
 
 ```bash
 /graphene/Tools/argv_serializer bash -c "export RABIT_TRACKER_IP=your_IP_address && /opt/jdk8/bin/java -cp \
@@ -295,10 +308,9 @@ Before running the example, make sure that `Boston_Housing.csv` is under `work/d
   --conf spark.executor.extraClassPath=/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
   --conf spark.driver.extraClassPath=/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
   --properties-file /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/conf/spark-bigdl.conf \
-  --jars /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
   --py-files /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/bigdl-orca-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip \
   --executor-memory 2g \
-  /ppml/trusted-big-data-ml/work/examples/pyzoo/xgboost/xgboost_example.py \
+  /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/examples/dllib/nnframes/xgboost/xgboost_example.py \
   --file-path path_of_boston_housing_csv" > /ppml/trusted-big-data-ml/secured-argvs
 ./init.sh
 SGX=1 ./pal_loader bash 2>&1 | tee test-zoo-xgboost-regressor-sgx.log
@@ -372,10 +384,9 @@ After downloading the dataset, make sure that `pima-indians-diabetes.data.csv` i
   --conf spark.executor.extraClassPath=/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
   --conf spark.driver.extraClassPath=/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
   --properties-file /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/conf/spark-bigdl.conf \
-  --jars /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
   --py-files /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/bigdl-orca-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip \
   --executor-memory 2g \
-  /ppml/trusted-big-data-ml/work/examples/pyzoo/xgboost/xgboost_classifier.py \
+  /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/examples/dllib/nnframes/xgboost/xgboost_classifier.py \
   -f path_of_pima_indians_diabetes_csv" > /ppml/trusted-big-data-ml/secured-argvs
 ./init.sh
 SGX=1 ./pal_loader bash 2>&1 | tee test-xgboost-classifier-sgx.log

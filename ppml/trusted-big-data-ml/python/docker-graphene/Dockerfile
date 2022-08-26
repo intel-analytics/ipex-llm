@@ -4,13 +4,14 @@ ARG TINI_VERSION=v0.18.0
 ARG JDK_VERSION=8u192
 ARG JDK_URL=your_jdk_url
 ARG SPARK_JAR_REPO_URL=your_spark_jar_repo_url
+
+# stage.1 graphene
+FROM ubuntu:20.04 AS graphene
+
 ARG HTTP_PROXY_HOST
 ARG HTTP_PROXY_PORT
 ARG HTTPS_PROXY_HOST
 ARG HTTPS_PROXY_PORT
-
-# stage.1 graphene
-FROM ubuntu:20.04 AS graphene
 
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     env DEBIAN_FRONTEND=noninteractive apt-get install -y autoconf bison build-essential coreutils gawk git libcurl4-openssl-dev libprotobuf-c-dev protobuf-c-compiler python3-protobuf wget
@@ -233,7 +234,10 @@ RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils vim curl nano wget unzip git tree zip && \
     apt-get install -y libsm6 make build-essential && \
     apt-get install -y autoconf gawk bison libcurl4-openssl-dev python3-protobuf libprotobuf-c-dev protobuf-c-compiler && \
-    apt-get install -y netcat net-tools
+    apt-get install -y netcat net-tools && \
+    mkdir -p /ppml/trusted-big-data-ml/fl
+
+COPY --from=bigdl /bigdl-${BIGDL_VERSION}/python/start-fl-server.py /ppml/trusted-big-data-ml/fl
 
 #python
 RUN apt install software-properties-common -y && \
@@ -241,6 +245,10 @@ RUN apt install software-properties-common -y && \
     apt-get install -y python3-minimal build-essential python3.7-distutils python3-apt python3.7 python3-setuptools python3-dev python3-pip libpython3.7 && \
     rm /usr/bin/python3 && \
     ln -s /usr/bin/python3.7 /usr/bin/python3 && \
+    rm -rf /usr/lib/python3/dist-packages/protobuf-3.6.1.egg-info && \
+    rm -rf /usr/lib/python3/dist-packages/google/protobuf && \
+    ln -s /usr/lib/x86_64-linux-gnu/libtinfo.so.6 /usr/lib/x86_64-linux-gnu/libtinfo.so.5 && \
+    pip install pyyaml && \
     pip3 install --upgrade pip && \
     pip install setuptools==58.4.0 && \
     pip install --no-cache-dir numpy scipy && \
@@ -277,7 +285,7 @@ ADD ./_dill.py.patch ./_dill.py.patch
 ADD ./python-uuid.patch ./python-uuid.patch
 ADD ./python-pslinux.patch ./python-pslinux.patch
 
-RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ./tracker.py && \
+RUN zip -u ${BIGDL_HOME}/jars/xgboost4j_2.12-1.1.2.jar ./tracker.py && \
     patch /usr/local/lib/python3.7/dist-packages/dill/_dill.py ./_dill.py.patch && \
     patch /usr/lib/python3.7/uuid.py ./python-uuid.patch && \
     patch /usr/local/lib/python3.7/dist-packages/psutil/_pslinux.py ./python-pslinux.patch && \
@@ -322,3 +330,4 @@ ADD azure /ppml/trusted-big-data-ml/azure
 WORKDIR /ppml/trusted-big-data-ml
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
+
