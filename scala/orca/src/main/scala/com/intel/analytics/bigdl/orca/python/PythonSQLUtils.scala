@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+
 package org.apache.spark.sql
 
 import java.io.{DataOutputStream, FileInputStream, FileOutputStream}
@@ -65,6 +66,8 @@ class PythonOrcaSQLUtils[T: ClassTag](implicit ev: TensorNumeric[T]) {
     sqlContext.internalCreateDataFrame(rdd.setName("arrow"), schema)
   }
 
+  // Below code is adapted from spark, https://github.com/apache/spark/blob/branch-3.1/sql/core/
+  // src/main/scala/org/apache/spark/sql/execution/python/ArrowPythonRunner.scala
   def sparkdfTopdf(sdf: DataFrame, sqlContext: SQLContext, batchSize: Int = -1): RDD[String] = {
     val schemaCaptured = sdf.schema
     val maxRecordsPerBatch = if (batchSize == -1) {

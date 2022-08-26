@@ -18,7 +18,7 @@ import numpy as np
 import pandas as pd
 
 
-from bigdl.dllib.utils.file_utils import get_file_list
+from bigdl.dllib.utils.file_utils import get_file_list, callZooFunc
 from bigdl.dllib.utils.utils import convert_row_to_numpy
 from bigdl.dllib.utils.common import *
 from bigdl.dllib.utils.log4Error import *
@@ -394,15 +394,13 @@ def spark_df_to_rdd_pd(df, squeeze=False, index_col=None,
     try:
         pd_rdd = to_pandas(df, squeeze, index_col, dtype, index_map,
                          batch_size=shard_size)
-        df.unpersist()
         return pd_rdd
     except Exception as e:
-        print("Failed to create shards from Spark DataFrame with arrow optim, will do the"
-              " convertion without arrow")
+        print(f"create shards from Spark DataFrame attempted Arrow optimization failed as:"
+              f" {str(e)}. Will try without Arrow optimization")
         pd_rdd = df.rdd.mapPartitions(to_pandas_without_arrow(df.columns, squeeze, index_col,
                                                               dtype, index_map,
                                                               batch_size=shard_size))
-        df.unpersist()
         return pd_rdd
 
 
@@ -413,33 +411,32 @@ def spark_df_to_pd_sparkxshards(df, squeeze=False, index_col=None,
     spark_xshards = SparkXShards(pd_rdd)
     return spark_xshards
 
+def postprocess(pd_df, squeeze=False, index_col=None, dtype=None, index_map=None):
+    if dtype is not None:
+        if isinstance(dtype, dict):
+            for col, type in dtype.items():
+                if isinstance(col, str):
+                    if col not in pd_df.columns:
+                        invalidInputError(False,
+                                          "column to be set type is not"
+                                          " in current dataframe")
+                    pd_df[col] = pd_df[col].astype(type)
+                elif isinstance(col, int):
+                    if index_map[col] not in pd_df.columns:
+                        invalidInputError(False,
+                                          "column index to be set type is not"
+                                          " in current dataframe")
+                    pd_df[index_map[col]] = pd_df[index_map[col]].astype(type)
+        else:
+            pd_df = pd_df.astype(dtype)
+    if squeeze and len(pd_df.columns) == 1:
+        pd_df = pd_df.iloc[:, 0]
+    if index_col:
+        pd_df = pd_df.set_index(index_col)
+    return pd_df
 
 def to_pandas_without_arrow(columns, squeeze=False, index_col=None, dtype=None, index_map=None,
                             batch_size=None):
-    def postprocess(pd_df):
-        if dtype is not None:
-            if isinstance(dtype, dict):
-                for col, type in dtype.items():
-                    if isinstance(col, str):
-                        if col not in pd_df.columns:
-                            invalidInputError(False,
-                                              "column to be set type is not"
-                                              " in current dataframe")
-                        pd_df[col] = pd_df[col].astype(type)
-                    elif isinstance(col, int):
-                        if index_map[col] not in pd_df.columns:
-                            invalidInputError(False,
-                                              "column index to be set type is not"
-                                              " in current dataframe")
-                        pd_df[index_map[col]] = pd_df[index_map[col]].astype(type)
-            else:
-                pd_df = pd_df.astype(dtype)
-        if squeeze and len(pd_df.columns) == 1:
-            pd_df = pd_df.iloc[:, 0]
-        if index_col:
-            pd_df = pd_df.set_index(index_col)
-        return pd_df
-
     def f(iter):
         import pandas as pd
         counter = 0
@@ -449,41 +446,17 @@ def to_pandas_without_arrow(columns, squeeze=False, index_col=None, dtype=None, 
             data.append(row)
             if batch_size and counter % batch_size == 0:
                 pd_df = pd.DataFrame(data, columns=columns)
-                pd_df = postprocess(pd_df)
+                pd_df = postprocess(pd_df, squeeze, index_col, dtype, index_map)
                 yield pd_df
                 data = []
         if data:
             pd_df = pd.DataFrame(data, columns=columns)
-            pd_df = postprocess(pd_df)
+            pd_df = postprocess(pd_df, squeeze, index_col, dtype, index_map)
             yield pd_df
 
     return f
 
 def to_pandas(df, squeeze=False, index_col=None, dtype=None, index_map=None, batch_size=None):
-    def postprocess(pd_df):
-        if dtype is not None:
-            if isinstance(dtype, dict):
-                for col, type in dtype.items():
-                    if isinstance(col, str):
-                        if col not in pd_df.columns:
-                            invalidInputError(False,
-                                              "column to be set type is not"
-                                              " in current dataframe")
-                        pd_df[col] = pd_df[col].astype(type)
-                    elif isinstance(col, int):
-                        if index_map[col] not in pd_df.columns:
-                            invalidInputError(False,
-                                              "column index to be set type is not"
-                                              " in current dataframe")
-                        pd_df[index_map[col]] = pd_df[index_map[col]].astype(type)
-            else:
-                pd_df = pd_df.astype(dtype)
-        if squeeze and len(pd_df.columns) == 1:
-            pd_df = pd_df.iloc[:, 0]
-        if index_col:
-            pd_df = pd_df.set_index(index_col)
-        return pd_df
-
     def farrow(iter):
         for fileName in iter:
             from pyspark.sql.pandas.serializers import ArrowStreamPandasSerializer
@@ -491,12 +464,12 @@ def to_pandas(df, squeeze=False, index_col=None, dtype=None, index_map=None, bat
             with open(fileName, "rb") as stream:
                 t = ser.load_stream(stream)
                 pd_df = pd.concat(next(t), axis=1)
-                pd_df = postprocess(pd_df)
+                pd_df = postprocess(pd_df, squeeze, index_col, dtype, index_map)
                 yield pd_df
 
     sqlContext = get_spark_sql_context(get_spark_context())
     timezone = sqlContext._conf.sessionLocalTimeZone()
-    from bigdl.dllib.utils.file_utils import callZooFunc
+
     batch_size = -1 if not batch_size else batch_size
     rdd_file = callZooFunc("float", "sparkdfTopdf", df._jdf, sqlContext, batch_size)
     pd_rdd = rdd_file.mapPartitions(farrow)
@@ -515,7 +488,6 @@ def spark_xshards_to_ray_dataset(spark_xshards):
 
 
 def generate_string_idx(df, columns, freq_limit, order_by_freq):
-    from bigdl.dllib.utils.file_utils import callZooFunc
     return callZooFunc("float", "generateStringIdx", df, columns, freq_limit, order_by_freq)
 
 
