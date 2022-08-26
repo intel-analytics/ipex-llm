@@ -213,9 +213,9 @@ class SparkTFEstimator():
 
             res = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
-        result = res[0]
 
         if self.model_dir:
+            result = res
             try:
                 temp_dir = tempfile.mkdtemp()
                 get_remote_file_to_local(os.path.join(self.model_dir, "state.pkl"),
@@ -227,6 +227,7 @@ class SparkTFEstimator():
             finally:
                 shutil.rmtree(temp_dir)
         else:
+            result = res[0]
             self.model_weights = res[1]
 
         return result[0]
