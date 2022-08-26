@@ -244,11 +244,11 @@ RUN apt install software-properties-common -y && \
     add-apt-repository ppa:deadsnakes/ppa -y && \
     apt-get install -y python3-minimal build-essential python3.7-distutils python3-apt python3.7 python3-setuptools python3-dev python3-pip libpython3.7 && \
     rm /usr/bin/python3 && \
-    pip install six --target=/usr/lib/python3.7/dist-packages && \
+    ln -s /usr/bin/python3.7 /usr/bin/python3 && \
     rm -rf /usr/lib/python3/dist-packages/protobuf-3.6.1.egg-info && \
+    rm -rf /usr/lib/python3/dist-packages/google/protobuf && \
     ln -s /usr/lib/x86_64-linux-gnu/libtinfo.so.6 /usr/lib/x86_64-linux-gnu/libtinfo.so.5 && \
     pip install pyyaml && \
-    ln -s /usr/bin/python3.7 /usr/bin/python3 && \
     pip3 install --upgrade pip && \
     pip install setuptools==58.4.0 && \
     pip install --no-cache-dir numpy scipy && \
