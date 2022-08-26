@@ -51,7 +51,8 @@ class PythonOrcaSQLUtils[T: ClassTag](implicit ev: TensorNumeric[T]) {
       Utils.tryWithResource(new FileInputStream(file)) { fileStream =>
         // Create array to consume iterator so that we can safely close the file
         val batches = ArrowConverters.getBatchesFromStream(fileStream.getChannel)
-        ArrowConverters.fromBatchIterator(batches, schema, timeZoneId, context)
+        ArrowConverters.fromBatchIterator(batches,
+          DataType.fromJson(schemaString).asInstanceOf[StructType], timeZoneId, context)
       }
     }
     sqlContext.internalCreateDataFrame(rdd.setName("arrow"), schema)

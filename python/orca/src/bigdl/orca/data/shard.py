@@ -144,7 +144,7 @@ class SparkXShards(XShards):
 
     A collection of data which can be pre-processed in parallel on Spark
     """
-    def __init__(self, rdd, transient=False):
+    def __init__(self, rdd, transient=False, class_name=None):
         self.rdd = rdd
         self.user_cached = False
         if transient:
@@ -155,6 +155,9 @@ class SparkXShards(XShards):
         if self.eager:
             self.compute()
         self.type = {}
+        if class_name:
+            self.type['class_name'] = class_name
+
 
     def transform_shard(self, func, *args):
         """
@@ -170,7 +173,8 @@ class SparkXShards(XShards):
                 yield func(x, *args)
 
         transformed_shard = SparkXShards(self.rdd.mapPartitions(lambda iter:
-                                                                transform(iter, func, *args)))
+                                                                transform(iter, func, *args)),
+                                         class_name = self.class_name)
         self._uncache()
         return transformed_shard
 
@@ -577,6 +581,7 @@ class SparkXShards(XShards):
                         return [schema]
 
             schema = self.rdd.mapPartitions(getSchemaStructType).first()
+
             sqlContext = get_spark_sql_context(get_spark_context())
             timezone = sqlContext._conf.sessionLocalTimeZone()
 
@@ -603,6 +608,7 @@ class SparkXShards(XShards):
 
             jiter = self.rdd.mapPartitions(f)
             from bigdl.dllib.utils.file_utils import callZooFunc
+
             df = callZooFunc("float", "orcaToDataFrame", jiter, schema.json(), sqlContext)
             return df
         except Exception as e:
