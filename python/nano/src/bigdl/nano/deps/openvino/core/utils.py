@@ -19,10 +19,13 @@ from bigdl.nano.utils.log4Error import invalidInputError
 from openvino.runtime.passes import Manager
 
 
-def convert_onnx_to_xml(onnx_file_path, xml_path, batch_size=1):
+def convert_onnx_to_xml(onnx_file_path, xml_path, logging=True, batch_size=1):
     xml_path = Path(xml_path)
     model_name, output_dir = str(xml_path.stem), str(xml_path.parent)
-    mo_cmd = "mo -m {} -n {} -o {}".format(str(onnx_file_path), model_name, output_dir)
+    if logging:
+        mo_cmd = "mo -m {} -n {} -o {}".format(str(onnx_file_path), model_name, output_dir)
+    else:
+        mo_cmd = "mo -m {} --silent -n {} -o {}".format(str(onnx_file_path), model_name, output_dir)
     if os.system(mo_cmd) == 0:
         return
     else:

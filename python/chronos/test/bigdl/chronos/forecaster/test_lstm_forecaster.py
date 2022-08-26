@@ -511,3 +511,20 @@ class TestChronosModelLSTMForecaster(TestCase):
                                     loss="mae",
                                     lr=0.01)
         val_loss = forecaster.fit(train_data, val_data, validation_mode='best_epoch', epochs=10)
+
+    def test_lstm_forecaster_tune_fit(self):
+        train_data, val_data, _ = create_data()
+        import bigdl.nano.automl.hpo.space as space
+        forecaster = LSTMForecaster(past_seq_len=24,
+                                    input_feature_num=2,
+                                    output_feature_num=2,
+                                    hidden_dim=space.Categorical(16, 32, 64),
+                                    layer_num=1,
+                                    dropout=0.1,
+                                    loss="mae",
+                                    metrics=["mse"],
+                                    lr=0.01)
+        forecaster.tune(train_data, val_data, epochs=10,
+                        n_trials=3, target_metric="mse",
+                        direction="minimize")
+        forecaster.fit(train_data, epochs=10)

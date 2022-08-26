@@ -41,7 +41,7 @@ spec:
         - name: API_KEY
           value: {{ .Values.apiKey }}
         - name: PCCS_PORT
-          value: 18081
+          value: "18081"
         - name: HTTPS_PROXY_URL
           value: {{ .Values.httpsProxyUrl }}
         - name: COUNTRY_NAME

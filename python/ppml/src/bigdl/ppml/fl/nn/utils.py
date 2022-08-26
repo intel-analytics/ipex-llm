@@ -16,6 +16,7 @@
 
 import logging
 import pickle
+import stat
 import numpy as np
 
 from bigdl.ppml.fl.nn.generated.nn_service_pb2 import *
@@ -31,6 +32,8 @@ class ClassAndArgsWrapper(object):
         cls = pickle.dumps(self.cls)
         args = pickle.dumps(self.args)
         return ClassAndArgs(cls=cls, args=args)
+
+
 
 import numpy as np
 from bigdl.dllib.utils.log4Error import invalidInputError
