@@ -214,7 +214,7 @@ class SparkTFEstimator():
             res = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
 
-        if self.model_dir:
+        if self.model_dir is not None:
             result = res
             try:
                 temp_dir = tempfile.mkdtemp()
@@ -517,7 +517,8 @@ class SparkTFEstimator():
         model = load_model(filepath, custom_objects=custom_objects, compile=compile)
         self.model_weights = model.get_weights()
         # update remote model
-        save_model(model, self._model_saved_path, save_format="h5", filemode=0o666)
+        if self.model_dir is not None:
+            save_model(model, self._model_saved_path, save_format="h5", filemode=0o666)
 
     def get_model(self):
         """
