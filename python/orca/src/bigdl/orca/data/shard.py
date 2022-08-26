@@ -612,7 +612,7 @@ class SparkXShards(XShards):
         except Exception as e:
             print(f"createDataFrame from shards attempted Arrow optimization failed as: {str(e)},"
                   f"Will try without Arrow optimization")
-            return to_spark_df_without_arrow()
+            return self.to_spark_df_without_arrow()
 
     def __len__(self):
         return self.rdd.map(lambda data: len(data) if hasattr(data, '__len__') else 1)\
