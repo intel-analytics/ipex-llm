@@ -29,6 +29,7 @@ will generate roughly 10GB of input data.
 You can then either upload your data to remote file system or read them locally.
 
 2. Encrypt Data
+
 Encrypt data with specified Key Management Service (`SimpleKeyManagementService`, or `EHSMKeyManagementService` , or `AzureKeyManagementService`)
 
 The example code of encrypt data with `SimpleKeyManagementService` is like below:
