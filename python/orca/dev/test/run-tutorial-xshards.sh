@@ -62,5 +62,62 @@ rm -rf result
 now=$(date "+%s")
 time2=$((now - start))
 
+echo "#3 Running diabetes"
+
+#timer
+start=$(date "+%s")
+
+if [ -f ${BIGDL_ROOT}/python/orca/tutorial/xshards/pima-indians-diabetes-test.csv ]
+then
+    echo "pima-indians-diabetes-test.csv already exists"
+else
+    wget -nv $FTP_URI/analytics-zoo-data/xshards/pima-indians-diabetes-test.csv -P ${BIGDL_ROOT}/python/orca/tutorial/xshards/
+fi
+
+python diabetes.py
+
+now=$(date "+%s")
+time3=$((now - start))
+
+
+echo "#4 Running ionosphere"
+
+#timer
+start=$(date "+%s")
+
+if [ -f ${BIGDL_ROOT}/python/orca/tutorial/xshards/new_ionosphere.csv ]
+then
+    echo "new_ionosphere.csv already exists"
+else
+    wget -nv $FTP_URI/analytics-zoo-data/xshards/new_ionosphere.csv -P ${BIGDL_ROOT}/python/orca/tutorial/xshards/
+fi
+
+python ionosphere.py
+
+now=$(date "+%s")
+time4=$((now - start))
+
+
+echo "#5 Running auto_mpg"
+
+#timer
+start=$(date "+%s")
+
+if [ -f ${BIGDL_ROOT}/python/orca/tutorial/xshards/auto-mpg.csv ]
+then
+    echo "auto-mpg.csv already exists"
+else
+    wget -nv $FTP_URI/analytics-zoo-data/xshards/auto-mpg.csv -P ${BIGDL_ROOT}/python/orca/tutorial/xshards/
+fi
+
+python auto_mpg.py
+
+now=$(date "+%s")
+time5=$((now - start))
+
+
 echo "#1 Running run-tabular_playground_series time used: $time1 seconds"
 echo "#2 Running titanic time used: $time2 seconds"
+echo "#3 Running diabetes time used: $time3 seconds"
+echo "#4 Running ionosphere time used: $time4 seconds"
+echo "#5 Running auto_mpg time used: $time5 seconds"
