@@ -5,11 +5,15 @@ on:
     paths:
       - 'scala/friesian/**'
       - '.github/actions/friesian-scala-ut-action/action.yml'
+      - 'scala/dllib/**'
+      - '.github/actions/dllib-scala-ut-action/action.yml'
   pull_request:
     branches: [ main ]
     paths:
       - 'scala/friesian/**'
       - '.github/actions/friesian-scala-ut-action/action.yml'
+      - 'scala/dllib/**'
+      - '.github/actions/dllib-scala-ut-action/action.yml'
 
 permissions:
   contents: read
@@ -21,6 +25,7 @@ jobs:
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
     outputs:
       friesian: ${{ steps.filter.outputs.friesian }}
+      dllib: ${{ steps.filter.outputs.dllib }}
     steps:
       - uses: actions/checkout@v3
       - uses: dorny/paths-filter@v2
@@ -30,6 +35,9 @@ jobs:
             friesian:
               - 'scala/friesian/**'
               - '.github/actions/friesian-scala-ut-action/action.yml'
+            dllib:
+              - 'scala/dllib/**'
+              - '.github/actions/dllib-scala-ut-action/action.yml'
 
   
   Friesian-Scala-UT:
@@ -44,4 +52,19 @@ jobs:
       - name: Set up maven
         uses: ./.github/actions/maven-setup-action
       - name: Run test
-        uses: ./.github/actions/friesian-scala-ut-action
+        uses: ./.github/actions/dllib-scala-ut-action
+
+
+  Dllib-Scala-UT:
+    needs: changes
+    if: ${{ needs.changes.outputs.dllib == 'true' }}
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK8
+        uses: ./.github/actions/jdk-setup-action
+      - name: Set up maven
+        uses: ./.github/actions/maven-setup-action
+      - name: Run test
+        uses: ./.github/actions/dllib-scala-ut-action

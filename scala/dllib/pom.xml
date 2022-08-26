@@ -21,6 +21,7 @@
         <bigdl.basedir>${project.parent.basedir}</bigdl.basedir>
     </properties>
 
+
     <dependencies>
         <dependency>
             <groupId>org.apache.opennlp</groupId>
