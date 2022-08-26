@@ -288,9 +288,9 @@ The data source `Boston_Housing.csv` can be found at [here](https://github.com/s
 Before running the example, make sure that `Boston_Housing.csv` is under `work/data` directory or the same path in the command. Run the example with SGX spark local mode with the following command in the terminal. Replace `your_IP_address` with your IP address and `path_of_boston_housing_csv` with your path of `Boston_Housing.csv`.
 
 
-Also, please be noted that the data within Boston_Housing.csv needs to be processed beforing handing to xgboost_exmaple.py.
+Note that data in `Boston_Housing.csv` needs to be pre-processed, before training with `xgboost_example.py`.
 
-The data for column "chas" is in type "string" and we need to delete all the quotation marks so that the xgboost_example.py can successfully load the data.
+The data for column "chas" is in type "string" and we need to delete all the **quotation marks(")** so that the `xgboost_example.py` can successfully load the data.
 
 Before changing:
 > 0.00632,18,2.31,**"0"**,0.538,6.575,65.2,4.09,1,296,15.3,396.9,4.98,24
