@@ -24,7 +24,6 @@ from bigdl.dllib.utils.log4Error import *
 
 import numpy as np
 
-import pyarrow as pa
 from pyspark.sql.pandas.types import from_arrow_type, to_arrow_type
 
 from pyspark.sql.types import StructType
@@ -145,7 +144,7 @@ class SparkXShards(XShards):
 
     A collection of data which can be pre-processed in parallel on Spark
     """
-    def __init__(self, rdd, transient=False):
+    def __init__(self, rdd, transient=False, class_name=None):
         self.rdd = rdd
         self.user_cached = False
         if transient:
@@ -156,6 +155,8 @@ class SparkXShards(XShards):
         if self.eager:
             self.compute()
         self.type = {}
+        if class_name:
+            self.type['class_name'] = class_name
 
     def transform_shard(self, func, *args):
         """
@@ -552,62 +553,66 @@ class SparkXShards(XShards):
         rdd = self.rdd.mapPartitions(f)
         column = self.get_schema()['columns']
         df = rdd.toDF(list(column))
-        df.cache()
-        df.count()
-        self.uncache()
         return df
 
+    # to_spark_df adapted from pyspark
+    # https://github.com/apache/spark/blob/master/python/pyspark/sql/pandas/conversion.py
     def to_spark_df(self):
         if self._get_class_name() != 'pandas.core.frame.DataFrame':
             invalidInputError(False,
                               "Currently only support to_spark_df on XShards of Pandas DataFrame")
 
-        def getSchemaStructType(iter):
-            for pdf in iter:
-                schema = [str(x) if not isinstance(x, str) else x for x in pdf.columns]
-                if isinstance(schema, (list, tuple)):
-                    arrow_schema = pa.Schema.from_pandas(pdf, preserve_index=False)
-                    struct = StructType()
-                    for name, field in zip(schema, arrow_schema):
-                        struct.add(
-                            name, from_arrow_type(field.type), nullable=field.nullable
-                        )
-                    schema = struct
-                    return [schema]
+        try:
+            import pyarrow as pa
 
-        schema = self.rdd.mapPartitions(getSchemaStructType).first()
-        sqlContext = get_spark_sql_context(get_spark_context())
-        timezone = sqlContext._conf.sessionLocalTimeZone()
-        # create temp dir
-        jvm = SparkContext._jvm
-        local_dir = jvm.org.apache.spark.util.Utils.getLocalDir(sqlContext._jsc.sc().conf())
-        tmpFile = jvm.org.apache.spark.util.Utils.createTempDir(
-            local_dir, "pyspark"
-        ).getAbsolutePath()
+            def getSchemaStructType(iter):
+                for pdf in iter:
+                    schema = [str(x) if not isinstance(x, str) else x for x in pdf.columns]
+                    if isinstance(schema, (list, tuple)):
+                        arrow_schema = pa.Schema.from_pandas(pdf, preserve_index=False)
+                        struct = StructType()
+                        for name, field in zip(schema, arrow_schema):
+                            struct.add(
+                                name, from_arrow_type(field.type), nullable=field.nullable
+                            )
+                        schema = struct
+                        return [schema]
 
-        def f(iter):
-            for pdf in iter:
-                arrow_types = [to_arrow_type(f.dataType) for f in schema.fields]
+            schema = self.rdd.mapPartitions(getSchemaStructType).first()
 
-                arrow_data = [[(c, t) for (_, c), t in zip(pdf.iteritems(), arrow_types)]]
-                col_by_name = True
-                safecheck = False
-                ser = ArrowStreamPandasSerializer(timezone, safecheck, col_by_name)
+            sqlContext = get_spark_sql_context(get_spark_context())
+            timezone = sqlContext._conf.sessionLocalTimeZone()
 
-                tempFile = NamedTemporaryFile(delete=False, dir=tmpFile)
-                try:
-                    ser.dump_stream(arrow_data, tempFile)
-                finally:
-                    tempFile.close()
-                return [tempFile.name]
+            def f(iter):
+                for pdf in iter:
+                    import os
+                    import uuid
+                    tmpFile = "/tmp/" + str(uuid.uuid1())
+                    os.mkdir(tmpFile)
 
-        jiter = self.rdd.mapPartitions(f)
-        from bigdl.dllib.utils.file_utils import callZooFunc
-        df = callZooFunc("float", "orcaToDataFrame", jiter, schema.json(), sqlContext)
-        df.cache()
-        df.count()
-        self.uncache()
-        return df
+                    arrow_types = [to_arrow_type(f.dataType) for f in schema.fields]
+
+                    arrow_data = [[(c, t) for (_, c), t in zip(pdf.iteritems(), arrow_types)]]
+                    col_by_name = True
+                    safecheck = False
+                    ser = ArrowStreamPandasSerializer(timezone, safecheck, col_by_name)
+
+                    tempFile = NamedTemporaryFile(delete=False, dir=tmpFile)
+                    try:
+                        ser.dump_stream(arrow_data, tempFile)
+                    finally:
+                        tempFile.close()
+                    return [tempFile.name]
+
+            jiter = self.rdd.mapPartitions(f)
+            from bigdl.dllib.utils.file_utils import callZooFunc
+
+            df = callZooFunc("float", "orcaToDataFrame", jiter, schema.json(), sqlContext)
+            return df
+        except Exception as e:
+            print(f"createDataFrame from shards attempted Arrow optimization failed as: {str(e)},"
+                  f"Will try without Arrow optimization")
+            return to_spark_df_without_arrow()
 
     def __len__(self):
         return self.rdd.map(lambda data: len(data) if hasattr(data, '__len__') else 1)\

@@ -31,6 +31,9 @@ import org.apache.spark.sql.execution.python.BatchIterator
 import org.apache.spark.sql.types.{DataType, StructType}
 import org.apache.spark.sql.util.ArrowUtils
 import org.apache.spark.util.Utils
+import org.apache.spark.util.{ShutdownHookManager, Utils}
+
+import java.io._
 
 import scala.reflect.ClassTag
 
@@ -49,10 +52,14 @@ class PythonOrcaSQLUtils[T: ClassTag](implicit ev: TensorNumeric[T]) {
     val rdd = jrdd.rdd.mapPartitions { iter =>
       val context = TaskContext.get()
       val file = iter.next()
+      val dir = new File(file)
+      ShutdownHookManager.registerShutdownDeleteDir(dir)
+
       Utils.tryWithResource(new FileInputStream(file)) { fileStream =>
         // Create array to consume iterator so that we can safely close the file
         val batches = ArrowConverters.getBatchesFromStream(fileStream.getChannel)
-        ArrowConverters.fromBatchIterator(batches, schema, timeZoneId, context)
+        ArrowConverters.fromBatchIterator(batches,
+          DataType.fromJson(schemaString).asInstanceOf[StructType], timeZoneId, context)
       }
     }
     sqlContext.internalCreateDataFrame(rdd.setName("arrow"), schema)
