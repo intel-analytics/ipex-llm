@@ -5,7 +5,7 @@ nfsPath: a_nfs_shared_folder_path_on_the_server
 couchdbRootUsername: YWRtaW4= # Reset is optional
 couchdbRootPassword: cGFzc3dvcmQ= # Reset is optional
 # Set the versions according to your images
-pccsImageName: intelanalytics/pccs:0.3.0
+pccsImageName: intelanalytics/pccs:0.3.0-SNAPSHOT
 dkeyserverImageName: intelccc/ehsm_dkeyserver:0.2.1
 couchdbImageName: couchdb:3.2
 dkeycacheImageName: intelccc/ehsm_dkeycache:0.2.1
@@ -21,4 +21,4 @@ cityName: your_city_name
 organizaitonName: your_organizaition_name
 commonName: server_fqdn_or_your_name
 emailAddress: your_email_address
-serverPassword: your_server_password_to_use
+serverPassword: your_server_password_to_use # Do not use a pure-number password
