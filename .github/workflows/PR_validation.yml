@@ -27,9 +27,7 @@ jobs:
         with:
           filters: |
             src:
-              - '**/**'
-              - 'scala/friesian/**'
-              - '.github/workflows/nb-ut-scala-friesian.yml'
+              - '.github/workflows/PR_validation.yml'
 
   build:
     needs: changes
