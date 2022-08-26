@@ -23,7 +23,7 @@ on:
 
 jobs:
   build:
-    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+    runs-on: [self-hosted, Gondolin-resources, ubuntu-20.04-lts]
     permissions:
       contents: read
       packages: write
