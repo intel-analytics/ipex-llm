@@ -84,8 +84,9 @@ class NNServiceImpl(NNServiceServicer):
     def upload_meta(self, request, context):
         try:
             loss_fn = pickle.loads(request.loss_fn)
-
-            aggregator = self.aggregator_map[request.aggregator]            
+            client_id = request.client_uuid
+            aggregator = self.aggregator_map[request.aggregator]
+            aggregator.load_uploaded_model(client_id, self.model_path)
             if request.aggregator == 'pt':
                 os.rename(self.model_path, f'{self.model_path}.pt')                
                 aggregator.model = torch.jit.load(f'{self.model_path}.pt')

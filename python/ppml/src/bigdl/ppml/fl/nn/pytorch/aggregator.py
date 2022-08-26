@@ -127,6 +127,13 @@ got {len(self.client_data[phase])}/{self.client_num}')
             invalidInputError(False,
                               f'Invalid phase: {phase}, should be train/eval/pred')
 
+    def load_uploaded_model(self, client_id, model_path):
+        if self.model is not None:
+            logging.warn(f"Model exists, model uploading from {client_id} ignored.")
+        else:
+            os.rename(model_path, f'{model_path}.pt')                
+            self.model = torch.jit.load(f'{model_path}.pt')
+
     def save_server_model(self, model_path):
         if not os.path.exists(f"{model_path}/model.meta"):
             os.makedirs(f"{model_path}", exist_ok=True)
@@ -139,11 +146,14 @@ got {len(self.client_data[phase])}/{self.client_num}')
         # save meta to file if not saved yet
         
 
-    def load_server_model(self, model_path):        
-        logging.info(f"Trying to load model from {model_path}")
-        self.model = torch.jit.load(f"{model_path}/model.pt")
-        # if loaded, set meta here to make the optimizer bind the model
-        with open(f"{model_path}/model.meta", "rb") as meta_file:
-            meta = pickle.load(meta_file)
-            self.loss_fn = meta['loss']
-            self.set_optimizer(meta['optimizer'][0], meta['optimizer'][1])
+    def load_server_model(self, model_path):
+        if self.model is not None:
+            logging.warn(f"Model exists, would not load again from {model_path}.")
+        else:
+            logging.info(f"Trying to load model from {model_path}")
+            self.model = torch.jit.load(f"{model_path}/model.pt")
+            # if loaded, set meta here to make the optimizer bind the model
+            with open(f"{model_path}/model.meta", "rb") as meta_file:
+                meta = pickle.load(meta_file)
+                self.loss_fn = meta['loss']
+                self.set_optimizer(meta['optimizer'][0], meta['optimizer'][1])
