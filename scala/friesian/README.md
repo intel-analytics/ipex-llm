@@ -1,5 +1,6 @@
 ## Friesian Serving Recommendation Framework
 
+
 ### Architecture of the serving pipelines
 
 The diagram below demonstrates the components of the friesian serving system, which typically consists of three stages:
