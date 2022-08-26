@@ -81,6 +81,7 @@ jobs:
         pip install -i https://pypi.org/simple --pre --upgrade bigdl-orca-spark3[ray]
         pip install tensorflow==1.15.0
         pip install sklearn
+        pip install pandas
     - name: Run Test
       #run: python -m build
       run: |
