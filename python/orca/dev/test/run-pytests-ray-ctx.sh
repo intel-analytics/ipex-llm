@@ -30,30 +30,30 @@ export PYSPARK_DRIVER_PYTHON=python
 ray stop -f
 ray start --head
 
-echo "Running Ray Estimator tests"
-python test/bigdl/orca/learn/ray/pytorch/test_estimator_ray_runtime.py
-exit_status_2=$?
-if [ $exit_status_2 -ne 0 ];
-then
-    exit $exit_status_2
-fi
-
-python test/bigdl/orca/learn/ray/tf/test_tf2estimator_ray_runtime.py
-exit_status_3=$?
-if [ $exit_status_3 -ne 0 ];
-then
-    exit $exit_status_3
-fi
-
-ray stop -f
-ray start --head
-
 echo "Running RayContext tests"
 python -m pytest -v test/bigdl/orca/ray/ray_cluster
 exit_status_1=$?
 if [ $exit_status_1 -ne 0 ];
 then
     exit $exit_status_1
+fi
+
+ray stop -f
+ray start --head
+
+echo "Running Ray Estimator tests"
+python -m pytest -v test/bigdl/orca/learn/ray/pytorch/test_estimator_ray_runtime.py
+exit_status_2=$?
+if [ $exit_status_2 -ne 0 ];
+then
+    exit $exit_status_2
+fi
+
+python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf2estimator_ray_runtime.py
+exit_status_3=$?
+if [ $exit_status_3 -ne 0 ];
+then
+    exit $exit_status_3
 fi
 
 echo "Running PyTorch Estimator Ray Dataset tests"
