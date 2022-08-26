@@ -2,14 +2,14 @@ name: PR Validation
 
 on:
   push:
-    # paths:
-    #   - 'scala/friesian/**'
-    #   - '.github/workflows/nb-ut-scala-friesian.yml'
+    paths:
+      - 'scala/friesian/**'
+      - '.github/actions/friesian-scala-ut-action/action.yml'
   pull_request:
-    # branches: [ main ]
-    # paths:
-    #   - 'scala/friesian/**'
-    #   - '.github/workflows/nb-ut-scala-friesian.yml'
+    branches: [ main ]
+    paths:
+      - 'scala/friesian/**'
+      - '.github/actions/friesian-scala-ut-action/action.yml'
 
 permissions:
   contents: read
@@ -18,71 +18,30 @@ permissions:
 jobs:
   changes:
     name: Paths filter
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
     outputs:
-      src: ${{ steps.filter.outputs.src }}
+      friesian: ${{ steps.filter.outputs.friesian }}
     steps:
       - uses: actions/checkout@v3
       - uses: dorny/paths-filter@v2
         id: filter
         with:
           filters: |
-            src:
+            friesian:
               - 'scala/friesian/**'
-              - '.github/workflows/PR_validation1.yml'
+              - '.github/actions/friesian-scala-ut-action/action.yml'
 
-  build:
-    needs: changes
-    if: ${{ needs.changes.outputs.src == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: |
-          echo "$GITHUB_CONTEXT"
-
-  # build:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Dump GitHub context
-  #       env:
-  #         GITHUB_CONTEXT: ${{ toJson(github) }}
-  #         GITHUB_EVENT_PATH_CONTEXT: ${{ toJson(github.event.path) }}
-  #       run: |
-  #         echo "$GITHUB_CONTEXT"
-  #         echo "$GITHUB_EVENT_PATH_CONTEXT"
-      # - name: print github.event.path
-      #   run: |
-      #     echo ${{ github.event.path }}
-      # - name: do something when Path1 directory has a commit
-      #   if: github.event.path == '**/**'
-      #   run: <do something>
-      # - name: do something when Path2 directory has a commit
-      #   if: github.event.path == 'Path2/**'
-      #   run: <do something else>
   
-  # Friesian-Scala-UT:
-  #   if: ${{ github.event.schedule || github.event.inputs.artifact == 'Friesian-Scala-UT' || github.event.inputs.artifact == 'all' }} 
-  #   runs-on: [ self-hosted, ubuntu-20.04-lts, CLX, AVX512, Ettenmoors ]
+  Friesian-Scala-UT:
+    needs: changes
+    if: ${{ needs.changes.outputs.friesian == 'true' }}
+    runs-on: [ self-hosted, ubuntu-20.04-lts, CLX, AVX512, Ettenmoors ]
 
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - uses: dorny/paths-filter@v2
-  #       id: filter
-  #       with:
-  #         filters: |
-  #           path1:
-  #             - 'scala/friesian/**'
-  #           path2:
-  #             - '.github/workflows/nb-ut-scala-friesian.yml'
-  #     # run if 'path1' or 'path2' files were changed
-  #     - name: both paths tests
-  #       if: steps.filter.outputs.path1 == 'true' || steps.filter.outputs.path2 == 'true'
-  #       run: ...
-  #     - name: Set up JDK8
-  #       uses: ./.github/actions/jdk-setup-action
-  #     - name: Set up maven
-  #       uses: ./.github/actions/maven-setup-action
-  #     - name: Run test
-  #       uses: ./.github/actions/friesian-scala-ut-action
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK8
+        uses: ./.github/actions/jdk-setup-action
+      - name: Set up maven
+        uses: ./.github/actions/maven-setup-action
+      - name: Run test
+        uses: ./.github/actions/friesian-scala-ut-action
