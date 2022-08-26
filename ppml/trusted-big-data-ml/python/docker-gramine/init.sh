@@ -2,6 +2,12 @@
 
 set -x
 
+if [ -f "/ppml/trusted-big-data-ml/bash.sig" ]; then
+    echo "/ppml/trusted-big-data-ml/bash.sig is ready"
+else
+    echo "/ppml/trusted-big-data-ml/bash.sig is not ready, please generate it through building CustomerImageDockfile"
+    exit 1
+fi
 if [ -c "/dev/sgx/enclave" ]; then
     echo "/dev/sgx/enclave is ready"
 elif [ -c "/dev/sgx_enclave" ]; then
@@ -26,7 +32,7 @@ fi
 
 ls -al /dev/sgx
 
-/graphene/Pal/src/host/Linux-SGX/signer/pal-sgx-get-token -output /ppml/trusted-big-data-ml/bash.token -sig /ppml/trusted-big-data-ml/bash.sig
+/gramine/python/gramine-sgx-get-token -output /ppml/trusted-big-data-ml/bash.token -sig /ppml/trusted-big-data-ml/bash.sig
 
 chmod +x /ppml/trusted-big-data-ml/bash.token
 
