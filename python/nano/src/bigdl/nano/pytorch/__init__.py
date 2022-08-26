@@ -22,3 +22,4 @@ import os
 os.unsetenv('KMP_INIT_AT_FORK')
 from bigdl.nano.pytorch.trainer import Trainer
 from bigdl.nano.pytorch.torch_nano import TorchNano
+from bigdl.nano.pytorch.inference import InferenceOptimizer

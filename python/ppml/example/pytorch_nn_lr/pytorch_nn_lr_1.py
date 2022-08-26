@@ -22,6 +22,7 @@ import click
 import torch
 from torch import Tensor, nn
 from bigdl.ppml.fl.estimator import Estimator
+from bigdl.ppml.fl.psi.psi import PSI
 
 
 class LocalModel(nn.Module):
@@ -50,16 +51,12 @@ class ServerModel(nn.Module):
 @click.command()
 @click.option('--load_model', default=False)
 def run_client(load_model):
-    # fl_server = FLServer(2)
-    # fl_server.build()
-    # fl_server.start()
-    df_train = pd.read_csv('.data/diabetes-vfl-1.csv')    
+    df_train = pd.read_csv('./data/diabetes-vfl-1.csv')    
     
-    # this should wait for the merge of 2 FLServer (Py4J Java gRPC and Python gRPC)
-    # df_train['ID'] = df_train['ID'].astype(str)
-    # psi = PSI()
-    # intersection = psi.get_intersection(list(df_train['ID']))
-    # df_train = df_train[df_train['ID'].isin(intersection)]
+    df_train['ID'] = df_train['ID'].astype(str)
+    psi = PSI()
+    intersection = psi.get_intersection(list(df_train['ID']))
+    df_train = df_train[df_train['ID'].isin(intersection)]
 
     df_x = df_train.drop('Outcome', 1)
     df_y = df_train['Outcome']

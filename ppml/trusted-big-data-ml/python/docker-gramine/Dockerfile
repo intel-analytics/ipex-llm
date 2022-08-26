@@ -232,7 +232,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y libsm6 make build-essential && \
     apt-get install -y autoconf gawk bison libcurl4-openssl-dev python3-protobuf libprotobuf-c-dev protobuf-c-compiler && \
     apt-get install -y netcat net-tools && \
-    zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar /tracker.py && \
+    zip -u ${BIGDL_HOME}/jars/xgboost4j_2.12-1.1.2.jar /tracker.py && \
     patch /usr/local/lib/python3.7/dist-packages/dill/_dill.py /_dill.py.patch && \
     patch /usr/lib/python3.7/uuid.py /python-uuid.patch && \
     patch /usr/local/lib/python3.7/dist-packages/psutil/_pslinux.py /python-pslinux.patch && \

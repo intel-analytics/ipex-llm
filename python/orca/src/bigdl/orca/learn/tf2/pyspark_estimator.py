@@ -28,11 +28,12 @@ import tensorflow as tf
 
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, \
-    get_remote_file_to_local, is_local_path, get_remote_files_with_prefix_to_local, \
-    append_suffix, put_local_file_to_remote, put_local_files_with_prefix_to_remote
-
+    is_local_path, append_suffix
 from bigdl.dllib.utils.utils import get_node_ip
-from bigdl.orca.data.file import is_file, exists
+
+from bigdl.orca.data.file import is_file, exists, get_remote_file_to_local, \
+    get_remote_files_with_prefix_to_local, put_local_file_to_remote, \
+    put_local_files_with_prefix_to_remote
 from bigdl.orca.learn.tf2.spark_runner import SparkRunner
 from bigdl.orca.learn.utils import find_free_port, find_ip_and_free_port
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
@@ -217,8 +218,7 @@ class SparkTFEstimator():
             try:
                 temp_dir = tempfile.mkdtemp()
                 get_remote_file_to_local(os.path.join(self.model_dir, "state.pkl"),
-                                         os.path.join(temp_dir, "state.pkl"),
-                                         over_write=True)
+                                         os.path.join(temp_dir, "state.pkl"))
                 import pickle
                 with open(os.path.join(temp_dir, "state.pkl"), 'rb') as f:
                     state = pickle.load(f)
@@ -492,7 +492,7 @@ class SparkTFEstimator():
         if exists(self._model_saved_path):
             model = load_model(self._model_saved_path)
         else:
-            model = self.model_creator(self.config)
+            model = self.get_model()
         # save model
         save_model(model, filepath, overwrite=overwrite, include_optimizer=include_optimizer,
                    save_format=save_format, signatures=signatures, options=options)
