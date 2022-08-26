@@ -1,0 +1,56 @@
+name: PR Validation
+
+on:
+  push:
+    # paths:
+    #   - 'scala/friesian/**'
+    #   - '.github/workflows/nb-ut-scala-friesian.yml'
+  pull_request:
+    # branches: [ main ]
+    # paths:
+    #   - 'scala/friesian/**'
+    #   - '.github/workflows/nb-ut-scala-friesian.yml'
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: print github.event.path
+        run: |
+          echo ${{ github.event.path }}
+      # - name: do something when Path1 directory has a commit
+      #   if: github.event.path == '**/**'
+      #   run: <do something>
+      # - name: do something when Path2 directory has a commit
+      #   if: github.event.path == 'Path2/**'
+      #   run: <do something else>
+  
+  # Friesian-Scala-UT:
+  #   if: ${{ github.event.schedule || github.event.inputs.artifact == 'Friesian-Scala-UT' || github.event.inputs.artifact == 'all' }} 
+  #   runs-on: [ self-hosted, ubuntu-20.04-lts, CLX, AVX512, Ettenmoors ]
+
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: dorny/paths-filter@v2
+  #       id: filter
+  #       with:
+  #         filters: |
+  #           path1:
+  #             - 'scala/friesian/**'
+  #           path2:
+  #             - '.github/workflows/nb-ut-scala-friesian.yml'
+  #     # run if 'path1' or 'path2' files were changed
+  #     - name: both paths tests
+  #       if: steps.filter.outputs.path1 == 'true' || steps.filter.outputs.path2 == 'true'
+  #       run: ...
+  #     - name: Set up JDK8
+  #       uses: ./.github/actions/jdk-setup-action
+  #     - name: Set up maven
+  #       uses: ./.github/actions/maven-setup-action
+  #     - name: Run test
+  #       uses: ./.github/actions/friesian-scala-ut-action
