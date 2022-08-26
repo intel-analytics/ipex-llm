@@ -30,9 +30,6 @@ sys.path.insert(0, os.path.abspath("../../../python/orca/src/"))
 sys.path.insert(0, os.path.abspath("../../../python/serving/src/"))
 sys.path.insert(0, os.path.abspath("../../../python/nano/src/"))
 
-# path to referred py files for Nano How-to Guides
-sys.path.insert(0, os.path.abspath("../../../python/nano/tutorial"))
-
 # -- Project information -----------------------------------------------------
 import sphinx_rtd_theme
 html_theme = "sphinx_rtd_theme"
