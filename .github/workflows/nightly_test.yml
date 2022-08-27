@@ -19,6 +19,7 @@ on:
         - Dllib-Scala-UT
         - Friesian-Scala-UT
         - PPML-Scala-UT
+        - Orca-Ray-Ctx-Example
 
 permissions:
   contents: read
@@ -137,18 +138,16 @@ jobs:
         uses: ./.github/actions/maven-setup-action
       - name: Run test
         uses: ./.github/actions/ppml-scala-ut-action
-      
 
+  Orca-Ray-Ctx-Example:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Ray-Ctx-Example' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, Gondolin-resources, ubuntu-20.04-lts]
 
-
-
-
-
-
-
-
-
-
-
-
-
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Run test
+      uses: ./.github/actions/orca-ray-ctx-example-action
