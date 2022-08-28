@@ -455,7 +455,7 @@ def start_rabit_tracker(args):
 
 def main():
     """Main function if tracker is executed in standalone mode."""
-    host_ip = os.environ['RABIT_TRACKER_IP']
+    host_ip = os.environ.get("RABIT_TRACKER_IP")
     if host_ip == None:
         sys.stdout.write("###PYTHONWARN### RABIT_TRACKER_IP not set in env")
 
