@@ -9,7 +9,7 @@ Protecting privacy and confidentiality is critical for large-scale data analysis
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 0. Preparation your environment](#step-0-preparation-your-environment): detailed steps in [Prepare Environment](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/prepare_environment.md) \
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 1. Encrypt and Upload Data](#step-1-encrypt-and-upload-data) \
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 2. Build Big Data & AI applications](#step-2-build-big-data--ai-applications) \
-&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 3. (Optional) Attestation ](#step-3-optional-attestation) \
+&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 3. Attestation ](#step-3-attestation) \
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 4. Submit Job](#step-4-submit-job): 4 deploy modes and 2 options to submit job  \
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 5. Decrypt and Read Result](#step-5-decrypt-and-read-result) \
 &ensp;&ensp;[3.3 More BigDL PPML Examples](#33-more-bigdl-ppml-examples) \
@@ -176,7 +176,7 @@ you can use [generate_people_csv.py](https://github.com/analytics-zoo/ppml-e2e-e
 #### Step 2. Build Big Data & AI applications
 To build your own Big Data & AI applications, refer to [develop your own Big Data & AI applications with BigDL PPML](#4-develop-your-own-big-data--ai-applications-with-bigdl-ppml). The code of SimpleQuery is in [here](https://github.com/intel-analytics/BigDL/blob/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/examples/SimpleQuerySparkExample.scala), it is already built into bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar, and the jar is put into PPML image.
 
-#### Step 3. (Optional) Attestation 
+#### Step 3. Attestation 
 
 To enable attestation, you should have a running KMS in your environment. Configure your kms app_id and app_key in your kubernetes, and then configure KMS settings in `spark-driver-template.yaml` and `spark-executor-template.yaml` in the container.
 ``` bash
@@ -208,7 +208,7 @@ spec:
             key: app_key
 ...
 ```
-You should get `Attestation Success!` after you submit spark task.
+You should get `Attestation Success!` after you submit spark task and pass attestation.
 
 #### Step 4. Submit Job
 When the Big Data & AI application and its input data is prepared, you are ready to submit BigDL PPML jobs. You need to choose the deploy mode and the way to submit job first.
