@@ -533,7 +533,7 @@ def init_nncontext(conf=None, cluster_mode="spark-submit", spark_log_level="WARN
             num_nodes = conf.get("spark.executor.instances")
         spark_args.update(conf.getAll())
     if cluster_mode == "spark-submit":
-        sc = init_internal_nncontext(conf, spark_log_level, redirect_spark_log)
+        sc = init_internal_nncontext(conf, spark_log_level, redirect_spark_log, **kwargs)
     elif cluster_mode == "local":
         if conf:
             os.environ["SPARK_DRIVER_MEMORY"] = conf.get("spark.driver.memory")
@@ -619,7 +619,7 @@ def init_nncontext(conf=None, cluster_mode="spark-submit", spark_log_level="WARN
     return sc
 
 
-def init_internal_nncontext(conf=None, spark_log_level="WARN", redirect_spark_log=True):
+def init_internal_nncontext(conf=None, spark_log_level="WARN", redirect_spark_log=True, **kwargs):
     """
     Creates or gets a SparkContext with optimized configurations for BigDL performance.
     This method will also initialize the BigDL engine.
@@ -639,11 +639,10 @@ def init_internal_nncontext(conf=None, spark_log_level="WARN", redirect_spark_lo
     :return: An instance of SparkContext.
     """
     has_activate_sc = SparkContext._active_spark_context is not None
-
     if isinstance(conf, six.string_types):
-        sc = getOrCreateSparkContext(conf=None, appName=conf)
+        sc = getOrCreateSparkContext(conf=None, appName=conf, **kwargs)
     else:
-        sc = getOrCreateSparkContext(conf=conf)
+        sc = getOrCreateSparkContext(conf=conf, **kwargs)
     sc.setLogLevel(spark_log_level)
 
     if ZooContext.log_output:
@@ -669,7 +668,7 @@ def init_internal_nncontext(conf=None, spark_log_level="WARN", redirect_spark_lo
     return sc
 
 
-def getOrCreateSparkContext(conf=None, appName=None):
+def getOrCreateSparkContext(conf=None, appName=None, **kwargs):
     """
     Get the current active SparkContext or create a new SparkContext.
     :param conf: An instance of SparkConf. If not specified, a new SparkConf with
@@ -680,7 +679,7 @@ def getOrCreateSparkContext(conf=None, appName=None):
     """
     with SparkContext._lock:
         if SparkContext._active_spark_context is None:
-            spark_conf = init_spark_conf() if conf is None else conf
+            spark_conf = init_spark_conf(**kwargs) if conf is None else conf
             if appName:
                 spark_conf.setAppName(appName)
             return SparkContext.getOrCreate(spark_conf)
@@ -743,11 +742,12 @@ def init_env(conf):
     os.environ["KMP_BLOCKTIME"] = kmp_blocktime
 
 
-def init_spark_conf(conf=None):
+def init_spark_conf(conf=None, **kwargs):
     spark_conf = SparkConf()
     if conf:
         spark_conf.setAll(conf.items())
-    init_env(spark_conf)
+    if "is_orca" is not in kwargs or kwargs["is_orca"] is False:
+        init_env(spark_conf)
     zoo_conf = get_analytics_zoo_conf()
     # Set bigDL and TF conf
     if conf and "spark.driver.extraJavaOptions" in conf:
