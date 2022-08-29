@@ -78,7 +78,6 @@ class TestTrainer(TestCase):
             input = TensorDataset(torch.rand(1, 3, 32, 32))
             train_loader = DataLoader(input)
             y_hat = trainer.predict(pl_model, train_loader)
-            assert y_hat[0].dtype is torch.bfloat16
 
 
 if __name__ == '__main__':
