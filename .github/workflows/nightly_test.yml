@@ -145,7 +145,7 @@ jobs:
         uses: ./.github/actions/ppml-scala-ut-action
       
   Orca-Ray-Ctx:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Ray-Ctx' || github.event.inputs.artifact == 'all' }} 
+    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Ray-Ctx' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Gondolin-resources, ubuntu-20.04-lts]
 
     steps:
