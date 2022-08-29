@@ -501,40 +501,6 @@ run `docker exec -it spark-local-k8s-client bash` to entry the container.
 
 ### 1.4 Init the client and run Spark applications on k8s (1.4 can be skipped if you are using 1.5 to submit jobs)
 
-#### 1.4.0 (Optional) Enable attestation
-
-To enable attestation, you should have a running KMS in your environment. Configure your kms app_id and app_key in your kubernetes, and then configure KMS settings in `spark-driver-template.yaml` and `spark-executor-template.yaml` in the container.
-``` bash
-kubectl create secret generic kms-secret --from-literal=app_id=your-kms-app-id --from-literal=app_key=your-kms-app-key
-```
-Configure `spark-driver-template.yaml` for example. (`spark-executor-template.yaml` is similar)
-``` yaml
-apiVersion: v1
-kind: Pod
-spec:
-  containers:
-  - name: spark-driver
-    securityContext:
-      privileged: true
-    env:
-      - name: ATTESTATION
-        value: true
-      - name: ATTESTATION_URL
-        value: your_attestation_url
-      - name: ATTESTATION_ID
-        valueFrom:
-          secretKeyRef:
-            name: kms-secret
-            key: app_id
-      - name: ATTESTATION_KEY
-        valueFrom:
-          secretKeyRef:
-            name: kms-secret
-            key: app_key
-...
-```
-You should get `Attestation Success!` after you submit spark task.
-
 #### 1.4.1 Configure `spark-executor-template.yaml` in the container
 
 We assume you have a working Network File System (NFS) configured for your Kubernetes cluster. Configure the `nfsvolumeclaim` on the last line to the name of the Persistent Volume Claim (PVC) of your NFS.

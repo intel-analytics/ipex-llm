@@ -175,7 +175,41 @@ you can use [generate_people_csv.py](https://github.com/analytics-zoo/ppml-e2e-e
 #### Step 2. Build Big Data & AI applications
 To build your own Big Data & AI applications, refer to [develop your own Big Data & AI applications with BigDL PPML](#4-develop-your-own-big-data--ai-applications-with-bigdl-ppml). The code of SimpleQuery is in [here](https://github.com/intel-analytics/BigDL/blob/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/examples/SimpleQuerySparkExample.scala), it is already built into bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar, and the jar is put into PPML image.
 
-#### Step 3. Submit Job
+#### Step 3. (Optional) Attestation 
+
+To enable attestation, you should have a running KMS in your environment. Configure your kms app_id and app_key in your kubernetes, and then configure KMS settings in `spark-driver-template.yaml` and `spark-executor-template.yaml` in the container.
+``` bash
+kubectl create secret generic kms-secret --from-literal=app_id=your-kms-app-id --from-literal=app_key=your-kms-app-key
+```
+Configure `spark-driver-template.yaml` for example. (`spark-executor-template.yaml` is similar)
+``` yaml
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: spark-driver
+    securityContext:
+      privileged: true
+    env:
+      - name: ATTESTATION
+        value: true
+      - name: ATTESTATION_URL
+        value: your_attestation_url
+      - name: ATTESTATION_ID
+        valueFrom:
+          secretKeyRef:
+            name: kms-secret
+            key: app_id
+      - name: ATTESTATION_KEY
+        valueFrom:
+          secretKeyRef:
+            name: kms-secret
+            key: app_key
+...
+```
+You should get `Attestation Success!` after you submit spark task.
+
+#### Step 4. Submit Job
 When the Big Data & AI application and its input data is prepared, you are ready to submit BigDL PPML jobs. You need to choose the deploy mode and the way to submit job first.
 
 * **There are 4 modes to submit job**:
@@ -274,7 +308,7 @@ Here we use **k8s client mode** and **PPML CLI** to run SimpleQuery. Check other
   </details>
 <br />
 
-#### Step 4. Decrypt and Read Result
+#### Step 5. Decrypt and Read Result
 When the job is done, you can decrypt and read result of the job. More details in [Decrypt Job Result](./services/kms-utils/docker/README.md#3-enroll-generate-key-encrypt-and-decrypt).
 
   ```
