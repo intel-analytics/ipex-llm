@@ -74,17 +74,18 @@ if __name__ == '__main__':
 
     if args.cluster_mode == "local":
         sc = init_orca_context("local", cores=args.executor_cores,
-                               memory=args.executor_memory)
+                               memory=args.executor_memory, conf=spark_conf)
     elif args.cluster_mode == "standalone":
         sc = init_orca_context("standalone", master=args.master,
                                cores=args.executor_cores, num_nodes=args.num_executors,
                                memory=args.executor_memory,
-                               driver_cores=args.driver_cores, driver_memory=args.driver_memory)
+                               driver_cores=args.driver_cores, driver_memory=args.driver_memory,
+                               conf=spark_conf)
     elif args.cluster_mode == "yarn":
         sc = init_orca_context("yarn-client", cores=args.executor_cores,
                                num_nodes=args.num_executors, memory=args.executor_memory,
                                driver_cores=args.driver_cores, driver_memory=args.driver_memory,
-                               object_store_memory="10g")
+                               conf=spark_conf)
     elif args.cluster_mode == "spark-submit":
         sc = init_orca_context("spark-submit")
     else:
