@@ -30,7 +30,7 @@ jobs:
     outputs:
       friesian: ${{ steps.filter.outputs.friesian }}
       dllib: ${{ steps.filter.outputs.dllib }}
-      orca: ${{ steps.filter.outputs.dllib }}
+      orca: ${{ steps.filter.outputs.orca }}
     steps:
       - uses: actions/checkout@v3
       - uses: dorny/paths-filter@v2
@@ -76,6 +76,7 @@ jobs:
         uses: ./.github/actions/maven-setup-action
       - name: Run test
         uses: ./.github/actions/dllib-scala-ut-action
+
 
   Orca-Ray-Ctx-Example:
     needs: changes
