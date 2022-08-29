@@ -11,6 +11,7 @@ usage()
 	--cluster-name; AKS cluster name
 	--vm-size; AKS node vm size, should be DC-series, i.e. Standard_DC8ds_v3
 	--node-count; AKS cluster initial node count
+	--location; AKS's region
 	--help; help
 	" | column -t -s ";"
 }
