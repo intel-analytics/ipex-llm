@@ -24,10 +24,12 @@ from torch import nn
 
 from bigdl.nano.pytorch.lightning import LightningModule
 from bigdl.nano.pytorch import Trainer
+from bigdl.nano.common import check_avx512
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
 from test.pytorch.utils._train_torch_lightning import create_test_data_loader
-from test.pytorch.utils._train_ipex_callback import CheckIPEXCallback
+from test.pytorch.utils._train_ipex_callback import CheckIPEXCallback, CheckIPEXFusedStepCallback
 from test.pytorch.tests.test_lightning import ResNet18
 
 num_classes = 10
@@ -63,6 +65,26 @@ class TestPlugin(TestCase):
                           callbacks=[CheckIPEXCallback()])
         trainer.fit(pl_model, self.data_loader, self.test_data_loader)
         trainer.test(pl_model, self.test_data_loader)
+
+    def test_trainer_spawn_plugin_bf16(self):
+        # IPEX BF16 weight prepack needs the cpu support avx512bw, avx512vl and avx512dq
+        model = ResNet18(pretrained=False, include_top=False, freeze=True)
+        loss = nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+        pl_model = LightningModule(
+            model, loss, optimizer,
+            metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
+        )
+        trainer = Trainer(num_processes=2, distributed_backend="spawn",
+                          max_epochs=4, use_ipex=True, precision="bf16",
+                          callbacks=[CheckIPEXCallback(), CheckIPEXFusedStepCallback()])
+        trainer.fit(pl_model, self.data_loader, self.test_data_loader)
+        trainer.test(pl_model, self.test_data_loader)
+        if trainer.use_ipex and TORCH_VERSION_LESS_1_10:
+            import intel_pytorch_extension as ipex
+            # Diable IPEX AMP
+            # Avoid affecting other tests
+            ipex.enable_auto_mixed_precision(None)
 
 
 if __name__ == '__main__':

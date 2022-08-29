@@ -23,6 +23,8 @@ from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.dllib.utils import nest
 from bigdl.dllib.utils.log4Error import *
 
+import numpy as np
+
 from typing import TYPE_CHECKING
 from typing import (
     Callable,
@@ -450,6 +452,7 @@ class SparkXShards(XShards):
             invalidInputError(False,
                               "Currently only support dedup() on XShards of Pandas DataFrame")
 
+
     def split(self) -> List["SparkXShards"]:
         """
 
@@ -522,6 +525,9 @@ class SparkXShards(XShards):
         rdd = self.rdd.mapPartitions(f)
         column = self.rdd.mapPartitions(getSchema).first()
         df = rdd.toDF(list(column))
+        df.cache()
+        df.count()
+        self.uncache()
         return df
 
     def __len__(self) -> int:

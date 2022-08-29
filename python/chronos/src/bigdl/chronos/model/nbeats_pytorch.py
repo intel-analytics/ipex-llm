@@ -50,6 +50,7 @@ from torch.nn.functional import mse_loss, l1_loss, binary_cross_entropy, cross_e
 from torch.optim import Optimizer
 
 from .utils import PYTORCH_REGRESSION_LOSS_MAP
+from pytorch_lightning import seed_everything
 
 
 class NBeatsNet(nn.Module):
@@ -65,8 +66,10 @@ class NBeatsNet(nn.Module):
                  thetas_dim=(4, 8),
                  share_weights_in_stack=False,
                  hidden_layer_units=256,
-                 nb_harmonics=None):
+                 nb_harmonics=None,
+                 seed=None):
         super(NBeatsNet, self).__init__()
+        seed_everything(seed, workers=True)
         self.future_seq_len = future_seq_len
         self.past_seq_len = past_seq_len
         self.hidden_layer_units = hidden_layer_units

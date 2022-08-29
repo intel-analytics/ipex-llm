@@ -148,6 +148,84 @@ class TestChronosModelTCNForecaster(TestCase):
         train_loss = forecaster.trainer.callback_metrics['train/loss']
         assert train_loss > 10
 
+    def test_tcn_forecaster_multi_objective_tune(self):
+        import bigdl.nano.automl.hpo.space as space
+        train_data, val_data, _ = create_data(loader=False)
+        forecaster = TCNForecaster(past_seq_len=24,
+                                future_seq_len=5,
+                                input_feature_num=1,
+                                output_feature_num=1,
+                                kernel_size=4,
+                                num_channels=[16, 16],
+                                loss="mae",
+                                metrics=['mae', 'mse', 'mape'],
+                                lr=space.Real(0.001, 0.01, log=True))
+        forecaster.num_processes = 1
+        forecaster.tune(train_data, validation_data=val_data,
+                        n_trials=2, target_metric=['mse', 'latency'],
+                        direction=None,
+                        directions=["minimize", "minimize"])
+
+    @skip_onnxrt
+    def test_tcn_forecaster_multi_objective_tune_acceleration(self):
+        import bigdl.nano.automl.hpo.space as space
+        train_data, val_data, _ = create_data(loader=False)
+        forecaster = TCNForecaster(past_seq_len=24,
+                                future_seq_len=5,
+                                input_feature_num=1,
+                                output_feature_num=1,
+                                kernel_size=4,
+                                num_channels=[16, 16],
+                                loss="mae",
+                                metrics=['mae', 'mse', 'mape'],
+                                lr=space.Real(0.001, 0.01, log=True))
+        forecaster.num_processes = 1
+        forecaster.tune(train_data, validation_data=val_data,
+                        n_trials=2, target_metric=['mse', 'latency'], 
+                        directions=["minimize", "minimize"],
+                        acceleration=True, direction=None)
+
+    @skip_onnxrt
+    def test_tcn_forecaster_mo_tune_acceleration_fit_input(self):
+        import bigdl.nano.automl.hpo.space as space
+        train_data, val_data, _ = create_data(loader=False)
+        forecaster = TCNForecaster(past_seq_len=24,
+                                future_seq_len=5,
+                                input_feature_num=1,
+                                output_feature_num=1,
+                                kernel_size=4,
+                                num_channels=[16, 16],
+                                loss="mae",
+                                metrics=['mae', 'mse', 'mape'],
+                                lr=space.Real(0.001, 0.01, log=True))
+        forecaster.num_processes = 1
+        forecaster.tune(train_data, validation_data=val_data,
+                        n_trials=2, target_metric=['mse', 'latency'], 
+                        directions=["minimize", "minimize"],
+                        acceleration=True, direction=None)
+        with self.assertRaises(Exception):
+            forecaster.fit(train_data, epochs=2)
+
+    @skip_onnxrt
+    def test_tcn_forecaster_mo_tune_acceleration_fit(self):
+        import bigdl.nano.automl.hpo.space as space
+        train_data, val_data, _ = create_data(loader=False)
+        forecaster = TCNForecaster(past_seq_len=24,
+                                future_seq_len=5,
+                                input_feature_num=1,
+                                output_feature_num=1,
+                                kernel_size=4,
+                                num_channels=[16, 16],
+                                loss="mae",
+                                metrics=['mae', 'mse', 'mape'],
+                                lr=space.Real(0.001, 0.01, log=True))
+        forecaster.num_processes = 1
+        forecaster.tune(train_data, validation_data=val_data,
+                        n_trials=2, target_metric=['mse', 'latency'], 
+                        directions=["minimize", "minimize"],
+                        acceleration=True, direction=None)
+        forecaster.fit(train_data, epochs=2, use_trial_id=0)
+
     @skip_onnxrt
     def test_tcn_forecaster_onnx_methods(self):
         train_data, val_data, test_data = create_data()
@@ -544,7 +622,7 @@ class TestChronosModelTCNForecaster(TestCase):
                                    num_channels=[16, 16],
                                    loss="mae",
                                    lr=0.01)
-        train_loss = forecaster.fit(train_data, val_data, validation_mode='earlystop', epochs=50)
+        train_loss = forecaster.fit(train_data, val_data, validation_mode='earlystop', epochs=10)
 
     def test_tcn_forecaster_fit_earlystop_patience(self):
         train_data, val_data, test_data = create_data()
@@ -557,4 +635,37 @@ class TestChronosModelTCNForecaster(TestCase):
                                    loss="mae",
                                    lr=0.01)
         train_loss = forecaster.fit(train_data, val_data, validation_mode='earlystop',
-                                    earlystop_patience=6, epochs=50)
+                                    earlystop_patience=6, epochs=10)
+
+    def test_tcn_forecaster_fit_best_val(self):
+        train_data, val_data, _ = create_data()
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=4,
+                                   num_channels=[16, 16],
+                                   loss="mae",
+                                   lr=0.01)
+        val_loss = forecaster.fit(train_data, val_data, validation_mode='best_epoch', epochs=10)
+
+    def test_tcn_forecaster_tune_save_load(self):
+        import bigdl.nano.automl.hpo.space as space
+        train_data, val_data, test_data = create_data()
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=4,
+                                   num_channels=space.Categorical([16, 16], [4, 4]),
+                                   lr=0.01)
+        forecaster.tune(train_data, validation_data=val_data,
+                        n_trials=2, target_metric='mse', direction="minimize")
+        forecaster.fit(train_data, epochs=2)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            ckpt_name = os.path.join(tmp_dir_name, "ckpt")
+            test_pred_save = forecaster.predict(test_data[0])
+            forecaster.save(ckpt_name)
+            forecaster.load(ckpt_name)
+            test_pred_load = forecaster.predict(test_data[0])
+        np.testing.assert_almost_equal(test_pred_save, test_pred_load)

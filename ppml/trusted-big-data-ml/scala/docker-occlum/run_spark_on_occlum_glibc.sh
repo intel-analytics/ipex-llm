@@ -51,6 +51,15 @@ init_instance() {
     echo "${new_json}" > Occlum.json
     echo "SGX_MEM_SIZE ${SGX_MEM_SIZE}"
 
+    # enable tmp hostfs
+    # --conf spark.executorEnv.USING_TMP_HOSTFS=true \
+    if [ $USING_TMP_HOSTFS == "true" ]; then
+        echo "use tmp hostfs"
+        mkdir ./shuffle
+        edit_json="$(cat Occlum.json | jq '.mount+=[{"target": "/tmp","type": "hostfs","source": "./shuffle"}]')" && \
+        echo "${edit_json}" > Occlum.json
+    fi
+
     if [[ -z "$META_SPACE" ]]; then
         echo "META_SPACE not set, using default value 256m"
         META_SPACE=256m
@@ -95,6 +104,19 @@ init_instance() {
         else
            export ENABLE_SGX_DEBUG=false
            sed -i "s#https://localhost:8081/sgx/certification/v3/#${PCCS_URL}#g" /etc/sgx_default_qcnl.conf
+        fi
+    fi
+
+    # check occlum log level for docker
+    export ENABLE_SGX_DEBUG=false
+    export OCCLUM_LOG_LEVEL=off
+    if [[ -z "$SGX_LOG_LEVEL" ]]; then
+        echo "No SGX_LOG_LEVEL specified, set to off."
+    else
+        echo "Set SGX_LOG_LEVEL to $SGX_LOG_LEVEL"
+        if [[ $SGX_LOG_LEVEL == "debug" ]] || [[ $SGX_LOG_LEVEL == "trace" ]]; then
+            export ENABLE_SGX_DEBUG=true
+            export OCCLUM_LOG_LEVEL=$SGX_LOG_LEVEL
         fi
     fi
 
@@ -285,11 +307,11 @@ run_spark_tpch(){
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
                 -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
-                -Xmx78g -Xms78g \
+                -Xmx8g -Xms8g \
                 org.apache.spark.deploy.SparkSubmit \
                 --master 'local[4]' \
                 --conf spark.driver.port=54321 \
-                --conf spark.driver.memory=12g \
+                --conf spark.driver.memory=8g \
                 --conf spark.driver.blockManager.port=10026 \
                 --conf spark.blockManager.port=10025 \
                 --conf spark.scheduler.maxRegisteredResourcesWaitingTime=5000000 \

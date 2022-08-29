@@ -24,12 +24,10 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.input.PortableDataStream
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, DataFrameReader, DataFrameWriter, Row, SparkSession}
-
-import com.intel.analytics.bigdl.ppml.kms.{EHSMKeyManagementService, KMS_CONVENTION,
-KeyManagementService, SimpleKeyManagementService, AzureKeyManagementService}
+import com.intel.analytics.bigdl.ppml.kms.{AzureKeyManagementService, EHSMKeyManagementService, KMS_CONVENTION,
+KeyManagementService, SimpleKeyManagementService}
 import com.intel.analytics.bigdl.ppml.crypto.dataframe.{EncryptedDataFrameReader, EncryptedDataFrameWriter}
-
-import java.nio.file.Paths
+import org.apache.hadoop.fs.Path
 
 /**
  * PPMLContext who wraps a SparkSession and provides read functions to
@@ -50,7 +48,8 @@ class PPMLContext protected(kms: KeyManagementService, sparkSession: SparkSessio
    */
   def loadKeys(primaryKeyPath: String, dataKeyPath: String): this.type = {
     dataKeyPlainText = kms.retrieveDataKeyPlainText(
-      Paths.get(primaryKeyPath).toString, Paths.get(dataKeyPath).toString)
+      new Path(primaryKeyPath).toString, new Path(dataKeyPath).toString,
+      sparkSession.sparkContext.hadoopConfiguration)
     sparkSession.sparkContext.hadoopConfiguration.set("bigdl.kms.data.key", dataKeyPlainText)
     this
   }
@@ -200,7 +199,7 @@ object PPMLContext{
    */
   def initPPMLContext(sparkSession: SparkSession): PPMLContext = {
     val conf = sparkSession.sparkContext.getConf
-    val kmsType = conf.get("spark.bigdl.kms.type")
+    val kmsType = conf.get("spark.bigdl.kms.type", defaultValue = "SimpleKeyManagementService")
     val kms = kmsType match {
       case KMS_CONVENTION.MODE_EHSM_KMS =>
         val ip = conf.get("spark.bigdl.kms.ehs.ip")
@@ -209,9 +208,9 @@ object PPMLContext{
         val appKey = conf.get("spark.bigdl.kms.ehs.key")
         new EHSMKeyManagementService(ip, port, appId, appKey)
       case KMS_CONVENTION.MODE_SIMPLE_KMS =>
-        val id = conf.get("spark.bigdl.kms.simple.id")
+        val id = conf.get("spark.bigdl.kms.simple.id", defaultValue = "simpleAPPID")
         // println(id + "=-------------------")
-        val key = conf.get("spark.bigdl.kms.simple.key")
+        val key = conf.get("spark.bigdl.kms.simple.key", defaultValue = "simpleAPPKEY")
         // println(key + "=-------------------")
         SimpleKeyManagementService(id, key)
       case KMS_CONVENTION.MODE_AZURE_KMS =>

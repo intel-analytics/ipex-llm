@@ -418,7 +418,8 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        output_feature_num=1,
                                        loss="mae",
                                        lr=0.01)
-        val_loss = forecaster.fit(train_data, val_data, validation_mode='earlystop', epochs=50)
+        val_loss = forecaster.fit(train_data, val_data,
+                                  validation_mode='earlystop', epochs=10)
 
     def test_s2s_forecaster_fit_earlystop_patience(self):
         train_data, val_data, _ = create_data()
@@ -429,4 +430,30 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        loss="mae",
                                        lr=0.01)
         val_loss = forecaster.fit(train_data, val_data, validation_mode='earlystop',
-                                  earlystop_patience=6, epochs=50)
+                                  earlystop_patience=6, epochs=10)
+
+    def test_s2s_forecaster_fit_best_val(self):
+        train_data, val_data, _ = create_data()
+        forecaster = Seq2SeqForecaster(past_seq_len=24,
+                                       future_seq_len=5,
+                                       input_feature_num=1,
+                                       output_feature_num=1,
+                                       loss="mae",
+                                       lr=0.01)
+        val_loss = forecaster.fit(train_data, val_data,
+                                  validation_mode='best_epoch', epochs=10)
+
+    def test_s2s_forecaster_tune_fit(self):
+        train_data, val_data, _ = create_data()
+        import bigdl.nano.automl.hpo.space as space
+        forecaster = Seq2SeqForecaster(past_seq_len=24,
+                                        future_seq_len=5,
+                                        input_feature_num=1,
+                                        output_feature_num=1,
+                                        loss="mae",
+                                        lstm_hidden_dim=space.Categorical(32, 64, 128),
+                                        lr=space.Real(0.001, 0.1, log=True))
+        forecaster.tune(train_data, val_data, epochs=10,
+                        n_trials=3, target_metric="mse",
+                        direction="minimize")
+        forecaster.fit(train_data, epochs=10)

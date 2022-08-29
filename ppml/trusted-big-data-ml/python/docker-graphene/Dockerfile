@@ -8,9 +8,16 @@ ARG SPARK_JAR_REPO_URL=your_spark_jar_repo_url
 # stage.1 graphene
 FROM ubuntu:20.04 AS graphene
 
+ARG HTTP_PROXY_HOST
+ARG HTTP_PROXY_PORT
+ARG HTTPS_PROXY_HOST
+ARG HTTPS_PROXY_PORT
+
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     env DEBIAN_FRONTEND=noninteractive apt-get install -y autoconf bison build-essential coreutils gawk git libcurl4-openssl-dev libprotobuf-c-dev protobuf-c-compiler python3-protobuf wget
-RUN git clone https://github.com/analytics-zoo/graphene.git /graphene
+RUN git config --global http.proxy http://$HTTP_PROXY_HOST:$HTTP_PROXY_PORT && \
+    git config --global https.proxy https://$HTTPS_PROXY_HOST:$HTTPS_PROXY_PORT && \
+    git clone https://github.com/analytics-zoo/graphene.git /graphene
 RUN cd /graphene && \
     git fetch origin branch-0.7 && \
     git checkout branch-0.7
@@ -119,6 +126,8 @@ RUN cd /opt && \
     make install && \
     protoc --version && \
     cd /opt && \
+    git config --global http.proxy http://$HTTP_PROXY_HOST:$HTTP_PROXY_PORT && \
+    git config --global https.proxy https://$HTTPS_PROXY_HOST:$HTTPS_PROXY_PORT && \    
     git clone https://github.com/analytics-zoo/hadoop.git && \
     cd hadoop && \
     git checkout branch-3.2.0-ppml && \
@@ -225,7 +234,10 @@ RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils vim curl nano wget unzip git tree zip && \
     apt-get install -y libsm6 make build-essential && \
     apt-get install -y autoconf gawk bison libcurl4-openssl-dev python3-protobuf libprotobuf-c-dev protobuf-c-compiler && \
-    apt-get install -y netcat net-tools
+    apt-get install -y netcat net-tools && \
+    mkdir -p /ppml/trusted-big-data-ml/fl
+
+COPY --from=bigdl /bigdl-${BIGDL_VERSION}/python/start-fl-server.py /ppml/trusted-big-data-ml/fl
 
 #python
 RUN apt install software-properties-common -y && \
@@ -250,7 +262,11 @@ RUN apt install software-properties-common -y && \
     pip install --no-cache-dir psutil && \
     pip install --no-cache-dir dill==0.3.4 && \
     python3 -m pip install toml==0.10.2 click jinja2 && \
-    python3 -m ipykernel.kernelspec
+    python3 -m ipykernel.kernelspec && \
+    rm -rf /usr/lib/python3/dist-packages/protobuf-3.6.1.egg-info && \
+    rm -rf /usr/lib/python3/dist-packages/google/protobuf && \
+    ln -s /usr/lib/x86_64-linux-gnu/libtinfo.so.6 /usr/lib/x86_64-linux-gnu/libtinfo.so.5 && \
+    pip install --no-cache-dir pyyaml
 
 ADD ./bash.manifest.template /ppml/trusted-big-data-ml/bash.manifest.template
 ADD ./Makefile /ppml/trusted-big-data-ml/Makefile
@@ -269,7 +285,7 @@ ADD ./_dill.py.patch ./_dill.py.patch
 ADD ./python-uuid.patch ./python-uuid.patch
 ADD ./python-pslinux.patch ./python-pslinux.patch
 
-RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ./tracker.py && \
+RUN zip -u ${BIGDL_HOME}/jars/xgboost4j_2.12-1.1.2.jar ./tracker.py && \
     patch /usr/local/lib/python3.7/dist-packages/dill/_dill.py ./_dill.py.patch && \
     patch /usr/lib/python3.7/uuid.py ./python-uuid.patch && \
     patch /usr/local/lib/python3.7/dist-packages/psutil/_pslinux.py ./python-pslinux.patch && \
@@ -314,3 +330,4 @@ ADD azure /ppml/trusted-big-data-ml/azure
 WORKDIR /ppml/trusted-big-data-ml
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
+

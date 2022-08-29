@@ -31,16 +31,18 @@ import copy
 import logging
 import json
 import os
-
-import numpy as np
+import socket
+import shutil
+import tempfile
+import subprocess
 
 import ray
+import numpy as np
 from contextlib import closing
-import logging
-import socket
 
 from bigdl.dllib.utils import log4Error
 from bigdl.orca.data.utils import ray_partitions_get_data_label, ray_partitions_get_tf_dataset
+from bigdl.orca.data.file import is_file, get_remote_file_to_local, get_remote_dir_to_local
 from bigdl.dllib.utils.log4Error import *
 
 logger = logging.getLogger(__name__)
@@ -494,6 +496,32 @@ class TFRunner:
                                         "Failed to set model weights, please provide real tensor "
                                         "data (of the correct dtype) as sample_input in the load "
                                         "method.")
+
+    def load_model(self, filepath, custom_objects, compile, options):
+        """Load the model from provided local filepath."""
+        import tensorflow as tf
+        self.model = tf.keras.models.load_model(filepath, custom_objects, compile, options)
+
+    def load_remote_model(self, filepath, custom_objects, compile, options):
+        """Load the model from provided remote filepath."""
+        import tensorflow as tf
+        file_name = os.path.basename(filepath)
+        temp_path = os.path.join(tempfile.mkdtemp(), file_name)
+        if is_file(filepath):
+            # h5 format
+            get_remote_file_to_local(filepath, temp_path)
+        else:
+            # savemodel format
+            if os.path.exists(temp_path):
+                os.makedirs(temp_path)
+            get_remote_dir_to_local(filepath, temp_path)
+        try:
+            self.model = tf.keras.models.load_model(temp_path, custom_objects, compile, options)
+        finally:
+            if os.path.isdir(temp_path):
+                shutil.rmtree(temp_path)
+            else:
+                os.remove(temp_path)
 
     def shutdown(self):
         """Attempts to shut down the worker."""
