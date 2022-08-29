@@ -14,7 +14,9 @@ pccsIP: your_pccs_ip_to_use_as
 dkeyserverIP: your_dkeyserver_ip_to_use_as
 kmsIP: your_kms_ip_to_use_as
 # Below are used by pccs
-apiKey: your_intel_pcs_server_subscription_key_obtained_through_web_registeration
+apiKey: your_intel_pcs_server_subscription_key_obtained_through_web_registeration # Refer to README for obtaining pcs api key
+# The below three service IPs are different IP addresses that unused in your subnetwork
+# Please do not use the same IP as nodes
 httpsProxyUrl: your_usable_https_proxy_url
 countryName: your_country_name
 cityName: your_city_name
