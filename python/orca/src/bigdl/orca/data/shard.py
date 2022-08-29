@@ -454,19 +454,28 @@ class SparkXShards(XShards):
         if 'schema' in self.type:
             return self.type['schema']
         else:
-            if self._get_class_name() == 'pandas.core.frame.DataFrame':
-                import pandas as pd
-                columns, dtypes = self.rdd.map(lambda x: (x.columns, x.dtypes)).first()
-                self.type['schema'] = {'columns': columns, 'dtypes': dtypes}
-                return self.type['schema']
-            return None
+            class_name, schema = self._get_schema_class_name()
+            self.type['class_name'] = class_name
+            self.type['schema'] = schema
+            return self.type['schema']
 
     def _get_class_name(self):
         if 'class_name' in self.type:
             return self.type['class_name']
         else:
-            self.type['class_name'] = self._for_each(get_class_name).first()
+            class_name, schema = self._get_schema_class_name()
+            self.type['class_name'] = class_name
+            self.type['schema'] = schema
             return self.type['class_name']
+
+    def _get_schema_class_name(self):
+        def func(x):
+            class_name = get_class_name(x)
+            schema = None
+            if class_name == 'pandas.core.frame.DataFrame':
+                schema = {'columns': x.columns, 'dtypes': x.dtypes}
+            return (class_name, schema)
+        return self.rdd.map(lambda x: func(x)).first()
 
 
 class SharedValue(object):
