@@ -97,6 +97,7 @@ def check_type_and_convert(data, allow_tuple=True, allow_list=True):
     :param allow_list: boolean, if the model accepts a list as input. Default: True
     :return:
     """
+
     def check_and_convert(convert_data):
         if isinstance(convert_data, np.ndarray):
             return [convert_data]
@@ -130,6 +131,7 @@ def get_spec(allow_tuple=True, allow_list=True):
     :param allow_list: boolean, if the model accepts a list as input. Default: True
     :return:
     """
+
     def _get_spec(data):
         data = check_type_and_convert(data, allow_tuple, allow_list)
         feature_spec = [(feat.dtype, feat.shape[1:])
@@ -140,6 +142,7 @@ def get_spec(allow_tuple=True, allow_list=True):
         else:
             label_spec = None
         return feature_spec, label_spec
+
     return _get_spec
 
 
@@ -150,6 +153,7 @@ def flatten_xy(allow_tuple=True, allow_list=True):
     :param allow_list: boolean, if the model accepts a list as input. Default: True
     :return:
     """
+
     def _flatten_xy(data):
         data = check_type_and_convert(data, allow_tuple, allow_list)
         features = data["x"]
@@ -165,6 +169,7 @@ def flatten_xy(allow_tuple=True, allow_list=True):
                 yield (fs, ls)
             else:
                 yield (fs,)
+
     return _flatten_xy
 
 
@@ -417,6 +422,7 @@ def spark_df_to_pd_sparkxshards(df: "DataFrame", squeeze: bool=False, index_col:
     pd_rdd = spark_df_to_rdd_pd(df, squeeze, index_col, dtype, index_map)
     from bigdl.orca.data import SparkXShards
     spark_xshards = SparkXShards(pd_rdd)
+    df.unpersist()
     return spark_xshards
 
 
@@ -426,7 +432,6 @@ def to_pandas(columns: List[str], squeeze: bool=False, index_col: Optional[str]=
                                     Dict[str, str]]]=None,
               index_map: Optional[Dict[int, str]]=None,
               batch_size: None=None) -> Callable:
-
     def postprocess(pd_df):
         if dtype is not None:
             if isinstance(dtype, dict):
@@ -493,30 +498,3 @@ def check_col_exists(df, columns):
     if len(col_not_exist) > 0:
         invalidInputError(False,
                           str(col_not_exist) + " do not exist in this Table")
-
-
-def shards_pd_df_to_shards_dic(data, featureCols, labelCol):
-    """
-    This api is used to process SparkXShards of pandas dataframe to SparkXShards of
-    dictionary, x is feature, y is label
-    :param data: SparkXShards of pandas dataframe.
-    :param featureCols: a list of featurecols.
-    :param labelCol: single label col.
-    :return: SparkXShards of dictionary
-
-    eg:
-    shards: SparkXShards of pandas dataframe with 2 cols ['f1', 'lable'],
-    transform_shards = shards_pd_df_to_shards_dic(shards, featureCols=[''], labelCol='')
-
-    transform_shards will be SparkXShards of dictionary. x will be a stacked numpy array
-    (stack feature columns), y will be a numpy array
-    """
-    def to_shard_dict(df):
-        featureLists = [df[feature_col].to_numpy() for feature_col in featureCols]
-        result = {
-            "x": np.stack(featureLists, axis=1),
-            "y": df[labelCol].to_numpy().reshape((-1, 1))}
-        return result
-
-    data = data.transform_shard(to_shard_dict)
-    return data

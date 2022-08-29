@@ -67,7 +67,7 @@ class PSI() extends FLClientClosable {
   def getIntersection(ids: util.List[String],
                       maxTry: Int = 100,
                       retry: Long = 3000): util.List[String] = {
-    val salt = getSalt()
+    val salt = if (FLContext.getPsiSalt() == null) getSalt() else FLContext.getPsiSalt()
     uploadSet(ids, salt)
     downloadIntersection(maxTry, retry)
   }

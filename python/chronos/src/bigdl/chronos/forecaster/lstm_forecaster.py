@@ -101,7 +101,8 @@ class LSTMForecaster(BasePytorchForecaster):
         self.model_config = {
             "hidden_dim": hidden_dim,
             "layer_num": layer_num,
-            "dropout": dropout
+            "dropout": dropout,
+            "seed": seed
         }
         self.loss_config = {
             "loss": loss
@@ -142,7 +143,7 @@ class LSTMForecaster(BasePytorchForecaster):
         self.onnx_available = True
         self.quantize_available = True
         self.checkpoint_callback = True
-        self.use_hpo = False
+        self.use_hpo = True
 
         super().__init__()
 

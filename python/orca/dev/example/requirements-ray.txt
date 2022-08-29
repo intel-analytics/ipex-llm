@@ -14,8 +14,15 @@ gym[atari]==0.17.1
 atari-py==0.2.5
 tabulate==0.8.7
 tensorflow==1.15.0
+tensorflow-gan==2.0.0
+tensorflow-probability==0.7.0
+tensorflow-datasets==3.2.0
 mxnet==1.6.0
 xgboost_ray
 argparse
 Pillow
 pyarrow==4.0.1
+h5py==2.10.0
+fsspec==2021.9.0
+scikit-optimize==0.8.1
+pandas==1.1.5

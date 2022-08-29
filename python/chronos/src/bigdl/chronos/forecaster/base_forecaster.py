@@ -24,11 +24,8 @@ import warnings
 warnings.filterwarnings('ignore', category=UserWarning, module='pytorch_lightning')
 warnings.filterwarnings('ignore', category=UserWarning, module='torch')
 import torch
-import logging
 
-from functools import partial
 from torch.utils.data import TensorDataset, DataLoader
-from bigdl.nano.automl.hpo.space import Space
 from .utils_hpo import GenericLightningModule, _format_metric_str, _config_has_search_space
 from bigdl.nano.utils.log4Error import invalidOperationError, invalidInputError
 from bigdl.chronos.data.tsdataset import TSDataset
@@ -41,6 +38,8 @@ class BasePytorchForecaster(Forecaster):
     def __init__(self, **kwargs):
         self.internal = None
         if self.distributed:
+            # don't support use_hpo when distributed
+            self.use_hpo = False
             from bigdl.orca.learn.pytorch.estimator import Estimator
             from bigdl.orca.learn.metrics import MSE, MAE
             ORCA_METRICS = {"mse": MSE, "mae": MAE}
@@ -77,8 +76,6 @@ class BasePytorchForecaster(Forecaster):
                                          "Enable HPO or remove search spaces in arguments to use.")
 
             if not has_space:
-                if self.use_hpo:
-                    warnings.warn("HPO is enabled but no spaces is specified, so disable HPO.")
                 self.use_hpo = False
                 model = self.model_creator({**self.model_config, **self.data_config})
                 loss = self.loss_creator(self.loss_config)
@@ -120,10 +117,13 @@ class BasePytorchForecaster(Forecaster):
              validation_data,
              target_metric,
              direction,
+             directions=None,
              n_trials=2,
              n_parallels=1,
              epochs=1,
              batch_size=32,
+             acceleration=False,
+             input_sample=None,
              **kwargs):
         """
         Search the hyper parameter.
@@ -141,6 +141,11 @@ class BasePytorchForecaster(Forecaster):
                For more information, refer to Nano AutoML user guide.
         :param epochs: the number of epochs to run in each trial fit, defaults to 1
         :param batch_size: number of batch size for each trial fit, defaults to 32
+        :param acceleration: Whether to automatically consider the model after
+            inference acceleration in the search process. It will only take
+            effect if target_metric contains "latency". Default value is False.
+        :param input_sample: A set of inputs for trace, defaults to None if you have
+            trace before or model is a LightningModule with any dataloader attached.
         """
         invalidInputError(not self.distributed,
                           "HPO is not supported in distributed mode."
@@ -164,6 +169,9 @@ class BasePytorchForecaster(Forecaster):
         else:
             invalidInputError(False, "HPO only supports numpy train input data.")
 
+        if input_sample is None:
+            input_sample = torch.from_numpy(data[0][:1, :, :])
+
         # prepare target metric
         if validation_data is not None:
             formated_target_metric = _format_metric_str('val', target_metric)
@@ -174,34 +182,37 @@ class BasePytorchForecaster(Forecaster):
         # build auto model
         self.tune_internal = self._build_automodel(data, validation_data, batch_size, epochs)
 
-        from pytorch_lightning.callbacks import Callback
-
-        # reset current epoch = 0 after each run
-        class ResetCallback(Callback):
-            def on_train_end(self, trainer, pl_module):
-                trainer.fit_loop.current_epoch = 0
-
         # shall we use the same trainier
         self.tune_trainer = Trainer(logger=False, max_epochs=epochs,
-                                    checkpoint_callback=self.checkpoint_callback,
+                                    enable_checkpointing=self.checkpoint_callback,
                                     num_processes=self.num_processes, use_ipex=self.use_ipex,
-                                    use_hpo=True,
-                                    callbacks=[ResetCallback()] if self.num_processes == 1
-                                    else None)
+                                    use_hpo=True)
+
         # run hyper parameter search
         self.internal = self.tune_trainer.search(
             self.tune_internal,
             n_trials=n_trials,
             target_metric=formated_target_metric,
             direction=direction,
+            directions=directions,
             n_parallels=n_parallels,
+            acceleration=acceleration,
+            input_sample=input_sample,
             **kwargs)
 
-        # reset train and validation datasets
-        self.tune_trainer.reset_train_val_dataloaders(self.internal)
+        if self.tune_trainer.hposearcher.objective.mo_hpo:
+            return self.internal
+        else:
+            # reset train and validation datasets
+            self.tune_trainer.reset_train_val_dataloaders(self.internal)
+
+    def search_summary(self):
+        # add tuning check
+        invalidOperationError(self.use_hpo, "No search summary when HPO is disabled.")
+        return self.trainer.search_summary()
 
     def fit(self, data, validation_data=None, epochs=1, batch_size=32, validation_mode='output',
-            earlystop_patience=1):
+            earlystop_patience=1, use_trial_id=None):
         # TODO: give an option to close validation during fit to save time.
         """
         Fit(Train) the forecaster.
@@ -263,10 +274,16 @@ class BasePytorchForecaster(Forecaster):
                |
                | 2. earlystop:
                | Monitor the val_loss and stop training when it stops improving.
+               |
+               | 3. best_epoch:
+               | Monitor the val_loss. And load the checkpoint of the epoch with the smallest
+               | val_loss after the training.
 
         :param earlystop_patience: Number of checks with no improvement after which training will
                be stopped. It takes effect when 'validation_mode' is 'earlystop'. Under the default
                configuration, one check happens after every training epoch.
+        :param use_trail_id: choose a internal according to trial_id, which is used only
+               in multi-objective search.
         :return: Validation loss if 'validation_data' is not None.
         """
         # input transform
@@ -323,23 +340,30 @@ class BasePytorchForecaster(Forecaster):
             # numpy data shape checking
             if isinstance(data, tuple):
                 check_data(data[0], data[1], self.data_config)
-            else:
-                warnings.warn("Data shape checking is not supported by dataloader input.")
 
             # data transformation
             if isinstance(data, tuple):
                 data = np_to_dataloader(data, batch_size, self.num_processes)
             from pytorch_lightning.loggers import CSVLogger
             logger = False if validation_data is None else CSVLogger(".",
+                                                                     flush_logs_every_n_steps=10,
                                                                      name="forecaster_tmp_log")
             from pytorch_lightning.callbacks import EarlyStopping
             early_stopping = EarlyStopping('val/loss', patience=earlystop_patience)
-            callbacks = [early_stopping] if validation_mode == 'earlystop' else None
+            from pytorch_lightning.callbacks import ModelCheckpoint
+            checkpoint_callback = ModelCheckpoint(monitor="val/loss", dirpath='validation',
+                                                  filename='best', save_on_train_epoch_end=True)
+            if validation_mode == 'earlystop':
+                callbacks = [early_stopping]
+            elif validation_mode == 'best_epoch':
+                callbacks = [checkpoint_callback]
+            else:
+                callbacks = None
             # Trainer init
             self.trainer = Trainer(logger=logger, max_epochs=epochs, callbacks=callbacks,
-                                   checkpoint_callback=self.checkpoint_callback,
+                                   enable_checkpointing=self.checkpoint_callback,
                                    num_processes=self.num_processes, use_ipex=self.use_ipex,
-                                   flush_logs_every_n_steps=10, log_every_n_steps=10,
+                                   log_every_n_steps=10,
                                    distributed_backend=self.local_distributed_backend)
 
             # This error is only triggered when the python interpreter starts additional processes.
@@ -350,6 +374,15 @@ class BasePytorchForecaster(Forecaster):
                               "safely import the main module. ",
                               fixMsg="you should use if __name__ == '__main__':, "
                               "otherwise performance will be degraded.")
+
+            # build internal according to use_trail_id for multi-objective HPO
+            if hasattr(self, "tune_trainer") and self.tune_trainer.hposearcher.objective.mo_hpo:
+                invalidOperationError(self.tune_trainer.hposearcher.study,
+                                      "You must tune before fit the model.")
+                invalidInputError(use_trial_id is not None,
+                                  "For multibojective HPO, you must specify a trial id for fit.")
+                trial = self.tune_trainer.hposearcher.study.trials[use_trial_id]
+                self.internal = self.tune_internal._model_build(trial)
 
             # fitting
             if not validation_data:
@@ -363,6 +396,9 @@ class BasePytorchForecaster(Forecaster):
                 self.fitted = True
                 fit_out = read_csv('./forecaster_tmp_log/version_0/metrics.csv')
                 delete_folder("./forecaster_tmp_log")
+                if validation_mode == 'best_epoch':
+                    self.load('validation/best.ckpt')
+                    delete_folder("./validation")
                 return fit_out
 
     def predict(self, data, batch_size=32, quantize=False):
@@ -782,10 +818,16 @@ class BasePytorchForecaster(Forecaster):
         else:
             from bigdl.nano.pytorch.lightning import LightningModule
             from bigdl.chronos.pytorch import TSTrainer as Trainer
-
-            model = self.model_creator({**self.model_config, **self.data_config})
-            loss = self.loss_creator(self.loss_config)
-            optimizer = self.optimizer_creator(model, self.optim_config)
+            if self.use_hpo:
+                ckpt = torch.load(checkpoint_file)
+                hparams = ckpt["hyper_parameters"]
+                model = self.model_creator(hparams)
+                loss = self.loss_creator(hparams)
+                optimizer = self.optimizer_creator(model, hparams)
+            else:
+                model = self.model_creator({**self.model_config, **self.data_config})
+                loss = self.loss_creator(self.loss_config)
+                optimizer = self.optimizer_creator(model, self.optim_config)
             self.internal = LightningModule.load_from_checkpoint(checkpoint_file,
                                                                  model=model,
                                                                  loss=loss,
@@ -799,7 +841,7 @@ class BasePytorchForecaster(Forecaster):
             # This trainer is only for quantization, once the user call `fit`, it will be
             # replaced according to the new training config
             self.trainer = Trainer(logger=False, max_epochs=1,
-                                   checkpoint_callback=self.checkpoint_callback,
+                                   enable_checkpointing=self.checkpoint_callback,
                                    num_processes=self.num_processes, use_ipex=self.use_ipex)
 
     def to_local(self):
@@ -831,7 +873,7 @@ class BasePytorchForecaster(Forecaster):
         # This trainer is only for saving, once the user call `fit`, it will be
         # replaced according to the new training config
         self.trainer = Trainer(logger=False, max_epochs=1,
-                               checkpoint_callback=self.checkpoint_callback,
+                               enable_checkpointing=self.checkpoint_callback,
                                num_processes=self.num_processes, use_ipex=self.use_ipex)
 
         self.distributed = False

@@ -26,15 +26,14 @@ import tensorflow as tf
 
 # TODO: tf and pytorch aggregator could be integrated to one using inherit
 class Aggregator(object):
-    def __init__(self,
-                 client_num=1) -> None:
+    def __init__(self, conf) -> None:
         self.model = None
         self.client_data = {'train':{}, 'eval':{}, 'pred':{}}
         self.server_data = {'train':{}, 'eval':{}, 'pred':{}}
-        self.client_num = client_num
+        self.client_num = conf['clientNum']
         self.condition = Condition()
         self._lock = threading.Lock()
-        logging.info(f"Initialized Tensorflow aggregator [client_num: {client_num}]")
+        logging.info(f"Initialized Tensorflow aggregator [client_num: {self.client_num}]")
 
 
     def set_meta(self, loss_fn, optimizer):

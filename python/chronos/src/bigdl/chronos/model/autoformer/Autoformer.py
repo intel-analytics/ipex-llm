@@ -59,6 +59,8 @@ class AutoFormer(pl.LightningModule):
     """
     def __init__(self, configs):
         super().__init__()
+        kwargs = {k: getattr(configs, k) for k in configs._fields}
+        self.save_hyperparameters(kwargs)
         pl.seed_everything(configs.seed, workers=True)
         self.seq_len = configs.seq_len
         self.label_len = configs.label_len
@@ -70,7 +72,8 @@ class AutoFormer(pl.LightningModule):
         self.loss = loss_creator(configs.loss)
 
         # Decomp
-        kernel_size = configs.moving_avg
+        # change kernei_size to odd
+        kernel_size = int(2 * (configs.moving_avg // 2)) + 1
         self.decomp = series_decomp(kernel_size)
 
         # Embedding
@@ -91,7 +94,7 @@ class AutoFormer(pl.LightningModule):
                         configs.d_model, configs.n_heads),
                     configs.d_model,
                     configs.d_ff,
-                    moving_avg=configs.moving_avg,
+                    moving_avg=kernel_size,
                     dropout=configs.dropout,
                     activation=configs.activation
                 ) for l in range(configs.e_layers)
@@ -113,7 +116,7 @@ class AutoFormer(pl.LightningModule):
                     configs.d_model,
                     configs.c_out,
                     configs.d_ff,
-                    moving_avg=configs.moving_avg,
+                    moving_avg=kernel_size,
                     dropout=configs.dropout,
                     activation=configs.activation,
                 )

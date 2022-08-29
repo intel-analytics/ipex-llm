@@ -18,7 +18,7 @@ To learn more about installation of WSL2, please Follow [this guide](https://doc
 
 ## Step 2: Install conda in WSL2
 
- Start a new WSL2 window and setup the user information. Then download and install the conda. 
+ Start a new WSL2 window and set up the user information. Then download and install the conda. 
  
 ```bash
 wget https://repo.continuum.io/miniconda/Miniconda3-4.5.4-Linux-x86_64.sh
@@ -28,7 +28,7 @@ chmod +x Miniconda3-4.5.4-Linux-x86_64.sh
 
 ## Step 3: Create a BigDL-Nano env 
 
-Use conda to create a new environment. For example, use `bigdl-nano` as the new environemnt name: 
+Use conda to create a new environment. For example, use `bigdl-nano` as the new environment name: 
 
 ```bash
 conda create -n bigdl-nano
@@ -36,9 +36,9 @@ conda activate bigdl-nano
 ```
 
 
-## Step 4: Install BigDL Nano from Pypi
+## Step 4: Install BigDL-Nano from Pypi
 
-You can install BigDL nano from Pypi with `pip`. Specifically, for PyTroch extensions, please run:
+You can install BigDL-Nano from Pypi with `pip`. Specifically, for PyTorch extensions, please run:
 
 ```
 pip install bigdl-nano[pytorch]

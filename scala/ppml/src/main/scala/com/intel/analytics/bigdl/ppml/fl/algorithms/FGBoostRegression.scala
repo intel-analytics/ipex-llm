@@ -71,6 +71,7 @@ object FGBoostRegression {
     trees.toArray.sortBy(_._1.toInt).foreach{t =>
       gbr.trees.enqueue(t._2)
     }
+    logger.info(s"FGBoost Regression model loaded, tree number: ${gbr.trees.size}")
     gbr
   }
   def loadModel(src: String): FGBoostRegression = {

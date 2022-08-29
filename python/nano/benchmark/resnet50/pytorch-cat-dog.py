@@ -15,7 +15,7 @@
 #
 
 import os
-from shutil import rmtree
+import json
 import torch
 import time
 from bigdl.nano.pytorch.vision.datasets import ImageFolder
@@ -91,9 +91,14 @@ def _main_process(args, train_loader, val_loader, train_size):
     trainer.fit(classifier, train_loader)
     train_end = time.time()
     trainer.test(classifier, val_loader)
-
-    throughput = train_size * args.epochs / (train_end - train_start)
-    print(f"Nano_Perf: training in {train_end - train_start}s, thoughput is {throughput} img/s")
+    
+    output = json.dumps({
+        "config": args.name,
+        "train_time": train_end - train_start,
+        "train_throughput": train_size * args.epochs / (train_end - train_start)
+    })
+    
+    print(f'>>>{output}<<<')
 
     return
 

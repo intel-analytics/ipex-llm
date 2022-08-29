@@ -19,7 +19,7 @@ import shutil
 import pytest
 import tempfile
 
-from bigdl.orca.data.file import open_image, open_text, load_numpy, exists, makedirs, write_text
+from bigdl.orca.data.file import open_image, open_text, load_numpy, exists, makedirs, write_text, multi_fs_load
 
 
 class TestFile:
@@ -162,6 +162,26 @@ class TestFile:
                 aws_secret_access_key=secret_access_key).client('s3', verify=False)
             s3_client.delete_object(Bucket='analytics-zoo-data', Key='test.txt')
 
+    def test_multi_fs_load_local(self):
+
+        @multi_fs_load
+        def mock_func(path):
+            assert exists(path)
+
+        file_path = os.path.join(self.resource_path, "orca/data/random.npy")
+        mock_func(file_path)
+
+    def test_multi_fs_load_s3(self):
+
+        @multi_fs_load
+        def mock_func(path):
+            assert exists(path)
+
+        access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
+        secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+        if access_key_id and secret_access_key:
+            file_path = "s3://analytics-zoo-data/hyperseg/VGGcompression/core1.npy"
+            mock_func(file_path)
+            
 if __name__ == "__main__":
     pytest.main([__file__])
-

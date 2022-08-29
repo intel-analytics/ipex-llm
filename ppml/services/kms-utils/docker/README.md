@@ -30,7 +30,14 @@ sudo docker run -itd \
     -e PCCS_URL=$PCCS_URL
     $ENROLL_IMAGE_NAME bash
     
+
+
+```
+## 3. enroll, generate key, encrypt and decrypt
+```
+# Enroll
 docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh enroll"
+
 INFO [main.cpp(46) -> main]: ehsm-kms enroll app start.
 INFO [main.cpp(86) -> main]: First handle:  send msg0 and get msg1.
 INFO [main.cpp(99) -> main]: First handle success.
@@ -46,6 +53,7 @@ INFO [main.cpp(155) -> main]: decrypt APP ID and API Key success.
 INFO [main.cpp(156) -> main]: Third handle success.
 INFO [main.cpp(159) -> main]: ehsm-kms enroll app end.
 
+
 export kms_type=ehsm_or_simple_or_azure
 
 # Generatekeys
@@ -59,10 +67,8 @@ docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh $kms_typ
 
 # SpliteAndEncrypt
 docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh $kms_type splitandencrypt $appid $appkey $primary_key_name_in_key_folder $data_key_name_in_key_folder $plaintext_data_file_name_in_data_shared_folder $to_save_encrypted_file_name_in_data_shared_folder"
-
 ```
-
-## 3. Stop container:
+## 4. Stop container:
 ```
 docker stop $ENROLL_CONTAINER_NAME
 ```

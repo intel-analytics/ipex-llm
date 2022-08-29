@@ -223,7 +223,7 @@ View High-dimensional Electricity Data Forecasting [example][run_electricity] an
     **Additional Dependencies**:
     You need to install `pmdarima` to enable this built-in model.
 
-    ``pip install pmdarima==1.8.2``
+    ``pip install pmdarima==1.8.5``
 ```
 
 ARIMAForecaster wraps a ARIMA model and is suitable for univariate time series forecasting. It works best with data that show evidence of non-stationarity in the sense of mean (and an initial differencing step (corresponding to the "I, integrated" part of the model) can be applied one or more times to eliminate the non-stationarity of the mean function.
@@ -238,7 +238,7 @@ View [ARIMAForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#arimafor
     **Additional Dependencies**:
     You need to install `prophet` to enable this built-in model.
 
-    ``pip install prophet==1.0.1``
+    ``pip install prophet==1.1.0``
 ```
 
 ```eval_rst

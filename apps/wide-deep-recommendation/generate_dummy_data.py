@@ -18,8 +18,8 @@ import random
 import os
 from argparse import ArgumentParser
 from pyspark.sql.types import StructType, StructField, StringType, LongType, BooleanType
-from bigdl.friesian.feature import FeatureTable
 from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
+from bigdl.friesian.feature import FeatureTable
 
 id_list = ["0", "1", "2", "3", "4", "5", "6", "7", "8",
            "9", "A", "B", "C", "D", "E", "F", "G", "H",
@@ -30,7 +30,7 @@ tweet_list = ["Retweet", "Quote", "TopLevel"]
 language_list = ["".join(random.choices(id_list, k=32)) for _ in range(65)]
 
 schema = StructType(
-    [StructField("test_tokens", StringType(), True),
+    [StructField("text_tokens", StringType(), True),
      StructField("hashtags", StringType(), True),
      StructField("tweet_id", StringType(), True),
      StructField("present_media", StringType(), True),
@@ -82,7 +82,7 @@ def _parse_args():
 
 def generate_record(random_seed):
     random.seed(random_seed)
-    test_tokens = "\t".join([str(random.randint(1, 1000))
+    text_tokens = "\t".join([str(random.randint(1, 1000))
                             for i in range(random.randint(1, 10))])
     hashtags = "\t".join(["".join(random.choices(id_list, k=32))
                           for i in range(random.randint(0, 50))])
@@ -117,7 +117,7 @@ def generate_record(random_seed):
         946656000, 1609430400) if comment else None
     like = bool(random.getrandbits(1))
     like_timestamp = random.randint(946656000, 1609430400) if like else None
-    return (test_tokens, hashtags, tweet_id, present_media, present_links, present_domains,
+    return (text_tokens, hashtags, tweet_id, present_media, present_links, present_domains,
             tweet_type, language, tweet_timestamp, engaged_with_user_id,
             engaged_with_user_follower_count, engaged_with_user_following_count,
             engaged_with_user_is_verified, engaged_with_user_account_creation,
