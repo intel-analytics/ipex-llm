@@ -17,7 +17,7 @@ spark_conf = { "spark.app.name": "recsys-lightGBM",
               "spark.jars.packages": "com.microsoft.azure:synapseml_2.12:0.9.5-13-d1b51517-SNAPSHOT",
               "spark.jars.repositories": "https://mmlspark.azureedge.net/maven"}
 
-sc = init_orca_context("local", conf=spark_conf)
+sc = init_orca_context("local", cores=8, memory="8g", conf=spark_conf)
 spark = OrcaContext.get_spark_session()
 
 # data_dir = "/Users/guoqiong/intelWork/data/tweet/recsys2021_jennie"
@@ -105,7 +105,7 @@ user_tbl = user_tbl.cross_columns([["gender", "age"], ["age", "zip"]], [50, 200]
 
 user_tbl = user_tbl.join(user_stats, on="user")
 full = ratings_tbl.join(user_tbl, on="user").join(item_stats, on="item")
-full, target_codes = full.target_encode(cat_cols=cat_cols, target_cols=["label"])
+# full, target_codes = full.target_encode(cat_cols=cat_cols, target_cols=["label"])
 stats = full.get_stats(cat_cols, "max")
 train_tbl, test_tbl = full.select("label", *features).random_split([0.8, 0.2])
 
@@ -119,10 +119,13 @@ test = test_tbl.merge_cols(features, "features") \
     .apply("features", "features", lambda x: DenseVector(x), VectorUDT())
 
 from synapse.ml.lightgbm import LightGBMClassifier
-model = LightGBMClassifier(objective="binary", featuresCol="features", labelCol="label")
+classifier = LightGBMClassifier(objective="binary", featuresCol="features", labelCol="label")
 
-model = model.fit(train.df)
+model = classifier.fit(train.df)
 predictions = model.transform(test.df)
+predictions.show(100)
+print(predictions.count())
+
 evaluator = BinaryClassificationEvaluator(labelCol="label",
                                           rawPredictionCol="rawPrediction")
 auc = evaluator.evaluate(predictions, {evaluator.metricName: "areaUnderROC"})
@@ -130,8 +133,7 @@ auc = evaluator.evaluate(predictions, {evaluator.metricName: "areaUnderROC"})
 evaluator2 = MulticlassClassificationEvaluator(labelCol="label",
                                                predictionCol="prediction")
 acc = evaluator2.evaluate(predictions, {evaluator2.metricName: "accuracy"})
-predictions.show(100)
-print(predictions.count())
+
 print("AUC: %.2f" % (auc * 100.0))
 print("Accuracy: %.2f" % (acc * 100.0))
 
