@@ -41,6 +41,9 @@ class KerasOpenVINOModel(OpenVINOModel, AcceleratedKerasModel):
                 ov_model_path = dir / 'tmp.xml'
             OpenVINOModel.__init__(self, ov_model_path)
             AcceleratedKerasModel.__init__(self, None)
+    
+    def __call__(self, *args, **kwds):
+        return AcceleratedKerasModel.__call__(self, *args, **kwds)
 
     def on_forward_start(self, inputs):
         if self.ie_network is None:
