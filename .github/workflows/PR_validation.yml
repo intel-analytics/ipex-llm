@@ -7,6 +7,8 @@ on:
       - '.github/actions/friesian-scala-ut-action/action.yml'
       - 'scala/dllib/**'
       - '.github/actions/dllib-scala-ut-action/action.yml'
+      - 'python/orca/**'
+      - '.github/actions/orca-ray-ctx-example-action/action.yml'
   pull_request:
     branches: [ main ]
     paths:
@@ -14,6 +16,8 @@ on:
       - '.github/actions/friesian-scala-ut-action/action.yml'
       - 'scala/dllib/**'
       - '.github/actions/dllib-scala-ut-action/action.yml'
+      - 'python/orca/**'
+      - '.github/actions/orca-ray-ctx-example-action/action.yml'
 
 permissions:
   contents: read
@@ -26,6 +30,7 @@ jobs:
     outputs:
       friesian: ${{ steps.filter.outputs.friesian }}
       dllib: ${{ steps.filter.outputs.dllib }}
+      orca: ${{ steps.filter.outputs.orca }}
     steps:
       - uses: actions/checkout@v3
       - uses: dorny/paths-filter@v2
@@ -38,6 +43,9 @@ jobs:
             dllib:
               - 'scala/dllib/**'
               - '.github/actions/dllib-scala-ut-action/action.yml'
+            orca:
+              - 'python/orca/**'
+              - '.github/actions/orca-ray-ctx-example-action/action.yml'
 
   
   Friesian-Scala-UT:
@@ -68,3 +76,18 @@ jobs:
         uses: ./.github/actions/maven-setup-action
       - name: Run test
         uses: ./.github/actions/dllib-scala-ut-action
+
+
+  Orca-Ray-Ctx-Example:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca == 'true' }}
+    runs-on: [self-hosted, Gondolin-resources, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Run test
+      uses: ./.github/actions/orca-ray-ctx-example-action
