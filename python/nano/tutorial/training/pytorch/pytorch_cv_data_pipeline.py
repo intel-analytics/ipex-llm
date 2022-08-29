@@ -16,9 +16,7 @@
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
-from torchvision import transforms
 from torchvision.models import resnet18
-from torchvision.datasets import OxfordIIITPet
 from torchmetrics import Accuracy
 
 from bigdl.nano.pytorch.torch_nano import TorchNano
@@ -37,6 +35,17 @@ class MyPytorchModule(nn.Module):
 
 
 def create_dataloaders():
+    # CV Data Pipelines
+    #
+    # Computer Vision task often needs a data processing pipeline that sometimes constitutes a
+    # non-trivial part of the whole training pipeline.
+    # BigDL-Nano can accelerate computer vision data pipelines.
+    #
+    # BigDL-Nano can accelerate computer vision data pipelines
+    # by providing a drop-in replacement of torch_vision’s datasets and transforms
+    #
+    from bigdl.nano.pytorch.vision import transforms
+    from bigdl.nano.pytorch.vision.datasets import OxfordIIITPet
     train_transform = transforms.Compose([transforms.Resize(256),
                                           transforms.RandomCrop(224),
                                           transforms.RandomHorizontalFlip(),
@@ -72,6 +81,7 @@ class MyNano(TorchNano):
         model = MyPytorchModule()
         optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9, weight_decay=5e-4)
         loss_fuc = torch.nn.CrossEntropyLoss()
+
         train_loader, val_loader = create_dataloaders()
 
         # call `setup` to prepare for model, optimizer(s) and dataloader(s) for accelerated training
@@ -113,13 +123,4 @@ class MyNano(TorchNano):
 
 
 if __name__ == '__main__':
-    # IPEX Accelerated Training
-    #
-    # Intel Extension for PyTorch (a.k.a. IPEX) ecapsulates
-    # several optimizations for PyTorch and offers an extra
-    # performance boost on Intel hardware.
-    #
-    # In BigDL-Nano, you can easily use IPEX to accelerate custom pytorch training loops
-    # through the TorchNano by setting use_ipex=True.
-    #
-    MyNano(use_ipex=True).train()
+    MyNano().train()
