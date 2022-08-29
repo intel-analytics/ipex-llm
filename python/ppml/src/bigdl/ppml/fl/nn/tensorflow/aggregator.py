@@ -122,7 +122,7 @@ got {len(self.client_data[phase])}/{self.client_num}')
 
     def load_uploaded_model(self, client_id, model_path):
         if self.model is not None:
-            logging.warn(f"Model exists, model uploading from {client_id} ignored.")
+            raise Exception(f"Model exists, model uploading from {client_id} ignored.")
         else:
             os.rename(model_path, f'{model_path}.h5')                
             self.model = tf.keras.models.load_model(f'{model_path}.h5')
