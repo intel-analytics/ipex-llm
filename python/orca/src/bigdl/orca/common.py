@@ -250,7 +250,8 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=None, memory="2g
                 warnings.warn("Use an existing SparkContext, " +
                               "cluster_mode is determined by the existing SparkContext", Warning)
             from bigdl.dllib.nncontext import init_nncontext
-            sc = init_nncontext(conf=None, spark_log_level="WARN", redirect_spark_log=True, is_orca=True)
+            sc = init_nncontext(conf=None, spark_log_level="WARN", redirect_spark_log=True,
+                                is_orca=True)
         else:
             cluster_mode = "local" if cluster_mode is None else cluster_mode
             if cluster_mode == "local":
