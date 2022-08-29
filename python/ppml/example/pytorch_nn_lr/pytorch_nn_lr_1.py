@@ -51,7 +51,7 @@ class ServerModel(nn.Module):
 @click.command()
 @click.option('--load_model', default=False)
 def run_client(load_model):
-    df_train = pd.read_csv('.data/diabetes-vfl-1.csv')    
+    df_train = pd.read_csv('./data/diabetes-vfl-1.csv')    
     
     df_train['ID'] = df_train['ID'].astype(str)
     psi = PSI()

@@ -133,8 +133,6 @@ ppl.load_server_model(server_model_path) # trigger model loading on server
 ppl.fit(x, y, epoch=5)
 result = ppl.predict(x)
 ```
-
-
 ## 3 Run FGBoost
 FL Server is required before running any federated applications. Check [Start FL Server]() section for details.
 ### 3.1 Start FL Server in SGX
@@ -143,9 +141,8 @@ FL Server is required before running any federated applications. Check [Start FL
 Before running FL Server in SGX, please prepare keys and start the BigDL PPML container first. Check  [3.1 BigDL PPML Hello World](https://github.com/intel-analytics/BigDL/tree/main/ppml#31-bigdl-ppml-hello-world) for details.
 #### 3.1.2 Run FL Server in SGX
 You can run FL Server in SGX with the following command:
-
 ```bash
-bash start-python-fl-server-sgx.sh -p 8980 -c 2
+docker exec -it YOUR_DOCKER bash /ppml/trusted-big-data-ml/work/start-scripts/start-python-fl-server-sgx.sh -p 8980 -c 2
 ```
 You can set port with `-p` and set client number with `-c`  while the default settings are `port=8980` and `client-num=2`.
 ### 3.2 Start FGBoost Clients

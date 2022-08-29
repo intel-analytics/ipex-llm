@@ -18,9 +18,10 @@
 ## Prerequests
 
 - Please make sure you have a workable **Kubernetes cluster/machine**.
+- Please make sure you have a usable https proxy.
 - Please make sure your **CPU** is able to run PCCS service, which generate and verify quotes.
 - Please make sure you have a reachable **NFS**.
-- Please make sure you have already installed **helm**.
+- Please make sure you have already installed **[helm](https://helm.sh/)**.
 - Please make sure you have an usable PCCS ApiKey for your platform. The PCCS uses this API key to request collaterals from Intel's Provisioning Certificate Service. User needs to subscribe first to obtain an API key. For how to subscribe to Intel Provisioning Certificate Service and receive an API key, goto https://api.portal.trustedservices.intel.com/provisioning-certification and click on 'Subscribe'.
 
 ## 1. Pull/Build the PCCS Image
@@ -70,9 +71,10 @@ organizaitonName: your_organizaition_name
 commonName: server_fqdn_or_your_name
 ```
 
-Then, deploy BigDL-PCCS-eHSM-KMS on kubernetes with a single command:
+Then, deploy BigDL-PCCS-eHSM-KMS on kubernetes:
 
 ```bash
+kubectl create namespace bigdl-pccs-ehsm-kms
 helm install kms . # kms can be modified to any name as you like
 ```
 
@@ -121,8 +123,7 @@ curl http://<external_kms_ip>:9000/ehsm/?Action=GetVersion
 We encapsulate eHSM enroll into a docker image, you can pull it or build by yourself like below:
 
 ```bash
-docker pull intelanalytics/kms-utils:0.3.0 # 0.3.0 is the latest version when writting (to do)
-tod
+docker pull intelanalytics/kms-utils:0.3.0-SNAPSHOT
 # OR
 
 cd ../kms-utils
