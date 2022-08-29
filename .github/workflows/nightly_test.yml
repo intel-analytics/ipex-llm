@@ -1,11 +1,6 @@
 name: Nightly Test
 
 on:
-  pull_request:
-    branches: [ "main" ]
-    paths:
-      - 'python/orca/**'
-      - '.github/workflows/nightly_test.yml'
   schedule:
     - cron: '0 13 * * *' # GMT time, 13:00 GMT == 21:00 China
   workflow_dispatch:
@@ -159,7 +154,7 @@ jobs:
         uses: ./.github/actions/ppml-scala-ut-action
 
   Orca-Ray-Ctx-Example:
-    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Ray-Ctx-Example' || github.event.inputs.artifact == 'all' }} 
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Ray-Ctx-Example' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Gondolin-resources, ubuntu-20.04-lts]
 
     steps:
