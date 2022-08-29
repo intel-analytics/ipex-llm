@@ -52,20 +52,6 @@
     </fileSet>
     <fileSet>
       <outputDirectory>/python</outputDirectory>
-      <directory>${project.parent.basedir}/serving/target</directory>
-      <includes>
-          <include>bigdl-serving*-python-api.zip</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <outputDirectory>/python</outputDirectory>
-      <directory>${project.parent.basedir}/ppml/target</directory>
-      <includes>
-        <include>bigdl-ppml*-python-api.zip</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <outputDirectory>/python</outputDirectory>
       <directory>${project.parent.basedir}/target</directory>
       <includes>
           <include>bigdl*-python-api.zip</include>
@@ -100,20 +86,6 @@
       </includes>
     </fileSet>
     <fileSet>
-      <outputDirectory>/examples/nano</outputDirectory>
-      <directory>${project.parent.basedir}/../python/nano/example</directory>
-      <includes>
-          <include>/**</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <outputDirectory>/examples/serving</outputDirectory>
-      <directory>${project.parent.basedir}/../python/serving/example</directory>
-      <includes>
-          <include>/**</include>
-      </includes>
-    </fileSet>
-    <fileSet>
       <outputDirectory>/</outputDirectory>
       <directory>${project.parent.basedir}/tpp</directory>
       <includes>
@@ -141,46 +113,6 @@
           <include>bigdl-friesian*-jar-with-dependencies.jar</include>
       </includes>
     </fileSet>
-    <fileSet>
-      <outputDirectory>/assembly</outputDirectory>
-      <directory>${project.parent.basedir}/ppml/target</directory>
-      <includes>
-          <include>bigdl-ppml*-jar-with-dependencies.jar</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <outputDirectory>/python</outputDirectory>
-      <directory>${project.parent.basedir}/../python/ppml/scripts</directory>
-      <includes>
-          <include>start-fl-server.py</include>
-      </includes>
-    </fileSet>
   </fileSets>
-  <!--<dependencySets>
-    <dependencySet>
-      <outputDirectory>jars</outputDirectory>
-      <includes>
-        <include>com.intel.analytics.bigdl:*:jar</include>
-      </includes>
-      <excludes>
-        <exclude>com.intel.analytics.bigdl:bigdl-assembly*:jar</exclude>
-      </excludes>
-    </dependencySet>
-    <dependencySet>
-      <outputDirectory>jars</outputDirectory>
-      <useTransitiveDependencies>true</useTransitiveDependencies>
-      <unpack>false</unpack>
-      <scope>runtime</scope>
-      <useProjectArtifact>false</useProjectArtifact>
-      <excludes>
-        <exclude>com.intel.analytics.bigdl:*:jar</exclude>
-        <exclude>org.apache.hadoop:*:jar</exclude>
-        <exclude>org.apache.flink:*:jar</exclude>
-        <exclude>org.apache.spark:*:jar</exclude>
-        <exclude>*:commons*:jar</exclude>
-        <exclude>*:slf4j*:jar</exclude>
-      </excludes>
-    </dependencySet>
-  </dependencySets>-->
 </assembly>
 
