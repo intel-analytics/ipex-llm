@@ -251,6 +251,10 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=None, memory="2g
                               "cluster_mode is determined by the existing SparkContext", Warning)
             from bigdl.dllib.nncontext import init_nncontext
             sc = init_nncontext(conf=None, spark_log_level="WARN", redirect_spark_log=True)
+            del os.environ["KMP_AFFINITY"]
+            del os.environ["KMP_SETTINGS"]
+            del os.environ["OMP_NUM_THREADS"]
+            del os.environ["KMP_BLOCKTIME"]
         else:
             cluster_mode = "local" if cluster_mode is None else cluster_mode
             if cluster_mode == "local":
@@ -270,6 +274,14 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=None, memory="2g
                                   + repr(spark_args["conf"]) + ", ignored", Warning)
                     spark_args["conf"] = None
                 sc = init_nncontext(**spark_args)
+                if "KMP_AFFINITY" not in spark_args:
+                    del os.environ["KMP_AFFINITY"]
+                if "KMP_SETTINGS" not in spark_args:
+                    del os.environ["KMP_SETTINGS"]
+                if "OMP_NUM_THREADS" not in spark_args:
+                    del os.environ["OMP_NUM_THREADS"]
+                if "KMP_BLOCKTIME" not in spark_args:
+                    del os.environ["KMP_BLOCKTIME"]
             elif cluster_mode.startswith("yarn"):  # yarn, yarn-client or yarn-cluster
                 hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
                 if not hadoop_conf:
