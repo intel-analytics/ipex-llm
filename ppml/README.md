@@ -9,8 +9,9 @@ Protecting privacy and confidentiality is critical for large-scale data analysis
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 0. Preparation your environment](#step-0-preparation-your-environment): detailed steps in [Prepare Environment](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/prepare_environment.md) \
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 1. Encrypt and Upload Data](#step-1-encrypt-and-upload-data) \
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 2. Build Big Data & AI applications](#step-2-build-big-data--ai-applications) \
-&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 3. Submit Job](#step-3-submit-job): 4 deploy modes and 2 options to submit job  \
-&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 4. Decrypt and Read Result](#step-4-decrypt-and-read-result) \
+&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 3. (Optional) Attestation ](#step-3-optional-attestation) \
+&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 4. Submit Job](#step-4-submit-job): 4 deploy modes and 2 options to submit job  \
+&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 5. Decrypt and Read Result](#step-5-decrypt-and-read-result) \
 &ensp;&ensp;[3.3 More BigDL PPML Examples](#33-more-bigdl-ppml-examples) \
 [4. Develop your own Big Data & AI applications with BigDL PPML](#4-develop-your-own-big-data--ai-applications-with-bigdl-ppml) \
 &ensp;&ensp;[4.1 Create PPMLContext](#41-create-ppmlcontext) \
