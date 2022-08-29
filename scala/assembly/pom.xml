@@ -102,8 +102,8 @@
                 <version>${maven-assembly-plugin.version}</version>
                 <configuration>
                     <descriptors>
-                        <descriptor>src/main/assembly/assembly.xml
-                        </descriptor>
+		        <descriptor>src/main/assembly/assembly.xml</descriptor>
+                        <descriptor>src/main/assembly/fat-assembly.xml</descriptor>
                     </descriptors>
                 </configuration>
                 <executions>
