@@ -18,7 +18,7 @@ import os
 import pickle
 import logging
 import threading
-from bigdl.dllib.utils.log4Error import invalidInputError
+from bigdl.dllib.utils.log4Error import invalidInputError, invalidOperationError
 from bigdl.ppml.fl.nn.utils import ndarray_map_to_tensor_map
 from threading import Condition
 
@@ -122,7 +122,8 @@ got {len(self.client_data[phase])}/{self.client_num}')
 
     def load_uploaded_model(self, client_id, model_path):
         if self.model is not None:
-            raise Exception(f"Model exists, model uploading from {client_id} ignored.")
+            invalidOperationError(False,
+                f"Model exists, model uploading from {client_id} ignored.")
         else:
             os.rename(model_path, f'{model_path}.h5')                
             self.model = tf.keras.models.load_model(f'{model_path}.h5')

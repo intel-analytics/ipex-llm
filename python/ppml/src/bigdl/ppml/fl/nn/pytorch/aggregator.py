@@ -20,7 +20,7 @@ import threading
 from torch import nn
 import torch
 from bigdl.ppml.fl.nn.utils import ndarray_map_to_tensor_map
-from bigdl.dllib.utils.log4Error import invalidInputError
+from bigdl.dllib.utils.log4Error import invalidInputError, invalidOperationError
 from threading import Condition
 import os
 
@@ -148,7 +148,8 @@ got {len(self.client_data[phase])}/{self.client_num}')
 
     def load_server_model(self, client_id, model_path):
         if self.model is not None:
-            raise Exception(f"Model exists, model uploading from {client_id} ignored.")
+            invalidOperationError(False,
+                f"Model exists, model uploading from {client_id} ignored.")
         else:
             logging.info(f"Trying to load model from {model_path}")
             self.model = torch.jit.load(f"{model_path}/model.pt")
