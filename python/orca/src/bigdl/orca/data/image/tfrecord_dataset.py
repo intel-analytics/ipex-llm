@@ -63,7 +63,7 @@ def write_imagenet(imagenet_path: str,
                           'ImageNet data path should not be empty. Please download '
                           'from http://image-net.org/download-images and extract .tar '
                           'and provide raw data directory path')
-    return convert_imagenet_to_tf_records(imagenet_path, output_path, **kwargs)
+    convert_imagenet_to_tf_records(imagenet_path, output_path, **kwargs)
 
 
 def read_imagenet(path: str,

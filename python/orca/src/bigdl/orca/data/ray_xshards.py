@@ -255,7 +255,10 @@ class RayXShards(XShards):
 
         return RayXShards.from_partition_refs(actor_ip2part_id, new_part_id_refs, self.rdd)
 
-    def reduce_partitions_for_actors(self, actors, reduce_partitions_func, return_refs=False):
+    # TODO: ADD UT
+    def reduce_partitions_for_actors(self, actors: List["ActorHandle"],
+                                     reduce_partitions_func: Callable,
+                                     return_refs: bool=False):
         """
         Evenly allocate partitions for actors and run `reduce_partitions_func` on partitions of each
         worker.
@@ -283,8 +286,12 @@ class RayXShards(XShards):
         results = ray.get(result_refs)
         return results
 
-    def zip_reduce_shards_with_actors(self, xshards, actors, reduce_partitions_func,
-                                      return_refs=False):
+    # TODO: ADD UT
+    def zip_reduce_shards_with_actors(self,
+                                      xshards: "RayXShards",
+                                      actors: List["ActorHandle"],
+                                      reduce_partitions_func,
+                                      return_refs: bool=False):
         invalidInputError(self.num_partitions() == xshards.num_partitions(),
                           "the rdds to be zipped must have the same number of partitions")
         invalidInputError(self.num_partitions() >= len(actors),
@@ -412,11 +419,11 @@ class RayXShards(XShards):
         return RayXShards(uuid_str, new_id_ip_store_rdd, partition_stores)
 
     @staticmethod
-    def from_spark_xshards(spark_xshards:     "SparkXShards") -> "RayXShards":
+    def from_spark_xshards(spark_xshards: "SparkXShards") -> "RayXShards":
         return RayXShards._from_spark_xshards_ray_api(spark_xshards)
 
     @staticmethod
-    def _from_spark_xshards_ray_api(spark_xshards:     "SparkXShards") -> "RayXShards":
+    def _from_spark_xshards_ray_api(spark_xshards: "SparkXShards") -> "RayXShards":
         ray_ctx = OrcaRayContext.get()
         address = ray_ctx.redis_address
         password = ray_ctx.redis_password

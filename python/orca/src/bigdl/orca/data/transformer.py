@@ -28,6 +28,7 @@ from bigdl.orca.data.utils import *
 import uuid
 
 
+# TODO: ADD UT
 class StringIndexer:
     def __init__(self, inputCol=None):
         self.inputCol = inputCol
@@ -315,6 +316,7 @@ class StringIndex:
         return res_dict
 
 
+# TODO: ADD UT
 class MinMaxScaler:
     def __init__(self, min=0.0, max=1.0, inputCol=None, outputCol=None):
         self.min = min

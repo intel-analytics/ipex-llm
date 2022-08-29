@@ -25,6 +25,7 @@ from typing import TYPE_CHECKING, Callable, Optional
 if TYPE_CHECKING:
     from bigdl.orca.data.shard import SparkXShards
     from pyspark.rdd import PipelinedRDD
+    from bigdl.friesian.feature import FeatureTable
 
 
 class Dataset(object):
@@ -128,7 +129,7 @@ class Dataset(object):
         return TensorSliceDataset(xshards)
 
     @staticmethod
-    def from_feature_table(tbl):
+    def from_feature_table(tbl: "FeatureTable"):
         from bigdl.friesian.feature import FeatureTable
         from bigdl.friesian.feature.utils import featuretable_to_xshards
         log4Error.invalidInputError(isinstance(tbl, FeatureTable),

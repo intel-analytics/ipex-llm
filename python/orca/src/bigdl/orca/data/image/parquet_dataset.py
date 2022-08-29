@@ -34,8 +34,9 @@ import math
 from bigdl.dllib.utils.log4Error import *
 from numpy import ndarray, uint32
 
-from typing import TYPE_CHECKING, Dict, List, Tuple, Union, Any
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Tuple, Union, Any
 if TYPE_CHECKING:
+    import tensorflow as tf
     from bigdl.orca.data.shard import SparkXShards
     from pyspark.rdd import PipelinedRDD
     from bigdl.orca.data.tf.data import TensorSliceDataset, Dataset
@@ -44,7 +45,7 @@ if TYPE_CHECKING:
 class ParquetDataset:
     @staticmethod
     def write(path: str,
-              generator: List[Dict[str, Union[str, int, ndarray]]],
+              generator: List[Dict[str, Union[str, int, float, ndarray]]],
               schema: Dict[str, SchemaField],
               block_size: int=1000,
               write_mode: str="overwrite",
@@ -136,7 +137,7 @@ class ParquetDataset:
         :param path:
         :return:
         """
-        from bigdl.orca.data.tf.data import TensorSliceDataset, Dataset
+        from bigdl.orca.data.tf.data import Dataset
         xshards = ParquetDataset._read_as_xshards(path)
         return Dataset.from_tensor_slices(xshards)
 
@@ -218,7 +219,7 @@ def _read32(bytestream: io.BufferedReader) -> uint32:
     return np.frombuffer(bytestream.read(4), dtype=dt)[0]
 
 
-def _extract_mnist_images(image_filepath: str):
+def _extract_mnist_images(image_filepath: str) -> ndarray:
     with open(image_filepath, "rb") as bytestream:
         magic = _read32(bytestream)
         if magic != 2051:
@@ -234,7 +235,7 @@ def _extract_mnist_images(image_filepath: str):
         return data
 
 
-def _extract_mnist_labels(labels_filepath: str):
+def _extract_mnist_labels(labels_filepath: str) -> ndarray:
     with open(labels_filepath, "rb") as bytestream:
         magic = _read32(bytestream)
         if magic != 2049:
@@ -361,7 +362,11 @@ def write_parquet(format: str, output_path: str, *args, **kwargs) -> None:
     func(output_path=output_path, *args, **kwargs)
 
 
-def read_as_tfdataset(path, output_types, config=None, output_shapes=None, *args, **kwargs):
+def read_as_tfdataset(path: str,
+                      output_types: Dict[str, 'tf.Dtype'],
+                      config: Dict[str, int]=None,
+                      output_shapes: Dict[str, 'tf.TensorShape']=None,
+                      *args, **kwargs):
     """
     return a orca.data.tf.data.Dataset
     :param path:
@@ -390,7 +395,11 @@ def read_as_tfdataset(path, output_types, config=None, output_shapes=None, *args
                                           output_shapes=output_shapes)
 
 
-def read_as_dataloader(path, config=None, transforms=None, batch_size=1, *args, **kwargs):
+def read_as_dataloader(path: str,
+                       config: Dict[str, int]=None,
+                       transforms: Callable=None,
+                       batch_size: int=1,
+                       *args, **kwargs):
     path, _ = pa_fs(path)
     import tensorflow as tf
     import torch
@@ -440,7 +449,12 @@ def read_as_dataloader(path, config=None, transforms=None, batch_size=1, *args, 
                                        batch_size=batch_size, worker_init_fn=worker_init_fn)
 
 
-def read_parquet(format, path, transforms=None, config=None, batch_size=1, *args, **kwargs):
+def read_parquet(format: str,
+                 path: str,
+                 transforms: Callable=None,
+                 config: Optional[Dict[str, int]]=None,
+                 batch_size: int=1,
+                 *args, **kwargs):
     supported_format = {"tf_dataset", "dataloader"}
     if format not in supported_format:
         invalidInputError(False,

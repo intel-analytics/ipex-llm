@@ -57,7 +57,7 @@ VALIDATION_LABELS = 'synset_labels.txt'
 
 def convert_imagenet_to_tf_records(
         raw_data_dir: str,
-        output_dir: str) -> Tuple[List[str], List[str]]:
+        output_dir: str) -> None:
     """Converts the Imagenet dataset into TF-Record dumps."""
     import tensorflow as tf
     # Shuffle training records to ensure we are distributing classes
