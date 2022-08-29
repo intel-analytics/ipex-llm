@@ -1512,6 +1512,10 @@ class TestTable(TestCase):
         invalidInputError(text_embeds.select("text1_embds").size() == 3, "size error")
         invalidInputError(text_embeds.select("text2_embds").size() == 3, "size error")
 
+        text_embeds_replaced = tbl.string_embed(["text1", "text2"], reduce_dim=5, replace=True)
+        invalidInputError('text1_embds' not in text_embeds_replaced.columns, 'replace failed')
+        invalidInputError('text2_embds' not in text_embeds_replaced.columns, 'replace failed')
+
         with self.assertRaises(Exception) as context:
             text_embeds = tbl.string_embed(["text1"], reduce_dim=1000)
         self.assertTrue("must be no less than k=1000" in str(context.exception))
