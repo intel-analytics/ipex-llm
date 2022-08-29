@@ -80,7 +80,7 @@ jobs:
 
   Orca-Ray-Ctx-Example:
     needs: changes
-    if: ${{ needs.changes.outputs.dllib == 'true' }}
+    if: ${{ needs.changes.outputs.orca == 'true' }}
     runs-on: [self-hosted, Gondolin-resources, ubuntu-20.04-lts]
 
     steps:
