@@ -533,6 +533,7 @@ spec:
             key: app_key
 ...
 ```
+You should get `Attestation Success!` after you submit spark task.
 
 #### 1.4.1 Configure `spark-executor-template.yaml` in the container
 
