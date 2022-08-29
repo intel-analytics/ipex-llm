@@ -129,7 +129,7 @@ got {len(self.client_data[phase])}/{self.client_num}')
 
     def load_uploaded_model(self, client_id, model_path):
         if self.model is not None:
-            logging.warn(f"Model exists, model uploading from {client_id} ignored.")
+            raise Exception(f"Model exists, model uploading from {client_id} ignored.")
         else:
             os.rename(model_path, f'{model_path}.pt')                
             self.model = torch.jit.load(f'{model_path}.pt')
@@ -146,9 +146,9 @@ got {len(self.client_data[phase])}/{self.client_num}')
         # save meta to file if not saved yet
         
 
-    def load_server_model(self, model_path):
+    def load_server_model(self, client_id, model_path):
         if self.model is not None:
-            logging.warn(f"Model exists, would not load again from {model_path}.")
+            raise Exception(f"Model exists, model uploading from {client_id} ignored.")
         else:
             logging.info(f"Trying to load model from {model_path}")
             self.model = torch.jit.load(f"{model_path}/model.pt")
