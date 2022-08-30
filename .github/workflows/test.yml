@@ -5,10 +5,20 @@ on:
 
 jobs:
   test-self-runner-create-badge:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
     steps:
       - name: "Checkout Code"
         uses: actions/checkout@v3
+
+      - name: Create Awesome Badge
+        uses: schneegans/dynamic-badges-action@v1.4.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: 746dcada5746912c8d6808d71bd6c35b
+          filename: ppml-spark-deploy.json
+          label: Hello
+          message: World
+          color: orange
 
       - name: Create Job Badge
         uses: ./.github/actions/create-job-status-badge
