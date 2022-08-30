@@ -59,6 +59,7 @@ class TSDataset:
         self.scaler_index = [i for i in range(len(self.target_col))]
         self.id_sensitive = None
         self._has_generate_agg_feature = False
+        self.is_predict = False
         self._check_basic_invariants()
 
         self._id_list = list(np.unique(self.df[self.id_col]))
@@ -609,7 +610,8 @@ class TSDataset:
         # horizon_time is only for time_enc, the time_enc numpy ndarray won't have any
         # shape change when the dataset is for prediction.
         horizon_time = self.horizon
-        if is_predict:
+        self.is_predict = is_predict
+        if self.is_predict:
             self.horizon = 0
 
         if self.lookback == 'auto':
@@ -785,6 +787,7 @@ class TSDataset:
                                   "of lookback and horizon, while get lookback+horizon="
                                   f"{need_dflen} and the length of dataset is {len(self.df)}.")
 
+            self.is_predict = is_predict
             torch_dataset = RollDataset(self.df,
                                         dt_col=self.dt_col,
                                         freq=self._freq,
@@ -795,7 +798,7 @@ class TSDataset:
                                         id_col=self.id_col,
                                         time_enc=time_enc,
                                         label_len=label_len,
-                                        is_predict=is_predict)
+                                        is_predict=self.is_predict)
             # TODO gen_rolling_feature and gen_global_feature will be support later
             self.roll_target = target_col
             self.roll_feature = feature_col

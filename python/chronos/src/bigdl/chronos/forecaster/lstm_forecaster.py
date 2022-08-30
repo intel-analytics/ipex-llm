@@ -152,7 +152,7 @@ class LSTMForecaster(BasePytorchForecaster):
         '''
         Build a LSTM Forecaster Model.
 
-        :param tsdataset: A bigdl.chronos.data.tsdataset.TSDataset instance.
+        :param tsdataset: Train tsdataset, a bigdl.chronos.data.tsdataset.TSDataset instance.
         :param past_seq_len: Specify the history time steps (i.e. lookback).
                Do not specify the 'past_seq_len' if your tsdataset has called
                the 'TSDataset.roll' method or 'TSDataset.to_torch_data_loader'.

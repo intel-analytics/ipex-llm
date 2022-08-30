@@ -450,7 +450,7 @@ class BasePytorchForecaster(Forecaster):
                                              feature_col=data.roll_feature,
                                              target_col=data.roll_target,
                                              shuffle=False,
-                                             is_predict=True)
+                                             is_predict=data.is_predict)
         # data transform
         is_local_data = isinstance(data, (np.ndarray, DataLoader))
         if is_local_data and self.distributed:
@@ -544,7 +544,7 @@ class BasePytorchForecaster(Forecaster):
                                              feature_col=data.roll_feature,
                                              target_col=data.roll_target,
                                              shuffle=False,
-                                             is_predict=True)
+                                             is_predict=data.is_predict)
         if quantize:
             return _pytorch_fashion_inference(model=self.onnxruntime_int8,
                                               input_data=data,
@@ -654,7 +654,8 @@ class BasePytorchForecaster(Forecaster):
                                              horizon=self.data_config['future_seq_len'],
                                              feature_col=data.roll_feature,
                                              target_col=data.roll_target,
-                                             shuffle=False)
+                                             shuffle=False,
+                                             is_predict=False)
         is_local_data = isinstance(data, (tuple, DataLoader))
         if not is_local_data and not self.distributed:
             data = xshard_to_np(data, mode="fit")
@@ -754,7 +755,8 @@ class BasePytorchForecaster(Forecaster):
                                              horizon=self.data_config['future_seq_len'],
                                              feature_col=data.roll_feature,
                                              target_col=data.roll_target,
-                                             shuffle=False)
+                                             shuffle=False,
+                                             is_predict=False)
         if isinstance(data, DataLoader):
             input_data = data
             target = np.concatenate(tuple(val[1] for val in data), axis=0)
@@ -1098,7 +1100,7 @@ class BasePytorchForecaster(Forecaster):
         """
         Build a Forecaster Model.
 
-        :param tsdataset: A bigdl.chronos.data.tsdataset.TSDataset instance.
+        :param tsdataset: Train tsdataset, a bigdl.chronos.data.tsdataset.TSDataset instance.
         :param past_seq_len: int or "auto", Specify the history time steps (i.e. lookback).
                Do not specify the 'past_seq_len' if your tsdataset has called
                the 'TSDataset.roll' method or 'TSDataset.to_torch_data_loader'.
