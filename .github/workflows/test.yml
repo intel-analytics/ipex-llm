@@ -3,9 +3,9 @@ name: self-runner-create-badge
 on:
   pull_request:
 
-env:
-  http_proxy: 'http://child-prc.intel.com:913'
-  https_proxy: 'http://child-prc.intel.com:913'
+# env:
+#   http_proxy: 'http://child-prc.intel.com:913'
+#   https_proxy: 'http://child-prc.intel.com:913'
 
 jobs:
   test-self-runner-create-badge:
