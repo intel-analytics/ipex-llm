@@ -18,7 +18,7 @@ on:
       image:
         description: 'docker image version'
         required: true
-        default: 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine:test
+        default: 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine:latest
         type: string
 
   
