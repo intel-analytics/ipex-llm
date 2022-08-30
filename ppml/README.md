@@ -178,7 +178,7 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
 
 #### Step 3. Attestation 
 
-To enable attestation, you should have a running KMS in your environment. Configure your kms app_id and app_key in your kubernetes, and then configure KMS settings in `spark-driver-template.yaml` and `spark-executor-template.yaml` in the container.
+To enable attestation, you should have a running Attestation Service (EHSM-KMS here for example) in your environment. (You can start a KMS  refering to [this link](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/kms-utils/docker)). Configure your KMS app_id and app_key with `kubectl`, and then configure KMS settings in `spark-driver-template.yaml` and `spark-executor-template.yaml` in the container.
 ``` bash
 kubectl create secret generic kms-secret --from-literal=app_id=your-kms-app-id --from-literal=app_key=your-kms-app-key
 ```
@@ -208,7 +208,7 @@ spec:
             key: app_key
 ...
 ```
-You should get `Attestation Success!` after you submit spark task and pass attestation.
+You should get `Attestation Success!` in logs after you [submit a PPML job](#step-4-submit-job) if the quote generated with user report is verified successfully by Attestation Service, or you will get `Attestation Fail! Application killed!` and the job will be stopped.
 
 #### Step 4. Submit Job
 When the Big Data & AI application and its input data is prepared, you are ready to submit BigDL PPML jobs. You need to choose the deploy mode and the way to submit job first.
