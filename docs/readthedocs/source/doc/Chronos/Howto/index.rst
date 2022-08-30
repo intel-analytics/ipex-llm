@@ -13,7 +13,6 @@ Forecasting
     In this guidance, we demonstrate **how to tune forecaster on single node**. In tuning process, forecaster will find the best hyperparameter combination among user-defined search space, which is a common process if users pursue a forecaster with higher accuracy.
 
 
-
 .. toctree::
     :maxdepth: 1
     :hidden:
