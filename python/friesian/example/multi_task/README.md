@@ -1,23 +1,23 @@
 # Multi-task Recommendation with BigDL
 In addition to providing a personalized recommendation, recommendation systems need to output diverse 
 predictions to meet the needs of real-world applications, such as user click-through rates and browsing (or watching) time predictions for products.
-This example demonstrates how to use the [MMoE](https://dl.acm.org/doi/pdf/10.1145/3219819.3220007) or [PLE](https://dl.acm.org/doi/pdf/10.1145/3383313.3412236?casa_token=8fchWD8CHc0AAAAA:2cyP8EwkhIUlSFPRpfCGHahTddki0OEjDxfbUFMkXY5fU0FNtkvRzmYloJtLowFmL1en88FRFY4Q) model to implement multi-task recommendations with large-scale data.
+This example demonstrates how to use BigDL Friesian to train [MMoE](https://dl.acm.org/doi/pdf/10.1145/3219819.3220007) or [PLE](https://dl.acm.org/doi/pdf/10.1145/3383313.3412236?casa_token=8fchWD8CHc0AAAAA:2cyP8EwkhIUlSFPRpfCGHahTddki0OEjDxfbUFMkXY5fU0FNtkvRzmYloJtLowFmL1en88FRFY4Q) for multi-task recommendation with large-scale data.
 
-## Prepare environments
+## Prepare the environment
 We highly recommend you use [Anaconda](https://www.anaconda.com/distribution/#linux) to prepare the environment, especially if you want to run on a yarn cluster. 
 ```
 conda create -n bigdl python=3.7 #bigdl is conda environment name, you can set another name you like.
 conda activate bigdl
-pip install bigdl-orca[ray]
-pip install bigdl-friesian
+pip install bigdl-friesian[train]
 pip install tensorflow==2.9.1
 pip install deepctr[cpu]
 ```
 Refer to [this document](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/python.html#install) for more installation guides.
 
 ## Data Preparation
-In this example, a news dataset is used to demonstrate the training and testing process. 
-Each row contains several feature values, timestamps and two labels. Using the timestamp to divide the training and testing sets. 
+In this example, a [news dataset](https://github.com/zhongqiangwu960812/AI-RecommenderSystem/tree/master/Dataset) is used to demonstrate the training and testing process. 
+The original data has more than 1 million users, as well as more than 60 million clicks, and the processed training and test data have 2,977,923  and 962,066 records respectively. 
+Each row contains several feature values, timestamps and two labels. The timestamp is used to divide the training and testing sets. 
 The click prediction (classification) and duration time prediction (regression) are two output targets. Original data examples are as follows:
 ```angular2html
 +----------+----------+-------------------+----------+----------+-------------+-----+--------+------+-------+--------+--------+------+------+-------------------+-------+-------------+--------------------+
@@ -31,8 +31,8 @@ The click prediction (classification) and duration time prediction (regression) 
 +----------+----------+-------------------+----------+----------+-------------+-----+--------+------+-------+--------+--------+------+------+-------------------+-------+-------------+--------------------+
 ```
 
-With the built-in high-level preprocessing operations in FeatureTable, we can easily perform distributed pre-processing for large-scale data.
-The details of pre-processing can be found [here](https://github.com/intel-analytics/BigDL/blob/main/apps/wide-deep-recommendation/feature_engineering.ipynb). Examples of processed data are as follows:
+With the built-in high-level preprocessing operations in Friesian FeatureTable, we can easily perform distributed preprocessing for large-scale data.
+The details of preprocessing can be found [here](https://github.com/intel-analytics/BigDL/blob/main/apps/wide-deep-recommendation/feature_engineering.ipynb). Examples of processed data are as follows:
 
 ```angular2html
 +-------------------+-----+--------+-------------------+-----------+-----+-------+----------+----------+----------+-------------+------+---+--------+----+---+------+-----+
@@ -45,17 +45,17 @@ The details of pre-processing can be found [here](https://github.com/intel-analy
 |2021-07-03 18:13:03|    0|       0|2021-07-02 10:43:51| 0.09944751|   60|  14089|     81707|         2|        73|          313|    36|  2|      38| 308|  5|     1|    5|
 +-------------------+-----+--------+-------------------+-----------+-----+-------+----------+----------+----------+-------------+------+---+--------+----+---+------+-----+
 ```
-Data pre-processing command:
+Data preprocessing command:
 ```bash
 python data_processing.py \
-    --input_path  path/to/input/dataset \
-    --output_path path/to/save/processed/dataset \
+    --input_path  /path/to/input/dataset \
+    --output_path /path/to/save/processed/dataset \
     --cluster_mode local \
     --executor_cores 8 \
-    --executor_memory 24g \
+    --executor_memory 12g \
     --num_executors 4 \
     --driver_cores 2 \
-    --driver_memory 24g
+    --driver_memory 8g
 ```
 
 __Options for data_processing:__
@@ -64,29 +64,29 @@ __Options for data_processing:__
 * `cluster_mode`: The cluster mode, such as local, yarn, standalone or spark-submit. Default to be local. 
 * `master`: The master url, only used when cluster mode is standalone. Default to be None. 
 * `executor_cores`: The executor core number. Default to be 8.
-* `executor_memory`: The executor memory. Default to be 24g.
+* `executor_memory`: The executor memory. Default to be 12g.
 * `num_executors`: The number of executors. Default to be 4.
 * `driver_cores`: The driver core number. Default to be 2. 
-* `driver_memory`: The driver memory. Default to be 24g.
+* `driver_memory`: The driver memory. Default to be 8g.
 
 __NOTE:__ 
 When the *cluster_mode* is yarn, *input_path* and *output_path* can be HDFS paths. 
 
 ## Train and test Multi-task models
-After data preprocessing, training MMoE or PlE model as follows:
+After data preprocessing, the training command for MMoE or PLE model is as follows:
 ```bash
 python run_multi_task.py \
     --do_train \
     --model_type mmoe\
-    --train_data_path path/to/training/dataset \
-    --test_data_path path/to/testing/dataset \
-    --model_save_path path/to/save/the/trained/model \
+    --train_data_path /path/to/training/dataset \
+    --test_data_path /path/to/testing/dataset \
+    --model_save_path /path/to/save/the/trained/model \
     --cluster_mode local \
     --executor_cores 8 \
-    --executor_memory 24g \
+    --executor_memory 12g \
     --num_executors 4 \
     --driver_cores 2 \
-    --driver_memory 24g
+    --driver_memory 8g
 ```
 
 Evaluate Results as follows:
@@ -94,17 +94,17 @@ Evaluate Results as follows:
 python run_multi_task.py \
     --do_test \
     --model_type mmoe\
-    --test_data_path path/to/testing/dataset \
-    --model_save_path path/to/save/the/trained/model \
+    --test_data_path /path/to/testing/dataset \
+    --model_save_path /path/to/save/the/trained/model \
     --cluster_mode local \
     --executor_cores 8 \
-    --executor_memory 24g \
+    --executor_memory 12g \
     --num_executors 4 \
     --driver_cores 2 \
-    --driver_memory 24g
+    --driver_memory 8g
 ```
 
-__Options for data_processing:__
+__Options for training and test:__
 * `do_train`: To start training model.
 * `do_test`: To start test model.
 * `model_type`: The multi task model, mmoe or ple. Default to be mmoe.
@@ -114,10 +114,10 @@ __Options for data_processing:__
 * `cluster_mode`: The cluster mode, such as local, yarn, standalone or spark-submit. Default to be local. 
 * `master`: The master url, only used when cluster mode is standalone. Default to be None. 
 * `executor_cores`: The executor core number. Default to be 8.
-* `executor_memory`: The executor memory. Default to be 24g.
+* `executor_memory`: The executor memory. Default to be 12g.
 * `num_executors`: The number of executors. Default to be 4.
 * `driver_cores`: The driver core number. Default to be 2. 
-* `driver_memory`: The driver memory. Default to be 24g.
+* `driver_memory`: The driver memory. Default to be 8g.
 
 __NOTE:__ 
 When the *cluster_mode* is yarn, *train_data_path*, *test_data_path* ans *model_save_path* can be HDFS paths. 

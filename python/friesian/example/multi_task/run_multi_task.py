@@ -171,13 +171,13 @@ def _parse_args():
                         help='The master url, only used when cluster mode is standalone.')
     parser.add_argument('--executor_cores', type=int, default=8,
                         help='The executor core number.')
-    parser.add_argument('--executor_memory', type=str, default="24g",
+    parser.add_argument('--executor_memory', type=str, default="12g",
                         help='The executor memory.')
     parser.add_argument('--num_executors', type=int, default=4,
                         help='The number of executors.')
     parser.add_argument('--driver_cores', type=int, default=2,
                         help='The driver core number.')
-    parser.add_argument('--driver_memory', type=str, default="24g",
+    parser.add_argument('--driver_memory', type=str, default="8g",
                         help='The driver memory.')
     args = parser.parse_args()
     return args
