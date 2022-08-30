@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 from pathlib import Path
+from statistics import mode
 from tempfile import TemporaryDirectory
 from ..core.model import OpenVINOModel
 from bigdl.nano.utils.inference.tf.model import AcceleratedKerasModel
@@ -22,7 +23,7 @@ import tensorflow as tf
 from bigdl.nano.utils.log4Error import invalidInputError
 
 
-class KerasOpenVINOModel(OpenVINOModel, AcceleratedKerasModel):
+class KerasOpenVINOModel(AcceleratedKerasModel):
     def __init__(self, model):
         """
         Create a OpenVINO model from Keras.
@@ -39,14 +40,14 @@ class KerasOpenVINOModel(OpenVINOModel, AcceleratedKerasModel):
             if isinstance(model, tf.keras.Model):
                 export(model, str(dir / 'tmp.xml'))
                 ov_model_path = dir / 'tmp.xml'
-            OpenVINOModel.__init__(self, ov_model_path)
+            self.ov_model = OpenVINOModel(ov_model_path)
             AcceleratedKerasModel.__init__(self, None)
 
-    def __call__(self, *args, **kwds):
-        return AcceleratedKerasModel.__call__(self, *args, **kwds)
+    def forward_step(self, *inputs):
+        return self.ov_model.forward_step(*inputs)
 
     def on_forward_start(self, inputs):
-        if self.ie_network is None:
+        if self.ov_model.ie_network is None:
             invalidInputError(False,
                               "Please create an instance by KerasOpenVINOModel()"
                               " or KerasOpenVINOModel.load()")
@@ -82,3 +83,6 @@ class KerasOpenVINOModel(OpenVINOModel, AcceleratedKerasModel):
             invalidInputError(False, "nano_model_meta.yml must specify 'xml_path' for loading.")
         xml_path = Path(path) / status['xml_path']
         return KerasOpenVINOModel(xml_path)
+
+    def _save_model(self, path):
+        self.ov_model._save_model(path, model=self)

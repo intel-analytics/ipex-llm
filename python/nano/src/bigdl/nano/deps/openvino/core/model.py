@@ -53,17 +53,18 @@ class OpenVINOModel:
         input_names = [t.any_name for t in self._ie_network.inputs]
         self._forward_args = input_names
 
-    def _save_model(self, path):
+    def _save_model(self, path, model):
         """
         Save PytorchOpenVINOModel to local as xml and bin file
 
         :param path: Directory to save the model.
+        :param model: Model object to get status property
         """
         path = Path(path)
         path.mkdir(exist_ok=True)
         invalidInputError(self.ie_network,
                           "self.ie_network shouldn't be None.")
-        xml_path = path / self.status['xml_path']
+        xml_path = path / model.status['xml_path']
         save(self.ie_network, xml_path)
 
     def pot(self,

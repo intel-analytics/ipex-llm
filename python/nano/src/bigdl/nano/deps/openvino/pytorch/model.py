@@ -24,7 +24,7 @@ import torch
 from bigdl.nano.utils.log4Error import invalidInputError
 
 
-class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
+class PytorchOpenVINOModel(AcceleratedLightningModule):
     def __init__(self, model, input_sample=None, logging=True, **export_kwargs):
         """
         Create a OpenVINO model from pytorch.
@@ -43,14 +43,14 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
             if isinstance(model, torch.nn.Module):
                 export(model, input_sample, str(dir / 'tmp.xml'), logging, **export_kwargs)
                 ov_model_path = dir / 'tmp.xml'
-            OpenVINOModel.__init__(self, ov_model_path)
-            AcceleratedLightningModule.__init__(self, None)
+            self.ov_model = OpenVINOModel(ov_model_path)
+            super().__init__(self.ov_model)
 
-    def __call__(self, *inputs, **kwargs):
-        return AcceleratedLightningModule.__call__(self, *inputs, **kwargs)
+    def forward_step(self, *inputs):
+        return self.ov_model.forward_step(*inputs)
 
     def on_forward_start(self, inputs):
-        if self.ie_network is None:
+        if self.ov_model.ie_network is None:
             invalidInputError(False,
                               "Please create an instance by PytorchOpenVINOModel()"
                               " or PytorchOpenVINOModel.load()")
@@ -66,6 +66,10 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
         status = super().status
         status.update({"xml_path": 'ov_saved_model.xml', "weight_path": 'ov_saved_model.bin'})
         return status
+
+    @property
+    def forward_args(self):
+        return self.ov_model.forward_args
 
     @staticmethod
     def _load(path):
@@ -98,7 +102,10 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
         if metric:
             metric = PytorchOpenVINOMetric(metric=metric, higher_better=higher_better)
         dataloader = PytorchOpenVINODataLoader(dataloader, collate_fn=self.tensors_to_numpy)
-        model = super().pot(dataloader, metric=metric, drop_type=drop_type,
-                            maximal_drop=maximal_drop, max_iter_num=max_iter_num,
-                            n_requests=n_requests, sample_size=sample_size)
+        model = self.ov_model.pot(dataloader, metric=metric, drop_type=drop_type,
+                                  maximal_drop=maximal_drop, max_iter_num=max_iter_num,
+                                  n_requests=n_requests, sample_size=sample_size)
         return PytorchOpenVINOModel(model)
+
+    def _save_model(self, path):
+        self.ov_model._save_model(path, model=self)
