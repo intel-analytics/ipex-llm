@@ -209,7 +209,7 @@ class BasePytorchForecaster(Forecaster):
     def search_summary(self):
         # add tuning check
         invalidOperationError(self.use_hpo, "No search summary when HPO is disabled.")
-        return self.trainer.search_summary()
+        return self.tune_trainer.search_summary()
 
     def fit(self, data, validation_data=None, epochs=1, batch_size=32, validation_mode='output',
             earlystop_patience=1, use_trial_id=None):
