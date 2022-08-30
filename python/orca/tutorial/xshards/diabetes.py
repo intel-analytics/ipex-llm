@@ -25,8 +25,9 @@ from bigdl.orca.learn.tf.estimator import Estimator
 
 init_orca_context(cluster_mode="local", cores=4, memory="3g")
 
-path = 'pima-indians-diabetes-test.csv'
-data_shard = bigdl.orca.data.pandas.read_csv(path)
+path = 'pima-indians-diabetes.csv'
+data_shard = bigdl.orca.data.pandas.read_csv(path, header=None)
+column = list(data_shard.get_schema()['columns'])
 
 model = Sequential()
 model.add(Dense(12, input_shape=(8,), activation='relu'))
@@ -35,9 +36,8 @@ model.add(Dense(1, activation='sigmoid'))
 
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-data_shard = data_shard.assembleFeatureLabelCols(featureCols=['f1', 'f2', 'f3',
-                                                              'f4', 'f5', 'f6', 'f7', 'f8'],
-                                                 labelCols=['label'])
+data_shard = data_shard.assembleFeatureLabelCols(featureCols=column[:-1],
+                                                 labelCols=list(column[-1]))
 
 est = Estimator.from_keras(keras_model=model)
 est.fit(data=data_shard,
