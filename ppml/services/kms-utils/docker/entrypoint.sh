@@ -43,7 +43,7 @@ elif [ "$action" = "generatekeys" ]; then
 		--simpleAPPKEY $appkey
 	elif [ "$KMS_TYPE" = "azure" ]; then
 	    keyVaultName=$2
-		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
+		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$BIGDL_HOME/jars/*:$SPARK_HOME/examples/jars/*:$SPARK_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.GenerateKeys \
 		--primaryKeyPath /home/key/simple_encrypted_primary_key \
 		--dataKeyPath /home/key/simple_encrypted_data_key \
