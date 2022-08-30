@@ -64,11 +64,11 @@ echo "#3 Running diabetes"
 #timer
 start=$(date "+%s")
 
-if [ -f ${BIGDL_ROOT}/python/orca/tutorial/xshards/pima-indians-diabetes-test.csv ]
+if [ -f ${BIGDL_ROOT}/python/orca/tutorial/xshards/pima-indians-diabetes.csv ]
 then
-    echo "pima-indians-diabetes-test.csv already exists"
+    echo "pima-indians-diabetes.csv already exists"
 else
-    wget -nv $FTP_URI/analytics-zoo-data/xshards/pima-indians-diabetes-test.csv -P ${BIGDL_ROOT}/python/orca/tutorial/xshards/
+    wget -nv $FTP_URI/analytics-zoo-data/xshards/pima-indians-diabetes.csv -P ${BIGDL_ROOT}/python/orca/tutorial/xshards/
 fi
 
 sed -i "s/epochs=150/epochs=2/g" diabetes.py
@@ -82,11 +82,11 @@ echo "#4 Running ionosphere"
 #timer
 start=$(date "+%s")
 
-if [ -f ${BIGDL_ROOT}/python/orca/tutorial/xshards/new_ionosphere.csv ]
+if [ -f ${BIGDL_ROOT}/python/orca/tutorial/xshards/ionosphere.csv ]
 then
-    echo "new_ionosphere.csv already exists"
+    echo "ionosphere.csv already exists"
 else
-    wget -nv $FTP_URI/analytics-zoo-data/xshards/new_ionosphere.csv -P ${BIGDL_ROOT}/python/orca/tutorial/xshards/
+    wget -nv $FTP_URI/analytics-zoo-data/xshards/ionosphere.csv -P ${BIGDL_ROOT}/python/orca/tutorial/xshards/
 fi
 
 sed -i "s/epochs=100/epochs=2/g" ionosphere.py
