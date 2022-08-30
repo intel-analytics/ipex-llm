@@ -68,9 +68,9 @@ class StringIndexer:
 
         :param df: a pyspark.sql.dataframe.DataFrame to be processed.
         :param columns: str, dict or a list of str, dict, target column(s) to generate StringIndex.
-               dict is a mapping of source column names -> target column name if needs to combine multiple
-               source columns to generate index.
-               For example: {'src_cols':['a_user', 'b_user'], 'col_name':'user'}.
+         dict is a mapping of source column names -> target column name if needs to combine multiple
+         source columns to generate index.
+         For example: {'src_cols':['a_user', 'b_user'], 'col_name':'user'}.
         :param freq_limit: int, dict or None. Categories with a count/frequency below freq_limit
                will be omitted from the encoding. Can be represented as either an integer,
                dict. For instance, 15, {'col_4': 10, 'col_5': 2} etc. Default is None,
@@ -297,7 +297,7 @@ class StringIndex:
         self.df = broadcast(self.df)
 
     @classmethod
-    def from_dict(cls, indices, col_name) -> "StringIndex":
+    def from_dict(cls, indices: Dict[str, int], col_name: str) -> "StringIndex":
         """
         Create the StringIndex from a dict of indices.
 

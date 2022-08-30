@@ -37,6 +37,7 @@ from numpy import ndarray, uint32
 from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Tuple, Union, Any
 if TYPE_CHECKING:
     import tensorflow as tf
+    from torch.utils.data import DataLoader
     from bigdl.orca.data.shard import SparkXShards
     from pyspark.rdd import PipelinedRDD
     from bigdl.orca.data.tf.data import TensorSliceDataset, Dataset
@@ -366,7 +367,7 @@ def read_as_tfdataset(path: str,
                       output_types: Dict[str, 'tf.Dtype'],
                       config: Dict[str, int]=None,
                       output_shapes: Dict[str, 'tf.TensorShape']=None,
-                      *args, **kwargs):
+                      *args, **kwargs) -> "tf.data.Dataset":
     """
     return a orca.data.tf.data.Dataset
     :param path:
@@ -399,7 +400,7 @@ def read_as_dataloader(path: str,
                        config: Dict[str, int]=None,
                        transforms: Callable=None,
                        batch_size: int=1,
-                       *args, **kwargs):
+                       *args, **kwargs) -> "DataLoader":
     path, _ = pa_fs(path)
     import tensorflow as tf
     import torch
@@ -454,7 +455,7 @@ def read_parquet(format: str,
                  transforms: Callable=None,
                  config: Optional[Dict[str, int]]=None,
                  batch_size: int=1,
-                 *args, **kwargs):
+                 *args, **kwargs) -> Union["tf.data.Dataset", "DataLoader"]:
     supported_format = {"tf_dataset", "dataloader"}
     if format not in supported_format:
         invalidInputError(False,

@@ -30,7 +30,7 @@ class TF1Dataset(TFDataset):
     def __init__(self, dataset: "MapDataset", batch_size: int,
                  batch_per_thread: int,
                  validation_dataset: "MapDataset"=None,
-                 intra_threads: int=None, inter_threads: None=None) -> None:
+                 intra_threads: int=None, inter_threads: int=None) -> None:
 
         node_num, core_num = get_node_and_core_number()
 

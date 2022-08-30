@@ -453,7 +453,7 @@ class SparkXShards(XShards):
 
     def assembleFeatureLabelCols(self,
                                  featureCols: List[Union[str, "Column"]],
-                                 labelCols: List[Union[str, "Column"]]):
+                                 labelCols: List[Union[str, "Column"]]) -> "SparkXShards":
         """
         The api is used to merge/convert one or multiple feature columns into a numpy array,
         merge/convert one or multiple label columns into a numpy array.

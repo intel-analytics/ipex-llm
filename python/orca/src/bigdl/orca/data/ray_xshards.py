@@ -30,6 +30,7 @@ from bigdl.dllib.utils.log4Error import *
 from numpy import ndarray
 from typing import (
     TYPE_CHECKING,
+    Any,
     Callable,
     DefaultDict,
     Dict,
@@ -258,7 +259,7 @@ class RayXShards(XShards):
     # TODO: ADD UT
     def reduce_partitions_for_actors(self, actors: List["ActorHandle"],
                                      reduce_partitions_func: Callable,
-                                     return_refs: bool=False):
+                                     return_refs: bool=False) -> List[Any]:
         """
         Evenly allocate partitions for actors and run `reduce_partitions_func` on partitions of each
         worker.
@@ -290,8 +291,8 @@ class RayXShards(XShards):
     def zip_reduce_shards_with_actors(self,
                                       xshards: "RayXShards",
                                       actors: List["ActorHandle"],
-                                      reduce_partitions_func,
-                                      return_refs: bool=False):
+                                      reduce_partitions_func: Callable,
+                                      return_refs: bool=False) -> List[Any]:
         invalidInputError(self.num_partitions() == xshards.num_partitions(),
                           "the rdds to be zipped must have the same number of partitions")
         invalidInputError(self.num_partitions() >= len(actors),

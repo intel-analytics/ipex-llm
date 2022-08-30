@@ -129,7 +129,7 @@ class Dataset(object):
         return TensorSliceDataset(xshards)
 
     @staticmethod
-    def from_feature_table(tbl: "FeatureTable"):
+    def from_feature_table(tbl: "FeatureTable") -> "TensorSliceDataset":
         from bigdl.friesian.feature import FeatureTable
         from bigdl.friesian.feature.utils import featuretable_to_xshards
         log4Error.invalidInputError(isinstance(tbl, FeatureTable),
