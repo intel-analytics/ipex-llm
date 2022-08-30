@@ -1,7 +1,7 @@
 Nano How-to Guides
 =========================
 
-In Nano How-to Guides, you could expect to find multiple task-oriented and bite-sized examples. These examples will show you various tasks that BigDL-Nano could help you accomplish smoothly.
+In Nano How-to Guides, you could expect to find multiple task-oriented, bite-sized, and executable examples. These examples will show you various tasks that BigDL-Nano could help you accomplish smoothly.
 
 PyTorch Inference
 -------------------------
