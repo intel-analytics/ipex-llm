@@ -1,6 +1,7 @@
 # Bigdl-nano InferenceOptimizer example on Cat vs. Dog dataset
 
-This example illustrates how to apply InferenceOptimizer to quickly find the acceleration method with the minimum inference latency under certain specific restrictions or without restrictions for the trained model. For the sake of this example, we first train the proposed network(by default, a ResNet50 is used) on the [cats and dogs dataset](https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip), which consists both [frozen and unfrozen stages](https://github.com/PyTorchLightning/pytorch-lightning/blob/495812878dfe2e31ec2143c071127990afbb082b/pl_examples/domain_templates/computer_vision_fine_tuning.py#L21-L35). Then, by calling `optimize()`, we can obtain all avaliable accelaration combinations provided by BigDL-Nano for inference. With all the optimizations provided by BigDL-Nano, we could make inference 5x times faster.
+This example illustrates how to apply InferenceOptimizer to quickly find acceleration method with the minimum inference latency under specific restrictions or without restrictions for a trained model. 
+For the sake of this example, we first train the proposed network(by default, a ResNet50 is used) on the [cats and dogs dataset](https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip), which consists both [frozen and unfrozen stages](https://github.com/PyTorchLightning/pytorch-lightning/blob/495812878dfe2e31ec2143c071127990afbb082b/pl_examples/domain_templates/computer_vision_fine_tuning.py#L21-L35). Then, by calling `optimize()`, we can obtain all avaliable accelaration combinations provided by BigDL-Nano for inference. By calling `get_best_mdoel()` , we could get an accelerated model whose inference is 7.6x times faster.
 
 
 ## Prepare the environment
@@ -9,8 +10,15 @@ We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux)
 conda create -n nano python=3.7  # "nano" is conda environment name, you can use any name you like.
 conda activate nano
 pip install jsonargparse[signatures]
+pip install --pre --upgrade bigdl-nano[pytorch]
 
-pip install bigdl-nano[pytorch]
+# bf16 is avaliable only on torch1.12
+pip install torch==1.12.0 torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu 
+# Necessary packages for inference accelaration
+pip install --upgrade intel-extension-for-pytorch
+pip install onnx onnxruntime onnxruntime-extensions
+pip install openvino-dev
+pip install --upgrade neural-compressor
 ```
 Initialize environment variables with script `bigdl-nano-init` installed with bigdl-nano.
 ```
@@ -42,31 +50,12 @@ You could access [cats and dogs dataset](https://storage.googleapis.com/mledu-da
 You can run this example with command line:
 
 ```bash
-python pl-finetune.py
+python inference_pipeline.py
 ```
-
-**Options**
-* `--trainer.num_processes` The number of processes in distributed training.Default: 1.
-* `--trainer.use_ipex` Whether we use ipex as accelerator for trainer. Default is False.
-* `--trainer.distributed_backend` The way distributing model and data, `spawn` and `ray` are available. Default is `spawn`.
-* `--model.backbone` Name (as in ``torchvision.models``) of the feature extractor. Default is `resnet50`.
 
 ## Results
 
-You can find the result for training as follows:
+You can find the result for inference as follows:
 ```
-Global seed set to 1234
-GPU available: False, used: False
-TPU available: False, using: 0 TPU cores
-IPU available: False, using: 0 IPUs
-Downloading https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip to data/cats_and_dogs_filtered.zip
-68606976it [00:07, 9476966.43it/s]                                                                                                                                                                                                                              
-Extracting data/cats_and_dogs_filtered.zip to data
-The model will start training with only 6 trainable parameters out of 165.
-/opt/conda/envs/test37/lib/python3.7/site-packages/pytorch_lightning/trainer/data_loading.py:106: UserWarning: The dataloader, train dataloader, does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` (try 96 which is the number of cpus on this machine) in the `DataLoader` init to improve performance.
-  f"The dataloader, {name}, does not have many workers which may be a bottleneck."
-/opt/conda/envs/test37/lib/python3.7/site-packages/pytorch_lightning/trainer/data_loading.py:106: UserWarning: The dataloader, val dataloader 0, does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` (try 96 which is the number of cpus on this machine) in the `DataLoader` init to improve performance.
-  f"The dataloader, {name}, does not have many workers which may be a bottleneck."
-Epoch 0:  75%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉                                           | 280/375 [01:01<00:20,  4.57it/s, loss=0.116, v_num=4, train_acc=0.875]
-Validating:  24%|█████████████████████████████████████████████████▍                                                                                                                                                            | 30/125 [00:07<00:24,  3.95it/s]
+
 ```
