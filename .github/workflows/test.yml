@@ -17,7 +17,7 @@ jobs:
       - name: Create Awesome Badge
         uses: schneegans/dynamic-badges-action@v1.4.0
         with:
-          auth: ${{ secrets.GIST_SECRET }}
+          auth: ${{ secrets.GIST_KEY }}
           gistID: 746dcada5746912c8d6808d71bd6c35b
           filename: ppml-spark-deploy.json
           label: Hello
