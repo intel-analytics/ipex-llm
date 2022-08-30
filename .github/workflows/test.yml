@@ -1,0 +1,19 @@
+name: self-runner-create-badge
+
+on:
+  pull_request:
+
+jobs:
+  test-self-runner-create-badge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout Code"
+        uses: actions/checkout@v3
+
+      - name: Create Job Badge
+        uses: ./.github/actions/create-job-status-badge
+        if: ${{ always() }}
+        with:
+          secret: ${{ secrets.GIST_SECRET }}
+          gist-id: 7495dccc42118020c12de5a095cfa2a6
+          file-name: nb-scala-build.json
