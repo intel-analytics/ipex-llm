@@ -125,8 +125,7 @@ class TestTFEstimator(TestCase):
                 verbose=True,
                 config=config,
                 workers_per_node=3,
-                backend="spark",
-                model_dir=temp_dir)
+                backend="spark")
 
             res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
                               feature_cols=["feature"],
@@ -177,8 +176,7 @@ class TestTFEstimator(TestCase):
                 verbose=True,
                 config=config,
                 workers_per_node=1,
-                backend="spark",
-                model_dir=temp_dir)
+                backend="spark")
 
             res = trainer.fit(data=xshards, epochs=5, batch_size=4, steps_per_epoch=25,
                               feature_cols=["user", "item"], label_cols=["label"])
@@ -213,8 +211,7 @@ class TestTFEstimator(TestCase):
                 verbose=True,
                 config=config,
                 workers_per_node=2,
-                backend="spark",
-                model_dir=temp_dir)
+                backend="spark")
 
             callbacks = [
                 tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(temp_dir, "ckpt_{epoch}"),
@@ -301,35 +298,29 @@ class TestTFEstimator(TestCase):
             "lr": 0.2
         }
 
-        try:
-            temp_dir = tempfile.mkdtemp()
+        trainer = Estimator.from_keras(
+            model_creator=model_creator,
+            verbose=True,
+            config=config,
+            workers_per_node=2,
+            backend="spark")
 
-            trainer = Estimator.from_keras(
-                model_creator=model_creator,
-                verbose=True,
-                config=config,
-                workers_per_node=2,
-                backend="spark",
-                model_dir=temp_dir)
+        res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
+                            validation_data=val_df,
+                            validation_steps=2,
+                            feature_cols=["feature"],
+                            label_cols=["label"])
 
-            res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
-                              validation_data=val_df,
-                              validation_steps=2,
-                              feature_cols=["feature"],
-                              label_cols=["label"])
+        res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
+                            feature_cols=["feature"],
+                            label_cols=["label"])
 
-            res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
-                              feature_cols=["feature"],
-                              label_cols=["label"])
+        res = trainer.evaluate(val_df, batch_size=4, num_steps=25, feature_cols=["feature"],
+                                label_cols=["label"])
+        print("validation result: ", res)
 
-            res = trainer.evaluate(val_df, batch_size=4, num_steps=25, feature_cols=["feature"],
-                                   label_cols=["label"])
-            print("validation result: ", res)
-
-            res = trainer.predict(df, feature_cols=["feature"]).collect()
-            print("predict result: ", res)
-        finally:
-            shutil.rmtree(temp_dir)
+        res = trainer.predict(df, feature_cols=["feature"]).collect()
+        print("predict result: ", res)
         OrcaContext._shard_size = None
 
     def test_dataframe_different_train_val(self):
@@ -349,31 +340,25 @@ class TestTFEstimator(TestCase):
             "lr": 0.2
         }
 
-        try:
-            temp_dir = tempfile.mkdtemp()
+        trainer = Estimator.from_keras(
+            model_creator=model_creator,
+            verbose=True,
+            config=config,
+            workers_per_node=2,
+            backend="spark")
 
-            trainer = Estimator.from_keras(
-                model_creator=model_creator,
-                verbose=True,
-                config=config,
-                workers_per_node=2,
-                backend="spark",
-                model_dir=temp_dir)
+        res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
+                            validation_data=val_df,
+                            validation_steps=2,
+                            feature_cols=["feature"],
+                            label_cols=["label"])
 
-            res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
-                              validation_data=val_df,
-                              validation_steps=2,
-                              feature_cols=["feature"],
-                              label_cols=["label"])
+        res = trainer.evaluate(val_df, batch_size=4, num_steps=25, feature_cols=["feature"],
+                                label_cols=["label"])
+        print("validation result: ", res)
 
-            res = trainer.evaluate(val_df, batch_size=4, num_steps=25, feature_cols=["feature"],
-                                   label_cols=["label"])
-            print("validation result: ", res)
-
-            res = trainer.predict(df, feature_cols=["feature"]).collect()
-            print("predict result: ", res)
-        finally:
-            shutil.rmtree(temp_dir)
+        res = trainer.predict(df, feature_cols=["feature"]).collect()
+        print("predict result: ", res)
 
     def test_tensorboard(self):
         sc = OrcaContext.get_spark_context()
@@ -396,8 +381,7 @@ class TestTFEstimator(TestCase):
                 verbose=True,
                 config=config,
                 workers_per_node=2,
-                backend="spark",
-                model_dir=temp_dir)
+                backend="spark")
 
             callbacks = [
                 tf.keras.callbacks.TensorBoard(log_dir=os.path.join(temp_dir, "train_log"),
@@ -457,8 +441,7 @@ class TestTFEstimator(TestCase):
                 verbose=True,
                 config=config,
                 workers_per_node=2,
-                backend="spark",
-                model_dir=temp_dir)
+                backend="spark")
 
             callbacks = [
                 tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(temp_dir, "ckpt_{epoch}"),
@@ -563,8 +546,7 @@ class TestTFEstimator(TestCase):
                 verbose=True,
                 config=config,
                 workers_per_node=2,
-                backend="spark",
-                model_dir=temp_dir)
+                backend="spark")
 
             res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
                               feature_cols=["feature"],
