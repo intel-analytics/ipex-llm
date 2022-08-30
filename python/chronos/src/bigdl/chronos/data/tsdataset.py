@@ -66,6 +66,7 @@ class TSDataset:
         self._freq_certainty = False
         self._freq = None
         self._is_pd_datetime = pd.api.types.is_datetime64_any_dtype(self.df[self.dt_col].dtypes)
+        self.is_predict = False
         if self._is_pd_datetime:
             if len(self.df[self.dt_col]) < 2:
                 self._freq = None
@@ -590,7 +591,8 @@ class TSDataset:
         # horizon_time is only for time_enc, the time_enc numpy ndarray won't have any
         # shape change when the dataset is for prediction.
         horizon_time = self.horizon
-        if is_predict:
+        self.is_predict = is_predict
+        if self.is_predict:
             self.horizon = 0
 
         if self.lookback == 'auto':
@@ -774,6 +776,7 @@ class TSDataset:
                                   "of lookback and horizon, while get lookback+horizon="
                                   f"{need_dflen} and the length of dataset is {len(self.df)}.")
 
+            self.is_predict = is_predict
             torch_dataset = RollDataset(self.df,
                                         dt_col=self.dt_col,
                                         freq=self._freq,
@@ -784,7 +787,7 @@ class TSDataset:
                                         id_col=self.id_col,
                                         time_enc=time_enc,
                                         label_len=label_len,
-                                        is_predict=is_predict)
+                                        is_predict=self.is_predict)
             # TODO gen_rolling_feature and gen_global_feature will be support later
             self.roll_target = target_col
             self.roll_feature = feature_col
