@@ -28,6 +28,8 @@ service FGBoostService {
     rpc uploadTreeLeaf(UploadTreeLeafRequest) returns (UploadResponse) {}
     rpc evaluate(EvaluateRequest) returns (EvaluateResponse) {}
     rpc predict(PredictRequest) returns (PredictResponse) {}
+    rpc saveServerModel(SaveModelRequest) returns (SaveModelResponse) {}
+    rpc loadServerModel(LoadModelRequest) returns (LoadModelResponse) {}
 }
 
 message UploadLabelRequest {
@@ -139,4 +141,20 @@ message SplitResponse {
     string response = 2;
     int32 code = 3;
 }
+message SaveModelRequest {
+    string clientuuid = 1;
+    string modelPath = 2;
+}
+message SaveModelResponse {
+    string message = 1;
+    int32 code = 2;
+}
+message LoadModelRequest {
+    string client_id = 1;
+    string model_path = 2;
+}
 
+message LoadModelResponse {
+    string message = 1;
+    int32 code = 2;
+}

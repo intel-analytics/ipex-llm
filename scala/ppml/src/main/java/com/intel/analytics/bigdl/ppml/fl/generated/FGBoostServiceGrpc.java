@@ -14,29 +14,29 @@ public final class FGBoostServiceGrpc {
   public static final String SERVICE_NAME = "fgboost.FGBoostService";
 
   // Static method descriptors that strictly reflect the proto.
-  private static volatile io.grpc.MethodDescriptor<FGBoostServiceProto.UploadLabelRequest,
-      FGBoostServiceProto.UploadResponse> getUploadLabelMethod;
+  private static volatile io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadLabelRequest,
+      com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadResponse> getUploadLabelMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "uploadLabel",
-      requestType = FGBoostServiceProto.UploadLabelRequest.class,
-      responseType = FGBoostServiceProto.UploadResponse.class,
+      requestType = com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadLabelRequest.class,
+      responseType = com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadResponse.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<FGBoostServiceProto.UploadLabelRequest,
-      FGBoostServiceProto.UploadResponse> getUploadLabelMethod() {
-    io.grpc.MethodDescriptor<FGBoostServiceProto.UploadLabelRequest, FGBoostServiceProto.UploadResponse> getUploadLabelMethod;
+  public static io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadLabelRequest,
+      com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadResponse> getUploadLabelMethod() {
+    io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadLabelRequest, com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadResponse> getUploadLabelMethod;
     if ((getUploadLabelMethod = FGBoostServiceGrpc.getUploadLabelMethod) == null) {
       synchronized (FGBoostServiceGrpc.class) {
         if ((getUploadLabelMethod = FGBoostServiceGrpc.getUploadLabelMethod) == null) {
           FGBoostServiceGrpc.getUploadLabelMethod = getUploadLabelMethod =
-              io.grpc.MethodDescriptor.<FGBoostServiceProto.UploadLabelRequest, FGBoostServiceProto.UploadResponse>newBuilder()
+              io.grpc.MethodDescriptor.<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadLabelRequest, com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "uploadLabel"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  FGBoostServiceProto.UploadLabelRequest.getDefaultInstance()))
+                  com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadLabelRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  FGBoostServiceProto.UploadResponse.getDefaultInstance()))
+                  com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadResponse.getDefaultInstance()))
               .setSchemaDescriptor(new FGBoostServiceMethodDescriptorSupplier("uploadLabel"))
               .build();
         }
@@ -45,29 +45,29 @@ public final class FGBoostServiceGrpc {
     return getUploadLabelMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<FGBoostServiceProto.DownloadLabelRequest,
-      FGBoostServiceProto.DownloadResponse> getDownloadLabelMethod;
+  private static volatile io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.DownloadLabelRequest,
+      com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.DownloadResponse> getDownloadLabelMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "downloadLabel",
-      requestType = FGBoostServiceProto.DownloadLabelRequest.class,
-      responseType = FGBoostServiceProto.DownloadResponse.class,
+      requestType = com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.DownloadLabelRequest.class,
+      responseType = com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.DownloadResponse.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<FGBoostServiceProto.DownloadLabelRequest,
-      FGBoostServiceProto.DownloadResponse> getDownloadLabelMethod() {
-    io.grpc.MethodDescriptor<FGBoostServiceProto.DownloadLabelRequest, FGBoostServiceProto.DownloadResponse> getDownloadLabelMethod;
+  public static io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.DownloadLabelRequest,
+      com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.DownloadResponse> getDownloadLabelMethod() {
+    io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.DownloadLabelRequest, com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.DownloadResponse> getDownloadLabelMethod;
     if ((getDownloadLabelMethod = FGBoostServiceGrpc.getDownloadLabelMethod) == null) {
       synchronized (FGBoostServiceGrpc.class) {
         if ((getDownloadLabelMethod = FGBoostServiceGrpc.getDownloadLabelMethod) == null) {
           FGBoostServiceGrpc.getDownloadLabelMethod = getDownloadLabelMethod =
-              io.grpc.MethodDescriptor.<FGBoostServiceProto.DownloadLabelRequest, FGBoostServiceProto.DownloadResponse>newBuilder()
+              io.grpc.MethodDescriptor.<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.DownloadLabelRequest, com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.DownloadResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "downloadLabel"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  FGBoostServiceProto.DownloadLabelRequest.getDefaultInstance()))
+                  com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.DownloadLabelRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  FGBoostServiceProto.DownloadResponse.getDefaultInstance()))
+                  com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.DownloadResponse.getDefaultInstance()))
               .setSchemaDescriptor(new FGBoostServiceMethodDescriptorSupplier("downloadLabel"))
               .build();
         }
@@ -76,29 +76,29 @@ public final class FGBoostServiceGrpc {
     return getDownloadLabelMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<FGBoostServiceProto.SplitRequest,
-      FGBoostServiceProto.SplitResponse> getSplitMethod;
+  private static volatile io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SplitRequest,
+      com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SplitResponse> getSplitMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "split",
-      requestType = FGBoostServiceProto.SplitRequest.class,
-      responseType = FGBoostServiceProto.SplitResponse.class,
+      requestType = com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SplitRequest.class,
+      responseType = com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SplitResponse.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<FGBoostServiceProto.SplitRequest,
-      FGBoostServiceProto.SplitResponse> getSplitMethod() {
-    io.grpc.MethodDescriptor<FGBoostServiceProto.SplitRequest, FGBoostServiceProto.SplitResponse> getSplitMethod;
+  public static io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SplitRequest,
+      com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SplitResponse> getSplitMethod() {
+    io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SplitRequest, com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SplitResponse> getSplitMethod;
     if ((getSplitMethod = FGBoostServiceGrpc.getSplitMethod) == null) {
       synchronized (FGBoostServiceGrpc.class) {
         if ((getSplitMethod = FGBoostServiceGrpc.getSplitMethod) == null) {
           FGBoostServiceGrpc.getSplitMethod = getSplitMethod =
-              io.grpc.MethodDescriptor.<FGBoostServiceProto.SplitRequest, FGBoostServiceProto.SplitResponse>newBuilder()
+              io.grpc.MethodDescriptor.<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SplitRequest, com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SplitResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "split"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  FGBoostServiceProto.SplitRequest.getDefaultInstance()))
+                  com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SplitRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  FGBoostServiceProto.SplitResponse.getDefaultInstance()))
+                  com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SplitResponse.getDefaultInstance()))
               .setSchemaDescriptor(new FGBoostServiceMethodDescriptorSupplier("split"))
               .build();
         }
@@ -107,29 +107,29 @@ public final class FGBoostServiceGrpc {
     return getSplitMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<FGBoostServiceProto.RegisterRequest,
-      FGBoostServiceProto.RegisterResponse> getRegisterMethod;
+  private static volatile io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.RegisterRequest,
+      com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.RegisterResponse> getRegisterMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "register",
-      requestType = FGBoostServiceProto.RegisterRequest.class,
-      responseType = FGBoostServiceProto.RegisterResponse.class,
+      requestType = com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.RegisterRequest.class,
+      responseType = com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.RegisterResponse.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<FGBoostServiceProto.RegisterRequest,
-      FGBoostServiceProto.RegisterResponse> getRegisterMethod() {
-    io.grpc.MethodDescriptor<FGBoostServiceProto.RegisterRequest, FGBoostServiceProto.RegisterResponse> getRegisterMethod;
+  public static io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.RegisterRequest,
+      com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.RegisterResponse> getRegisterMethod() {
+    io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.RegisterRequest, com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.RegisterResponse> getRegisterMethod;
     if ((getRegisterMethod = FGBoostServiceGrpc.getRegisterMethod) == null) {
       synchronized (FGBoostServiceGrpc.class) {
         if ((getRegisterMethod = FGBoostServiceGrpc.getRegisterMethod) == null) {
           FGBoostServiceGrpc.getRegisterMethod = getRegisterMethod =
-              io.grpc.MethodDescriptor.<FGBoostServiceProto.RegisterRequest, FGBoostServiceProto.RegisterResponse>newBuilder()
+              io.grpc.MethodDescriptor.<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.RegisterRequest, com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.RegisterResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "register"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  FGBoostServiceProto.RegisterRequest.getDefaultInstance()))
+                  com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.RegisterRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  FGBoostServiceProto.RegisterResponse.getDefaultInstance()))
+                  com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.RegisterResponse.getDefaultInstance()))
               .setSchemaDescriptor(new FGBoostServiceMethodDescriptorSupplier("register"))
               .build();
         }
@@ -138,29 +138,29 @@ public final class FGBoostServiceGrpc {
     return getRegisterMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<FGBoostServiceProto.UploadTreeLeafRequest,
-      FGBoostServiceProto.UploadResponse> getUploadTreeLeafMethod;
+  private static volatile io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadTreeLeafRequest,
+      com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadResponse> getUploadTreeLeafMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "uploadTreeLeaf",
-      requestType = FGBoostServiceProto.UploadTreeLeafRequest.class,
-      responseType = FGBoostServiceProto.UploadResponse.class,
+      requestType = com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadTreeLeafRequest.class,
+      responseType = com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadResponse.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<FGBoostServiceProto.UploadTreeLeafRequest,
-      FGBoostServiceProto.UploadResponse> getUploadTreeLeafMethod() {
-    io.grpc.MethodDescriptor<FGBoostServiceProto.UploadTreeLeafRequest, FGBoostServiceProto.UploadResponse> getUploadTreeLeafMethod;
+  public static io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadTreeLeafRequest,
+      com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadResponse> getUploadTreeLeafMethod() {
+    io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadTreeLeafRequest, com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadResponse> getUploadTreeLeafMethod;
     if ((getUploadTreeLeafMethod = FGBoostServiceGrpc.getUploadTreeLeafMethod) == null) {
       synchronized (FGBoostServiceGrpc.class) {
         if ((getUploadTreeLeafMethod = FGBoostServiceGrpc.getUploadTreeLeafMethod) == null) {
           FGBoostServiceGrpc.getUploadTreeLeafMethod = getUploadTreeLeafMethod =
-              io.grpc.MethodDescriptor.<FGBoostServiceProto.UploadTreeLeafRequest, FGBoostServiceProto.UploadResponse>newBuilder()
+              io.grpc.MethodDescriptor.<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadTreeLeafRequest, com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "uploadTreeLeaf"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  FGBoostServiceProto.UploadTreeLeafRequest.getDefaultInstance()))
+                  com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadTreeLeafRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  FGBoostServiceProto.UploadResponse.getDefaultInstance()))
+                  com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadResponse.getDefaultInstance()))
               .setSchemaDescriptor(new FGBoostServiceMethodDescriptorSupplier("uploadTreeLeaf"))
               .build();
         }
@@ -169,29 +169,29 @@ public final class FGBoostServiceGrpc {
     return getUploadTreeLeafMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<FGBoostServiceProto.EvaluateRequest,
-      FGBoostServiceProto.EvaluateResponse> getEvaluateMethod;
+  private static volatile io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.EvaluateRequest,
+      com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.EvaluateResponse> getEvaluateMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "evaluate",
-      requestType = FGBoostServiceProto.EvaluateRequest.class,
-      responseType = FGBoostServiceProto.EvaluateResponse.class,
+      requestType = com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.EvaluateRequest.class,
+      responseType = com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.EvaluateResponse.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<FGBoostServiceProto.EvaluateRequest,
-      FGBoostServiceProto.EvaluateResponse> getEvaluateMethod() {
-    io.grpc.MethodDescriptor<FGBoostServiceProto.EvaluateRequest, FGBoostServiceProto.EvaluateResponse> getEvaluateMethod;
+  public static io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.EvaluateRequest,
+      com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.EvaluateResponse> getEvaluateMethod() {
+    io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.EvaluateRequest, com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.EvaluateResponse> getEvaluateMethod;
     if ((getEvaluateMethod = FGBoostServiceGrpc.getEvaluateMethod) == null) {
       synchronized (FGBoostServiceGrpc.class) {
         if ((getEvaluateMethod = FGBoostServiceGrpc.getEvaluateMethod) == null) {
           FGBoostServiceGrpc.getEvaluateMethod = getEvaluateMethod =
-              io.grpc.MethodDescriptor.<FGBoostServiceProto.EvaluateRequest, FGBoostServiceProto.EvaluateResponse>newBuilder()
+              io.grpc.MethodDescriptor.<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.EvaluateRequest, com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.EvaluateResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "evaluate"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  FGBoostServiceProto.EvaluateRequest.getDefaultInstance()))
+                  com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.EvaluateRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  FGBoostServiceProto.EvaluateResponse.getDefaultInstance()))
+                  com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.EvaluateResponse.getDefaultInstance()))
               .setSchemaDescriptor(new FGBoostServiceMethodDescriptorSupplier("evaluate"))
               .build();
         }
@@ -200,29 +200,29 @@ public final class FGBoostServiceGrpc {
     return getEvaluateMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<FGBoostServiceProto.PredictRequest,
-      FGBoostServiceProto.PredictResponse> getPredictMethod;
+  private static volatile io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.PredictRequest,
+      com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.PredictResponse> getPredictMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "predict",
-      requestType = FGBoostServiceProto.PredictRequest.class,
-      responseType = FGBoostServiceProto.PredictResponse.class,
+      requestType = com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.PredictRequest.class,
+      responseType = com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.PredictResponse.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<FGBoostServiceProto.PredictRequest,
-      FGBoostServiceProto.PredictResponse> getPredictMethod() {
-    io.grpc.MethodDescriptor<FGBoostServiceProto.PredictRequest, FGBoostServiceProto.PredictResponse> getPredictMethod;
+  public static io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.PredictRequest,
+      com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.PredictResponse> getPredictMethod() {
+    io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.PredictRequest, com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.PredictResponse> getPredictMethod;
     if ((getPredictMethod = FGBoostServiceGrpc.getPredictMethod) == null) {
       synchronized (FGBoostServiceGrpc.class) {
         if ((getPredictMethod = FGBoostServiceGrpc.getPredictMethod) == null) {
           FGBoostServiceGrpc.getPredictMethod = getPredictMethod =
-              io.grpc.MethodDescriptor.<FGBoostServiceProto.PredictRequest, FGBoostServiceProto.PredictResponse>newBuilder()
+              io.grpc.MethodDescriptor.<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.PredictRequest, com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.PredictResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "predict"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  FGBoostServiceProto.PredictRequest.getDefaultInstance()))
+                  com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.PredictRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  FGBoostServiceProto.PredictResponse.getDefaultInstance()))
+                  com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.PredictResponse.getDefaultInstance()))
               .setSchemaDescriptor(new FGBoostServiceMethodDescriptorSupplier("predict"))
               .build();
         }
@@ -231,13 +231,75 @@ public final class FGBoostServiceGrpc {
     return getPredictMethod;
   }
 
+  private static volatile io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SaveModelRequest,
+      com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SaveModelResponse> getSaveServerModelMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "saveServerModel",
+      requestType = com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SaveModelRequest.class,
+      responseType = com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SaveModelResponse.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SaveModelRequest,
+      com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SaveModelResponse> getSaveServerModelMethod() {
+    io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SaveModelRequest, com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SaveModelResponse> getSaveServerModelMethod;
+    if ((getSaveServerModelMethod = FGBoostServiceGrpc.getSaveServerModelMethod) == null) {
+      synchronized (FGBoostServiceGrpc.class) {
+        if ((getSaveServerModelMethod = FGBoostServiceGrpc.getSaveServerModelMethod) == null) {
+          FGBoostServiceGrpc.getSaveServerModelMethod = getSaveServerModelMethod =
+              io.grpc.MethodDescriptor.<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SaveModelRequest, com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SaveModelResponse>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "saveServerModel"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SaveModelRequest.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SaveModelResponse.getDefaultInstance()))
+              .setSchemaDescriptor(new FGBoostServiceMethodDescriptorSupplier("saveServerModel"))
+              .build();
+        }
+      }
+    }
+    return getSaveServerModelMethod;
+  }
+
+  private static volatile io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.LoadModelRequest,
+      com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.LoadModelResponse> getLoadServerModelMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "loadServerModel",
+      requestType = com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.LoadModelRequest.class,
+      responseType = com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.LoadModelResponse.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.LoadModelRequest,
+      com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.LoadModelResponse> getLoadServerModelMethod() {
+    io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.LoadModelRequest, com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.LoadModelResponse> getLoadServerModelMethod;
+    if ((getLoadServerModelMethod = FGBoostServiceGrpc.getLoadServerModelMethod) == null) {
+      synchronized (FGBoostServiceGrpc.class) {
+        if ((getLoadServerModelMethod = FGBoostServiceGrpc.getLoadServerModelMethod) == null) {
+          FGBoostServiceGrpc.getLoadServerModelMethod = getLoadServerModelMethod =
+              io.grpc.MethodDescriptor.<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.LoadModelRequest, com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.LoadModelResponse>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "loadServerModel"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.LoadModelRequest.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.LoadModelResponse.getDefaultInstance()))
+              .setSchemaDescriptor(new FGBoostServiceMethodDescriptorSupplier("loadServerModel"))
+              .build();
+        }
+      }
+    }
+    return getLoadServerModelMethod;
+  }
+
   /**
    * Creates a new async stub that supports all call types for the service
    */
   public static FGBoostServiceStub newStub(io.grpc.Channel channel) {
     io.grpc.stub.AbstractStub.StubFactory<FGBoostServiceStub> factory =
       new io.grpc.stub.AbstractStub.StubFactory<FGBoostServiceStub>() {
-        @Override
+        @java.lang.Override
         public FGBoostServiceStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
           return new FGBoostServiceStub(channel, callOptions);
         }
@@ -252,7 +314,7 @@ public final class FGBoostServiceGrpc {
       io.grpc.Channel channel) {
     io.grpc.stub.AbstractStub.StubFactory<FGBoostServiceBlockingStub> factory =
       new io.grpc.stub.AbstractStub.StubFactory<FGBoostServiceBlockingStub>() {
-        @Override
+        @java.lang.Override
         public FGBoostServiceBlockingStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
           return new FGBoostServiceBlockingStub(channel, callOptions);
         }
@@ -267,7 +329,7 @@ public final class FGBoostServiceGrpc {
       io.grpc.Channel channel) {
     io.grpc.stub.AbstractStub.StubFactory<FGBoostServiceFutureStub> factory =
       new io.grpc.stub.AbstractStub.StubFactory<FGBoostServiceFutureStub>() {
-        @Override
+        @java.lang.Override
         public FGBoostServiceFutureStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
           return new FGBoostServiceFutureStub(channel, callOptions);
         }
@@ -281,104 +343,132 @@ public final class FGBoostServiceGrpc {
 
     /**
      */
-    public void uploadLabel(FGBoostServiceProto.UploadLabelRequest request,
-                            io.grpc.stub.StreamObserver<FGBoostServiceProto.UploadResponse> responseObserver) {
+    public void uploadLabel(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadLabelRequest request,
+        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getUploadLabelMethod(), responseObserver);
     }
 
     /**
      */
-    public void downloadLabel(FGBoostServiceProto.DownloadLabelRequest request,
-                              io.grpc.stub.StreamObserver<FGBoostServiceProto.DownloadResponse> responseObserver) {
+    public void downloadLabel(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.DownloadLabelRequest request,
+        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.DownloadResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getDownloadLabelMethod(), responseObserver);
     }
 
     /**
      */
-    public void split(FGBoostServiceProto.SplitRequest request,
-                      io.grpc.stub.StreamObserver<FGBoostServiceProto.SplitResponse> responseObserver) {
+    public void split(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SplitRequest request,
+        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SplitResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getSplitMethod(), responseObserver);
     }
 
     /**
      */
-    public void register(FGBoostServiceProto.RegisterRequest request,
-                         io.grpc.stub.StreamObserver<FGBoostServiceProto.RegisterResponse> responseObserver) {
+    public void register(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.RegisterRequest request,
+        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.RegisterResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getRegisterMethod(), responseObserver);
     }
 
     /**
      */
-    public void uploadTreeLeaf(FGBoostServiceProto.UploadTreeLeafRequest request,
-                               io.grpc.stub.StreamObserver<FGBoostServiceProto.UploadResponse> responseObserver) {
+    public void uploadTreeLeaf(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadTreeLeafRequest request,
+        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getUploadTreeLeafMethod(), responseObserver);
     }
 
     /**
      */
-    public void evaluate(FGBoostServiceProto.EvaluateRequest request,
-                         io.grpc.stub.StreamObserver<FGBoostServiceProto.EvaluateResponse> responseObserver) {
+    public void evaluate(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.EvaluateRequest request,
+        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.EvaluateResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getEvaluateMethod(), responseObserver);
     }
 
     /**
      */
-    public void predict(FGBoostServiceProto.PredictRequest request,
-                        io.grpc.stub.StreamObserver<FGBoostServiceProto.PredictResponse> responseObserver) {
+    public void predict(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.PredictRequest request,
+        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.PredictResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getPredictMethod(), responseObserver);
     }
 
-    @Override public final io.grpc.ServerServiceDefinition bindService() {
+    /**
+     */
+    public void saveServerModel(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SaveModelRequest request,
+        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SaveModelResponse> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getSaveServerModelMethod(), responseObserver);
+    }
+
+    /**
+     */
+    public void loadServerModel(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.LoadModelRequest request,
+        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.LoadModelResponse> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getLoadServerModelMethod(), responseObserver);
+    }
+
+    @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
           .addMethod(
             getUploadLabelMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                FGBoostServiceProto.UploadLabelRequest,
-                FGBoostServiceProto.UploadResponse>(
+                com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadLabelRequest,
+                com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadResponse>(
                   this, METHODID_UPLOAD_LABEL)))
           .addMethod(
             getDownloadLabelMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                FGBoostServiceProto.DownloadLabelRequest,
-                FGBoostServiceProto.DownloadResponse>(
+                com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.DownloadLabelRequest,
+                com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.DownloadResponse>(
                   this, METHODID_DOWNLOAD_LABEL)))
           .addMethod(
             getSplitMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                FGBoostServiceProto.SplitRequest,
-                FGBoostServiceProto.SplitResponse>(
+                com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SplitRequest,
+                com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SplitResponse>(
                   this, METHODID_SPLIT)))
           .addMethod(
             getRegisterMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                FGBoostServiceProto.RegisterRequest,
-                FGBoostServiceProto.RegisterResponse>(
+                com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.RegisterRequest,
+                com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.RegisterResponse>(
                   this, METHODID_REGISTER)))
           .addMethod(
             getUploadTreeLeafMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                FGBoostServiceProto.UploadTreeLeafRequest,
-                FGBoostServiceProto.UploadResponse>(
+                com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadTreeLeafRequest,
+                com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadResponse>(
                   this, METHODID_UPLOAD_TREE_LEAF)))
           .addMethod(
             getEvaluateMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                FGBoostServiceProto.EvaluateRequest,
-                FGBoostServiceProto.EvaluateResponse>(
+                com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.EvaluateRequest,
+                com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.EvaluateResponse>(
                   this, METHODID_EVALUATE)))
           .addMethod(
             getPredictMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                FGBoostServiceProto.PredictRequest,
-                FGBoostServiceProto.PredictResponse>(
+                com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.PredictRequest,
+                com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.PredictResponse>(
                   this, METHODID_PREDICT)))
+          .addMethod(
+            getSaveServerModelMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+              new MethodHandlers<
+                com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SaveModelRequest,
+                com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SaveModelResponse>(
+                  this, METHODID_SAVE_SERVER_MODEL)))
+          .addMethod(
+            getLoadServerModelMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+              new MethodHandlers<
+                com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.LoadModelRequest,
+                com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.LoadModelResponse>(
+                  this, METHODID_LOAD_SERVER_MODEL)))
           .build();
     }
   }
@@ -391,7 +481,7 @@ public final class FGBoostServiceGrpc {
       super(channel, callOptions);
     }
 
-    @Override
+    @java.lang.Override
     protected FGBoostServiceStub build(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new FGBoostServiceStub(channel, callOptions);
@@ -399,58 +489,74 @@ public final class FGBoostServiceGrpc {
 
     /**
      */
-    public void uploadLabel(FGBoostServiceProto.UploadLabelRequest request,
-                            io.grpc.stub.StreamObserver<FGBoostServiceProto.UploadResponse> responseObserver) {
+    public void uploadLabel(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadLabelRequest request,
+        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadResponse> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getUploadLabelMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
      */
-    public void downloadLabel(FGBoostServiceProto.DownloadLabelRequest request,
-                              io.grpc.stub.StreamObserver<FGBoostServiceProto.DownloadResponse> responseObserver) {
+    public void downloadLabel(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.DownloadLabelRequest request,
+        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.DownloadResponse> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getDownloadLabelMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
      */
-    public void split(FGBoostServiceProto.SplitRequest request,
-                      io.grpc.stub.StreamObserver<FGBoostServiceProto.SplitResponse> responseObserver) {
+    public void split(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SplitRequest request,
+        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SplitResponse> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getSplitMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
      */
-    public void register(FGBoostServiceProto.RegisterRequest request,
-                         io.grpc.stub.StreamObserver<FGBoostServiceProto.RegisterResponse> responseObserver) {
+    public void register(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.RegisterRequest request,
+        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.RegisterResponse> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getRegisterMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
      */
-    public void uploadTreeLeaf(FGBoostServiceProto.UploadTreeLeafRequest request,
-                               io.grpc.stub.StreamObserver<FGBoostServiceProto.UploadResponse> responseObserver) {
+    public void uploadTreeLeaf(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadTreeLeafRequest request,
+        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadResponse> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getUploadTreeLeafMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
      */
-    public void evaluate(FGBoostServiceProto.EvaluateRequest request,
-                         io.grpc.stub.StreamObserver<FGBoostServiceProto.EvaluateResponse> responseObserver) {
+    public void evaluate(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.EvaluateRequest request,
+        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.EvaluateResponse> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getEvaluateMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
      */
-    public void predict(FGBoostServiceProto.PredictRequest request,
-                        io.grpc.stub.StreamObserver<FGBoostServiceProto.PredictResponse> responseObserver) {
+    public void predict(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.PredictRequest request,
+        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.PredictResponse> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getPredictMethod(), getCallOptions()), request, responseObserver);
+    }
+
+    /**
+     */
+    public void saveServerModel(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SaveModelRequest request,
+        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SaveModelResponse> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getSaveServerModelMethod(), getCallOptions()), request, responseObserver);
+    }
+
+    /**
+     */
+    public void loadServerModel(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.LoadModelRequest request,
+        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.LoadModelResponse> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getLoadServerModelMethod(), getCallOptions()), request, responseObserver);
     }
   }
 
@@ -462,7 +568,7 @@ public final class FGBoostServiceGrpc {
       super(channel, callOptions);
     }
 
-    @Override
+    @java.lang.Override
     protected FGBoostServiceBlockingStub build(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new FGBoostServiceBlockingStub(channel, callOptions);
@@ -470,51 +576,65 @@ public final class FGBoostServiceGrpc {
 
     /**
      */
-    public FGBoostServiceProto.UploadResponse uploadLabel(FGBoostServiceProto.UploadLabelRequest request) {
+    public com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadResponse uploadLabel(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadLabelRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getUploadLabelMethod(), getCallOptions(), request);
     }
 
     /**
      */
-    public FGBoostServiceProto.DownloadResponse downloadLabel(FGBoostServiceProto.DownloadLabelRequest request) {
+    public com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.DownloadResponse downloadLabel(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.DownloadLabelRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getDownloadLabelMethod(), getCallOptions(), request);
     }
 
     /**
      */
-    public FGBoostServiceProto.SplitResponse split(FGBoostServiceProto.SplitRequest request) {
+    public com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SplitResponse split(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SplitRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getSplitMethod(), getCallOptions(), request);
     }
 
     /**
      */
-    public FGBoostServiceProto.RegisterResponse register(FGBoostServiceProto.RegisterRequest request) {
+    public com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.RegisterResponse register(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.RegisterRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getRegisterMethod(), getCallOptions(), request);
     }
 
     /**
      */
-    public FGBoostServiceProto.UploadResponse uploadTreeLeaf(FGBoostServiceProto.UploadTreeLeafRequest request) {
+    public com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadResponse uploadTreeLeaf(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadTreeLeafRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getUploadTreeLeafMethod(), getCallOptions(), request);
     }
 
     /**
      */
-    public FGBoostServiceProto.EvaluateResponse evaluate(FGBoostServiceProto.EvaluateRequest request) {
+    public com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.EvaluateResponse evaluate(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.EvaluateRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getEvaluateMethod(), getCallOptions(), request);
     }
 
     /**
      */
-    public FGBoostServiceProto.PredictResponse predict(FGBoostServiceProto.PredictRequest request) {
+    public com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.PredictResponse predict(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.PredictRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getPredictMethod(), getCallOptions(), request);
+    }
+
+    /**
+     */
+    public com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SaveModelResponse saveServerModel(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SaveModelRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getSaveServerModelMethod(), getCallOptions(), request);
+    }
+
+    /**
+     */
+    public com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.LoadModelResponse loadServerModel(com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.LoadModelRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getLoadServerModelMethod(), getCallOptions(), request);
     }
   }
 
@@ -526,7 +646,7 @@ public final class FGBoostServiceGrpc {
       super(channel, callOptions);
     }
 
-    @Override
+    @java.lang.Override
     protected FGBoostServiceFutureStub build(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new FGBoostServiceFutureStub(channel, callOptions);
@@ -534,58 +654,74 @@ public final class FGBoostServiceGrpc {
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<FGBoostServiceProto.UploadResponse> uploadLabel(
-        FGBoostServiceProto.UploadLabelRequest request) {
+    public com.google.common.util.concurrent.ListenableFuture<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadResponse> uploadLabel(
+        com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadLabelRequest request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getUploadLabelMethod(), getCallOptions()), request);
     }
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<FGBoostServiceProto.DownloadResponse> downloadLabel(
-        FGBoostServiceProto.DownloadLabelRequest request) {
+    public com.google.common.util.concurrent.ListenableFuture<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.DownloadResponse> downloadLabel(
+        com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.DownloadLabelRequest request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getDownloadLabelMethod(), getCallOptions()), request);
     }
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<FGBoostServiceProto.SplitResponse> split(
-        FGBoostServiceProto.SplitRequest request) {
+    public com.google.common.util.concurrent.ListenableFuture<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SplitResponse> split(
+        com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SplitRequest request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getSplitMethod(), getCallOptions()), request);
     }
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<FGBoostServiceProto.RegisterResponse> register(
-        FGBoostServiceProto.RegisterRequest request) {
+    public com.google.common.util.concurrent.ListenableFuture<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.RegisterResponse> register(
+        com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.RegisterRequest request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getRegisterMethod(), getCallOptions()), request);
     }
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<FGBoostServiceProto.UploadResponse> uploadTreeLeaf(
-        FGBoostServiceProto.UploadTreeLeafRequest request) {
+    public com.google.common.util.concurrent.ListenableFuture<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadResponse> uploadTreeLeaf(
+        com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadTreeLeafRequest request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getUploadTreeLeafMethod(), getCallOptions()), request);
     }
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<FGBoostServiceProto.EvaluateResponse> evaluate(
-        FGBoostServiceProto.EvaluateRequest request) {
+    public com.google.common.util.concurrent.ListenableFuture<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.EvaluateResponse> evaluate(
+        com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.EvaluateRequest request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getEvaluateMethod(), getCallOptions()), request);
     }
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<FGBoostServiceProto.PredictResponse> predict(
-        FGBoostServiceProto.PredictRequest request) {
+    public com.google.common.util.concurrent.ListenableFuture<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.PredictResponse> predict(
+        com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.PredictRequest request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getPredictMethod(), getCallOptions()), request);
+    }
+
+    /**
+     */
+    public com.google.common.util.concurrent.ListenableFuture<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SaveModelResponse> saveServerModel(
+        com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SaveModelRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getSaveServerModelMethod(), getCallOptions()), request);
+    }
+
+    /**
+     */
+    public com.google.common.util.concurrent.ListenableFuture<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.LoadModelResponse> loadServerModel(
+        com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.LoadModelRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getLoadServerModelMethod(), getCallOptions()), request);
     }
   }
 
@@ -596,6 +732,8 @@ public final class FGBoostServiceGrpc {
   private static final int METHODID_UPLOAD_TREE_LEAF = 4;
   private static final int METHODID_EVALUATE = 5;
   private static final int METHODID_PREDICT = 6;
+  private static final int METHODID_SAVE_SERVER_MODEL = 7;
+  private static final int METHODID_LOAD_SERVER_MODEL = 8;
 
   private static final class MethodHandlers<Req, Resp> implements
       io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -610,45 +748,53 @@ public final class FGBoostServiceGrpc {
       this.methodId = methodId;
     }
 
-    @Override
-    @SuppressWarnings("unchecked")
+    @java.lang.Override
+    @java.lang.SuppressWarnings("unchecked")
     public void invoke(Req request, io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
         case METHODID_UPLOAD_LABEL:
-          serviceImpl.uploadLabel((FGBoostServiceProto.UploadLabelRequest) request,
-              (io.grpc.stub.StreamObserver<FGBoostServiceProto.UploadResponse>) responseObserver);
+          serviceImpl.uploadLabel((com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadLabelRequest) request,
+              (io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadResponse>) responseObserver);
           break;
         case METHODID_DOWNLOAD_LABEL:
-          serviceImpl.downloadLabel((FGBoostServiceProto.DownloadLabelRequest) request,
-              (io.grpc.stub.StreamObserver<FGBoostServiceProto.DownloadResponse>) responseObserver);
+          serviceImpl.downloadLabel((com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.DownloadLabelRequest) request,
+              (io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.DownloadResponse>) responseObserver);
           break;
         case METHODID_SPLIT:
-          serviceImpl.split((FGBoostServiceProto.SplitRequest) request,
-              (io.grpc.stub.StreamObserver<FGBoostServiceProto.SplitResponse>) responseObserver);
+          serviceImpl.split((com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SplitRequest) request,
+              (io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SplitResponse>) responseObserver);
           break;
         case METHODID_REGISTER:
-          serviceImpl.register((FGBoostServiceProto.RegisterRequest) request,
-              (io.grpc.stub.StreamObserver<FGBoostServiceProto.RegisterResponse>) responseObserver);
+          serviceImpl.register((com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.RegisterRequest) request,
+              (io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.RegisterResponse>) responseObserver);
           break;
         case METHODID_UPLOAD_TREE_LEAF:
-          serviceImpl.uploadTreeLeaf((FGBoostServiceProto.UploadTreeLeafRequest) request,
-              (io.grpc.stub.StreamObserver<FGBoostServiceProto.UploadResponse>) responseObserver);
+          serviceImpl.uploadTreeLeaf((com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadTreeLeafRequest) request,
+              (io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadResponse>) responseObserver);
           break;
         case METHODID_EVALUATE:
-          serviceImpl.evaluate((FGBoostServiceProto.EvaluateRequest) request,
-              (io.grpc.stub.StreamObserver<FGBoostServiceProto.EvaluateResponse>) responseObserver);
+          serviceImpl.evaluate((com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.EvaluateRequest) request,
+              (io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.EvaluateResponse>) responseObserver);
           break;
         case METHODID_PREDICT:
-          serviceImpl.predict((FGBoostServiceProto.PredictRequest) request,
-              (io.grpc.stub.StreamObserver<FGBoostServiceProto.PredictResponse>) responseObserver);
+          serviceImpl.predict((com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.PredictRequest) request,
+              (io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.PredictResponse>) responseObserver);
+          break;
+        case METHODID_SAVE_SERVER_MODEL:
+          serviceImpl.saveServerModel((com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SaveModelRequest) request,
+              (io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SaveModelResponse>) responseObserver);
+          break;
+        case METHODID_LOAD_SERVER_MODEL:
+          serviceImpl.loadServerModel((com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.LoadModelRequest) request,
+              (io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.LoadModelResponse>) responseObserver);
           break;
         default:
           throw new AssertionError();
       }
     }
 
-    @Override
-    @SuppressWarnings("unchecked")
+    @java.lang.Override
+    @java.lang.SuppressWarnings("unchecked")
     public io.grpc.stub.StreamObserver<Req> invoke(
         io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
@@ -662,12 +808,12 @@ public final class FGBoostServiceGrpc {
       implements io.grpc.protobuf.ProtoFileDescriptorSupplier, io.grpc.protobuf.ProtoServiceDescriptorSupplier {
     FGBoostServiceBaseDescriptorSupplier() {}
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Descriptors.FileDescriptor getFileDescriptor() {
-      return FGBoostServiceProto.getDescriptor();
+      return com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.getDescriptor();
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Descriptors.ServiceDescriptor getServiceDescriptor() {
       return getFileDescriptor().findServiceByName("FGBoostService");
     }
@@ -687,7 +833,7 @@ public final class FGBoostServiceGrpc {
       this.methodName = methodName;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Descriptors.MethodDescriptor getMethodDescriptor() {
       return getServiceDescriptor().findMethodByName(methodName);
     }
@@ -710,6 +856,8 @@ public final class FGBoostServiceGrpc {
               .addMethod(getUploadTreeLeafMethod())
               .addMethod(getEvaluateMethod())
               .addMethod(getPredictMethod())
+              .addMethod(getSaveServerModelMethod())
+              .addMethod(getLoadServerModelMethod())
               .build();
         }
       }

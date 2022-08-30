@@ -67,8 +67,7 @@ class FGBoostRegressionSepc extends FLSpec {
 
   }
   "FGBoostRegression client/server save/load" should "work" in {
-    val flServer = new FLServer(Array("-c",
-      getClass.getClassLoader.getResource("ppml-conf-save-model.yaml").getPath))
+    val flServer = new FLServer()
     try {
       val rowkeyName = "Id"
       val labelName = "SalePrice"
@@ -86,20 +85,21 @@ class FGBoostRegressionSepc extends FLSpec {
       flServer.start()
       FLContext.initFLContext("1", target)
       val fGBoostRegression = new FGBoostRegression(
-        learningRate = 0.1f, maxDepth = 7, minChildSize = 5)
+        learningRate = 0.1f, maxDepth = 7, minChildSize = 5, "/tmp/fgboost-server-model")
       fGBoostRegression.fit(trainFeatures, trainLabels, 5)
       val tmpFileName = s"/tmp/${UUID.randomUUID().toString}"
       fGBoostRegression.saveModel(tmpFileName)
       flServer.stop()
 
       // start another FLServer to load the server model and continue training
-      val flServer2 = new FLServer(Array("-c",
-        getClass.getClassLoader.getResource("ppml-conf-save-model.yaml").getPath))
+      val flServer2 = new FLServer()
       flServer2.setPort(port)
+      flServer2.setClientNum(1)
       flServer2.build()
       flServer2.start()
       FLContext.initFLContext("1", target)
       val fGBoostRegression2 = FGBoostRegression.loadModel(tmpFileName)
+      fGBoostRegression2.loadServerModel("/tmp/fgboost-server-model")
       fGBoostRegression2.fit(trainFeatures, trainLabels, 5)
       flServer2.stop()
 
