@@ -52,45 +52,60 @@ class TorchNano(LightningLite):
 
     def __init__(self, num_processes: int = 1,
                  use_ipex: bool = False,
-                 enable_bf16: bool = False,
                  strategy: str = "subprocess",
+                 precision: Union[str, int] = 32,
                  *args, **kwargs) -> None:
         """
         Create a TorchNano with nano acceleration.
 
         :param num_processes: number of processes in distributed training, defaults to 1
         :param use_ipex: whether use ipex acceleration, defaults to False
-        :param enable_bf16: whether use bf16 acceleration, defaults to False
         :param strategy: use which backend in distributed mode, defaults to "subprocess", \
             now avaiable strategies are 'spawn', 'subprocess' and 'ray'
+        :param precision: Double precision (64), full precision (32), half precision (16)
+            or bfloat16 precision (bf16), defaults to 32.
+            Enable ipex bfloat16 weight prepack when `use_ipex=True` and `precision='bf16'`
         """
         self.num_processes = num_processes
         self.use_ipex = use_ipex
-        self.enable_bf16 = enable_bf16
+        self.dtype = None
+        if self.use_ipex and precision == 'bf16':
+            # Enable ipex bfloat16 weight prepack and disable native AMP
+            self.dtype = torch.bfloat16
+            precision = 32
 
-        if TORCH_VERSION_LESS_1_11 and use_ipex and not check_avx512():
-            warning("Enable ipex<=1.10 in a cpu instruction set"
-                    " without avx512 will crash."
-                    "Fall back to regular pytorch.")
-            self.use_ipex = False
+        # Confirm if cpu supports AVX512
+        if self.use_ipex and not check_avx512():
+            if TORCH_VERSION_LESS_1_11:
+                warning("Enable ipex<=1.10 in a cpu instruction set"
+                        " without avx512 will crash."
+                        "Fall back to regular pytorch.")
+                self.use_ipex = False
+            elif self.dtype == torch.bfloat16:
+                warning("Enable IPEX bfloat16 in a cpu instruction set"
+                        " without avx512 will crash. "
+                        "Using 32-bit precision")
+                self.dtype = None
+
+        kwargs['precision'] = precision
 
         if self.num_processes == 1:
             if self.use_ipex:
-                strategy = create_IPEXStrategy(enable_bf16=self.enable_bf16)
+                strategy = create_IPEXStrategy(dtype=self.dtype)
             else:
                 strategy = None     # type: ignore
         elif strategy == "spawn":
             strategy = DDPSpawnStrategy(num_processes=self.num_processes,   # type: ignore
                                         use_ipex=self.use_ipex,
-                                        enable_bf16=self.enable_bf16)
+                                        dtype=self.dtype)
         elif strategy == "subprocess":
             strategy = DDPSubprocessStrategy(num_processes=self.num_processes,  # type: ignore
                                              use_ipex=self.use_ipex,
-                                             enable_bf16=self.enable_bf16)
+                                             dtype=self.dtype)
         elif strategy == "ray":
             strategy = create_RayStrategy(num_workers=self.num_processes,
                                           use_ipex=self.use_ipex,
-                                          enable_bf16=self.enable_bf16)
+                                          dtype=self.dtype)
         else:
             warning(f"Bigdl-nano doesn't support '{strategy}' strategy now, "
                     f"'{strategy}' strategy of pytorch_lightning will be used. "
@@ -118,16 +133,6 @@ class TorchNano(LightningLite):
         # so we have to add optimizations in this method, which will be called in
         # user defined `train()` method.
 
-        # add IPEX 1.11's optimization
-        if self.use_ipex and not TORCH_VERSION_LESS_1_10:
-            dtype = torch.bfloat16 if self.enable_bf16 else None
-            if len(optimizers) == 0:
-                ipex_optimize(model, inplace=True, dtype=dtype)
-            elif len(optimizers) == 1:
-                ipex_optimize(model, optimizer=optimizers[0], inplace=True, dtype=dtype)
-            else:
-                invalidInputError(False, "Ipex does not support more than one optimizers.")
-
         # the following codes are copied from pl's LightningLite's `setup` method,
         # ipex 1.9 requires `_move_model_to_device` after `_setup_model_and_optimizers`, but
         # pl's `setup` method calls `_move_model_to_device` before `_setup_model_and_optimizers`,
@@ -135,6 +140,18 @@ class TorchNano(LightningLite):
         self._validate_setup(model, optimizers)
 
         model, optimizers = self._strategy._setup_model_and_optimizers(model, optimizers)
+
+        # IPEX bfloat16 optimization will cast model parameters to `torch.bfloat16`
+        # which is not supported by ddp currently,
+        # so add IPEX 1.11's optimization after `_setup_model`
+        if self.use_ipex and not TORCH_VERSION_LESS_1_10:
+            if len(optimizers) == 0:
+                ipex_optimize(model, inplace=True, dtype=self.dtype)
+            elif len(optimizers) == 1:
+                ipex_optimize(model, optimizer=optimizers[0], inplace=True, dtype=self.dtype)
+            else:
+                invalidInputError(False, "Ipex does not support more than one optimizers.")
+
         if move_to_device:
             model = self._move_model_to_device(model=model, optimizers=optimizers)
         model = _TorchNanoModule(model, self._precision_plugin)

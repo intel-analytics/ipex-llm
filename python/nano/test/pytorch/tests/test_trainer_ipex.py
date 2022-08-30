@@ -22,10 +22,13 @@ import pytest
 import torch
 from torch.optim.lr_scheduler import OneCycleLR
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
+from test.pytorch.utils._train_ipex_callback import CheckIPEXFusedStepCallback
 from torch import nn
 
 from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch.vision.models import vision
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
+from bigdl.nano.common import check_avx512
 
 batch_size = 256
 max_epochs = 2
@@ -52,11 +55,11 @@ class TestTrainer(TestCase):
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
     scheduler_dict = {
         "scheduler": OneCycleLR(
-                optimizer,
-                0.1,
-                epochs=max_epochs,
-                steps_per_epoch=len(train_loader),
-            ),
+            optimizer,
+            0.1,
+            epochs=max_epochs,
+            steps_per_epoch=len(train_loader),
+        ),
         "interval": "step",
     }
 
@@ -65,6 +68,63 @@ class TestTrainer(TestCase):
         trainer = Trainer(max_epochs=max_epochs, use_ipex=True)
         pl_model = Trainer.compile(self.model, self.loss, self.optimizer, self.scheduler_dict)
         trainer.fit(pl_model, self.train_loader)
+
+    def test_trainer_ipex_bf16(self):
+        # IPEX BF16 weight prepack needs the cpu support avx512bw, avx512vl and avx512dq
+        trainer = Trainer(max_epochs=max_epochs, use_ipex=True, precision="bf16",
+                          callbacks=[CheckIPEXFusedStepCallback()])
+
+        # use_ipex=True will perform inplace optimization
+        model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
+        optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
+        loss = nn.CrossEntropyLoss()
+        scheduler_dict = {
+            "scheduler": OneCycleLR(
+                optimizer,
+                0.1,
+                epochs=max_epochs,
+                steps_per_epoch=len(self.train_loader),
+            ),
+            "interval": "step",
+        }
+
+        pl_model = Trainer.compile(model, loss, optimizer, scheduler_dict)
+        trainer.fit(pl_model, self.train_loader)
+        trainer.test(pl_model, self.train_loader)
+
+        if trainer.use_ipex and TORCH_VERSION_LESS_1_10:
+            import intel_pytorch_extension as ipex
+            # Diable IPEX AMP
+            # Avoid affecting other tests
+            ipex.enable_auto_mixed_precision(None)
+
+    def test_trainer_ipex_bf16_unspport_optim(self):
+        # IPEX BF16 weight prepack needs the cpu support avx512bw, avx512vl and avx512dq
+        trainer = Trainer(max_epochs=max_epochs, use_ipex=True, precision="bf16",
+                          callbacks=[CheckIPEXFusedStepCallback()])
+
+        model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
+        optimizer = torch.optim.AdamW(model.parameters(), lr=0.01, weight_decay=5e-4)
+        loss = nn.CrossEntropyLoss()
+        scheduler_dict = {
+            "scheduler": OneCycleLR(
+                optimizer,
+                0.1,
+                epochs=max_epochs,
+                steps_per_epoch=len(self.train_loader),
+            ),
+            "interval": "step",
+        }
+
+        pl_model = Trainer.compile(model, loss, optimizer, scheduler_dict)
+        trainer.fit(pl_model, self.train_loader)
+        trainer.test(pl_model, self.train_loader)
+
+        if trainer.use_ipex and TORCH_VERSION_LESS_1_10:
+            import intel_pytorch_extension as ipex
+            # Diable IPEX AMP
+            # Avoid affecting other tests
+            ipex.enable_auto_mixed_precision(None)
 
 
 if __name__ == '__main__':
