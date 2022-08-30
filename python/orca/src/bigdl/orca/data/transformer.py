@@ -27,39 +27,50 @@ from pyspark.ml import Pipeline as SparkPipeline
 from bigdl.orca.data.utils import *
 import uuid
 
+from typing import TYPE_CHECKING, Tuple, Union, List
+if TYPE_CHECKING:
+    from bigdl.orca.data.shard import SparkXShards
+    from pyspark.sql.dataframe import DataFrame as SparkDataFrame
+
 
 # TODO: ADD UT
 class StringIndexer:
-    def __init__(self, inputCol=None):
+    def __init__(self, inputCol: Optional[Union[str, List[str]]]=None) -> None:
         self.inputCol = inputCol
         self.indices = None
 
-    def setInputCol(self, inputCol):
+    def setInputCol(self, inputCol: Union[str, List[str]]) -> None:
         self.inputCol = inputCol
 
-    def fit_transform(self, shard):
+    def fit_transform(self, shard: "SparkXShards") -> "SparkXShards":
         df = shard.to_spark_df()
         indexedData, self.indices = self.category_encode(df, self.inputCol)
         data_shards = spark_df_to_pd_sparkxshards(indexedData)
         return data_shards
 
-    def transform(self, shard):
+    def transform(self, shard: "SparkXShards") -> "SparkXShards":
         invalidInputError(self.indices, "Please call fit_transform first")
         df = shard.to_spark_df()
         indexedData = self.encode_string(df, self.inputCol, self.indices)
         data_shards = spark_df_to_pd_sparkxshards(indexedData)
         return data_shards
 
-    def gen_string_idx(self, df, columns, freq_limit=None, order_by_freq=False,
-                       do_split=False, sep=','):
+    def gen_string_idx(self,
+                       df: "SparkDataFrame",
+                       columns: Union[str, List[str]],
+                       freq_limit: Optional[Union[int, Dict[str, int]]]=None,
+                       order_by_freq: bool=False,
+                       do_split: bool=False,
+                       sep: str=',') -> Union["StringIndex", List["StringIndex"]]:
         """
         Generate unique index value of categorical features. The resulting index would
         start from 1 with 0 reserved for unknown features.
 
+        :param df: a pyspark.sql.dataframe.DataFrame to be processed.
         :param columns: str, dict or a list of str, dict, target column(s) to generate StringIndex.
-         dict is a mapping of source column names -> target column name if needs to combine multiple
-         source columns to generate index.
-         For example: {'src_cols':['a_user', 'b_user'], 'col_name':'user'}.
+               dict is a mapping of source column names -> target column name if needs to combine multiple
+               source columns to generate index.
+               For example: {'src_cols':['a_user', 'b_user'], 'col_name':'user'}.
         :param freq_limit: int, dict or None. Categories with a count/frequency below freq_limit
                will be omitted from the encoding. Can be represented as either an integer,
                dict. For instance, 15, {'col_4': 10, 'col_5': 2} etc. Default is None,
@@ -154,12 +165,20 @@ class StringIndexer:
         else:
             return string_idx_list
 
-    def category_encode(self, df, columns, freq_limit=None, order_by_freq=False,
-                        do_split=False, sep=',', sort_for_array=False, keep_most_frequent=False,
-                        broadcast=True):
+    def category_encode(self,
+                        df: "SparkDataFrame",
+                        columns: Union[str, List[str]],
+                        freq_limit: Optional[Union[int, Dict[str, int]]]=None,
+                        order_by_freq: bool=False,
+                        do_split: bool=False,
+                        sep: str=',',
+                        sort_for_array: bool=False,
+                        keep_most_frequent: bool=False,
+                        broadcast: bool=True) -> Tuple["SparkDataFrame", List["StringIndex"]]:
         """
         Category encode the given columns.
 
+        :param df: a pyspark.sql.dataframe.DataFrame to be processed.
         :param columns: str or a list of str, target columns to encode from string to index.
         :param freq_limit: int, dict or None. Categories with a count/frequency below freq_limit
                will be omitted from the encoding. Can be represented as either an integer,
@@ -189,8 +208,15 @@ class StringIndexer:
                                   keep_most_frequent=keep_most_frequent,
                                   broadcast=broadcast), indices
 
-    def encode_string(self, df, columns, indices, broadcast=True, do_split=False,
-                      sep=',', sort_for_array=False, keep_most_frequent=False):
+    def encode_string(self,
+                      df: "SparkDataFrame",
+                      columns: Union[str, List[str]],
+                      indices: Union["StringIndex", List["StringIndex"]],
+                      broadcast: bool=True,
+                      do_split: bool=False,
+                      sep: str=',',
+                      sort_for_array: bool=False,
+                      keep_most_frequent: bool=False) -> "SparkDataFrame":
         """
         Encode columns with provided list of StringIndex. Unknown string will be
         None after the encoding and you may need to fillna with 0.
@@ -257,7 +283,7 @@ class StringIndexer:
 
 
 class StringIndex:
-    def __init__(self, df, col_name):
+    def __init__(self, df: "SparkDataFrame", col_name: str) -> None:
         cols = df.columns
         invalidInputError(len(cols) >= 2,
                           "StringIndex should have >= 2 columns: col_name, id and other columns")
@@ -266,12 +292,12 @@ class StringIndex:
         self.col_name = col_name
         self.df = df
 
-    def broadcast(self):
+    def broadcast(self) -> None:
         from pyspark.sql.functions import broadcast
         self.df = broadcast(self.df)
 
     @classmethod
-    def from_dict(cls, indices, col_name):
+    def from_dict(cls, indices, col_name) -> "StringIndex":
         """
         Create the StringIndex from a dict of indices.
 
@@ -298,7 +324,7 @@ class StringIndex:
         df = spark.createDataFrame((Row(**x) for x in indices), schema=schema)
         return cls(df, col_name)
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, "StringIndex"]:
         """
         Convert the StringIndex to a dict, with the categorical features as keys and indices
         as values.
@@ -318,7 +344,11 @@ class StringIndex:
 
 # TODO: ADD UT
 class MinMaxScaler:
-    def __init__(self, min=0.0, max=1.0, inputCol=None, outputCol=None):
+    def __init__(self,
+                 min: float=0.0,
+                 max: float=1.0,
+                 inputCol: Optional[Union[str, List[str]]]=None,
+                 outputCol: Optional[Union[str, List[str]]]=None):
         self.min = min
         self.max = max
         self.inputCol = inputCol
@@ -328,7 +358,7 @@ class MinMaxScaler:
         if inputCol:
             self.__createScaler__()
 
-    def __createScaler__(self):
+    def __createScaler__(self) -> None:
         invalidInputError(self.inputCol, "inputColumn cannot be empty")
         invalidInputError(self.outputCol, "outputColumn cannot be empty")
 
@@ -338,19 +368,21 @@ class MinMaxScaler:
                                    inputCol=vecOutputCol, outputCol=self.outputCol)
         self.scaler = SparkPipeline(stages=[assembler, scaler])
 
-    def setInputOutputCol(self, inputCol, outputCol):
+    def setInputOutputCol(self,
+                          inputCol: Union[str, List[str]],
+                          outputCol: Union[str, List[str]]) -> None:
         self.inputCol = inputCol
         self.outputCol = outputCol
         self.__createScaler__()
 
-    def fit_transform(self, shard):
+    def fit_transform(self, shard: "SparkXShards") -> "SparkXShards":
         df = shard.to_spark_df()
         self.scalerModel = self.scaler.fit(df)
         scaledData = self.scalerModel.transform(df)
         data_shards = spark_df_to_pd_sparkxshards(scaledData)
         return data_shards
 
-    def transform(self, shard):
+    def transform(self, shard: "SparkXShards") -> "SparkXShards":
         invalidInputError(self.scalerModel, "Please call fit_transform first")
         df = shard.to_spark_df()
         scaledData = self.scalerModel.transform(df)
