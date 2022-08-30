@@ -24,13 +24,14 @@ from bigdl.dllib.utils.log4Error import *
 
 from pyspark.ml.evaluation import BinaryClassificationEvaluator, MulticlassClassificationEvaluator
 
-os.environ['KMP_DUPLICATE_LIB_OK']='True'
+os.environ['KMP_DUPLICATE_LIB_OK'] ='True'
 
 # Please use 0.10.0 version for Spark3.2 and 0.9.5-13-d1b51517-SNAPSHOT version for Spark3.1
 spark_conf = {"spark.app.name": "recsys-lightGBM",
               "spark.serializer": "org.apache.spark.serializer.KryoSerializer",
               "spark.driver.memoryOverhead": "8G",
-              "spark.jars.packages": "com.microsoft.azure:synapseml_2.12:0.9.5-13-d1b51517-SNAPSHOT",
+              "spark.jars.packages":
+                  "com.microsoft.azure:synapseml_2.12:0.9.5-13-d1b51517-SNAPSHOT",
               "spark.jars.repositories": "https://mmlspark.azureedge.net/maven"}
 
 data_dir = "/Users/guoqiong/intelWork/data/tweet/recsys2021_jennie"
