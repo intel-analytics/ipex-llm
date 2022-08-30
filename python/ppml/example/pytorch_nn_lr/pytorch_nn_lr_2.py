@@ -21,6 +21,7 @@ import click
 import torch
 from torch import nn
 from bigdl.ppml.fl.estimator import Estimator
+from bigdl.ppml.fl.psi.psi import PSI
 
 
 class LocalModel(nn.Module):
@@ -38,11 +39,10 @@ class LocalModel(nn.Module):
 def run_client(load_model):
     df_train = pd.read_csv('.data/diabetes-vfl-2.csv')
 
-    # this should wait for the merge of 2 FLServer (Py4J Java gRPC and Python gRPC)
-    # df_train['ID'] = df_train['ID'].astype(str)
-    # psi = PSI()
-    # intersection = psi.get_intersection(list(df_train['ID']))
-    # df_train = df_train[df_train['ID'].isin(intersection)]
+    df_train['ID'] = df_train['ID'].astype(str)
+    psi = PSI()
+    intersection = psi.get_intersection(list(df_train['ID']))
+    df_train = df_train[df_train['ID'].isin(intersection)]
     
     df_x = df_train
     x = df_x.to_numpy(dtype="float32")

@@ -21,7 +21,13 @@ We use [Diabetes](https://www.kaggle.com/competitions/house-prices-advanced-regr
 The code is available in projects, including [Client 1 code](fgboost_regression_party_1.py) and [Client 2 code](fgboost_regression_party_2.py). You could directly start two different terminals are run them respectively to start a federated learning, and the order of start does not matter. Following is the detailed step-by-step tutorial to introduce how the code works.
 
 ### 2.1 Private Set Intersection
-// TODO: add this section after Python version of PSI is done
+We first need to get the intersection of datasets across parties by Private Set Intersection algorithm.
+```python
+df_train['ID'] = df_train['ID'].astype(str)
+psi = PSI()
+intersection = psi.get_intersection(list(df_train['ID']))
+df_train = df_train[df_train['ID'].isin(intersection)]
+```
 
 ### 2.2 Data Preprocessing
 Since one party owns label data while another not, different operations should be done before training.
