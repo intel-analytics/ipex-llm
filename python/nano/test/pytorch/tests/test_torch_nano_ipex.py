@@ -45,10 +45,13 @@ class ResNet18(nn.Module):
 
 
 class MyNano(TorchNano):
-    def train(self):
+    def train(self, optimizer_supported: bool = False):
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
         loss_func = nn.CrossEntropyLoss()
-        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+        if optimizer_supported:
+            optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
+        else:
+            optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
         train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
 
         model, optimizer, train_loader = self.setup(model, optimizer, train_loader)
@@ -63,7 +66,6 @@ class MyNano(TorchNano):
                 loss = loss_func(model(X), y)
                 self.backward(loss)
                 optimizer.step()
-                
                 total_loss += loss.sum()
                 num += 1
             print(f'avg_loss: {total_loss / num}')
@@ -131,6 +133,18 @@ class TestLite(TestCase):
 
     def test_torch_nano_subprocess_correctness(self):
         MyNanoCorrectness(use_ipex=True, num_processes=2, strategy="subprocess").train(0.5)
+
+    def test_torch_nano_bf16_support_opt(self):
+        MyNano(use_ipex=True, precision='bf16').train(optimizer_supported=True)
+
+    def test_torch_nano_bf16_unsupport_opt(self):
+        MyNano(use_ipex=True, precision='bf16').train()
+
+    def test_torch_nano_bf16_spawn(self):
+        MyNano(use_ipex=True, precision='bf16', num_processes=2, strategy="spawn").train()
+
+    def test_torch_nano_bf16_subprocess(self):
+        MyNano(use_ipex=True, precision='bf16', num_processes=2, strategy="subprocess").train()
 
 
 if __name__ == '__main__':

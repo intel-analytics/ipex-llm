@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.{Criterion, Module}
 import com.intel.analytics.bigdl.dllib.feature.common._
 import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error}
+import org.apache.spark.SparkContext
 import org.apache.spark.sql.SparkSession
 // import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.EngineRef
 import com.intel.analytics.bigdl.dllib.nnframes.NNModel.NNModelWriter

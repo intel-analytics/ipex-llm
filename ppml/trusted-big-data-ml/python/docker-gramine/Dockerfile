@@ -183,13 +183,14 @@ ADD ./bash.manifest.template /ppml/trusted-big-data-ml/bash.manifest.template
 ADD ./Makefile /ppml/trusted-big-data-ml/Makefile
 ADD ./init.sh /ppml/trusted-big-data-ml/init.sh
 ADD ./clean.sh /ppml/trusted-big-data-ml/clean.sh
+ADD ./bigdl-ppml-submit.sh /ppml/trusted-big-data-ml/bigdl-ppml-submit.sh
 ADD ./examples /ppml/trusted-big-data-ml/work/examples
 ADD ./start-scripts /ppml/trusted-big-data-ml/work/start-scripts
-ADD ./tracker.py ./tracker.py
-ADD ./_dill.py.patch ./_dill.py.patch
-ADD ./python-uuid.patch ./python-uuid.patch
-ADD ./python-pslinux.patch ./python-pslinux.patch
-
+ADD ./test-suites /ppml/trusted-big-data-ml/work/test-suites
+ADD ./tracker.py /tracker.py
+ADD ./_dill.py.patch /_dill.py.patch
+ADD ./python-uuid.patch /python-uuid.patch
+ADD ./python-pslinux.patch /python-pslinux.patch
 
 # python
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
@@ -232,10 +233,10 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y libsm6 make build-essential && \
     apt-get install -y autoconf gawk bison libcurl4-openssl-dev python3-protobuf libprotobuf-c-dev protobuf-c-compiler && \
     apt-get install -y netcat net-tools && \
-    zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ./tracker.py && \
-    patch /usr/local/lib/python3.7/dist-packages/dill/_dill.py ./_dill.py.patch && \
-    patch /usr/lib/python3.7/uuid.py ./python-uuid.patch && \
-    patch /usr/local/lib/python3.7/dist-packages/psutil/_pslinux.py ./python-pslinux.patch && \
+    zip -u ${BIGDL_HOME}/jars/xgboost4j_2.12-1.1.2.jar /tracker.py && \
+    patch /usr/local/lib/python3.7/dist-packages/dill/_dill.py /_dill.py.patch && \
+    patch /usr/lib/python3.7/uuid.py /python-uuid.patch && \
+    patch /usr/local/lib/python3.7/dist-packages/psutil/_pslinux.py /python-pslinux.patch && \
     wget -P /ppml/trusted-big-data-ml/work/lib https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/libhadoop.so && \
     cp /usr/lib/x86_64-linux-gnu/libpython3.7m.so.1 /usr/lib/libpython3.7m.so.1 && \
     sed -i 's/examples/\/ppml\/trusted-big-data-ml\/work\/spark-3.1.2\/examples/' /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/basic.py && \
@@ -245,5 +246,18 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     chmod a+x /ppml/trusted-big-data-ml/clean.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/*
 
+ADD ./spark-executor-template.yaml /ppml/trusted-big-data-ml/spark-executor-template.yaml
+ADD ./spark-driver-template.yaml /ppml/trusted-big-data-ml/spark-driver-template.yaml
+ADD ./entrypoint.sh /opt/entrypoint.sh
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
+RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
+    wget -P $SPARK_HOME/jars https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.8.0/okhttp-3.8.0.jar && \
+    wget -P $SPARK_HOME/jars https://github.com/xerial/sqlite-jdbc/releases/download/3.36.0.1/sqlite-jdbc-3.36.0.1.jar && \
+    chmod +x /opt/entrypoint.sh && \
+    chmod +x /sbin/tini && \
+    cp /sbin/tini /usr/bin/tini
+
 ENV PYTHONPATH                          /usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages
 WORKDIR /ppml/trusted-big-data-ml
+
+ENTRYPOINT [ "/opt/entrypoint.sh" ]

@@ -17,6 +17,8 @@
 import contextlib
 import io
 from logging import info, warning
+import sys
+import fcntl
 
 from pytorch_lightning import LightningModule
 import torch
@@ -44,6 +46,40 @@ class autocast(torch.cpu.amp.autocast):  # noqa
     def __exit__(self, exc_type, exc_val, exc_tb):
         os.environ["ONEDNN_MAX_CPU_ISA"] = self.global_max_cpu_isa
         return super().__exit__(exc_type, exc_val, exc_tb)
+
+
+class RedirectStream(object):
+    """Context manager to capture output of shared library"""
+    def __init__(self, stream=sys.stdout, target=None):
+        self.origin_stream = stream
+        self.origin_stream_fileno = stream.fileno()
+        self.target = io.StringIO() if target is None else target
+        # Create a pipe to capture the stream
+        self.pipe_out, self.pipe_in = os.pipe()
+
+    def __enter__(self):
+        # Save a copy of the original stream
+        self.origin_stream_fileno_dup = os.dup(self.origin_stream_fileno)
+        # Replace the original stream with the write pipe
+        os.dup2(self.pipe_in, self.origin_stream_fileno)
+        os.close(self.pipe_in)
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.origin_stream.flush()
+        # Make pipe_out non-blocking
+        fcntl.fcntl(self.pipe_out, fcntl.F_SETFL, os.O_NONBLOCK)
+        while True:
+            try:
+                buf = os.read(self.pipe_out, 1024)
+                if not buf:
+                    break
+                self.target.write(buf.decode('utf-8'))
+            except OSError as e:
+                break
+        os.close(self.pipe_out)
+        os.dup2(self.origin_stream_fileno_dup, self.origin_stream_fileno)
+        os.close(self.origin_stream_fileno_dup)
 
 
 class BF16Model(LightningModule):

@@ -51,6 +51,15 @@ init_instance() {
     echo "${new_json}" > Occlum.json
     echo "SGX_MEM_SIZE ${SGX_MEM_SIZE}"
 
+    # enable tmp hostfs
+    # --conf spark.executorEnv.USING_TMP_HOSTFS=true \
+    if [ $USING_TMP_HOSTFS == "true" ]; then
+        echo "use tmp hostfs"
+        mkdir ./shuffle
+        edit_json="$(cat Occlum.json | jq '.mount+=[{"target": "/tmp","type": "hostfs","source": "./shuffle"}]')" && \
+        echo "${edit_json}" > Occlum.json
+    fi
+
     if [[ -z "$META_SPACE" ]]; then
         echo "META_SPACE not set, using default value 256m"
         META_SPACE=256m
@@ -98,7 +107,7 @@ init_instance() {
         fi
     fi
 
-    # check occlum log level
+    # check occlum log level for docker
     export ENABLE_SGX_DEBUG=false
     export OCCLUM_LOG_LEVEL=off
     if [[ -z "$SGX_LOG_LEVEL" ]]; then

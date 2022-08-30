@@ -1,7 +1,7 @@
 # Run DeepRec with BigDL
 Here we demonstrate how to integrate [DeepRec](https://github.com/alibaba/DeepRec) into BigDL so as to easily build end-to-end recommendation pipelines for Spark data processing and DeepRec model training.
 
-See [here](https://github.com/alibaba/DeepRec/tree/main/modelzoo/WDL) for the original Wide & Deep training example in DeepRec. This BigDL example addes BigDL Friesian for recommendation feature engineering and BigDL Orca for launching DeepRec distributed training on the Kubernetes cluster.
+See [here](https://github.com/alibaba/DeepRec/tree/main/modelzoo/WDL) for the original Wide & Deep training example in DeepRec. This BigDL example uses BigDL Friesian for distribtued feature engineering and BigDL Orca for launching DeepRec distributed training on the Kubernetes cluster.
 
 ## 1. Environment Preparation
 1. Enter the client node of the k8s cluster.
@@ -35,8 +35,7 @@ conda create --name bigdl python=3.7
 ```bash
 conda activate bigdl
 
-pip install --pre --upgrade bigdl-orca-spark3[ray]
-pip install --pre --upgrade bigdl-friesian-spark3
+pip install --pre --upgrade bigdl-friesian-spark3[train]
 pip install protobuf==3.19.4
 pip install numpy==1.18.5
 ```
@@ -56,22 +55,28 @@ Please refer to the [README](https://github.com/alibaba/DeepRec/tree/main/modelz
 - Local mode:
 ```bash
 python wdl.py \
-    --smartstaged false \
-    --ev True \
+    --instances_per_node 3 \
     --data_location /folder/path/to/train/and/test/files \
     --checkpoint /path/to/save/model/checkpoint \
-    --instances_per_node 3
+    --ev True \
+    --ev_filter counter \
+    --smartstaged False \
+    --emb_fusion False \
+    --optimizer adam
 ```
 - K8s mode:
 ```bash
 python wdl.py \
-    --smartstaged false \
-    --ev True \
+    --cluster_mode k8s \
+    --master k8s://https://ip:port \
+    --num_nodes 3 \
     --data_location /folder/path/to/train/and/test/files \
     --checkpoint /path/to/save/model/checkpoint \
-    --cluster_mode k8s \
-    --num_nodes 3 \
-    --master k8s://https://ip:port
+    --ev True \
+    --ev_filter counter \
+    --smartstaged False \
+    --emb_fusion False \
+    --optimizer adam
 ```
 
 For DeepRec related arguments, please refer to the original example for more description.

@@ -147,6 +147,6 @@ class Seq2SeqForecaster(BasePytorchForecaster):
         self.onnx_available = True
         self.quantize_available = False
         self.checkpoint_callback = True
-        self.use_hpo = False
+        self.use_hpo = True
 
         super().__init__()
