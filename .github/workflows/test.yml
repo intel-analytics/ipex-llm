@@ -3,6 +3,10 @@ name: self-runner-create-badge
 on:
   pull_request:
 
+env:
+  http_proxy: 'http://child-prc.intel.com:913'
+  https_proxy: 'http://child-prc.intel.com:913'
+
 jobs:
   test-self-runner-create-badge:
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
