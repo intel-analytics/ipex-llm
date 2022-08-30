@@ -93,7 +93,8 @@ extensions = [
     'sphinx_design',
     'sphinx_external_toc',
     'sphinx_design',
-    'nbsphinx'
+    'nbsphinx',
+    'nbsphinx_link'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
