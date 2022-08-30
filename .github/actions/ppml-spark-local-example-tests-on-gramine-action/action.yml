@@ -46,8 +46,8 @@ runs:
     - name: Spark Examples Test
       shell: bash
       run: |
-        /ppml/trusted-big-data-ml/work/test-suites/spark-examples.sh
-        /ppml/trusted-big-data-ml/work/test-suites/spark-sql-examples.sh
-        /ppml/trusted-big-data-ml/work/test-suites/pyspark-simple-examples.sh
-        /ppml/trusted-big-data-ml/work/test-suites/pyspark-sql-examples.sh
-        /ppml/trusted-big-data-ml/work/test-suites/pyspark-sql-api-examples.sh
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/spark-examples.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/spark-sql-examples.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/pyspark-simple-examples.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/pyspark-sql-examples.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/pyspark-sql-api-examples.sh"
