@@ -3,6 +3,8 @@ name: Nightly Test
 on:
   schedule:
     - cron: '0 13 * * *' # GMT time, 13:00 GMT == 21:00 China
+  pull_request:
+    branchs: [ main ]
   workflow_dispatch:
     inputs:
       artifact:
@@ -113,6 +115,7 @@ jobs:
           export SCALA_HOME=/opt/scala
           chmod a+x apps/run-scala-app-test.sh
           apps/run-scala-app-test.sh
+
   Dllib-Scala-UT:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Dllib-Scala-UT' || github.event.inputs.artifact == 'all' }} 
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
@@ -166,7 +169,6 @@ jobs:
       uses: ./.github/actions/orca-ray-ctx-example-action
 
   ppml-spark-local-example-tests-on-gramine-action:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-spark-Local-Example-Tests-on-Gramine' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, SGX, Wilwarin]
 
     steps:
