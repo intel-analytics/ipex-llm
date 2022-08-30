@@ -4,7 +4,7 @@ ARG BIGDL_IMAGE_VERSION
 # stage 1. generate SGX secrets and prepare KMS env
 FROM $BIGDL_IMAGE_NAME:$BIGDL_IMAGE_VERSION as temp
 
-ADD ./enclave-key.pem /graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem
+ADD ./enclave-key.pem /root/.config/gramine/enclave-key.pem
 
 # 1.1 make SGX and sign in a temp image
 RUN cd /ppml/trusted-big-data-ml && \
