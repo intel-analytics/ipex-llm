@@ -37,7 +37,7 @@ import errno
 
 
 def process(filepath, demo):
-    sparkConf = init_spark_conf().setMaster("local[1]").setAppName("testXGBClassifier")
+    sparkConf = init_spark_conf().setAppName("testXGBClassifier")
     sc = init_nncontext(sparkConf)
     sqlContext = SQLContext(sc)
     if demo:
