@@ -46,8 +46,8 @@ runs:
     - name: Spark Examples Test
       shell: bash
       run: |
-        bash /ppml/trusted-big-data-ml/work/test-suites/spark-examples.sh
-        bash /ppml/trusted-big-data-ml/work/test-suites/spark-sql-examples.sh
-        bash /ppml/trusted-big-data-ml/work/test-suites/pyspark-simple-examples.sh
-        bash /ppml/trusted-big-data-ml/work/test-suites/pyspark-sql-examples.sh
-        bash /ppml/trusted-big-data-ml/work/test-suites/pyspark-sql-api-examples.sh
+        /ppml/trusted-big-data-ml/work/test-suites/spark-examples.sh
+        /ppml/trusted-big-data-ml/work/test-suites/spark-sql-examples.sh
+        /ppml/trusted-big-data-ml/work/test-suites/pyspark-simple-examples.sh
+        /ppml/trusted-big-data-ml/work/test-suites/pyspark-sql-examples.sh
+        /ppml/trusted-big-data-ml/work/test-suites/pyspark-sql-api-examples.sh
