@@ -55,9 +55,11 @@ INFO [main.cpp(159) -> main]: ehsm-kms enroll app end.
 
 
 export kms_type=ehsm_or_simple_or_azure
+export appid=your_appid
+export appkey=your_apikey
 
 # Generatekeys
-docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh $kms_type generatekeys"
+docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh generatekeys $appid $appkey"
 
 # Encrypt a single data file
 docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh $kms_type encrypt $appid $appkey $primary_key_name_in_key_folder $data_key_name_in_key_folder $plaintext_data_file_name_in_data_shared_folder"
