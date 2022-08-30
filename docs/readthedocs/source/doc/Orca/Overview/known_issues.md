@@ -2,28 +2,6 @@
 
 ## **Estimator Issues**
 
-### **OSError: Unable to load libhdfs: ./libhdfs.so: cannot open shared object file: No such file or directory**
-
-This error occurs while running Orca TF2 Estimator with YARN on Cloudera, where PyArrow fails to locate `libhdfs.so` in default path of `$HADOOP_HOME/lib/native`. 
-To solve this issue, you need to set the path of `libhdfs.so` in Cloudera to the environment variable of `ARROW_LIBHDFS_DIR` on Spark driver and executors with the following steps:
-
-1. Run `locate libhdfs.so` on the client node to find `libhdfs.so`
-2. `export ARROW_LIBHDFS_DIR=/opt/cloudera/parcels/CDH-5.15.2-1.cdh5.15.2.p0.3/lib64` (replace with the result of `locate libhdfs.so` in your environment)
-3. If you are using `init_orca_context(cluster_mode="yarn-client")`: 
-   ```
-   conf = {"spark.executorEnv.ARROW_LIBHDFS_DIR": "/opt/cloudera/parcels/CDH-5.15.2-1.cdh5.15.2.p0.3/lib64"}
-   init_orca_context(cluster_mode="yarn-client", conf=conf)
-   ```
-   If you are using `init_orca_context(cluster_mode="spark-submit")`:
-   ```
-   # For yarn-client mode
-   spark-submit --conf spark.executorEnv.ARROW_LIBHDFS_DIR=/opt/cloudera/parcels/CDH-5.15.2-1.cdh5.15.2.p0.3/lib64
-   
-   # For yarn-cluster mode
-   spark-submit --conf spark.executorEnv.ARROW_LIBHDFS_DIR=/opt/cloudera/parcels/CDH-5.15.2-1.cdh5.15.2.p0.3/lib64 \
-                --conf spark.yarn.appMasterEnv.ARROW_LIBHDFS_DIR=/opt/cloudera/parcels/CDH-5.15.2-1.cdh5.15.2.p0.3/lib64
-   ```
-
 ### **UnkownError: Could not start gRPC server**
 
 This error occurs while running Orca TF2 Estimator with spark backend, which may because the previous pyspark tensorflow job was not cleaned completely. You can retry later or you can set spark config `spark.python.worker.reuse=false` in your application.
@@ -84,3 +62,26 @@ You could follow below steps to workaround:
       ```
 
 2. If you really need to use ray on spark, please install bigdl-orca under a conda environment. Detailed information please refer to [here](./orca.html).
+
+## **Other Issues**
+
+### **OSError: Unable to load libhdfs: ./libhdfs.so: cannot open shared object file: No such file or directory**
+
+This error is because PyArrow fails to locate `libhdfs.so` in default path of `$HADOOP_HOME/lib/native` when you run with YARN on Cloudera.
+To solve this issue, you need to set the path of `libhdfs.so` in Cloudera to the environment variable of `ARROW_LIBHDFS_DIR` on Spark driver and executors with the following steps:
+
+1. Run `locate libhdfs.so` on the client node to find `libhdfs.so`
+2. `export ARROW_LIBHDFS_DIR=/opt/cloudera/parcels/CDH-5.15.2-1.cdh5.15.2.p0.3/lib64` (replace with the result of `locate libhdfs.so` in your environment)
+3. If you are using `init_orca_context(cluster_mode="yarn-client")`:
+   ```
+   conf = {"spark.executorEnv.ARROW_LIBHDFS_DIR": "/opt/cloudera/parcels/CDH-5.15.2-1.cdh5.15.2.p0.3/lib64"}
+   init_orca_context(cluster_mode="yarn-client", conf=conf)
+   ```
+   If you are using `init_orca_context(cluster_mode="spark-submit")`:
+   ```
+   # For yarn-client mode
+   spark-submit --conf spark.executorEnv.ARROW_LIBHDFS_DIR=/opt/cloudera/parcels/CDH-5.15.2-1.cdh5.15.2.p0.3/lib64
+
+   # For yarn-cluster mode
+   spark-submit --conf spark.executorEnv.ARROW_LIBHDFS_DIR=/opt/cloudera/parcels/CDH-5.15.2-1.cdh5.15.2.p0.3/lib64 \
+                --conf spark.yarn.appMasterEnv.ARROW_LIBHDFS_DIR=/opt/cloudera/parcels/CDH-5.15.2-1.cdh5.15.2.p0.3/lib64

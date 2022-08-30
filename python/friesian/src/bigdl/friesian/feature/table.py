@@ -34,21 +34,41 @@ from pyspark.sql.functions import col as pyspark_col, concat, udf, array, broadc
     lit, rank, monotonically_increasing_id, row_number, desc
 from pyspark.sql.types import ArrayType, DataType, StructType, StringType, StructField
 
+from typing import (
+    TYPE_CHECKING,
+    TypeVar,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    Union,
+)
+NUMERIC_TYPE = TypeVar('NUMERIC_TYPE', int, float, complex)
+
+if TYPE_CHECKING:
+    from pandas.core.frame import DataFrame as PandasDataFrame
+    from pyspark.sql.column import Column
+    from pyspark.sql import Row
+    from pyspark.sql.dataframe import DataFrame as SparkDataFrame
+    from pyspark.sql.types import StructType
+
+
 JAVA_INT_MIN = -2147483648
 JAVA_INT_MAX = 2147483647
 
 
 class Table:
-    def __init__(self, df):
+    def __init__(self, df: "SparkDataFrame") -> None:
         self.df = df
         self.__column_names = self.df.schema.names
 
     @property
-    def schema(self):
+    def schema(self) -> "StructType":
         return self.df.schema
 
     @staticmethod
-    def _read_parquet(paths):
+    def _read_parquet(paths: Union[str, List[str]]) -> "SparkDataFrame":
         if not isinstance(paths, list):
             paths = [paths]
         spark = OrcaContext.get_spark_session()
@@ -56,7 +76,7 @@ class Table:
         return df
 
     @staticmethod
-    def _read_json(paths, cols):
+    def _read_json(paths: Union[str, List[str]], cols: Union[str, List[str]]) -> "SparkDataFrame":
         if not isinstance(paths, list):
             paths = [paths]
         spark = OrcaContext.get_spark_session()
@@ -72,7 +92,13 @@ class Table:
         return df
 
     @staticmethod
-    def _read_csv(paths, delimiter=",", header=False, names=None, dtype=None):
+    def _read_csv(
+        paths: Union[str, List[str]],
+        delimiter: str = ",",
+        header: bool = False,
+        names: Optional[Union[str, List[str]]]=None,
+        dtype: Optional[Union[List[str], Dict[str, str], str]]=None
+    ) -> "SparkDataFrame":
         if not isinstance(paths, list):
             paths = [paths]
         spark = OrcaContext.get_spark_session()
@@ -103,17 +129,17 @@ class Table:
                                   "dtype should be str or a list of str or dict")
         return tbl.df
 
-    def _clone(self, df):
+    def _clone(self, df: "SparkDataFrame") -> "Table":
         return Table(df)
 
-    def compute(self):
+    def compute(self) -> "Table":
         """
         Trigger computation of the Table.
         """
         compute(self.df)
         return self
 
-    def to_spark_df(self):
+    def to_spark_df(self) -> "SparkDataFrame":
         """
         Convert the current Table to a Spark DataFrame.
 
@@ -121,7 +147,7 @@ class Table:
         """
         return self.df
 
-    def size(self):
+    def size(self) -> int:
         """
         Returns the number of rows in this Table.
 
@@ -130,13 +156,13 @@ class Table:
         cnt = self.df.count()
         return cnt
 
-    def broadcast(self):
+    def broadcast(self) -> None:
         """
         Marks the Table as small enough for use in broadcast join.
         """
         self.df = broadcast(self.df)
 
-    def select(self, *cols):
+    def select(self, *cols: Union[str, List[str]]) -> "Table":
         """
         Select specific columns.
 
@@ -152,7 +178,7 @@ class Table:
                               "cols should be str or a list of str, but got None.")
         return self._clone(self.df.select(*cols))
 
-    def drop(self, *cols):
+    def drop(self, *cols: Union[str, List[str]]) -> "Table":
         """
         Returns a new Table that drops the specified column.
         This is a no-op if schema doesn't contain the given column name(s).
@@ -164,7 +190,7 @@ class Table:
         """
         return self._clone(self.df.drop(*cols))
 
-    def limit(self, num):
+    def limit(self, num: int) -> "Table":
         """
         Limits the result count to the number specified.
 
@@ -173,7 +199,7 @@ class Table:
         """
         return self._clone(self.df.limit(num))
 
-    def repartition(self, num_partitions):
+    def repartition(self, num_partitions: int) -> "Table":
         """
         Return a new Table that has exactly num_partitions partitions.
 
@@ -182,7 +208,7 @@ class Table:
         """
         return self._clone(self.df.repartition(num_partitions))
 
-    def get_partition_row_number(self):
+    def get_partition_row_number(self) -> "Table":
         """
         Return a Table that contains partitionId and corresponding row number.
 
@@ -192,7 +218,11 @@ class Table:
         return self._clone(self.df.withColumn("partitionId", spark_partition_id())
                            .groupBy("partitionId").count())
 
-    def fillna(self, value, columns):
+    def fillna(
+        self,
+        value: Union[int, float, str, bool],
+        columns: Optional[Union[str, List[str]]]
+    ) -> "FeatureTable":
         """
         Replace null values.
 
@@ -218,7 +248,12 @@ class Table:
                 return self._clone(fill_na_int(self.df, value, columns))
         return self._clone(fill_na(self.df, value, columns))
 
-    def dropna(self, columns, how='any', thresh=None):
+    def dropna(
+        self,
+        columns: Optional[Union[str, List[str]]],
+        how: str = "any",
+        thresh: Optional[int] = None
+    ) -> "Table":
         """
         Drops the rows containing null values in the specified columns.
 
@@ -234,7 +269,7 @@ class Table:
         """
         return self._clone(self.df.dropna(how, thresh, subset=columns))
 
-    def distinct(self):
+    def distinct(self) -> "Table":
         """
         Select the distinct rows of the Table.
 
@@ -242,7 +277,7 @@ class Table:
         """
         return self._clone(self.df.distinct())
 
-    def filter(self, condition):
+    def filter(self, condition: Union[str, "Column"]) -> "Table":
         """
         Filters the rows that satisfy `condition`. For instance, filter("col_1 == 1") will filter
         the rows that has value 1 at column col_1.
@@ -253,7 +288,11 @@ class Table:
         """
         return self._clone(self.df.filter(condition))
 
-    def random_split(self, weights, seed=None):
+    def random_split(
+        self,
+        weights: List[float],
+        seed: Optional[int] = None
+    ) -> List["Table"]:
         """
         Randomly split Table into multiple Tables with the provided weights for train, validation
         and test.
@@ -269,7 +308,12 @@ class Table:
 
     split = random_split
 
-    def clip(self, columns, min=None, max=None):
+    def clip(
+        self,
+        columns: Optional[Union[str, List[str]]]=None,
+        min: Optional[NUMERIC_TYPE] = None,
+        max: Optional[NUMERIC_TYPE] = None
+    ) -> "Table":
         """
         Clips continuous values so that they are within the range [min, max]. For instance, by
         setting the min value to 0, all negative values in columns will be replaced with 0.
@@ -293,7 +337,11 @@ class Table:
         check_col_exists(self.df, columns)
         return self._clone(clip(self.df, columns, min, max))
 
-    def log(self, columns, clipping=True):
+    def log(
+        self,
+        columns: Optional[Union[str, List[str]]]=None,
+        clipping: bool = True
+    ) -> "Table":
         """
         Calculates the log of continuous columns.
 
@@ -312,7 +360,7 @@ class Table:
         check_col_exists(self.df, columns)
         return self._clone(log_with_clip(self.df, columns, clipping))
 
-    def fill_median(self, columns):
+    def fill_median(self, columns: Optional[Union[str, List[str]]]=None) -> "Table":
         """
         Replaces null values with the median in the specified numeric columns. Any column to be
         filled should not contain only null values.
@@ -329,7 +377,7 @@ class Table:
             check_col_exists(self.df, columns)
         return self._clone(fill_median(self.df, columns))
 
-    def median(self, columns):
+    def median(self, columns: Optional[Union[str, List[str]]]=None) -> "Table":
         """
         Returns a new Table that has two columns, `column` and `median`, containing the column
         names and the medians of the specified numeric columns.
@@ -345,7 +393,9 @@ class Table:
             check_col_exists(self.df, columns)
         return self._clone(median(self.df, columns))
 
-    def merge_cols(self, columns, target):
+    def merge_cols(self,
+                   columns: Union[str, List[str]],
+                   target: str) -> "Table":
         """
         Merge the target column values as a list to a new column.
         The original columns will be dropped.
@@ -359,7 +409,7 @@ class Table:
                           "columns must be a list of column names")
         return self._clone(self.df.withColumn(target, array(columns)).drop(*columns))
 
-    def rename(self, columns):
+    def rename(self, columns: Dict[str, str]) -> "Table":
         """
         Rename columns with new column names
 
@@ -376,7 +426,7 @@ class Table:
             new_df = new_df.withColumnRenamed(old_name, new_name)
         return self._clone(new_df)
 
-    def show(self, n=20, truncate=True):
+    def show(self, n: int = 20, truncate: bool = True) -> None:
         """
         Prints the first `n` rows to the console.
 
@@ -387,7 +437,11 @@ class Table:
         """
         self.df.show(n, truncate)
 
-    def get_stats(self, columns, aggr):
+    def get_stats(
+        self,
+        columns: Optional[Union[str, List[str]]],
+        aggr: Union[Dict[str, List[str]], List[str], Dict[str, str], str]
+    ) -> Dict[str, Union[List[NUMERIC_TYPE], NUMERIC_TYPE]]:
         """
         Calculate the statistics of the values over the target column(s).
 
@@ -431,7 +485,7 @@ class Table:
             stats[column] = values[0] if len(values) == 1 else values
         return stats
 
-    def min(self, columns):
+    def min(self, columns: Optional[Union[str, List[str]]]=None) -> "Table":
         """
         Returns a new Table that has two columns, `column` and `min`, containing the column
         names and the minimum values of the specified numeric columns.
@@ -448,7 +502,7 @@ class Table:
         spark = OrcaContext.get_spark_session()
         return self._clone(spark.createDataFrame(data, schema))
 
-    def max(self, columns):
+    def max(self, columns: Optional[Union[str, List[str]]]=None) -> "Table":
         """
         Returns a new Table that has two columns, `column` and `max`, containing the column
         names and the maximum values of the specified numeric columns.
@@ -465,7 +519,7 @@ class Table:
         spark = OrcaContext.get_spark_session()
         return self._clone(spark.createDataFrame(data, schema))
 
-    def to_list(self, column):
+    def to_list(self, column: str) -> List:
         """
         Convert all values of the target column to a list.
         Only call this if the Table is small enough.
@@ -480,7 +534,7 @@ class Table:
         check_col_exists(self.df, [column])
         return self.df.select(column).rdd.flatMap(lambda x: x).collect()
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, List]:
         """
         Convert the Table to a dictionary.
         Only call this if the Table is small enough.
@@ -494,7 +548,7 @@ class Table:
             result[column] = [row[i] for row in rows]
         return result
 
-    def add(self, columns, value=1):
+    def add(self, columns: Union[str, List[str]], value: NUMERIC_TYPE=1) -> "Table":
         """
         Increase all of values of the target numeric column(s) by a constant value.
 
@@ -521,7 +575,7 @@ class Table:
         return self._clone(new_df)
 
     @property
-    def columns(self):
+    def columns(self) -> List[str]:
         """
         Get column names of the Table.
 
@@ -529,7 +583,12 @@ class Table:
         """
         return self.__column_names
 
-    def sample(self, fraction, replace=False, seed=None):
+    def sample(
+        self,
+        fraction: float,
+        replace: bool = False,
+        seed: Optional[int] = None
+    ) -> "Table":
         """
         Return a sampled subset of Table.
 
@@ -542,7 +601,7 @@ class Table:
         """
         return self._clone(self.df.sample(withReplacement=replace, fraction=fraction, seed=seed))
 
-    def ordinal_shuffle_partition(self):
+    def ordinal_shuffle_partition(self) -> "Table":
         """
         Shuffle each partition of the Table by adding a random ordinal column for each row and sort
         by this ordinal column within each partition.
@@ -551,7 +610,7 @@ class Table:
         """
         return self._clone(ordinal_shuffle_partition(self.df))
 
-    def write_parquet(self, path, mode="overwrite"):
+    def write_parquet(self, path: str, mode: str = "overwrite") -> None:
         """
         Write the Table to Parquet file.
 
@@ -564,7 +623,7 @@ class Table:
         """
         write_parquet(self.df, path, mode)
 
-    def cast(self, columns, dtype):
+    def cast(self, columns: Optional[Union[str, List[str]]], dtype: str) -> "Table":
         """
         Cast columns to the specified type.
 
@@ -593,7 +652,14 @@ class Table:
             df_cast.df = df_cast.df.withColumn(i, pyspark_col(i).cast(dtype))
         return df_cast
 
-    def write_csv(self, path, delimiter=",", mode="overwrite", header=True, num_partitions=None):
+    def write_csv(
+        self,
+        path: str,
+        delimiter: str = ",",
+        mode: str = "overwrite",
+        header: bool = True,
+        num_partitions: Optional[int] = None
+    ) -> None:
         """
         Write the Table to csv file.
 
@@ -614,7 +680,7 @@ class Table:
         else:
             self.df.write.csv(path=path, mode=mode, header=header, sep=delimiter)
 
-    def _concat(self, join="outer"):
+    def _concat(self, join: str = "outer") -> Callable:
         def concat_inner(self, df2):
             col_names_1 = set(self.schema.names)
             col_names_2 = set(df2.schema.names)
@@ -638,7 +704,12 @@ class Table:
         else:
             return concat_inner
 
-    def concat(self, tables, mode="inner", distinct=False):
+    def concat(
+        self,
+        tables: Union["Table", List["Table"]],
+        mode: str = "inner",
+        distinct: bool = False
+    ) -> "Table":
         """
         Concatenate a list of Tables into one Table in the dimension of row.
 
@@ -663,7 +734,12 @@ class Table:
             df = df.distinct()
         return self._clone(df)
 
-    def drop_duplicates(self, subset=None, sort_cols=None, keep="min"):
+    def drop_duplicates(
+        self,
+        subset: Optional[Union[str, List[str]]]=None,
+        sort_cols: Optional[Union[str, List[str]]]=None,
+        keep: str = "min"
+    ) -> "Table":
         """
         Return a new Table with duplicate rows removed.
 
@@ -703,7 +779,7 @@ class Table:
         df = df.filter(pyspark_col('rank') == 1).drop('rank', 'id')
         return self._clone(df)
 
-    def append_column(self, name, column):
+    def append_column(self, name: str, column: "Column") -> "Table":
         """
         Append a column with a constant value to the Table.
 
@@ -716,7 +792,7 @@ class Table:
                           "column should be a pyspark.sql.column.Column")
         return self._clone(self.df.withColumn(name, column))
 
-    def subtract(self, other):
+    def subtract(self, other: "Table") -> "Table":
         """
         Return a new :class:`Table` containing rows in this :class:`Table`
         but not in another :class:`Table`
@@ -726,19 +802,19 @@ class Table:
         """
         return self._clone(self.df.subtract(other.df))
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> "Column":
         """
         Get the target column of the Table.
         """
         return self.df.__getattr__(name)
 
-    def col(self, name):
+    def col(self, name: str) -> "Column":
         """
         Get the target column of the Table.
         """
         return pyspark_col(name)
 
-    def sort(self, *cols, **kwargs):
+    def sort(self, *cols: List[Union["Column", str]], **kwargs: Union[bool, List[bool]]) -> "Table":
         """
         Sort the Table by specified column(s).
 
@@ -754,10 +830,10 @@ class Table:
 
     order_by = sort
 
-    def to_pandas(self):
+    def to_pandas(self) -> "PandasDataFrame":
         return self.df.toPandas()
 
-    def cache(self):
+    def cache(self) -> "Table":
         """
         Persist this Table in memory.
 
@@ -766,7 +842,7 @@ class Table:
         self.df.cache()
         return self
 
-    def uncache(self):
+    def uncache(self) -> "Table":
         """
 
         Make this table as non-persistent and remove all its blocks from memory.
@@ -780,7 +856,7 @@ class Table:
                 print("Try to unpersist an uncached table")
         return self
 
-    def coalesce(self, num_partitions):
+    def coalesce(self, num_partitions: int) -> "Table":
         """
         Return a new Table that has exactly num_partitions partitions.
         coalesce uses existing partitions to minimize the amount of data that's shuffled.
@@ -790,7 +866,7 @@ class Table:
         """
         return self._clone(self.df.coalesce(num_partitions))
 
-    def intersect(self, other):
+    def intersect(self, other: "Table") -> "Table":
         """
         Return a new :class:`Table` containing rows only in both this :class:`Table`
         and another :class:`Table`
@@ -800,14 +876,14 @@ class Table:
         """
         return self._clone(self.df.intersect(other.df))
 
-    def collect(self):
+    def collect(self) -> List["Row"]:
         """
         Returns all the records as a list of :class:`Row`.
         """
         return self.df.collect()
 
     @property
-    def dtypes(self):
+    def dtypes(self) -> List[Tuple[str, str]]:
         """
         Returns all column names and their data types as a list.
         """
@@ -816,7 +892,7 @@ class Table:
 
 class FeatureTable(Table):
     @classmethod
-    def read_parquet(cls, paths):
+    def read_parquet(cls, paths: Union[str, List[str]]) -> "FeatureTable":
         """
         Loads Parquet files as a FeatureTable.
 
@@ -827,7 +903,9 @@ class FeatureTable(Table):
         return cls(Table._read_parquet(paths))
 
     @classmethod
-    def read_json(cls, paths, cols=None):
+    def read_json(cls,
+                  paths: Union[str, List[str]],
+                  cols: Union[str, List[str]]=None) -> "FeatureTable":
         """
         Loads json files as a FeatureTable.
 
@@ -840,7 +918,14 @@ class FeatureTable(Table):
         return cls(Table._read_json(paths, cols))
 
     @classmethod
-    def read_csv(cls, paths, delimiter=",", header=False, names=None, dtype=None):
+    def read_csv(
+        cls,
+        paths: Union[str, List[str]],
+        delimiter: str = ",",
+        header: bool = False,
+        names: Optional[Union[str, List[str]]]=None,
+        dtype: Optional[Union[str, List[str], Dict[str, str]]]=None
+    ) -> "FeatureTable":
         """
         Loads csv files as a FeatureTable.
 
@@ -865,7 +950,7 @@ class FeatureTable(Table):
         return cls(Table._read_csv(paths, delimiter, header, names, dtype))
 
     @classmethod
-    def read_text(cls, paths, col_name="value"):
+    def read_text(cls, paths: Union[str, List[str]], col_name: str = "value") -> "FeatureTable":
         """
         Loads text files as a FeatureTable.
 
@@ -881,7 +966,7 @@ class FeatureTable(Table):
         return tbl
 
     @staticmethod
-    def from_pandas(pandas_df):
+    def from_pandas(pandas_df: "PandasDataFrame") -> "FeatureTable":
         """
         Returns the contents of of a pandas DataFrame as FeatureTable.
 
@@ -893,8 +978,16 @@ class FeatureTable(Table):
         sparkDF = spark.createDataFrame(pandas_df)
         return FeatureTable(sparkDF)
 
-    def encode_string(self, columns, indices, broadcast=True, do_split=False,
-                      sep=',', sort_for_array=False, keep_most_frequent=False):
+    def encode_string(
+        self,
+        columns: Union[str, List[str]],
+        indices: Union["StringIndex", Dict[str, int], List[Dict[str, int]], List["StringIndex"]],
+        broadcast: bool = True,
+        do_split: bool = False,
+        sep: str = ',',
+        sort_for_array: bool = False,
+        keep_most_frequent: bool = False
+    ) -> "FeatureTable":
         """
         Encode columns with provided list of StringIndex. Unknown string will be
         None after the encoding and you may need to fillna with 0.
@@ -959,7 +1052,9 @@ class FeatureTable(Table):
 
         return FeatureTable(data_df)
 
-    def filter_by_frequency(self, columns, min_freq=2):
+    def filter_by_frequency(self,
+                            columns: Union[str, List[str]],
+                            min_freq: int = 2) -> "FeatureTable":
         """
         Filter the FeatureTable by the given minimum frequency on the target columns.
 
@@ -980,7 +1075,12 @@ class FeatureTable(Table):
         group = key.filter(key[filter_col_name] >= min_freq).drop(filter_col_name)
         return FeatureTable(group)
 
-    def hash_encode(self, columns, bins, method='md5'):
+    def hash_encode(
+        self,
+        columns: Union[str, List[str]],
+        bins: int,
+        method: str = 'md5'
+    ) -> "FeatureTable":
         """
         Hash encode for categorical column(s).
 
@@ -1001,7 +1101,13 @@ class FeatureTable(Table):
             hash_df = hash_df.withColumn(col_name, hash_int(pyspark_col(col_name)))
         return FeatureTable(hash_df)
 
-    def cross_hash_encode(self, cross_columns, bin_sizes, cross_col_names=None, method='md5'):
+    def cross_hash_encode(
+        self,
+        cross_columns: Union[List[str], List[List[str]]],
+        bin_sizes: Union[int, List[int]],
+        cross_col_names: Optional[Union[str, List[str]]]=None,
+        method: str = 'md5'
+    ) -> "FeatureTable":
         """
         Cross columns and hashed to specified bin size.
 
@@ -1059,9 +1165,17 @@ class FeatureTable(Table):
 
     cross_columns = cross_hash_encode
 
-    def category_encode(self, columns, freq_limit=None, order_by_freq=False,
-                        do_split=False, sep=',', sort_for_array=False, keep_most_frequent=False,
-                        broadcast=True):
+    def category_encode(
+        self,
+        columns: Union[str, List[str]],
+        freq_limit: Optional[Union[int, Dict[str, int]]]=None,
+        order_by_freq: bool = False,
+        do_split: bool = False,
+        sep: str = ',',
+        sort_for_array: bool = False,
+        keep_most_frequent: bool = False,
+        broadcast: bool = True
+    ) -> Tuple["FeatureTable", List["StringIndex"]]:
         """
         Category encode the given columns.
 
@@ -1093,7 +1207,13 @@ class FeatureTable(Table):
                                   keep_most_frequent=keep_most_frequent,
                                   broadcast=broadcast), indices
 
-    def one_hot_encode(self, columns, sizes=None, prefix=None, keep_original_columns=False):
+    def one_hot_encode(
+        self,
+        columns: Union[str, List[str]],
+        sizes: Union[int, List[int]]=None,
+        prefix: Union[str, List[str]]=None,
+        keep_original_columns: bool = False
+    ) -> "FeatureTable":
         """
         Convert categorical features into ont hot encodings.
         If the features are string, you should first call category_encode to encode them into
@@ -1186,16 +1306,24 @@ class FeatureTable(Table):
         data_df = data_df.drop("friesian_onehot")
         return FeatureTable(data_df)
 
-    def gen_string_idx(self, columns, freq_limit=None, order_by_freq=False,
-                       do_split=False, sep=','):
+    def gen_string_idx(
+        self,
+        columns: Union[str,
+                       List[Union[str, Dict[str, Union[str, List[str]]]]],
+                       Dict[str, Union[str, List[str]]]],
+        freq_limit: Optional[Union[int, Dict[str, int]]]=None,
+        order_by_freq: bool = False,
+        do_split: bool = False,
+        sep: str = ','
+    ) -> Union["StringIndex", List["StringIndex"]]:
         """
         Generate unique index value of categorical features. The resulting index would
         start from 1 with 0 reserved for unknown features.
 
         :param columns: str, dict or a list of str, dict, target column(s) to generate StringIndex.
-         dict is a mapping of source column names -> target column name if needs to combine multiple
-         source columns to generate index.
-         For example: {'src_cols':['a_user', 'b_user'], 'col_name':'user'}.
+               dict is a mapping of source column names -> target column name
+               if needs to combine multiple source columns to generate index.
+               For example: {'src_cols':['a_user', 'b_user'], 'col_name':'user'}.
         :param freq_limit: int, dict or None. Categories with a count/frequency below freq_limit
                will be omitted from the encoding. Can be represented as either an integer,
                dict. For instance, 15, {'col_4': 10, 'col_5': 2} etc. Default is None,
@@ -1290,18 +1418,24 @@ class FeatureTable(Table):
         else:
             return string_idx_list
 
-    def _clone(self, df):
+    def _clone(self, df: "SparkDataFrame") -> "FeatureTable":
         return FeatureTable(df)
 
-    def min_max_scale(self, columns, min=0.0, max=1.0):
+    def min_max_scale(
+        self,
+        columns: Union[str, List[str]],
+        min: float = 0.0,
+        max: float = 1.0
+    ) -> Tuple["FeatureTable", Dict[str, Union[Tuple[float, float],
+                                    Tuple[List[float], List[float]]]]]:
         """
         Rescale each column individually to a common range [min, max] linearly using
         column summary statistics, which is also known as min-max normalization or rescaling.
 
         :param columns: str or a list of str, the column(s) to be rescaled.
-        :param min: int, the lower bound after transformation, shared by all columns.
+        :param min: float, the lower bound after transformation, shared by all columns.
                     Default is 0.0.
-        :param max: int, the upper bound after transformation, shared by all columns.
+        :param max: float, the upper bound after transformation, shared by all columns.
                     Default is 1.0.
 
         :return: A tuple of a new FeatureTable with rescaled column(s), and a dict of the
@@ -1369,7 +1503,11 @@ class FeatureTable(Table):
 
         return FeatureTable(df), min_max_dict
 
-    def transform_min_max_scale(self, columns, min_max_dict):
+    def transform_min_max_scale(
+        self,
+        columns: Union[str, List[str]],
+        min_max_dict: Dict[str, Union[Tuple[float, float], Tuple[List[float], List[float]]]]
+    ) -> "FeatureTable":
         """
         Rescale each column individually with the given [min, max] range of each column.
 
@@ -1426,7 +1564,13 @@ class FeatureTable(Table):
 
         return tbl
 
-    def add_negative_samples(self, item_size, item_col="item", label_col="label", neg_num=1):
+    def add_negative_samples(
+        self,
+        item_size: int,
+        item_col: str = "item",
+        label_col: str = "label",
+        neg_num: int = 1
+    ) -> "FeatureTable":
         """
         Generate negative records for each record in the FeatureTable. All the records in the
         original FeatureTable will be treated as positive samples with value 1 for label_col
@@ -1443,8 +1587,15 @@ class FeatureTable(Table):
         df = add_negative_samples(self.df, item_size, item_col, label_col, neg_num)
         return FeatureTable(df)
 
-    def add_hist_seq(self, cols, user_col, sort_col='time',
-                     min_len=1, max_len=100, num_seqs=2147483647):
+    def add_hist_seq(
+        self,
+        cols: Union[str, List[str]],
+        user_col: str,
+        sort_col: str = 'time',
+        min_len: int = 1,
+        max_len: int = 100,
+        num_seqs: int = 2147483647
+    ) -> "FeatureTable":
         """
         Add a column of history visits of each user.
 
@@ -1463,7 +1614,12 @@ class FeatureTable(Table):
         df = add_hist_seq(self.df, cols, user_col, sort_col, min_len, max_len, num_seqs)
         return FeatureTable(df)
 
-    def add_neg_hist_seq(self, item_size, item_history_col, neg_num):
+    def add_neg_hist_seq(
+        self,
+        item_size: int,
+        item_history_col: str,
+        neg_num: int
+    ) -> "FeatureTable":
         """
         Generate a list of negative samples for each item in the history sequence.
 
@@ -1476,7 +1632,7 @@ class FeatureTable(Table):
         df = add_neg_hist_seq(self.df, item_size, item_history_col, neg_num)
         return FeatureTable(df)
 
-    def mask(self, mask_cols, seq_len=100):
+    def mask(self, mask_cols: Union[str, List[str]], seq_len: int = 100) -> "FeatureTable":
         """
         Add mask on specified column(s).
 
@@ -1490,7 +1646,13 @@ class FeatureTable(Table):
         df = mask(self.df, mask_cols, seq_len)
         return FeatureTable(df)
 
-    def pad(self, cols, seq_len=100, mask_cols=None, mask_token=0):
+    def pad(
+        self,
+        cols: Union[str, List[str]],
+        seq_len: int = 100,
+        mask_cols: Union[str, List[str]]=None,
+        mask_token: Union[NUMERIC_TYPE, str]=0
+    ) -> "FeatureTable":
         """
         Add padding on specified column(s).
 
@@ -1509,7 +1671,13 @@ class FeatureTable(Table):
         df = pad(self.df, cols, seq_len, mask_cols, mask_token)
         return FeatureTable(df)
 
-    def apply(self, in_col, out_col, func, dtype="string"):
+    def apply(
+        self,
+        in_col: Union[str, List[str]],
+        out_col: str,
+        func: Callable,
+        dtype: str = "string"
+    ) -> "FeatureTable":
         """
         Transform a FeatureTable using a user-defined Python function.
 
@@ -1533,7 +1701,14 @@ class FeatureTable(Table):
             df = self.df.withColumn(out_col, udf_func(array(in_col)))
         return FeatureTable(df)
 
-    def join(self, table, on=None, how=None, lsuffix=None, rsuffix=None):
+    def join(
+        self,
+        table: "FeatureTable",
+        on: Optional[Union[str, List[str]]]=None,
+        how: str = "inner",
+        lsuffix: Optional[str] = None,
+        rsuffix: Optional[str] = None
+    ) -> "FeatureTable":
         """
         Join a FeatureTable with another FeatureTable.
 
@@ -1561,7 +1736,13 @@ class FeatureTable(Table):
         joined_df = self.df.join(table.df, on=on, how=how)
         return FeatureTable(joined_df)
 
-    def add_value_features(self, columns, dict_tbl, key, value):
+    def add_value_features(
+        self,
+        columns: Union[str, List[str]],
+        dict_tbl: "Table",
+        key: str,
+        value: str
+    ) -> "FeatureTable":
         """
          Add features based on key columns and the key value Table.
          For each column in columns, it adds a value column using key-value pairs from dict_tbl.
@@ -1580,7 +1761,11 @@ class FeatureTable(Table):
         df = add_value_features(self.df, columns, dict_tbl.df, key, value)
         return FeatureTable(df)
 
-    def reindex(self, columns=[], index_tbls=[]):
+    def reindex(
+        self,
+        columns: Union[str, List[str]]=[],
+        index_tbls: Union["Table", List["Table"]]=[]
+    ) -> "FeatureTable":
         """
         Replace the value using index_dicts for each col in columns, set 0 for default
 
@@ -1604,7 +1789,11 @@ class FeatureTable(Table):
             tbl = tbl.add_value_features(c, index_tbls[i], key=c, value=c)
         return tbl
 
-    def gen_reindex_mapping(self, columns=[], freq_limit=10):
+    def gen_reindex_mapping(
+        self,
+        columns: List[str] = [],
+        freq_limit: Optional[Union[int, Dict[str, int]]]=10
+    ) -> List["FeatureTable"]:
         """
         Generate a mapping from old index to new one based on popularity count on descending order
          :param columns: str or a list of str
@@ -1634,7 +1823,12 @@ class FeatureTable(Table):
 
         return index_tbls
 
-    def group_by(self, columns=[], agg="count", join=False):
+    def group_by(
+        self,
+        columns: Union[str, List[str]]=[],
+        agg: Union[Dict[str, List[str]], List[str], Dict[str, str], str]="count",
+        join: bool = False
+    ) -> "FeatureTable":
         """
         Group the Table with specified columns and then run aggregation. Optionally join the result
         with the original Table.
@@ -1705,9 +1899,19 @@ class FeatureTable(Table):
         else:
             return FeatureTable(agg_df)
 
-    def target_encode(self, cat_cols, target_cols, target_mean=None, smooth=20, kfold=2,
-                      fold_seed=None, fold_col="__fold__", drop_cat=False, drop_fold=True,
-                      out_cols=None):
+    def target_encode(
+        self,
+        cat_cols: Union[List[str], List[List[str]], str],
+        target_cols: Union[str, List[str]],
+        target_mean: Optional[Dict[str, NUMERIC_TYPE]]=None,
+        smooth: int = 20,
+        kfold: int = 2,
+        fold_seed: Optional[int] = None,
+        fold_col: str = "__fold__",
+        drop_cat: bool = False,
+        drop_fold: bool = True,
+        out_cols: Optional[Union[str, List[str], List[List[str]]]]=None
+    ) -> Tuple["FeatureTable", List["TargetCode"]]:
         """
         For each categorical column or column group in cat_cols, calculate the mean of target
         columns in target_cols and encode the FeatureTable with the target mean(s) to generate
@@ -1910,7 +2114,12 @@ class FeatureTable(Table):
 
         return result_tbl, all_targets
 
-    def encode_target(self, targets, target_cols=None, drop_cat=True):
+    def encode_target(
+        self,
+        targets: Union["TargetCode", List["TargetCode"]],
+        target_cols: Union[str, List[str]]=None,
+        drop_cat: bool = True
+    ) -> "FeatureTable":
         """
         Encode columns with the provided TargetCode(s).
 
@@ -1947,7 +2156,14 @@ class FeatureTable(Table):
 
         return result_tbl
 
-    def difference_lag(self, columns, sort_cols, shifts=1, partition_cols=None, out_cols=None):
+    def difference_lag(
+        self,
+        columns: Union[str, List[str]],
+        sort_cols: Union[str, List[str]],
+        shifts: Union[int, List[int]]=1,
+        partition_cols: Optional[Union[str, List[str]]]=None,
+        out_cols: Optional[Union[List[str], List[List[str]], str]]=None
+    ) -> "FeatureTable":
         """
         Calculates the difference between two consecutive rows, or two rows with certain interval
         of the specified continuous columns. The table is first partitioned by partition_cols if it
@@ -2034,7 +2250,14 @@ class FeatureTable(Table):
 
         return FeatureTable(result_df)
 
-    def cut_bins(self, columns, bins, labels=None, out_cols=None, drop=True):
+    def cut_bins(
+        self,
+        columns: Union[str, List[str]],
+        bins: Union[Dict[str, Union[int, List[int]]], int, List[int]],
+        labels: Optional[Union[List[str], Dict[str, List[str]]]]=None,
+        out_cols: Optional[Union[str, List[str]]]=None,
+        drop: bool = True
+    ) -> "FeatureTable":
         """
         Segment values of the target column(s) into bins, which is also known as bucketization.
 
@@ -2117,7 +2340,8 @@ class FeatureTable(Table):
                     df_buck = df_buck.drop(column)
         return self._clone(df_buck)
 
-    def get_vocabularies(self, columns):
+    # TODO: Add UT
+    def get_vocabularies(self, columns: Union[str, List[str]]) -> Dict[str, List[str]]:
         """
         Create vocabulary for each column, and return dict of vocabularies
 
@@ -2132,8 +2356,14 @@ class FeatureTable(Table):
                 .distinct().rdd.map(lambda row: row[col]).collect()
         return vocabularies
 
-    def sample_listwise(self, columns, num_sampled_list, num_sampled_item, random_seed=None,
-                        replace=True):
+    def sample_listwise(
+        self,
+        columns: Union[str, List[str]],
+        num_sampled_list: int,
+        num_sampled_item: int,
+        random_seed: Optional[int] = None,
+        replace: bool = True
+    ) -> "FeatureTable":
         """
         Convert the FeatureTable to a sample listwise FeatureTable. The columns should be of list
         type and have the same length. Note that the rows with list length < num_sampled_item will
@@ -2242,8 +2472,13 @@ class FeatureTable(Table):
 
         return FeatureTable(df)
 
-    def string_embed(self, columns, bert_model='distilbert-base-uncased', reduce_dim=None,
-                     replace=True):
+    def string_embed(
+        self,
+        columns: Union[str, List[str]],
+        bert_model: str = 'distilbert-base-uncased',
+        reduce_dim: Optional[int] = None,
+        replace: bool = True
+    ) -> "FeatureTable":
         """
         Convert the columns of string to bert embeddings in FeatureTable. The columns should be of
         string type.
@@ -2310,12 +2545,13 @@ class FeatureTable(Table):
                     .withColumn(c + "_embds", tolist(c + "_embds"))
 
         if replace:
-            df = df.drop(c).withColumnRenamed(c + "_embds", c)
+            for c in cols:
+                df = df.drop(c).withColumnRenamed(c + "_embds", c)
         return FeatureTable(df)
 
 
 class StringIndex(Table):
-    def __init__(self, df, col_name):
+    def __init__(self, df: "SparkDataFrame", col_name: str) -> None:
         super().__init__(df)
         cols = df.columns
         invalidInputError(len(cols) >= 2,
@@ -2325,7 +2561,9 @@ class StringIndex(Table):
         self.col_name = col_name
 
     @classmethod
-    def read_parquet(cls, paths, col_name=None):
+    def read_parquet(cls,
+                     paths: Union[str, List[str]],
+                     col_name: Optional[str] = None) -> "StringIndex":
         """
         Loads Parquet files as a StringIndex.
 
@@ -2342,7 +2580,11 @@ class StringIndex(Table):
         return cls(Table._read_parquet(paths), col_name)
 
     @classmethod
-    def from_dict(cls, indices, col_name):
+    def from_dict(
+        cls,
+        indices: Dict[str, int],
+        col_name: str
+    ) -> "StringIndex":
         """
         Create the StringIndex from a dict of indices.
 
@@ -2369,7 +2611,7 @@ class StringIndex(Table):
         df = spark.createDataFrame((Row(**x) for x in indices), schema=schema)
         return cls(df, col_name)
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, int]:
         """
         Convert the StringIndex to a dict, with the categorical features as keys and indices
         as values.
@@ -2386,7 +2628,7 @@ class StringIndex(Table):
             res_dict[row[col_id]] = row[index_id]
         return res_dict
 
-    def write_parquet(self, path, mode="overwrite"):
+    def write_parquet(self, path: str, mode: str = "overwrite") -> None:
         """
         Write the StringIndex to Parquet file.
 
@@ -2401,13 +2643,18 @@ class StringIndex(Table):
         path = path + "/" + self.col_name + ".parquet"
         write_parquet(self.df, path, mode)
 
-    def cast(self, columns, dtype):
+    def cast(self, columns: str, dtype: str) -> "StringIndex":
         df_cast = super().cast(columns, dtype)
         return StringIndex(df_cast.df, self.col_name)
 
 
 class TargetCode(Table):
-    def __init__(self, df, cat_col, out_target_mean):
+    def __init__(
+        self,
+        df: "SparkDataFrame",
+        cat_col: Union[str, List[str]],
+        out_target_mean: Dict[str, Tuple[str, NUMERIC_TYPE]]
+    ) -> None:
         """
         Target Encoding output used for encoding new FeatureTables, which consists of the encoded
         categorical column or column group and the target encoded columns (mean statistics of
@@ -2431,10 +2678,10 @@ class TargetCode(Table):
 
         invalidInputError(isinstance(out_target_mean, dict), "out_target_mean should be dict")
 
-    def _clone(self, df):
+    def _clone(self, df: "SparkDataFrame") -> "TargetCode":
         return TargetCode(df, self.cat_col, self.out_target_mean)
 
-    def rename(self, columns):
+    def rename(self, columns: Dict[str, str]) -> "TargetCode":
         invalidInputError(isinstance(columns, dict),
                           "columns should be a dictionary of "
                           "{'old_name1': 'new_name1', 'old_name2': 'new_name2'}")

@@ -22,7 +22,7 @@ import bigdl.ppml.fl.nn.pytorch.aggregator as pt_agg
 import bigdl.ppml.fl.nn.tensorflow.aggregator as tf_agg
 
 from bigdl.ppml.fl.nn.generated.fl_base_pb2 import TensorMap
-from bigdl.ppml.fl.nn.generated.nn_service_pb2 import TrainRequest, TrainResponse, PredictResponse, UploadMetaResponse
+from bigdl.ppml.fl.nn.generated.nn_service_pb2 import LoadModelResponse, SaveModelResponse, TrainRequest, TrainResponse, PredictResponse, UploadMetaResponse
 from bigdl.ppml.fl.nn.generated.nn_service_pb2_grpc import *
 from bigdl.ppml.fl.nn.utils import tensor_map_to_ndarray_map
 import tensorflow as tf
@@ -35,11 +35,11 @@ import logging
 
 
 class NNServiceImpl(NNServiceServicer):
-    def __init__(self, client_num, **kargs) -> None:
-        self.client_num = client_num
+    def __init__(self, conf, **kargs) -> None:        
+        self.client_num = conf['clientNum']
         self.aggregator_map = {
-            'tf': tf_agg.Aggregator(client_num, **kargs),
-            'pt': pt_agg.Aggregator(client_num, **kargs)}
+            'tf': tf_agg.Aggregator(conf, **kargs),
+            'pt': pt_agg.Aggregator(conf, **kargs)}
         self.model_dir = tempfile.mkdtemp() # store tmp file dir
         self.model_path = os.path.join(self.model_dir, "vfl_server_model")
 
@@ -131,3 +131,13 @@ class NNServiceImpl(NNServiceServicer):
         if client_id <= 0 or client_id > self.client_num:
             invalidInputError(False, f"invalid client ID received: {client_id}, \
                 must be in range of client number [1, {self.client_num}]")
+
+    def save_server_model(self, request, context):
+        aggregator = self.aggregator_map[request.backend]
+        aggregator.save_server_model(request.model_path)
+        return SaveModelResponse(message=f"Server model saved to {request.model_path}")
+
+    def load_server_model(self, request, context):
+        aggregator = self.aggregator_map[request.backend]
+        aggregator.load_server_model(request.model_path)
+        return LoadModelResponse(message=f"Server model loaded from {request.model_path}")
