@@ -27,7 +27,7 @@ runs:
         --device=/dev/sgx/provision \
         -v ~/glorysdj/kuberconfig:/root/.kube/config \
         -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
-        -v $ENCLAVE_KEY:/graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
+        -v $ENCLAVE_KEY:/root/.config/gramine/enclave-key.pem \
         -v $DATA_PATH:/ppml/trusted-big-data-ml/work/data \
         -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
         -e LOCAL_IP=$LOCAL_IP \
