@@ -9,7 +9,7 @@ env:
 
 jobs:
   test-self-runner-create-badge:
-    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+    runs-on: ubuntu-latest
     steps:
       - name: "Checkout Code"
         uses: actions/checkout@v3
