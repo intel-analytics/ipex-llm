@@ -57,5 +57,18 @@ python inference_pipeline.py
 
 You can find the result for inference as follows:
 ```
-
+accleration option: original, latency: 133.7490ms, accuracy: 0.9890
+accleration option: fp32_ipex, latency: 102.1587ms, accuracy: 0.9890
+accleration option: bf16_ipex, latency: 628.2516ms, accuracy: 0.9890
+accleration option: int8, latency: 34.6394ms, accuracy: 0.9880
+accleration option: openvino_fp32, latency: 31.9775ms, accuracy: 0.9890
+accleration option: openvino_int8, latency: 17.0428ms, accuracy: 0.9870
+accleration option: onnxruntime_fp32, latency: 121.4465ms, accuracy: 0.9890
+accleration option: onnxruntime_int8_qlinear, latency: 19.3709ms, accuracy: 0.9870
+accleration option: onnxruntime_int8_integer, latency: 43.3232ms, accuracy: 0.9860
+accleration option: jit_fp32, latency: 103.0402ms, accuracy: 0.9890
+accleration option: jit_fp32_ipex, latency: 102.9166ms, accuracy: 0.9890
+accleration option: jit_fp32_ipex_clast, latency: 55.8827ms, accuracy: 0.9890
+inc + onnxruntime + qlinear
+openvino + pot
 ```
