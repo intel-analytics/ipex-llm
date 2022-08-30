@@ -1,7 +1,6 @@
 name: Nightly Test
 
 on:
-  #pull_request:
   schedule:
     - cron: '0 13 * * *' # GMT time, 13:00 GMT == 21:00 China
   workflow_dispatch:
@@ -21,6 +20,8 @@ on:
         - Dllib-Scala-UT
         - Friesian-Scala-UT
         - PPML-Scala-UT
+        - Orca-Ray-Ctx-Example
+        - PPML-spark-Local-Example-Tests-on-Gramine
 
 permissions:
   contents: read
@@ -102,7 +103,6 @@ jobs:
         pip install jupyter
         apt-get update
         apt-get install wget 
-
         wget https://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz
         gunzip scala-2.11.8.tgz
         tar -xf scala-2.11.8.tar -C /opt
@@ -113,7 +113,6 @@ jobs:
           export SCALA_HOME=/opt/scala
           chmod a+x apps/run-scala-app-test.sh
           apps/run-scala-app-test.sh
-
   Dllib-Scala-UT:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Dllib-Scala-UT' || github.event.inputs.artifact == 'all' }} 
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
@@ -152,18 +151,29 @@ jobs:
         uses: ./.github/actions/maven-setup-action
       - name: Run test
         uses: ./.github/actions/ppml-scala-ut-action
-      
 
+  Orca-Ray-Ctx-Example:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Ray-Ctx-Example' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, Gondolin-resources, ubuntu-20.04-lts]
 
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Run test
+      uses: ./.github/actions/orca-ray-ctx-example-action
 
+  ppml-spark-local-example-tests-on-gramine-action:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-spark-Local-Example-Tests-on-Gramine' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, SGX, Wilwarin]
 
-
-
-
-
-
-
-
-
-
-
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Run test
+      uses: ./.github/actions/ppml-spark-local-example-tests-on-gramine-action
