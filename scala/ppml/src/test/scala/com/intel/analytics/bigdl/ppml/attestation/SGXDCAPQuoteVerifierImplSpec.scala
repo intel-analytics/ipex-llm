@@ -43,7 +43,8 @@ class SGXDCAPQuoteVerifierImplSpec extends FlatSpec with Matchers {
         }
         val quoteUrl = s"$FTP_URI/bigdl/ppml/test/sgxdcap_quote.dat"
         tmpDir = zooUtils.createTmpDir("ZooPPML").toFile()
-        val dir = new File(s"${tmpDir.getAbsolutePath}/SGXDCAPQuoteVerifierImplSpec").getCanonicalPath
+        val tmpPath = s"${tmpDir.getAbsolutePath}/SGXDCAPQuoteVerifierImplSpec"
+        val dir = new File(tmpPath).getCanonicalPath
         s"wget -nv -P $dir $quoteUrl" !;
         val quotePath = s"$dir/sgxdcap_quote.dat"
         val quoteFile = new File(quotePath)
