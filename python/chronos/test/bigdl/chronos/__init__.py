@@ -24,6 +24,5 @@ op_automl = pytest.mark.automl
 op_distributed = pytest.mark.distributed
 
 # other mark
-op_tf1 = pytest.mark.tf1 # will delete later, may be in the last pr.
 op_all = pytest.mark.all
 op_onnxrt16 = pytest.mark.onnxrt16
