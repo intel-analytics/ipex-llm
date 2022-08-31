@@ -21,6 +21,7 @@ from torch import nn
 from bigdl.ppml.fl.nn.fl_client import FLClient
 from torch.utils.data import DataLoader
 from bigdl.dllib.utils.log4Error import invalidInputError, invalidOperationError
+from bigdl.ppml.fl.nn.nn_client import NNClient
 from bigdl.ppml.fl.nn.utils import file_chunk_generate, tensor_map_to_ndarray_map
 import os
 import tempfile
@@ -35,9 +36,7 @@ class PytorchEstimator:
                  loss_fn, 
                  optimizer_cls,
                  optimizer_args,
-                 client_id,
-                 bigdl_type="float", 
-                 target="localhost:8980", 
+                 bigdl_type="float",
                  fl_client=None,
                  server_model=None,
                  client_model_path=None,
@@ -50,7 +49,7 @@ class PytorchEstimator:
         self.client_model_path = client_model_path
         self.server_model_path = server_model_path
         self.fl_client = fl_client if fl_client is not None \
-            else FLClient(client_id=client_id, aggregator='pt', target=target)
+            else NNClient(aggregator='pt')
         self.loss_history = []
         if server_model is not None:
             self.__add_server_model(server_model, loss_fn, optimizer_cls, optimizer_args)

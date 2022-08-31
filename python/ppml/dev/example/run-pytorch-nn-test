@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 #
 # Copyright 2016 The BigDL Authors.
 #
@@ -14,11 +16,18 @@
 # limitations under the License.
 #
 
-from ..nn.fl_client import FLClient
+set -ex
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+source $SCRIPT_DIR/../prepare_env.sh
 
-def init_fl_context(client_id, target="localhost:8980"):
-    FLClient.load_config()
-    FLClient.set_client_id(client_id)
-    # target can be set in config file, and also could be overwritten here
-    FLClient.set_target(target)
-    FLClient.ensure_initialized()
+
+cd "`dirname $0`"
+echo "Running PPML tests"
+cd ../../
+
+rm -rf /tmp/pytorch_server_model*
+rm -rf /tmp/pytorch_client_model*
+rm -rf /tmp/vfl_server_model*
+python src/bigdl/ppml/fl/nn/fl_server.py --client_num 2 &
+python example/pytorch_nn_lr/pytorch_nn_lr_1.py --data_path example/pytorch_nn_lr/data/diabetes-vfl-1.csv &
+python example/pytorch_nn_lr/pytorch_nn_lr_2.py --data_path example/pytorch_nn_lr/data/diabetes-vfl-2.csv &

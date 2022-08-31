@@ -17,7 +17,7 @@
 import unittest
 
 
-from bigdl.ppml.fl.psi.psi import PSI
+from bigdl.ppml.fl.psi.psi_client import PSI
 from bigdl.ppml.fl.nn.fl_server import FLServer
 from bigdl.ppml.fl.nn.fl_context import init_fl_context
 from bigdl.ppml.fl.utils import FLTest

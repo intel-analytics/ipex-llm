@@ -20,14 +20,15 @@ from bigdl.ppml.fl import *
 
 from bigdl.ppml.fl.nn.nn_service import NNServiceImpl
 import yaml
-
+import click
 from bigdl.ppml.fl.psi.psi_service import PSIServiceImpl
 from bigdl.ppml.fl.nn.generated.nn_service_pb2_grpc import *
 from bigdl.ppml.fl.nn.generated.psi_service_pb2_grpc import *
 
+# fmt = '%(asctime)s %(levelname)s {%(module)s:%(lineno)d} - %(message)s'
+# logging.basicConfig(format=fmt, level=logging.DEBUG)
 
-
-class FLServer(object):
+class FLServer(object):    
     def __init__(self, client_num=None):
         self.server = grpc.server(futures.ThreadPoolExecutor(max_workers=5))
         self.port = 8980
@@ -86,9 +87,15 @@ class FLServer(object):
     def wait_for_termination(self):
         self.server.wait_for_termination()
 
-    
-if __name__ == '__main__':
-    fl_server = FLServer(2)
+
+@click.command()
+@click.option('--client_num', default=2)
+def run(client_num):
+    fl_server = FLServer(client_num)
     fl_server.build()
     fl_server.start()
     fl_server.wait_for_termination()
+
+
+if __name__ == '__main__':
+    run()
