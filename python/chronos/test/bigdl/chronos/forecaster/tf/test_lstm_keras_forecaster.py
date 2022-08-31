@@ -18,7 +18,6 @@ import pytest
 import tempfile
 import os
 
-from bigdl.chronos.forecaster.tf.lstm_forecaster import LSTMForecaster
 from unittest import TestCase
 import numpy as np
 from bigdl.chronos.utils import LazyImport
@@ -74,6 +73,7 @@ def create_tsdataset(roll=True):
 
 
 @op_all
+@op_tf2
 class TestLSTMForecaster(TestCase):
     def setUp(self):
         from bigdl.chronos.forecaster.tf.lstm_forecaster import LSTMForecaster

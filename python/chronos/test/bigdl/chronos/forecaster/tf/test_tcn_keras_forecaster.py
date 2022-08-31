@@ -21,7 +21,6 @@ import os
 from unittest import TestCase
 import numpy as np
 
-from bigdl.chronos.forecaster.tf.tcn_forecaster import TCNForecaster
 from bigdl.chronos.utils import LazyImport
 tf = LazyImport('tensorflow')
 from test.bigdl.chronos import op_tf2, op_all
@@ -76,6 +75,7 @@ def create_tsdataset(roll=True):
 
 
 @op_all
+@op_tf2
 class TestTCNForecaster(TestCase):
     def setUp(self):
         from bigdl.chronos.forecaster.tf.tcn_forecaster import TCNForecaster

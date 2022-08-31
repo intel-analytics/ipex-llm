@@ -19,8 +19,6 @@ import os
 
 from unittest import TestCase
 import numpy as np
-from bigdl.chronos.forecaster.tf.seq2seq_forecaster import Seq2SeqForecaster
-
 
 from bigdl.chronos.utils import LazyImport
 tf = LazyImport('tensorflow')
