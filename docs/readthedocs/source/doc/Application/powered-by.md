@@ -17,7 +17,7 @@
 * __Capgemini__
   <br>• [Intelligent 5G L2 MAC Scheduler: Powered by Capgemini NetAnticipate 5G on Intel Architecture](https://networkbuilders.intel.com/solutionslibrary/intelligent-5g-l2-mac-scheduler-powered-by-capgemini-netanticipate-5g-on-intel-architecture)
 * __China Unicom__
-  <br>• [5G Core Network Power Saving using BigDL Chronos in China Unicom](https://www.intel.cn/content/www/cn/zh/customer-spotlight/cases/china-unicom-bigdl-chronos-framework-5gc.html)
+  <br>• [Cloud Data Center Power Saving using BigDL Chronos in China Unicom](https://www.intel.cn/content/www/cn/zh/customer-spotlight/cases/china-unicom-bigdl-chronos-framework-5gc.html)
 * __CERN__
  <br>• [Deep Learning Pipelines for High Energy Physics using Apache Spark with Distributed Keras on Analytics Zoo](https://databricks.com/session_eu19/deep-learning-pipelines-for-high-energy-physics-using-apache-spark-with-distributed-keras-on-analytics-zoo)
  <br>• [Topology classification at CERN's Large Hadron Collider using Analytics Zoo](https://db-blog.web.cern.ch/blog/luca-canali/machine-learning-pipelines-high-energy-physics-using-apache-spark-bigdl)
