@@ -74,13 +74,10 @@ from pytorch_lightning import LightningDataModule, LightningModule
 from pytorch_lightning.callbacks.finetuning import BaseFinetuning
 from pytorch_lightning.utilities.rank_zero import rank_zero_info
 
-from bigdl.nano.pytorch.trainer import Trainer
-from bigdl.nano.pytorch import InferenceOptimizer
 
 log = logging.getLogger(__name__)
 DATA_URL = "https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip"
 
-milestones: tuple = (5, 10)
 
 class TransferLearningModel(LightningModule):
     def __init__(
@@ -202,9 +199,7 @@ class CatDogImageDataModule(LightningDataModule):
 
         self._dl_path = dl_path
         self._num_workers = num_workers
-        self._train_batch_size = batch_size
-        self._val_batch_size = batch_size
-        self._predict_batch_size = 1
+        self._batch_size = batch_size
 
     def prepare_data(self):
         """Download images and prepare images datasets."""
@@ -236,29 +231,24 @@ class CatDogImageDataModule(LightningDataModule):
     def create_dataset(self, root, transform):
         return ImageFolder(root=root, transform=transform)
 
-    def __dataloader(self, stage="train"):
+    def __dataloader(self, train: bool, batch_size=None):
         """Train/validation loaders."""
-        if stage == "train":
+        if batch_size is None:
+            batch_size = self._batch_size
+        if train:
             dataset = self.create_dataset(self.data_path.joinpath("train"), self.train_transform)
-            return DataLoader(dataset=dataset, batch_size=self._train_batch_size, num_workers=self._num_workers, shuffle=True)
-        elif stage == "val":
-            dataset = self.create_dataset(self.data_path.joinpath("validation"), self.valid_transform)
-            return DataLoader(dataset=dataset, batch_size=self._val_batch_size, num_workers=self._num_workers, shuffle=False)
+            return DataLoader(dataset=dataset, batch_size=batch_size, num_workers=self._num_workers, shuffle=True)
         else:
             dataset = self.create_dataset(self.data_path.joinpath("validation"), self.valid_transform)
-            return DataLoader(dataset=dataset, batch_size=self._predict_batch_size, num_workers=self._num_workers, shuffle=False)
+            return DataLoader(dataset=dataset, batch_size=batch_size, num_workers=self._num_workers, shuffle=False)
 
-    def train_dataloader(self):
+    def train_dataloader(self, batch_size=None):
         log.info("Training data loaded.")
-        return self.__dataloader(stage="train")
+        return self.__dataloader(train=True, batch_size=batch_size)
 
-    def val_dataloader(self):
+    def val_dataloader(self, batch_size=None):
         log.info("Validation data loaded.")
-        return self.__dataloader(stage="val")
-    
-    def predict_dataloader(self):
-        log.info("Prediction data loaded.")
-        return self.__dataloader(stage="predict")
+        return self.__dataloader(train=False, batch_size=batch_size)
 
 
 class MilestonesFinetuning(BaseFinetuning):
@@ -282,38 +272,3 @@ class MilestonesFinetuning(BaseFinetuning):
             self.unfreeze_and_add_param_group(
                 modules=pl_module.feature_extractor[:-5], optimizer=optimizer, train_bn=self.train_bn
             )
-
-
-# finetune on new dataset
-trainer = Trainer(max_epochs=15, callbacks=[MilestonesFinetuning(milestones)])
-model = TransferLearningModel(milestones=milestones)
-datamodule = CatDogImageDataModule()
-# trainer.fit(model, datamodule)
-# trainer.save(model, "best_model.ckpt")
-trainer.load(model, "best_model.ckpt")
-
-# define metric for accuracy calculation
-def accuracy(pred, target):
-    pred = torch.sigmoid(pred)
-    target = target.view((-1, 1)).type_as(pred).int()
-    return Accuracy()(pred, target)
-
-# accelaration inference using InferenceOptimizer
-model.eval()
-optimizer = InferenceOptimizer()
-optimizer.optimize(model=model,
-                   training_data=datamodule.predict_dataloader(),
-                   validation_data=datamodule.val_dataloader(),
-                   metric=accuracy,
-                   direction="max",
-                   cpu_num=1,
-                   latency_sample_num=30)
-
-for key, value in optimizer.optimized_model_dict.items():
-    print("accleration option: {}, latency: {:.4f}ms, accuracy: {:.4f}".format(key, value["latency"], value["accuracy"]))
-
-acc_model, option = optimizer.get_best_model(accelerator="onnxruntime")
-print(option)
-
-acc_model, option = optimizer.get_best_model(accuracy_criterion=0.05)
-print(option)

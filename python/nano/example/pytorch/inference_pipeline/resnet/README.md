@@ -1,7 +1,7 @@
 # Bigdl-nano InferenceOptimizer example on Cat vs. Dog dataset
 
 This example illustrates how to apply InferenceOptimizer to quickly find acceleration method with the minimum inference latency under specific restrictions or without restrictions for a trained model. 
-For the sake of this example, we first train the proposed network(by default, a ResNet50 is used) on the [cats and dogs dataset](https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip), which consists both [frozen and unfrozen stages](https://github.com/PyTorchLightning/pytorch-lightning/blob/495812878dfe2e31ec2143c071127990afbb082b/pl_examples/domain_templates/computer_vision_fine_tuning.py#L21-L35). Then, by calling `optimize()`, we can obtain all avaliable accelaration combinations provided by BigDL-Nano for inference. By calling `get_best_mdoel()` , we could get an accelerated model whose inference is 7.6x times faster.
+For the sake of this example, we first train the proposed network(by default, a ResNet50 is used) on the [cats and dogs dataset](https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip), which consists both [frozen and unfrozen stages](https://github.com/PyTorchLightning/pytorch-lightning/blob/495812878dfe2e31ec2143c071127990afbb082b/pl_examples/domain_templates/computer_vision_fine_tuning.py#L21-L35). Then, by calling `optimize()`, we can obtain all avaliable accelaration combinations provided by BigDL-Nano for inference. By calling `get_best_mdoel()` , we could get an accelerated model whose inference is 7.8x times faster.
 
 
 ## Prepare the environment
@@ -55,7 +55,7 @@ python inference_pipeline.py
 
 ## Results
 
-You can find the result for inference as follows:
+It will take about 10 minutes to run inference optimization. Then you can find the result for inference as follows:
 ```
 accleration option: original, latency: 133.7490ms, accuracy: 0.9890
 accleration option: fp32_ipex, latency: 102.1587ms, accuracy: 0.9890
@@ -69,6 +69,7 @@ accleration option: onnxruntime_int8_integer, latency: 43.3232ms, accuracy: 0.98
 accleration option: jit_fp32, latency: 103.0402ms, accuracy: 0.9890
 accleration option: jit_fp32_ipex, latency: 102.9166ms, accuracy: 0.9890
 accleration option: jit_fp32_ipex_clast, latency: 55.8827ms, accuracy: 0.9890
-inc + onnxruntime + qlinear
-openvino + pot
+When accelerator is onnxruntime, the model with the least latency is: inc + onnxruntime + qlinear
+When accuracy drop less than 5%, the model with the least latency is: openvino + pot
+The model with the least latency is: openvino + pot
 ```
