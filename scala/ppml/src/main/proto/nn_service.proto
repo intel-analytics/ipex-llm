@@ -81,6 +81,7 @@ message ClassAndArgs {
 }
 message UploadMetaResponse {
     string message = 1;
+    int32 code = 2;
 }
 
 message LoadModelRequest {
@@ -91,6 +92,7 @@ message LoadModelRequest {
 
 message LoadModelResponse {
     string message = 1;
+    int32 code = 2;
 }
 
 message SaveModelRequest {
@@ -101,3 +103,4 @@ message SaveModelRequest {
 message SaveModelResponse  {
     string message = 1;
 }
+
