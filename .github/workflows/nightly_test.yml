@@ -19,6 +19,7 @@ on:
         - Orca-Python-Ray-Py37-Spark3
         - Orca-Python-Py37-Spark3
         - Orca-Ray-Ctx-Example
+        - Orca-Python-Horovod-Tf2-Py37-Spark3
         - Dllib-Scala-UT
         - Friesian-Scala-UT
         - PPML-Scala-UT
@@ -95,6 +96,19 @@ jobs:
     - name: Run test
       uses: ./.github/actions/orca-python-py37-spark3-action
 
+  Orca-Python-Horovod-Tf2-Py37-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Horovod-Tf2-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Run test
+      uses: ./.github/actions/Orca-Python-Horovod-Tf2-Py37-Spark3-action
+      
   Dllib-Scala-UT:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Dllib-Scala-UT' || github.event.inputs.artifact == 'all' }} 
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
