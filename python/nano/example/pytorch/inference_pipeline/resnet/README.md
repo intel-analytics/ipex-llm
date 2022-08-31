@@ -6,6 +6,7 @@ For the sake of this example, we first train the proposed network(by default, a 
 
 ## Prepare the environment
 We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux) to prepare the environment.
+**Note**: during your installation, there may be some warnings or errors about version, just ignore them.
 ```
 conda create -n nano python=3.7  # "nano" is conda environment name, you can use any name you like.
 conda activate nano
@@ -19,6 +20,7 @@ pip install --upgrade intel-extension-for-pytorch
 pip install onnx onnxruntime onnxruntime-extensions
 pip install openvino-dev
 pip install --upgrade neural-compressor
+pip install --upgrade numpy==1.21.6
 ```
 Initialize environment variables with script `bigdl-nano-init` installed with bigdl-nano.
 ```
