@@ -374,6 +374,7 @@ class TestTFEstimator(TestCase):
 
             res = trainer.predict(df, feature_cols=["feature"]).collect()
             print("predict result: ", res)
+            trainer.shutdown()
         finally:
             shutil.rmtree(temp_dir)
 

@@ -31,7 +31,7 @@ from bigdl.orca.learn.base_estimator import BaseEstimator
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, \
     get_remote_file_to_local
 from bigdl.dllib.utils.common import get_node_and_core_number
-from bigdl.orca.learn.log_monitor import start_log_server
+from bigdl.orca.learn.log_monitor import start_log_server, stop_log_server
 
 from bigdl.orca.learn.utils import find_free_port, find_ip_and_free_port
 from bigdl.dllib.utils.utils import get_node_ip
@@ -135,7 +135,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         is_local = sc.master.startswith("local")
         self.need_to_log_to_driver = (not is_local) and log_to_driver
         if self.need_to_log_to_driver:
-            start_log_server(self.ip, self.log_port)
+            self.log_server_thread = start_log_server(self.ip, self.log_port)
         self.tcp_store_port = find_free_port()
 
         self.worker_init_params = dict(
@@ -562,4 +562,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
         return stats
 
     def shutdown(self):
-        pass
+        """
+        Shutdown estimator and release resources.
+        """
+        if self.need_to_log_to_driver:
+            stop_log_server(self.log_server_thread, self.ip, self.port)
