@@ -17,6 +17,9 @@ jobs:
       - name: echo
         run: |
           echo "${{ secrets.GIST_SECRET }}"
+          echo "${{ secrets.HTTP_PROXY_HOST }}"
+
+          
 
       - name: Create Awesome Badge
         uses: schneegans/dynamic-badges-action@v1.4.0
