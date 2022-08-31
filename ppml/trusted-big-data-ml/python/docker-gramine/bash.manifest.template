@@ -3,7 +3,7 @@ loader.entrypoint = "file:{{ gramine.libos }}"
 loader.pal_internal_mem_size = "512M"
 loader.log_level = "{{ log_level }}"
 
-loader.insecure__use_host_env = 1
+loader.insecure__use_host_env = true
 loader.env.LD_PRELOAD  = ""
 
 #loader.insecure__use_cmdline_argv = true
