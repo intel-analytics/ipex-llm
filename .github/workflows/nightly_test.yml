@@ -107,7 +107,7 @@ jobs:
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
     - name: Run test
-      uses: ./.github/actions/Orca-Python-Horovod-Tf2-Py37-Spark3-action
+      uses: ./.github/actions/orca-python-horovod-tf2-py37-spark3-action
       
   Dllib-Scala-UT:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Dllib-Scala-UT' || github.event.inputs.artifact == 'all' }} 
