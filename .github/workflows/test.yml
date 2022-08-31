@@ -16,7 +16,7 @@ jobs:
       
       - name: echo
         run: |
-          echo ${{ secrets.GIST_SECRET }}
+          echo "${{ secrets.GIST_SECRET }}"
 
       - name: Create Awesome Badge
         uses: schneegans/dynamic-badges-action@v1.4.0
