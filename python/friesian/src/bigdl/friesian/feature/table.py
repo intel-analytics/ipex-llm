@@ -2545,7 +2545,8 @@ class FeatureTable(Table):
                     .withColumn(c + "_embds", tolist(c + "_embds"))
 
         if replace:
-            df = df.drop(c).withColumnRenamed(c + "_embds", c)
+            for c in cols:
+                df = df.drop(c).withColumnRenamed(c + "_embds", c)
         return FeatureTable(df)
 
 
