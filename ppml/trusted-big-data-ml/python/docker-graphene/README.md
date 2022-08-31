@@ -125,8 +125,10 @@ The result should be similar to
 
 ## Run Python code with dependencies
 
-It usually happens that your code needs to depend on some other packages. In this section, we will show how to inject python dependencies into the ppml running environment.
+It usually happens that your code needs to depend on some other packages. In this section, we will show how to inject python dependencies into the ppml running environment by using **conda** or python **eggs**.
 
+
+### Inject python dependencies using Conda
 
 The code used in this example can be found [here](https://spark.apache.org/docs/latest/api/python/user_guide/python_packaging.html).
 
@@ -209,6 +211,57 @@ The result should be
 
 which, indicates that the dependency **pyarrow** and **pandas** has been successfully loaded into the running environment.
 
+
+### Inject python dependencies using egg
+
+Although the use of eggs is deprecated, the **spark-submit** command allow users to pass dependencies to the executors through python eggs and the `--py-files` option.
+
+In this section, we will show how to use python eggs to inject a `demo` package into spark executors.
+
+#### Prepare your Python eggs
+You can prepare the eggs you need by either  searching [PyPI](https://pypi.org/) or packaging the source code with the [Setuptools](https://setuptools.pypa.io/en/latest/setuptools.html#develop-deploy-the-project-source-in-development-mode).
+
+Here, we will use a very simple egg file for demonstration purpose. The egg named `demo` only contains a function `test()` whose function is to print "Hello World" to the terminal.
+
+
+#### Submit the task and watch result
+Please refer to the above subsections for starting the container and transferring the egg file into the container.
+
+The following bash command shows an example on how to inject dependencies to the spark executors running in kubernetes cluster.
+
+```bash
+export secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
+bash bigdl-ppml-submit.sh \
+        --master $RUNTIME_SPARK_MASTER \
+        --deploy-mode cluster \
+        --sgx-enabled true \
+        --sgx-log-level error \
+        --sgx-driver-memory 64g \
+        --sgx-driver-jvm-memory 12g \
+        --sgx-executor-memory 64g \
+        --sgx-executor-jvm-memory 12g \
+        --driver-memory 32g \
+        --driver-cores 8 \
+        --executor-memory 32g \
+        --executor-cores 8 \
+        --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
+        --num-executors 2 \
+        --name spark-test \
+        --verbose \
+        --py-files local:///ppml/trusted-big-data-ml/work/demo-0.1.0-py3.7.egg \
+        local:///ppml/trusted-big-data-ml/work/data/app.py
+```
+
+The result can be obtained by running the following bash command:
+
+```bash
+kubectl logs $(kubectl get pods | grep spark-test | grep driver | awk '{print $1}') | egrep "^Hello"
+```
+
+The result should be
+>Hello World
+
+which, indicates that the dependency `demo` egg has been successfully loaded into the running environment.
 ## Run as Spark Local Mode
 
 #### 1. Start the container to run spark applications in spark local mode
