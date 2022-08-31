@@ -540,11 +540,7 @@ class SparkXShards(XShards):
                               "The two SparkXShards should have the same number of elements "
                               "in each partition")
 
-    def to_spark_df_without_arrow(self):
-        if self._get_class_name() != 'pandas.core.frame.DataFrame':
-            invalidInputError(False,
-                              "Currently only support to_spark_df on XShards of Pandas DataFrame")
-
+    def _to_spark_df_without_arrow(self):
         def f(iter):
             for pdf in iter:
                 np_records = pdf.to_records(index=False)
@@ -612,7 +608,7 @@ class SparkXShards(XShards):
         except Exception as e:
             print(f"createDataFrame from shards attempted Arrow optimization failed as: {str(e)},"
                   f"Will try without Arrow optimization")
-            return self.to_spark_df_without_arrow()
+            return self._to_spark_df_without_arrow()
 
     def __len__(self):
         return self.rdd.map(lambda data: len(data) if hasattr(data, '__len__') else 1)\
