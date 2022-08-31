@@ -64,8 +64,8 @@ class MLP(Module):
 
 init_orca_context(memory="4g")
 
-path = 'new_ionosphere.csv'
-data_shard = bigdl.orca.data.pandas.read_csv(path)
+path = 'ionosphere.csv'
+data_shard = bigdl.orca.data.pandas.read_csv(path, header=None)
 
 column = data_shard.get_schema()['columns']
 
@@ -74,7 +74,7 @@ data_shard = label_encoder.fit_transform(data_shard)
 
 
 def update_label_to_zero_base(df):
-    df['_c34'] = df['_c34'] - 1
+    df['34'] = df['34'] - 1
     return df
 data_shard = data_shard.transform_shard(update_label_to_zero_base)
 
