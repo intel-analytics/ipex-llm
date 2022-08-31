@@ -247,5 +247,42 @@ class FGBoostServiceImpl(clientNum: Int, config: FLConfig)
     }
   }
 
+  override def saveServerModel(request: SaveModelRequest,
+                               responseObserver: StreamObserver[SaveModelResponse]): Unit = {
+    try {
+      aggregator.saveModel(request.getModelPath)
+      val response = "Save model on server successfully"
+      responseObserver.onNext(
+        SaveModelResponse.newBuilder.setMessage(response).setCode(1).build)
+      responseObserver.onCompleted()
+    } catch {
+      case e: Exception =>
+        val error = e.getStackTrace.map(_.toString).mkString("\n")
+        logger.error(e.getMessage + "\n" + error)
+        val response = SaveModelResponse.newBuilder.setMessage(e.getMessage).setCode(1).build
+        responseObserver.onNext(response)
+        responseObserver.onCompleted()
+    }
+
+  }
+
+  override def loadServerModel(request: LoadModelRequest,
+                               responseObserver: StreamObserver[LoadModelResponse]): Unit = {
+    try {
+      aggregator.loadModel(request.getModelPath)
+      val response = "Save model on server successfully"
+      responseObserver.onNext(
+        LoadModelResponse.newBuilder.setMessage(response).setCode(1).build)
+      responseObserver.onCompleted()
+    } catch {
+      case e: Exception =>
+        val error = e.getStackTrace.map(_.toString).mkString("\n")
+        logger.error(e.getMessage + "\n" + error)
+        val response = LoadModelResponse.newBuilder.setMessage(e.getMessage).setCode(1).build
+        responseObserver.onNext(response)
+        responseObserver.onCompleted()
+    }
+
+  }
 
 }
