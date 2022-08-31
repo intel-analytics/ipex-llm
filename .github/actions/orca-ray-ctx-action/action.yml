@@ -20,7 +20,6 @@ runs:
         python -m pip install --upgrade pip
         python -m pip install --upgrade setuptools==58.0.4
 
-        pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-friesian bigdl-friesian-spark3
         pip uninstall -r python/orca/dev/example/requirements-ray.txt -y
         pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r python/orca/dev/example/requirements-ray.txt
 
@@ -28,14 +27,15 @@ runs:
         pip install tensorflow==2.8.0
         pip install ray==1.11.0
 
-        sed -i "s/'bigdl-core=='+VERSION/'bigdl-core==2.1.0b20220811'/g" python/dllib/src/setup.py
-        bash python/dev/release_default_linux_spark312.sh default false false -Ddata-store-url=http://10.239.45.10:8081/repository/raw -U
+        pip uninstall -y bigdl-dllib bigdl-orca
 
-        # install dllib
-        pip install -i https://pypi.org/simple python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl
+        #build dllib whl without make_dist
+        ./python/dllib/dev/release/release.sh linux default false True
+        pip install ./python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl
 
-        # install orca
-        pip install -i https://pypi.org/simple python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
+        #build orca whl without make_dist
+        ./python/orca/dev/release/release.sh linux default True True
+        pip install ./python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
         
     - name: Run Test
       shell: bash
