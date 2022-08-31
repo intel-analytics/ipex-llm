@@ -116,4 +116,22 @@ public class FGBoostStub {
                 .build();
         return stub.uploadTreeLeaf(uploadTreeLeafRequest);
     }
+
+    public SaveModelResponse saveServerModel(String modelPath) {
+        SaveModelRequest saveModelRequest = SaveModelRequest
+                .newBuilder()
+                .setClientuuid(clientID)
+                .setModelPath(modelPath)
+                .build();
+        return stub.saveServerModel(saveModelRequest);
+    }
+
+    public LoadModelResponse loadServerModel(String modelPath) {
+        LoadModelRequest loadModelRequest = LoadModelRequest
+                .newBuilder()
+                .setClientId(clientID)
+                .setModelPath(modelPath)
+                .build();
+        return stub.loadServerModel(loadModelRequest);
+    }
 }

@@ -84,23 +84,19 @@ class NNServiceImpl(NNServiceServicer):
     def upload_meta(self, request, context):
         try:
             loss_fn = pickle.loads(request.loss_fn)
-
-            aggregator = self.aggregator_map[request.aggregator]            
-            if request.aggregator == 'pt':
-                os.rename(self.model_path, f'{self.model_path}.pt')                
-                aggregator.model = torch.jit.load(f'{self.model_path}.pt')
-            elif request.aggregator == 'tf':
-                os.rename(self.model_path, f'{self.model_path}.h5')
-                aggregator.model = tf.keras.models.load_model(f'{self.model_path}.h5')
-            else:
-                invalidInputError(False, f"Invalid aggregator, got {request.aggregator}")
+            client_id = request.client_uuid
+            aggregator = self.aggregator_map[request.aggregator]
+            aggregator.load_uploaded_model(client_id, self.model_path)            
 
             aggregator.set_meta(loss_fn, request.optimizer)
             msg = "Upload meta success, server model is ready."
+            code = 0
         except Exception as e:            
             msg = traceback.format_exc()
             logging.error(msg)
-        return UploadMetaResponse(message=msg)
+            code = 1
+
+        return UploadMetaResponse(message=msg, code=code)
 
     def upload_file(self, request_iterator, context):
         try:
@@ -109,6 +105,8 @@ class NNServiceImpl(NNServiceServicer):
             logging.debug("Acquired lock of server model")
             if os.path.exists(self.model_path):
                 logging.warn("Model file exists, will not upload.")
+                msg = "Model file exists, will not upload, exiting.."
+                code = 1
             else:
                 logging.debug("Unpacking file chunk from FLClient")
                 with open(self.model_path, 'wb') as f:
@@ -117,10 +115,12 @@ class NNServiceImpl(NNServiceServicer):
                 logging.info(f"Server received model file, length: {os.path.getsize(self.model_path)}")
             self.condition.release()
             msg = "Upload model file sucess"
+            code = 0
         except Exception as e:
             traceback.print_exc()
             msg = traceback.format_exc()
-        return UploadMetaResponse(message=msg)
+            code = 1
+        return UploadMetaResponse(message=msg, code=code)
             
     def validate_client_id(self, client_id):
         try:
@@ -139,5 +139,5 @@ class NNServiceImpl(NNServiceServicer):
 
     def load_server_model(self, request, context):
         aggregator = self.aggregator_map[request.backend]
-        aggregator.load_server_model(request.model_path)
+        aggregator.load_server_model(request.client_id, request.model_path)
         return LoadModelResponse(message=f"Server model loaded from {request.model_path}")
