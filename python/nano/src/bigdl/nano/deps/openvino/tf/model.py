@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 from pathlib import Path
-from statistics import mode
 from tempfile import TemporaryDirectory
 from ..core.model import OpenVINOModel
 from bigdl.nano.utils.inference.tf.model import AcceleratedKerasModel
