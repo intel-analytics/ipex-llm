@@ -14,25 +14,10 @@
 # limitations under the License.
 #
 
-from functools import partial
-from pytorch_lightning import LightningModule
 
-
-def bind_onnxrt_methods(pl_model: LightningModule, q_onnx_model=None, sess_options=None):
-    from . import torch_funcs
-    # add an ort_infer_engine to control the runtime binding
-    if not hasattr(pl_model, "ort_infer_engine"):
-        pl_model.ort_infer_engine = torch_funcs.PytorchORTInference()
-    if q_onnx_model:
-        pl_model.ort_infer_engine.build_ortsess_int8(pl_model, q_onnx_model.model)
-        pl_model.ort_infer_engine.default_eval_precision = "int8"
-    pl_model.eval_onnx = partial(torch_funcs.eval_onnx, pl_model)
-    pl_model.exit_onnx = partial(torch_funcs.exit_onnx, pl_model)
-    pl_model.to_quantized_onnx = partial(torch_funcs.to_quantized_onnx, pl_model)
-    return pl_model
-
-
-def PytorchONNXRuntimeModel(model, input_sample=None):
+def PytorchONNXRuntimeModel(model, input_sample=None,
+                            onnxruntime_session_options=None,
+                            **export_kwargs):
     """
         Create a ONNX Runtime model from pytorch.
 
@@ -41,11 +26,14 @@ def PytorchONNXRuntimeModel(model, input_sample=None):
         :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
                              model is a LightningModule with any dataloader attached,
                              defaults to None.
-
+        :param onnxruntime_session_options: A session option for onnxruntime accelerator.
+        :param **export_kwargs: will be passed to torch.onnx.export function.
         :return: A PytorchONNXRuntimeModel instance
         """
     from .pytorch.pytorch_onnxruntime_model import PytorchONNXRuntimeModel
-    return PytorchONNXRuntimeModel(model, input_sample)
+    return PytorchONNXRuntimeModel(model, input_sample,
+                                   onnxruntime_session_options=onnxruntime_session_options,
+                                   **export_kwargs)
 
 
 def load_onnxruntime_model(path):

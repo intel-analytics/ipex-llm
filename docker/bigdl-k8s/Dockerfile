@@ -101,8 +101,6 @@ ENV BIGDL_VERSION                       ${BIGDL_VERSION}
 ENV SPARK_HOME                          ${SPARK_HOME}
 ENV SPARK_VERSION                       ${SPARK_VERSION}
 ENV OMP_NUM_THREADS                     4
-ENV NOTEBOOK_PORT                       12345
-ENV NOTEBOOK_TOKEN                      1234qwer
 ENV RUNTIME_SPARK_MASTER                local[4]
 ENV RUNTIME_K8S_SERVICE_ACCOUNT         spark
 ENV RUNTIME_K8S_SPARK_IMAGE             intelanalytics/bigdl-k8s:${BIGDL_VERSION}-${SPARK_VERSION}
@@ -128,9 +126,7 @@ COPY --from=spark /sbin/tini /sbin/tini
 RUN mkdir -p /opt/bigdl-examples/python && \
     mkdir -p /opt/bigdl-examples/scala && \
     apt-get update --fix-missing && \
-    apt-get install -y apt-utils vim curl nano wget unzip git && \
-    apt-get install -y gcc g++ make && \
-    apt-get install -y libsm6 libxext6 libxrender-dev && \
+    apt-get install -y apt-utils vim curl libgomp1 nano wget unzip git && \
     rm /bin/sh && \
     ln -sv /bin/bash /bin/sh && \
     echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \

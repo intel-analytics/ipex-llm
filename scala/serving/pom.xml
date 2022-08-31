@@ -16,13 +16,14 @@
         <akka.http.version>10.1.15</akka.http.version>
         <akka.actor.version>2.5.31</akka.actor.version>
         <spark-scope>compile</spark-scope>
+        <bigdl.basedir>${project.parent.basedir}</bigdl.basedir>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>18.0</version>
+            <version>31.0.1-jre</version>
         </dependency>
         <dependency>
             <groupId>com.intel.analytics.bigdl</groupId>
@@ -41,9 +42,20 @@
             <version>2.1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
+            <groupId>org.json4s</groupId>
+            <artifactId>json4s-jackson_${scala.major.version}</artifactId>
+            <version>3.7.0-M5</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>3.5.1</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-mllib_${scala.major.version}</artifactId>
             <version>${spark.version}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>log4j</groupId>
@@ -68,6 +80,10 @@
                 <exclusion>
                     <groupId>xerces</groupId>
                     <artifactId>xercesImpl</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.json4s</groupId>
+                    <artifactId>json4s-jackson_${scala.major.version}</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -129,17 +145,17 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.12.2</version>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
-            <version>2.12.2</version>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-scala_${scala.major.version}</artifactId>
-            <version>2.12.2</version>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
@@ -210,6 +226,7 @@
             <groupId>com.github.kstyrc</groupId>
             <artifactId>embedded-redis</artifactId>
             <version>0.6</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
@@ -240,16 +257,19 @@
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-streams</artifactId>
             <version>2.4.1</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
             <version>2.4.1</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-streams-scala_2.11</artifactId>
             <version>2.4.1</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 

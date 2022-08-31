@@ -31,6 +31,7 @@ enum SIGNAL {
 message FloatTensor {
     repeated int32 shape = 1;
     repeated float tensor = 2;
+    string dtype = 3;
 }
 //
 message TensorMap {

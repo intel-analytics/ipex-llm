@@ -42,6 +42,8 @@ from tensorflow.python.ops import variable_scope as vs
 
 from tensorflow.python.util import nest
 from tensorflow.python.ops import nn_ops
+from bigdl.dllib.utils.log4Error import *
+
 
 _BIAS_VARIABLE_NAME = "bias"
 _WEIGHTS_VARIABLE_NAME = "kernel"
@@ -70,7 +72,7 @@ class _Linear(object):
         self._build_bias = build_bias
 
         if args is None or (nest.is_sequence(args) and not args):
-            raise ValueError("`args` must be specified")
+            invalidInputError(False, "`args` must be specified")
         if not nest.is_sequence(args):
             args = [args]
             self._is_sequence = False
@@ -82,17 +84,19 @@ class _Linear(object):
         shapes = [a.get_shape() for a in args]
         for shape in shapes:
             if shape.ndims != 2:
-                raise ValueError("linear is expecting 2D arguments: %s" % shapes)
+                invalidInputError(False, "linear is expecting 2D arguments: %s" % shapes)
             if tf.__version__[0] == '1':
                 if shape[1].value is None:
-                    raise ValueError("linear expects shape[1] to be provided for shape %s, "
-                                     "but saw %s" % (shape, shape[1]))
+                    invalidInputError(False,
+                                      "linear expects shape[1] to be provided for shape %s, "
+                                      "but saw %s" % (shape, shape[1]))
                 else:
                     total_arg_size += shape[1].value
             elif tf.__version__[0] == '2':
                 if shape[1] is None:
-                    raise ValueError("linear expects shape[1] to be provided for shape %s, "
-                                     "but saw %s" % (shape, shape[1]))
+                    invalidInputError(False,
+                                      "linear expects shape[1] to be provided for shape %s, "
+                                      "but saw %s" % (shape, shape[1]))
                 else:
                     total_arg_size += shape[1]
 

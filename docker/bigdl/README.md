@@ -1,4 +1,4 @@
---------
+---------
 # Docker images and builders for BigDL
 
 ## BigDL in Docker
@@ -69,51 +69,35 @@
 ### To start a notebook directly with a specified port(e.g. 12345). You can view the notebook on http://[host-ip]:12345
 
     sudo docker run -it --rm -p 12345:12345 \
-        -e NOTEBOOK_PORT=12345 \
-        -e NOTEBOOK_TOKEN="your-token" \
         intelanalytics/bigdl:default
 
     sudo docker run -it --rm --net=host \
-        -e NOTEBOOK_PORT=12345 \
-        -e NOTEBOOK_TOKEN="your-token" \
         intelanalytics/bigdl:default
 
     sudo docker run -it --rm -p 12345:12345 \
-        -e NOTEBOOK_PORT=12345 \
-        -e NOTEBOOK_TOKEN="your-token" \
         intelanalytics/bigdl:latest
 
     sudo docker run -it --rm --net=host \
-        -e NOTEBOOK_PORT=12345 \
-        -e NOTEBOOK_TOKEN="your-token" \
         intelanalytics/bigdl:spark_2.4.6
 
 ### If you need http and https proxy in your environment:
 
     sudo docker run -it --rm -p 12345:12345 \
-        -e NOTEBOOK_PORT=12345 \
-        -e NOTEBOOK_TOKEN="your-token" \
         -e http_proxy=http://your-proxy-host:your-proxy-port \
         -e https_proxy=https://your-proxy-host:your-proxy-port \
         intelanalytics/bigdl:default
 
     sudo docker run -it --rm --net=host \
-        -e NOTEBOOK_PORT=12345 \
-        -e NOTEBOOK_TOKEN="your-token" \
         -e http_proxy=http://your-proxy-host:your-proxy-port \
         -e https_proxy=https://your-proxy-host:your-proxy-port \
         intelanalytics/bigdl:default
 
     sudo docker run -it --rm -p 12345:12345 \
-        -e NOTEBOOK_PORT=12345 \
-        -e NOTEBOOK_TOKEN="your-token" \
         -e http_proxy=http://your-proxy-host:your-proxy-port \
         -e https_proxy=https://your-proxy-host:your-proxy-port \
         intelanalytics/bigdl:spark_2.4.6
 
     sudo docker run -it --rm --net=host \
-        -e NOTEBOOK_PORT=12345 \
-        -e NOTEBOOK_TOKEN="your-token" \
         -e http_proxy=http://your-proxy-host:your-proxy-port \
         -e https_proxy=https://your-proxy-host:your-proxy-port \
         intelanalytics/bigdl:spark_2.4.6
@@ -121,13 +105,11 @@
 ### You can also start the container first
 
     sudo docker run -it --rm --net=host \
-        -e NOTEBOOK_PORT=12345 \
-        -e NOTEBOOK_TOKEN="your-token" \
         intelanalytics/bigdl:default bash
 
 ### In the container, after setting proxy and ports, you can start the Notebook by:
 
-    /opt/work/start-notebook.sh
+    /opt/work/start-notebook.sh --port=YOUR_PORT --token=YOUR_TOKEN
 
 ## Notice
 
@@ -140,8 +122,6 @@
 ### With 0.3+ version of BigDL Docker image, you can specify the runtime conf of spark
 
     sudo docker run -itd --net=host \
-        -e NOTEBOOK_PORT=12345 \
-        -e NOTEBOOK_TOKEN="1234qwer" \
         -e http_proxy=http://your-proxy-host:your-proxy-port  \
         -e https_proxy=https://your-proxy-host:your-proxy-port  \
         -e RUNTIME_SPARK_MASTER=spark://your-spark-master-host:your-spark-master-port or local[*] \
@@ -149,5 +129,69 @@
         -e RUNTIME_DRIVER_MEMORY=20g \
         -e RUNTIME_EXECUTOR_CORES=4 \
         -e RUNTIME_EXECUTOR_MEMORY=20g \
-        -e RUNTIME_TOTAL_EXECUTOR_CORES=4 \
+        -e RUNTIME_EXECUTOR_INSTANCES=1 \
         intelanalytics/bigdl:latest
+
+
+## Run Notebook On K8s
+### Deploy notebook
+Execute the command to deploy notebook service
+```bash
+kubectl apply -f deployment.yaml
+```
+
+> you should replace the nfs `claimName` with your nfs `claimName` on `deployment.yaml` file.
+
+### Port forward
+you can execute `kubectl get pods | grep bigdl` to find the pod name likes `bigdl-notebook-XXX`, then to forward the port:
+```bash
+kubectl port-forward --namespace default bigdl-notebook-XXX 12345:12345 --address 0.0.0.0
+```
+
+## Run Notebook On K8S and Start Jupyter Task On K8S
+### 1. Prepare the k8s config
+Create `bigdl` namespace:  
+```bash
+kubectl create namespace bigdl
+```
+Store k8s config configuration with secret to be able to start pods on k8s cluster.
+```bash
+kubectl create secret generic kubeconf --from-file=/root/.kube/config -n bigdl
+```
+### 2. Prepare the NFS
+Steps:
+1. please install nfs first.
+2. create nfs pvc with `deployment-nfs.yaml`, the namespace on this file all named `bigdl` and you can replace that namespace with other namespace.  
+```bash
+kubectl apply -f deployment-nfs.yaml
+```
+
+### 3. Start Notebook On K8S
+#### Create Deployment On K8S
+Create `Deployment` with `deployment-k8s.yaml` file.  
+```bash
+kubectl apply -f deployment-k8s.yaml
+```
+
+You can find the pod started by running the following command:  
+```bash
+kubectl get pods -n bigdl | grep bigdl-notebook
+```
+> The example of pod name: bigdl-notebook-XXXX（JupyterLab runs on this pod）
+
+Check the pod's logs:
+```bash
+kubectl logs bigdl-notebook-XXXX -n bigdl
+```
+
+### 4. Access Service
+#### Access services through k8s svc
+You can find the svc named "bigdl-notebook" and access the service through the way provided by the svc of k8s.
+```bash
+kubectl get svc -n bigdl
+```
+
+|Service|Port|
+---|---
+|NoteBook|NodePort|
+|TensorBoard|NodePort|

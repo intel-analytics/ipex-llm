@@ -36,6 +36,7 @@ import os
 from typing import Any, List, Optional, Callable
 
 import multiprocessing
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 import torch
 from torch.nn.parallel.distributed import DistributedDataParallel
 from torch.multiprocessing.spawn import _wrap, ProcessContext
@@ -43,11 +44,16 @@ from torch.multiprocessing.spawn import _wrap, ProcessContext
 import pytorch_lightning as pl
 from pytorch_lightning.overrides import LightningDistributedModule
 from pytorch_lightning.plugins.environments.cluster_environment import ClusterEnvironment
+from pytorch_lightning.plugins.environments import LightningEnvironment
 from pytorch_lightning.utilities.distributed import rank_zero_only
 from pytorch_lightning.utilities.seed import reset_seed
 
-from bigdl.nano.common.cpu_schedule import schedule_workers
+from bigdl.nano.common.cpu_schedule import schedule_processors
+from bigdl.nano.deps.ipex.ipex_api import ipex_device, ipex_optimize
 import logging
+
+import warnings
+import copy
 log = logging.getLogger(__name__)
 
 
@@ -57,17 +63,26 @@ def start_processes_new(fn, args=(), nprocs=1, join=True, daemon=False,
     mp = multiprocessing.get_context(start_method)
     error_queues = []
     processes = []
+    envs = []
 
     if cpu_procs is None:
-        cpu_procs = schedule_workers(nprocs)
+        envs = schedule_processors(nprocs)
+    else:
+        for i in range(nprocs):
+            env = {
+                "KMP_AFFINITY": f"granularity=fine,proclist"
+                                f"=[{','.join([str(i) for i in cpu_procs[i]])}],explicit",
+                "OMP_NUM_THREADS": str(len(cpu_procs[i]))
+            }
 
-    init_KMP_AFFINITY = os.environ.get("KMP_AFFINITY")
-    init_OMP_NUM_THREADS = os.environ.get("OMP_NUM_THREADS")
+            envs.append(env)
+
+    init_KMP_AFFINITY = os.environ.get("KMP_AFFINITY", "")
+    init_OMP_NUM_THREADS = os.environ.get("OMP_NUM_THREADS", "")
 
     for i in range(nprocs):
-        os.environ["KMP_AFFINITY"] = f"granularity=fine,proclist"\
-                                     f"=[{','.join([str(i) for i in cpu_procs[i]])}],explicit"
-        os.environ["OMP_NUM_THREADS"] = str(len(cpu_procs[i]))
+        os.environ["KMP_AFFINITY"] = envs[i]['KMP_AFFINITY']
+        os.environ["OMP_NUM_THREADS"] = envs[i]['OMP_NUM_THREADS']
         log.debug(f"[Process {i}]: using KMP_AFFINITY: {os.environ['KMP_AFFINITY']}")
         log.debug(f"[Process {i}]: using OMP_NUM_THREADS: {os.environ['OMP_NUM_THREADS']}")
         error_queue = mp.SimpleQueue()
@@ -84,7 +99,7 @@ def start_processes_new(fn, args=(), nprocs=1, join=True, daemon=False,
     if not join:
         return context
 
-    # Loop on join until it returns True or raises an exception.
+    # Loop on join until it returns True or throw an exception.
     while not context.join():
         pass
 
@@ -99,27 +114,22 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
 
     def __init__(
         self,
-        parallel_devices: Optional[List[torch.device]] = None,
-        num_nodes: int = 1,
-        cluster_environment: ClusterEnvironment = None,
-        sync_batchnorm: bool = False,
-        ddp_comm_state: Optional[object] = None,
-        ddp_comm_hook: Optional[Callable] = None,
-        ddp_comm_wrapper: Optional[Callable] = None,
+        num_processes: int = 1,
         cpu_for_each_process: Optional[List[List[int]]] = None,
-        **kwargs: Any,
+        use_ipex=False,
+        enable_bf16=False,
     ):
         """Create a DDPSpawnPlugin, adding a cpu_for_each_process parameter."""
+        device = ipex_device() if use_ipex and TORCH_VERSION_LESS_1_10 else 'cpu'
+        parallel_devices = [torch.device(device) for _ in range(num_processes)]
+        cluster_environment = LightningEnvironment()
+
         super().__init__(parallel_devices,
-                         num_nodes,
-                         cluster_environment,
-                         sync_batchnorm,
-                         ddp_comm_state,
-                         ddp_comm_hook,
-                         ddp_comm_wrapper,
-                         **kwargs)
+                         cluster_environment=cluster_environment)
         self.cpu_for_each_process = cpu_for_each_process
         self.is_distributed = True
+        self.use_ipex = use_ipex
+        self.enable_bf16 = enable_bf16
 
     @property
     def mp_spawn_kwargs(self):
@@ -151,6 +161,7 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
 
     def new_process(self, process_idx, trainer, mp_queue):
         """The fucntion to run in each new process."""
+        self = copy.deepcopy(self)
         self.mp_queue = mp_queue
 
         reset_seed()
@@ -180,6 +191,19 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
         self.dist.rank = self.global_rank
         self.dist.device = self.root_device
 
+        if self.use_ipex and not TORCH_VERSION_LESS_1_10:
+            dtype = torch.bfloat16 if self.enable_bf16 else None
+            num_optimizers = len(self.lightning_module.trainer.accelerator.optimizers)
+            if num_optimizers == 1:
+                optimizer = self.lightning_module.trainer.accelerator.optimizers[0]
+                ipex_optimize(self.model, optimizer=optimizer,
+                              inplace=True, dtype=dtype)
+            elif num_optimizers == 0:
+                ipex_optimize(self.model, inplace=True, dtype=dtype)
+            else:
+                warnings.warn(f"IPEX currently only support single optimizers, "
+                              f"but got {num_optimizers}. Skip IPEX")
+
         if self.sync_batchnorm:
             self.model = self.configure_sync_batchnorm(self.model)
 
@@ -191,7 +215,7 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
         self.model_to_device()
 
         self.barrier()
-        results = trainer.run_stage()
+        results = self.lightning_module.trainer.run_stage()
 
         # persist info in ddp_spawn
         self.transfer_distrib_spawn_state_on_fit_end(results)

@@ -17,6 +17,7 @@
 import os
 from bigdl.orca.data.image.imagenet_dataset import *
 from bigdl.orca.data.image.parquet_dataset import _check_arguments
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 
 def write_imagenet(imagenet_path: str,
@@ -54,9 +55,10 @@ def write_imagenet(imagenet_path: str,
 
     """
     if not imagenet_path:
-        raise AssertionError('ImageNet data path should not be empty. Please download '
-                             'from http://image-net.org/download-images and extract .tar '
-                             'and provide raw data directory path')
+        invalidInputError(False,
+                          'ImageNet data path should not be empty. Please download '
+                          'from http://image-net.org/download-images and extract .tar '
+                          'and provide raw data directory path')
     return convert_imagenet_to_tf_records(imagenet_path, output_path, **kwargs)
 
 
@@ -109,7 +111,8 @@ def write_tfrecord(format, output_path, *args, **kwargs):
     """
     supported_format = {"imagenet"}
     if format not in supported_format:
-        raise ValueError(format + " is not supported, should be 'imagenet'. ")
+        invalidInputError(False,
+                          format + " is not supported, should be 'imagenet'. ")
 
     format_to_function = {"imagenet": (write_imagenet, ["imagenet_path"])}
     func, required_args = format_to_function[format]
@@ -128,7 +131,8 @@ def read_tfrecord(format, path, *args, **kwargs):
     """
     supported_format = {"imagenet"}
     if format not in supported_format:
-        raise ValueError(format + " is not supported, should be 'imagenet'. ")
+        invalidInputError(False,
+                          format + " is not supported, should be 'imagenet'. ")
 
     format_to_function = {"imagenet": (read_imagenet, ["is_training"])}
     func, required_args = format_to_function[format]

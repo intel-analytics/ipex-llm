@@ -233,7 +233,7 @@ class TestTFKerasAutoEstimator(TestCase):
             elements = np.power(np.log1p(y_true) - np.log1p(y_pred), 2)
             return float(np.sqrt(np.sum(elements) / len(y_true)))
 
-        with pytest.raises(ValueError) as exeinfo:
+        with pytest.raises(RuntimeError) as exeinfo:
             auto_est.fit(data=data,
                          validation_data=validation_data,
                          search_space=create_linear_search_space(),

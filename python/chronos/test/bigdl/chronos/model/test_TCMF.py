@@ -16,7 +16,7 @@
 
 import pytest
 
-from bigdl.orca.test_zoo_utils import ZooTestCase
+from unittest import TestCase
 from bigdl.chronos.model.tcmf_model import TCMF
 import numpy as np
 import os
@@ -24,7 +24,7 @@ from numpy.testing import assert_array_almost_equal
 import pandas as pd
 
 
-class TestTCMF(ZooTestCase):
+class TestTCMF(TestCase):
 
     def setup_method(self, method):
         self.seq_len = 480
@@ -65,28 +65,28 @@ class TestTCMF(ZooTestCase):
 
     def test_tcmf_covariates_dti(self):
         # test wrong format in fit
-        with pytest.raises(ValueError, match="Input covariates must be a ndarray. Got"):
+        with pytest.raises(RuntimeError, match="Input covariates must be a ndarray. Got"):
             self.model.fit_eval(data=(self.Ymat, None),
                                 covariates='None',
                                 **self.config)
 
-        with pytest.raises(ValueError, match="The second dimension shape of covariates should be"):
+        with pytest.raises(RuntimeError, match="The second dimension shape of covariates should be"):
             self.model.fit_eval(data=(self.Ymat, None),
                                 covariates=np.random.randn(3, self.seq_len - 1),
                                 **self.config)
 
-        with pytest.raises(ValueError, match="You should input a 2-D ndarray of covariates."):
+        with pytest.raises(RuntimeError, match="You should input a 2-D ndarray of covariates."):
             self.model.fit_eval(data=(self.Ymat, None),
                                 covariates=np.random.randn(3, 4, 5),
                                 **self.config)
 
-        with pytest.raises(ValueError, match="Input dti must be a pandas DatetimeIndex. Got"):
+        with pytest.raises(RuntimeError, match="Input dti must be a pandas DatetimeIndex. Got"):
             self.model.fit_eval(data=(self.Ymat, None),
                                 covariates=np.random.randn(3, self.seq_len),
                                 dti='None',
                                 **self.config)
 
-        with pytest.raises(ValueError, match="Input dti length should be equal to"):
+        with pytest.raises(RuntimeError, match="Input dti length should be equal to"):
             self.model.fit_eval(data=(self.Ymat, None),
                                 covariates=np.random.randn(3, self.seq_len),
                                 dti=pd.date_range('20130101', periods=self.seq_len-1),
@@ -99,27 +99,27 @@ class TestTCMF(ZooTestCase):
                             **self.config)
 
         # inconsistent covariates and dti
-        with pytest.raises(ValueError, match="Find valid covariates in fit but invalid covariates "
+        with pytest.raises(RuntimeError, match="Find valid covariates in fit but invalid covariates "
                                              "in predict."):
             self.model.predict(horizon=self.horizon)
 
-        with pytest.raises(ValueError, match="be the same as the input covariates number in fit."):
+        with pytest.raises(RuntimeError, match="be the same as the input covariates number in fit."):
             self.model.predict(horizon=self.horizon,
                                future_covariates=np.random.randn(2, self.horizon),
                                )
-        with pytest.raises(ValueError, match="Find valid dti in fit but invalid dti in"):
+        with pytest.raises(RuntimeError, match="Find valid dti in fit but invalid dti in"):
             self.model.predict(horizon=self.horizon,
                                future_covariates=np.random.randn(3, self.horizon),
                                )
 
-        with pytest.raises(ValueError, match="Find valid covariates in fit but invalid covariates "
+        with pytest.raises(RuntimeError, match="Find valid covariates in fit but invalid covariates "
                                              "in fit_incremental."):
             self.model.fit_incremental(x=np.random.rand(self.num_samples, self.horizon))
 
-        with pytest.raises(ValueError, match="be the same as the input covariates number in fit."):
+        with pytest.raises(RuntimeError, match="be the same as the input covariates number in fit."):
             self.model.fit_incremental(x=np.random.rand(self.num_samples, self.horizon),
                                        covariates_new=np.random.randn(2, self.horizon),)
-        with pytest.raises(ValueError, match="Find valid dti in fit but invalid dti in"):
+        with pytest.raises(RuntimeError, match="Find valid dti in fit but invalid dti in"):
             self.model.fit_incremental(x=np.random.rand(self.num_samples, self.horizon),
                                        covariates_new=np.random.randn(3, self.horizon), )
 
@@ -132,13 +132,13 @@ class TestTCMF(ZooTestCase):
                                    dti_new=pd.date_range('20130101', periods=self.horizon),)
 
     def test_error(self):
-        with pytest.raises(ValueError, match="We don't support input x directly"):
+        with pytest.raises(RuntimeError, match="We don't support input x directly"):
             self.model.predict(x=1)
 
-        with pytest.raises(ValueError, match="We don't support input x directly"):
+        with pytest.raises(RuntimeError, match="We don't support input x directly"):
             self.model.evaluate(x=1, y=np.random.rand(self.num_samples, self.horizon))
 
-        with pytest.raises(ValueError, match="Input invalid y of None"):
+        with pytest.raises(RuntimeError, match="Input invalid y of None"):
             self.model.evaluate(y=None)
 
         with pytest.raises(Exception,
@@ -149,7 +149,7 @@ class TestTCMF(ZooTestCase):
                            match="Needs to call fit_eval or restore first before calling predict"):
             self.model.evaluate(y=np.random.rand(self.num_samples, self.horizon))
 
-        with pytest.raises(ValueError, match="Input invalid x of None"):
+        with pytest.raises(RuntimeError, match="Input invalid x of None"):
             self.model.fit_incremental(x=None)
 
         with pytest.raises(Exception, match="Needs to call fit_eval or restore first before "
@@ -161,18 +161,18 @@ class TestTCMF(ZooTestCase):
                                             f"time series, got {self.num_samples - 1} instead"):
             self.model.fit_incremental(x=np.random.rand(self.num_samples - 1, self.horizon))
 
-        with pytest.raises(ValueError, match="but invalid covariates in fit. "):
+        with pytest.raises(RuntimeError, match="but invalid covariates in fit. "):
             self.model.predict(horizon=self.horizon,
                                future_covariates=np.random.randn(3, self.horizon),
                                )
-        with pytest.raises(ValueError, match="but invalid dti in fit. "):
+        with pytest.raises(RuntimeError, match="but invalid dti in fit. "):
             self.model.predict(horizon=self.horizon,
                                future_dti=pd.date_range('20130101', periods=self.horizon),
                                )
-        with pytest.raises(ValueError, match="but invalid covariates in fit. "):
+        with pytest.raises(RuntimeError, match="but invalid covariates in fit. "):
             self.model.fit_incremental(x=np.random.rand(self.num_samples, self.horizon),
                                        covariates_new=np.random.randn(3, self.horizon),)
-        with pytest.raises(ValueError, match="but invalid dti in fit. "):
+        with pytest.raises(RuntimeError, match="but invalid dti in fit. "):
             self.model.fit_incremental(x=np.random.rand(self.num_samples, self.horizon),
                                        dti_new=pd.date_range('20130101', periods=self.horizon), )
 

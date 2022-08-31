@@ -31,6 +31,8 @@ from bigdl.dllib.utils.file_utils import get_remote_file_to_local
 from bigdl.orca.learn.tf2.estimator import Estimator
 
 import tensorflow as tf
+from bigdl.dllib.utils.log4Error import *
+
 
 wide_cols = ['engaged_with_user_is_verified', 'enaging_user_is_verified']
 wide_dims = [1, 1]
@@ -79,7 +81,8 @@ conf = {"spark.network.timeout": "10000000",
 def get_size(data_dir):
     if not exists(os.path.join(data_dir, "train_parquet")) or \
             not exists(os.path.join(data_dir, "test_parquet")):
-        raise Exception("Not train and test data parquet specified")
+        invalidInputError(False,
+                          "Not train and test data parquet specified")
     else:
         train_tbl = FeatureTable.read_parquet(os.path.join(data_dir, "train_parquet"))
         test_tbl = FeatureTable.read_parquet(os.path.join(data_dir, "test_parquet"))
@@ -302,9 +305,9 @@ if __name__ == "__main__":
     elif options.cluster_mode == "spark-submit":
         init_orca_context("spark-submit")
     else:
-        raise ValueError(
-            "cluster_mode should be one of 'local', 'yarn', 'standalone' and 'spark-submit'"
-            ", but got " + args.cluster_mode)
+        invalidInputError(False,
+                          "cluster_mode should be one of 'local', 'yarn', 'standalone' and"
+                          " 'spark-submit', but got " + args.cluster_mode)
 
     train_tbl, test_tbl, indicator_sizes, embedding_sizes, cross_sizes = get_size(options.data_dir)
 
@@ -333,7 +336,7 @@ if __name__ == "__main__":
         model_creator=model_creator,
         verbose=True,
         config=config,
-        backend="tf2")
+        backend="ray")
 
     train_count = train_tbl.size()
     print("train size: ", train_count)

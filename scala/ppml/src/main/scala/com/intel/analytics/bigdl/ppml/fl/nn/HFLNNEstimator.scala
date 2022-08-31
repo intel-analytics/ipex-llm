@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.ppml.fl.nn
 import com.intel.analytics.bigdl.{Criterion, Module}
 import com.intel.analytics.bigdl.dllib.estimator.LocalEstimator
 import com.intel.analytics.bigdl.dllib.feature.dataset.{LocalDataSet, MiniBatch}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.optim.{LocalPredictor, Metrics, OptimMethod, ValidationMethod}
 import com.intel.analytics.bigdl.ppml.fl.base.Estimator
 import com.intel.analytics.bigdl.ppml.fl.FLContext
@@ -74,10 +75,10 @@ class HFLNNEstimator(algorithm: String,
 
     model
   }
-  def evaluate(dataSet: LocalDataSet[MiniBatch[Float]]) = {
+  def evaluate(dataSet: LocalDataSet[MiniBatch[Float]]): Unit = {
     model.evaluate(dataSet, metrics)
   }
-  def predict(dataSet: LocalDataSet[MiniBatch[Float]]) = {
+  def predict(dataSet: LocalDataSet[MiniBatch[Float]]): Array[Activity] = {
     localPredictor.predict(dataSet)
   }
 }

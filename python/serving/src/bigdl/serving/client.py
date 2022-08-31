@@ -20,6 +20,8 @@ from bigdl.serving.schema import *
 import httpx
 import json
 import uuid
+from bigdl.serving.log4Error import invalidInputError
+
 
 RESULT_PREFIX = "cluster-serving_"
 
@@ -92,7 +94,7 @@ class InputQueue(API):
                     self.cli = httpx.Client()
                     print("Attempt connecting to Cluster Serving frontend success")
                 else:
-                    raise ConnectionError()
+                    invalidInputError(False, "connection error")
             except Exception as e:
                 print("Connection error, please check your HTTP server. Error msg is ", e)
         else:
@@ -175,7 +177,9 @@ class InputQueue(API):
             # tensor
             data = [data]
         if not isinstance(data, list):
-            raise Exception("Your input is invalid, only List of ndarray and ndarray are allowed.")
+            invalidInputError(False,
+                              "Your input is invalid, only List of ndarray and ndarray"
+                              " are allowed.")
 
         sink = pa.BufferOutputStream()
         writer = None
@@ -212,7 +216,7 @@ class InputQueue(API):
         try:
             if inf['used_memory'] >= inf['maxmemory'] * self.input_threshold\
                     and inf['maxmemory'] != 0:
-                raise redis.exceptions.ConnectionError
+                invalidInputError(False, "redis connetion error")
             self.db.xadd(self.name, data)
             print("Write to Redis successful")
         except redis.exceptions.ConnectionError:
@@ -270,7 +274,7 @@ class OutputQueue(API):
         c = a.read_buffer()
         myreader = pa.ipc.open_stream(c)
         r = [i for i in myreader]
-        assert len(r) > 0
+        invalidInputError(len(r) > 0, f"len(r) should be positive, but got ${len(r)}")
         if len(r) == 1:
             return self.get_ndarray_from_record_batch(r[0])
         else:

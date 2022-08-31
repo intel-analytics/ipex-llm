@@ -14,19 +14,22 @@
 # limitations under the License.
 #
 
-from typing import Any, Dict, Optional, Union
+from typing import Any
 import pytorch_lightning as pl
-
+import copy
+import math
 from pytorch_lightning.trainer.states import TrainerFn, TrainerStatus
-
-from bigdl.nano.automl.hpo.backend import create_hpo_backend
+from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.automl.hpo.backend import create_hpo_backend, SamplerType
 from .objective import Objective
-from ..hpo.search import (
+from ._helper import ResetCallback, CustomEvaluationLoop
+from bigdl.nano.automl.utils.parallel import run_parallel
+from bigdl.nano.automl.hpo.search import (
     _search_summary,
     _end_search,
-    _check_optimize_direction,
-    _filter_tuner_args,
-    _check_search_args,
+    _create_study,
+    _validate_args,
+    _prepare_args,
 )
 
 
@@ -42,120 +45,78 @@ class HPOSearcher:
     TUNE_RUN_KEYS = {'n_trials', 'timeout', 'n_jobs', 'catch', 'tune_callbacks',
                      'gc_after_trial', 'show_progress_bar'}
 
-    def __init__(self, trainer: "pl.Trainer") -> None:
+    def __init__(self, trainer: "pl.Trainer", num_processes: int = 1) -> None:
         """
         Init a HPO Searcher.
 
         :param trainer: The pl.Trainer object.
         """
         self.trainer = trainer
-        self.objective = None
+        self.num_process = num_processes
+        if num_processes == 1:
+            callbacks = self.trainer.callbacks or []
+            callbacks.append(ResetCallback())
+            self.trainer.callbacks = callbacks
+
         self.model_class = pl.LightningModule
         self.study = None
+        self.objective = None
         self.tune_end = False
         self._lazymodel = None
         self.backend = create_hpo_backend()
+        self.create_kwargs = None
+        self.run_kwargs = None
+        self.fit_kwargs = None
 
-    def _run_search(self,
-                    resume,
-                    target_metric,
-                    create_keys,
-                    run_keys,
-                    kwargs):
+    def _create_objective(self, model, target_metric, create_kwargs, acceleration,
+                          input_sample, fit_kwargs):
+        # target_metric = self._fix_target_metric(target_metric, search_kwargs)
+        isprune = True if create_kwargs.get('pruner', None) else False
+        self.objective = Objective(
+            searcher=self,
+            model=model._model_build,
+            target_metric=target_metric,
+            pruning=isprune,
+            acceleration=acceleration,
+            input_sample=input_sample,
+            **fit_kwargs,
+        )
 
-        # create study
-        if self.study is None:
-            if not resume:
-                load_if_exists = False
-                print("Starting a new tuning")
-            else:
-                load_if_exists = True
-                print("Resume the last tuning...")
-
-            study_create_kwargs = _filter_tuner_args(kwargs, create_keys)
-            _check_optimize_direction(
-                direction=study_create_kwargs.get('direction', None),
-                directions=study_create_kwargs.get('directions', None),
-                metric=target_metric)
-
-            # prepare sampler and pruner args
-            sampler_type = study_create_kwargs.get('sampler', None)
-            if sampler_type:
-                sampler_args = study_create_kwargs.get('sampler_kwargs', {})
-                sampler = self.backend.create_sampler(sampler_type, sampler_args)
-                study_create_kwargs['sampler'] = sampler
-                study_create_kwargs.pop('sampler_kwargs', None)
-
-            pruner_type = study_create_kwargs.get('pruner', None)
-            if pruner_type:
-                pruner_args = study_create_kwargs.get('pruner_kwargs', {})
-                pruner = self.backend.create_pruner(pruner_type, pruner_args)
-                study_create_kwargs['pruner'] = pruner
-                study_create_kwargs.pop('pruner_kwargs', None)
-
-            study_create_kwargs['load_if_exists'] = load_if_exists
-            # create study
-            self.study = self.backend.create_study(**study_create_kwargs)
-
-        # renamed callbacks to tune_callbacks to avoid conflict with fit param
-        study_optimize_kwargs = _filter_tuner_args(kwargs, run_keys)
-        study_optimize_kwargs['callbacks'] = study_optimize_kwargs.get('tune_callbacks', None)
-        study_optimize_kwargs.pop('tune_callbacks', None)
-        study_optimize_kwargs['show_progress_bar'] = False
-        # run optimize
-        self.study.optimize(self.objective, **study_optimize_kwargs)
-
-    def _pre_search(self,
-                    model,
-                    target_metric,
-                    **kwargs):
-        # self.trainer.strategy.connect(model)
-
-        # if self.trainer._accelerator_connector.is_distributed:
-        #     raise MisconfigurationException(
-        #         "`trainer.search()` is currently not supported with"
-        #         f" `Trainer(strategy={self.trainer.strategy.strategy_name!r})`."
-        #     )
-        _check_search_args(
-            search_args=self.search_kwargs,
-            legal_keys=[
-                HPOSearcher.FIT_KEYS,
-                HPOSearcher.EXTRA_FIT_KEYS,
-                HPOSearcher.TUNE_CREATE_KEYS,
-                HPOSearcher.TUNE_RUN_KEYS
-            ])
-
-        isprune = True if kwargs.get('pruner', None) else False
-
-        if self.objective is None:
-            # target_metric = self._fix_target_metric(target_metric, search_kwargs)
-            fit_kwargs = _filter_tuner_args(kwargs, HPOSearcher.FIT_KEYS)
-            self.objective = Objective(
-                searcher=self,
-                model=model._model_build,
-                target_metric=target_metric,
-                pruning=isprune,
-                **fit_kwargs,
-            )
-
+    def _run_search(self):
         # TODO do we need to set these trainer states?
         self.trainer.state.fn = TrainerFn.TUNING
         self.trainer.state.status = TrainerStatus.RUNNING
         self.trainer.tuning = True
 
-    def _post_search(self):
+        # run optimize
+        self.study.optimize(self.objective, **self.run_kwargs)
+
         self.tune_end = False
         self.trainer.tuning = False
         # Force the train dataloader to reset as the batch size has changed
         # self.trainer.reset_train_dataloader(model)
         # self.trainer.reset_val_dataloader(model)
         self.trainer.state.status = TrainerStatus.FINISHED
-        assert self.trainer.state.stopped
+        invalidInputError(self.trainer.state.stopped,
+                          "trainer state should be stopped")
+
+    def _run_search_n_procs(self, n_procs=4):
+        new_searcher = copy.deepcopy(self)
+        n_trials = new_searcher.run_kwargs.get('n_trials', None)
+        if n_trials:
+            subp_n_trials = math.ceil(n_trials / n_procs)
+            new_searcher.run_kwargs['n_trials'] = subp_n_trials
+        run_parallel(func=new_searcher._run_search,
+                     kwargs={},
+                     n_procs=n_procs)
 
     def search(self,
                model,
-               resume: bool = False,
+               resume=False,
                target_metric=None,
+               n_parallels=1,
+               acceleration=False,
+               input_sample=None,
                **kwargs):
         """
         Run HPO Searcher. It will be called in Trainer.search().
@@ -165,25 +126,63 @@ class HPOSearcher:
             defaults to False.
         :param target_metric: the object metric to optimize,
             defaults to None.
+        :param acceleration: Whether to automatically consider the model after
+            inference acceleration in the search process. It will only take
+            effect if target_metric contains "latency". Default value is False.
+        :param input_sample: A set of inputs for trace, defaults to None if you have
+            trace before or model is a LightningModule with any dataloader attached.
         :param return: the model with study meta info attached.
         """
-        self.search_kwargs = kwargs or {}
+        search_kwargs = kwargs or {}
         self.target_metric = target_metric
 
-        self._pre_search(model, target_metric, **kwargs)
-        self._run_search(resume=resume,
-                         target_metric=self.target_metric,
-                         create_keys=HPOSearcher.TUNE_CREATE_KEYS,
-                         run_keys=HPOSearcher.TUNE_RUN_KEYS,
-                         kwargs=self.search_kwargs)
+        _validate_args(search_kwargs,
+                       self.target_metric,
+                       legal_keys=[HPOSearcher.FIT_KEYS,
+                                   HPOSearcher.EXTRA_FIT_KEYS,
+                                   HPOSearcher.TUNE_CREATE_KEYS,
+                                   HPOSearcher.TUNE_RUN_KEYS])
 
-        self._post_search()
+        _sampler_kwargs = model._lazyobj.sampler_kwargs
+        user_sampler_kwargs = kwargs.get("sampler_kwargs", {})
+        _sampler_kwargs.update(user_sampler_kwargs)
+        if "sampler" in kwargs and kwargs["sampler"] in [SamplerType.Grid]:
+            search_kwargs["sampler_kwargs"] = _sampler_kwargs
+
+        (self.create_kwargs, self.run_kwargs, self.fit_kwargs) \
+            = _prepare_args(search_kwargs,
+                            HPOSearcher.TUNE_CREATE_KEYS,
+                            HPOSearcher.TUNE_RUN_KEYS,
+                            HPOSearcher.FIT_KEYS,
+                            self.backend)
+
+        # create study
+        if self.study is None:
+            self.study = _create_study(resume, self.create_kwargs, self.backend)
+
+        if self.objective is None:
+            self._create_objective(model, self.target_metric, self.create_kwargs, acceleration,
+                                   input_sample, self.fit_kwargs)
+
+        if n_parallels and n_parallels > 1:
+            invalidInputError(self.create_kwargs.get('storage', "").strip() != "",
+                              "parallel search is not supported"
+                              " when in-mem storage is used (n_parallels must be 1)")
+
+            self._run_search_n_procs(n_procs=n_parallels)
+        else:
+            self._run_search()
+
         # it is not possible to know the best trial before runing search,
-        # so just apply the best trial at end of each search
-        self._lazymodel = _end_search(study=self.study,
-                                      model_builder=model._model_build,
-                                      use_trial_id=-1)
-        return self._lazymodel
+        # so just apply the best trial at end of each search.
+        # a single best trial cannot be retrieved from a multi-objective study.
+        if not self.objective.mo_hpo:
+            self._lazymodel = _end_search(study=self.study,
+                                          model_builder=model._model_build,
+                                          use_trial_id=-1)
+            return self._lazymodel
+        else:
+            return self.study.best_trials
 
     def search_summary(self):
         """
@@ -202,7 +201,7 @@ class HPOSearcher:
 
         :param use_trial_id: int(optional) params of which trial to be used.
             Defaults to -1.
-        :raise: ValueError: error when tune is not called before end_search.
+        :throw: ValueError: error when tune is not called before end_search.
         """
         self._lazymodel = _end_search(study=self.study,
                                       model_builder=self._model_build,
@@ -217,5 +216,17 @@ class HPOSearcher:
         # last `_run` call might have set it to `FINISHED`
         self.trainer.state.status = TrainerStatus.RUNNING
         self.trainer.training = True
-        self.trainer._run(*args, **kwargs)
+        if self.num_process > 1:
+            self.trainer.state.fn = TrainerFn.FITTING  # add in lightning 1.6
+            self.trainer.fit(*args, **kwargs)
+        else:
+            self.trainer._run(*args, **kwargs)
         self.trainer.tuning = True
+
+    def _validate(self, *args: Any, **kwargs: Any) -> None:
+        """A wrapper to test optimization latency multiple times after training."""
+        self.trainer.validate_loop = CustomEvaluationLoop()
+        self.trainer.state.fn = TrainerFn.VALIDATING
+        self.trainer.training = False
+        self.trainer.testing = False
+        self.trainer.validate(*args, **kwargs)

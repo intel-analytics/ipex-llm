@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.ppml.fl.fgboost
 
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.ppml.fl.algorithms.FGBoostRegression
 import com.intel.analytics.bigdl.ppml.fl.data.PreprocessUtil
 import com.intel.analytics.bigdl.ppml.fl.utils.FlContextForTest
@@ -23,11 +24,13 @@ import org.apache.log4j.LogManager
 
 import scala.io.Source
 
-class MockClient(dataPath: String,
+class MockClient(clientId: String,
+                 dataPath: String,
                  testPath: String = null,
                  rowKeyName: String = null,
                  labelName: String = null,
-                 dataFormat: String = "raw") extends Thread {
+                 dataFormat: String = "raw",
+                 target: String = "localhost:8980") extends Thread {
 
   val logger = LogManager.getLogger(getClass)
 
@@ -38,7 +41,7 @@ class MockClient(dataPath: String,
     }
 
   }
-  def rawDataPipeline() = {
+  def rawDataPipeline(): Array[Tensor[Float]] = {
     val sources = Source.fromFile(dataPath, "utf-8").getLines()
     val testSources = if (testPath != null) {
       Source.fromFile(testPath, "utf-8").getLines()
@@ -48,7 +51,7 @@ class MockClient(dataPath: String,
     val fgBoostRegression = new FGBoostRegression(
       learningRate = 0.1f, maxDepth = 7, minChildSize = 5)
     val testFlContext = new FlContextForTest()
-    testFlContext.initFLContext()
+    testFlContext.initFLContext(clientId, target)
     fgBoostRegression.setFlClient(testFlContext.getClient())
     logger.debug(s"Client2 calling fit...")
     fgBoostRegression.fit(trainFeatures, trainLabels, 15)

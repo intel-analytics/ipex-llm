@@ -42,14 +42,14 @@ object Log4Error {
 
   def outputUserMessage(errmsg: String = null, fixmsg: String = null): Unit = {
     if (errmsg != null) {
-      logger.error(s"\n\n****************************Usage Error************************\n"
+      logger.info(s"\n\n****************************Usage Error************************\n"
         + errmsg)
     }
     if (fixmsg != null) {
-      logger.error(s"\n\n****************************How to fix*************************\n"
+      logger.info(s"\n\n****************************How to fix*************************\n"
         + fixmsg)
     }
-    logger.error(s"\n\n****************************Call Stack*************************")
+    logger.info(s"\n\n****************************Call Stack*************************")
   }
 
   def unKnowExceptionError(condition: Boolean, errmsg: String = null,

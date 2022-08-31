@@ -18,6 +18,8 @@
 from .space import AutoObject
 from enum import Enum
 
+from bigdl.nano.utils.log4Error import invalidInputError
+
 
 class CALLTYPE(Enum):
     """Type of Function Calls."""
@@ -94,7 +96,7 @@ class CallCache(object):
             """Loop over all arguments to find any autoobjects\
             in input and merge down the callcache."""
             if isinstance(inp, AutoObject):
-                assert(inp._callgraph is not None)
+                invalidInputError(inp._callgraph is not None, "inp._callgraph cannot be none")
                 input_callgraph = inp._callgraph
                 # merge call graph from the input
                 if not input_callgraph.skip:
@@ -124,7 +126,7 @@ class CallCache(object):
                                   arguments,
                                   CALLTYPE.FUNC_SLICE)
         else:
-            raise ValueError("Unexpected CallType: %s" % ctype)
+            invalidInputError(False, "Unexpected CallType: %s" % ctype)
 
         return cur_cache
 
@@ -171,7 +173,7 @@ class CallCache(object):
                 new_arguments = _process_arguments(
                     arguments, out_cache)
                 # layer is an auto object
-                assert(isinstance(caller, AutoObject))
+                invalidInputError(isinstance(caller, AutoObject), "caller should be AutoObject")
                 instance = backend.instantiate(trial, caller)
                 # the actual excution of the functional API
                 out_tensor = instance(new_arguments)
@@ -185,14 +187,14 @@ class CallCache(object):
                 # out_tensor = backend.instantiate(trial, caller)
                 new_arguments = _process_arguments(
                     arguments, out_cache)
-                assert(isinstance(caller, AutoObject))
+                invalidInputError(isinstance(caller, AutoObject), "caller should be AutoObject")
                 # assume tensors does not exist in kwargs
                 # replace only the non-kwargs with new_arguments
                 # TODO revisit to validate the parent tensors in kwargs
                 caller.args, caller.kwargs = new_arguments
                 out_tensor = backend.instantiate(trial, caller)
             else:
-                raise ValueError("Unexpected CallType: %s" % type)
+                invalidInputError(False, "Unexpected CallType: %s" % type)
             out_cache.add_tensor(caller, out_tensor)
         out_tensors = out_cache.get_tensor(outputs)
 

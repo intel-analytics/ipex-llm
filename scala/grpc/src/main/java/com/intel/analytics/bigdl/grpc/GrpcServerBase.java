@@ -64,12 +64,12 @@ public abstract class GrpcServerBase extends AbstractGrpcBase {
     public void setPort(int port) {
         this.port = port;
     }
+    public int getPort() { return this.port; }
 
     public void parseConfig() throws Exception {}
 
     /** Entrypoint of GrpcServerBase */
     public void build() throws Exception {
-        parseConfig();
         ServerBuilder builder = ServerBuilder.forPort(port);
         for (BindableService bindableService : serverServices) {
             builder.addService(bindableService);
@@ -81,7 +81,6 @@ public abstract class GrpcServerBase extends AbstractGrpcBase {
     }
 
     public void buildWithTls() throws Exception {
-        parseConfig();
         NettyServerBuilder serverBuilder = NettyServerBuilder.forPort(port);
         for (BindableService bindableService : serverServices) {
             serverBuilder.addService(bindableService);

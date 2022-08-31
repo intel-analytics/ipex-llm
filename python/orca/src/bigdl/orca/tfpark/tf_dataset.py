@@ -30,6 +30,7 @@ from bigdl.dllib.feature.common import FeatureSet, SampleToMiniBatch, Preprocess
 from bigdl.dllib.feature.image import ImagePreprocessing, ImageFeatureToSample
 from bigdl.dllib.utils import nest
 from bigdl.dllib.utils.utils import convert_row_to_numpy
+from bigdl.dllib.utils.log4Error import *
 
 if sys.version >= '3':
     long = int
@@ -48,8 +49,9 @@ def _to_tensor_structure(tensors):
         for key, value in tensors.items():
             tensor_structure[key] = TensorMeta(dtype=value[0], shape=value[1], name=key)
     else:
-        raise ValueError("In TFDataset.from_rdd, features and labels should be a tuple, "
-                         "a list of tuples or a dict of tuples")
+        invalidInputError(False,
+                          "In TFDataset.from_rdd, features and labels should be a tuple, "
+                          "a list of tuples or a dict of tuples")
     return tensor_structure
 
 
@@ -138,7 +140,8 @@ class TFDataset(object):
         """
 
         if batch_size > 0 and batch_per_thread > 0:
-            raise ValueError("bath_size and batch_per_thread should not be set simultaneously")
+            invalidInputError(False,
+                              "bath_size and batch_per_thread should not be set simultaneously")
 
         self.has_batch = True
         node_num, core_num = get_node_and_core_number()
@@ -147,10 +150,11 @@ class TFDataset(object):
         self.core_num = core_num
         if batch_size > 0:
             if batch_size % self.total_core_num != 0:
-                raise ValueError("batch_size should be a multiple " +
-                                 "of total core number, but got batch_size: " +
-                                 "%s where total core number is %s" % (batch_size,
-                                                                       self.total_core_num))
+                invalidInputError(False,
+                                  "batch_size should be a multiple " +
+                                  "of total core number, but got batch_size: " +
+                                  "%s where total core number is %s" % (batch_size,
+                                                                        self.total_core_num))
         if batch_size <= 0 and batch_per_thread <= 0:
             batch_per_thread = 1
             batch_size = self.total_core_num
@@ -244,9 +248,10 @@ class TFDataset(object):
             self._create_placeholders()
 
         if not isinstance(self._tensors, tuple):
-            raise ValueError("To use feature_tensors, " +
-                             "the element in TFDataset must be a tuple of two components. " +
-                             "Please use TFDataset.from_rdd(rdd, features=..., labels=...). ")
+            invalidInputError(False,
+                              "To use feature_tensors, " +
+                              "the element in TFDataset must be a tuple of two components. " +
+                              "Please use TFDataset.from_rdd(rdd, features=..., labels=...). ")
 
         return self._tensors[0]
 
@@ -257,9 +262,10 @@ class TFDataset(object):
             self._create_placeholders()
 
         if not isinstance(self._tensors, tuple):
-            raise ValueError("To use label_tensors, " +
-                             "the element in TFDataset must be a tuple of two components. " +
-                             "Please use TFDataset.from_rdd(rdd, features=..., labels=...). ")
+            invalidInputError(False,
+                              "To use label_tensors, " +
+                              "the element in TFDataset must be a tuple of two components. " +
+                              "Please use TFDataset.from_rdd(rdd, features=..., labels=...). ")
 
         return self._tensors[1]
 
@@ -279,7 +285,8 @@ class TFDataset(object):
         :return: an object that can be used for TFNet.predict
         e.g. an RDD of Sample or a ImageSet
         """
-        assert self.batch_per_thread > 0, "batch_per_thread must be set when used in prediction"
+        invalidInputError(self.batch_per_thread > 0,
+                          "batch_per_thread must be set when used in prediction")
         return self._get_prediction_data()
 
     def get_evaluation_data(self):
@@ -287,7 +294,8 @@ class TFDataset(object):
         :return: an object that can be used for TFNet.evaluate,
         e.g. an RDD of Sample or a ImageSet
         """
-        assert self.batch_per_thread > 0, "batch_per_thread must be set when used in evaluation"
+        invalidInputError(self.batch_per_thread > 0,
+                          "batch_per_thread must be set when used in evaluation")
         return self._get_evaluation_data()
 
     def get_training_data(self):
@@ -295,7 +303,8 @@ class TFDataset(object):
         :return: an object that can be used to create a BigDL optimizer,
         e.g. an RDD of Sample or a DataSet
         """
-        assert self.batch_size > 0, "batch_size must be set when used in training"
+        invalidInputError(self.batch_size > 0,
+                          "batch_size must be set when used in training")
         return self._get_training_data()
 
     def get_validation_data(self):
@@ -303,26 +312,27 @@ class TFDataset(object):
         :return: an object that can be used to set validation in a BigDL optimizer,
         e.g. an RDD of Sample or a DataSet
         """
-        assert self.batch_size > 0, "batch_size must be set when used in training"
+        invalidInputError(self.batch_size > 0,
+                          "batch_size must be set when used in training")
         return self._get_validation_data()
 
     def _get_prediction_data(self):
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def _get_evaluation_data(self):
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def _get_training_data(self):
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def _get_validation_data(self):
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def get_num_partitions(self):
         """
         :return: the num of partitions of the underlying RDD
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     @staticmethod
     def from_rdd(*args, **kwargs):
@@ -698,8 +708,9 @@ class TFDataDataset(TFDataset):
         if isinstance(dataset, dataset_ops.DatasetV1Adapter):
             TFDataDataset._assert_not_batched(dataset._dataset)
         elif isinstance(dataset, dataset_ops.BatchDataset):
-            raise ValueError("Dataset should not be batched,"
-                             "please use a dataset without the batch operation")
+            invalidInputError(False,
+                              "Dataset should not be batched,"
+                              "please use a dataset without the batch operation")
         else:
             for dt in dataset._inputs():
                 TFDataDataset._assert_not_batched(dt)
@@ -712,7 +723,7 @@ class TFDataDataset(TFDataset):
             TFDataDataset.check_rules(dataset._dataset, rules, is_training)
         else:
             for rule, message in rules:
-                assert not rule(dataset, is_training), message
+                invalidInputError(not rule(dataset, is_training), message)
             else:
                 for dt in dataset._inputs():
                     TFDataDataset.check_rules(dt, rules, is_training)
@@ -751,8 +762,9 @@ class TFDataDataset(TFDataset):
         for node in tf.get_default_graph().as_graph_def().node:
             op_type = node.op
             if op_type in py_func_ops:
-                raise ValueError("tf.py_func, tf.py_function, tf.numpy_function and" +
-                                 " Dataset.from_generators are not supported in TFPark")
+                invalidInputError(False,
+                                  "tf.py_func, tf.py_function, tf.numpy_function and" +
+                                  " Dataset.from_generators are not supported in TFPark")
 
         if shuffle:
             from tensorflow.python.keras.engine import training_utils
@@ -856,7 +868,8 @@ class TFDataDataset(TFDataset):
         self.graph_def = bytearray(self.graph.as_graph_def().SerializeToString())
 
     def _get_prediction_data(self):
-        raise Exception("TFDataDataset cannot be used for prediction")
+        invalidInputError(False,
+                          "TFDataDataset cannot be used for prediction")
 
     def _get_evaluation_data(self):
 
@@ -894,10 +907,12 @@ class TFFeatureDataset(TFDataset):
         self.validation_dataset = validation_dataset
 
     def _get_prediction_data(self):
-        raise Exception("TFFeatureDataset is only supported in training")
+        invalidInputError(False,
+                          "TFFeatureDataset is only supported in training")
 
     def _get_evaluation_data(self):
-        raise Exception("TFFeatureDataset is only supported in training")
+        invalidInputError(False,
+                          "TFFeatureDataset is only supported in training")
 
     def _get_training_data(self):
         fs = self.dataset.transform(MergeFeatureLabelFeatureTransformer())
@@ -913,7 +928,8 @@ class TFFeatureDataset(TFDataset):
         return None
 
     def get_num_partitions(self):
-        raise Exception("TFFeatureDataset is only supported in training")
+        invalidInputError(False,
+                          "TFFeatureDataset is only supported in training")
 
 
 class TFBytesDataset(TFDataset):
@@ -1224,11 +1240,12 @@ class DataFrameDataset(TFNdarrayDataset):
                  batch_per_thread=-1, hard_code_batch_size=False,
                  validation_df=None, memory_type="DRAM",
                  sequential_order=False, shuffle=True):
-        assert isinstance(feature_cols, list), "feature_cols should be a list"
+        invalidInputError(isinstance(feature_cols, list), "feature_cols should be a list")
         if labels_cols is not None:
-            assert isinstance(labels_cols, list), "label_cols should be a list"
+            invalidInputError(isinstance(labels_cols, list), "label_cols should be a list")
         import pyspark
-        assert isinstance(df, pyspark.sql.DataFrame)
+        invalidInputError(isinstance(df, pyspark.sql.DataFrame),
+                          "expect df is spark DataFrame")
 
         if labels_cols is None:
             labels_cols = []
@@ -1240,8 +1257,9 @@ class DataFrameDataset(TFNdarrayDataset):
             name = field.name
             data_type = field.dataType
             if DataFrameDataset.df_datatype_to_tf(data_type) is None:
-                raise ValueError(
-                    "data type {} of col {} is not supported for now".format(data_type, name))
+                invalidInputError(False,
+                                  "data type {} of col {} is not supported for"
+                                  " now".format(data_type, name))
             tf_type, tf_shape = DataFrameDataset.df_datatype_to_tf(data_type)
             feature_meta.append(TensorMeta(tf_type, name=name, shape=tf_shape))
 
@@ -1252,8 +1270,9 @@ class DataFrameDataset(TFNdarrayDataset):
                 name = field.name
                 data_type = field.dataType
                 if DataFrameDataset.df_datatype_to_tf(data_type) is None:
-                    raise ValueError(
-                        "data type {} of col {} is not supported for now".format(data_type, name))
+                    invalidInputError(False,
+                                      "data type {} of col {} is not supported for"
+                                      " now".format(data_type, name))
                 tf_type, tf_shape = DataFrameDataset.df_datatype_to_tf(data_type)
                 label_meta.append(TensorMeta(tf_type, name=name, shape=tf_shape))
 
@@ -1282,14 +1301,15 @@ def _check_compatible(names, structure, data_type="model_input"):
     if isinstance(structure, dict):
         err_msg = f"all {data_type} names should exist in data, " \
                   f"got {data_type} {names}, data {structure}"
-        assert all([name in structure for name in names]), err_msg
+        invalidInputError(all([name in structure for name in names]), err_msg)
     elif isinstance(structure, list) or isinstance(structure, tuple):
         err_msg = f"{data_type} number does not match data number, " \
                   f"got {data_type} {names}, data {structure}"
-        assert len(nest.flatten(structure)) == len(names), err_msg
+        invalidInputError(len(nest.flatten(structure)) == len(names), err_msg)
     else:
-        assert len(names) == 1, f"data does not match {data_type}, " \
-                                f"data {structure}, {data_type} {names}"
+        invalidInputError(len(names) == 1,
+                          f"data does not match {data_type},"
+                          f" data {structure}, {data_type} {names}")
 
 
 def check_data_compatible(dataset, model, mode):
@@ -1298,7 +1318,7 @@ def check_data_compatible(dataset, model, mode):
     err_msg = f"each element in dataset should be a tuple for {mode}, " \
               f"but got {dataset.tensor_structure}"
     if mode == "train" or mode == "evaluate":
-        assert isinstance(dataset.tensor_structure, tuple), err_msg
+        invalidInputError(isinstance(dataset.tensor_structure, tuple), err_msg)
 
         feature = dataset.tensor_structure[0]
         _check_compatible(input_names, feature, data_type="model_input")
@@ -1324,7 +1344,7 @@ def _standarize_feature_label_dataset(dataset, model):
             return np.expand_dims(ys, axis=-1) if ys.ndim == 0 else ys
 
     def _training_reorder(x, input_names, output_names):
-        assert isinstance(x, tuple)
+        invalidInputError(isinstance(x, tuple), "expect x to be tuple")
 
         return (_reorder(x[0], input_names), _reorder(x[1], output_names))
 

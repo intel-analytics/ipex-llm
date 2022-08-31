@@ -56,6 +56,8 @@ parser.add_argument('--data_dir', type=str, default="./data", help='The path to 
 parser.add_argument('--download', type=bool, default=True, help='Download dataset or not')
 parser.add_argument("--executor_memory", type=str, default="5g", help="executor memory")
 parser.add_argument("--driver_memory", type=str, default="5g", help="driver memory")
+parser.add_argument("--wandb_callback", type=bool, default=False,
+                    help='Whether to enable WandbLoggerCallback. Only for ray and spark backend')
 args = parser.parse_args()
 
 if args.runtime == "ray":
@@ -185,7 +187,13 @@ elif args.backend in ["ray", "spark"]:
                                           config={"lr": 0.001,
                                                   "root": root_dir})
 
-    orca_estimator.fit(data=train_loader_creator, epochs=args.epochs, batch_size=batch_size)
+    fit_args = dict(data=train_loader_creator, epochs=args.epochs, batch_size=batch_size)
+    if args.wandb_callback:
+        from bigdl.orca.learn.pytorch.callbacks.wandb import WandbLoggerCallback
+        wandb_callback = WandbLoggerCallback(project="cifar")
+        fit_args.update(dict(callbacks=[wandb_callback]))
+
+    orca_estimator.fit(**fit_args)
 
     res = orca_estimator.evaluate(data=test_loader_creator)
     for r in res:

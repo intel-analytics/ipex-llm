@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.ppml.fl.fgboost.common
 import org.apache.logging.log4j.LogManager
 
 import scala.collection.immutable.HashSet
+import scala.util.parsing.json.{JSONArray, JSONObject}
 
 /**
  *
@@ -51,7 +52,25 @@ class TreeNode (
   }
 
 
-  override def toString = s"TreeNode($nodeID, $isLeaf, score $similarScore, depth $depth, size ${recordSet.size})"
+  override def toString: String = s"TreeNode($nodeID," +
+    s" $isLeaf, score $similarScore, depth $depth, size ${recordSet.size})"
+
+  def toJSON(): JSONObject = {
+    val map = scala.collection.mutable.Map[String, Any]()
+    if (leftChild != null) {
+      map("leftChild") = leftChild.nodeID
+    }
+    if (rightChild != null) {
+      map("rightChild") = rightChild.nodeID
+    }
+    JSONObject(Map(
+      "nodeID" -> nodeID,
+      "similarScore" -> similarScore,
+      "recordSet" -> JSONArray(recordSet.toList),
+      "depth" -> depth,
+      "isLeaf" -> isLeaf
+    ) ++ map)
+  }
 }
 
 
@@ -72,6 +91,19 @@ object TreeNode {
            ): TreeNode = {
     new TreeNode(nodeID, null, null, similarScore, recordSet)
   }
+  def fromJson(json: JSONObject): TreeNode = {
+    val nodeID = json.obj.get("nodeID").get.asInstanceOf[String]
+    val similarScore = json.obj.get("similarScore").get.asInstanceOf[Double].toFloat
+    val isLeaf = json.obj.get("isLeaf").get.asInstanceOf[Boolean]
+    val recordSet = json.obj.get("recordSet").get.asInstanceOf[JSONArray].list
+      .map(_.asInstanceOf[Double].toInt).toSet
+    val treeNode = apply(nodeID, similarScore, recordSet)
+    treeNode.depth = json.obj.get("depth").get.asInstanceOf[Double].toInt
+    if (isLeaf) treeNode.setLeaf()
+    treeNode
+  }
+
+
 }
 
 

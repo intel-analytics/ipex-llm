@@ -25,9 +25,11 @@ import logging
 
 
 class FGBoostRegression(FLClientClosable):
-    def __init__(self, jvalue=None, learning_rate:float=0.1, max_depth=7, min_child_size=1):
+    def __init__(self, jvalue=None, learning_rate:float=0.1,
+                 max_depth=7, min_child_size=1, server_model_path=None):
         self.bigdl_type = "float"
-        super().__init__(jvalue, self.bigdl_type, learning_rate, max_depth, min_child_size)
+        super().__init__(jvalue, self.bigdl_type, learning_rate, 
+                         max_depth, min_child_size, server_model_path)
 
     def fit(self, x, y=None, num_round=5, **kargs):
         x = convert_to_numpy(x)
@@ -50,9 +52,23 @@ class FGBoostRegression(FLClientClosable):
             x_batch = x[i:i+batchsize]
             x_batch, _ = convert_to_jtensor(x_batch, **kargs)
             result_batch = callBigDlFunc(self.bigdl_type, "fgBoostPredict", self.value, x_batch).to_ndarray()
-            result.append(result_batch)
+            result.append(result_batch.flatten())
             i += batchsize
         x_batch = x[i:]
         x_batch, _ = convert_to_jtensor(x_batch, **kargs)
         result_batch = callBigDlFunc(self.bigdl_type, "fgBoostPredict", self.value, x_batch).to_ndarray()
-        return np.array(result_batch)
+        result.append(result_batch.flatten())
+        flat_result = [x for xs in result for x in xs]
+        return np.array(flat_result)
+
+    def save_model(self, dest):
+        callBigDlFunc(self.bigdl_type, "fgBoostRegressionSave", self.value, dest)
+
+    @classmethod
+    def load_model(cls, src):
+        # the jvalue exists here so JVM constructor would not be called again
+        # thus the parameters would remain the same as model loaded
+        return cls(jvalue=callBigDlFunc("float", "fgBoostRegressionLoad", src))
+
+    def load_server_model(self, model_path):
+        callBigDlFunc(self.bigdl_type, "fgBoostLoadServerModel", self.value, model_path)

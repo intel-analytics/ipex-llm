@@ -67,7 +67,7 @@ object FGBoostRealDataBenchmark extends TimingSupportive {
       trainLabelStacked = trainLabelStacked ++ trainLabelArray
     })
 
-    FLContext.initFLContext()
+    FLContext.initFLContext("1")
     val fGBoostRegression = new FGBoostRegression(
       learningRate = 0.1f, maxDepth = 7, minChildSize = 5)
     fGBoostRegression.fit(
@@ -75,7 +75,8 @@ object FGBoostRealDataBenchmark extends TimingSupportive {
       trainLabelStacked,
       param.numRound)
 
-    val fGBoostResult = fGBoostRegression.predict(DataFrameUtils.toTensorArray(testDf)).map(tensor => tensor.value())
+    val fGBoostResult = fGBoostRegression.predict(DataFrameUtils.toTensorArray(testDf))
+      .map(tensor => tensor.value())
       .map(math.exp(_))
 
   }

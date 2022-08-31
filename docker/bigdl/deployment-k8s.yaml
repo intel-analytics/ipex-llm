@@ -1,0 +1,204 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bigdl-notebook
+  namespace: bigdl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bigdl-notebook
+  template:
+    metadata:
+      name: bigdl-notebook
+      labels:
+        app: bigdl-notebook
+        appType: bigdl
+    spec:
+      containers:
+        - image: intelanalytics/bigdl-spark-3.1.2:latest
+          ports:
+            - name: jupyter-address
+              containerPort: 12345
+          name: bigdl-notebook
+          imagePullPolicy: Always
+          env:
+            - name: NOTEBOOK_TOKEN
+              valueFrom:
+                configMapKeyRef:
+                  name: bigdl-notebook-config
+                  key: token
+            - name: RUNTIME_SPARK_MASTER
+              valueFrom:
+                configMapKeyRef:
+                  name: bigdl-notebook-config
+                  key: master
+            - name: DEPLOY_MODE
+              valueFrom:
+                configMapKeyRef:
+                  name: bigdl-notebook-config
+                  key: mode
+            - name: RUNTIME_K8S_SERVICE_ACCOUNT
+              valueFrom:
+                configMapKeyRef:
+                  name: bigdl-notebook-config
+                  key: spark.kubernetes.authenticate.driver.serviceAccountName
+            - name: NAMESPACE
+              valueFrom:
+                configMapKeyRef:
+                  name: bigdl-notebook-config
+                  key: spark.kubernetes.namespace
+            - name: CONTAINER_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: bigdl-notebook-config
+                  key: name
+            - name: RUNTIME_K8S_SPARK_IMAGE
+              valueFrom:
+                configMapKeyRef:
+                  name: bigdl-notebook-config
+                  key: spark.kubernetes.container.image
+            - name: RUNTIME_DRIVER_CORES
+              valueFrom:
+                configMapKeyRef:
+                  name: bigdl-notebook-config
+                  key: spark.driver.cores
+            - name: RUNTIME_DRIVER_MEMORY
+              valueFrom:
+                configMapKeyRef:
+                  name: bigdl-notebook-config
+                  key: spark.driver.memory
+            - name: RUNTIME_EXECUTOR_CORES
+              valueFrom:
+                configMapKeyRef:
+                  name: bigdl-notebook-config
+                  key: spark.executor.cores
+            - name: RUNTIME_EXECUTOR_MEMORY
+              valueFrom:
+                configMapKeyRef:
+                  name: bigdl-notebook-config
+                  key: spark.executor.memory
+            - name: RUNTIME_EXECUTOR_INSTANCES
+              valueFrom:
+                configMapKeyRef:
+                  name: bigdl-notebook-config
+                  key: spark.executor.instances
+            - name: RUNTIME_TOTAL_EXECUTOR_CORES
+              valueFrom:
+                configMapKeyRef:
+                  name: bigdl-notebook-config
+                  key: total.executor.cores
+            - name: NFS_CLAIMNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: bigdl-notebook-config
+                  key: spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName
+            - name: NFS_MOUNT_PATH
+              valueFrom:
+                configMapKeyRef:
+                  name: bigdl-notebook-config
+                  key: spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path
+            - name: PYSPARK_DRIVER_PYTHON
+              valueFrom:
+                configMapKeyRef:
+                  name: bigdl-notebook-config
+                  key: spark.pyspark.driver.python
+            - name: PYSPARK_PYTHON
+              valueFrom:
+                configMapKeyRef:
+                  name: bigdl-notebook-config
+                  key: spark.pyspark.python
+          volumeMounts:
+            - name: bigdl-notebook-volume
+              mountPath: /data/jupyter
+            - name: cache-volume
+              mountPath: /dev/shm
+            - name: kubeconfig
+              mountPath: /root/.kube
+          command: ["/bin/sh","-c"]
+          args: ["
+                  export SPARK_DRIVER_HOST=$( hostname -I | awk '{print $1}' );
+                  ray start --head --port=6379;
+                  tensorboard --logdir \"/data/jupyter/train\" --port 6006 &
+                  bash /opt/work/start-notebook-k8s.sh
+                "]
+      volumes:
+        - name: bigdl-notebook-volume
+          persistentVolumeClaim:
+            claimName: nfsvolumeclaim
+            readOnly: false
+        - name: cache-volume
+          emptyDir:
+            medium: Memory
+            sizeLimit: "1024Mi"
+        - name: kubeconfig
+          secret:
+            secretName: kubeconf
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bigdl-notebook
+  namespace: bigdl
+  labels:
+    app: bigdl-notebook
+spec:
+  ports:
+    - port: 12345
+      protocol: TCP
+      name: jupyter-address
+    - port: 6006
+      protocol: TCP
+      name: tensorboard
+  type: NodePort
+  selector:
+    app: bigdl-notebook
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: spark
+  namespace: bigdl
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: spark-role
+  namespace: bigdl
+subjects:
+- kind: ServiceAccount
+  name: spark
+roleRef:
+  kind: ClusterRole
+  name: edit
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bigdl-notebook-config
+  namespace: bigdl
+  labels:
+    app: bigdl-notebook
+data:
+  master: k8s://https://172.16.0.117:6443
+  mode: client
+  name: bigdl-notebook
+  spark.kubernetes.authenticate.driver.serviceAccountName: spark
+  spark.kubernetes.namespace: bigdl
+  spark.kubernetes.container.image: intelanalytics/bigdl-k8s-spark-3.1.2:latest
+  spark.driver.cores: "4"
+  spark.driver.memory: 20g
+  spark.executor.cores: "4"
+  spark.executor.memory: 20g
+  spark.executor.instances: "4"
+  total.executor.cores: "4"
+  token: "" # To specific the token value
+  spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName: nfsvolumeclaim
+  spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path: /data/jupyter
+  spark.pyspark.driver.python: python
+  spark.pyspark.python: /usr/local/envs/bigdl/bin/python

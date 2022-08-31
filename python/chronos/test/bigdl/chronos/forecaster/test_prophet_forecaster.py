@@ -104,8 +104,8 @@ class TestChronosModelProphetForecaster(TestCase):
                                        metric="mse",
                                        )
 
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             forecaster.fit(data[['ds']], validation_data)
 
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             forecaster.fit(data, validation_data[['ds']])

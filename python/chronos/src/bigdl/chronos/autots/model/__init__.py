@@ -71,11 +71,12 @@ class AutoModelFactory:
     @staticmethod
     def create_auto_model(name, search_space):
         name = name.lower()
+        from bigdl.nano.utils.log4Error import invalidInputError
         if name == "lstm":
             from .auto_lstm import AutoLSTM
             revised_search_space = search_space.copy()
-            assert revised_search_space["future_seq_len"] == 1, \
-                "future_seq_len should be set to 1 if you choose lstm model."
+            invalidInputError(revised_search_space["future_seq_len"] == 1,
+                              "future_seq_len should be set to 1 if you choose lstm model.")
             del revised_search_space["future_seq_len"]  # future_seq_len should always be 1
             return AutoLSTM(**revised_search_space)
         if name == "tcn":

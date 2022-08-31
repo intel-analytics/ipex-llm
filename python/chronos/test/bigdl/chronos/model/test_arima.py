@@ -16,7 +16,7 @@
 
 import pytest
 
-from bigdl.orca.test_zoo_utils import ZooTestCase
+from unittest import TestCase
 from bigdl.chronos.model.arima import ARIMAModel
 import numpy as np
 import os
@@ -24,7 +24,7 @@ from numpy.testing import assert_array_almost_equal
 import pandas as pd
 
 
-class TestARIMAModel(ZooTestCase):
+class TestARIMAModel(TestCase):
 
     def setup_method(self, method):
         np.random.seed(0)
@@ -65,30 +65,30 @@ class TestARIMAModel(ZooTestCase):
         assert len(rolling_result) == self.horizon
 
     def test_error(self):
-        with pytest.raises(ValueError, match="x should be None"):
+        with pytest.raises(RuntimeError, match="x should be None"):
             self.model.predict(x=1)
 
-        with pytest.raises(ValueError, match="We don't support input x currently"):
+        with pytest.raises(RuntimeError, match="We don't support input x currently"):
             self.model.evaluate(target=self.validation_data, x=1)
 
-        with pytest.raises(ValueError, match="Input invalid target of None"):
+        with pytest.raises(RuntimeError, match="Input invalid target of None"):
             self.model.evaluate(target=None)
 
-        with pytest.raises(Exception,
+        with pytest.raises(RuntimeError,
                            match="Needs to call fit_eval or restore first before calling predict"):
             self.model.predict(horizon=self.horizon)
 
-        with pytest.raises(Exception,
+        with pytest.raises(RuntimeError,
                            match="We don't support updating model "
                                  "without rolling prediction currently"
                            ):
             self.model.predict(horizon=self.horizon, update=True, rolling=False)
 
-        with pytest.raises(Exception,
+        with pytest.raises(RuntimeError,
                            match="Needs to call fit_eval or restore first before calling evaluate"):
             self.model.evaluate(target=self.validation_data, x=None)
 
-        with pytest.raises(Exception,
+        with pytest.raises(RuntimeError,
                            match="Needs to call fit_eval or restore first before calling save"):
             model_file = "tmp.pkl"
             self.model.save(model_file)

@@ -16,6 +16,7 @@
 
 import socket
 from contextlib import closing
+from bigdl.dllib.utils.log4Error import *
 
 
 def find_free_port():
@@ -37,6 +38,6 @@ def create_config(optimizer="sgd", optimizer_params=None,
     if seed:
         config["seed"] = seed
     if extra_config:
-        assert isinstance(extra_config, dict), "extra_config must be a dict"
+        invalidInputError(isinstance(extra_config, dict), "extra_config must be a dict")
         config.update(extra_config)
     return config

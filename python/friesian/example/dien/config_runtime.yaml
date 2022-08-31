@@ -1,0 +1,15 @@
+AMX: false
+batch_size: 128
+cores_per_instance: 1
+data_type: fp32
+dnnl_verbose: false
+exact_maxlen: 0
+graph_type: dynamic
+history_maxlen: 100
+history_minlen: 2
+inference_profiler: false
+model_path: dien_fp32_dynamic_rnn_graph.pb
+num_inter_threads: 1
+num_intra_threads: 1
+seed: 2
+kmp_affinity: granularity=fine,verbose,1,0

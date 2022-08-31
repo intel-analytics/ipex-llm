@@ -31,7 +31,7 @@ orca.learn.tf2.estimator
 orca.learn.tf2.tf2_ray_estimator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Orca TF2Estimator with backend of "horovod" or "tf2".
+Orca TF2Estimator with backend of "horovod" or "ray".
 
 .. autoclass:: bigdl.orca.learn.tf2.ray_estimator.TensorFlow2Estimator
     :members:

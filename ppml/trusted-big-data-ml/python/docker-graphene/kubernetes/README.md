@@ -17,7 +17,6 @@ In `bigdl-ppml-helm/values.yaml`, configure the full values for:
 
 Please prepare the following and put them in your NFS directory:
 - The data (in a directory called `data`), 
-- The script used to submit your Spark job (defaulted to `./submit-spark-k8s.sh`) 
 - A kubeconfig file. Generate your Kubernetes config file with `kubectl config view --flatten --minify > kubeconfig`, then put it in your NFS.
 
 The other values have self-explanatory names and can be left alone.
@@ -40,12 +39,13 @@ sudo kubectl create serviceaccount spark
 sudo kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
 ```
 
-### 2.4 Create k8s secret 
+### 2.4 Create k8s secret
 
 ``` bash
 sudo kubectl create secret generic spark-secret --from-literal secret=YOUR_SECRET
 ```
-**The secret created (`YOUR_SECRET`) should be the same as `YOUR_PASSWORD` in section 2.2**. 
+
+**The secret created (`YOUR_SECRET`) should be the same as `YOUR_PASSWORD` in section 2.2**.
 
 ### 2.5 Using [Helm][helmsite] to run your Spark job
 
@@ -84,6 +84,26 @@ Note that the `<name>` must be the same as the one you set in section 2.5. Helm 
 sudo kubectl get pod | grep -o "spark-pi-.*-exec-[0-9]*" | xargs sudo kubectl delete pod
 sudo kubectl get pod | grep -o "spark-pi-sgx.*-driver" | xargs sudo kubectl delete pod
 ```
+
+## 3 Attestation
+
+With attestation, we can verify if any service is replaced or hacked by malicious nodes. This helps us ensure integrity of the our distributed applications.
+
+### 3.1 Prerequisites
+
+To enable attestation in BigDL PPML, you need to ensure you have correct access to attestation services (eHSM attestation service, amber or Azure attestation service etc). In this example, we will sue eHSM as attestation service. Please ensure eHSM is correctly configured.
+
+### 3.2 Attestation Configurations
+
+1. Set APP_ID and APP_KEY in [kms-secret.yaml](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/kubernetes/kms-secret.yaml). Apply this secret.
+2. Mount APP_ID and APP_KEY in [spark-driver-template.yaml](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/spark-driver-template.yaml#L13) and [spark-executor-template.yaml](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/spark-executor-template.yaml#L13).
+3. Change ATTESTATION to `true` in [spark-driver-template.yaml](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/spark-driver-template.yaml#L10) and [spark-executor-template.yaml](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/spark-executor-template.yaml#L10), and set ATTESTATION_URL, e.g., `http://192.168.0.8:9000`.
+
+### 3.2 Test with examples
+
+After updating `spark-driver-template.yaml` and `spark-executor-template.yaml`, attestation will by automatically added to BigDL PPML pipe line. That means PPML applications will be automatically attested by attestation service when they start in Kubernetes Pod. They will prevent malicious Pod from getting sensitive information in applications.
+
+You can test attestation with [Spark Pi](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-graphene#143-spark-pi-example) or other Kubernetes examples.
 
 
 [devicePluginK8sQuickStart]: https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html

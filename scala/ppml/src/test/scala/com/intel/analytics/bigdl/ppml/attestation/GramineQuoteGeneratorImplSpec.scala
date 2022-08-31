@@ -22,7 +22,7 @@ import scala.io.Source
 import scala.util.Random
 import sys.env
 
-class GramineQuoteGeneratorImplSpec  extends FlatSpec with Matchers {
+class GramineQuoteGeneratorImplSpec extends FlatSpec with Matchers {
   // get the 'envFlag' from the shell environments, enable TEE by 'export envFlag=TEE'
   val envFlag = if (env.contains("envFlag")) {
     env("envFlag").toString

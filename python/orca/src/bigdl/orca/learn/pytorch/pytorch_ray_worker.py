@@ -36,6 +36,7 @@ from torch.utils.data import IterableDataset
 
 
 import logging
+from bigdl.dllib.utils.log4Error import *
 
 try:
     from collections.abc import Iterable
@@ -75,10 +76,10 @@ class PytorchRayWorker(TorchRunner):
         self.setup_components_horovod()
         self.setup_operator(self.models)
 
-    def setup_address(self):
+    def get_node_ip_port(self):
         ip = self.get_node_ip()
         port = find_free_port()
-        return f"tcp://{ip}:{port}"
+        return ip, port
 
     def get_node_ip(self):
         """Returns the IP address of the current node."""
@@ -92,10 +93,11 @@ class PytorchRayWorker(TorchRunner):
         if not isinstance(self.models, Iterable):
             self.models = [self.models]
         else:
-            raise ValueError("only support single model for now")
+            invalidInputError(False,
+                              "only support single model for now")
 
-        assert all(isinstance(model, nn.Module) for model in self.models), (
-            "All models must be PyTorch models: {}.".format(self.models))
+        invalidInputError(all(isinstance(model, nn.Module) for model in self.models),
+                          ("All models must be PyTorch models: {}.".format(self.models)))
 
         self.logger.debug("Creating optimizer.")
         self.optimizers = self.optimizer_creator(self.given_models,
@@ -108,7 +110,8 @@ class PytorchRayWorker(TorchRunner):
                                                        named_parameters=parameters)
             self.optimizers = [self.optimizers]
         else:
-            raise ValueError("only support one optimizer for now")
+            invalidInputError(False,
+                              "only support one optimizer for now")
 
         self._create_schedulers_if_available()
         self._create_loss()
@@ -127,7 +130,8 @@ class PytorchRayWorker(TorchRunner):
             worker_stats = pred_stat["prediction"]
         else:
             if not isinstance(shards_ref, ray.ObjectID):
-                raise ValueError("Only xshards and Ray Dataset is supported for predict")
+                invalidInputError(False,
+                                  "Only xshards and Ray Dataset is supported for predict")
             partition = ray.get(shards_ref)
             worker_stats = super().predict(partition=partition, batch_size=batch_size,
                                            profile=profile)

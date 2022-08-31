@@ -16,11 +16,13 @@
 
 import torch
 import torch.nn as nn
+from pytorch_lightning import seed_everything
 
 
 class LSTMModel(nn.Module):
-    def __init__(self, input_dim, hidden_dim, layer_num, dropout, output_dim):
+    def __init__(self, input_dim, hidden_dim, layer_num, dropout, output_dim, seed):
         super(LSTMModel, self).__init__()
+        seed_everything(seed, workers=True)
         self.hidden_dim = hidden_dim
         self.dropout = dropout
         self.layer_num = layer_num
@@ -55,12 +57,13 @@ def model_creator(config):
     hidden_dim = config.get("hidden_dim", 32)
     dropout = config.get("dropout", 0.2)
     layer_num = config.get("layer_num", 2)
+    from bigdl.nano.utils.log4Error import invalidInputError
     if isinstance(hidden_dim, list):
-        assert len(hidden_dim) == layer_num, \
-            "length of hidden_dim should be equal to layer_num"
+        invalidInputError(len(hidden_dim) == layer_num,
+                          "length of hidden_dim should be equal to layer_num")
     if isinstance(dropout, list):
-        assert len(dropout) == layer_num, \
-            "length of dropout should be equal to layer_num"
+        invalidInputError(len(dropout) == layer_num,
+                          "length of dropout should be equal to layer_num")
     if isinstance(hidden_dim, int):
         hidden_dim = [hidden_dim]*layer_num
     if isinstance(dropout, (float, int)):
@@ -69,7 +72,8 @@ def model_creator(config):
                      hidden_dim=hidden_dim,
                      layer_num=layer_num,
                      dropout=dropout,
-                     output_dim=config["output_feature_num"],)
+                     output_dim=config["output_feature_num"],
+                     seed=config.get("seed", None))
 
 
 def optimizer_creator(model, config):

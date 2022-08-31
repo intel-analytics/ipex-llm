@@ -27,12 +27,15 @@ from bigdl.orca.learn.pytorch.pytorch_ray_worker import PytorchRayWorker
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
     process_xshards_of_pandas_dataframe
-from bigdl.orca.ray import RayContext
+from bigdl.orca.ray import OrcaRayContext
 from bigdl.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save
+from bigdl.orca.learn.pytorch.utils import find_free_port
 
 import ray
 from ray.exceptions import RayActorError
+from bigdl.dllib.utils.log4Error import *
+
 
 logger = logging.getLogger(__name__)
 
@@ -88,6 +91,15 @@ def partition_refs_to_creator(partition_refs):
     return data_creator
 
 
+def get_driver_node_ip():
+    """
+    Returns the IP address of the current node.
+
+    :return: the IP address of the current node.
+    """
+    return ray._private.services.get_node_ip_address()
+
+
 class PyTorchRayEstimator(OrcaRayEstimator):
     def __init__(
             self,
@@ -107,15 +119,17 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             sync_stats=True,
             log_level=logging.INFO):
         if config is not None and "batch_size" in config:
-            raise Exception("Please do not specify batch_size in config. Input batch_size in the"
-                            " fit/evaluate/predict function of the estimator instead.")
+            invalidInputError(False,
+                              "Please do not specify batch_size in config. Input batch_size in the"
+                              " fit/evaluate/predict function of the estimator instead.")
 
         # todo remove ray_ctx to run on workers
-        ray_ctx = RayContext.get()
+        ray_ctx = OrcaRayContext.get()
         if not (isinstance(model_creator, types.FunctionType) and
                 isinstance(optimizer_creator, types.FunctionType)):  # Torch model is also callable.
-            raise ValueError(
-                "Must provide a function for both model_creator and optimizer_creator")
+            invalidInputError(False,
+                              "Must provide a function for both model_creator and"
+                              " optimizer_creator")
 
         self.model_creator = model_creator
         self.optimizer_creator = optimizer_creator
@@ -125,10 +139,12 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         self.scheduler_step_freq = scheduler_step_freq
         self.use_tqdm = use_tqdm
         self.sync_stats = sync_stats
+        self.backend = backend
 
         if not training_operator_cls and not loss_creator:
-            raise ValueError("If a loss_creator is not provided, you must "
-                             "provide a custom training operator.")
+            invalidInputError(False,
+                              "If a loss_creator is not provided, you must "
+                              "provide a custom training operator.")
 
         self.initialization_hook = initialization_hook
         self.config = {} if config is None else config
@@ -148,6 +164,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         )
 
         if backend == "ray":
+            import torch.distributed as dist
             cores_per_node = ray_ctx.ray_node_cpu_cores // workers_per_node
             num_nodes = ray_ctx.num_ray_nodes * workers_per_node
             RemoteRunner = ray.remote(num_cpus=cores_per_node)(PytorchRayWorker)
@@ -159,13 +176,15 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 for i, worker in enumerate(self.remote_workers)
             ])
 
-            head_worker = self.remote_workers[0]
-            address = ray.get(head_worker.setup_address.remote())
+            driver_ip = get_driver_node_ip()
+            driver_tcp_store_port = find_free_port()
 
-            logger.info(f"initializing pytorch process group on {address}")
+            _ = dist.TCPStore(driver_ip, driver_tcp_store_port, -1, True,
+                              dist.constants.default_pg_timeout)
 
             ray.get([
-                worker.setup_torch_distribute.remote(address, i, num_nodes)
+                worker.setup_torch_distribute.remote(
+                    driver_ip, driver_tcp_store_port, i, num_nodes)
                 for i, worker in enumerate(self.remote_workers)
             ])
 
@@ -187,8 +206,9 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 for i, worker in enumerate(self.remote_workers)
             ])
         else:
-            raise Exception("Only \"ray\" and \"horovod\" are supported "
-                            "values of backend, but got {}".format(backend))
+            invalidInputError(False,
+                              "Only \"ray\" and \"horovod\" are supported "
+                              "values of backend, but got {}".format(backend))
         self.num_workers = len(self.remote_workers)
 
     def fit(self,
@@ -200,6 +220,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             info=None,
             feature_cols=None,
             label_cols=None,
+            validation_data=None,
             callbacks=[]):
         """
         Trains a PyTorch model given training data for several epochs.
@@ -225,6 +246,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                train_epoch and train_batch.
         :param feature_cols: feature column names if data is Spark DataFrame or Ray Dataset.
         :param label_cols: label column names if data is Spark DataFrame or Ray Dataset.
+        :param validation_data: validation data. Validation data type should be the same
+               as train data.
         :param callbacks: A list for all callbacks.
 
         :return: A list of dictionary of metrics for every training epoch. If reduce_results is
@@ -233,60 +256,112 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 You can also provide custom metrics by passing in a custom training_operator_cls
                 when creating the Estimator.
         """
+        params = dict(
+            epochs=epochs,
+            batch_size=batch_size,
+            profile=profile,
+            info=info,
+            callbacks=callbacks,
+        )
+
         from bigdl.orca.data import SparkXShards
         from ray.data import Dataset
 
-        data, _ = maybe_dataframe_to_xshards(data,
-                                             validation_data=None,
-                                             feature_cols=feature_cols,
-                                             label_cols=label_cols,
-                                             mode="fit",
-                                             num_workers=self.num_workers)
+        data, validation_data = maybe_dataframe_to_xshards(data,
+                                                           validation_data=validation_data,
+                                                           feature_cols=feature_cols,
+                                                           label_cols=label_cols,
+                                                           mode="fit",
+                                                           num_workers=self.num_workers)
 
         if isinstance(data, SparkXShards):
+            # Should not wrap DistributedSampler on DataLoader for SparkXShards input.
+            params["wrap_dataloader"] = False
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
-                data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
+                data, validation_data = process_xshards_of_pandas_dataframe(data, feature_cols,
+                                                                            label_cols,
+                                                                            validation_data, "fit")
             from bigdl.orca.data.utils import process_spark_xshards
             ray_xshards = process_spark_xshards(data, self.num_workers)
 
-            def transform_func(worker, partition_refs):
-                data_creator = partition_refs_to_creator(partition_refs)
-                # Should not wrap DistributedSampler on DataLoader for SparkXShards input.
-                return worker.train_epochs.remote(
-                    data_creator, epochs, batch_size, profile, info, False, callbacks)
+            if validation_data is None:
+                def transform_func(worker, partition_refs):
+                    data_creator = partition_refs_to_creator(partition_refs)
+                    params["data_creator"] = data_creator
+                    return worker.train_epochs.remote(**params)
 
-            worker_stats = ray_xshards.reduce_partitions_for_actors(self.remote_workers,
-                                                                    transform_func)
+                worker_stats = ray_xshards.reduce_partitions_for_actors(self.remote_workers,
+                                                                        transform_func)
+            else:
+                if self.backend == "horovod":
+                    invalidInputError(False,
+                                      "Currently, we don't support input validation_data"
+                                      " for horovod backend")
+                val_ray_xshards = process_spark_xshards(validation_data, self.num_workers)
+
+                def zip_func(worker, this_partition_refs, that_partition_refs):
+                    params["data_creator"] = partition_refs_to_creator(this_partition_refs)
+                    params["validation_data_creator"] = \
+                        partition_refs_to_creator(that_partition_refs)
+                    return worker.train_epochs.remote(**params)
+
+                worker_stats = ray_xshards.zip_reduce_shards_with_actors(val_ray_xshards,
+                                                                         self.remote_workers,
+                                                                         zip_func)
         elif isinstance(data, Dataset):
+            # todo: need to refactor to align with tf2 code
+            params["wrap_dataloader"] = False
             shards = data.split(n=self.num_workers, locality_hints=self.remote_workers)
 
-            def data_creator(config, batch_size):
-                torch_datashard = shard.to_torch(label_column=label_cols,
-                                                 feature_columns=feature_cols,
-                                                 batch_size=batch_size)
-                return torch_datashard
+            def make_data_creator(shard, feature_cols, label_cols):
+                def data_creator(config, batch_size):
+                    torch_datashard = shard.to_torch(label_column=label_cols,
+                                                     feature_columns=feature_cols,
+                                                     batch_size=batch_size)
+                    return torch_datashard
+                return data_creator
 
             remote_worker_stats = []
-            for shard, worker in zip(shards, self.remote_workers):
-                stats = worker.train_epochs.remote(data_creator, epochs, batch_size, profile,
-                                                   info, False, callbacks)
-                remote_worker_stats.append(stats)
+            if validation_data is None:
+                for shard, worker in zip(shards, self.remote_workers):
+                    params["data_creator"] = make_data_creator(shard, feature_cols, label_cols)
+                    stats = worker.train_epochs.remote(**params)
+                    remote_worker_stats.append(stats)
+            else:
+                if self.backend == "horovod":
+                    invalidInputError(False,
+                                      "Currently, we don't support input validation_data for"
+                                      " horovod backend")
+                if not isinstance(validation_data, ray.data.Dataset):
+                    invalidInputError(False,
+                                      "Validation data type should be the same as train data,"
+                                      " but got type: {}".format(type(validation_data)))
+
+                val_shards = validation_data.split(n=self.num_workers,
+                                                   locality_hints=self.remote_workers)
+                for shard, val_shard, worker in zip(shards, val_shards, self.num_workers):
+                    params["data_creator"] = make_data_creator(shard, feature_cols, label_cols)
+
+                    params["validation_data_creator"] = make_data_creator(val_shard,
+                                                                          feature_cols,
+                                                                          label_cols)
+                    stats = worker.train_epochs.remote(**params)
+                    remote_worker_stats.append(stats)
+
             success = check_for_failure(remote_worker_stats)
             if success:
                 worker_stats = ray.get(remote_worker_stats)
             else:
                 worker_stats = None
         else:
-            assert isinstance(data, types.FunctionType), \
-                "data should be either an instance of SparkXShards, Ray Dataset " \
-                "or a callable function, but got type: {}".format(type(data))
+            invalidInputError(isinstance(data, types.FunctionType),
+                              "data should be either an instance of SparkXShards,"
+                              " Ray Dataset or a callable function, but"
+                              " got type: {}".format(type(data)))
 
-            success, worker_stats = self._train_epochs(data,
-                                                       epochs=epochs,
-                                                       batch_size=batch_size,
-                                                       profile=profile,
-                                                       info=info,
-                                                       callbacks=callbacks)
+            params["data_creator"] = data
+            params["validation_data_creator"] = validation_data
+            success, worker_stats = self._train_epochs(**params)
 
         epoch_stats = list(map(list, zip(*worker_stats)))
         if reduce_results:
@@ -346,8 +421,9 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             result = ray.data.from_numpy(remote_worker_stats).map(
                 lambda r: {"prediction_result": r["value"]})
         else:
-            raise ValueError("Only xshards, Spark DataFrame or Ray Dataset"
-                             " is supported for predict")
+            invalidInputError(False,
+                              "Only xshards, Spark DataFrame or Ray Dataset"
+                              " is supported for predict")
 
         return result
 
@@ -423,9 +499,9 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 remote_worker_stats.append(stats)
             worker_stats = ray.get(remote_worker_stats)
         else:
-            assert isinstance(data, types.FunctionType), \
-                "data should be either an instance of SparkXShards or a callable function, but " \
-                "got type: {}".format(type(data))
+            invalidInputError(isinstance(data, types.FunctionType),
+                              "data should be either an instance of SparkXShards or a callable"
+                              " function, but got type: {}".format(type(data)))
 
             params = dict(data_creator=data, batch_size=batch_size, num_steps=num_steps,
                           profile=profile, info=info)
@@ -548,14 +624,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 stats[stat_key] = worker_stats[0][stat_key]
         return stats
 
-    def _train_epochs(self, data_creator,
-                      epochs=1, batch_size=32,
-                      profile=False, info=None,
-                      callbacks=None):
-
-        params = dict(data_creator=data_creator, epochs=epochs,
-                      batch_size=batch_size, profile=profile, info=info,
-                      callbacks=callbacks)
+    def _train_epochs(self, **params):
         remote_worker_stats = []
         for i, w in enumerate(self.remote_workers):
             stats = w.train_epochs.remote(**params)

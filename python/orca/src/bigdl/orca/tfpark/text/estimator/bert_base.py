@@ -16,6 +16,7 @@
 
 from bigdl.orca.tfpark.estimator import *
 from bert import modeling
+from bigdl.dllib.utils.log4Error import *
 
 
 def bert_model(features, labels, mode, params):
@@ -66,15 +67,17 @@ def bert_input_fn(rdd, max_seq_length, batch_size,
     and tuple of (dtype, shape) as its value.
     """
     import tensorflow as tf
-    assert features.issubset({"input_ids", "input_mask", "token_type_ids"})
+    invalidInputError(features.issubset({"input_ids", "input_mask", "token_type_ids"}),
+                      "features should be subset of {input_ids, input_mask, token_type_ids}")
     features_dict = {}
     for feature in features:
         features_dict[feature] = (tf.int32, [max_seq_length])
     if extra_features is not None:
-        assert isinstance(extra_features, dict), "extra_features should be a dictionary"
+        invalidInputError(isinstance(extra_features, dict),
+                          "extra_features should be a dictionary")
         for k, v in extra_features.items():
-            assert isinstance(k, six.string_types)
-            assert isinstance(v, tuple)
+            invalidInputError(isinstance(k, six.string_types, "expect k is string type"))
+            invalidInputError(isinstance(v, tuple), "expect v is tuple")
             features_dict[k] = v
     if label_size is None:
         label_size = []
@@ -91,8 +94,9 @@ def bert_input_fn(rdd, max_seq_length, batch_size,
             for label in labels:
                 res_labels[label] = (tf.int32, label_size)
     else:
-        raise ValueError("Wrong labels. "
-                         "labels should be a set of label names if you have multiple labels")
+        invalidInputError(False,
+                          "Wrong labels. labels should be a set of label names"
+                          " if you have multiple labels")
 
     def input_fn(mode):
         if mode == tf.estimator.ModeKeys.TRAIN:

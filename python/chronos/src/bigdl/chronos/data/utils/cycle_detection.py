@@ -16,7 +16,6 @@
 
 from scipy.fftpack import fft, fftfreq
 import numpy as np
-from statsmodels.tsa.stattools import acf
 
 
 def cycle_length_est(data, top_k=3):
@@ -29,10 +28,11 @@ def cycle_length_est(data, top_k=3):
            used to check the autocorrelation. Higher top_k might be time-consuming.
            The value is default to 3.
     '''
-    assert (data.size//2) > abs(top_k)+1, \
-        "top_k must be less than half the length of the time series, "\
-        f"but top_k and data length are {top_k} and {data.size} respectively."
-    assert np.any(np.diff(data) != 0), "Data elements cannot all be the same."
+    from bigdl.nano.utils.log4Error import invalidInputError
+    invalidInputError((data.size//2) > abs(top_k)+1,
+                      "top_k must be less than half the length of the time series,"
+                      " but top_k and data length are {top_k} and {data.size} respectively.")
+    invalidInputError(np.any(np.diff(data) != 0), "Data elements cannot all be the same.")
 
     fft_series = fft(data)
     power = np.abs(fft_series)
@@ -50,6 +50,7 @@ def cycle_length_est(data, top_k=3):
     # Expected time period
     largest_acf_score = -float("inf")
     cycle_length_est = None
+    from statsmodels.tsa.stattools import acf
     for lag in fft_periods:
         acf_score = acf(data, nlags=lag)[-1]
         if acf_score > largest_acf_score:

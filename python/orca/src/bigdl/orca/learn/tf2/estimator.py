@@ -18,6 +18,7 @@ import logging
 import numpy as np
 
 from bigdl.orca.learn.utils import get_latest_checkpoint
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 
 logger = logging.getLogger(__name__)
@@ -31,7 +32,7 @@ class Estimator(object):
                    verbose=False,
                    workers_per_node=1,
                    compile_args_creator=None,
-                   backend="tf2",
+                   backend="ray",
                    cpu_binding=False,
                    log_to_driver=True,
                    model_dir=None,
@@ -52,8 +53,8 @@ class Estimator(object):
                the backend="horovod". This function takes in the `config` dict and returns a
                dictionary like {"optimizer": tf.keras.optimizers.SGD(lr), "loss":
                "mean_squared_error", "metrics": ["mean_squared_error"]}
-        :param backend: (string) You can choose "horovod", "tf2" or "spark" as backend.
-         Default: `tf2`.
+        :param backend: (string) You can choose "horovod", "ray" or "spark" as backend.
+         Default: `ray`.
         :param cpu_binding: (bool) Whether to binds threads to specific CPUs. Default: False
         :param log_to_driver: (bool) Whether display executor log on driver in cluster mode.
          Default: True. This option is only for "spark" backend.
@@ -61,7 +62,7 @@ class Estimator(object):
         backend. For cluster mode, it should be a share filesystem path which can be accessed
         by executors.
         """
-        if backend in {"tf2", "horovod"}:
+        if backend in {"ray", "horovod"}:
             from bigdl.orca.learn.tf2.ray_estimator import TensorFlow2Estimator
             return TensorFlow2Estimator(model_creator=model_creator, config=config,
                                         verbose=verbose, workers_per_node=workers_per_node,
@@ -69,9 +70,11 @@ class Estimator(object):
                                         cpu_binding=cpu_binding)
         elif backend == "spark":
             if cpu_binding:
-                raise ValueError("cpu_binding should not be True when using spark backend")
+                invalidInputError(False,
+                                  "cpu_binding should not be True when using spark backend")
             if not model_dir:
-                raise ValueError("Please specify model directory when using spark backend")
+                invalidInputError(False,
+                                  "Please specify model directory when using spark backend")
             from bigdl.orca.learn.tf2.pyspark_estimator import SparkTFEstimator
             return SparkTFEstimator(model_creator=model_creator,
                                     config=config, verbose=verbose,
@@ -81,8 +84,9 @@ class Estimator(object):
                                     model_dir=model_dir,
                                     **kwargs)
         else:
-            raise ValueError("Only horovod, tf2 and spark backends are supported"
-                             f" for now, got backend: {backend}")
+            invalidInputError(False,
+                              "Only horovod, ray and spark backends are supported"
+                              f" for now, got backend: {backend}")
 
     @staticmethod
     def latest_checkpoint(checkpoint_dir):

@@ -15,25 +15,27 @@
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
+        <grpc.version>1.47.0</grpc.version>
+        <bigdl.basedir>${project.parent.basedir}</bigdl.basedir>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-api</artifactId>
-            <version>1.37.0</version>
+            <version>${grpc.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
-            <version>2.12.2</version>
+            <version>${jackson.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-scala_${scala.major.version}</artifactId>
-            <version>2.12.2</version>
+            <version>${jackson.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -45,7 +47,7 @@
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-netty-shaded</artifactId>
-            <version>1.37.0</version>
+            <version>${grpc.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

@@ -16,6 +16,11 @@
 
 package com.intel.analytics.bigdl.ppml.attestation
 
+/**
+ * Attestation Related Exception
+ * @param message error message
+ * @param cause throwable cause
+ */
 class AttestationRuntimeException(message: String, cause: Throwable = null)
   extends Exception(message, cause) {
 }

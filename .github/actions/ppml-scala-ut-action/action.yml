@@ -1,0 +1,13 @@
+name: 'Run PPML Scala UT'
+description: 'Run PPML Scala UT'
+runs:
+  using: "composite"
+  steps:
+    - name: Run tests
+      shell: bash
+      run: |
+        export SPARK_LOCAL_HOSTNAME=localhost
+        export KERAS_BACKEND=tensorflow
+        cd scala
+        mvn "-DwildcardSuites=com.intel.analytics.bigdl.ppml" "-Dtest=com.intel.analytics.bigdl.ppml.*Test" test -P spark_3.x -Dspark.version=3.1.2 -Ddata-store-url=http://10.239.45.10:8081/repository/raw
+

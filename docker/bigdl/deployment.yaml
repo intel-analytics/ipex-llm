@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bigdl-notebook
+  namespace: bigdl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bigdl-notebook
+  template:
+    metadata:
+      name: bigdl-notebook
+      labels:
+        app: bigdl-notebook
+        appType: bigdl
+    spec:
+      containers:
+        - image: intelanalytics/bigdl-spark-3.1.2:latest
+          ports:
+            - name: jupyter-address
+              containerPort: 8888
+          name: bigdl-notebook
+          env:
+            - name: CONTAINER_NAME
+              value: bigdl-notebook
+            - name: NOTEBOOK_TOKEN
+              value: ""  # To specific the token value
+          volumeMounts:
+            - name: bigdl-notebook-volume
+              mountPath: /data/jupyter
+            - name: cache-volume
+              mountPath: /dev/shm
+          command: [ "/opt/work/start-notebook.sh" ]
+      volumes:
+        - name: bigdl-notebook-volume
+          persistentVolumeClaim:
+            claimName: nfsvolumeclaim
+            readOnly: false
+        - name: cache-volume
+          emptyDir:
+            medium: Memory
+            sizeLimit: "1024Mi"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bigdl-notebook
+  namespace: bigdl
+  labels:
+    app: bigdl-notebook
+spec:
+  ports:
+    - port: 8888
+      protocol: TCP
+      name: jupyter-address
+  type: NodePort
+  selector:
+    app: bigdl-notebook

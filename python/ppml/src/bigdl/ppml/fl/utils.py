@@ -17,8 +17,8 @@
 from bigdl.dllib.utils.common import *
 
 
-def init_fl_context(bigdl_type="float"):
-    callBigDlFunc(bigdl_type, "initFLContext")
+def init_fl_context(id, target="localhost:8980"):
+    callBigDlFunc("float", "initFLContext", id, target)
 
 class FLClientClosable(JavaValue):
     def __init__(self, jvalue=None, bigdl_type="float", *args):
@@ -27,3 +27,31 @@ class FLClientClosable(JavaValue):
     def set_fl_client(self, fl_client):
         return callBigDlFunc(self.bigdl_type, "flClientClosableSetFLClient", self.value, fl_client)
 
+
+import unittest
+import socket
+from bigdl.dllib.utils.log4Error import invalidOperationError
+class FLTest(unittest.TestCase):    
+    def __init__(self, methodName='FLTest') -> None:
+        super().__init__(methodName)
+        self.port = 8980
+        self.port = self.get_available_port(self.port, self.port + 10)
+        self.target = f"localhost:{self.port}"
+
+    def update_available_port(self):
+        self.port = self.get_available_port(self.port, self.port + 10)
+        self.target = f"localhost:{self.port}"
+
+    def get_available_port(self, port_start, port_end):
+        def is_available(p):            
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            result = sock.connect_ex(('127.0.0.1', p))            
+            sock.close()
+            return result != 0
+        for p in range(port_start, port_end):
+            if is_available(p):
+                return p
+            else:
+                logging.info(f"port {p} is not avaible, trying another...")
+        invalidOperationError(False, 
+            f"can not find available port in range [{port_start}, {port_end}]")

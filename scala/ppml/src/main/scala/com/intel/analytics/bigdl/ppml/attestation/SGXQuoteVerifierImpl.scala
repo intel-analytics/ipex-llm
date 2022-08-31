@@ -16,6 +16,9 @@
 
 package com.intel.analytics.bigdl.ppml.attestation
 
+/**
+ * Verify SGX quote with SGX SDK
+ */
 class SGXQuoteVerifierImpl extends QuoteVerifier with Serializable {
 
 }

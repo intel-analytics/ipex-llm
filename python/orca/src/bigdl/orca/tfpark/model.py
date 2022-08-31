@@ -25,6 +25,7 @@ from bigdl.orca.tfpark.tf_dataset import TFNdarrayDataset, TFDataset, \
 
 from bigdl.orca.tfpark.tf_optimizer import TFOptimizer
 from bigdl.orca.tfpark.tf_predictor import TFPredictor
+from bigdl.dllib.utils.log4Error import *
 
 
 class KerasModel(object):
@@ -124,12 +125,14 @@ class KerasModel(object):
         """
         if isinstance(x, TFDataset):
             # todo check arguments
-            assert validation_data is None, "validation_data must be None when " \
-                                            "using TFDataset as input, please " \
-                                            "use set the validation data in TFDataset"
+            invalidInputError(validation_data is None,
+                              "validation_data must be None when"
+                              " using TFDataset as input, please use set"
+                              " the validation data in TFDataset")
             if not x.has_batch:
-                raise ValueError("The batch_size of TFDataset must be " +
-                                 "specified when used in KerasModel fit.")
+                invalidInputError(False,
+                                  "The batch_size of TFDataset must be " +
+                                  "specified when used in KerasModel fit.")
             self._fit_distributed(x, epochs, **kwargs)
 
         elif distributed:
@@ -183,8 +186,9 @@ class KerasModel(object):
         """
         if isinstance(x, TFDataset):
             if not x.has_batch:
-                raise ValueError("The batch_per_thread of TFDataset must be " +
-                                 "specified when used in KerasModel evaluate.")
+                invalidInputError(False,
+                                  "The batch_per_thread of TFDataset must be " +
+                                  "specified when used in KerasModel evaluate.")
             if isinstance(x, TFNdarrayDataset):
                 x = _standarize_feature_label_dataset(x, self.model)
             # todo check arguments
@@ -248,8 +252,9 @@ class KerasModel(object):
         if isinstance(x, TFDataset):
             # todo check arguments
             if not x.has_batch:
-                raise ValueError("The batch_per_thread of TFDataset" +
-                                 " must be specified when used in KerasModel predict.")
+                invalidInputError(False,
+                                  "The batch_per_thread of TFDataset" +
+                                  " must be specified when used in KerasModel predict.")
             return self._predict_distributed(x)
         else:
             if distributed:

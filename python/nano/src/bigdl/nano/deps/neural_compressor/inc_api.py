@@ -13,35 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
-def QuantizationINC(framework: str,
-                    conf='',
-                    approach='post_training_static_quant',
-                    tuning_strategy='bayesian',
-                    accuracy_criterion: dict = {'relative': 0.99, 'higher_is_better': True},
-                    timeout=0,
-                    max_trials=1,
-                    inputs=None,
-                    outputs=None):
-    from .core import QuantizationINC as Quantization
-    return Quantization(framework, conf, approach, tuning_strategy, accuracy_criterion,
-                        timeout, max_trials, inputs, outputs)
-
-
-def check_pytorch_dataloaders(model, loaders):
-    from .pytorch.dataloader import check_loaders
-    return check_loaders(model, loaders)
-
-
-def tf_dataset_to_inc_dataloader(tf_dataset, batchsize):
-    from neural_compressor.experimental import common
-    return common.DataLoader(tf_dataset, batchsize)
-
-
-def PytorchQuantizedModel(model):
-    from .pytorch.quantized_model import PytorchQuantizedModel
-    return PytorchQuantizedModel(model)
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 def load_inc_model(path, model, framework):
@@ -49,7 +21,45 @@ def load_inc_model(path, model, framework):
         from .pytorch.quantized_model import PytorchQuantizedModel
         return PytorchQuantizedModel._load(path, model)
     elif framework == 'tensorflow':
-        raise NotImplementedError("QuantizedTensorflowModel loading is not implemented yet.")
+        invalidInputError(False, "QuantizedTensorflowModel loading is not implemented yet.")
     else:
-        raise ValueError("The value {} for framework is not supported. "
-                         "Please choose from 'pytorch'/'tensorflow'.")
+        invalidInputError(False,
+                          "The value {} for framework is not supported."
+                          " Please choose from 'pytorch'/'tensorflow'.")
+
+
+def quantize(model, dataloader=None, metric=None, **kwargs):
+    if kwargs['approach'] not in ['static', 'dynamic']:
+        invalidInputError(False,
+                          "Approach should be 'static' or 'dynamic', "
+                          "{} is invalid.".format(kwargs['approach']))
+    not_none_kwargs = {}
+    for k, v in kwargs.items():
+        # pop None values to use default
+        if v is not None:
+            not_none_kwargs[k] = v
+    approach_map = {
+        'static': 'post_training_static_quant',
+        'dynamic': 'post_training_dynamic_quant'
+    }
+    not_none_kwargs['approach'] = approach_map.get(kwargs['approach'], None)
+    quantizer = None
+    onnxruntime_session_options = not_none_kwargs.pop('onnxruntime_session_options', None)
+    if 'pytorch' in not_none_kwargs['framework']:
+        from .pytorch.quantization import PytorchQuantization
+        quantizer = PytorchQuantization(**not_none_kwargs)
+    if 'onnx' in not_none_kwargs['framework']:
+        invalidInputError('torch' in str(type(dataloader)),
+                          errMsg="ONNXRuntime quantization only support in Pytorch.")
+        from .onnx.pytorch.quantization import PytorchONNXRuntimeQuantization
+        quantizer =\
+            PytorchONNXRuntimeQuantization(onnxruntime_session_options=onnxruntime_session_options,
+                                           **not_none_kwargs)
+    if 'tensorflow' in not_none_kwargs['framework']:
+        from .tensorflow.quantization import TensorflowQuantization
+        quantizer = TensorflowQuantization(**not_none_kwargs)
+    if not quantizer:
+        # default quantization
+        from .core import BaseQuantization
+        quantizer = BaseQuantization(**not_none_kwargs)
+    return quantizer.post_training_quantize(model, dataloader, metric)

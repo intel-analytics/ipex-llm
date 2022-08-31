@@ -18,6 +18,7 @@ import os
 import sys
 import subprocess
 from bigdl.dllib.utils.utils import get_node_ip
+from bigdl.dllib.utils.log4Error import *
 
 
 # Assumption:
@@ -45,7 +46,7 @@ class MPIRunner:
             self.hosts = list(set(sc.range(0, total_cores, numSlices=total_cores).barrier()
                                   .mapPartitions(get_ip).collect()))
         else:  # User specified hosts, assumed to be non-duplicate
-            assert isinstance(hosts, list)
+            invalidInputError(isinstance(hosts, list), "expect hosts to be list")
             self.hosts = hosts
 
         self.master = self.hosts[0]
@@ -61,7 +62,7 @@ class MPIRunner:
 
     def run(self, file, **kwargs):
         file_path = os.path.abspath(file)
-        assert os.path.exists(file_path)
+        invalidInputError(os.path.exists(file_path), "file_path doesn't exist")
         file_dir = "/".join(file_path.split("/")[:-1])
         self.scp_file(file_path, file_dir)
 

@@ -27,7 +27,7 @@ import torchmetrics
 
 import numpy as np
 
-from bigdl.nano.pytorch.trainer import Trainer
+from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch.vision.models import vision
 
 batch_size = 256
@@ -64,38 +64,6 @@ class MultiInputModel(nn.Module):
 
 
 class TestOnnx(TestCase):
-
-    def test_trainer_compile_with_onnx(self):
-        # TODO: to remove this ut
-        model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
-        loss = nn.CrossEntropyLoss()
-        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
-        trainer = Trainer(max_epochs=1)
-
-        pl_model = Trainer.compile(model, loss, optimizer, onnx=True)
-        x = torch.rand((10, 3, 256, 256))
-        y = torch.ones((10, ), dtype=torch.long)
-        ds = TensorDataset(x, y)
-        train_loader = DataLoader(ds, batch_size=2)
-        trainer.fit(pl_model, train_loader)
-
-        for x, y in train_loader:
-            onnx_res = pl_model.inference(x.numpy())  # onnxruntime
-            pytorch_res = pl_model.inference(x.numpy(), backend=None).numpy()  # native pytorch
-            pl_model.eval_onnx()
-            forward_res = pl_model(x).numpy()
-            pl_model.exit_onnx()
-            np.testing.assert_almost_equal(onnx_res, pytorch_res, decimal=5)  # same result
-            np.testing.assert_almost_equal(onnx_res, forward_res, decimal=5)  # same result
-
-        trainer = Trainer(max_epochs=1)
-        trainer.fit(pl_model, train_loader)
-
-        pl_model.eval_onnx()  # update the ortsess with default settings
-
-        for x, y in train_loader:
-            pl_model.inference(x.numpy())
-
     def test_trainer_trace_onnx(self):
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
         loss = nn.CrossEntropyLoss()
@@ -109,7 +77,7 @@ class TestOnnx(TestCase):
         train_loader = DataLoader(ds, batch_size=2)
         trainer.fit(pl_model, train_loader)
 
-        onnx_model = trainer.trace(pl_model, accelerator="onnxruntime")
+        onnx_model = trainer.trace(pl_model, accelerator="onnxruntime", input_sample=train_loader)
 
         for x, y in train_loader:
             model.eval()
@@ -118,37 +86,8 @@ class TestOnnx(TestCase):
             forward_res_onnx = onnx_model(x).numpy()
             np.testing.assert_almost_equal(forward_res_onnx, forward_res_pytorch, decimal=5)
 
-    def test_multiple_input_onnx(self):
-        # TODO: to remove this ut
-        model = MultiInputModel()
-        loss = nn.CrossEntropyLoss()
-        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
-        trainer = Trainer(max_epochs=1)
-
-        pl_model = Trainer.compile(model, loss, optimizer, onnx=True)
-        x1 = torch.randn(100, 28 * 28)
-        x2 = torch.randn(100, 28 * 28)
-        y = torch.zeros(100).long()
-        y[0:50] = 1
-        train_loader = DataLoader(TensorDataset(x1, x2, y), batch_size=32, shuffle=True)
-        trainer.fit(pl_model, train_loader)
-
-        for x1, x2, y in train_loader:
-            onnx_res = pl_model.inference([x1.numpy(), x2.numpy()])  # onnxruntime
-            pytorch_res = pl_model.inference([x1.numpy(), x2.numpy()], backend=None).numpy()  # native pytorch
-            pl_model.eval_onnx()
-            forward_res = pl_model(x1, x2).numpy()
-            pl_model.exit_onnx()
-            np.testing.assert_almost_equal(onnx_res, pytorch_res, decimal=5)  # same result
-            np.testing.assert_almost_equal(onnx_res, forward_res, decimal=5)  # same result
-
-        trainer = Trainer(max_epochs=1)
-        trainer.fit(pl_model, train_loader)
-
-        pl_model.eval_onnx()  # update the ortsess with default settings
-
-        for x1, x2, y in train_loader:
-            pl_model.inference([x1.numpy(), x2.numpy()])
+        trainer.validate(onnx_model, train_loader)
+        trainer.test(onnx_model, train_loader)
 
     def test_trainer_trace_multiple_input_onnx(self):
         model = MultiInputModel()
@@ -164,7 +103,7 @@ class TestOnnx(TestCase):
         train_loader = DataLoader(TensorDataset(x1, x2, y), batch_size=32, shuffle=True)
         trainer.fit(pl_model, train_loader)
 
-        onnx_model = trainer.trace(pl_model, accelerator="onnxruntime")
+        onnx_model = trainer.trace(pl_model, accelerator="onnxruntime", input_sample=train_loader)
 
         for x1, x2, y in train_loader:
             model.eval()
@@ -172,6 +111,10 @@ class TestOnnx(TestCase):
                 forward_res_pytorch = pl_model(x1, x2).numpy()
             forward_res_onnx = onnx_model(x1, x2).numpy()
             np.testing.assert_almost_equal(forward_res_onnx, forward_res_pytorch, decimal=5)
+
+        trainer.validate(onnx_model, train_loader)
+        trainer.test(onnx_model, train_loader)
+        trainer.predict(onnx_model, train_loader)
 
     def test_onnx_trainer_save_load(self):
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
@@ -186,7 +129,7 @@ class TestOnnx(TestCase):
         train_loader = DataLoader(ds, batch_size=2)
         trainer.fit(pl_model, train_loader)
 
-        onnx_model = trainer.trace(pl_model, accelerator="onnxruntime")
+        onnx_model = trainer.trace(pl_model, accelerator="onnxruntime", input_sample=train_loader)
 
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             Trainer.save(onnx_model, tmp_dir_name)

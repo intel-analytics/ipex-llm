@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 from bigdl.nano.common.multiprocessing.backend import Backend
+from bigdl.nano.utils.log4Error import invalidInputError
 import os
 from tempfile import TemporaryDirectory
 from typing import Any
@@ -30,11 +31,12 @@ class HorovodBackend(Backend):
     def run(self, target, args=..., nprocs=1, envs=None) -> Any:
         if envs is not None:
             if isinstance(envs, list):
-                assert nprocs == len(envs), "envs must have the same length with nprocs"
+                invalidInputError(nprocs == len(envs),
+                                  "envs must have the same length with nprocs")
             elif isinstance(envs, dict):
                 envs = [envs] * nprocs
             else:
-                raise ValueError("envs must be a dict or a list of dict")
+                invalidInputError(False, "envs must be a dict or a list of dict")
 
         return self.run_subprocess(target, args=args, nprocs=nprocs, envs=envs)
 
@@ -57,7 +59,7 @@ class HorovodBackend(Backend):
             p.wait()
 
             if p.returncode != 0:
-                raise RuntimeError("horovodrun failed")
+                invalidInputError(False, "horovodrun failed")
 
             results = []
             for i in range(nprocs):

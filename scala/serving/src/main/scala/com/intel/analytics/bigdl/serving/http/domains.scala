@@ -175,7 +175,7 @@ case class Instances(instances: List[mutable.LinkedHashMap[String, Any]]) {
                       java.util.Base64.getDecoder.decode(value.toString)
                     }
                     val mat = timing("load byte buffer")() {
-                      OpenCVMethod.fromImageBytes(byteBuffer, Imgcodecs.CV_LOAD_IMAGE_UNCHANGED)
+                      OpenCVMethod.fromImageBytes(byteBuffer, Imgcodecs.IMREAD_UNCHANGED)
                     }
                     val (height, width, channel) = (mat.height(), mat.width(), mat.channels())
                     val arrayBuffer = new Array[Float](height * width * channel)
@@ -1155,7 +1155,7 @@ case class ClusterServingMetaData(modelName: String,
                                   tokensPerSecond: Int = 100,
                                   redisSecureEnabled: Boolean = false,
                                   redisTrustStorePath: String = null,
-                                  redisTrustStoreToken: String = "1234qwer",
+                                  redisTrustStoreToken: String = null,
                                   inputCompileType: String = "direct",
                                   features: Array[String])
   extends ModelMetaData(modelName, modelVersion, features)

@@ -18,9 +18,10 @@ package com.intel.analytics.bigdl.ppml.fl.nn
 
 import com.intel.analytics.bigdl.ppml.fl.common.{FLDataType, FLPhase}
 import com.intel.analytics.bigdl.ppml.fl.common.FLPhase.{EVAL, PREDICT, TRAIN}
-import com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.{FloatTensor, TensorMap, MetaData}
+import com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.{FloatTensor, MetaData, TensorMap}
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 
 
@@ -46,7 +47,8 @@ class HFLNNAggregator extends NNAggregator {
       for (tensorName <- modelMap.keySet.asScala) {
         val shapeList = modelMap.get(tensorName).getShapeList
         val dataList = modelMap.get(tensorName).getTensorList
-        if (sumedDataMap.get(tensorName) == null) sumedDataMap.put(tensorName, FloatTensor.newBuilder.addAllTensor(dataList).addAllShape(shapeList).build)
+        if (sumedDataMap.get(tensorName) == null) sumedDataMap.put(tensorName,
+          FloatTensor.newBuilder.addAllTensor(dataList).addAllShape(shapeList).build)
         else {
           val shapeListAgg = sumedDataMap.get(tensorName).getShapeList
           val dataListAgg = sumedDataMap.get(tensorName).getTensorList
@@ -62,9 +64,8 @@ class HFLNNAggregator extends NNAggregator {
       }
     }
     // average
-    val averagedDataMap = new java.util.HashMap[String, FloatTensor]
-    import scala.collection.JavaConversions._
-    for (tensorName <- sumedDataMap.keySet) {
+    val averagedDataMap = new mutable.HashMap[String, FloatTensor]
+    for (tensorName <- sumedDataMap.asScala.keySet) {
       val shapeList = sumedDataMap.get(tensorName).getShapeList
       val dataList = sumedDataMap.get(tensorName).getTensorList
       val averagedDataList = new java.util.ArrayList[java.lang.Float]
@@ -79,7 +80,7 @@ class HFLNNAggregator extends NNAggregator {
     val metaData = MetaData.newBuilder
       .setName(modelName).setVersion(storage.version + 1).build
     val aggregatedTable = TensorMap.newBuilder
-      .setMetaData(metaData).putAllTensorMap(averagedDataMap).build
+      .setMetaData(metaData).putAllTensorMap(averagedDataMap.asJava).build
     storage.clearClientAndUpdateServer(aggregatedTable)
   }
 }

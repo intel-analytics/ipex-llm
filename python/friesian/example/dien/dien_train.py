@@ -27,6 +27,7 @@ from bigdl.orca.data.file import exists, makedirs
 from bigdl.orca.learn.tf.estimator import Estimator
 from bigdl.orca import init_orca_context, stop_orca_context
 from model import *
+from bigdl.dllib.utils.log4Error import *
 
 
 EMBEDDING_DIM = 18
@@ -140,9 +141,9 @@ if __name__ == '__main__':
     elif args.cluster_mode == "spark-submit":
         init_orca_context("spark-submit")
     else:
-        raise ValueError(
-            "cluster_mode should be one of 'local', 'yarn', 'standalone' and 'spark-submit'"
-            ", but got " + args.cluster_mode)
+        invalidInputError(False,
+                          "cluster_mode should be one of 'local', 'yarn', 'standalone' and"
+                          " 'spark-submit', but got " + args.cluster_mode)
 
     train_data, test_data, n_uid, n_mid, n_cat = load_dien_data(args.data_dir)
 

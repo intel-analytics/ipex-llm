@@ -27,7 +27,7 @@ import org.apache.spark.{SPARK_VERSION, SparkConf, SparkContext, SparkException}
 import sys.env
 
 /**
- * [[NNContext]] wraps a spark context in Analytics Zoo.
+ * [[NNContext]] wraps a spark context in BigDL.
  *
  */
 object NNContext {

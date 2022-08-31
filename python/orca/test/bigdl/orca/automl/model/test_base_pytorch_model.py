@@ -158,7 +158,7 @@ class TestBasePytorchModel(TestCase):
         modelBuilder = PytorchModelBuilder(model_creator=model_creator,
                                            optimizer_creator=optimizer_creator,
                                            loss_creator=loss_creator)
-        with pytest.raises(ValueError):
+        with pytest.raises(RuntimeError):
             model = modelBuilder.build(config={
                 "lr": 1e-2,
                 "batch_size": 32,

@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.ppml.fl.nn
 
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.ppml.fl.FLContext
 import com.intel.analytics.bigdl.ppml.fl.algorithms.{FGBoostRegression, VFLLogisticRegression}
 import com.intel.analytics.bigdl.ppml.fl.utils.{FlContextForTest, TensorUtils}
@@ -23,19 +24,21 @@ import org.apache.log4j.LogManager
 
 import scala.io.Source
 
-class MockClient(dataPath: String,
+class MockClient(clientId: String,
+                 dataPath: String,
                  featureColumns: Array[String] = null,
                  labelColumns: Array[String] = null,
-                 learningRate: Float = 0.005f) extends Thread {
+                 learningRate: Float = 0.005f,
+                 target: String = null) extends Thread {
 
   val logger = LogManager.getLogger(getClass)
   val testFlContext = new FlContextForTest()
-  testFlContext.initFLContext()
+  testFlContext.initFLContext(clientId, target)
   override def run(): Unit = {
     rawDataPipeline()
   }
 
-  def rawDataPipeline() = {
+  def rawDataPipeline(): Array[Activity] = {
     val sources = Source.fromFile(dataPath, "utf-8").getLines()
     val spark = FLContext.getSparkSession()
     val dfTrain = spark.read.option("header", "true").csv(dataPath)

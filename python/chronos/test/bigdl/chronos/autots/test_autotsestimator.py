@@ -25,6 +25,11 @@ from bigdl.chronos.autots import AutoTSEstimator, TSPipeline
 from bigdl.chronos.data import TSDataset
 from bigdl.orca.automl import hp
 import pandas as pd
+import tensorflow as tf
+import onnxruntime
+
+_onnxrt_ver = onnxruntime.__version__ != '1.6.0' #  Jenkins requires 1.6.0(chronos)
+skip_onnxrt = pytest.mark.skipif(_onnxrt_ver, reason="Only runs when onnxrt is 1.6.0")
 
 
 def get_ts_df():
@@ -47,15 +52,23 @@ def get_tsdataset():
                                  id_col="id")
 
 
-def get_data_creator():
-    def data_creator(config):
-        tsdata = get_tsdataset()
-        x, y = tsdata.roll(lookback=7, horizon=1).to_numpy()
-        return DataLoader(TensorDataset(torch.from_numpy(x).float(),
-                                        torch.from_numpy(y).float()),
-                          batch_size=config["batch_size"],
-                          shuffle=True)
-    return data_creator
+def get_data_creator(backend="torch"):
+    if backend == "torch":
+        def data_creator(config):
+            tsdata = get_tsdataset()
+            x, y = tsdata.roll(lookback=7, horizon=1).to_numpy()
+            return DataLoader(TensorDataset(torch.from_numpy(x).float(),
+                                            torch.from_numpy(y).float()),
+                            batch_size=config["batch_size"],
+                            shuffle=True)
+        return data_creator
+    if backend == "keras":
+        def data_creator(config):
+            tsdata = get_tsdataset()
+            tsdata.roll(lookback=7, horizon=1)
+            return tsdata.to_tf_dataset(batch_size=config["batch_size"],
+                                        shuffle=True)
+        return data_creator
 
 
 class CustomizedNet(nn.Module):
@@ -87,12 +100,34 @@ class CustomizedNet(nn.Module):
         return x
 
 
-def model_creator(config):
+def model_creator_pytorch(config):
+    '''
+    Pytorch customized model creator
+    '''
     return CustomizedNet(dropout=config["dropout"],
                          input_size=config["past_seq_len"],
                          input_feature_num=config["input_feature_num"],
                          hidden_dim=config["hidden_dim"],
                          output_size=config["output_feature_num"])
+
+
+def model_creator_keras(config):
+    '''
+    Keras(tf2) customized model creator
+    '''
+    from bigdl.nano.tf.keras import Sequential
+    model = Sequential([
+                tf.keras.layers.Input(shape=(config["past_seq_len"], config["input_feature_num"])),
+                tf.keras.layers.Dense(config["hidden_dim"], activation='relu'),
+                tf.keras.layers.Dropout(config["dropout"]),
+                tf.keras.layers.Dense(config["output_feature_num"], activation='softmax')
+            ])
+    learning_rate = config.get('lr', 1e-3)
+    optimizer = getattr(tf.keras.optimizers, config.get('optim', "Adam"))(learning_rate)
+    model.compile(loss=config.get("loss", "mse"),
+                  optimizer=optimizer,
+                  metrics=[config.get("metric", "mse")])
+    return model
 
 
 class TestAutoTrainer(TestCase):
@@ -115,7 +150,7 @@ class TestAutoTrainer(TestCase):
             'dropout': hp.uniform(0.1, 0.2)
         }
 
-        auto_estimator = AutoTSEstimator(model=model_creator,
+        auto_estimator = AutoTSEstimator(model=model_creator_pytorch,
                                          search_space=search_space,
                                          past_seq_len=hp.randint(4, 6),
                                          future_seq_len=1,
@@ -163,6 +198,31 @@ class TestAutoTrainer(TestCase):
         # use tspipeline to incrementally train
         new_ts_pipeline.fit(tsdata_valid)
 
+    @pytest.mark.skipif(tf.__version__ < '2.0.0', reason="run only when tf>2.0.0")
+    def test_fit_third_party_feature_tf2(self):
+        search_space = {'hidden_dim': hp.grid_search([32, 64]),
+                        'layer_num': hp.randint(1, 3),
+                        'dropout': hp.uniform(0.1, 0.2)}
+        auto_estimator = AutoTSEstimator(model=model_creator_keras,
+                                         search_space=search_space,
+                                         past_seq_len=7,
+                                         future_seq_len=1,
+                                         input_feature_num=None,
+                                         output_target_num=None,
+                                         selected_features="auto",
+                                         metric="mse",
+                                         backend="keras",
+                                         logs_dir="/tmp/auto_trainer",
+                                         cpus_per_trial=2,
+                                         name="auto_trainer")
+        auto_estimator.fit(data=get_tsdataset(),
+                           epochs=1,
+                           batch_size=hp.choice([32, 64]),
+                           validation_data=get_tsdataset(),
+                           n_sampling=1)
+        config = auto_estimator.get_best_config()
+        assert config["past_seq_len"] == 7
+
     def test_fit_third_party_data_creator(self):
         input_feature_dim = 4
         output_feature_dim = 2  # 2 targets are generated in get_tsdataset
@@ -172,7 +232,7 @@ class TestAutoTrainer(TestCase):
             'dropout': hp.uniform(0.1, 0.2)
         }
 
-        auto_estimator = AutoTSEstimator(model=model_creator,
+        auto_estimator = AutoTSEstimator(model=model_creator_pytorch,
                                          search_space=search_space,
                                          past_seq_len=7,
                                          future_seq_len=1,
@@ -189,6 +249,31 @@ class TestAutoTrainer(TestCase):
                            validation_data=get_data_creator(),
                            n_sampling=1)
 
+        config = auto_estimator.get_best_config()
+        assert config["past_seq_len"] == 7
+
+    @pytest.mark.skipif(tf.__version__ < '2.0.0', reason="run only when tf>2.0.0")
+    def test_fit_third_party_data_creator_tf2(self):
+        search_space = {'hidden_dim': hp.grid_search([32, 64]),
+                        'layer_num': hp.randint(1, 3),
+                        'dropout': hp.uniform(0.1, 0.2)}
+        auto_estimator = AutoTSEstimator(model=model_creator_keras,
+                                         search_space=search_space,
+                                         past_seq_len=7,
+                                         future_seq_len=1,
+                                         input_feature_num=4,
+                                         output_target_num=2,
+                                         selected_features="auto",
+                                         metric="mse",
+                                         backend="keras",
+                                         logs_dir="/tmp/auto_trainer",
+                                         cpus_per_trial=2,
+                                         name="auto_trainer")
+        auto_estimator.fit(data=get_data_creator(backend="keras"),
+                           epochs=1,
+                           batch_size=hp.choice([32, 64]),
+                           validation_data=get_data_creator(backend="keras"),
+                           n_sampling=1)
         config = auto_estimator.get_best_config()
         assert config["past_seq_len"] == 7
 
@@ -226,6 +311,7 @@ class TestAutoTrainer(TestCase):
         best_model = auto_estimator._get_best_automl_model()
         assert 4 <= best_config["past_seq_len"] <= 6
 
+    @skip_onnxrt
     def test_fit_lstm_feature(self):
         from sklearn.preprocessing import StandardScaler
         scaler = StandardScaler()
@@ -292,6 +378,7 @@ class TestAutoTrainer(TestCase):
         # use tspipeline to incrementally train
         new_ts_pipeline.fit(tsdata_valid)
 
+    @skip_onnxrt
     def test_fit_tcn_feature(self):
         from sklearn.preprocessing import StandardScaler
         scaler = StandardScaler()
@@ -359,6 +446,7 @@ class TestAutoTrainer(TestCase):
         # use tspipeline to incrementally train
         new_ts_pipeline.fit(tsdata_valid)
 
+    @skip_onnxrt
     def test_fit_seq2seq_feature(self):
         from sklearn.preprocessing import StandardScaler
         scaler = StandardScaler()

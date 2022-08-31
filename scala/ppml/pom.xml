@@ -12,11 +12,22 @@
     <packaging>jar</packaging>
 
     <properties>
-        <spark-scope>provided</spark-scope>
         <grpc.version>1.37.0</grpc.version>
+        <bigdl.basedir>${project.parent.basedir}</bigdl.basedir>
+        <parquet.version>1.12.2</parquet.version>
     </properties>
 
-
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.azure</groupId>
+                <artifactId>azure-sdk-bom</artifactId>
+                <version>1.2.4</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
@@ -38,10 +49,6 @@
                     <artifactId>jersey-media-jaxb</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.codehaus.jackson</groupId>
-                    <artifactId>jackson-mapper-asl</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
                     <artifactId>jackson-databind</artifactId>
                 </exclusion>
@@ -49,7 +56,34 @@
                     <groupId>xerces</groupId>
                     <artifactId>xercesImpl</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.apache.parquet</groupId>
+                    <artifactId>parquet-column</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.parquet</groupId>
+                    <artifactId>parquet-hadoop</artifactId>
+                </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.parquet</groupId>
+            <artifactId>parquet-hadoop</artifactId>
+            <version>${parquet.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.parquet</groupId>
+            <artifactId>parquet-hadoop</artifactId>
+            <version>${parquet.version}</version>
+            <scope>${spark-scope}</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.parquet</groupId>
+            <artifactId>parquet-column</artifactId>
+            <version>${parquet.version}</version>
+            <scope>${spark-scope}</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
@@ -67,11 +101,11 @@
             <version>${log4j.version}</version>
         </dependency>
 
-	<dependency>
-	    <groupId>com.google.guava</groupId>
-	    <artifactId>guava</artifactId>
-	    <version>31.0.1-jre</version>
-	</dependency>
+	    <dependency>
+	        <groupId>com.google.guava</groupId>
+	        <artifactId>guava</artifactId>
+	        <version>31.0.1-jre</version>
+	    </dependency>
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-api</artifactId>
@@ -104,6 +138,16 @@
             <version>${grpc.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20220320</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.13</version>
+        </dependency>
+        <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
             <version>3.15.8</version>
@@ -118,11 +162,6 @@
                     <artifactId>gson</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>commons-cli</groupId>
-            <artifactId>commons-cli</artifactId>
-            <version>1.4</version>
         </dependency>
         <dependency>
             <groupId>org.scalatest</groupId>
@@ -140,6 +179,12 @@
             <groupId>com.intel.analytics.bigdl</groupId>
             <artifactId>bigdl-dllib-spark_${spark.version}</artifactId>
             <version>2.1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.intel.analytics.bigdl.core.dist</groupId>
+            <artifactId>all</artifactId>
+            <version>2.1.0-SNAPSHOT</version>
+            <scope>${bigdl-core-all-scope}</scope>
         </dependency>
         <dependency>
             <groupId>com.intel.analytics.bigdl</groupId>
@@ -167,7 +212,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
-            <version>2.12.2</version>
+            <version>${jackson.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
@@ -185,6 +230,65 @@
             <version>1.1.2</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-security-keyvault-keys</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-annotations</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.datatype</groupId>
+                    <artifactId>jackson-datatype-jsr310</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.dataformat</groupId>
+                    <artifactId>jackson-dataformat-xml</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.projectreactor</groupId>
+                    <artifactId>reactor-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-identity</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core</artifactId>
+        </dependency>
+
     </dependencies>
     <build>
         <extensions>
@@ -233,7 +337,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <configuration>
-
                     <filters>
                         <filter>
                             <artifact>*:*</artifact>
@@ -244,11 +347,10 @@
                             </excludes>
                         </filter>
                     </filters>
-
                 </configuration>
                 <executions>
                     <execution>
-                        <id>ppml</id>
+                        <id>without-spark</id>
                         <phase>package</phase>
                         <goals>
                             <goal>shade</goal>
@@ -259,13 +361,13 @@
                             <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-			    </transformers>
-			    <relocations>
-                          	<relocation>
-                          	    <pattern>com.google.protobuf</pattern>
-                          	    <shadedPattern>shaded.com.google.protobuf</shadedPattern>
+			                </transformers>
+			                <relocations>
+                          	    <relocation>
+                          	        <pattern>com.google.protobuf</pattern>
+                          	        <shadedPattern>shaded.com.google.protobuf</shadedPattern>
                                 </relocation>
-			    </relocations>
+			                </relocations>
                         </configuration>
                     </execution>
                 </executions>
@@ -300,6 +402,42 @@
                     <target>8</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>python</id>
+                        <inherited>false</inherited>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>${project.basedir}/../../python/ppml/src/python-zip.xml
+                                </descriptor>
+                            </descriptors>
+                        </configuration>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+
+     <profiles>
+        <profile>
+            <id>linux</id>
+            <properties>
+              <bigdl-core-all-scope>provided</bigdl-core-all-scope>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>mac</id>
+            <properties>
+              <bigdl-core-all-scope>provided</bigdl-core-all-scope>
+            </properties>
+        </profile>
+    </profiles>
 </project>

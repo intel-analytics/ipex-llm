@@ -15,10 +15,15 @@
 #
 from torch.utils.data import Dataset, DataLoader
 import torch
+import tensorflow as tf
 import numpy as np
 from unittest import TestCase
 import pytest
 import tempfile
+import onnxruntime
+
+_onnxrt_ver = onnxruntime.__version__ != '1.6.0' #  Jenkins requires 1.6.0(chronos)
+skip_onnxrt = pytest.mark.skipif(_onnxrt_ver, reason="Only runs when onnxrt is 1.6.0")
 
 from bigdl.chronos.autots.model.auto_lstm import AutoLSTM
 from bigdl.orca.automl import hp
@@ -60,12 +65,13 @@ def valid_dataloader_creator(config):
                       shuffle=True)
 
 
-def get_auto_estimator():
+def get_auto_estimator(backend='torch'):
+    loss = "mse" if backend.startswith('keras') else torch.nn.MSELoss()
     auto_lstm = AutoLSTM(input_feature_num=input_feature_dim,
                          output_target_num=output_feature_dim,
                          past_seq_len=5,
                          optimizer='Adam',
-                         loss=torch.nn.MSELoss(),
+                         loss=loss,
                          metric="mse",
                          hidden_dim=hp.grid_search([32, 64]),
                          layer_num=hp.randint(1, 3),
@@ -73,6 +79,7 @@ def get_auto_estimator():
                          dropout=hp.uniform(0.1, 0.2),
                          logs_dir="/tmp/auto_lstm",
                          cpus_per_trial=2,
+                         backend=backend,
                          name="auto_lstm")
     return auto_lstm
 
@@ -87,7 +94,8 @@ class TestAutoLSTM(TestCase):
         stop_orca_context()
 
     def test_fit_np(self):
-        auto_lstm = get_auto_estimator()
+        # torch
+        auto_lstm = get_auto_estimator(backend='torch')
         auto_lstm.fit(data=get_x_y(size=1000),
                       epochs=1,
                       batch_size=hp.choice([32, 64]),
@@ -95,6 +103,20 @@ class TestAutoLSTM(TestCase):
                       n_sampling=1)
         assert auto_lstm.get_best_model()
         best_config = auto_lstm.get_best_config()
+        assert 0.1 <= best_config['dropout'] <= 0.2
+        assert best_config['batch_size'] in (32, 64)
+        assert 1 <= best_config['layer_num'] < 3
+
+    @pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf > 2.0.0.")
+    def test_fit_np_keras(self):
+        keras_auto_lstm = get_auto_estimator(backend='keras')
+        keras_auto_lstm.fit(data=get_x_y(size=1000),
+                            epochs=2,
+                            batch_size=hp.choice([32, 64]),
+                            validation_data=get_x_y(size=400),
+                            n_sampling=1)
+        assert keras_auto_lstm.get_best_model()
+        best_config = keras_auto_lstm.get_best_config()
         assert 0.1 <= best_config['dropout'] <= 0.2
         assert best_config['batch_size'] in (32, 64)
         assert 1 <= best_config['layer_num'] < 3
@@ -122,6 +144,7 @@ class TestAutoLSTM(TestCase):
         auto_lstm.predict(test_data_x)
         auto_lstm.evaluate((test_data_x, test_data_y))
 
+    @skip_onnxrt
     def test_onnx_methods(self):
         auto_lstm = get_auto_estimator()
         auto_lstm.fit(data=train_dataloader_creator(config={"batch_size": 64}),
@@ -141,6 +164,7 @@ class TestAutoLSTM(TestCase):
         except ImportError:
             pass
 
+    @skip_onnxrt
     def test_save_load(self):
         auto_lstm = get_auto_estimator()
         auto_lstm.fit(data=train_dataloader_creator(config={"batch_size": 64}),
@@ -162,6 +186,21 @@ class TestAutoLSTM(TestCase):
             np.testing.assert_almost_equal(eval_res, eval_res_onnx, decimal=5)
         except ImportError:
             pass
+
+    @pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf > 2.0.0.")
+    def test_save_load_keras(self):
+        auto_keras_lstm = get_auto_estimator(backend='keras')
+        auto_keras_lstm.fit(data=get_x_y(size=1000),
+                            epochs=2,
+                            batch_size=hp.choice([32, 64]),
+                            validation_data=get_x_y(size=400),
+                            n_sampling=1)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            auto_keras_lstm.save(tmp_dir_name)
+            auto_keras_lstm.load(tmp_dir_name)
+        test_data_x, test_data_y = get_x_y(size=100)
+        pred = auto_keras_lstm.predict(test_data_x)
+        eval_res = auto_keras_lstm.evaluate((test_data_x, test_data_y))
 
 if __name__ == "__main__":
     pytest.main([__file__])

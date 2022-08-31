@@ -16,7 +16,7 @@ It is worth mentioning that you can run the components without using sgx by sett
 
 You need to [generate secure keys and password][keysNpassword]. Modify the `OUTPUT` in both `../../../../scripts/generate-keys.sh` and `../../../../scripts/generate-password.sh` to your present working directory, and run both scripts. Then, run
 
-``` bash
+```bash
 kubectl apply -f ../../../../scripts/keys/keys.yaml
 kubectl apply -f ../../../../scripts/password/password.yaml
 ```

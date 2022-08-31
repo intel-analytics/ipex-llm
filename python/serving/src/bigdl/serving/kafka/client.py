@@ -17,6 +17,7 @@ from kafka import KafkaProducer, KafkaConsumer
 from kafka.errors import kafka_errors
 import json
 from bigdl.serving.schema import *
+from bigdl.serving.log4Error import invalidInputError
 
 
 RESULT_PREFIX = "cluster-serving_"
@@ -112,7 +113,7 @@ class OutputQueue:
         c = a.read_buffer()
         myreader = pa.ipc.open_stream(c)
         r = [i for i in myreader]
-        assert len(r) > 0
+        invalidInputError(len(r) > 0, f"expect len(r) be positive, but got ${len(r)}")
         if len(r) == 1:
             return self.get_ndarray_from_record_batch(r[0])
         else:

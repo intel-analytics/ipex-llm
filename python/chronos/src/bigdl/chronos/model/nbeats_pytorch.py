@@ -50,6 +50,7 @@ from torch.nn.functional import mse_loss, l1_loss, binary_cross_entropy, cross_e
 from torch.optim import Optimizer
 
 from .utils import PYTORCH_REGRESSION_LOSS_MAP
+from pytorch_lightning import seed_everything
 
 
 class NBeatsNet(nn.Module):
@@ -65,8 +66,10 @@ class NBeatsNet(nn.Module):
                  thetas_dim=(4, 8),
                  share_weights_in_stack=False,
                  hidden_layer_units=256,
-                 nb_harmonics=None):
+                 nb_harmonics=None,
+                 seed=None):
         super(NBeatsNet, self).__init__()
+        seed_everything(seed, workers=True)
         self.future_seq_len = future_seq_len
         self.past_seq_len = past_seq_len
         self.hidden_layer_units = hidden_layer_units
@@ -114,7 +117,8 @@ class NBeatsNet(nn.Module):
 
 def seasonality_model(thetas, t):
     p = thetas.size()[-1]
-    assert p <= thetas.shape[1], 'thetas_dim is too big.'
+    from bigdl.nano.utils.log4Error import invalidInputError
+    invalidInputError(p <= thetas.shape[1], 'thetas_dim is too big.')
     p1, p2 = (p // 2, p // 2) if p % 2 == 0 else (p // 2, p // 2 + 1)
     s1 = torch.tensor([np.cos(2 * np.pi * i * t) for i in range(p1)]).float()  # H/2-1
     s2 = torch.tensor([np.sin(2 * np.pi * i * t) for i in range(p2)]).float()
@@ -124,7 +128,8 @@ def seasonality_model(thetas, t):
 
 def trend_model(thetas, t):
     p = thetas.size()[-1]
-    assert p <= 4, 'thetas_dim is too big.'
+    from bigdl.nano.utils.log4Error import invalidInputError
+    invalidInputError(p <= 4, 'thetas_dim is too big.')
     T = torch.tensor([t ** i for i in range(p)]).float()
     return thetas.mm(T)
 
@@ -243,8 +248,10 @@ def loss_creator(config):
     if loss_name in PYTORCH_REGRESSION_LOSS_MAP:
         loss_name = PYTORCH_REGRESSION_LOSS_MAP[loss_name]
     else:
-        raise RuntimeError(f"Got '{loss_name}' for loss name, "
-                           "where 'mse', 'mae' or 'huber_loss' is expected")
+        from bigdl.nano.utils.log4Error import invalidInputError
+        invalidInputError(False,
+                          f"Got '{loss_name}' for loss name, "
+                          "where 'mse', 'mae' or 'huber_loss' is expected")
     return getattr(torch.nn, loss_name)()
 
 

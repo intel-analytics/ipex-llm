@@ -36,6 +36,7 @@ import ray
 from contextlib import closing
 import logging
 import socket
+from bigdl.dllib.utils.log4Error import *
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +104,7 @@ class TFRunner:
             world_size (int): the total number of runners.
         """
         import tensorflow.compat.v1 as tf
-        assert len(urls) == world_size
+        invalidInputError(len(urls) == world_size, "expect len(urls) == word_size")
         tf_config = {
             "cluster": {
                 "worker": urls

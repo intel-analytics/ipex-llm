@@ -66,15 +66,15 @@ class TestAEDetector(TestCase):
     def test_corner_cases(self):
         y = self.create_data()
         ad = AEDetector(roll_len=314, backend="dummy")
-        with pytest.raises(ValueError):
+        with pytest.raises(RuntimeError):
             ad.fit(y)
         ad = AEDetector(roll_len=314)
         with pytest.raises(RuntimeError):
             ad.score()
         y = np.array([1])
-        with pytest.raises(ValueError):
+        with pytest.raises(RuntimeError):
             ad.fit(y)
         y = self.create_data()
         y = y.reshape(2, -1)
-        with pytest.raises(ValueError):
+        with pytest.raises(RuntimeError):
             ad.fit(y)

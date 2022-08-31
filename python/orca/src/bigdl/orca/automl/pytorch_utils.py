@@ -15,6 +15,7 @@
 #
 
 import torch
+from bigdl.dllib.utils.log4Error import *
 
 PYTORCH_LOSS_NAMES = {s for s in dir(torch.nn.modules) if s.endswith("Loss")}
 PYTORCH_OPTIM_NAMES = {s for s in dir(torch.optim) if any(c.isupper() for c in s)} - {'Optimizer'}
@@ -30,14 +31,16 @@ def validate_pytorch_loss(loss):
     if isinstance(loss, str):
         if loss in PYTORCH_LOSS_NAMES:
             return getattr(torch.nn.modules, loss)()
-        raise ValueError(f'Must provide a valid torch loss name among {PYTORCH_LOSS_NAMES}')
+        invalidInputError(False,
+                          f'Must provide a valid torch loss name among {PYTORCH_LOSS_NAMES}')
 
     if isinstance(loss, torch.nn.modules.loss._Loss) or \
             isinstance(loss, types.FunctionType):
         return loss
 
-    raise ValueError("Must provide a valid pytorch loss name or a pytorch loss instance"
-                     "or a pytorch loss creator function.")
+    invalidInputError(False,
+                      "Must provide a valid pytorch loss name or a pytorch loss instance"
+                      "or a pytorch loss creator function.")
 
 
 def validate_pytorch_optim(optim):
@@ -45,10 +48,12 @@ def validate_pytorch_optim(optim):
     if isinstance(optim, str):
         if optim in PYTORCH_OPTIM_NAMES:
             return getattr(torch.optim, optim)
-        raise ValueError(f'Must provide a valid torch optimizer name among {PYTORCH_OPTIM_NAMES}')
+        invalidInputError(False,
+                          f'Must provide a valid torch optimizer name among {PYTORCH_OPTIM_NAMES}')
 
     if isinstance(optim, types.FunctionType):
         return optim
 
-    raise ValueError("Must provide a valid pytorch optimizer name "
-                     "or a pytorch optimizer creator function.")
+    invalidInputError(False,
+                      "Must provide a valid pytorch optimizer name "
+                      "or a pytorch optimizer creator function.")

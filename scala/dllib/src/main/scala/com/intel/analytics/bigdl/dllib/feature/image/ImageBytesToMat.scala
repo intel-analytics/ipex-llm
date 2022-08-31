@@ -28,7 +28,7 @@ import org.opencv.imgcodecs.Imgcodecs
  *              By default is Imgcodecs.CV_LOAD_IMAGE_UNCHANGED
  */
 class ImageBytesToMat(byteKey: String = ImageFeature.bytes,
-                      imageCodec: Int = Imgcodecs.CV_LOAD_IMAGE_UNCHANGED) extends ImageProcessing {
+                      imageCodec: Int = Imgcodecs.IMREAD_UNCHANGED) extends ImageProcessing {
 
   override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
     prev.map(transform(_))
@@ -43,7 +43,7 @@ object ImageBytesToMat {
   val logger = LogManager.getLogger(getClass)
 
   def apply(byteKey: String = ImageFeature.bytes,
-            imageCodec: Int = Imgcodecs.CV_LOAD_IMAGE_UNCHANGED): ImageBytesToMat =
+            imageCodec: Int = Imgcodecs.IMREAD_UNCHANGED): ImageBytesToMat =
     new ImageBytesToMat(byteKey, imageCodec)
 
   def transform(feature: ImageFeature, byteKey: String, imageCodec: Int): ImageFeature = {
@@ -60,7 +60,7 @@ object ImageBytesToMat {
       case e: Exception =>
         e.printStackTrace()
         val uri = feature.uri()
-        logger.error(s"The convertion from bytes to mat fails for $uri")
+        logger.info(s"The convertion from bytes to mat fails for $uri")
         feature(ImageFeature.originalSize) = (-1, -1, -1)
         feature.isValid = false
     }

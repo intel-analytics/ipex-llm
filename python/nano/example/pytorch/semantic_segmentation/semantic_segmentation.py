@@ -45,7 +45,7 @@ import pytorch_lightning as pl
 from pl_examples import cli_lightning_logo
 from pl_examples.domain_templates.unet import UNet
 from pytorch_lightning.utilities.argparse import from_argparse_args
-from bigdl.nano.pytorch.trainer import Trainer
+from bigdl.nano.pytorch import Trainer
 
 DEFAULT_VOID_LABELS = (0, 1, 2, 3, 4, 5, 6, 9, 10, 14, 15, 16, 18, 29, 30, -1)
 DEFAULT_VALID_LABELS = (7, 8, 11, 12, 13, 17, 19, 20,
@@ -291,7 +291,7 @@ class SegModel(pl.LightningModule):
 
     @classmethod
     def from_argparse_args(cls, args: Union[Namespace, ArgumentParser], **kwargs):
-        return from_argparse_args(cls, args, **kwargs)
+        return from_argparse_args(cls, args, **kwargs)  # type: ignore
 
 
 def main(hparams: Namespace):

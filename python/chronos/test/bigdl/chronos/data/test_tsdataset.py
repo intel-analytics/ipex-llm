@@ -21,7 +21,7 @@ import tempfile
 import os
 import shutil
 
-from bigdl.orca.test_zoo_utils import ZooTestCase
+from unittest import TestCase
 from bigdl.chronos.data import TSDataset
 
 from pandas.testing import assert_frame_equal
@@ -64,9 +64,9 @@ def get_ugly_ts_df():
     return df
 
 
-def get_int_target_df():
+def get_int_target_df(freq="D"):
     sample_num = np.random.randint(100, 200)
-    train_df = pd.DataFrame({"datetime": pd.date_range('1/1/2019', periods=sample_num),
+    train_df = pd.DataFrame({"datetime": pd.date_range('1/1/2019', periods=sample_num, freq=freq),
                              "value": np.array(sample_num),
                              "id": np.array(['00']*sample_num),
                              "extra feature": np.random.randn(sample_num)})
@@ -97,7 +97,7 @@ def get_not_aligned_df():
     return df
 
 
-class TestTSDataset(ZooTestCase):
+class TestTSDataset(TestCase):
     def setup_method(self, method):
         pass
 
@@ -133,19 +133,19 @@ class TestTSDataset(ZooTestCase):
         assert tsdata._is_pd_datetime
 
         # illegal input
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col=["value"],
                                            extra_feature_col="extra feature", id_col=0)
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata = TSDataset.from_pandas(df, dt_col=0, target_col=["value"],
                                            extra_feature_col="extra feature", id_col="id")
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col=0,
                                            extra_feature_col="extra feature", id_col="id")
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata = TSDataset.from_pandas(0, dt_col="datetime", target_col=["value"],
                                            extra_feature_col="extra feature", id_col="id")
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col=["value1"],
                                            extra_feature_col="extra feature", id_col="id")
 
@@ -198,19 +198,19 @@ class TestTSDataset(ZooTestCase):
         assert tsdata._is_pd_datetime
 
         # illegael input
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col=["value"],
                                            extra_feature_col="extra feature", id_col=0)
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata = TSDataset.from_pandas(df, dt_col=0, target_col=["value"],
                                            extra_feature_col="extra feature", id_col="id")
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col=0,
                                            extra_feature_col="extra feature", id_col="id")
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata = TSDataset.from_pandas(0, dt_col="datetime", target_col=["value"],
                                            extra_feature_col="extra feature", id_col="id")
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col=["value1"],
                                            extra_feature_col="extra feature", id_col="id")
 
@@ -352,6 +352,64 @@ class TestTSDataset(ZooTestCase):
         assert y.dtype == np.float32
         tsdata._check_basic_invariants()
 
+    def test_tsdata_roll_timeenc(self):
+        horizon = random.randint(1, 9)
+        lookback = random.randint(10, 20)
+        for freq in ["D", "2D"]:
+            df = get_int_target_df(freq=freq)
+            tsdata = TSDataset.from_pandas(df, dt_col='datetime', target_col='value', id_col="id")
+            x, y, x_time, y_time =\
+                tsdata.roll(lookback=lookback, horizon=horizon,
+                            time_enc=True, label_len=lookback-horizon).to_numpy()
+            assert x.shape[1:] == (lookback, 1)
+            assert y.shape[1:] == (lookback, 1)
+            assert x_time.shape[1:] == (lookback, 3)
+            assert y_time.shape[1:] == (lookback, 3)
+
+    def test_tsdata_roll_timeenc_predict(self):
+        horizon = 10
+        lookback = random.randint(10, 20)
+        df = get_int_target_df()
+        len_df = len(df)
+        tsdata = TSDataset.from_pandas(df, dt_col='datetime', target_col='value', id_col="id")
+        x, y, x_time, y_time =\
+            tsdata.roll(lookback=lookback, horizon=horizon,
+                        time_enc=True, label_len=5, is_predict=True).to_numpy()
+        assert x.shape[1:] == (lookback, 1)
+        assert y.shape[1:] == (5, 1)
+        assert x_time.shape[1:] == (lookback, 3)
+        assert y_time.shape[1:] == (15, 3)
+        assert x.shape[0] == y.shape[0] == x_time.shape[0] == y_time.shape[0] == len(df) - lookback + 1
+
+    def test_tsdata_roll_timeenc_to_torch_data_loader(self):
+        horizon = random.randint(1, 9)
+        lookback = random.randint(10, 20)
+        df = get_int_target_df()
+        tsdata = TSDataset.from_pandas(df, dt_col='datetime', target_col='value', id_col="id")
+        dataloader =\
+            tsdata.to_torch_data_loader(roll=True, lookback=lookback, horizon=horizon,
+                        time_enc=True, label_len=lookback-horizon)
+        x, y, x_time, y_time = next(iter(dataloader))
+        assert x.shape[1:] == (lookback, 1)
+        assert y.shape[1:] == (lookback, 1)
+        assert x_time.shape[1:] == (lookback, 3)
+        assert y_time.shape[1:] == (lookback, 3)
+    
+    def test_tsdata_roll_timeenc_to_torch_data_loader_predict(self):
+        horizon = 10
+        lookback = random.randint(10, 20)
+        df = get_int_target_df()
+        tsdata = TSDataset.from_pandas(df, dt_col='datetime', target_col='value', id_col="id")
+        dataloader =\
+            tsdata.to_torch_data_loader(roll=True, lookback=lookback, horizon=horizon,
+                        time_enc=True, label_len=5, is_predict=True, batch_size=len(df))
+        x, y, x_time, y_time = next(iter(dataloader))
+        assert x.shape[1:] == (lookback, 1)
+        assert y.shape[1:] == (5, 1)
+        assert x_time.shape[1:] == (lookback, 3)
+        assert y_time.shape[1:] == (15, 3)
+        assert x.shape[0] == y.shape[0] == x_time.shape[0] == y_time.shape[0] == len(df) - lookback + 1
+
     def test_tsdataset_to_torch_loader_roll(self):
         df_single_id = get_ts_df()
         df_multi_id = get_multi_id_ts_df()
@@ -444,6 +502,16 @@ class TestTSDataset(ZooTestCase):
             assert tuple(x_batch.size()) == (batch_size, lookback, 2)
             assert tuple(y_batch.size()) == (batch_size, horizon, 1)
             break
+
+    def test_tsdataset_to_torch_loader_lessthansample(self):
+        lookback = 96
+        horizon = 48
+        df = pd.DataFrame(np.random.randint(1, 10, size=(100, 1)), columns=["target"])
+        df.insert(0, "datetime", pd.date_range(start="2022-7-22", periods=100, freq="H"))
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="target")
+        with pytest.raises(RuntimeError):
+            tsdata.to_torch_data_loader(roll=True, lookback=lookback, horizon=horizon)
+
 
     def test_tsdata_multi_unscale_numpy_torch_load(self):
         lookback = random.randint(1, 10)
@@ -913,13 +981,13 @@ class TestTSDataset(ZooTestCase):
                                                             test_ratio=0.1)
         from sklearn.preprocessing import StandardScaler
         stand = StandardScaler()
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             for tsdata in [td_train, td_valid, td_test]:
                 tsdata.scale(stand, fit=False)
             tsdata._check_basic_invariants()
 
         # remove due to the possible large cost on test sys
-        # with pytest.raises(AssertionError):
+        # with pytest.raises(RuntimeError):
         #     tsdata.gen_global_feature(settings="minimal")\
         #           .gen_rolling_feature(settings="minimal", window_size=5)
 
@@ -930,11 +998,11 @@ class TestTSDataset(ZooTestCase):
                                        extra_feature_col="extra feature",
                                        id_col="id")
 
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata.resample('2D')
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata.gen_dt_feature()
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata.gen_rolling_feature(settings="minimal", window_size=1000)
 
         tsdata._check_basic_invariants()
@@ -945,7 +1013,7 @@ class TestTSDataset(ZooTestCase):
                                        dt_col="datetime",
                                        extra_feature_col="extra feature",
                                        id_col="id")
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata.roll(lookback=5, horizon=2, id_sensitive=True)
         tsdata._check_basic_invariants()
 
@@ -967,13 +1035,13 @@ class TestTSDataset(ZooTestCase):
                                        extra_feature_col='extra feature',
                                        id_col='id')
 
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata.get_cycle_length(aggregate="normal")
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata.get_cycle_length(aggregate=10)
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata.get_cycle_length(top_k='3')
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata.get_cycle_length(top_k=24)
         
         df = pd.DataFrame({"datetime": pd.date_range('1/1/2019', periods=100),
@@ -997,5 +1065,5 @@ class TestTSDataset(ZooTestCase):
         tsdata = TSDataset.from_pandas(df,
                                        target_col='value',
                                        dt_col='datetime')
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata.get_cycle_length(aggregate='min', top_k=3)

@@ -8,12 +8,19 @@ ARG SPARK_JAR_REPO_URL=your_spark_jar_repo_url
 # stage.1 graphene
 FROM ubuntu:20.04 AS graphene
 
+ARG HTTP_PROXY_HOST
+ARG HTTP_PROXY_PORT
+ARG HTTPS_PROXY_HOST
+ARG HTTPS_PROXY_PORT
+
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     env DEBIAN_FRONTEND=noninteractive apt-get install -y autoconf bison build-essential coreutils gawk git libcurl4-openssl-dev libprotobuf-c-dev protobuf-c-compiler python3-protobuf wget
-RUN git clone https://github.com/analytics-zoo/graphene.git /graphene
+RUN git config --global http.proxy http://$HTTP_PROXY_HOST:$HTTP_PROXY_PORT && \
+    git config --global https.proxy https://$HTTPS_PROXY_HOST:$HTTPS_PROXY_PORT && \
+    git clone https://github.com/analytics-zoo/graphene.git /graphene
 RUN cd /graphene && \
-    git fetch origin branch-0.5 && \
-    git checkout branch-0.5
+    git fetch origin branch-0.7 && \
+    git checkout branch-0.7
 RUN cd /graphene/Pal/src/host/Linux-SGX && \
     git clone https://github.com/intel/SGXDataCenterAttestationPrimitives.git linux-sgx-driver && \
     cd linux-sgx-driver && \
@@ -66,6 +73,7 @@ RUN cd /opt && \
     echo $'\nlog4j.logger.io.netty=ERROR' >> spark-${SPARK_VERSION}/conf/log4j.properties && \
     rm spark-${SPARK_VERSION}/python/lib/pyspark.zip && \
     rm spark-${SPARK_VERSION}/jars/spark-core_2.12-$SPARK_VERSION.jar && \
+    rm spark-${SPARK_VERSION}/jars/spark-launcher_2.12-$SPARK_VERSION.jar && \
     rm spark-${SPARK_VERSION}/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
     rm spark-${SPARK_VERSION}/jars/spark-network-common_2.12-$SPARK_VERSION.jar && \
     rm spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-$SPARK_VERSION.jar && \
@@ -78,14 +86,14 @@ RUN cd /opt && \
     wget $SPARK_JAR_REPO_URL/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
     wget $SPARK_JAR_REPO_URL/spark-network-common_2.12-$SPARK_VERSION.jar && \
     wget $SPARK_JAR_REPO_URL/spark-examples_2.12-$SPARK_VERSION.jar && \
+    wget $SPARK_JAR_REPO_URL/spark-launcher_2.12-$SPARK_VERSION.jar && \
     wget $SPARK_JAR_REPO_URL/pyspark.zip && \
-    wget $SPARK_JAR_REPO_URL/spark-encrypt-io-0.2-SNAPSHOT.jar && \
     mv /opt/spark-core_2.12-$SPARK_VERSION.jar  /opt/spark-${SPARK_VERSION}/jars/spark-core_2.12-$SPARK_VERSION.jar && \
+    mv /opt/spark-launcher_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/jars/spark-launcher_2.12-$SPARK_VERSION.jar && \
     mv /opt/spark-kubernetes_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
     mv /opt/spark-network-common_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/jars/spark-network-common_2.12-$SPARK_VERSION.jar && \
     mv /opt/spark-examples_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-$SPARK_VERSION.jar && \
     mv /opt/pyspark.zip /opt/spark-${SPARK_VERSION}/python/lib/pyspark.zip && \
-    mv /opt/spark-encrypt-io-0.2-SNAPSHOT.jar /opt/spark-${SPARK_VERSION}/examples/jars/spark-encrypt-io.jar && \
     sed -i 's/\#\!\/usr\/bin\/env bash/\#\!\/usr\/bin\/env bash\nset \-x/' /opt/spark-${SPARK_VERSION}/bin/spark-class && \
     rm -f /opt/spark-${SPARK_VERSION}/jars/log4j-1.2.17.jar && \
     rm -f /opt/spark-${SPARK_VERSION}/jars/slf4j-log4j12-1.7.16.jar && \
@@ -118,6 +126,8 @@ RUN cd /opt && \
     make install && \
     protoc --version && \
     cd /opt && \
+    git config --global http.proxy http://$HTTP_PROXY_HOST:$HTTP_PROXY_PORT && \
+    git config --global https.proxy https://$HTTPS_PROXY_HOST:$HTTPS_PROXY_PORT && \    
     git clone https://github.com/analytics-zoo/hadoop.git && \
     cd hadoop && \
     git checkout branch-3.2.0-ppml && \
@@ -218,23 +228,28 @@ COPY --from=spark /opt/scala-2.11.8  /opt/scala-2.11.8
 COPY --from=spark /opt/spark-${SPARK_VERSION} /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}
 COPY --from=spark /opt/spark-${SPARK_VERSION}/examples/src/main/resources /ppml/trusted-big-data-ml/examples/src/main/resources
 COPY --from=bigdl /bigdl-${BIGDL_VERSION} ${BIGDL_HOME}
-ADD ./kms-client /ppml/trusted-big-data-ml/work/kms-client
 
 RUN apt-get update --fix-missing && \
     env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y tzdata && \
     apt-get install -y apt-utils vim curl nano wget unzip git tree zip && \
     apt-get install -y libsm6 make build-essential && \
     apt-get install -y autoconf gawk bison libcurl4-openssl-dev python3-protobuf libprotobuf-c-dev protobuf-c-compiler && \
-    apt-get install -y netcat net-tools
+    apt-get install -y netcat net-tools && \
+    mkdir -p /ppml/trusted-big-data-ml/fl
+
+COPY --from=bigdl /bigdl-${BIGDL_VERSION}/python/start-fl-server.py /ppml/trusted-big-data-ml/fl
 
 #python
-RUN apt-get install -y python3-minimal && \
-    apt-get install -y build-essential python3 python3-setuptools python3-dev python3-pip && \
+RUN apt install software-properties-common -y && \
+    add-apt-repository ppa:deadsnakes/ppa -y && \
+    apt-get install -y python3-minimal build-essential python3.7-distutils python3-apt python3.7 python3-setuptools python3-dev python3-pip libpython3.7 && \
+    rm /usr/bin/python3 && \
+    ln -s /usr/bin/python3.7 /usr/bin/python3 && \
     pip3 install --upgrade pip && \
     pip install setuptools==58.4.0 && \
     pip install --no-cache-dir numpy scipy && \
-    pip install --no-cache-dir --no-binary pandas -I pandas && \
-    pip install --no-cache-dir scikit-learn matplotlib seaborn jupyter wordcloud moviepy requests h5py opencv-python tensorflow && \
+    pip install --no-cache-dir pandas && \
+    pip install --no-cache-dir scikit-learn matplotlib seaborn jupyter wordcloud moviepy requests h5py opencv-python tensorflow==1.15 protobuf==3.19.0 && \
     pip install --no-cache-dir torch==1.8.1 torchvision==0.9.1 -f https://download.pytorch.org/whl/torch_stable.html && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     #Fix tornado await process
@@ -245,10 +260,13 @@ RUN apt-get install -y python3-minimal && \
     pip install --no-cache-dir pyarrow && \
     pip install --no-cache-dir ninja meson && \
     pip install --no-cache-dir psutil && \
-    pip install -r /ppml/trusted-big-data-ml/work/kms-client/requirement.yml && \
     pip install --no-cache-dir dill==0.3.4 && \
     python3 -m pip install toml==0.10.2 click jinja2 && \
-    python3 -m ipykernel.kernelspec
+    python3 -m ipykernel.kernelspec && \
+    rm -rf /usr/lib/python3/dist-packages/protobuf-3.6.1.egg-info && \
+    rm -rf /usr/lib/python3/dist-packages/google/protobuf && \
+    ln -s /usr/lib/x86_64-linux-gnu/libtinfo.so.6 /usr/lib/x86_64-linux-gnu/libtinfo.so.5 && \
+    pip install --no-cache-dir pyyaml
 
 ADD ./bash.manifest.template /ppml/trusted-big-data-ml/bash.manifest.template
 ADD ./Makefile /ppml/trusted-big-data-ml/Makefile
@@ -259,7 +277,7 @@ ADD ./standalone/check-status.sh /ppml/trusted-big-data-ml/standalone/check-stat
 ADD ./standalone/start-spark-standalone-master-sgx.sh /ppml/trusted-big-data-ml/standalone/start-spark-standalone-master-sgx.sh
 ADD ./standalone/start-spark-standalone-worker-sgx.sh /ppml/trusted-big-data-ml/standalone/start-spark-standalone-worker-sgx.sh
 ADD ./standalone/start-spark-standalone-driver-sgx.sh /ppml/trusted-big-data-ml/standalone/start-spark-standalone-driver-sgx.sh
-ADD ./ppml-spark-submit.sh /ppml/trusted-big-data-ml/ppml-spark-submit.sh
+ADD ./bigdl-ppml-submit.sh /ppml/trusted-big-data-ml/bigdl-ppml-submit.sh
 ADD ./tracker.py ./tracker.py
 ADD ./start-scripts /ppml/trusted-big-data-ml/work/start-scripts
 ADD ./test-suites /ppml/trusted-big-data-ml/work/test-suites
@@ -267,19 +285,19 @@ ADD ./_dill.py.patch ./_dill.py.patch
 ADD ./python-uuid.patch ./python-uuid.patch
 ADD ./python-pslinux.patch ./python-pslinux.patch
 
-RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ./tracker.py && \
-    patch /usr/local/lib/python3.8/dist-packages/dill/_dill.py ./_dill.py.patch && \
-    patch /usr/lib/python3.8/uuid.py ./python-uuid.patch && \
-    patch /usr/local/lib/python3.8/dist-packages/psutil/_pslinux.py ./python-pslinux.patch && \
+RUN zip -u ${BIGDL_HOME}/jars/xgboost4j_2.12-1.1.2.jar ./tracker.py && \
+    patch /usr/local/lib/python3.7/dist-packages/dill/_dill.py ./_dill.py.patch && \
+    patch /usr/lib/python3.7/uuid.py ./python-uuid.patch && \
+    patch /usr/local/lib/python3.7/dist-packages/psutil/_pslinux.py ./python-pslinux.patch && \
     wget -P /ppml/trusted-big-data-ml/work/lib https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/libhadoop.so && \
-    cp /usr/lib/x86_64-linux-gnu/libpython3.8.so /usr/lib/libpython3.8.so && \
+    cp /usr/lib/x86_64-linux-gnu/libpython3.7m.so.1 /usr/lib/libpython3.7m.so.1 && \
     sed -i 's/examples/\/ppml\/trusted-big-data-ml\/work\/spark-3.1.2\/examples/' /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/basic.py && \
     sed -i 's/examples/\/ppml\/trusted-big-data-ml\/work\/spark-3.1.2\/examples/' /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/hive.py && \
     sed -i 's/spark-warehouse/\/ppml\/trusted-big-data-ml\/work\/spark-warehouse/' /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/hive.py && \
     chmod a+x /ppml/trusted-big-data-ml/init.sh && \
     chmod a+x /ppml/trusted-big-data-ml/clean.sh && \
     chmod a+x /ppml/trusted-big-data-ml/standalone/* && \
-    chmod a+x /ppml/trusted-big-data-ml/ppml-spark-submit.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/bigdl-ppml-submit.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/* && \
     chmod a+x /ppml/trusted-big-data-ml/work/test-suites/pyspark-e2e-example.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/test-suites/pyspark-simple-examples.sh && \
@@ -291,8 +309,7 @@ RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION
     chmod a+x /ppml/trusted-big-data-ml/work/test-suites/spark-e2e-example.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/test-suites/k8s-spark-pi.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/test-suites/k8s-spark-sql-examples.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/k8s-pyspark-sql-examples.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/work/kms-client/*
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/k8s-pyspark-sql-examples.sh
 
 # kuberenetes support
 ADD ./spark-executor-template.yaml /ppml/trusted-big-data-ml/spark-executor-template.yaml
@@ -306,6 +323,11 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     chmod +x /sbin/tini && \
     cp /sbin/tini /usr/bin/tini
 
+# Azure support
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+ADD azure /ppml/trusted-big-data-ml/azure
+
 WORKDIR /ppml/trusted-big-data-ml
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
+

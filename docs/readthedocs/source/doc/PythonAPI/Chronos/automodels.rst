@@ -5,35 +5,52 @@ AutoTCN
 -------------------------------------------
 
 AutoTCN is a TCN forecasting model with Auto tuning.
-Other API follows its base class(BasePytorchAutomodel).
 
-.. automodule:: bigdl.chronos.autots.model.auto_tcn
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    
+
+.. tabs::
+
+    .. tab:: PyTorch/Tensorflow
+
+        .. automodule:: bigdl.chronos.autots.model.auto_tcn
+            :members:
+            :undoc-members:
+            :show-inheritance:
+            :inherited-members:
+
 
 AutoLSTM
 ----------------------------------------
 
 AutoLSTM is an LSTM forecasting model with Auto tuning.
-Other API follows its base class(BasePytorchAutomodel).
 
-.. automodule:: bigdl.chronos.autots.model.auto_lstm
-    :members:
-    :undoc-members:
-    :show-inheritance:
+
+.. tabs::
+
+    .. tab:: PyTorch/Tensorflow
+
+        .. automodule:: bigdl.chronos.autots.model.auto_lstm
+            :members:
+            :undoc-members:
+            :show-inheritance:
+            :inherited-members:
+
 
 AutoSeq2Seq
 ----------------------------------------
 
 AutoSeq2Seq is an Seq2Seq forecasting model with Auto tuning.
-Other API follows its base class(BasePytorchAutomodel).
 
-.. automodule:: bigdl.chronos.autots.model.auto_seq2seq
-    :members:
-    :undoc-members:
-    :show-inheritance:
+
+.. tabs::
+
+    .. tab:: PyTorch/Tensorflow
+
+        .. automodule:: bigdl.chronos.autots.model.auto_seq2seq
+            :members:
+            :undoc-members:
+            :show-inheritance:
+            :inherited-members:
+
 
 AutoARIMA
 ----------------------------------------
@@ -44,6 +61,8 @@ AutoARIMA is an ARIMA forecasting model with Auto tuning.
     :members:
     :undoc-members:
     :show-inheritance:
+    :inherited-members:
+
 
 AutoProphet
 ----------------------------------------
@@ -54,11 +73,4 @@ AutoProphet is a Prophet forecasting model with Auto tuning.
     :members:
     :undoc-members:
     :show-inheritance:
-
-BasePytorchAutomodel
-------------------------------------------------------------
-AutoLSTM, AutoSeq2Seq and AutoTCN all follow the same API as stated below.
-
-.. autoclass:: bigdl.chronos.autots.model.base_automodel.BasePytorchAutomodel
-    :members:
-    :show-inheritance:
+    :inherited-members:

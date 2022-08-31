@@ -18,6 +18,7 @@ import subprocess
 import shutil
 import glob
 import os
+from bigdl.serving.log4Error import invalidInputError
 
 
 class ClusterServing:
@@ -39,12 +40,13 @@ class ClusterServing:
                 __file__ + "/../../../../../bin/cluster-serving/config.yaml"))
             conf_paths = build_conf_path + prebuilt_conf_path
 
-            assert len(conf_paths) > 0, "No config file is found"
+            invalidInputError(len(conf_paths) > 0, "No config file is found")
             self.conf_path = conf_paths[0]
             print("config path is found at ", self.conf_path)
 
             if not os.path.exists(self.conf_path):
-                raise EOFError("Can not find your config file.")
+                invalidInputError(False,
+                                  "Can not find your config file.")
         else:
             print('Config file found in pip package, copying...')
         try:

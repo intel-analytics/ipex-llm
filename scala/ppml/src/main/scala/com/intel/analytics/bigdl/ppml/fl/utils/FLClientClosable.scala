@@ -21,11 +21,11 @@ import com.intel.analytics.bigdl.ppml.fl.{FLClient, FLContext}
 
 trait FLClientClosable {
   protected var flClient = FLContext.getClient()
-  def setFlClient(flClient: FLClient) = {
+  def setFlClient(flClient: FLClient): FLClientClosable = {
     this.flClient = flClient
     this
   }
-  def close() = {
+  def close(): Boolean = {
     flClient.getChannel.shutdownNow.awaitTermination(5, TimeUnit.SECONDS)
   }
 }

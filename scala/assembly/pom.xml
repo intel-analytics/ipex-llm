@@ -12,6 +12,10 @@
     <artifactId>bigdl-assembly-spark_${spark.version}</artifactId>
     <packaging>pom</packaging>
 
+    <properties>
+        <bigdl.basedir>${project.parent.basedir}</bigdl.basedir>
+    </properties>
+
     <dependencies>
       <dependency>
         <groupId>com.intel.analytics.bigdl</groupId>
@@ -51,6 +55,11 @@
       <dependency>
         <groupId>com.intel.analytics.zoo</groupId>
         <artifactId>zoo-core-tfnet-linux</artifactId>
+        <version>2.1.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>com.intel.analytics.zoo</groupId>
+        <artifactId>zoo-core-tfnet-mac</artifactId>
         <version>2.1.0-SNAPSHOT</version>
       </dependency>
       <dependency>

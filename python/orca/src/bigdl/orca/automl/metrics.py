@@ -20,6 +20,7 @@ from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import mean_squared_log_error
 import numpy as np
 import pandas as pd
+from bigdl.dllib.utils.log4Error import *
 
 
 EPSILON = 1e-10
@@ -33,10 +34,12 @@ def _standardize_input(y_true, y_pred, multioutput):
     input will be changed to corresponding 2-dim ndarray
     """
     if y_true is None or y_pred is None:
-        raise ValueError("The input is None.")
+        invalidInputError(False,
+                          "The input is None.")
     if not isinstance(y_true, (list, tuple, np.ndarray, pd.DataFrame)):
-        raise ValueError("Expected array-like input."
-                         "Only list/tuple/ndarray/pd.DataFrame are supported")
+        invalidInputError(False,
+                          "Expected array-like input. "
+                          "Only list/tuple/ndarray/pd.DataFrame are supported")
     if isinstance(y_true, (list, tuple)):
         y_true = np.array(y_true)
     if isinstance(y_pred, (list, tuple)):
@@ -62,18 +65,20 @@ def _standardize_input(y_true, y_pred, multioutput):
         y_pred = y_pred.reshape((y_pred.shape[0], -1))
 
     if y_true.shape[0] != y_pred.shape[0]:
-        raise ValueError("y_true and y_pred have different number of samples "
-                         "({0}!={1})".format(y_true.shape[0], y_pred.shape[0]))
+        invalidInputError(False,
+                          "y_true and y_pred have different number of samples "
+                          "({0}!={1})".format(y_true.shape[0], y_pred.shape[0]))
     if y_true.shape[1] != y_pred.shape[1]:
-        raise ValueError("y_true and y_pred have different number of output "
-                         "({0}!={1})".format(y_true.shape[1], y_pred.shape[1]))
+        invalidInputError(False,
+                          "y_true and y_pred have different number of output "
+                          "({0}!={1})".format(y_true.shape[1], y_pred.shape[1]))
     allowed_multioutput_str = ('raw_values', 'uniform_average',
                                'variance_weighted')
     if isinstance(multioutput, str):
         if multioutput not in allowed_multioutput_str:
-            raise ValueError("Allowed 'multioutput' string values are {}. "
-                             "You provided multioutput={!r}"
-                             .format(allowed_multioutput_str, multioutput))
+            invalidInputError(False,
+                              "Allowed 'multioutput' string values are {}. You provided"
+                              " multioutput={!r}".format(allowed_multioutput_str, multioutput))
 
     return y_true, y_pred, original_shape
 
@@ -460,9 +465,11 @@ class Evaluator(object):
     @staticmethod
     def check_metric(metric):
         if not metric:
-            raise ValueError(f"Got invalid metric name of {metric}!")
+            invalidInputError(False,
+                              f"Got invalid metric name of {metric}!")
         if metric not in Evaluator.metrics_func.keys():
-            raise ValueError("metric " + metric + " is not supported")
+            invalidInputError(False,
+                              "metric " + metric + " is not supported")
 
     @staticmethod
     def get_metric_mode(metric):

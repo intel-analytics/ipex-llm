@@ -15,6 +15,7 @@
 #
 from torch.utils.data.sampler import Sampler
 import math
+from bigdl.dllib.utils.log4Error import *
 
 
 def trainable_param(model):
@@ -44,7 +45,8 @@ class DistributedSequentialSampler(Sampler):
     def __iter__(self):
         indices = list(range(self.offset, self.num_samples + self.offset))
 
-        assert len(indices) == self.num_samples
+        invalidInputError(len(indices) == self.num_samples,
+                          "expect indices len match num_samples")
 
         return iter(indices)
 

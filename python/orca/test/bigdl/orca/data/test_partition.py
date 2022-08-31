@@ -107,10 +107,10 @@ class TestSparkBackend(TestCase):
         reconstructed = np.concatenate(data_parts)
         assert np.allclose(data, reconstructed)
         # Empty shards
-        with pytest.raises(ValueError) as errorInfo:
+        with pytest.raises(RuntimeError) as errorInfo:
             xshards = XShards.partition(data, num_shards=20)
 
-        assert errorInfo.type == ValueError
+        assert errorInfo.type == RuntimeError
         assert "number of shards" in str(errorInfo.value)
 
     def test_partition_nested_with_num_shards_specification(self):
@@ -129,10 +129,10 @@ class TestSparkBackend(TestCase):
         assert np.allclose(data1, reconstructed1)
         assert np.allclose(data2, reconstructed2)
         # Empty shards
-        with pytest.raises(ValueError) as errorInfo:
+        with pytest.raises(RuntimeError) as errorInfo:
             xshards = XShards.partition({"x": (data1, ), "y": [data2]}, num_shards=20)
 
-        assert errorInfo.type == ValueError
+        assert errorInfo.type == RuntimeError
         assert "number of shards" in str(errorInfo.value)
 
 

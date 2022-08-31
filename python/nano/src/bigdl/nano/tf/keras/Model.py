@@ -14,12 +14,12 @@
 # limitations under the License.
 #
 import tensorflow as tf
+from tensorflow.keras import Model as Model
 from bigdl.nano.tf.keras.training_utils import TrainingUtils
+from bigdl.nano.tf.keras.inference_utils import InferenceUtils
+from bigdl.nano.tf.keras.inheritance_utils import inject_function
 
 
-class Model(TrainingUtils, tf.keras.Model):
-    """A wrapper class for tf.keras.Model adding more functions for BigDL-Nano."""
-
-    def __init__(self, *args, **kwargs):
-        """Create a nano Sequential model, having the same arguments with tf.keras.Sequential."""
-        super().__init__(*args, **kwargs)
+# override_method(Model, TFModel, f_wrapper)
+Model.__doc__ = 'A wrapper class for tf.keras.Model adding more functions for BigDL-Nano.'
+inject_function(Model, TrainingUtils, InferenceUtils)

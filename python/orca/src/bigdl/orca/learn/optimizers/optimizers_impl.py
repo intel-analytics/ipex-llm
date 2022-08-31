@@ -17,6 +17,7 @@ from abc import ABC, abstractmethod
 
 from bigdl.dllib.utils.common import DOUBLEMAX
 from bigdl.orca.learn.optimizers.schedule import Scheduler
+from bigdl.dllib.utils.log4Error import *
 
 
 class Optimizer(ABC):
@@ -54,9 +55,10 @@ class SGD(Optimizer):
                  learningrates=None,
                  weightdecays=None):
         from bigdl.dllib.optim.optimizer import SGD as BSGD
-        assert isinstance(learningrate_schedule, Scheduler),\
-            "learningrate_schedule should be an bigdl.orca.learn.optimizers.schedule.Scheduler," \
-            f" but got {learningrate_schedule}"
+        invalidInputError(isinstance(learningrate_schedule, Scheduler),
+                          "learningrate_schedule should be an "
+                          "bigdl.orca.learn.optimizers.schedule.Scheduler,"
+                          " but got {learningrate_schedule}")
         self.optimizer = BSGD(learningrate,
                               learningrate_decay,
                               weightdecay,

@@ -21,13 +21,15 @@ import functools
 from bigdl.chronos.data.utils.feature import generate_dt_features, generate_global_features
 from bigdl.chronos.data.utils.impute import impute_timeseries_dataframe
 from bigdl.chronos.data.utils.deduplicate import deduplicate_timeseries_dataframe
-from bigdl.chronos.data.utils.roll import roll_timeseries_dataframe
+from bigdl.chronos.data.utils.roll import roll_timeseries_dataframe, _roll_timeseries_ndarray
+from bigdl.chronos.data.utils.time_feature import time_features
 from bigdl.chronos.data.utils.scale import unscale_timeseries_numpy
 from bigdl.chronos.data.utils.resample import resample_timeseries_dataframe
 from bigdl.chronos.data.utils.split import split_timeseries_dataframe
 from bigdl.chronos.data.utils.cycle_detection import cycle_length_est
 from bigdl.chronos.data.utils.utils import _to_list, _check_type,\
     _check_col_within, _check_col_no_na, _check_is_aligned, _check_dt_is_sorted
+
 
 _DEFAULT_ID_COL_NAME = "id"
 _DEFAULT_ID_PLACEHOLDER = "0"
@@ -47,8 +49,10 @@ class TSDataset:
 
         self.numpy_x = None
         self.numpy_y = None
-        self.roll_feature = None
-        self.roll_target = None
+        self.lookback = None  # lookback stated by users if they called roll, to_torch_data_loader
+        self.horizon = None  # horizon stated by users if they called roll, to_torch_data_loader
+        self.roll_feature = None  # contains feature_col requested by roll/to_torch_data_loader
+        self.roll_target = None  # contains target_col requested by roll/to_torch_data_loader
         self.roll_feature_df = None
         self.roll_additional_feature = None
         self.scaler = None
@@ -277,9 +281,11 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
-        assert self._is_pd_datetime,\
-            "The time series data does not have a Pandas datetime format "\
-            "(you can use pandas.to_datetime to convert a string into a datetime format)."
+        from bigdl.nano.utils.log4Error import invalidInputError
+        invalidInputError(self._is_pd_datetime,
+                          "The time series data does not have a Pandas datetime format "
+                          "(you can use pandas.to_datetime to convert a string"
+                          " into a datetime format).")
         from pandas.api.types import is_numeric_dtype
         type_error_list = [val for val in self.target_col + self.feature_col
                            if not is_numeric_dtype(self.df[val])]
@@ -287,8 +293,9 @@ class TSDataset:
             for val in type_error_list:
                 self.df[val] = self.df[val].astype(np.float32)
         except Exception:
-            raise RuntimeError("All the columns of target_col "
-                               "and extra_feature_col should be of numeric type.")
+            invalidInputError(False,
+                              "All the columns of target_col "
+                              "and extra_feature_col should be of numeric type.")
         self.df = self.df.groupby([self.id_col]) \
             .apply(lambda df: resample_timeseries_dataframe(df=df,
                                                             dt_col=self.dt_col,
@@ -334,8 +341,11 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
-        assert self._is_pd_datetime, "The time series data does not have a Pandas datetime format"\
-            "(you can use pandas.to_datetime to convert a string into a datetime format.)"
+        from bigdl.nano.utils.log4Error import invalidInputError
+        invalidInputError(self._is_pd_datetime,
+                          "The time series data does not have a Pandas datetime format"
+                          "(you can use pandas.to_datetime to convert a string into"
+                          " a datetime format.)")
         features_generated = []
         self.df = generate_dt_features(input_df=self.df,
                                        dt_col=self.dt_col,
@@ -363,20 +373,23 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
+        from bigdl.nano.utils.log4Error import invalidInputError
         try:
             from tsfresh import extract_features
             from tsfresh.feature_extraction import ComprehensiveFCParameters, \
                 MinimalFCParameters, EfficientFCParameters
         except ImportError:
-            raise ImportError("Please install tsfresh by `pip install tsfresh` to use "
+            invalidInputError(False,
+                              "Please install tsfresh by `pip install tsfresh` to use "
                               "`gen_global_feature` method.")
 
         DEFAULT_PARAMS = {"comprehensive": ComprehensiveFCParameters(),
                           "minimal": MinimalFCParameters(),
                           "efficient": EfficientFCParameters()}
 
-        assert not self._has_generate_agg_feature, \
-            "Only one of gen_global_feature and gen_rolling_feature should be called."
+        invalidInputError(not self._has_generate_agg_feature,
+                          "Only one of gen_global_feature and gen_rolling_feature"
+                          " should be called.")
         if full_settings is not None:
             self.df,\
                 addtional_feature =\
@@ -389,9 +402,9 @@ class TSDataset:
             return self
 
         if isinstance(settings, str):
-            assert settings in ['comprehensive', 'minimal', 'efficient'], \
-                "settings str should be one of 'comprehensive', 'minimal', 'efficient'"\
-                f", but found {settings}."
+            invalidInputError(settings in ['comprehensive', 'minimal', 'efficient'],
+                              "settings str should be one of 'comprehensive', 'minimal',"
+                              " 'efficient', but found {settings}.")
             default_fc_parameters = DEFAULT_PARAMS[settings]
         else:
             default_fc_parameters = settings
@@ -430,6 +443,7 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
+        from bigdl.nano.utils.log4Error import invalidInputError
         try:
             from tsfresh.utilities.dataframe_functions import roll_time_series
             from tsfresh.utilities.dataframe_functions import impute as impute_tsfresh
@@ -437,25 +451,27 @@ class TSDataset:
             from tsfresh.feature_extraction import ComprehensiveFCParameters, \
                 MinimalFCParameters, EfficientFCParameters
         except ImportError:
-            raise ImportError("Please install tsfresh by `pip install tsfresh` to use "
+            invalidInputError(False,
+                              "Please install tsfresh by `pip install tsfresh` to use "
                               "`gen_rolling_feature` method.")
 
         DEFAULT_PARAMS = {"comprehensive": ComprehensiveFCParameters(),
                           "minimal": MinimalFCParameters(),
                           "efficient": EfficientFCParameters()}
 
-        assert not self._has_generate_agg_feature,\
-            "Only one of gen_global_feature and gen_rolling_feature should be called."
+        invalidInputError(not self._has_generate_agg_feature,
+                          "Only one of gen_global_feature and gen_rolling_feature"
+                          " should be called.")
         if isinstance(settings, str):
-            assert settings in ['comprehensive', 'minimal', 'efficient'], \
-                "settings str should be one of 'comprehensive', 'minimal', 'efficient'"\
-                f", but found {settings}."
+            invalidInputError(settings in ['comprehensive', 'minimal', 'efficient'],
+                              "settings str should be one of 'comprehensive', 'minimal',"
+                              " 'efficient', but found {settings}.")
             default_fc_parameters = DEFAULT_PARAMS[settings]
         else:
             default_fc_parameters = settings
-
-        assert window_size < self.df.groupby(self.id_col).size().min() + 1, "gen_rolling_feature "\
-            "should have a window_size smaller than shortest time series length."
+        invalidInputError(window_size < self.df.groupby(self.id_col).size().min() + 1,
+                          "gen_rolling_feature should have a window_size smaller"
+                          " than shortest time series length.")
         df_rolled = roll_time_series(self.df,
                                      column_id=self.id_col,
                                      column_sort=self.dt_col,
@@ -486,7 +502,10 @@ class TSDataset:
              lookback='auto',
              feature_col=None,
              target_col=None,
-             id_sensitive=False):
+             id_sensitive=False,
+             time_enc=False,
+             label_len=0,
+             is_predict=False):
         '''
         Sampling by rolling for machine learning/deep learning models.
 
@@ -498,6 +517,9 @@ class TSDataset:
                if `horizon` is a list, we will sample discretely according
                to the input list. 1 means the timestamp just after the observed data.
                specially, when `horizon` is set to 0, ground truth will be generated as None.
+
+               WARNING: The usage of setting `horizon` to will be deprecated later, please
+               use `is_predict` in future.
         :param feature_col: str or list, indicates the feature col name. Default to None,
                where we will take all available feature in rolling.
         :param target_col: str or list, indicates the target col name. Default to None,
@@ -508,17 +530,28 @@ class TSDataset:
                and fuse the sampings.
                The shape of rolling will be
                x: (num_sample, lookback, num_feature_col + num_target_col)
-               y: (num_sample, horizon, num_target_col)
+               y: (num_sample, horizon+label_len, num_target_col)
                where num_sample is the summation of sample number of each dataframe
 
                if `id_sensitive` is True, we will rolling on the wide dataframe whose
                columns are cartesian product of id_col and feature_col
                The shape of rolling will be
                x: (num_sample, lookback, new_num_feature_col + new_num_target_col)
-               y: (num_sample, horizon, new_num_target_col)
+               y: (num_sample, horizon+label_len, new_num_target_col)
                where num_sample is the sample number of the wide dataframe,
                new_num_feature_col is the product of the number of id and the number of feature_col.
                new_num_target_col is the product of the number of id and the number of target_col.
+        :param time_enc: bool,
+               This parameter should be set to True only when you are using Autoformer model. With
+               time_enc to be true, 2 additional numpy ndarray will be returned when you call
+               `.to_numpy()`. Be sure to have a time type for dt_col if you set time_enc to True.
+        :param label_len: int,
+               This parameter should be set to True only when you are using Autoformer model. This
+               indicates the length of overlap area of output(y) and input(x) on time axis.
+        :param is_predict: bool,
+               This parameter should be set to True only when you are using Autoformer model. This
+               indicates if the dataset will be sampled as a prediction dataset(without groud
+               truth).
 
         :return: the tsdataset instance.
 
@@ -545,9 +578,11 @@ class TSDataset:
         >>> print(x.shape, y.shape) # x.shape = (1, 1, 6) y.shape = (1, 1, 2)
 
         '''
+        from bigdl.nano.utils.log4Error import invalidInputError
         if id_sensitive and not _check_is_aligned(self.df, self.id_col, self.dt_col):
-            raise AssertionError("The time series data should be "
-                                 "aligned if id_sensitive is set to True.")
+            invalidInputError(False,
+                              "The time series data should be "
+                              "aligned if id_sensitive is set to True.")
         feature_col = _to_list(feature_col, "feature_col") if feature_col is not None \
             else self.feature_col
         target_col = _to_list(target_col, "target_col") if target_col is not None \
@@ -570,30 +605,61 @@ class TSDataset:
         roll_feature_df = None if self.roll_feature_df is None \
             else self.roll_feature_df[additional_feature_col]
 
-        if lookback == 'auto':
-            lookback = self.get_cycle_length('mode', top_k=3)
+        self.lookback, self.horizon = lookback, horizon
+        # horizon_time is only for time_enc, the time_enc numpy ndarray won't have any
+        # shape change when the dataset is for prediction.
+        horizon_time = self.horizon
+        if is_predict:
+            self.horizon = 0
+
+        if self.lookback == 'auto':
+            self.lookback = self.get_cycle_length('mode', top_k=3)
         rolling_result = \
             self.df.groupby([self.id_col]) \
                 .apply(lambda df: roll_timeseries_dataframe(df=df,
                                                             roll_feature_df=roll_feature_df,
-                                                            lookback=lookback,
-                                                            horizon=horizon,
+                                                            lookback=self.lookback,
+                                                            horizon=self.horizon,
                                                             feature_col=feature_col,
-                                                            target_col=target_col))
+                                                            target_col=target_col,
+                                                            label_len=label_len))
 
         # concat the result on required axis
         concat_axis = 2 if id_sensitive else 0
         self.numpy_x = np.concatenate([rolling_result[i][0]
                                        for i in self._id_list],
                                       axis=concat_axis).astype(np.float32)
-        if horizon != 0:
+        if horizon != 0 or time_enc:
             self.numpy_y = np.concatenate([rolling_result[i][1]
                                            for i in self._id_list],
                                           axis=concat_axis).astype(np.float32)
         else:
             self.numpy_y = None
 
+        # time_enc
+        if time_enc:
+            df_stamp = pd.DataFrame(columns=[self.dt_col])
+            if is_predict:
+                pred_dates = pd.date_range(self.df[self.dt_col].values[-1],
+                                           periods=horizon_time + 1, freq=self._freq)
+                df_stamp.loc[:, self.dt_col] =\
+                    list(self.df[self.dt_col].values) + list(pred_dates[1:])
+            else:
+                df_stamp.loc[:, self.dt_col] = list(self.df[self.dt_col].values)
+            data_stamp = time_features(pd.to_datetime(df_stamp[self.dt_col].values),
+                                       freq=self._freq)
+            self.data_stamp = data_stamp.transpose(1, 0)
+            max_horizon = horizon_time if isinstance(horizon_time, int) else max(horizon_time)
+            self.numpy_x_timeenc, _ = _roll_timeseries_ndarray(self.data_stamp[:-max_horizon],
+                                                               lookback)
+            self.numpy_y_timeenc, _ = _roll_timeseries_ndarray(self.data_stamp[lookback-label_len:],
+                                                               horizon_time+label_len)
+        else:
+            self.numpy_x_timeenc = None
+            self.numpy_y_timeenc = None
+
         # target first
+        # TODO: check id_sensitive effectiveness for the time_enc=True cases.
         if self.id_sensitive:
             feature_start_idx = num_target_col * num_id
             reindex_list = [list(range(i * num_target_col, (i + 1) * num_target_col)) +
@@ -619,7 +685,11 @@ class TSDataset:
                              lookback='auto',
                              horizon=None,
                              feature_col=None,
-                             target_col=None, ):
+                             target_col=None,
+                             shuffle=True,
+                             time_enc=False,
+                             label_len=0,
+                             is_predict=False):
         """
         Convert TSDataset to a PyTorch DataLoader with or without rolling. We recommend to use
         to_torch_data_loader(roll=True) if you don't need to output the rolled numpy array. It is
@@ -643,6 +713,18 @@ class TSDataset:
         :param target_col: str or list, indicates the target col name. Default to None,
                where we will take all target in rolling. it should be a subset of target_col
                you used to initialize the tsdataset.
+        :param shuffle: if the dataloader is shuffled. default to True.
+        :param time_enc: bool,
+               This parameter should be set to True only when you are using Autoformer model. With
+               time_enc to be true, 2 additional numpy ndarray will be returned when you call
+               `.to_numpy()`. Be sure to have a time type for dt_col if you set time_enc to True.
+        :param label_len: int,
+               This parameter should be set to True only when you are using Autoformer model. This
+               indicates the length of overlap area of output(y) and input(x) on time axis.
+        :param is_predict: bool,
+               This parameter should be set to True only when you are using Autoformer model. This
+               indicates if the dataset will be sampled as a prediction dataset(without groud
+               truth).
 
         :return: A pytorch DataLoader instance.
 
@@ -672,9 +754,11 @@ class TSDataset:
         """
         from torch.utils.data import TensorDataset, DataLoader
         import torch
+        from bigdl.nano.utils.log4Error import invalidInputError
         if roll:
             if horizon is None:
-                raise ValueError("You must input horizon if roll is True")
+                invalidInputError(False,
+                                  "You must input horizon if roll is True")
             from bigdl.chronos.data.utils.roll_dataset import RollDataset
             feature_col = _to_list(feature_col, "feature_col") if feature_col is not None \
                 else self.feature_col
@@ -683,29 +767,55 @@ class TSDataset:
 
             # set scaler index for unscale_numpy
             self.scaler_index = [self.target_col.index(t) for t in target_col]
+            self.lookback, self.horizon = lookback, horizon
 
-            if lookback == 'auto':
-                lookback = self.get_cycle_length('mode', top_k=3)
+            if self.lookback == 'auto':
+                self.lookback = self.get_cycle_length('mode', top_k=3)
+            invalidInputError(not self._has_generate_agg_feature,
+                              "Currently to_torch_data_loader does not support "
+                              "'gen_global_feature' and 'gen_rolling_feature' methods.")
+
+            if isinstance(self.horizon, int):
+                need_dflen = self.lookback + self.horizon
+            else:
+                need_dflen = self.lookback + max(self.horizon)
+            if len(self.df) < need_dflen:
+                invalidInputError(False,
+                                  "The length of the dataset must be larger than the sum "
+                                  "of lookback and horizon, while get lookback+horizon="
+                                  f"{need_dflen} and the length of dataset is {len(self.df)}.")
+
             torch_dataset = RollDataset(self.df,
-                                        lookback=lookback,
-                                        horizon=horizon,
+                                        dt_col=self.dt_col,
+                                        freq=self._freq,
+                                        lookback=self.lookback,
+                                        horizon=self.horizon,
                                         feature_col=feature_col,
                                         target_col=target_col,
-                                        id_col=self.id_col)
+                                        id_col=self.id_col,
+                                        time_enc=time_enc,
+                                        label_len=label_len,
+                                        is_predict=is_predict)
+            # TODO gen_rolling_feature and gen_global_feature will be support later
+            self.roll_target = target_col
+            self.roll_feature = feature_col
+
+            batch_size = 32 if batch_size is None else batch_size  # _pytorch_fashion_inference
             return DataLoader(torch_dataset,
                               batch_size=batch_size,
-                              shuffle=True)
+                              shuffle=shuffle)
         else:
             if self.numpy_x is None:
-                raise RuntimeError("Please call 'roll' method before transforming a TSDataset to "
-                                   "torch DataLoader without rolling (default roll=False)!")
+                invalidInputError(False,
+                                  "Please call 'roll' method before transforming a TSDataset to "
+                                  "torch DataLoader without rolling (default roll=False)!")
             x, y = self.to_numpy()
             return DataLoader(TensorDataset(torch.from_numpy(x).float(),
                                             torch.from_numpy(y).float()),
                               batch_size=batch_size,
-                              shuffle=True)
+                              shuffle=shuffle)
 
-    def to_tf_dataset(self, batch_size=32):
+    def to_tf_dataset(self, batch_size=32, shuffle=False):
         """
         Export a Dataset whose elements are slices of the given tensors.
 
@@ -716,11 +826,18 @@ class TSDataset:
         """
         # TODO Requires a tf dataset creator method and can be use less memory.
         import tensorflow as tf
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.numpy_x is None:
-            raise RuntimeError("Please call 'roll' method "
-                               "before transform a TSDataset to tf dataset!")
+            invalidInputError(False,
+                              "Please call 'roll' method "
+                              "before transform a TSDataset to tf dataset!")
         data = tf.data.Dataset.from_tensor_slices((self.numpy_x, self.numpy_y))
-        return data.cache().batch(batch_size).prefetch(tf.data.AUTOTUNE)
+        batch_size = 32 if batch_size is None else batch_size
+        if shuffle:
+            data = data.cache().shuffle(self.numpy_x.shape[0]).batch(batch_size)
+        else:
+            data = data.batch(batch_size).cache()
+        return data.prefetch(tf.data.AUTOTUNE)
 
     def to_numpy(self):
         '''
@@ -729,10 +846,15 @@ class TSDataset:
         :return: a 2-dim tuple. each item is a 3d numpy ndarray. The ndarray
                  is casted to float32.
         '''
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.numpy_x is None:
-            raise RuntimeError("Please call 'roll' method "
-                               "before transform a TSDataset to numpy ndarray!")
-        return self.numpy_x, self.numpy_y
+            invalidInputError(False,
+                              "Please call 'roll' method "
+                              "before transform a TSDataset to numpy ndarray!")
+        if self.numpy_x_timeenc is None:
+            return self.numpy_x, self.numpy_y
+        else:
+            return self.numpy_x, self.numpy_y, self.numpy_x_timeenc, self.numpy_y_timeenc
 
     def to_pandas(self):
         '''
@@ -774,11 +896,13 @@ class TSDataset:
                 scaler.fit_transform(self.df[self.target_col + feature_col])
         else:
             from sklearn.utils.validation import check_is_fitted
+            from bigdl.nano.utils.log4Error import invalidInputError
             try:
-                assert not check_is_fitted(scaler)
+                invalidInputError(not check_is_fitted(scaler), "scaler is not fittedd")
             except Exception:
-                raise AssertionError("When calling scale for the first time, "
-                                     "you need to set fit=True.")
+                invalidInputError(False,
+                                  "When calling scale for the first time, "
+                                  "you need to set fit=True.")
             self.df[self.target_col + feature_col] = \
                 scaler.transform(self.df[self.target_col + feature_col])
         self.scaler = scaler
@@ -857,12 +981,14 @@ class TSDataset:
         Returns:
             Describe the value of the time period distribution.
         """
-        assert isinstance(top_k, int),\
-            f"top_k type must be int, but found {type(top_k)}."
-        assert isinstance(aggregate, str),\
-            f"aggregate type must be str, but found {type(aggregate)}."
-        assert aggregate.lower().strip() in ['min', 'max', 'mode', 'median', 'mean'], \
-            f"We Only support 'min' 'max' 'mode' 'median' 'mean', but found {aggregate}."
+        from bigdl.nano.utils.log4Error import invalidInputError
+        invalidInputError(isinstance(top_k, int),
+                          f"top_k type must be int, but found {type(top_k)}.")
+        invalidInputError(isinstance(aggregate, str),
+                          f"aggregate type must be str, but found {type(aggregate)}.")
+        invalidInputError(aggregate.lower().strip() in ['min', 'max', 'mode', 'median', 'mean'],
+                          f"We Only support 'min' 'max' 'mode' 'median' 'mean',"
+                          f" but found {aggregate}.")
 
         if len(self.target_col) == 1:
             res = self.df.groupby(self.id_col)\

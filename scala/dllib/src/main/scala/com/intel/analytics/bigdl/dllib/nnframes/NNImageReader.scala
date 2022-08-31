@@ -174,7 +174,7 @@ object NNImageReader {
    */
   def readImages(path: String, sc: SparkContext, minPartitions: Int = 1,
                  resizeH: Int = -1, resizeW: Int = -1,
-                 imageCodec: Int = Imgcodecs.CV_LOAD_IMAGE_UNCHANGED): DataFrame = {
+                 imageCodec: Int = Imgcodecs.IMREAD_UNCHANGED): DataFrame = {
     val imageSet = ImageSet.read(path, sc, minPartitions, resizeH, resizeW, imageCodec)
     val rowRDD = imageSet.toDistributed().rdd.map { imf =>
       Row(NNImageSchema.imf2Row(imf))

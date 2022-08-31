@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{yy-MM-dd HH:mm:ss} [%t] %-5p %c{1}:%L - %msg%n"/>
+        </Console>
+
+        <Routing name="Routing">
+            <Routes pattern="$${sys:logFilename}">
+                <Route>
+                    <File name="File" fileName="/tmp/${sys:logFilename}"
+                          immediateFlush="false" append="true">
+                        <PatternLayout
+                                pattern="%d{yyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+                    </File>
+                </Route>
+
+            </Routes>
+        </Routing>
+    </Appenders>
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="Routing" level="info" />
+        </Root>
+        <Logger name="org" level="info" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="Routing" level="info" />
+        </Logger>
+    </Loggers>
+</Configuration>

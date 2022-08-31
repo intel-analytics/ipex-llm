@@ -15,6 +15,7 @@
 #
 
 
+from selectors import EpollSelector
 from tensorflow.keras.backend import clear_session
 from tensorflow.keras.models import clone_model
 import tensorflow as tf
@@ -22,6 +23,7 @@ import inspect
 import copy
 
 from bigdl.nano.automl.hpo.backend import create_tfkeras_pruning_callback
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 def _is_creator(model):
@@ -35,7 +37,9 @@ class Objective(object):
                  model=None,
                  target_metric=None,
                  pruning=False,
-                 **kwargs,
+                 backend=None,
+                 report_method=None,
+                 **kwargs
                  ):
         """
         Init the objective.
@@ -46,16 +50,25 @@ class Objective(object):
             Defaults to None.
         :param: pruning: bool (optional): whether to enable pruning.
             Defaults to False.
-        raises: ValueError: _description_
+        :param: backend: the HPO backend
+        :param: report_method: a function to decide which score to report
+            from the result of all epochs if there's more than one epoch
+        throw: ValueError: _description_
         """
         if not _is_creator(model) and not isinstance(model, tf.keras.Model):
-            raise ValueError("You should either pass a Tensorflo Keras model, or \
-                            a model_creator to the Tuning objective.")
+            invalidInputError(False,
+                              "You should either pass a Tensorflo Keras model, or "
+                              "a model_creator to the Tuning objective.")
 
         self.model_ = model
         self.target_metric_ = target_metric
         self.pruning = pruning
+        self.backend = backend
         self.kwargs = kwargs
+
+        if report_method is None:
+            report_method = max
+        self.report_method = report_method
 
     @property
     def target_metric(self):
@@ -74,6 +87,10 @@ class Objective(object):
         new_kwargs = copy.copy(self.kwargs)
         new_kwargs['verbose'] = 2
 
+        # process batch size
+        new_kwargs = self.backend.instantiate_param(trial, new_kwargs, 'batch_size')
+
+        # process callbacks
         callbacks = new_kwargs.get('callbacks', None)
         callbacks = callbacks() if inspect.isfunction(callbacks) else callbacks
 
@@ -111,5 +128,5 @@ class Objective(object):
         if score is not None:
             if isinstance(score, list):
                 # score = score[-1]
-                score = max(score)
+                score = self.report_method(score)
             return score

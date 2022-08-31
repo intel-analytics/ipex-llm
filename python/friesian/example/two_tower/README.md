@@ -6,6 +6,7 @@ We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux)
 ```
 conda create -n bigdl python=3.7  # "bigdl" is the conda environment name, you can use any name you like.
 conda activate bigdl
+pip install tensorflow==2.6.0
 pip install --pre --upgrade bigdl-friesian
 ```
 ## Preprocess data
@@ -45,11 +46,11 @@ python train_2tower.py \
 ```
 
 __Options:__
-* `cluster_mode`: The cluster mode to run the data preprocessing, one of local, yarn, standalone or spark-submit. Default to be local.
+* `cluster_mode`: The cluster mode to run the training, one of local, yarn, standalone or spark-submit. Default to be local.
 * `master`: The master URL, only used when cluster_mode is standalone.
 * `executor_cores`: The number of cores to use on each node. Default to be 48.
 * `executor_memory`: The amount of memory to allocate on each node. Default to be 240g.
-* `num_nodes`: The number of nodes to use in the cluster. Default to be 8.
+* `num_executors`: The number of executors to use in the cluster. Default to be 8.
 * `driver_cores`: The number of cores to use for the driver. Default to be 4.
 * `driver_memory`: The amount of memory to allocate for the driver. Default to be 36g.
 * `data_dir`: The input data directory as well as output of embedding reindex tables.

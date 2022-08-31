@@ -55,7 +55,9 @@ class DBScanDetector(AnomalyDetector):
 
     def check_data(self, arr):
         if len(arr.shape) > 1:
-            raise ValueError("Only univariate time series is supported")
+            from bigdl.nano.utils.log4Error import invalidInputError
+            invalidInputError(False,
+                              "Only univariate time series is supported")
 
     def fit(self, y, use_sklearnex=True):
         """
@@ -85,7 +87,9 @@ class DBScanDetector(AnomalyDetector):
         :return: anomaly score for each sample, in an array format with the same size as input
         """
         if self.anomaly_indexes_ is None:
-            raise RuntimeError("Please call fit first")
+            from bigdl.nano.utils.log4Error import invalidInputError
+            invalidInputError(False,
+                              "Please call fit first")
         return self.anomaly_scores_
 
     def anomaly_indexes(self):
@@ -95,5 +99,7 @@ class DBScanDetector(AnomalyDetector):
         :return: the indexes of the anomalies.
         """
         if self.anomaly_indexes_ is None:
-            raise RuntimeError("Please call fit first")
+            from bigdl.nano.utils.log4Error import invalidInputError
+            invalidInputError(False,
+                              "Please call fit first")
         return self.anomaly_indexes_

@@ -14,10 +14,13 @@ sgx.debug = 0
 sgx.isvprodid = 1
 sgx.isvsvn = 3
 
-loader.env.LD_LIBRARY_PATH = "/usr/lib/python3.8/lib:/lib:/lib/x86_64-linux-gnu:/usr/lib:/usr/lib/x86_64-linux-gnu:$(JDK_HOME):$(JDK_HOME)/lib/amd64/jli:/ppml/trusted-big-data-ml/work/lib"
-loader.env.PATH = "/usr/lib/python3.8/bin:/:$(EXECDIR):/usr/sbin:/usr/bin:/sbin:/bin:$(JDK_HOME)/bin"
-loader.env.PYTHONHOME = "/usr/lib/python3.8"
-loader.env.PYTHONPATH = "/usr/lib/python3.8:/usr/lib/python3.8/lib-dynload:/usr/local/lib/python3.8/dist-packages:/usr/lib/python3/dist-packages"
+sgx.remote_attestation = 1
+sgx.ra_client_spid = ""
+
+loader.env.LD_LIBRARY_PATH = "/usr/lib/python3.7/lib:/lib:/lib/x86_64-linux-gnu:/usr/lib:/usr/lib/x86_64-linux-gnu:$(JDK_HOME):$(JDK_HOME)/lib/amd64/jli:/ppml/trusted-big-data-ml/work/lib"
+loader.env.PATH = "/usr/lib/python3.7/bin:/:$(EXECDIR):/usr/sbin:/usr/bin:/sbin:/bin:$(JDK_HOME)/bin"
+loader.env.PYTHONHOME = "/usr/lib/python3.7"
+loader.env.PYTHONPATH = "/usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages"
 loader.env.JAVA_HOME = "$(JDK_HOME)"
 loader.env.JAVA_OPTS = "'-Djava.library.path=$(JDK_HOME)/lib -Dsun.boot.library.path=$(JDK_HOME)/lib'"
 loader.env.SPARK_LOCAL_IP = "$(SPARK_LOCAL_IP)"
@@ -25,6 +28,15 @@ loader.env.SPARK_USER = "$(SPARK_USER)"
 loader.env.SPARK_SCALA_VERSION = "2.12"
 loader.env.SPARK_HOME = "$(SPARK_HOME)"
 loader.env.SPARK_MASTER_OPTS = "'-Dspark.worker.timeout=60'"
+loader.env.BIGDL_HOME = "$(BIGDL_HOME)"
+
+sgx.ioctl_structs.ifconf  =  [ {name = "ifc_len",size = 4, align = 4, type= "inout" }, {size = 4, type= "inout"}, { ptr=[ {name="ifcu_req", size= "ifc_len", type="in"} ] } ]
+sgx.allowed_ioctls.io1.request = 0x8912
+sgx.allowed_ioctls.io1.struct = "ifconf"
+
+sgx.ioctl_structs.ifreq = [ {  name ="ifreq", size=40, type="inout"} ]
+sgx.allowed_ioctls.io2.request = 0x8927
+sgx.allowed_ioctls.io2.struct = "ifreq"
 
 fs.mount.lib.type = "chroot"
 fs.mount.lib.path = "/lib"
@@ -67,8 +79,8 @@ fs.mount.tmp.path = "/tmp"
 fs.mount.tmp.uri = "file:/tmp"
 
 fs.mount.pyhome.type = "chroot"
-fs.mount.pyhome.path = "/usr/lib/python3.8"
-fs.mount.pyhome.uri = "file:/usr/lib/python3.8"
+fs.mount.pyhome.path = "/usr/lib/python3.7"
+fs.mount.pyhome.uri = "file:/usr/lib/python3.7"
 
 fs.mount.pydisthome.type = "chroot"
 fs.mount.pydisthome.path = "/usr/lib/python3/dist-packages"
@@ -153,12 +165,23 @@ sgx.trusted_files.libz  = "file:$(ARCH_LIBDIR)/libz.so.1"
 sgx.trusted_files.libgcc_s = "file:/lib/x86_64-linux-gnu/libgcc_s.so.1"
 sgx.trusted_files.libstdcpp = "file:/usr/lib/x86_64-linux-gnu/libstdc++.so.6"
 
+
+sgx.trusted_files.libbz2 = "file:/lib/x86_64-linux-gnu/libbz2.so.1.0"
+sgx.trusted_files.liblzma = "file:/lib/x86_64-linux-gnu/liblzma.so.5"
+sgx.trusted_files.libmpdec = "file:/lib/x86_64-linux-gnu/libmpdec.so.2"
+sgx.trusted_files.uname = "file:/usr/bin/uname"
+sgx.trusted_files.libuuid = "file:/lib/x86_64-linux-gnu/libuuid.so.1"
+sgx.trusted_files.libffi = "file:/lib/x86_64-linux-gnu/libffi.so.7"
+sgx.trusted_files.libcrypto = "file:/lib/x86_64-linux-gnu/libcrypto.so.1.1"
+sgx.trusted_files.libstdc = "file:/lib/x86_64-linux-gnu/libstdc++.so.6"
+
+
 sgx.allowed_files.etc       = "file:/etc"
 sgx.allowed_files.tmp       = "file:/tmp"
 sgx.allowed_files.jdk       = "file:$(JDK_HOME)"
 sgx.allowed_files.current   = "file:/ppml/trusted-big-data-ml"
-sgx.allowed_files.pyhome    = "file:/usr/lib/python3.8"
-sgx.allowed_files.pydisthome = "file:/usr/local/lib/python3.8/dist-packages"
+sgx.allowed_files.pyhome    = "file:/usr/lib/python3.7"
+sgx.allowed_files.pydisthome = "file:/usr/local/lib/python3.7/dist-packages"
 sgx.allowed_files.kerasdatas = "file:/root/.keras"
 sgx.allowed_files.m2        = "file:/root/.m2"
 sgx.allowed_files.zinc      = "file:/root/.zinc"

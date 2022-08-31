@@ -49,7 +49,8 @@ import org.apache.spark.sql.functions._
 import scala.reflect.ClassTag
 
 class TrainingSpec extends ZooSpecHelper {
-
+  val uuid = java.util.UUID.randomUUID.toString
+  System.setProperty("logFilename", "bigdl" + uuid + ".log")
   private var sc: SparkContext = _
 
   override def doBefore(): Unit = {
@@ -142,6 +143,9 @@ class TrainingSpec extends ZooSpecHelper {
     model.fit(localData, nbEpoch = 2)
     model.clearGradientClipping()
     model.fit(localData, nbEpoch = 2)
+    val logPath = "/tmp/" + System.getProperty("logFilename")
+    TestUtils.conditionFailTest(new java.io.File(logPath).exists(),
+      f"${logPath} should exists")
     val accuracy = model.evaluate(localData)
     val predictResults = model.predict(localData, 32)
   }

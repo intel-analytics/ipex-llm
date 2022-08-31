@@ -20,16 +20,19 @@ import sys
 import tempfile
 import shutil
 
+from bigdl.dllib.utils import log4Error
 from bigdl.dllib.utils.file_utils import get_file_list, is_local_path
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.data.utils import get_size
 from bigdl.orca.data.file import put_local_dir_tree_to_remote, put_local_file_to_remote,\
     get_remote_file_to_local, get_remote_dir_to_local
 from bigdl.dllib.utils.utils import convert_row_to_numpy
+from functools import partial
 import numpy as np
 import pickle
 import os
 import subprocess
+from bigdl.dllib.utils.log4Error import *
 
 
 def find_latest_checkpoint(model_dir, model_type="bigdl"):
@@ -199,7 +202,66 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd):
     return result_df
 
 
-def arrays2dict(iter, feature_cols, label_cols, shard_size=None):
+def _merge_rows(results):
+    try:
+        result_arrs = [np.stack(l) for l in results]
+    except ValueError:
+        log4Error.invalidInputError(False, "Elements in the same column must have the same "
+                                           "shape, please drop, pad or truncate the columns "
+                                           "that do not meet this requirement.")
+    if len(result_arrs) == 1:
+        result_arrs = result_arrs[0]
+    else:
+        result_arrs = tuple(result_arrs)
+    return result_arrs
+
+
+def _generate_output_dict(feature_lists, label_lists, feature_cols=None, label_cols=None):
+    feature_arrs = _merge_rows(feature_lists)
+    if label_cols is not None:
+        label_arrs = _merge_rows(label_lists)
+        return {"x": feature_arrs, "y": label_arrs}
+    else:
+        return {"x": feature_arrs}
+
+
+def _generate_feature_dict(feature_lists, label_lists, feature_cols=None, label_cols=None):
+    cols = feature_cols
+    feature_arrs = _merge_rows(feature_lists)
+    if feature_cols and len(feature_cols) == 1:
+        feature_arrs = tuple(feature_arrs)
+    data = feature_arrs
+    if label_cols is not None:
+        cols = cols + label_cols
+        label_arrs = _merge_rows(label_lists)
+        if len(label_cols) == 1:
+            label_arrs = tuple(label_arrs)
+        data = data + label_arrs
+    result = dict()
+    for i in range(0, len(cols)):
+        result[cols[i]] = data[i]
+    return result
+
+
+def _generate_output_pandas_df(feature_lists, label_lists, feature_cols, label_cols=None):
+    import pandas as pd
+    feature_arrs = _merge_rows(feature_lists)
+    label_cols = [] if label_cols is None else label_cols
+    df = pd.DataFrame(columns=feature_cols + label_cols)
+    if isinstance(feature_arrs, np.ndarray):
+        feature_arrs = feature_arrs.reshape(-1)
+    else:
+        feature_arrs = list(map(lambda x: x.reshape(-1), feature_arrs))
+    for i, feature_col in enumerate(feature_cols):
+        df[feature_col] = feature_arrs[i]
+    if label_cols:
+        label_arrs = _merge_rows(label_lists)
+    for i, label_col in enumerate(label_cols):
+        df[label_col] = label_arrs[i]
+    return df
+
+
+def arrays2others(iter, feature_cols, label_cols, shard_size=None, generate_func=None):
     def init_result_lists():
         feature_lists = [[] for col in feature_cols]
         if label_cols is not None:
@@ -217,22 +279,6 @@ def arrays2dict(iter, feature_cols, label_cols, shard_size=None):
         for i, arr in enumerate(arrays):
             results[i].append(arr)
 
-    def merge_rows(results):
-        result_arrs = [np.stack(l) for l in results]
-        if len(result_arrs) == 1:
-            result_arrs = result_arrs[0]
-        else:
-            result_arrs = tuple(result_arrs)
-        return result_arrs
-
-    def generate_output(feature_lists, label_lists):
-        feature_arrs = merge_rows(feature_lists)
-        if label_cols is not None:
-            label_arrs = merge_rows(label_lists)
-            return {"x": feature_arrs, "y": label_arrs}
-        else:
-            return {"x": feature_arrs}
-
     feature_lists, label_lists = init_result_lists()
     counter = 0
 
@@ -243,19 +289,30 @@ def arrays2dict(iter, feature_cols, label_cols, shard_size=None):
             add_row(row[1], label_lists)
 
         if shard_size and counter % shard_size == 0:
-            yield generate_output(feature_lists, label_lists)
+            yield generate_func(feature_lists, label_lists, feature_cols, label_cols)
             feature_lists, label_lists = init_result_lists()
 
     if feature_lists[0]:
-        yield generate_output(feature_lists, label_lists)
+        yield generate_func(feature_lists, label_lists, feature_cols, label_cols)
+
+
+arrays2dict = partial(arrays2others, generate_func=_generate_output_dict)
+arrays2feature_dict = partial(arrays2others, generate_func=_generate_feature_dict)
+arrays2pandas = partial(arrays2others, generate_func=_generate_output_pandas_df)
 
 
 def transform_to_shard_dict(data, feature_cols, label_cols=None):
     def to_shard_dict(df):
         result = dict()
-        result["x"] = [df[feature_col].to_numpy() for feature_col in feature_cols]
+        if len(feature_cols) == 1:
+            featureLists = df[feature_cols[0]].tolist()
+            result["x"] = np.stack(featureLists, axis=0)
+        else:
+            result["x"] = [df[feature_col].to_numpy() for feature_col in feature_cols]
+
         if label_cols:
             result["y"] = df[label_cols[0]].to_numpy()
+
         return result
 
     data = data.transform_shard(to_shard_dict)
@@ -267,8 +324,9 @@ def process_xshards_of_pandas_dataframe(data, feature_cols, label_cols=None, val
     data = transform_to_shard_dict(data, feature_cols, label_cols)
     if mode == "fit":
         if validation_data:
-            assert validation_data._get_class_name() == 'pandas.core.frame.DataFrame', \
-                "train data and validation data should be both XShards of Pandas DataFrame"
+            invalidInputError(validation_data._get_class_name() == 'pandas.core.frame.DataFrame',
+                              "train data and validation data should be both XShards of Pandas"
+                              " DataFrame")
             validation_data = transform_to_shard_dict(validation_data, feature_cols, label_cols)
         return data, validation_data
     else:
@@ -291,20 +349,77 @@ def _dataframe_to_xshards(data, feature_cols, label_cols=None, accept_str_col=Fa
     return SparkXShards(shard_rdd)
 
 
+def dataframe_to_xshards_of_feature_dict(data, feature_cols, label_cols=None,
+                                         accept_str_col=False):
+    '''
+    This function transforms a spark dataframe to xshards of feature dict (all feature_cols
+    and label_cols will be merged to one dictionary).
+    :param data: a spark dataframe
+    :param feature_cols: the col names you would like to select and transform to ndarray
+    :param label_cols: the target col name you would like to select and transform to ndarray
+           typically, you may leave this to None since there is no difference to use
+           feature_cols directly.
+    :param accept_str_col: bool, states if allow str to be a valid type.
+
+    :return: a sparkxshards of ndarray dictionary with feature_cols+label_cols as keys.
+    '''
+    from bigdl.orca import OrcaContext
+    schema = data.schema
+    shard_size = OrcaContext._shard_size
+    numpy_rdd = data.rdd.map(lambda row: convert_row_to_numpy(row,
+                                                              schema,
+                                                              feature_cols,
+                                                              label_cols,
+                                                              accept_str_col))
+    shard_rdd = numpy_rdd.mapPartitions(lambda x: arrays2feature_dict(x,
+                                                                      feature_cols,
+                                                                      label_cols,
+                                                                      shard_size))
+    return SparkXShards(shard_rdd)
+
+
+def dataframe_to_xshards_of_pandas_df(data, feature_cols, label_cols=None, accept_str_col=False):
+    '''
+    This function transform a spark dataframe to xshards of pandas dataframe.
+    :param data: a spark dataframe
+    :param feature_cols: the col names you would like to select and transform to pandas
+    :param label_cols: the target col name you would like to select and transform to pandas
+           typically, you may leave this to None since there is no difference to use
+           feature_cols directly.
+    :param accept_str_col: bool, states if allow str to be a valid type.
+
+    :return: a sparkxshards of pandas dataframe with feature_cols+label_cols as header.
+    '''
+    from bigdl.orca import OrcaContext
+    schema = data.schema
+    shard_size = OrcaContext._shard_size
+    numpy_rdd = data.rdd.map(lambda row: convert_row_to_numpy(row,
+                                                              schema,
+                                                              feature_cols,
+                                                              label_cols,
+                                                              accept_str_col))
+    shard_rdd = numpy_rdd.mapPartitions(lambda x: arrays2pandas(x,
+                                                                feature_cols,
+                                                                label_cols,
+                                                                shard_size))
+    return SparkXShards(shard_rdd)
+
+
 def dataframe_to_xshards(data, validation_data, feature_cols, label_cols, mode="fit",
                          num_workers=None, accept_str_col=False):
     from pyspark.sql import DataFrame
     valid_mode = {"fit", "evaluate", "predict"}
-    assert mode in valid_mode, f"invalid mode {mode} " \
-                               f"mode should be one of {valid_mode}"
-    assert validation_data is None or isinstance(validation_data, DataFrame), \
-        "validation data must be a spark DataFrame when data is a DataFrame"
-    assert feature_cols is not None, \
-        "feature_col must be provided if data is a spark dataframe"
+    invalidInputError(mode in valid_mode,
+                      f"invalid mode {mode} "
+                      f"mode should be one of {valid_mode}")
+    invalidInputError(validation_data is None or isinstance(validation_data, DataFrame),
+                      "validation data must be a spark DataFrame when data is a DataFrame")
+    invalidInputError(feature_cols is not None,
+                      "feature_col must be provided if data is a spark dataframe")
 
     if mode != "predict":
-        assert label_cols is not None, \
-            "label_cols must be provided if data is a spark dataframe"
+        invalidInputError(label_cols is not None,
+                          "label_cols must be provided if data is a spark dataframe")
         # avoid empty partition for worker
         if data.rdd.getNumPartitions() < num_workers:
             data = data.repartition(num_workers)
@@ -354,14 +469,12 @@ def data_length(data):
 
 def save_pkl(data, path):
     if path.startswith("hdfs"):  # hdfs://url:port/file_path
-        import pyarrow as pa
-        host_port = path.split("://")[1].split("/")[0].split(":")
-        classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
-                                     stdout=subprocess.PIPE).communicate()[0]
-        os.environ["CLASSPATH"] = classpath.decode("utf-8")
-        fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
-        with fs.open(path, 'wb') as f:
+        import uuid
+        file_name = str(uuid.uuid1()) + ".pkl"
+        temp_path = os.path.join(tempfile.gettempdir(), file_name)
+        with open(temp_path, 'wb') as f:
             pickle.dump(data, f)
+        put_local_file_to_remote(temp_path, path)
     elif path.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]

@@ -26,7 +26,6 @@ import org.apache.spark.sql.types.{ArrayType, DataType, FloatType, MapType, Stri
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import collection.JavaConverters._
-import collection.JavaConversions._
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.ppml.fl.FLContext
 
@@ -119,7 +118,7 @@ object DataFrameUtils {
         else "complex"
     }
   }
-  def toTensorArray(df: DataFrame, columns: Array[String] = null) = {
+  def toTensorArray(df: DataFrame, columns: Array[String] = null): Array[Tensor[Float]] = {
     val col = if (columns == null) df.columns else columns
 
     var rowNum = 0
@@ -139,7 +138,7 @@ object DataFrameUtils {
    * @param column
    * @return
    */
-  def toArray(df: DataFrame, column: String) = {
+  def toArray(df: DataFrame, column: String): Array[Float] = {
     df.collect().map(row => {
       row.getAs[String](column).toFloat
     })

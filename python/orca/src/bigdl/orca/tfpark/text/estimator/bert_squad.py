@@ -15,6 +15,7 @@
 #
 
 from bigdl.orca.tfpark.text.estimator import *
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 
 def make_bert_squad_model_fn(optimizer):
@@ -69,8 +70,9 @@ def make_bert_squad_model_fn(optimizer):
             }
             return tf.estimator.EstimatorSpec(mode=mode, predictions=predictions)
         else:
-            raise ValueError("Currently only TRAIN and PREDICT modes are supported. "
-                             "SQuAD uses a separate script for EVAL")
+            invalidInputError(False,
+                              "Currently only TRAIN and PREDICT modes are supported. "
+                              "SQuAD uses a separate script for EVAL")
 
     return _bert_squad_model_fn
 

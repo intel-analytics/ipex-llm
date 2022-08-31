@@ -58,6 +58,8 @@ class TestRollDataset:
 
         # get results rolled by RollDataset
         roll_dataset = RollDataset(df=df,
+                                   dt_col="datetime",
+                                   freq=None,
                                    lookback=lookback,
                                    horizon=horizon,
                                    feature_col=tsdata.feature_col,
@@ -108,8 +110,10 @@ class TestRollDataset:
     def test_df_nan(self):
         df = get_ts_df()
         df["value"][0] = np.nan
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             RollDataset(df=df,
+                        dt_col="datetime",
+                        freq=None,
                         lookback=2,
                         horizon=1,
                         feature_col=["extra feature"],

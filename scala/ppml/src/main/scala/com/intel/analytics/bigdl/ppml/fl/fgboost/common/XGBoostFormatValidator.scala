@@ -28,13 +28,13 @@ object XGBoostFormatValidator {
   val logger = LogManager.getLogger(getClass)
   var fGBoostHeaders: ArrayBuffer[Array[String]] = new ArrayBuffer[Array[String]]()
   var xGBoostHeaders: Array[String] = _
-  def setXGBoostHeaders(headers: Array[String]) = {
+  def setXGBoostHeaders(headers: Array[String]): Unit = {
     xGBoostHeaders = headers
   }
-  def clearHeaders() = {
+  def clearHeaders(): Unit = {
     fGBoostHeaders.clear()
   }
-  def addHeaders(headers: Array[String]) = {
+  def addHeaders(headers: Array[String]): Unit = {
     fGBoostHeaders.append(headers)
   }
 
@@ -46,9 +46,9 @@ object XGBoostFormatValidator {
    * @param treeArray1 The XGBoost result in format, the feature would be represented in int
    * @param treeArray2 The FGBoost result in format, the feature would be represented in string
    */
-  def apply(treeArray1: Array[XGBoostFormatNode], treeArray2: Array[XGBoostFormatNode]) = {
+  def apply(treeArray1: Array[XGBoostFormatNode], treeArray2: Array[XGBoostFormatNode]): Unit = {
     def validateTreeEquality(t1: XGBoostFormatNode, t2: XGBoostFormatNode): Boolean = {
-      def almostEqual(a: Float, b: Float) = {
+      def almostEqual(a: Float, b: Float): Boolean = {
         math.abs(a - b) < 1e-3
       }
       if (t1.children == null) {

@@ -23,6 +23,7 @@ from torch.utils.data import Dataset, DataLoader
 from bigdl.dllib.utils.utils import get_node_ip
 from bigdl.orca.learn.mpi.mpi_runner import MPIRunner
 from bigdl.orca.learn.mpi.utils import *
+from bigdl.dllib.utils.log4Error import *
 
 
 class MPIEstimator:
@@ -58,8 +59,9 @@ class MPIEstimator:
             train_func=None, validate_func=None, train_batches=None, validate_batches=None,
             validate_steps=None, feature_cols=None, label_cols=None):
         if isinstance(data, DataFrame):
-            assert feature_cols is not None and label_cols is not None, \
-                "feature_cols and label_cols must be provided if data is a Spark DataFrame"
+            invalidInputError(feature_cols is not None and label_cols is not None,
+                              "feature_cols and label_cols must be provided if data is"
+                              " a Spark DataFrame")
             data = data.rdd.map(convert_row(feature_cols, label_cols))
             # TODO: make object store memory configurable?
             object_store_address = self.mpi_runner.launch_plasma(object_store_memory="100g")
@@ -87,7 +89,8 @@ class MPIEstimator:
                                                self.mpi_runner.processes_per_node, batch_size)
             data.unpersist()
             if validation_data:
-                assert isinstance(validation_data, DataFrame)
+                invalidInputError(isinstance(validation_data, DataFrame),
+                                  "expect validation data to be DataFrame")
                 validation_data = validation_data.rdd.map(convert_row(feature_cols, label_cols))
                 validate_plasma_meta = validation_data.mapPartitionsWithIndex(
                     put_to_plasma(object_store_address)).collect()
@@ -116,10 +119,12 @@ class MPIEstimator:
             else:
                 validation_data_creator = None
         else:
-            assert isinstance(data, types.FunctionType)
+            invalidInputError(isinstance(data, types.FunctionType),
+                              "expect data is FunctionType")
             data_creator = data
             if validation_data:
-                assert isinstance(validation_data, types.FunctionType)
+                invalidInputError(isinstance(validation_data, types.FunctionType),
+                                  "expect validaton data is FunctionType")
                 validation_data_creator = validation_data
             else:
                 validation_data_creator = None

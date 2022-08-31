@@ -62,10 +62,10 @@ cd /ppml/trusted-big-data-ml
 
 #### 2. Run your pyspark program
 
-To run your pyspark program, first you need to prepare your own pyspark program and put it under the trusted directory in SGX  `/ppml/trusted-big-data-ml/work`. Then run with `ppml-spark-submit.sh` using the command:
+To run your pyspark program, first you need to prepare your own pyspark program and put it under the trusted directory in SGX  `/ppml/trusted-big-data-ml/work`. Then run with `bigdl-ppml-submit.sh` using the command:
 
 ```bash
-./ppml-spark-submit.sh work/YOUR_PROMGRAM.py | tee YOUR_PROGRAM-sgx.log
+./bigdl-ppml-submit.sh work/YOUR_PROMGRAM.py | tee YOUR_PROGRAM-sgx.log
 ```
 
 When the program finishes, check the results with the log `YOUR_PROGRAM-sgx.log`.
@@ -283,7 +283,20 @@ The result should be similar to
 
 ##### Example 5: XGBoost Regressor
 
+The data source `Boston_Housing.csv` can be found at [here](https://github.com/selva86/datasets/blob/master/BostonHousing.csv).
+
 Before running the example, make sure that `Boston_Housing.csv` is under `work/data` directory or the same path in the command. Run the example with SGX spark local mode with the following command in the terminal. Replace `your_IP_address` with your IP address and `path_of_boston_housing_csv` with your path of `Boston_Housing.csv`.
+
+
+Note that data in `Boston_Housing.csv` needs to be pre-processed, before training with `xgboost_example.py`.
+
+The data for column "chas" is in type "string" and we need to delete all the **quotation marks(")** so that the `xgboost_example.py` can successfully load the data.
+
+Before changing:
+> 0.00632,18,2.31,**"0"**,0.538,6.575,65.2,4.09,1,296,15.3,396.9,4.98,24
+
+After changing:
+> 0.00632,18,2.31,**0**,0.538,6.575,65.2,4.09,1,296,15.3,396.9,4.98,24
 
 ```bash
 /graphene/Tools/argv_serializer bash -c "export RABIT_TRACKER_IP=your_IP_address && /opt/jdk8/bin/java -cp \
@@ -295,10 +308,9 @@ Before running the example, make sure that `Boston_Housing.csv` is under `work/d
   --conf spark.executor.extraClassPath=/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
   --conf spark.driver.extraClassPath=/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
   --properties-file /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/conf/spark-bigdl.conf \
-  --jars /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
   --py-files /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/bigdl-orca-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip \
   --executor-memory 2g \
-  /ppml/trusted-big-data-ml/work/examples/pyzoo/xgboost/xgboost_example.py \
+  /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/examples/dllib/nnframes/xgboost/xgboost_example.py \
   --file-path path_of_boston_housing_csv" > /ppml/trusted-big-data-ml/secured-argvs
 ./init.sh
 SGX=1 ./pal_loader bash 2>&1 | tee test-zoo-xgboost-regressor-sgx.log
@@ -372,10 +384,9 @@ After downloading the dataset, make sure that `pima-indians-diabetes.data.csv` i
   --conf spark.executor.extraClassPath=/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
   --conf spark.driver.extraClassPath=/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
   --properties-file /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/conf/spark-bigdl.conf \
-  --jars /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
   --py-files /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/bigdl-orca-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip \
   --executor-memory 2g \
-  /ppml/trusted-big-data-ml/work/examples/pyzoo/xgboost/xgboost_classifier.py \
+  /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/examples/dllib/nnframes/xgboost/xgboost_classifier.py \
   -f path_of_pima_indians_diabetes_csv" > /ppml/trusted-big-data-ml/secured-argvs
 ./init.sh
 SGX=1 ./pal_loader bash 2>&1 | tee test-xgboost-classifier-sgx.log
@@ -405,140 +416,6 @@ The result should be similar to
 >
 > | 0.0|119.0| 0.0| 0.0| 0.0|32.4|0.141|24.0| 1.0|[-0.4473398327827...|[0.55266016721725...|    0.0|
 
-##### Example 7: Orca data
-
-Before running the example, download the [NYC Taxi](https://raw.githubusercontent.com/numenta/NAB/master/data/realKnownCause/nyc_taxi.csv) dataset in Numenta Anoomaly Benchmark for demo manually or with following command.
-
-```bash
-wget https://raw.githubusercontent.com/numenta/NAB/master/data/realKnownCause/nyc_taxi.csv
-```
-
-After downloading the dataset, make sure that `nyc_taxi.csv` is under `work/data` directory or the same path in the command. Run the example with SGX spark local mode with the following command in the terminal. Replace `path_of_nyc_taxi_csv` with your path of `nyc_taxi.csv`.
-
-```bash
-/graphene/Tools/argv_serializer bash -c "/opt/jdk8/bin/java -cp \
-  '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
-  -Xmx2g \
-  org.apache.spark.deploy.SparkSubmit \
-  --master 'local[4]' \
-  --conf spark.python.use.daemon=false \
-  --conf spark.python.worker.reuse=false \
-  --conf spark.driver.memory=8g \
-  --conf spark.rpc.message.maxSize=190 \
-  --conf spark.network.timeout=10000000 \
-  --conf spark.executor.heartbeatInterval=10000000 \
-  --properties-file /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/conf/spark-bigdl.conf \
-  --conf spark.executor.extraClassPath=/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
-  --conf spark.driver.extraClassPath=/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
-  --py-files /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/bigdl-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip,/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/examples/orca/data/spark_pandas.py \
-  --driver-cores 2 \
-  --total-executor-cores 2 \
-  --executor-cores 2 \
-  --executor-memory 8g \
-  /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/examples/orca/data/spark_pandas.py \
-  -f /ppml/trusted-big-data-ml/work/data/nyc_taxi.csv" > /ppml/trusted-big-data-ml/secured-argvs
-./init.sh
-SGX=1 ./pal_loader bash 2>&1 | tee test-orca-data-sgx.log
-```
-
-Then check the output with the following command.
-
-```bash
-cat test-orca-data-sgx.log | egrep -a "INFO data|Stopping" -A10
-```
-
-Then the result should contain the similar content as
-
->INFO data collected: [        timestamp value
->
->0   2014-07-01 00:00:00 10844
->
->1   2014-07-01 00:30:00  8127
->
->2   2014-07-01 01:00:00  6210
->
->3   2014-07-01 01:30:00  4656
->
->4   2014-07-01 02:00:00  3820
->
->...          ...  ...
->
->10315 2015-01-31 21:30:00 24670
->
->10316 2015-01-31 22:00:00 25721
->
->10317 2015-01-31 22:30:00 27309
->
->10318 2015-01-31 23:00:00 26591
->
->\--
->
-> 
->
->INFO data2 collected: [        timestamp value      datetime hours awake
->
->0  2014-07-01 00:00:00 10844 2014-07-01 00:00:00   0   1
->
->1  2014-07-01 00:30:00  8127 2014-07-01 00:30:00   0   1
->
->2  2014-07-01 03:00:00  2369 2014-07-01 03:00:00   3   0
->
->3  2014-07-01 04:30:00  2158 2014-07-01 04:30:00   4   0
->
->4  2014-07-01 05:00:00  2515 2014-07-01 05:00:00   5   0
->
->...         ...  ...         ...  ...  ...
->
->5215 2015-01-31 17:30:00 23595 2015-01-31 17:30:00   17   1
->
->5216 2015-01-31 18:30:00 27286 2015-01-31 18:30:00   18   1
->
->5217 2015-01-31 19:00:00 28804 2015-01-31 19:00:00   19   1
->
->5218 2015-01-31 19:30:00 27773 2015-01-31 19:30:00   19   1
->
->\--
->
->Stopping orca context
-
-##### Example 8: Orca learn Tensorflow basic text classification
-
-Run the example with SGX spark local mode with the following command in the terminal.
-
-```bash
-/graphene/Tools/argv_serializer bash -c "/opt/jdk8/bin/java -cp \
-  '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
-  -Xmx3g \
-  org.apache.spark.deploy.SparkSubmit \
-  --master 'local[4]' \
-  --conf spark.python.use.daemon=false \
-  --conf spark.python.worker.reuse=false \
-  --conf spark.driver.memory=3g \
-  --conf spark.rpc.message.maxSize=190 \
-  --conf spark.network.timeout=10000000 \
-  --conf spark.executor.heartbeatInterval=10000000 \
-  --conf spark.executor.extraClassPath=/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
-  --conf spark.driver.extraClassPath=/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
-  --properties-file /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/conf/spark-bigdl.conf \
-  --py-files /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/bigdl-orca-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip,/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/bigdl-dllib-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip,/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/examples/orca/learn/tf/basic_text_classification/basic_text_classification.py \
-  --executor-memory 3g \
-  --executor-cores 2 \
-  --driver-cores 2 \
-  /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/examples/orca/learn/tf/basic_text_classification/basic_text_classification.py \
-  --cluster_mode local" > /ppml/trusted-big-data-ml/secured-argvs
-./init.sh
-SGX=1 ./pal_loader bash 2>&1 | tee test-orca-tf-text.log
-```
-
-Then check the output with the following command.
-
-```bash
-cat test-orca-tf-text.log | egrep "results"
-```
-
-Then the result should be similar to
-
-> INFO results: {'loss': 0.6932533979415894, 'acc Top1Accuracy': 0.7544000148773193}
 ## Run as Spark on Kubernetes Mode
 
 WARNING: If you want spark standalone mode, please refer to [standalone/README.md][standalone]. But it is not recommended.
@@ -620,10 +497,9 @@ sudo docker run -itd \
     -e LOCAL_IP=$LOCAL_IP \
     $DOCKER_IMAGE bash
 ```
+run `docker exec -it spark-local-k8s-client bash` to entry the container.
 
-### 1.4 Init the client and run Spark applications on k8s
-
-First, run `docker exec -it spark-local-k8s-client bash` to entry the container.
+### 1.4 Init the client and run Spark applications on k8s (1.4 can be skipped if you are using 1.5 to submit jobs)
 
 #### 1.4.1 Configure `spark-executor-template.yaml` in the container
 
@@ -707,10 +583,161 @@ Note that: you can run your own Spark Appliction after changing `--class` and ja
 2. `--class org.apache.spark.examples.SparkPi` => `--class your_class_path`
 
 #### 1.4.3 Spark-Pi example
-
 ```bash
 SGX=1 ./pal_loader bash 2>&1 | tee spark-pi-sgx-$SPARK_MODE.log
 ```
+### 1.5 Use bigdl-ppml-submit.sh to submit ppml jobs
+#### 1.5.1 Spark-Pi on local mode
+![image2022-6-6_16-18-10](https://user-images.githubusercontent.com/61072813/174703141-63209559-05e1-4c4d-b096-6b862a9bed8a.png)
+```
+#!/bin/bash
+bash bigdl-ppml-submit.sh \
+        --sgx-enabled false \
+        --master local[2] \
+        --driver-memory 32g \
+        --driver-cores 8 \
+        --executor-memory 32g \
+        --executor-cores 8 \
+        --num-executors 2 \
+        --class org.apache.spark.examples.SparkPi \
+        --name spark-pi \
+        --verbose \
+        local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
+```
+#### 1.5.2 Spark-Pi on local sgx mode
+![image2022-6-6_16-18-57](https://user-images.githubusercontent.com/61072813/174703165-2afc280d-6a3d-431d-9856-dd5b3659214a.png)
+```
+#!/bin/bash
+bash bigdl-ppml-submit.sh \
+        --master local[2] \
+        --sgx-enabled true \
+        --sgx-log-level error \
+        --sgx-driver-memory 64g \
+        --sgx-driver-jvm-memory 12g \
+        --sgx-executor-memory 64g \
+        --sgx-executor-jvm-memory 12g \
+        --driver-memory 32g \
+        --driver-cores 8 \
+        --executor-memory 32g \
+        --executor-cores 8 \
+        --num-executors 2 \
+        --class org.apache.spark.examples.SparkPi \
+        --name spark-pi \
+        --verbose \
+        local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
+```
+#### 1.5.3 Spark-Pi on client mode
+![image2022-6-6_16-19-43](https://user-images.githubusercontent.com/61072813/174703216-70588315-7479-4b6c-9133-095104efc07d.png)
+```
+#!/bin/bash
+ 
+export secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
+bash bigdl-ppml-submit.sh \
+        --master $RUNTIME_SPARK_MASTER \
+        --deploy-mode client \
+        --sgx-enabled true \
+        --sgx-log-level error \
+        --sgx-driver-memory 64g \
+        --sgx-driver-jvm-memory 12g \
+        --sgx-executor-memory 64g \
+        --sgx-executor-jvm-memory 12g \
+        --driver-memory 32g \
+        --driver-cores 8 \
+        --executor-memory 32g \
+        --executor-cores 8 \
+        --num-executors 2 \
+        --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
+        --class org.apache.spark.examples.SparkPi \
+        --name spark-pi \
+        --verbose \
+        local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
+```
+#### 1.5.4 Spark-Pi on cluster mode
+![image2022-6-6_16-20-0](https://user-images.githubusercontent.com/61072813/174703234-e45b8fe5-9c61-4d17-93ef-6b0c961a2f95.png)
+```
+#!/bin/bash
+
+export secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
+bash bigdl-ppml-submit.sh \
+        --master $RUNTIME_SPARK_MASTER \
+        --deploy-mode cluster \
+        --sgx-enabled true \
+        --sgx-log-level error \
+        --sgx-driver-memory 64g \
+        --sgx-driver-jvm-memory 12g \
+        --sgx-executor-memory 64g \
+        --sgx-executor-jvm-memory 12g \
+        --driver-memory 32g \
+        --driver-cores 8 \
+        --executor-memory 32g \
+        --executor-cores 8 \
+        --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
+        --num-executors 2 \
+        --class org.apache.spark.examples.SparkPi \
+        --name spark-pi \
+        --verbose \
+        local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
+```
+
+#### 1.5.5 bigdl-ppml-submit.sh explanations
+
+bigdl-ppml-submit.sh is used to simplify the steps in 1.4
+
+1. To use bigdl-ppml-submit.sh, first set the following required arguments: 
+```
+--master $RUNTIME_SPARK_MASTER \
+--deploy-mode cluster \
+--driver-memory 32g \
+--driver-cores 8 \
+--executor-memory 32g \
+--executor-cores 8 \
+--sgx-enabled true \
+--sgx-log-level error \
+--sgx-driver-memory 64g \
+--sgx-driver-jvm-memory 12g \
+--sgx-executor-memory 64g \
+--sgx-executor-jvm-memory 12g \
+--conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
+--num-executors 2 \
+--name spark-pi \
+--verbose \
+--class org.apache.spark.examples.SparkPi \
+local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
+```
+if you are want to enable sgx, don't forget to set the sgx-related arguments
+```
+--sgx-enabled true \
+--sgx-log-level error \
+--sgx-driver-memory 64g \
+--sgx-driver-jvm-memory 12g \
+--sgx-executor-memory 64g \
+--sgx-executor-jvm-memory 12g \
+```
+you can update the application arguments to anything you want to run
+```
+--class org.apache.spark.examples.SparkPi \
+local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
+```
+
+2. If you want to enable the spark security configurations as in 2.Spark security configurations, export secure_password to enable it.
+```
+export secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
+```
+
+3. The following spark properties are set by default in bigdl-ppml-submit.sh. If you want to overwrite them or add new spark properties, just append the spark properties to bigdl-ppml-submit.sh as arguments.
+```
+--conf spark.driver.host=$LOCAL_IP \
+--conf spark.driver.port=$RUNTIME_DRIVER_PORT \
+--conf spark.network.timeout=10000000 \
+--conf spark.executor.heartbeatInterval=10000000 \
+--conf spark.python.use.daemon=false \
+--conf spark.python.worker.reuse=false \
+--conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
+--conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/spark-driver-template.yaml \
+--conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/spark-executor-template.yaml \
+--conf spark.kubernetes.executor.deleteOnTermination=false \
+```
+
 
 ### Configuration Explainations
 

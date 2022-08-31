@@ -48,7 +48,7 @@ class TestChronosModelTCMFForecaster(TestCase):
     def tearDownClass(cls):
         # stop possible active_spark_context
         from pyspark import SparkContext
-        from bigdl.orca.ray import RayContext
+        from bigdl.orca.ray import OrcaRayContext
         if SparkContext._active_spark_context is not None:
             print("Stopping spark_orca context")
             sc = SparkContext.getOrCreate()
@@ -56,9 +56,9 @@ class TestChronosModelTCMFForecaster(TestCase):
                 from bigdl.dllib.nncontext import stop_spark_standalone
                 stop_spark_standalone()
             sc.stop()
-        if RayContext._active_ray_context is not None:
+        if OrcaRayContext._active_ray_context is not None:
             print("Stopping ray_orca context")
-            ray_ctx = RayContext.get(initialize=False)
+            ray_ctx = OrcaRayContext.get(initialize=False)
             if ray_ctx.initialized:
                 ray_ctx.stop()
 
@@ -141,6 +141,7 @@ class TestChronosModelTCMFForecaster(TestCase):
         # is_xshards_distributed
         with self.assertRaises(Exception) as context:
             self.model.is_xshards_distributed()
+        print(str(context.exception))
         self.assertTrue('You should run fit before calling is_xshards_distributed()'
                         in str(context.exception))
 
@@ -170,7 +171,7 @@ class TestChronosModelTCMFForecaster(TestCase):
 
         # fit_incremental
         data_id_diff = {'id': self.id - 1, 'y': self.data_new}
-        with self.assertRaises(ValueError) as context:
+        with self.assertRaises(RuntimeError) as context:
             self.model.fit_incremental(data_id_diff)
         self.assertTrue('The input ids in fit_incremental differs from input ids in fit'
                         in str(context.exception))
@@ -207,7 +208,7 @@ class TestChronosModelTCMFForecaster(TestCase):
         np.testing.assert_raises(AssertionError, np.testing.assert_array_equal, yhat, yhat_incr)
 
         data_new_id = {'id': self.id, 'y': self.data_new}
-        with self.assertRaises(ValueError) as context:
+        with self.assertRaises(RuntimeError) as context:
             self.model.fit_incremental(data_new_id)
         self.assertTrue('Got valid id in fit_incremental and invalid id in fit.'
                         in str(context.exception))
@@ -264,7 +265,7 @@ class TestChronosModelTCMFForecaster(TestCase):
         self.assertTrue('This model has already been fully trained' in str(context.exception))
         with self.assertRaises(Exception) as context:
             self.model.fit_incremental(shard_train)
-        self.assertTrue('NotImplementedError' in context.exception.__class__.__name__)
+        self.assertTrue('Error' in context.exception.__class__.__name__)
         with tempfile.TemporaryDirectory() as tempdirname:
             self.model.save(tempdirname + "/model")
             loaded_model = TCMFForecaster.load(tempdirname + "/model", is_xshards_distributed=True)

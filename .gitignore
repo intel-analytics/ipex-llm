@@ -19,6 +19,7 @@ dependency-reduced-pom.xml
 .worksheet
 *.iml
 .idea/
+.vscode/
 
 # macOS specific
 .DS_Store

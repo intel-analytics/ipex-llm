@@ -1,4 +1,4 @@
-# Analytics-zoo-doc Documentation
+# BigDL Documentation
 
 To compile the documentation, run the following commands from this directory.
 

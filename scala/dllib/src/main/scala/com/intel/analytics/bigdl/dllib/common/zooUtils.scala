@@ -110,7 +110,7 @@ private[bigdl] object zooUtils {
       }
     } catch {
       case _: FileNotFoundException => logger.warn(s"$path doesn't exist!")
-      case _: IOException => logger.error(s"List paths of $path error!")
+      case _: IOException => logger.info(s"List paths of $path error!")
     }
     fs.close()
     res.toArray
@@ -254,7 +254,7 @@ private[bigdl] object zooUtils {
     try {
       result = fs.exists(new Path(updatedPath))
     } catch {
-      case _: IOException => logger.error(s"Check existence of $path error!")
+      case _: IOException => logger.info(s"Check existence of $path error!")
     } finally {
       fs.close()
     }
@@ -271,7 +271,7 @@ private[bigdl] object zooUtils {
     try {
       fs.mkdirs(new Path(updatedPath))
     } catch {
-      case _: IOException => logger.error(s"make directory of $path error!")
+      case _: IOException => logger.info(s"make directory of $path error!")
     } finally {
       fs.close()
     }

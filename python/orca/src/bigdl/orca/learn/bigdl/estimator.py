@@ -23,6 +23,7 @@ from bigdl.dllib.optim.optimizer import MaxEpoch
 from bigdl.dllib.feature.common import FeatureSet
 from bigdl.orca.learn.metrics import Accuracy
 from pyspark.sql.dataframe import DataFrame
+from bigdl.dllib.utils.log4Error import *
 
 
 class Estimator(object):
@@ -116,12 +117,12 @@ class BigDLEstimator(OrcaSparkEstimator):
         """
         from bigdl.orca.learn.trigger import Trigger
 
-        assert batch_size > 0, "batch_size should be greater than 0"
+        invalidInputError(batch_size > 0, "batch_size should be greater than 0")
 
         if validation_data is not None:
-            assert self.metrics is not None, \
-                "You should provide metrics when creating this estimator if you provide " \
-                "validation_data."
+            invalidInputError(self.metrics is not None,
+                              "You should provide metrics when creating this estimator"
+                              " if you provide validation_data.")
 
         if isinstance(data, DataFrame):
             if isinstance(feature_cols, list):
@@ -139,10 +140,11 @@ class BigDLEstimator(OrcaSparkEstimator):
                 .setLabelCol(label_cols)
 
             if validation_data is not None:
-                assert isinstance(validation_data, DataFrame), \
-                    "validation_data should be a spark DataFrame."
-                assert validation_trigger is not None, \
-                    "You should provide validation_trigger if you provide validation_data."
+                invalidInputError(isinstance(validation_data, DataFrame),
+                                  "validation_data should be a spark DataFrame.")
+                invalidInputError(validation_trigger is not None,
+                                  "You should provide validation_trigger if you provide"
+                                  " validation_data.")
                 validation_trigger = Trigger.convert_trigger(validation_trigger)
                 self.nn_estimator.setValidation(validation_trigger, validation_data,
                                                 self.metrics, batch_size)
@@ -171,8 +173,8 @@ class BigDLEstimator(OrcaSparkEstimator):
                 if validation_data is None:
                     val_feature_set = None
                 else:
-                    assert isinstance(validation_data, SparkXShards), \
-                        "validation_data should be a XShards"
+                    invalidInputError(isinstance(validation_data, SparkXShards),
+                                      "validation_data should be a XShards")
                     val_feature_set = FeatureSet.sample_rdd(
                         validation_data.rdd.flatMap(xshard_to_sample))
                 if self.log_dir is not None and self.app_name is not None:
@@ -181,11 +183,13 @@ class BigDLEstimator(OrcaSparkEstimator):
                                      val_feature_set, self.metrics, batch_size)
                 self.is_nnframe_fit = False
             else:
-                raise ValueError("Data and validation data should be XShards, but get " +
-                                 data.__class__.__name__)
+                invalidInputError(False,
+                                  "Data and validation data should be XShards, but get " +
+                                  data.__class__.__name__)
         else:
-            raise ValueError("Data should be XShards or Spark DataFrame, but get " +
-                             data.__class__.__name__)
+            invalidInputError(False,
+                              "Data should be XShards or Spark DataFrame, but get " +
+                              data.__class__.__name__)
         return self
 
     def predict(self, data, batch_size=4, feature_cols="features", sample_preprocessing=None):
@@ -224,8 +228,9 @@ class BigDLEstimator(OrcaSparkEstimator):
             result_rdd = self.model.predict(sample_rdd)
             return convert_predict_rdd_to_xshard(data, result_rdd)
         else:
-            raise ValueError("Data should be XShards or Spark DataFrame, but get " +
-                             data.__class__.__name__)
+            invalidInputError(False,
+                              "Data should be XShards or Spark DataFrame, but get " +
+                              data.__class__.__name__)
 
     def evaluate(self, data, batch_size=32, feature_cols="features", label_cols="label"):
         """
@@ -241,9 +246,10 @@ class BigDLEstimator(OrcaSparkEstimator):
                is a Spark DataFrame. Default: None.
         :return:
         """
-        assert data is not None, "validation data shouldn't be None"
-        assert self.metrics is not None, "metrics shouldn't be None, please specify the metrics" \
-                                         " argument when creating this estimator."
+        invalidInputError(data is not None, "validation data shouldn't be None")
+        invalidInputError(self.metrics is not None,
+                          "metrics shouldn't be None, please specify the metrics"
+                          " argument when creating this estimator.")
 
         if isinstance(data, DataFrame):
             if isinstance(feature_cols, list):
@@ -272,8 +278,9 @@ class BigDLEstimator(OrcaSparkEstimator):
             val_feature_set = FeatureSet.sample_rdd(data.rdd.flatMap(xshard_to_sample))
             result = self.estimator.evaluate(val_feature_set, self.metrics, batch_size)
         else:
-            raise ValueError("Data should be XShards or Spark DataFrame, but get " +
-                             data.__class__.__name__)
+            invalidInputError(False,
+                              "Data should be XShards or Spark DataFrame, but get " +
+                              data.__class__.__name__)
 
         return bigdl_metric_results_to_dict(result)
 
@@ -296,7 +303,8 @@ class BigDLEstimator(OrcaSparkEstimator):
             model = self.get_model()
             model.saveModel(model_path + ".bigdl", model_path + ".bin", True)
         except ValueError:
-            raise ValueError("You should fit before calling save")
+            invalidInputError(False,
+                              "You should fit before calling save")
 
     def load(self, checkpoint, optimizer=None, loss=None, feature_preprocessing=None,
              label_preprocessing=None, model_dir=None, is_checkpoint=False):
@@ -387,21 +395,25 @@ class BigDLEstimator(OrcaSparkEstimator):
         if version is None:
             path, prefix, version = find_latest_checkpoint(path, model_type="bigdl")
             if path is None:
-                raise ValueError("Cannot find BigDL checkpoint, please check your checkpoint"
-                                 " path.")
+                invalidInputError(False,
+                                  "Cannot find BigDL checkpoint, please check your checkpoint"
+                                  " path.")
         else:
-            assert prefix is not None, "You should provide optimMethod prefix, " \
-                                       "for example 'optimMethod-TorchModelf53bddcc'"
+            invalidInputError(prefix is not None,
+                              "You should provide optimMethod prefix, "
+                              "for example 'optimMethod-TorchModelf53bddcc'")
 
         try:
             self.model = self.__load_bigdl_model(os.path.join(path, "model.{}".format(version)))
-            assert isinstance(self.model, Container), \
-                "The loaded model should be a Container, please check your checkpoint type."
+            invalidInputError(isinstance(self.model, Container),
+                              "The loaded model should be a Container, please check your"
+                              " checkpoint type.")
             self.optimizer = OptimMethod.load(os.path.join(path,
                                                            "{}.{}".format(prefix, version)))
         except Exception:
-            raise ValueError("Cannot load BigDL checkpoint, please check your checkpoint path "
-                             "and checkpoint type.")
+            invalidInputError(False,
+                              "Cannot load BigDL checkpoint, please check your checkpoint path "
+                              "and checkpoint type.")
         self.estimator = SparkEstimator(self.model, self.optimizer, self.model_dir)
         self.nn_estimator = NNEstimator(self.model, self.loss, self.feature_preprocessing,
                                         self.label_preprocessing)
@@ -453,8 +465,9 @@ class BigDLEstimator(OrcaSparkEstimator):
         """
         # Exception handle
         if tag != "Loss" and tag != "LearningRate" and tag != "Throughput":
-            raise TypeError('Only "Loss", "LearningRate", "Throughput"'
-                            + 'are supported in train summary')
+            invalidInputError(False,
+                              'Only "Loss", "LearningRate", "Throughput"'
+                              + 'are supported in train summary')
         if self.is_nnframe_fit:
             train_summary = self.nn_estimator.getTrainSummary()
             return train_summary.read_scalar(tag=tag)
@@ -491,10 +504,11 @@ class BigDLEstimator(OrcaSparkEstimator):
         :param tag: The string variable represents the scalar wanted
         """
         if self.is_nnframe_fit:
-            assert tag is not None, "You should provide tag which should match the name of " \
-                                    "the ValidationMethod set into the optimizer. " \
-                                    "e.g.'MAE', 'Top1AccuracyLoss', 'Top1Accuracy' or " \
-                                    "'Top5Accuracy'."
+            invalidInputError(tag is not None,
+                              "You should provide tag which should match the name of "
+                              "the ValidationMethod set into the optimizer. "
+                              "e.g.'MAE', 'Top1AccuracyLoss', 'Top1Accuracy' or "
+                              "'Top5Accuracy'.")
             val_summary = self.nn_estimator.getValidationSummary()
             return val_summary.read_scalar(tag=tag)
         else:

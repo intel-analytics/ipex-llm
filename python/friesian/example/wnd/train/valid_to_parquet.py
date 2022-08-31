@@ -20,6 +20,8 @@ from argparse import ArgumentParser
 
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.friesian.feature import FeatureTable
+from bigdl.dllib.utils.log4Error import *
+
 
 conf = {"spark.network.timeout": "10000000",
         "spark.sql.broadcastTimeout": "7200",
@@ -160,9 +162,9 @@ if __name__ == '__main__':
                           driver_cores=args.driver_cores, driver_memory=args.driver_memory,
                           conf=conf)
     else:
-        raise ValueError(
-            "cluster_mode should be one of 'local', 'yarn' and 'standalone'"
-            ", but got " + args.cluster_mode)
+        invalidInputError(False,
+                          "cluster_mode should be one of 'local', 'yarn' and 'standalone'"
+                          ", but got " + args.cluster_mode)
 
     start = time()
     val_tbl = FeatureTable.read_csv(args.input_file,

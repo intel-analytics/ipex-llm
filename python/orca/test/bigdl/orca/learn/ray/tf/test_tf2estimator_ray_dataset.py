@@ -73,7 +73,7 @@ def get_estimator(workers_per_node=2, model_fn=model_creator):
     estimator = Estimator.from_keras(model_creator=model_fn,
                                      config={"lr": 1e-3},
                                      workers_per_node=workers_per_node,
-                                     backend="tf2")
+                                     backend="ray")
     return estimator
 
 class TestTF2Estimator(TestCase):

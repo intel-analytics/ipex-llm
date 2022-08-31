@@ -50,13 +50,9 @@ class Seq2SeqForecaster(BaseTF2Forecaster):
                  seed=None,
                  distributed=False,
                  workers_per_node=1,
-                 distributed_backend="tf_distributed"):
+                 distributed_backend="ray"):
         """
         Build a Seq2Seq Forecast Model.
-
-        Seq2Seq Forecast may fall into local optima. Please set repo_initialization
-        to False to alleviate the issue. You can also change a random seed to
-        work around.
 
         :param past_seq_len: Specify the history time steps (i.e. lookback).
         :param future_seq_len: Specify the output time steps (i.e. horizon).
@@ -72,14 +68,18 @@ class Seq2SeqForecaster(BaseTF2Forecaster):
                possibility to a neuron). This value defaults to 0.1.
         :param optimizer: Specify the optimizer used for training. This value
                defaults to "Adam".
-        :param loss: Specify the loss function used for training. This value
-               defaults to "mse". You can choose from "mse", "mae" and
-               "huber_loss".
+        :param loss: Str or a tf.keras.losses.Loss instance, specify the loss function
+               used for training. This value defaults to "mse". You can choose
+               from "mse", "mae" and "huber_loss" or any customized loss instance
+               you want to use.
         :param lr: Specify the learning rate. This value defaults to 0.001.
         :param metrics: A list contains metrics for evaluating the quality of
                forecasting. You may only choose from "mse" and "mae" for a
                distributed forecaster. You may choose from "mse", "mae",
-               "rmse", "r2", "mape", "smape", for a non-distributed forecaster.
+               "rmse", "r2", "mape", "smape" or a callable function for a
+               non-distributed forecaster. If callable function, it signature
+               should be func(y_true, y_pred), where y_true and y_pred are numpy
+               ndarray.
         :param seed: int, random seed for training. This value defaults to None.
         :param distributed: bool, if init the forecaster in a distributed
                fashion. If True, the internal model will use an Orca Estimator.
@@ -88,8 +88,8 @@ class Seq2SeqForecaster(BaseTF2Forecaster):
         :param workers_per_node: int, the number of worker you want to use.
                The value defaults to 1. The param is only effective when
                distributed is set to True.
-        :param distributed_backend: str, select from "tf_distributed" or
-               "horovod". The value defaults to "tf_distributed".
+        :param distributed_backend: str, select from "ray" or
+               "horovod". The value defaults to "ray".
         """
         # config setting
         self.model_config = {
@@ -114,10 +114,12 @@ class Seq2SeqForecaster(BaseTF2Forecaster):
         # self.distributed = distributed
         # self.distributed_backend = distributed_backend
         # self.workers_per_node = workers_per_node
+        from bigdl.nano.utils.log4Error import invalidInputError
         if distributed:
-            raise NotImplementedError("We will add distributed support in subsequent releases, "
-                                      "the feature is currently unavailable, "
-                                      "Please set distributed=False.")
+            invalidInputError(False,
+                              "We will add distributed support in subsequent releases, "
+                              "the feature is currently unavailable, "
+                              "Please set distributed=False.")
 
         # other settings
         self.lr = lr

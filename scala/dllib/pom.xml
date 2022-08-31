@@ -18,6 +18,7 @@
         <scoverage.aggregate>true</scoverage.aggregate>
         <runSpecsInParallel>false</runSpecsInParallel>
         <tagsToExclude>com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
+        <bigdl.basedir>${project.parent.basedir}</bigdl.basedir>
     </properties>
 
     <dependencies>
@@ -72,7 +73,7 @@
             <artifactId>joda-time</artifactId>
             <version>2.9.9</version>
             <scope>${spark-scope}</scope>
-        </dependency>
+    	</dependency>
         <dependency>
             <groupId>org.apache.zookeeper</groupId>
             <artifactId>zookeeper</artifactId>
@@ -82,6 +83,10 @@
                 <exclusion>
                     <groupId>io.netty</groupId>
                     <artifactId>netty-codec</artifactId>
+	    	</exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -107,23 +112,23 @@
                     <artifactId>joda-time</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
+    	</dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>3.0.1</version>
-            <scope>compile</scope>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.36</version>
+            <scope>${spark-scope}</scope>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.11.4</version>
+            <version>${jackson.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-scala_${scala.major.version}</artifactId>
-            <version>2.11.4</version>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.intel.analytics.bigdl.core.dist</groupId>
@@ -187,11 +192,11 @@
             <groupId>com.intel.analytics.bigdl.spark-version</groupId>
             <artifactId>${spark-version.project}</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
+    	</dependency>
+	<dependency>
             <groupId>org.scalanlp</groupId>
             <artifactId>breeze_${scala.major.version}</artifactId>
-            <version>${breeze.version}</version>
+	    <version>${breeze.version}</version>
             <exclusions>
                 <!-- This is included as a compile-scoped dependency by jtransforms, which is
                      a dependency of breeze. -->
@@ -202,10 +207,18 @@
                 <exclusion>
                     <groupId>org.apache.commons</groupId>
                     <artifactId>commons-math3</artifactId>
+	    	</exclusion>
+                <exclusion>
+                    <groupId>com.github.fommil.netlib</groupId>
+                    <artifactId>core</artifactId>
+	    	</exclusion>
+                <exclusion>
+                    <groupId>com.github.rwl</groupId>
+                    <artifactId>jtransforms</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
+	<dependency>
             <groupId>ml.dmlc</groupId>
             <artifactId>xgboost4j_${scala.major.version}</artifactId>
             <version>1.1.2</version>
@@ -232,9 +245,18 @@
                 <exclusion>
                     <groupId>org.scala-lang</groupId>
                     <artifactId>scala-compiler</artifactId>
+	    	</exclusion>
+                <exclusion>
+                    <groupId>com.typesafe.akka</groupId>
+                    <artifactId>akka-actor_2.11</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
+    	</dependency>
+	<dependency>
+    	    <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-actor_${scala.major.version}</artifactId>
+            <version>2.5.32</version>
+	</dependency>
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-mapper-asl</artifactId>
@@ -260,7 +282,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>11.0.2</version>
+            <version>31.0.1-jre</version>
         </dependency>
         <dependency>
             <groupId>com.github.scopt</groupId>
@@ -458,31 +480,6 @@
                     <highlighting>true</highlighting>
                 </configuration>
 
-            </plugin>
-
-            <plugin>
-                <groupId>org.scalastyle</groupId>
-                <artifactId>scalastyle-maven-plugin</artifactId>
-                <version>0.8.0</version>
-                <configuration>
-                    <verbose>false</verbose>
-                    <failOnViolation>true</failOnViolation>
-                    <includeTestSourceDirectory>true</includeTestSourceDirectory>
-                    <failOnWarning>false</failOnWarning>
-                    <sourceDirectory>${basedir}/src/main/scala</sourceDirectory>
-                    <testSourceDirectory>${basedir}/src/test/scala</testSourceDirectory>
-                    <configLocation>${project.parent.basedir}/scalastyle_config.xml</configLocation>
-                    <outputFile>${project.build.directory}/stylecheck/scalastyle-output.xml</outputFile>
-                    <inputEncoding>UTF-8</inputEncoding>
-                    <outputEncoding>UTF-8</outputEncoding>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

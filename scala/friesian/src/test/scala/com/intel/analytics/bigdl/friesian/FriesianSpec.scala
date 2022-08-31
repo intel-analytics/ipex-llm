@@ -16,18 +16,17 @@
 
 package com.intel.analytics.bigdl.friesian
 
-import java.net.URL
-
 import com.intel.analytics.bigdl.dllib.NNContext
 import com.intel.analytics.bigdl.friesian.python.PythonFriesian
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.core.config.Configurator
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types.{StructField, _}
+import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Row, SQLContext}
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.{SparkConf, SparkContext, SparkException}
 
+import java.net.URL
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 
@@ -94,44 +93,6 @@ class FriesianSpec extends ZooSpecHelper {
     val cols = Array("col_2", "col_3")
     val dfClip = friesian.clip(df, cols.toList.asJava, 1, 2)
     dfClip.show()
-  }
-
-  "AssignStringIdx limit null" should "work properly" in {
-    val path = resource.getFile + "/data1.parquet"
-    val df = sqlContext.read.parquet(path)
-    val cols = Array("col_4", "col_5")
-    val stringIdxList = friesian.generateStringIdx(df, cols.toList.asJava, null)
-    TestUtils.conditionFailTest(stringIdxList.get(0).count == 3)
-    TestUtils.conditionFailTest(stringIdxList.get(1).count == 2)
-  }
-
-  "AssignStringIdx limit int" should "work properly" in {
-    val path = resource.getFile + "/data1.parquet"
-    val df = sqlContext.read.parquet(path)
-    val cols = Array("col_4", "col_5")
-    val stringIdxList = friesian.generateStringIdx(df, cols.toList.asJava, "2")
-    TestUtils.conditionFailTest(stringIdxList.get(0).count == 1)
-    TestUtils.conditionFailTest(stringIdxList.get(1).count == 1)
-  }
-
-  "AssignStringIdx limit dict" should "work properly" in {
-    val path = resource.getFile + "/data1.parquet"
-    val df = sqlContext.read.parquet(path)
-    val cols = Array("col_4", "col_5")
-    val stringIdxList = friesian.generateStringIdx(df, cols.toList.asJava, "col_4:1,col_5:3")
-    TestUtils.conditionFailTest(stringIdxList.get(0).count == 3)
-    TestUtils.conditionFailTest(stringIdxList.get(1).count == 1)
-  }
-
-  "AssignStringIdx limit order by freq" should "work properly" in {
-    val path = resource.getFile + "/data1.parquet"
-    val df = sqlContext.read.parquet(path)
-    val cols = Array("col_4", "col_5")
-    val stringIdxList = friesian.generateStringIdx(df, cols.toList.asJava, orderByFrequency = true)
-    val col4Idx = stringIdxList.get(0).collect().sortBy(_.getInt(1))
-    val col5Idx = stringIdxList.get(1).collect().sortBy(_.getInt(1))
-    TestUtils.conditionFailTest(col4Idx(0).getString(0) == "abc")
-    TestUtils.conditionFailTest(col5Idx(0).getString(0) == "aa")
   }
 
   "mask Int" should "work properly" in {
@@ -226,7 +187,7 @@ class FriesianSpec extends ZooSpecHelper {
     TestUtils.conditionFailTest(dft.filter("size(history_list) = 4").count() == 3)
     TestUtils.conditionFailTest(
       dft.filter(dft("name") === "rose").select("history").collect()(0)(0).toString()
-      == "WrappedArray(1, 2, 0, 0)")
+        == "WrappedArray(1, 2, 0, 0)")
   }
 
   "postpad Double" should "work properly" in {
@@ -240,14 +201,19 @@ class FriesianSpec extends ZooSpecHelper {
       StructField("history_list", ArrayType(ArrayType(DoubleType)), true)
     ))
     val df = sqlContext.createDataFrame(data, schema)
-    val dft = friesian.postPad(df, Array("history", "history_list").toList.asJava, 4)
+    assertThrows[SparkException] {
+      val df2 = friesian.postPad(df, Array("history", "history_list").toList.asJava,
+        4, "5.6")
+      df2.show(3, false)
+    }
+    val dft = friesian.postPad(df, Array("history", "history_list").toList.asJava, 4, 6.5)
     dft.schema.fields.map(x => x.dataType).foreach(println(_))
 
     TestUtils.conditionFailTest(dft.filter("size(history) = 4").count() == 3)
     TestUtils.conditionFailTest(dft.filter("size(history_list) = 4").count() == 3)
     TestUtils.conditionFailTest(
       dft.filter(dft("name") === "rose").select("history").collect()(0)(0).toString()
-      == "WrappedArray(1.0, 2.0, 0.0, 0.0)")
+        == "WrappedArray(1.0, 2.0, 6.5, 6.5)")
   }
 
   "postpad Long" should "work properly" in {
@@ -261,14 +227,38 @@ class FriesianSpec extends ZooSpecHelper {
       StructField("history_list", ArrayType(ArrayType(LongType)), true)
     ))
     val df = sqlContext.createDataFrame(data, schema)
-    val dft = friesian.postPad(df, Array("history", "history_list").toList.asJava, 4)
-//    dft.schema.fields.map(x => x.dataType).foreach(println(_))
+    val dft = friesian.postPad(df, Array("history", "history_list").toList.asJava, 4, 5.6)
+    dft.show(3, false)
+    //    dft.schema.fields.map(x => x.dataType).foreach(println(_))
     TestUtils.conditionFailTest(dft.filter("size(history) = 4").count() == 3)
     TestUtils.conditionFailTest(dft.filter("size(history_list) = 4").count() == 3)
     TestUtils.conditionFailTest(
       dft.filter(dft("name") === "rose").select("history").collect()(0)(0).toString()
-      == "WrappedArray(1, 2, 0, 0)")
+        == "WrappedArray(1, 2, 5, 5)")
   }
+
+  "postpad String" should "work properly" in {
+    val data = sc.parallelize(Seq(
+      Row("jack", Seq("1", "2", "3", "4", "5"), Seq(Seq("1", "2", "3"), Seq("1", "2", "3"))),
+      Row("alice", Seq("4", "5", "6", "7", "8"), Seq(Seq("1", "2", "3"), Seq("1", "2", "3"))),
+      Row("rose", Seq("1", "2"), Seq(Seq("1", "2", "3"), Seq("1", "2", "3"), Seq("1", "2", "3")))))
+    val schema = StructType(Array(
+      StructField("name", StringType, true),
+      StructField("history", ArrayType(StringType), true),
+      StructField("history_list", ArrayType(ArrayType(StringType)), true)
+    ))
+    val df = sqlContext.createDataFrame(data, schema)
+    val df2 = friesian.postPad(df, Array("history", "history_list").toList.asJava, 4, "<MSK>")
+    val dft = friesian.postPad(df2, Array("history", "history_list").toList.asJava, 5, 2)
+    dft.show(3, false)
+    dft.schema.fields.map(x => x.dataType).foreach(println(_))
+    TestUtils.conditionFailTest(dft.filter("size(history) = 5").count() == 3)
+    TestUtils.conditionFailTest(dft.filter("size(history_list) = 5").count() == 3)
+    TestUtils.conditionFailTest(
+      dft.filter(dft("name") === "rose").select("history").collect()(0)(0).toString()
+        == "WrappedArray(1, 2, <MSK>, <MSK>, 2)")
+  }
+
 
   "addHisSeq int and float" should "work properly" in {
     val data = sc.parallelize(Seq(

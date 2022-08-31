@@ -67,7 +67,8 @@ def estimate_th(y,
     :param dist_measure: measure of distance
     :return: the threshold
     """
-    assert y.shape == yhat.shape
+    from bigdl.nano.utils.log4Error import invalidInputError
+    invalidInputError(y.shape == yhat.shape, "y shape doesn't match yhat shape")
     diff = [dist_measure.abs_dist(m, n) for m, n in zip(y, yhat)]
     if mode == "default":
         threshold = np.percentile(diff, (1 - ratio) * 100)
@@ -78,7 +79,7 @@ def estimate_th(y,
         t = norm.ppf(1 - ratio)
         return t * sigma + mu
     else:
-        raise ValueError("Does not support", mode)
+        invalidInputError(False, f"Does not support ${mode}")
 
 
 def detect_all(y, yhat, th, dist_measure):
@@ -128,31 +129,33 @@ def detect_anomaly(y,
     :param dist_measure: measure of distance
     :return: the anomaly values indexes in the samples, i.e. num_samples dimension.
     """
+    from bigdl.nano.utils.log4Error import invalidInputError
     if isinstance(th, int) or isinstance(th, float):
         if yhat is None:
-            raise ValueError("Please specify a threshold range (min,max) "
-                             "if forecast values are not available")
+            invalidInputError(False,
+                              "Please specify a threshold range (min,max) "
+                              "if forecast values are not available")
         return detect_all(y, yhat, th, dist_measure)
     elif isinstance(th, tuple) and len(th) == 2:
         # min max values are scalars
         if (isinstance(th[0], int) or isinstance(th[0], float)) \
                 and (isinstance(th[1], int) or isinstance(th[1], float)):
             if th[0] > th[1]:
-                raise ValueError(
-                    "In threshold (min,max), max should be larger than min")
+                invalidInputError(False,
+                                  "In threshold (min,max), max should be larger than min")
             return detect_range(y, th)
         # min max values are arrays
         elif th[0].shape == y.shape and th[-1].shape == y.shape:
             if np.any((th[1] - th[0]) < 0):
-                raise ValueError("In threshold (min,max) ",
-                                 "each data point in max tensor should be larger than min")
+                invalidInputError(False,
+                                  "In threshold (min,max) each data point in max tensor"
+                                  " should be larger than min")
             return detect_range_arr(y, th)
         else:
-            raise ValueError("Threshold format", str(th), "is not supported")
+            invalidInputError(False, f"Threshold format ${str(th)} is not supported")
     else:
-        raise ValueError(
-            "Threshold format", str(th),
-            "is not supported")
+        invalidInputError(False,
+                          f"Threshold format ${str(th)} is not supported")
 
 
 class ThresholdDetector(AnomalyDetector):
@@ -236,9 +239,10 @@ class ThresholdDetector(AnomalyDetector):
 
         :return: anomaly score for each sample, in an array format with the same size as input
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if y is None:
             if self.anomaly_scores_ is None:
-                raise RuntimeError("please call fit before calling score")
+                invalidInputError(False, "please call fit before calling score")
             return self.anomaly_scores_
         else:
             return detect_anomaly(y,
@@ -252,6 +256,7 @@ class ThresholdDetector(AnomalyDetector):
 
         :return: the indexes of the anomalies.
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.anomaly_indexes_ is None:
-            raise RuntimeError("Please call fit first")
+            invalidInputError(False, "Please call fit first")
         return self.anomaly_indexes_

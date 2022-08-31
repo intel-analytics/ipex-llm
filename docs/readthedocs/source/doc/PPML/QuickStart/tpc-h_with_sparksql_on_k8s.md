@@ -2,42 +2,56 @@
 
 ### Prerequisites ###
 - Hardware that supports SGX
-- A fully configured Kubernetes cluster
+- A fully configured Kubernetes cluster 
 - Intel SGX Device Plugin to use SGX in K8S cluster (install following instructions [here](https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html "here"))
 
 ### Prepare TPC-H kit and data ###
-1. Download and compile tpc-h 
-```bash
-git clone https://github.com/intel-analytics/zoo-tutorials.git
-cd zoo-tutorials/tpch-spark
+1. Generate data
 
-sed -i 's/2.11.7/2.12.1/g' tpch.sbt
-sed -i 's/2.4.0/3.1.2/g' tpch.sbt
-sbt package
+Go to [TPC Download](https://www.tpc.org/tpc_documents_current_versions/current_specifications5.asp) site, choose `TPC-H` source code, then download the TPC-H toolkits.
+After you download the tpc-h tools zip and uncompressed the zip file. Go to `dbgen` directory, and create a makefile based on `makefile.suite`, and run `make`.
 
-cd dbgen
-make
+This should generate an executable called `dbgen`
 ```
-2. Generate data
+./dbgen -h
+```
 
-Generate input data with size ~100GB (user can adjust data size to need):
-```bash
-./dbgen -s 100
+gives you the various options for generating the tables. The simplest case is running:
+```
+./dbgen
+```
+which generates tables with extension `.tbl` with scale 1 (default) for a total of rougly 1GB size across all tables. For different size tables you can use the `-s` option:
+```
+./dbgen -s 10
+```
+will generate roughly 10GB of input data.
+
+You can then either upload your data to remote file system or read them locally.
+
+2. Encrypt Data
+Encrypt data with specified Key Management Service (`SimpleKeyManagementService`, or `EHSMKeyManagementService` , or `AzureKeyManagementService`)
+
+The example code of encrypt data with `SimpleKeyManagementService` is like below:
+```
+java -cp '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/lib/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/* \
+   -Xmx10g \
+   com.intel.analytics.bigdl.ppml.examples.tpch.EncryptFiles \
+   --inputPath xxx/dbgen \
+   --outputPath xxx/dbgen-encrypted
 ```
 
 ### Deploy PPML TPC-H on Kubernetes ###
 1.  Pull docker image
-```bash
+```
 sudo docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT
 ```
 2. Prepare SGX keys (following instructions [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-graphene#11-prepare-the-keyspassworddataenclave-keypem "here")), make sure keys and tpch-spark can be accessed on each K8S node
 3. Start a bigdl-ppml enabled Spark K8S client container with configured local IP, key, tpch and kuberconfig path
-```bash
-export ENCLAVE_KEY=/YOUR_DIR/keys/enclave-key.pem
-export DATA_PATH=/YOUR_DIR/zoo-tutorials/tpch-spark
-export KEYS_PATH=/YOUR_DIR/keys
-export SECURE_PASSWORD_PATH=/YOUR_DIR/password
-export KUBERCONFIG_PATH=/YOUR_DIR/kuberconfig
+```
+export ENCLAVE_KEY=/root/keys/enclave-key.pem
+export DATA_PATH=/root/zoo-tutorials/tpch-spark
+export KEYS_PATH=/root/keys
+export KUBERCONFIG_PATH=/root/kuberconfig
 export LOCAL_IP=$local_ip
 export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT
 sudo docker run -itd \
@@ -51,7 +65,6 @@ sudo docker run -itd \
         -v $ENCLAVE_KEY:/graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
         -v $DATA_PATH:/ppml/trusted-big-data-ml/work/tpch-spark \
         -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
-        -v $SECURE_PASSWORD_PATH:/ppml/trusted-big-data-ml/work/password \
         -v $KUBERCONFIG_PATH:/root/.kube/config \
         -e RUNTIME_SPARK_MASTER=k8s://https://$LOCAL_IP:6443 \
         -e RUNTIME_K8S_SERVICE_ACCOUNT=spark \
@@ -101,17 +114,14 @@ spec:
         path: /path/to/kuberconfig
 ```
 6. Run PPML TPC-H
-```bash
+bash```
 secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin` && \
 export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
 export SPARK_LOCAL_IP=$LOCAL_IP && \
-export HDFS_HOST=$hdfs_host_ip && \
-export HDFS_PORT=$hdfs_port && \
-export TPCH_DIR=/ppml/trusted-big-data-ml/work/tpch-spark \
-export INPUT_DIR=$TPCH_DIR/dbgen \
-export OUTPUT_DIR=hdfs://$HDFS_HOST:$HDFS_PORT/tpc-h/output \
+export INPUT_DIR=xxx/dbgen \
+export OUTPUT_DIR=xxx/output \
   /opt/jdk8/bin/java \
-    -cp '$TPCH_DIR/target/scala-2.12/spark-tpc-h-queries_2.12-1.0.jar:$TPCH_DIR/dbgen/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+    -cp '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/lib/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
     -Xmx10g \
     -Dbigdl.mklNumThreads=1 \
     org.apache.spark.deploy.SparkSubmit \
@@ -169,8 +179,13 @@ export OUTPUT_DIR=hdfs://$HDFS_HOST:$HDFS_PORT/tpc-h/output \
     --conf spark.ssl.trustStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
     --conf spark.ssl.trustStorePassword=$secure_password \
     --conf spark.ssl.trustStoreType=JKS \
-    --class main.scala.TpchQuery \
+    --conf spark.bigdl.kms.type=SimpleKeyManagementService \
+    --conf spark.bigdl.kms.simple.id=simpleAPPID \
+    --conf spark.bigdl.kms.simple.key=simpleAPPKEY \
+    --conf spark.bigdl.kms.key.primary=xxxx/primaryKey \
+    --conf spark.bigdl.kms.key.data=xxxx/dataKey \
+    --class com.intel.analytics.bigdl.ppml.examples.tpch.TpchQuery \
     --verbose \
-    $TPCH_DIR/target/scala-2.12/spark-tpc-h-queries_2.12-1.0.jar \
-    $INPUT_DIR $OUTPUT_DIR
+    /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/lib/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar \
+    $INPUT_DIR $OUTPUT_DIR aes_cbc_pkcs5padding plain_text [QUERY]
 ```

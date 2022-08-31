@@ -16,6 +16,7 @@
 
 from nlp_architect.models import chunker
 from bigdl.orca.tfpark.text.keras.text_model import TextKerasModel
+from bigdl.dllib.utils.log4Error import *
 
 
 class SequenceTagger(TextKerasModel):
@@ -49,7 +50,8 @@ class SequenceTagger(TextKerasModel):
                  char_vocab_size=None, word_length=12, feature_size=100, dropout=0.2,
                  classifier='softmax', optimizer=None):
         classifier = classifier.lower()
-        assert classifier in ['softmax', 'crf'], "classifier should be either softmax or crf"
+        invalidInputError(classifier in ['softmax', 'crf'],
+                          "classifier should be either softmax or crf")
         super(SequenceTagger, self).__init__(chunker.SequenceTagger(use_cudnn=False),
                                              vocabulary_size=word_vocab_size,
                                              num_pos_labels=num_pos_labels,

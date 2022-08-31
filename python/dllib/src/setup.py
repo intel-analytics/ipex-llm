@@ -98,7 +98,7 @@ def setup_package():
         scripts=scripts,
         install_requires=[
             'numpy>=1.19.5', 'pyspark==2.4.6', 'conda-pack==0.3.1',
-            'six>=1.10.0', 'bigdl-core==2.1.0b20220321'],
+            'six>=1.10.0', 'bigdl-core=='+VERSION],
         dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],
         include_package_data=True,
         package_data={"bigdl.share.dllib": ['lib/bigdl-dllib*.jar', 'conf/*',

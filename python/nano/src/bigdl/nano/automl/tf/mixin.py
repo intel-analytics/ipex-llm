@@ -15,17 +15,22 @@
 #
 
 import copy
+import warnings
 
 from .objective import Objective
 from bigdl.nano.automl.hpo.backend import create_hpo_backend
 from bigdl.nano.automl.hpo.search import (
     _search_summary,
     _end_search,
-    _check_optimize_direction,
-    _filter_tuner_args,
-    _check_search_args,
+    _create_study,
+    _validate_args,
     _strip_val_prefix,
+    _prepare_args,
 )
+from bigdl.nano.automl.hpo.space import AutoObject
+from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.automl.utils.parallel import run_parallel
+import math
 
 
 class HPOMixin:
@@ -89,27 +94,157 @@ class HPOMixin:
             else:
                 target_metric = prefix + str(compile_metrics)
         elif isinstance(target_metric, list):
-            raise ValueError("multiple objective metric is not supported.")
+            invalidInputError(False, "multiple objective metric is not supported.")
         else:
             stripped_target_metric = _strip_val_prefix(target_metric)
             if compile_metrics is None:
                 if stripped_target_metric not in ['loss', 'val_loss']:
-                    raise ValueError("target metric is should be loss or val_loss",
-                                     "if metrics is not provided in compile")
+                    invalidInputError(False, "target metric is should be loss or val_loss"
+                                             " if metrics is not provided in compile")
             elif isinstance(compile_metrics, list):
                 target_not_in = stripped_target_metric not in ['loss', 'val_loss']
                 if stripped_target_metric not in compile_metrics and target_not_in:
-                    raise ValueError("invalid target metric")
+                    invalidInputError(False, "invalid target metric")
             else:
                 target_not_in = stripped_target_metric not in ['loss', 'val_loss']
                 if stripped_target_metric != compile_metrics and target_not_in:
-                    raise ValueError("invalid target metric")
+                    invalidInputError(False, "invalid target metric")
         return target_metric
+
+    @staticmethod
+    def _create_objective(model_builder,
+                          target_metric,
+                          isprune,
+                          fit_kwargs,
+                          backend,
+                          report_method):
+        objective = Objective(
+            model=model_builder,
+            target_metric=target_metric,
+            pruning=isprune,
+            backend=backend,
+            report_method=report_method,
+            **fit_kwargs,
+        )
+        return objective
+
+    def _get_model_builder_args(self):
+        return {'model_init_args_func': self._model_init_args_func,
+                'model_init_args_func_kwargs': self._get_model_init_args_func_kwargs(),
+                'modelcls': self.model_class,
+                'compile_args': self.compile_args,
+                'compile_kwargs': self.compile_kwargs,
+                'backend': self.backend}
+
+    @staticmethod
+    def _get_model_builder(model_init_args_func,
+                           model_init_args_func_kwargs,
+                           modelcls,
+                           compile_args,
+                           compile_kwargs,
+                           backend):
+
+        def model_builder(trial):
+            model = modelcls(**model_init_args_func(
+                trial,
+                **model_init_args_func_kwargs))
+            # self._model_compile(model, trial)
+            # instantiate optimizers if it is autoobj
+            optimizer = compile_kwargs.get('optimizer', None)
+            if optimizer and isinstance(optimizer, AutoObject):
+                optimizer = backend.instantiate(trial, optimizer)
+                compile_kwargs['optimizer'] = optimizer
+            model.compile(*compile_args, **compile_kwargs)
+            return model
+        return model_builder
+
+    @staticmethod
+    def _run_search_subproc(study,
+                            get_model_builder_func,
+                            get_model_builder_func_args,
+                            backend,
+                            target_metric,
+                            isprune,
+                            report_method,
+                            fit_kwargs,
+                            run_kwargs):
+        """A stand-alone function for running parallel search."""
+        # # run optimize
+        model_builder = get_model_builder_func(**get_model_builder_func_args)
+
+        objective = HPOMixin._create_objective(model_builder,
+                                               target_metric,
+                                               isprune,
+                                               fit_kwargs,
+                                               backend,
+                                               report_method)
+
+        study.optimize(objective, **run_kwargs)
+
+    def _run_search_n_procs(self, isprune, n_procs=4):
+
+        # subp_study = copy.deepcopy(self.study)
+        # subp_objective = copy.deepcopy(self.objective)
+        subp_run_kwargs = copy.deepcopy(self.run_kwargs)
+        n_trials = subp_run_kwargs.get('n_trials', None)
+        if n_trials:
+            subp_n_trials = math.ceil(n_trials / n_procs)
+            subp_run_kwargs['n_trials'] = subp_n_trials
+
+        subp_kwargs = {'study': self.study,
+                       'get_model_builder_func': self._get_model_builder,
+                       'get_model_builder_func_args': self._get_model_builder_args(),
+                       'backend': self.backend,
+                       'target_metric': self.target_metric,
+                       'isprune': isprune,
+                       'report_method': self.report_method,
+                       'fit_kwargs': self.fit_kwargs,
+                       'run_kwargs': subp_run_kwargs}
+
+        # set_loky_pickler('pickle')
+        # Parallel(n_jobs=2)(_run_search(**subp_kwargs) for _ in range(1))
+        # set_loky_pickler()
+        run_parallel(func=self._run_search_subproc,
+                     kwargs=subp_kwargs,
+                     n_procs=n_procs)
+
+    def _run_search_n_threads(self, isprune, n_threads=1):
+        self.run_kwargs['n_jobs'] = n_threads
+        self._run_search(isprune)
+
+    def _run_search(self, isprune):
+        if self.objective is None:
+            self.objective = self._create_objective(self._model_build,
+                                                    self.target_metric,
+                                                    isprune,
+                                                    self.fit_kwargs,
+                                                    self.backend,
+                                                    self.report_method)
+
+        self.study.optimize(self.objective, **self.run_kwargs)
+
+    @staticmethod
+    def _prepare_report_method(mode, direction):
+        if mode == 'auto':
+            if direction == 'maximize':
+                mode = 'max'
+            else:
+                mode = 'min'
+        if mode == 'max':
+            return max
+        elif mode == 'min':
+            return min
+        elif mode == 'last':
+            return lambda x: x[-1]
+        else:
+            invalidInputError(False, "mode is not recognized")
 
     def search(
         self,
         resume=False,
         target_metric=None,
+        n_parallels=1,
+        target_metric_mode='last',
         **kwargs
     ):
         """
@@ -119,69 +254,64 @@ class HPOMixin:
             Defaults to False.
         :param target_metric: str, optional. the target metric to optimize.
             Defaults to "accuracy".
+        :param n_parallels: number of parallel processes to run trials.
+        :param target_metric_mode: target metric of which epoch to report as the final result,
+            possible options are:
+                'max': maximum value of all epochs's results
+                'min': minimum value of all epochs's results
+                'last': result of the last epoch
+                'auto': if direction is maximize, use max mode
+                        if direction is minimize, use min mode
         :param kwargs: model.fit arguments (e.g. batch_size, validation_data, etc.)
             and search backend arguments (e.g. n_trials, pruner, etc.)
             are allowed in kwargs.
         """
-        _check_search_args(search_args=kwargs,
-                           legal_keys=[HPOMixin.FIT_KEYS,
-                                       HPOMixin.TUNE_CREATE_KEYS,
-                                       HPOMixin.TUNE_RUN_KEYS])
+        do_create = True
+        if resume:
+            if 'storage' not in kwargs.keys() or kwargs['storage'].strip() == "":
+                if self.study is None:
+                    warnings.warn(
+                        "A new study is created since there's no existing study to resume from.",
+                        UserWarning)
+                else:
+                    do_create = False
 
-        pruning = True if kwargs.get('pruner', None) else False
+        if 'storage' in kwargs.keys() and kwargs['storage'].strip() == "":
+            del kwargs['storage']
 
-        # # create objective
-        if self.objective is None:
-            target_metric = self._fix_target_metric(target_metric, kwargs)
-            fit_kwargs = _filter_tuner_args(kwargs, HPOMixin.FIT_KEYS)
-            self.objective = Objective(
-                model=self._model_build,
-                target_metric=target_metric,
-                pruning=pruning,
-                **fit_kwargs,
-            )
+        search_kwargs = kwargs or {}
+        self.target_metric = self._fix_target_metric(target_metric, kwargs)
 
-        # # create study
-        if self.study is None:
-            if not resume:
-                load_if_exists = False
-                print("Starting a new tuning")
+        _validate_args(search_kwargs,
+                       self.target_metric,
+                       legal_keys=[HPOMixin.FIT_KEYS,
+                                   HPOMixin.TUNE_CREATE_KEYS,
+                                   HPOMixin.TUNE_RUN_KEYS])
+
+        (self.create_kwargs, self.run_kwargs, self.fit_kwargs) \
+            = _prepare_args(search_kwargs,
+                            HPOMixin.TUNE_CREATE_KEYS,
+                            HPOMixin.TUNE_RUN_KEYS,
+                            HPOMixin.FIT_KEYS,
+                            self.backend)
+
+        self.report_method = self._prepare_report_method(
+            target_metric_mode, self.create_kwargs.get('direction', None))
+
+        # create study
+        if do_create:
+            self.study = _create_study(resume, self.create_kwargs, self.backend)
+
+        isprune = True if self.create_kwargs.get('pruner', None) else False
+        if n_parallels and n_parallels > 1:
+            # if storage is in-memory, use parallel threads instead of multi-process
+            # this may suffer form python's GIL.
+            if self.create_kwargs.get('storage', "").strip() == "":
+                self._run_search_n_threads(isprune, n_threads=n_parallels)
             else:
-                load_if_exists = True
-                print("Resume the last tuning...")
-
-            study_create_kwargs = _filter_tuner_args(kwargs, HPOMixin.TUNE_CREATE_KEYS)
-            _check_optimize_direction(
-                direction=study_create_kwargs.get('direction', None),
-                directions=study_create_kwargs.get('directions', None),
-                metric=target_metric)
-
-            # prepare sampler and pruner args
-            sampler_type = study_create_kwargs.get('sampler', None)
-            if sampler_type:
-                sampler_args = study_create_kwargs.get('sampler_kwargs', {})
-                sampler = self.backend.create_sampler(sampler_type, sampler_args)
-                study_create_kwargs['sampler'] = sampler
-                study_create_kwargs.pop('sampler_kwargs', None)
-
-            pruner_type = study_create_kwargs.get('pruner', None)
-            if pruner_type:
-                pruner_args = study_create_kwargs.get('pruner_kwargs', {})
-                pruner = self.backend.create_pruner(pruner_type, pruner_args)
-                study_create_kwargs['pruner'] = pruner
-                study_create_kwargs.pop('pruner_kwargs', None)
-
-            study_create_kwargs['load_if_exists'] = load_if_exists
-            # create study
-            self.study = self.backend.create_study(**study_create_kwargs)
-
-        # renamed callbacks to tune_callbacks to avoid conflict with fit param
-        study_optimize_kwargs = _filter_tuner_args(kwargs, HPOMixin.TUNE_RUN_KEYS)
-        study_optimize_kwargs['callbacks'] = study_optimize_kwargs.get('tune_callbacks', None)
-        study_optimize_kwargs.pop('tune_callbacks', None)
-        study_optimize_kwargs['show_progress_bar'] = False
-        # # run optimize
-        self.study.optimize(self.objective, **study_optimize_kwargs)
+                self._run_search_n_procs(isprune, n_procs=n_parallels)
+        else:
+            self._run_search(isprune)
 
         self.tune_end = False
 
@@ -202,7 +332,7 @@ class HPOMixin:
 
         :param use_trial_id: int(optional) params of which trial to be used.
             Defaults to -1.
-        :raise: ValueError: error when tune is not called before end_search.
+        :throw: ValueError: error when tune is not called before end_search.
         """
         self._lazymodel = _end_search(study=self.study,
                                       model_builder=self._model_build,
@@ -224,14 +354,18 @@ class HPOMixin:
 
     def _model_compile(self, model, trial):
         # for lazy model compile
-        # TODO support searable compile args
-        # config = self.backend.sample_config(trial, kwspaces)
-        # TODO objects like Optimizers has internal states so
+        # objects like Optimizers has internal states so
         # each trial needs to have a copy of its own.
-        # should allow users to pass a creator function
+        # TODO may allow users to pass a creator function
         # to avoid deep copy of objects
         compile_args = copy.deepcopy(self.compile_args)
         compile_kwargs = copy.deepcopy(self.compile_kwargs)
+
+        # instantiate optimizers if it is autoobj
+        optimizer = compile_kwargs.get('optimizer', None)
+        if optimizer and isinstance(optimizer, AutoObject):
+            optimizer = self.backend.instantiate(trial, optimizer)
+            compile_kwargs['optimizer'] = optimizer
         model.compile(*compile_args, **compile_kwargs)
 
     def _model_build(self, trial):
@@ -253,8 +387,8 @@ class HPOMixin:
         # NOTE: keep the unused "method" argument so that
         # only the methods which are actually called are created
         if not self._lazymodel:
-            raise ValueError(
-                "Model is not actually built yet. Please call \
-                'end_search' before calling '" + name + "'")
+            invalidInputError(False,
+                              "Model is not actually built yet. Please call \
+                              'end_search' before calling '" + name + "'")
         internal_m = getattr(self._lazymodel, name)
         return internal_m(*args, **kwargs)

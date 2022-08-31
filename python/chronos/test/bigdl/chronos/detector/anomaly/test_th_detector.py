@@ -162,22 +162,22 @@ class TestThresholdDetector(TestCase):
         time = np.arange(0, 1, 0.5)
         y = np.sin(time)
         td.set_params(mode="dummy")
-        with pytest.raises(ValueError):
+        with pytest.raises(RuntimeError):
             td.fit(y, y)
         td.set_params(mode="gaussian")
-        with pytest.raises(ValueError):
+        with pytest.raises(RuntimeError):
             td.fit(y)
         td.set_params(threshold="1")
-        with pytest.raises(ValueError):
+        with pytest.raises(RuntimeError):
             td.fit(y)
         td.set_params(threshold=(1, -1))
-        with pytest.raises(ValueError):
+        with pytest.raises(RuntimeError):
             td.fit(y)
         td.set_params(threshold=(np.array([-1]), np.array([-1])))
-        with pytest.raises(ValueError):
+        with pytest.raises(RuntimeError):
             td.fit(y)
         td.set_params(threshold=(np.array([1, 1]), np.array([-1, -1])))
-        with pytest.raises(ValueError):
+        with pytest.raises(RuntimeError):
             td.fit(y)
 
 if __name__ == "__main__":

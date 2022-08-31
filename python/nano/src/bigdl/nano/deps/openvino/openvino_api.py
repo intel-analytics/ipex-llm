@@ -16,7 +16,7 @@
 from functools import partial
 
 
-def PytorchOpenVINOModel(model, input_sample=None):
+def PytorchOpenVINOModel(model, input_sample=None, logging=True, **export_kwargs):
     """
     Create a OpenVINO model from pytorch.
 
@@ -24,12 +24,33 @@ def PytorchOpenVINOModel(model, input_sample=None):
                   path to Openvino saved model.
     :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
                          model is a LightningModule with any dataloader attached, defaults to None
+    :param logging: whether to log detailed information of model conversion. default: True.
+    :param **export_kwargs: will be passed to torch.onnx.export function.
     :return: PytorchOpenVINOModel model for OpenVINO inference.
     """
-    from .pytorch.pytorch_openvino_model import PytorchOpenVINOModel
-    return PytorchOpenVINOModel(model, input_sample)
+    from .pytorch.model import PytorchOpenVINOModel
+    return PytorchOpenVINOModel(model, input_sample, logging, **export_kwargs)
 
 
 def load_openvino_model(path):
-    from .pytorch.pytorch_openvino_model import PytorchOpenVINOModel
+    from .pytorch.model import PytorchOpenVINOModel
     return PytorchOpenVINOModel._load(path)
+
+
+def KerasOpenVINOModel(model, input_sample=None):
+    """
+    Create a OpenVINO model from Keras.
+
+    :param model: Keras model to be converted to OpenVINO for inference or
+                  path to Openvino saved model.
+    :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
+                         model is a LightningModule with any dataloader attached, defaults to None
+    :return: KerasOpenVINOModel model for OpenVINO inference.
+    """
+    from .tf.model import KerasOpenVINOModel
+    return KerasOpenVINOModel(model)
+
+
+def OpenVINOModel(model, device='CPU'):
+    from .core.model import OpenVINOModel
+    return OpenVINOModel(model, device)

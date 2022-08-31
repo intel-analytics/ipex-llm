@@ -132,13 +132,13 @@ class TestTimeSequenceFeature(ZooTestCase):
         feat = TimeSequenceFeatureTransformer(future_seq_len=1, dt_col="datetime",
                                               target_col="values", drop_missing=True)
 
-        with pytest.raises(ValueError) as excinfo:
+        with pytest.raises(RuntimeError) as excinfo:
             feat.fit_transform(df, **config)
         assert 'np.datetime64' in str(excinfo.value)
 
         # if there is NaT in datetime, raise an error
         df.loc[1, "datetime"] = None
-        with pytest.raises(ValueError, match=r".* datetime .*"):
+        with pytest.raises(RuntimeError, match=r".* datetime .*"):
             feat.fit_transform(df, **config)
 
     def test_input_data_len(self):
@@ -158,14 +158,14 @@ class TestTimeSequenceFeature(ZooTestCase):
 
         feat = TimeSequenceFeatureTransformer(future_seq_len=1, dt_col="datetime",
                                               target_col="values", drop_missing=True)
-        with pytest.raises(ValueError, match=r".*past sequence length.*"):
+        with pytest.raises(RuntimeError, match=r".*past sequence length.*"):
             feat.fit_transform(train_df[:20], **config)
 
         feat.fit_transform(train_df, **config)
-        with pytest.raises(ValueError, match=r".*past sequence length.*"):
+        with pytest.raises(RuntimeError, match=r".*past sequence length.*"):
             feat.transform(val_df, is_train=True)
 
-        with pytest.raises(ValueError, match=r".*past sequence length.*"):
+        with pytest.raises(RuntimeError, match=r".*past sequence length.*"):
             feat.transform(test_df[:-1], is_train=False)
         out_x, out_y = feat.transform(test_df, is_train=False)
         assert len(out_x) == 1

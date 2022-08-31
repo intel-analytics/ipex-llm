@@ -60,24 +60,29 @@ class VanillaLSTM(KerasBaseModel):
 
     def _check_config(self, **config):
         super()._check_config(**config)
-        assert isinstance(config["input_dim"], int), "'input_dim' should be int"
-        assert isinstance(config["output_dim"], int), "'output_dim' should be int"
+        from bigdl.nano.utils.log4Error import invalidInputError
+        invalidInputError(isinstance(config["input_dim"], int), "'input_dim' should be int")
+        invalidInputError(isinstance(config["output_dim"], int), "'output_dim' should be int")
         lstm_name = "lstm_units"
         dropout_name = "dropouts"
         if lstm_name in config:
             if not check_iter_type(config[lstm_name], (int, np.integer)):
-                raise ValueError(f"{lstm_name} should be int or an list/tuple of ints. "
-                                 f"Got {config[lstm_name]}")
+                invalidInputError(False,
+                                  f"{lstm_name} should be int or an list/tuple of ints. "
+                                  f"Got {config[lstm_name]}")
         if dropout_name in config:
             if not check_iter_type(config[dropout_name], (float, np.float)):
-                raise ValueError(f"{dropout_name} should be float or a list/tuple of floats. "
-                                 f"Got {config[dropout_name]}")
+                invalidInputError(False,
+                                  f"{dropout_name} should be float or a list/tuple of floats. "
+                                  f"Got {config[dropout_name]}")
         if lstm_name in config and dropout_name in config:
             if (isinstance(config[lstm_name], int) and isinstance(config[dropout_name], Iterable)) \
                 or (isinstance(config[lstm_name], Iterable) and
                     isinstance(config[dropout_name], Iterable) and
                     len(config[lstm_name]) != len(config[dropout_name])):
-                raise ValueError(f"{lstm_name} should have the same elements num as {dropout_name}")
+                invalidInputError(False,
+                                  f"{lstm_name} should have the same elements num"
+                                  f" as {dropout_name}")
 
     def _get_required_parameters(self):
         return {"input_dim",

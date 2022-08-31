@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import numpy
 from py4j.protocol import Py4JError
 
 from bigdl.orca.data.utils import *
@@ -20,6 +21,9 @@ from bigdl.orca import OrcaContext
 from bigdl.dllib.nncontext import init_nncontext, ZooContext
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.dllib.utils import nest
+from bigdl.dllib.utils.log4Error import *
+
+import numpy as np
 
 
 class XShards(object):
@@ -95,26 +99,29 @@ But got data of type {}
         supported_types = {list, tuple, dict}
         if isinstance(data, np.ndarray):
             if data.shape[0] < shard_num:
-                raise ValueError("The length of data {} is smaller than the total number "
-                                 "of shards {}. Please adjust the num_shards option to be "
-                                 "at most {}.".format(data.shape[0], shard_num, data.shape[0]))
+                invalidInputError(False,
+                                  "The length of data {} is smaller than the total number "
+                                  "of shards {}. Please adjust the num_shards option to be "
+                                  "at most {}.".format(data.shape[0], shard_num, data.shape[0]))
             arrays = np.array_split(data, shard_num)
             rdd = sc.parallelize(arrays)
         else:
-            assert type(data) in supported_types, type_err_msg
+            invalidInputError(type(data) in supported_types, type_err_msg)
             flattened = nest.flatten(data)
             data_length = len(flattened[0])
             data_to_be_shard = []
             if data_length < shard_num:
-                raise ValueError("The length of data {} is smaller than the total number "
-                                 "of shards {}. Please adjust the num_shards option to be "
-                                 "at most {}.".format(data_length, shard_num, data_length))
+                invalidInputError(False,
+                                  "The length of data {} is smaller than the total number "
+                                  "of shards {}. Please adjust the num_shards option to be "
+                                  "at most {}.".format(data_length, shard_num, data_length))
             for i in range(shard_num):
                 data_to_be_shard.append([])
             for x in flattened:
-                assert len(x) == data_length, \
-                    "the ndarrays in data must all have the same size in first dimension, " \
-                    "got first ndarray of size {} and another {}".format(data_length, len(x))
+                invalidInputError(len(x) == data_length,
+                                  "the ndarrays in data must all have the same size in first"
+                                  " dimension, got first ndarray of size {} and"
+                                  " another {}".format(data_length, len(x)))
                 x_parts = np.array_split(x, shard_num)
                 for idx, x_part in enumerate(x_parts):
                     data_to_be_shard[idx].append(x_part)
@@ -233,7 +240,7 @@ class SparkXShards(XShards):
                              .values.tolist())\
                     .partitionBy(num_partitions)
 
-                schema = self._get_schema()
+                schema = self.get_schema()
 
                 def merge_rows(iter):
                     data = [value[1] for value in list(iter)]
@@ -287,6 +294,48 @@ class SparkXShards(XShards):
                         lambda iter: [np.concatenate(list(iter), axis=0)]))
             else:
                 repartitioned_shard = SparkXShards(self.rdd.repartition(num_partitions))
+        elif self._get_class_name() == "dict":
+            elem = self.rdd.first()
+            keys = list(elem.keys())
+            dtypes = []
+            dict_of_batched_ndarray = True
+            # Check if all values are ndarray and shape > 1
+            for v in elem.values():
+                if v.__class__.__name__ != "ndarray" or len(v.shape) == 0:
+                    dict_of_batched_ndarray = False
+                    break
+                else:
+                    dtypes.append(v.dtype)
+            if dict_of_batched_ndarray:
+                if num_partitions > self.rdd.getNumPartitions():
+                    def dict_to_unbatched_list(d):
+                        values = [list(d[k]) for k in keys]
+                        return list(zip(*values))
+
+                    def to_batched_dict(iter):
+                        batch_values = list(zip(*iter))
+                        if not batch_values:
+                            return []
+                        batch_ndarrays = [np.stack(v, axis=0).astype(dtype)
+                                          for v, dtype in zip(batch_values, dtypes)]
+                        return [dict(zip(keys, batch_ndarrays))]
+
+                    # If number of records in a partition <= 10, may produce empty partition
+                    rdd = self.rdd.flatMap(lambda data: dict_to_unbatched_list(data))\
+                        .repartition(num_partitions)
+                    repartitioned_shard = SparkXShards(rdd.mapPartitions(
+                        lambda iter: to_batched_dict(iter)))
+                else:
+                    rdd = self.rdd.coalesce(num_partitions)
+
+                    def merge_list_of_dict(iter):
+                        iter_list = list(iter)
+                        return [{k: np.concatenate([d[k] for d in iter_list], axis=0)
+                                 for k in keys}]
+                    repartitioned_shard = SparkXShards(rdd.mapPartitions(
+                        lambda iter: merge_list_of_dict(iter)))
+            else:
+                repartitioned_shard = SparkXShards(self.rdd.repartition(num_partitions))
         else:
             repartitioned_shard = SparkXShards(self.rdd.repartition(num_partitions))
         self._uncache()
@@ -305,11 +354,12 @@ class SparkXShards(XShards):
         """
         if self._get_class_name() == 'pandas.core.frame.DataFrame':
             import pandas as pd
-            schema = self._get_schema()
+            schema = self.get_schema()
             # if partition by a column
             if isinstance(cols, str):
                 if cols not in schema['columns']:
-                    raise Exception("The partition column is not in the DataFrame")
+                    invalidInputError(False,
+                                      "The partition column is not in the DataFrame")
                 # change data to key value pairs
                 rdd = self.rdd.flatMap(
                     lambda df: df.apply(lambda row: (row[cols], row.values.tolist()), axis=1)
@@ -320,7 +370,8 @@ class SparkXShards(XShards):
                 # partition with key
                 partitioned_rdd = rdd.partitionBy(partition_num)
             else:
-                raise Exception("Only support partition by a column name")
+                invalidInputError(False,
+                                  "Only support partition by a column name")
 
             def merge(iterator):
                 data = [value[1] for value in list(iterator)]
@@ -335,8 +386,9 @@ class SparkXShards(XShards):
             self._uncache()
             return partitioned_shard
         else:
-            raise Exception("Currently only support partition by for XShards"
-                            " of Pandas DataFrame")
+            invalidInputError(False,
+                              "Currently only support partition by for XShards"
+                              " of Pandas DataFrame")
 
     def unique(self):
         """
@@ -355,7 +407,75 @@ class SparkXShards(XShards):
             return result
         else:
             # we may support numpy or other types later
-            raise Exception("Currently only support unique() on XShards of Pandas Series")
+            invalidInputError(False,
+                              "Currently only support unique() on XShards of Pandas Series")
+
+    def deduplicates(self):
+        if self._get_class_name() == 'pandas.core.frame.DataFrame':
+            import pandas as pd
+            df = self.to_spark_df()
+            distinctDF = df.distinct()
+            data_shards = spark_df_to_pd_sparkxshards(distinctDF)
+            return data_shards
+        else:
+            # we may support numpy or other types later
+            invalidInputError(False,
+                              "Currently only support dedup() on XShards of Pandas DataFrame")
+
+    def assembleFeatureLabelCols(self, featureCols, labelCols):
+        """
+        The api is used to merge/convert one or multiple feature columns into a numpy array,
+        merge/convert one or multiple label columns into a numpy array.
+
+        :param featureCols: a list of feature columns.
+        :param labelCols: a list of label columns.
+        :return: SparkXShards of dictionary, key is assembled feature numpy array, value is
+         assembled label numpy array
+
+        eg:
+        shards: SparkXShards of pandas data frame with 9 cols ['f1', 'f2', 'f3', 'f4', 'f5', 'f6',
+         'f7', 'f8', 'lable']
+            f1   f2  f3  f4   f5    f6     f7  f8  label
+             6  148  72  35    0  33.6  0.627  50      1
+             1   85  66  29    0  26.6  0.351  31      0
+             8  183  64   0    0  23.3  0.672  32      1
+             1   89  66  23   94  28.1  0.167  21      0
+             0  137  40  35  168  43.1  2.288  33      1
+
+        transform_shards =
+          shards.assembleFeatureLabelCols(featureCols=['f1', 'f2', 'f3', 'f4', 'f5', 'f6',
+           'f7', 'f8'], labelCols=['label'])
+
+        transform_shards will be SparkXShards of dictionary. key will be a stacked numpy array
+        (stack feature columns), value will be a numpy array
+        {'x': array([[  6.   , 148.   ,  72.   , ...,  33.6  ,   0.627,  50.   ],
+           [  1.   ,  85.   ,  66.   , ...,  26.6  ,   0.351,  31.   ],
+           [  8.   , 183.   ,  64.   , ...,  23.3  ,   0.672,  32.   ],
+           [  1.   , 89.   ,  66.   , ...,  28.1  ,   0.167,  21.   ],
+           [  0.   , 137.   ,  40.   , ...,  43.1  ,  2.288, 33.   ]]),
+         'y': array([[1],
+           [0],
+           [1],
+           [0],
+           [1]
+        """
+        if self._get_class_name() != 'pandas.core.frame.DataFrame':
+            invalidInputError(False,
+                              "Currently only support assembleFeatureLabelCols() on"
+                              " XShards of Pandas DataFrame")
+
+        def to_shard_dict(df):
+            featureLists = [df[feature_col].to_numpy() for feature_col in featureCols]
+            labelLists = [df[label_col].to_numpy() for label_col in labelCols]
+            result = {
+                "x": np.stack(featureLists, axis=1),
+                "y": np.stack(labelLists, axis=1)}
+            return result
+
+        invalidInputError(type(featureCols) == list, "expect featureCols is a list")
+        invalidInputError(type(labelCols) == list, "expect labelCols is a list")
+        transformed_shard = self.transform_shard(to_shard_dict)
+        return transformed_shard
 
     def split(self):
         """
@@ -371,8 +491,9 @@ class SparkXShards(XShards):
                                          isinstance(data, tuple) else 1).collect()
         # check if each element has same splits
         if list_split_length.count(list_split_length[0]) != len(list_split_length):
-            raise Exception("Cannot split this XShards because its partitions "
-                            "have different split length")
+            invalidInputError(False,
+                              "Cannot split this XShards because its partitions "
+                              "have different split length")
         else:
             if list_split_length[0] > 1:
                 def get_data(order):
@@ -397,9 +518,9 @@ class SparkXShards(XShards):
         :param other: another SparkXShards
         :return: zipped SparkXShards
         """
-        assert isinstance(other, SparkXShards), "other should be a SparkXShards"
-        assert self.num_partitions() == other.num_partitions(), \
-            "The two SparkXShards should have the same number of partitions"
+        invalidInputError(isinstance(other, SparkXShards), "other should be a SparkXShards")
+        invalidInputError(self.num_partitions() == other.num_partitions(),
+                          "The two SparkXShards should have the same number of partitions")
         try:
             rdd = self.rdd.zip(other.rdd)
             zipped_shard = SparkXShards(rdd)
@@ -407,8 +528,31 @@ class SparkXShards(XShards):
             self._uncache()
             return zipped_shard
         except Exception:
-            raise ValueError("The two SparkXShards should have the same number of elements "
-                             "in each partition")
+            invalidInputError(False,
+                              "The two SparkXShards should have the same number of elements "
+                              "in each partition")
+
+    def to_spark_df(self):
+        if self._get_class_name() != 'pandas.core.frame.DataFrame':
+            invalidInputError(False,
+                              "Currently only support to_spark_df on XShards of Pandas DataFrame")
+
+        def f(iter):
+            for pdf in iter:
+                np_records = pdf.to_records(index=False)
+                return [r.tolist() for r in np_records]
+
+        def getSchema(iter):
+            for pdf in iter:
+                return [pdf.columns.values]
+
+        rdd = self.rdd.mapPartitions(f)
+        column = self.rdd.mapPartitions(getSchema).first()
+        df = rdd.toDF(list(column))
+        df.cache()
+        df.count()
+        self.uncache()
+        return df
 
     def __len__(self):
         return self.rdd.map(lambda data: len(data) if hasattr(data, '__len__') else 1)\
@@ -431,12 +575,13 @@ class SparkXShards(XShards):
 
     def __getitem__(self, key):
         def get_data(data):
-            assert hasattr(data, '__getitem__'), \
-                "No selection operation available for this XShards"
+            invalidInputError(hasattr(data, '__getitem__'),
+                              "No selection operation available for this XShards")
             try:
                 value = data[key]
             except:
-                raise Exception("Invalid key for this XShards")
+                invalidInputError(False,
+                                  "Invalid key for this XShards")
             return value
         return SparkXShards(self.rdd.map(get_data), transient=True)
 
@@ -450,7 +595,7 @@ class SparkXShards(XShards):
         result_rdd = self.rdd.map(lambda x: utility_func(x, func, *args, **kwargs))
         return result_rdd
 
-    def _get_schema(self):
+    def get_schema(self):
         if 'schema' in self.type:
             return self.type['schema']
         else:

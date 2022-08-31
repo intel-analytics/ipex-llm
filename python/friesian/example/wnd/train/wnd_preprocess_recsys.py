@@ -25,6 +25,8 @@ from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
 from bigdl.orca.data.file import makedirs, write_text, exists
 from bigdl.dllib.utils.file_utils import put_local_file_to_remote
 from bigdl.friesian.feature import FeatureTable
+from bigdl.dllib.utils.log4Error import *
+
 
 bool_cols = [
     'engaged_with_user_is_verified',
@@ -200,9 +202,9 @@ if __name__ == '__main__':
                           driver_cores=args.driver_cores, driver_memory=args.driver_memory,
                           conf=conf)
     else:
-        raise ValueError(
-            "cluster_mode should be one of 'local', 'yarn' and 'standalone'"
-            ", but got " + args.cluster_mode)
+        invalidInputError(False,
+                          "cluster_mode should be one of 'local', 'yarn' and 'standalone'"
+                          ", but got " + args.cluster_mode)
 
     start = time()
     train_paths = [os.path.join(args.input_train_folder, 'part-%05d.parquet' % i)

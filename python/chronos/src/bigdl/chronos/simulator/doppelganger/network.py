@@ -209,10 +209,12 @@ class DoppelGANgerGenerator(nn.Module):
                     self.attribute_outputs[i].dim
 
         # real attribute should come first
+        from bigdl.nano.utils.log4Error import invalidInputError
         for i in range(len(self.real_attribute_mask) - 1):
             if (self.real_attribute_mask[i] is False and
                     self.real_attribute_mask[i + 1] is True):
-                raise Exception("Real attribute should come first")
+                invalidInputError(False,
+                                  "Real attribute should come first")
 
         # find the output id of gen flag in feature outputs
         self.gen_flag_id = None
@@ -221,11 +223,13 @@ class DoppelGANgerGenerator(nn.Module):
                 self.gen_flag_id = i
                 break
         if self.gen_flag_id is None:
-            raise Exception("cannot find gen_flag_id")
+            invalidInputError(False,
+                              "cannot find gen_flag_id")
         # gen flag can only be [0,1] or [1,0]
         # gen flag is explained in appendix B, right below table 8.
         if self.feature_outputs[self.gen_flag_id].dim != 2:
-            raise Exception("gen flag output's dim should be 2")
+            invalidInputError(False,
+                              "gen flag output's dim should be 2")
 
         # prepare noise meta data (need more discussion or understanding)
         if attribute_dim is None:
@@ -280,7 +284,7 @@ class DoppelGANgerGenerator(nn.Module):
                 mlp_list.append(nn.BatchNorm1d(layers_dim[i+1], eps=1e-05, momentum=0.1))
             mlp_list.append(linear(layers_dim[-1], self.all_attribute_out_dim[part_i]))
 
-            assert part_i <= 1, 'part_i should smaller than 2!'
+            invalidInputError(part_i <= 1, 'part_i should smaller than 2!')
             if part_i == 0:
                 self.mlp_1 = nn.Sequential(*mlp_list)
             if part_i == 1:
@@ -304,6 +308,7 @@ class DoppelGANgerGenerator(nn.Module):
         current_idx = 0
         part_attribute = []
         part_discrete_attribute = []
+        from bigdl.nano.utils.log4Error import invalidInputError
         for i in range(len(sub_all_attribute_outputs)):
             output = sub_all_attribute_outputs[i]
             if output.type_ == OutputType.DISCRETE:
@@ -321,20 +326,24 @@ class DoppelGANgerGenerator(nn.Module):
                     sub_output = torch.tanh(sub_attribute_output[:, current_idx:
                                             current_idx+output.dim])
                 else:
-                    raise Exception("unknown normalization type")
+                    invalidInputError(False,
+                                      "unknown normalization type")
                 sub_output_discrete = sub_output
             else:
-                raise Exception("unknown output type")
+                invalidInputError(False,
+                                  "unknown output type")
             part_attribute.append(sub_output)
             part_discrete_attribute.append(sub_output_discrete)
             current_idx += output.dim
-        assert current_idx == np.sum([t.dim for t in sub_all_attribute_outputs])
+        invalidInputError(current_idx == np.sum([t.dim for t in sub_all_attribute_outputs]),
+                          "current_idx is expected the sum of sub_all_attribute_outputs dim")
         part_attribute = torch.cat(part_attribute, dim=1)
         part_discrete_attribute = torch.cat(part_discrete_attribute, dim=1)
         part_discrete_attribute = part_discrete_attribute.detach()
         # discrete attribute will be used as other generator's input
-        assert part_attribute.ndim == 2
-        assert part_discrete_attribute.ndim == 2
+        invalidInputError(part_attribute.ndim == 2, "part_attribute dim expected to be 2")
+        invalidInputError(part_discrete_attribute.ndim == 2,
+                          "part_discrete_attribute dim expected to be 2")
         return part_attribute, part_discrete_attribute
 
     def forward(self, attribute_input_noise, addi_attribute_input_noise,
@@ -364,9 +373,11 @@ class DoppelGANgerGenerator(nn.Module):
         # post-processed additional_attribute_output(discrete)
         # real_attribute_out_dim = sum of all real attribute dim
         # addi_attribute_out_dim = sum of all additional attribute dim
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.mlp_1 is not None and self.mlp_2 is not None:
-            # assert there are real attr and fake attr
-            assert len(all_attribute_outputs) == 2
+            # there are real attr and fake attr
+            invalidInputError(len(all_attribute_outputs) == 2,
+                              "len of all_attribute_outputs expect to be 2")
 
             # generate real attr
             attribute_output = self.mlp_1(attribute_input_noise)
@@ -386,7 +397,8 @@ class DoppelGANgerGenerator(nn.Module):
         elif self.mlp_1 is not None and self.mlp_2 is None:
             additional_attribute_output = self.mlp_1(attribute_input_noise)
             # (batch_size, addi_attribute_out_dim)
-            assert len(all_attribute_outputs) == 1
+            invalidInputError(len(all_attribute_outputs) == 1,
+                              "len of all_attribute_outputs expect to be 1")
             part_additional_attribute, part_additional_discrete_attribute = \
                 self._post_process_generated_attribute(additional_attribute_output,
                                                        all_attribute_outputs[0])
@@ -423,9 +435,10 @@ class DoppelGANgerGenerator(nn.Module):
                                           feature_input_data.shape[0],  # N (batch_size)
                                           self.feature_num_units)  # H (hidden dim)
         elif self.initial_state == RNNInitialStateType.VARIABLE:
-            raise NotImplementedError("RNNInitialStateType.VARIABLE has not been implemented!")
+            invalidInputError(False,
+                              "RNNInitialStateType.VARIABLE has not been implemented!")
         else:
-            raise NotImplementedError
+            invalidInputError(False, "not implemented")
 
         state = (initial_state_h, initial_state_c)
         batch_size = feature_input_data.shape[0]
@@ -477,10 +490,10 @@ class DoppelGANgerGenerator(nn.Module):
                                 Normalization.MINUSONE_ONE):
                             sub_output = torch.tanh(sub_output)
                         else:
-                            raise Exception("unknown normalization"
-                                            " type")
+                            invalidInputError(False,
+                                              "unknown normalization type")
                     else:
-                        raise Exception("unknown output type")
+                        invalidInputError(False, "unknown output type")
                     new_output_all.append(sub_output)
                     current_idx += output.dim
             new_output = torch.cat(new_output_all, dim=1)

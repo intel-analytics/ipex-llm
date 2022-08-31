@@ -17,6 +17,7 @@
 import os.path
 import shutil
 
+import numpy as np
 import pytest
 from unittest import TestCase
 
@@ -78,6 +79,20 @@ class TestSparkXShards(TestCase):
         assert partitions_num_1 == 2, "number of partition should be 2"
         data_shard.cache()
         partitioned_shard = data_shard.repartition(1)
+
+        # Test dict of numpy
+        def to_numpy_dict(df):
+            d = df.to_dict()
+            return {k: np.array([v for v in d[k].values()]) for k in d.keys()}
+
+        numpy_dict_shard = data_shard.transform_shard(to_numpy_dict)
+        partitioned_numpy_dict_shard = numpy_dict_shard.repartition(1)
+        assert partitioned_numpy_dict_shard.num_partitions() == 1, "number of partition should be 1"
+        assert len(partitioned_numpy_dict_shard.collect()) == 1
+
+        partitioned_numpy_dict_shard2 = numpy_dict_shard.repartition(3)
+        assert partitioned_numpy_dict_shard2.num_partitions() == 3, \
+            "number of partition should be 3"
         assert data_shard.is_cached(), "data_shard should be cached"
         assert partitioned_shard.is_cached(), "partitioned_shard should be cached"
         data_shard.uncache()

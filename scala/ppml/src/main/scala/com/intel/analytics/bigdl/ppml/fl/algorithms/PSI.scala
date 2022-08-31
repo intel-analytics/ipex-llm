@@ -25,8 +25,7 @@ import com.intel.analytics.bigdl.ppml.fl.utils.FLClientClosable
 import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.DataFrame
 
-import collection.JavaConverters._
-import collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.util.control.Breaks._
 
 class PSI() extends FLClientClosable {
@@ -39,17 +38,17 @@ class PSI() extends FLClientClosable {
 
   def uploadSet(ids: util.List[String], salt: String): Unit = {
     val hashedIdArray = HashingUtils.parallelToSHAHexString(ids, salt)
-    hashIdToId = hashedIdArray.zip(ids).toMap
+    hashIdToId = hashedIdArray.asScala.zip(ids.asScala).toMap
     flClient.psiStub.uploadSet(hashedIdArray)
   }
 
 
   def downloadIntersection(maxTry: Int = 100, retry: Long = 3000): util.List[String] = {
-    var intersection: util.List[String] = null
+    var intersectionHashed: util.List[String] = null
     breakable {
       for (i <- 0 until maxTry) {
-        intersection = flClient.psiStub.downloadIntersection
-        if (intersection == null) {
+        intersectionHashed = flClient.psiStub.downloadIntersection
+        if (intersectionHashed == null) {
           if (i == maxTry - 1) {
             throw new TimeoutException("Max retry reached, could not get intersection, exited.")
           }
@@ -57,31 +56,39 @@ class PSI() extends FLClientClosable {
           Thread.sleep(retry)
         }
         else {
-          logger.info("Intersection successful. Intersection's size is " + intersection.size + ".")
+          logger.info("Intersection successful. Intersection's size is "
+            + intersectionHashed.size + ".")
           break
         }
       }
     }
-    intersection
+    intersectionHashed.asScala.map(h => hashIdToId(h)).toList.asJava
   }
-  def getIntersectionSet(df: DataFrame,
-                         rowKeyName: String,
-                         intersection: util.List[String]): DataFrame = {
-    val intersectionSet = intersection.toSet
+  def getIntersection(ids: util.List[String],
+                      maxTry: Int = 100,
+                      retry: Long = 3000): util.List[String] = {
+    val salt = if (FLContext.getPsiSalt() == null) getSalt() else FLContext.getPsiSalt()
+    uploadSet(ids, salt)
+    downloadIntersection(maxTry, retry)
+  }
+
+  def getIntersectionDataFrame(df: DataFrame,
+                               rowKeyName: String,
+                               intersection: util.List[String]): DataFrame = {
+    val intersectionSet = intersection.asScala.toSet
     val dataSet = df.filter(r => intersectionSet.contains(r.getAs[String](rowKeyName)))
     dataSet
   }
-  def uploadSetAndDownloadIntersection(df: DataFrame,
-                                       salt: String,
-                                       rowKeyName: String = "ID",
-                                       maxTry: Int = 100,
-                                       retry: Long = 3000): DataFrame = {
+  def uploadSetAndDownloadIntersectionDataFrame(df: DataFrame,
+                                                salt: String,
+                                                rowKeyName: String = "ID",
+                                                maxTry: Int = 100,
+                                                retry: Long = 3000): DataFrame = {
     val spark = FLContext.getSparkSession()
     import spark.implicits._
-    val ids = df.select(rowKeyName).as[String].collect().toList
+    val ids = df.select(rowKeyName).as[String].collect().toList.asJava
     uploadSet(ids, salt)
-    val hashIntersection = downloadIntersection(maxTry, retry)
-    val intersection = hashIntersection.map(h => hashIdToId(h))
-    getIntersectionSet(df, rowKeyName, intersection)
+    val intersection = downloadIntersection(maxTry, retry)
+    getIntersectionDataFrame(df, rowKeyName, intersection)
   }
 }

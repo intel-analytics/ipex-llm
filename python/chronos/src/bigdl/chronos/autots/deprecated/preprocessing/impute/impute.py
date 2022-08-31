@@ -29,7 +29,8 @@ class LastFillImpute(BaseImputation):
         self.imputer = LastFill()
 
     def impute(self, input_df):
-        assert self.imputer is not None
+        from bigdl.nano.utils.log4Error import invalidInputError
+        invalidInputError(self.imputer is not None, "imputer cannot be empty")
         df = self.imputer.impute(input_df)
         return df
 
@@ -87,6 +88,8 @@ class TimeMergeImputor(BaseImputation):
         elif self.mode == "":
             merged_df
         else:
-            raise Exception("Currently only support max/min/mean/sum mode")
+            from bigdl.nano.utils.log4Error import invalidInputError
+            invalidInputError(False,
+                              "Currently only support max/min/mean/sum mode")
 
         return merged_df

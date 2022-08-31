@@ -20,19 +20,19 @@ import com.intel.analytics.bigdl.ppml.fl.FLContext
 import com.intel.analytics.bigdl.ppml.fl.algorithms.{PSI, VFLLogisticRegression}
 import com.intel.analytics.bigdl.ppml.fl.example.DebugLogger
 import com.intel.analytics.bigdl.ppml.fl.utils.TensorUtils
+import org.apache.spark.sql.DataFrame
 import scopt.OptionParser
 
 import collection.JavaConverters._
-import collection.JavaConversions._
 
 
 object VFLLogisticRegression extends DebugLogger{
-  def getData(pSI: PSI, dataPath: String, rowKeyName: String) = {
+  def getData(pSI: PSI, dataPath: String, rowKeyName: String): (DataFrame, DataFrame, DataFrame) = {
     val salt = pSI.getSalt()
 
     val spark = FLContext.getSparkSession()
     val df = spark.read.option("header", "true").csv(dataPath)
-    val intersectionDf = pSI.uploadSetAndDownloadIntersection(df, salt, rowKeyName)
+    val intersectionDf = pSI.uploadSetAndDownloadIntersectionDataFrame(df, salt, rowKeyName)
     val (trainDf, valDf) = ExampleUtils.splitDataFrameToTrainVal(intersectionDf)
     val testDf = trainDf.drop("Outcome")
     trainDf.show()
@@ -41,13 +41,13 @@ object VFLLogisticRegression extends DebugLogger{
   }
 
   def main(args: Array[String]): Unit = {
-    case class Params(clientId: Int = 0,
+    case class Params(clientId: String = "",
                       dataPath: String = null,
                       rowKeyName: String = "ID",
                       learningRate: Float = 0.005f,
                       batchSize: Int = 4)
     val parser: OptionParser[Params] = new OptionParser[Params]("VFL Logistic Regression") {
-      opt[Int]('c', "clientId")
+      opt[String]('c', "clientId")
         .text("data path to load")
         .action((x, params) => params.copy(clientId = x))
         .required()
@@ -74,7 +74,7 @@ object VFLLogisticRegression extends DebugLogger{
     /**
      * Usage of BigDL PPML starts from here
      */
-    FLContext.initFLContext()
+    FLContext.initFLContext(argv.clientId)
     val pSI = new PSI()
     val (trainData, valData, testData) = getData(pSI, dataPath, rowKeyName)
 
@@ -83,8 +83,9 @@ object VFLLogisticRegression extends DebugLogger{
 
     // Data pipeline from DataFrame to Tensor, and call fit, evaluate, predict
     val (featureColumns, labelColumns) = argv.clientId match {
-      case 1 => (Array("Pregnancies","Glucose","BloodPressure","SkinThickness"), Array("Outcome"))
-      case 2 => (Array("Insulin","BMI","DiabetesPedigreeFunction"), null)
+      case "1" => (Array("Pregnancies", "Glucose", "BloodPressure", "SkinThickness"),
+        Array("Outcome"))
+      case "2" => (Array("Insulin", "BMI", "DiabetesPedigreeFunction"), null)
       case _ => throw new IllegalArgumentException("clientId only support 1, 2 in this example")
     }
     val xTrain = TensorUtils.fromDataFrame(trainData, featureColumns)

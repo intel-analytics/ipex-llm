@@ -18,6 +18,8 @@ import glob
 import shutil
 import urllib
 
+autodoc_mock_imports = ["openvino", "pytorch_lightning", "keras"]
+
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, '.')
 sys.path.insert(0, os.path.abspath('.'))
@@ -26,6 +28,7 @@ sys.path.insert(0, os.path.abspath("../../../python/chronos/src/"))
 sys.path.insert(0, os.path.abspath("../../../python/dllib/src/"))
 sys.path.insert(0, os.path.abspath("../../../python/orca/src/"))
 sys.path.insert(0, os.path.abspath("../../../python/serving/src/"))
+sys.path.insert(0, os.path.abspath("../../../python/nano/src/"))
 
 
 
@@ -83,10 +86,15 @@ extensions = [
     'sphinxemoji.sphinxemoji',
     'sphinx_copybutton',
     'sphinx.ext.mathjax',
+    'sphinx.ext.autosectionlabel',
     'recommonmark',
-    'sphinx_markdown_tables'
+    'sphinx_markdown_tables',
+    'sphinx_tabs.tabs',
+    'sphinx_design',
+    'sphinx_external_toc',
+    'sphinx_design',
+    'nbsphinx'
 ]
-
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -146,6 +154,14 @@ html_static_path = ['_static']
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'BigDL Documentation'
 
+
+
+# -- Options for external TOC tree ---
+external_toc_exclude_missing = False
+external_toc_path = "_toc.yml"
+
+# this is to surpresswarnings about explicit "toctree" directives
+suppress_warnings = ["etoc.toctree"]
 
 # -- Options for LaTeX output ------------------------------------------------
 
@@ -229,3 +245,6 @@ def setup(app):
         'enable_auto_doc_ref': True,
     }, True)
     app.add_transform(AutoStructify)
+
+# disable notebook execution
+nbsphinx_execute = 'never'

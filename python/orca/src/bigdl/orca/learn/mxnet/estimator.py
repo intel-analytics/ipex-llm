@@ -22,17 +22,19 @@ import ray
 from dmlc_tracker.tracker import get_host_ip
 
 from bigdl.orca.data.utils import ray_partitions_get_data_label, process_spark_xshards
-from bigdl.orca.ray import RayContext
+from bigdl.orca.ray import OrcaRayContext
 from bigdl.orca.learn.mxnet.mxnet_runner import MXNetRunner
 from bigdl.orca.learn.mxnet.utils import find_free_port
 from bigdl.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
+from bigdl.dllib.utils.log4Error import *
 
 
 def partition_refs_to_creator(partition_refs, shuffle=False):
 
     def data_creator(config, kv):
         import mxnet as mx
-        assert "batch_size" in config, "batch_size must be set in config"
+        invalidInputError("batch_size" in config,
+                          "batch_size must be set in config")
         data, label = ray_partitions_get_data_label(ray.get(partition_refs),
                                                     allow_tuple=False,
                                                     allow_list=False)
@@ -97,13 +99,13 @@ class MXNetEstimator(OrcaRayEstimator):
     def __init__(self, config, model_creator, loss_creator=None,
                  eval_metrics_creator=None, validation_metrics_creator=None,
                  num_workers=None, num_servers=None, runner_cores=None):
-        ray_ctx = RayContext.get()
+        ray_ctx = OrcaRayContext.get()
         if not num_workers:
             num_workers = ray_ctx.num_ray_nodes
         self.config = {} if config is None else config
-        assert isinstance(config, dict), "config must be a dict"
+        invalidInputError(isinstance(config, dict), "config must be a dict")
         for param in ["optimizer", "optimizer_params", "log_interval"]:
-            assert param in config, param + " must be specified in config"
+            invalidInputError(param in config, param + " must be specified in config")
         self.model_creator = model_creator
         self.loss_creator = loss_creator
         self.validation_metrics_creator = validation_metrics_creator
@@ -186,9 +188,9 @@ class MXNetEstimator(OrcaRayEstimator):
         See this issue for more details: https://github.com/apache/incubator-mxnet/issues/17651
         """
         if validation_data:
-            assert self.validation_metrics_creator,\
-                "Metrics not defined for validation, please specify validation_metrics_creator " \
-                "when creating the Estimator"
+            invalidInputError(self.validation_metrics_creator,
+                              "Metrics not defined for validation, please specify"
+                              " validation_metrics_creator when creating the Estimator")
         from bigdl.orca.data import SparkXShards
         if isinstance(data, SparkXShards):
 
@@ -230,12 +232,14 @@ class MXNetEstimator(OrcaRayEstimator):
             stats = worker_stats + server_stats
 
         else:  # data_creator functions; should return Iter or DataLoader
-            assert isinstance(data, types.FunctionType),\
-                "train_data should be either an instance of SparkXShards or a callable function"
+            invalidInputError(isinstance(data, types.FunctionType),
+                              "train_data should be either an instance of SparkXShards or"
+                              " a callable function")
             train_data_list = [data] * self.num_workers
             if validation_data:
-                assert isinstance(validation_data, types.FunctionType),\
-                    "val_data should be either an instance of SparkXShards or a callable function"
+                invalidInputError(isinstance(validation_data, types.FunctionType),
+                                  "val_data should be either an instance of SparkXShards"
+                                  " or a callable function")
             val_data_list = [validation_data] * self.num_workers
             self.runners = self.workers + self.servers
             # For servers, data is not used and thus just input a None value.
@@ -261,31 +265,31 @@ class MXNetEstimator(OrcaRayEstimator):
         """
         Predict is not supported in MXNetEstimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def evaluate(self, data, batch_size=32, num_steps=None):
         """
         Evaluate is not supported in MXNetEstimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def get_model(self):
         """
         Get_model is not supported in MXNetEstimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def save(self, checkpoint):
         """
         Save is not supported in MXNetEstimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def load(self, checkpoint):
         """
         Load is not supported in MXNetEstimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
 # TODO: add model save and restore
 # TODO: add predict, evaluate

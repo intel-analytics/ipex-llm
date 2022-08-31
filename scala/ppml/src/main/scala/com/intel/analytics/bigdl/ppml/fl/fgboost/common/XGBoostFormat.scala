@@ -31,17 +31,17 @@ case class XGBoostFormatNode(nodeid: Int,
 
 class XGBoostSerializer {
   val jacksonJsonSerializer = new JacksonJsonSerializer()
-  def deserialize(jsonStr: String) = {
+  def deserialize(jsonStr: String): XGBoostFormatNode = {
     jacksonJsonSerializer.deSerialize(classOf[XGBoostFormatNode], jsonStr)
   }
 
 }
 object XGBoostFormatSerializer {
   val serializer = new XGBoostSerializer()
-  def apply(jsonStr: String) = {
+  def apply(jsonStr: String): XGBoostFormatNode = {
     serializer.deserialize(jsonStr)
   }
-  def apply(regressionTree: RegressionTree) = {
+  def apply(regressionTree: RegressionTree): XGBoostFormatNode = {
     def buildXGBoostFormatTree(treeNode: TreeNode): XGBoostFormatNode = {
       if (treeNode.leftChild != null) {
         Log4Error.unKnowExceptionError(treeNode.rightChild != null,

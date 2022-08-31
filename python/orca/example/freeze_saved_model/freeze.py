@@ -19,6 +19,7 @@ import sys
 import tensorflow as tf
 
 from bigdl.dllib.utils.tf import export_tf
+from bigdl.dllib.utils.log4Error import *
 
 if __name__ == "__main__":
     parser = OptionParser()
@@ -40,8 +41,10 @@ if __name__ == "__main__":
                       help="The output frozen model path")
     (options, args) = parser.parse_args(sys.argv)
 
-    assert options.saved_model_path is not None, "--saved_model_path must be provided"
-    assert options.output_path is not None, "--output_path must be provided"
+    invalidInputError(options.saved_model_path is not None,
+                      "--saved_model_path must be provided")
+    invalidInputError(options.output_path is not None,
+                      "--output_path must be provided")
 
     with tf.Session() as sess:
         loaded = tf.saved_model.load(sess, tags=[options.tag],

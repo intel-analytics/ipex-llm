@@ -17,8 +17,10 @@
 
 from threading import Lock
 
+from bigdl.dllib.utils.log4Error import invalidInputError
 
-class RayContext(object):
+
+class OrcaRayContext(object):
 
     _active_ray_context = None
     _lock = Lock()
@@ -36,8 +38,6 @@ class RayContext(object):
             from bigdl.orca.ray import RayOnSparkContext
             self._ray_on_spark_context = RayOnSparkContext(**kwargs)
             self.is_local = self._ray_on_spark_context.is_local
-            self.num_ray_nodes = self._ray_on_spark_context.num_ray_nodes
-            self.ray_node_cpu_cores = self._ray_on_spark_context.ray_node_cpu_cores
 
         elif runtime == "ray":
             self.is_local = False
@@ -46,10 +46,11 @@ class RayContext(object):
             self.num_ray_nodes = num_nodes
             self.ray_node_cpu_cores = cores
         else:
-            raise ValueError(f"Unsupported runtime: {runtime}. "
-                             f"Runtime must be spark or ray")
+            invalidInputError(False,
+                              f"Unsupported runtime: {runtime}. "
+                              f"Runtime must be spark or ray")
 
-        RayContext._active_ray_context = self
+        OrcaRayContext._active_ray_context = self
 
     def init(self, driver_cores=0):
         if self.runtime == "ray":
@@ -57,6 +58,8 @@ class RayContext(object):
             results = ray.init(**self.ray_args)
         else:
             results = self._ray_on_spark_context.init(driver_cores=driver_cores)
+            self.num_ray_nodes = self._ray_on_spark_context.num_ray_nodes
+            self.ray_node_cpu_cores = self._ray_on_spark_context.ray_node_cpu_cores
             self.address_info = self._ray_on_spark_context.address_info
             self.redis_address = self._ray_on_spark_context.redis_address
             self.redis_password = self._ray_on_spark_context.redis_password
@@ -72,16 +75,17 @@ class RayContext(object):
         import ray
         ray.shutdown()
         self.initialized = False
-        with RayContext._lock:
-            RayContext._active_ray_context = None
+        with OrcaRayContext._lock:
+            OrcaRayContext._active_ray_context = None
 
     @classmethod
     def get(cls, initialize=True):
-        if RayContext._active_ray_context:
-            ray_ctx = RayContext._active_ray_context
+        if OrcaRayContext._active_ray_context:
+            ray_ctx = OrcaRayContext._active_ray_context
             if initialize and not ray_ctx.initialized:
                 ray_ctx.init()
             return ray_ctx
         else:
-            raise Exception("No active RayContext. "
-                            "Please call init_orca_context to create a RayContext.")
+            invalidInputError(False,
+                              "No active RayContext. "
+                              "Please call init_orca_context to create a RayContext.")

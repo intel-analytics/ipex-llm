@@ -17,10 +17,10 @@
 import warnings
 
 
-def create_hpo_searcher(trainer):
+def create_hpo_searcher(trainer, num_processes=1):
     """Create HPO Search for PyTorch."""
     from bigdl.nano.automl.pytorch import HPOSearcher
-    return HPOSearcher(trainer)
+    return HPOSearcher(trainer, num_processes=num_processes)
 
 
 def check_hpo_status(searcher):
@@ -49,3 +49,27 @@ def create_optuna_tfkeras_pruning_callback(*args, **kwargs):
     """Create Tensorflow Keras Pruning Callback."""
     from optuna.integration import TFKerasPruningCallback
     return TFKerasPruningCallback(*args, **kwargs)
+
+
+def create_configuration_space(*args, **kwargs):
+    """Create Configuration Space."""
+    import ConfigSpace as CS
+    return CS.ConfigurationSpace(*args, **kwargs)
+
+
+def create_categorical_hp(*args, **kwargs):
+    """Create Categorical Hyperparamter."""
+    import ConfigSpace.hyperparameters as CSH
+    return CSH.CategoricalHyperparameter(*args, **kwargs)
+
+
+def create_uniform_float_hp(*args, **kwargs):
+    """Create UniformFloat Hyperparameter."""
+    import ConfigSpace.hyperparameters as CSH
+    return CSH.UniformFloatHyperparameter(*args, **kwargs)
+
+
+def create_uniform_int_hp(*args, **kwargs):
+    """Create UniformFloat Hyperparameter."""
+    import ConfigSpace.hyperparameters as CSH
+    return CSH.UniformIntegerHyperparameter(*args, **kwargs)

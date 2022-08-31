@@ -17,9 +17,7 @@
 package com.intel.analytics.bigdl.ppml.fl.nn
 
 import com.intel.analytics.bigdl.ppml.fl.algorithms.HFLLogisticRegression
-import com.intel.analytics.bigdl.ppml.fl.example.DebugLogger
-import com.intel.analytics.bigdl.ppml.fl.{FLContext, FLServer}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import com.intel.analytics.bigdl.ppml.fl.{FLContext, FLServer, FLSpec}
 
 class MockAnotherParty(algorithm: String, clientID: String = "mock") extends Thread {
 
@@ -37,9 +35,10 @@ class MockAnotherParty(algorithm: String, clientID: String = "mock") extends Thr
     lr.fitDataFrame(df, valData = df)
   }
 }
-class NNSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger {
+class NNSpec extends FLSpec {
   "Logistic Regression" should "work" in {
     val flServer = new FLServer()
+    flServer.setPort(port)
     flServer.build()
     flServer.start()
     val spark = FLContext.getSparkSession()
@@ -47,7 +46,7 @@ class NNSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger
       .csv(this.getClass.getClassLoader.getResource("diabetes-test.csv").getPath)
     val testDf = trainDf.drop("Outcome")
     trainDf.show()
-    FLContext.initFLContext()
+    FLContext.initFLContext("1", target)
     val lr = new HFLLogisticRegression(trainDf.columns.size - 1)
     lr.fitDataFrame(trainDf, valData = trainDf)
     lr.evaluateDataFrame(trainDf)

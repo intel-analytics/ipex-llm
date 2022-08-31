@@ -8,11 +8,11 @@ sudo docker run -it \
 	--cpuset-cpus 5-7 \
 	--device=/dev/sgx/enclave \
 	--device=/dev/sgx/provision \
-	-v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
+	-v /var/run/aesmd:/var/run/aesmd \
 	-e LOCAL_IP=$LOCAL_IP \
 	-e SGX_MEM_SIZE=8GB \
 	-e PCCS_URL=$PCCS_URL \
 	-e ATTESTATION_SERVER_IP=$ATTESTATION_SERVER_IP \
 	-e ATTESTATION_SERVER_PORT=$ATTESTATION_SERVER_PORT \
 	intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT \
-	bash /root/demos/remote_attestation/init_ra_flow/run_attestation_server.sh
+	bash -c "cd /root/demos/remote_attestation/init_ra_flow/ && ./run_attestation_server.sh"

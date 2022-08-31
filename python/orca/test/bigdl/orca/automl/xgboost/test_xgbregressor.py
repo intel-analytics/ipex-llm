@@ -81,7 +81,7 @@ class TestXgbregressor(ZooTestCase):
             validation_data=[(self.val_x, self.val_y)],
             metric="rmsle")
 
-        with pytest.raises(ValueError):
+        with pytest.raises(RuntimeError):
             self.model.fit_eval(
                 data=(self.x, self.y),
                 validation_data=[(self.val_x, self.val_y)],

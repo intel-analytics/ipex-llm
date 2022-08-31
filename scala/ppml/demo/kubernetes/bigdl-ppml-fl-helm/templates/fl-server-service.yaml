@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fl-server
+spec:
+  type: ClusterIP
+  ports:
+    - name: rpchfl
+      port: 8980
+    - name: rpcvfl
+      port: 8981
+  selector:
+    app: fldemo
+    component: flserver

@@ -1,10 +1,10 @@
 ##### Server property
 clientNum: 2
-privateKeyFilePath: /ppml/trusted-big-data-ml/work/keys/server.pem
-certChainFilePath:  /ppml/trusted-big-data-ml/work/keys/server.crt
-# serverPort:
+#privateKeyFilePath: /ppml/trusted-big-data-ml/work/keys/server.pem
+#certChainFilePath:  /ppml/trusted-big-data-ml/work/keys/server.crt
+serverPort: 8980
 
 ##### Client property
-# clientTarget:
+clientTarget: localhost:8980
 # taskID:
 

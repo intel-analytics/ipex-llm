@@ -21,7 +21,7 @@ import pytest
 import mxnet as mx
 from mxnet import gluon
 from mxnet.gluon import nn
-from bigdl.orca.ray import RayContext
+from bigdl.orca.ray import OrcaRayContext
 from bigdl.orca.learn.mxnet import Estimator, create_config
 
 np.random.seed(1337)  # for reproducibility
@@ -70,7 +70,7 @@ def get_metrics(config):
 
 class TestMXNetGluon(TestCase):
     def test_gluon(self):
-        current_ray_ctx = RayContext.get()
+        current_ray_ctx = OrcaRayContext.get()
         address_info = current_ray_ctx.address_info
         assert "object_store_address" in address_info
         config = create_config(log_interval=2, optimizer="adam",

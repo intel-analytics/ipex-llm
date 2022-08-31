@@ -136,7 +136,8 @@
       "spark.scheduler.minRegisteredResourcesRatio" -> "1.0",
       "spark.speculation" -> "false",
       "spark.serializer" -> "org.apache.spark.serializer.JavaSerializer",
-      "spark.scheduler.maxRegisteredResourcesWaitingTime" -> "3600s"
+      "spark.scheduler.maxRegisteredResourcesWaitingTime" -> "3600s",
+      "spark.driver.extraJavaOptions" -> "-Dlog4j2.info"
     )
     conf.length should be(target.keys.size)
     conf.foreach(s => {
@@ -153,7 +154,8 @@
       "spark.scheduler.minRegisteredResourcesRatio" -> "1.0",
       "spark.speculation" -> "false",
       "spark.serializer" -> "org.apache.spark.serializer.JavaSerializer",
-      "spark.scheduler.maxRegisteredResourcesWaitingTime" -> "3600s"
+      "spark.scheduler.maxRegisteredResourcesWaitingTime" -> "3600s",
+      "spark.driver.extraJavaOptions" -> "-Dlog4j2.info"
     )
     conf.length should be(target.keys.size)
     conf.foreach(s => {

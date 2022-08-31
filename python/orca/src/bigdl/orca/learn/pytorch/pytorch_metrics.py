@@ -14,17 +14,14 @@
 # limitations under the License.
 #
 import torch
-try:
-    import torchmetrics
-except ImportError:
-    raise ImportError("please install torchmetrics: pip install torchmetrics")
-
+from bigdl.dllib.utils.log4Error import invalidInputError
 from abc import ABC, abstractmethod
 
 
 def _unify_input_formats(preds, target):
     if not (preds.ndim == target.ndim or preds.ndim == target.ndim + 1):
-        raise ValueError("preds the same or one more dimensions than targets")
+        invalidInputError(False,
+                          "preds the same or one more dimensions than targets")
 
     if preds.ndim == target.ndim + 1:
         preds = torch.argmax(preds, dim=-1)
@@ -36,7 +33,8 @@ def _unify_input_formats(preds, target):
 
 def _check_same_shape(preds, targets):
     if preds.shape != targets.shape:
-        raise RuntimeError("preds and targets are expected to have the same shape")
+        invalidInputError(False,
+                          "preds and targets are expected to have the same shape")
 
 
 class PytorchMetric(ABC):
@@ -64,7 +62,7 @@ class Accuracy(PytorchMetric):
     ```python
     acc = Accuracy()
     acc(torch.tensor([0, 2, 3, 4]), torch.tensor([1, 2, 3, 4]))
-    assert acc.compute() == 0.75
+    acc.compute() == 0.75
     ```
     """
 
@@ -95,7 +93,7 @@ class SparseCategoricalAccuracy(PytorchMetric):
     ```python
      acc = SparseCategoricalAccuracy()
      acc(torch.tensor([[0.1, 0.9, 0.8], [0.05, 0.95, 0]]), torch.tensor([[2], [1]]))
-     assert acc.compute() == 0.5
+     acc.compute() == 0.5
     ```
     """
 
@@ -164,7 +162,7 @@ class BinaryAccuracy(PytorchMetric):
     pred = torch.tensor([0.98, 1, 0, 0.6])
     bac = BinaryAccuracy()
     bac(pred, target)
-    assert bac.compute() == 0.75
+    bac.compute() == 0.75
     ```
     """
 
@@ -195,7 +193,7 @@ class Top5Accuracy(PytorchMetric):
       target = torch.tensor([2, 2])
       top5acc = Top5Accuracy()
       top5acc(pred, target)
-      assert top5acc.compute() == 0.5
+      top5acc.compute() == 0.5
       ```
     """
 
@@ -288,7 +286,7 @@ class BinaryCrossEntropy(PytorchMetric):
     target = torch.tensor([[0, 1], [0, 0]])
     entropy = BinaryCrossEntropy()
     entropy(pred, target)
-    assert abs(entropy.compute() - 0.81492424) < 1e-6
+    abs(entropy.compute() - 0.81492424) < 1e-6
     ```
     """
 
@@ -323,7 +321,7 @@ class CategoricalCrossEntropy(PytorchMetric):
     target = torch.tensor([[0, 1, 0], [0, 0, 1]])
     entropy = CategoricalCrossEntropy()
     entropy(pred, target)
-    assert abs(entropy.compute() - 1.1769392) < 1e-6
+    abs(entropy.compute() - 1.1769392) < 1e-6
     ```
     """
 
@@ -358,7 +356,7 @@ class SparseCategoricalCrossEntropy(PytorchMetric):
     target = torch.tensor([1, 2])
     entropy = SparseCategoricalCrossEntropy()
     entropy(pred, target)
-    assert abs(entropy.compute() - 1.1769392) < 1e-6
+    abs(entropy.compute() - 1.1769392) < 1e-6
     ```
     """
 
@@ -392,7 +390,7 @@ class KLDivergence(PytorchMetric):
     target = torch.tensor([[0, 1], [0, 0]])
     div = KLDivergence()
     div(pred, target)
-    assert abs(div.compute() - 0.45814306) < 1e-6
+    abs(div.compute() - 0.45814306) < 1e-6
     ```
     """
 
@@ -425,7 +423,7 @@ class Poisson(PytorchMetric):
     target = torch.tensor([[0, 1], [0, 0]])
     poisson = Poisson()
     poisson(pred, target)
-    assert abs(poisson.compute() - 0.49999997) < 1e-6
+    abs(poisson.compute() - 0.49999997) < 1e-6
     ```
     """
 
@@ -457,10 +455,11 @@ class AUROC(PytorchMetric):
     target = torch.tensor([0, 1, 0, 1, 1, 1, 1.0])
     auc = AUROC()
     auc(pred, target)
-    assert (auc.compute() - 1.0) < 1e-6
+    (auc.compute() - 1.0) < 1e-6
     ```
     """
     def __init__(self):
+        import torchmetrics
         self.internal_auc = torchmetrics.AUROC()
 
     def __call__(self, preds, targets):
@@ -492,6 +491,7 @@ class ROC(PytorchMetric):
 
     """
     def __init__(self):
+        import torchmetrics
         self.internal_roc = torchmetrics.ROC()
 
     def __call__(self, preds, targets):
@@ -516,6 +516,7 @@ class F1Score(PytorchMetric):
 
     """
     def __init__(self):
+        import torchmetrics
         self.internal_f1 = torchmetrics.F1Score()
 
     def __call__(self, preds, targets):
@@ -536,11 +537,12 @@ class Precision(PytorchMetric):
     preds = torch.tensor([0, 0.2, 1.0, 0.8, 0.6, 0.5])
     precision = Precision()
     precision(preds, target)
-    assert (precision.compute() - 0.75 < 10e-6)
+    (precision.compute() - 0.75 < 10e-6)
     ```
 
     """
     def __init__(self):
+        import torchmetrics
         self.internal_precision = torchmetrics.Precision()
 
     def __call__(self, preds, targets):
@@ -561,11 +563,12 @@ class Recall(PytorchMetric):
     preds = torch.tensor([0, 0.2, 1.0, 0.8, 0.6, 0.5])
     recall = Recall()
     recall(preds, target)
-    assert (recall.compute() - 0.75 < 10e-6)
+    (recall.compute() - 0.75 < 10e-6)
     ```
 
     """
     def __init__(self):
+        import torchmetrics
         self.internal_recall = torchmetrics.Recall()
 
     def __call__(self, preds, targets):
@@ -597,6 +600,7 @@ class PrecisionRecallCurve(PytorchMetric):
 
     """
     def __init__(self):
+        import torchmetrics
         self.internal_curve = torchmetrics.PrecisionRecallCurve()
 
     def __call__(self, preds, targets):

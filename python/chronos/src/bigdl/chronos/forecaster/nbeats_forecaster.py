@@ -22,12 +22,15 @@ from bigdl.chronos.model.nbeats_pytorch import model_creator, loss_creator, opti
 class NBeatsForecaster(BasePytorchForecaster):
     """
     Example:
-        >>> # NBeatsForecaster test.
+        >>> # 1. Initialize Forecaster directly
         >>> forecaster = NBeatForecaster(paste_seq_len=10,
                                          future_seq_len=1,
                                          stack_types=("generic", "generic"),
                                          ...)
-        >>> forecaster.fit((x_train, y_train))
+        >>>
+        >>> # 2. The from_tsdataset method can also initialize a NBeatForecaster.
+        >>> forecaster.from_tsdataset(tsdata, **kwargs)
+        >>> forecaster.fit(tsdata)
         >>> forecaster.to_local() # if you set distributed=True
     """
 
@@ -43,7 +46,7 @@ class NBeatsForecaster(BasePytorchForecaster):
                  optimizer="Adam",
                  loss="mse",
                  lr=0.001,
-                 metircs=["mse"],
+                 metrics=["mse"],
                  seed=None,
                  distributed=False,
                  workers_per_node=1,
@@ -74,14 +77,18 @@ class NBeatsForecaster(BasePytorchForecaster):
                (i.e. the close possibility to a neuron). This value defaults to 0.1.
         :param optimizer: Specify the optimizer used for training. This value
                defaults to "Adam".
-        :param loss: Specify the loss function used for training. This value
-               defaults to "mse". You can choose from "mse", "mae" and
-               "huber_loss".
+        :param loss: str or pytorch loss instance, Specify the loss function
+               used for training. This value defaults to "mse". You can choose
+               from "mse", "mae", "huber_loss" or any customized loss instance
+               you want to use.
         :param lr: Specify the learning rate. This value defaults to 0.001.
         :param metrics: A list contains metrics for evaluating the quality of
                forecasting. You may only choose from "mse" and "mae" for a
                distributed forecaster. You may choose from "mse", "mae",
-               "rmse", "r2", "mape", "smape", for a non-distributed forecaster.
+               "rmse", "r2", "mape", "smape" or a callable function for a
+               non-distributed forecaster. If callable function, it signature
+               should be func(y_true, y_pred), where y_true and y_pred are numpy
+               ndarray.
         :param seed: int, random seed for training. This value defaults to None.
         :param distributed: bool, if init the forecaster in a distributed
                fashion. If True, the internal model will use an Orca Estimator.
@@ -95,9 +102,11 @@ class NBeatsForecaster(BasePytorchForecaster):
         """
         # ("generic", "generic") not support orca distributed.
         if stack_types[-1] == "generic" and distributed:
-            raise RuntimeError("Please set distributed=False or change the type "
-                               "of 'stack_types' to 'trend', 'seasonality', "
-                               "e.g. ('generic', 'seasonality').")
+            from bigdl.nano.utils.log4Error import invalidInputError
+            invalidInputError(False,
+                              "Please set distributed=False or change the type "
+                              "of 'stack_types' to 'trend', 'seasonality', "
+                              "e.g. ('generic', 'seasonality').")
 
         self.data_config = {
             "past_seq_len": past_seq_len,
@@ -112,7 +121,8 @@ class NBeatsForecaster(BasePytorchForecaster):
             "thetas_dim": thetas_dim,
             "share_weights_in_stack": share_weights_in_stack,
             "hidden_layer_units": hidden_layer_units,
-            "nb_harmonics": nb_harmonics
+            "nb_harmonics": nb_harmonics,
+            "seed": seed,
         }
 
         self.loss_config = {
@@ -127,24 +137,94 @@ class NBeatsForecaster(BasePytorchForecaster):
         # model creator settings
         self.model_creator = model_creator
         self.optimizer_creator = optimizer_creator
-        self.loss_creator = loss_creator
+        if isinstance(loss, str):
+            self.loss_creator = loss_creator
+        else:
+            def customized_loss_creator(config):
+                return config["loss"]
+            self.loss_creator = customized_loss_creator
 
         # distributed settings
         self.distributed = distributed
-        self.distributed_backend = distributed_backend
+        self.remote_distributed_backend = distributed_backend
+        self.local_distributed_backend = "subprocess"
         self.workers_per_node = workers_per_node
 
         # other settings
         self.lr = lr
         self.seed = seed
-        self.metrics = metircs
+        self.metrics = metrics
 
         # nano settings
         current_num_threads = torch.get_num_threads()
-        self.num_processes = max(1, current_num_threads//8)  # 8 is a magic num
+        if current_num_threads >= 24:
+            self.num_processes = max(1, current_num_threads//8)  # 8 is a magic num
+        else:
+            self.num_processes = 1
         self.use_ipex = False
         self.onnx_available = True
         self.quantize_available = True
-        self.checkpoint_callback = False
+        self.checkpoint_callback = True
+        self.use_hpo = False
 
         super().__init__()
+
+    @classmethod
+    def from_tsdataset(cls, tsdataset, past_seq_len=None, future_seq_len=None, **kwargs):
+        """
+        Build a NBeats Forecaster Model.
+
+        :param tsdataset: A bigdl.chronos.data.tsdataset.TSDataset instance.
+        :param past_seq_len: Specify the history time steps (i.e. lookback).
+               Do not specify the 'past_seq_len' if your tsdataset has called
+               the 'TSDataset.roll' method or 'TSDataset.to_torch_data_loader'.
+        :param future_seq_len: Specify the output time steps (i.e. horizon).
+               Do not specify the 'future_seq_len' if your tsdataset has called
+               the 'TSDataset.roll' method or 'TSDataset.to_torch_data_loader'.
+        :param kwargs: Specify parameters of Forecaster,
+               e.g. loss and optimizer, etc. More info,
+               please refer to NBeatsForecaster.__init__ methods.
+
+        :return: A NBeats Forecaster Model.
+        """
+        from bigdl.chronos.data.tsdataset import TSDataset
+        from bigdl.nano.utils.log4Error import invalidInputError
+        invalidInputError(isinstance(tsdataset, TSDataset),
+                          f"We only supports input a TSDataset, but get{type(tsdataset)}.")
+
+        def check_time_steps(tsdataset, past_seq_len, future_seq_len):
+            if tsdataset.lookback is not None and past_seq_len is not None:
+                future_seq_len = future_seq_len if isinstance(future_seq_len, int)\
+                    else max(future_seq_len)
+                return tsdataset.lookback == past_seq_len and tsdataset.horizon == future_seq_len
+            return True
+
+        invalidInputError(not tsdataset._has_generate_agg_feature,
+                          "We will add support for 'gen_rolling_feature' method later.")
+
+        if tsdataset.lookback is not None:  # calling roll or to_torch_data_loader
+            past_seq_len = tsdataset.lookback
+            future_seq_len = tsdataset.horizon if isinstance(tsdataset.horizon, int) \
+                else max(tsdataset.horizon)
+        elif past_seq_len is not None and future_seq_len is not None:  # initialize only
+            past_seq_len = past_seq_len if isinstance(past_seq_len, int)\
+                else tsdataset.get_cycle_length()
+            future_seq_len = future_seq_len if isinstance(future_seq_len, int) \
+                else max(future_seq_len)
+        else:
+            invalidInputError(False,
+                              "Forecaster requires 'past_seq_len' and 'future_seq_len' to specify "
+                              "the history time step and output time step.")
+
+        invalidInputError(check_time_steps(tsdataset, past_seq_len, future_seq_len),
+                          "tsdataset already has historical time steps and "
+                          "differs from the given past_seq_len and future_seq_len "
+                          "Expected past_seq_len and future_seq_len to be "
+                          f"{tsdataset.lookback, tsdataset.horizon}, "
+                          f"but found {past_seq_len, future_seq_len}",
+                          fixMsg="Do not specify past_seq_len and future seq_len "
+                          "or call tsdataset.roll method again and specify time step")
+
+        return cls(past_seq_len=past_seq_len,
+                   future_seq_len=future_seq_len,
+                   **kwargs)

@@ -18,6 +18,7 @@ import tensorflow as tf
 from bigdl.nano.deps.ray.ray_api import create_ray_multiprocessing_backend
 from bigdl.nano.deps.horovod.horovod_api import create_horovod_multiprocessing_backend
 from bigdl.nano.deps.horovod.horovod_api import distributed_train_keras_horovod
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class TrainingUtils:
@@ -84,9 +85,9 @@ class TrainingUtils:
         if num_processes is not None:
             if validation_data is not None:
                 msg = "validataion_data must be a tf.data.Dataset for multi-process training"
-                assert isinstance(x, (tf.compat.v1.data.Dataset, tf.data.Dataset)), msg
+                invalidInputError(isinstance(x, (tf.compat.v1.data.Dataset, tf.data.Dataset)), msg)
             msg = "x must be a tf.data.Dataset for multi-process training"
-            assert isinstance(x, (tf.compat.v1.data.Dataset, tf.data.Dataset)), msg
+            invalidInputError(isinstance(x, (tf.compat.v1.data.Dataset, tf.data.Dataset)), msg)
 
             if backend == "horovod":
                 _backend = create_horovod_multiprocessing_backend()
@@ -105,7 +106,8 @@ class TrainingUtils:
                 elif backend == "ray":
                     _backend = create_ray_multiprocessing_backend()
                 else:
-                    raise NotImplementedError("Backend {} is not implemented.".format(backend))
+                    invalidInputError(False,
+                                      "Backend {} is not implemented.".format(backend))
                 from bigdl.nano.tf.keras.distributed_utils import distributed_train_keras
                 history = distributed_train_keras(_backend,
                                                   model=self,
@@ -113,4 +115,4 @@ class TrainingUtils:
                                                   fit_kwargs=fit_kwargs)
                 return history
         else:
-            return super().fit(**fit_kwargs)
+            return self.fit_old(**fit_kwargs)

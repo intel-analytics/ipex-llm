@@ -28,7 +28,7 @@ from test.pytorch.utils._train_torch_lightning import train_with_linear_top_laye
 from torch import nn
 import torchmetrics
 
-from bigdl.nano.pytorch.trainer import Trainer
+from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch.vision.models import vision
 
 batch_size = 256
@@ -71,8 +71,7 @@ class TestTrainer(TestCase):
         resnet18 = vision.resnet18(
             pretrained=False, include_top=False, freeze=True)
         train_with_linear_top_layer(
-            resnet18, batch_size, num_workers, data_dir,
-            use_orca_lite_trainer=True)
+            resnet18, batch_size, num_workers, data_dir)
 
     def test_trainer_compile(self):
         trainer = Trainer(max_epochs=1)

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: bigdl-ppml-graphene-fl-helm-chart
+description: A Helm chart for BigDL PPML Graphene FL Demo
+type: application
+version: 0.1.0
+appVersion: 2.1.0-SNAPSHOT

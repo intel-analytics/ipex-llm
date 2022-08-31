@@ -21,12 +21,12 @@ from unittest import TestCase
 import pytest
 import torch
 from pytorch_lightning import LightningModule
-from _train_torch_lightning import create_data_loader, data_transform
-from _train_torch_lightning import train_with_linear_top_layer
+from test.pytorch.utils._train_torch_lightning import train_with_linear_top_layer
+from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
 from torch import nn
 import torchmetrics
 
-from bigdl.nano.pytorch.trainer import Trainer
+from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch.vision.models import vision
 
 batch_size = 256
@@ -65,15 +65,21 @@ class TestTrainer(TestCase):
     train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
     user_defined_pl_model = LitResNet18(10)
 
+    def setUp(self):
+        test_dir = os.path.dirname(__file__)
+        project_test_dir = os.path.abspath(
+            os.path.join(os.path.join(test_dir, ".."), "..")
+        )
+        os.environ['PYTHONPATH'] = project_test_dir
+
     def test_resnet18(self):
         resnet18 = vision.resnet18(
             pretrained=False, include_top=False, freeze=True)
         train_with_linear_top_layer(
-            resnet18, batch_size, num_workers, data_dir,
-            use_orca_lite_trainer=True)
+            resnet18, batch_size, num_workers, data_dir)
 
     def test_trainer_ray_compile(self):
-        trainer = Trainer(max_epochs=1, distributed_backend="ray")
+        trainer = Trainer(max_epochs=1, num_processes=2, distributed_backend="ray")
         pl_model = Trainer.compile(self.model, self.loss, self.optimizer)
         trainer.fit(pl_model, self.train_loader)
 

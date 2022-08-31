@@ -253,9 +253,12 @@ class LSTMSeq2Seq(BaseModel):
         elif self.metric in compiled_metric_names:
             metric_name = self.metric
         else:
-            raise ValueError(f"Input metric in fit_eval should be one of the metrics that are used "
-                             f"to compile the model. Got metric value of {self.metric} and "
-                             f"the metrics in compile are {compiled_metric_names}")
+            from bigdl.nano.utils.log4Error import invalidInputError
+            invalidInputError(False,
+                              f"Input metric in fit_eval should be one of the metrics that "
+                              f"are used "
+                              f"to compile the model. Got metric value of {self.metric} and "
+                              f"the metrics in compile are {compiled_metric_names}")
         if validation_data is None:
             result = hist.history.get(metric_name)[-1]
         else:

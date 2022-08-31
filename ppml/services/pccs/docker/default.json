@@ -1,0 +1,52 @@
+{
+    "HTTPS_PORT" : YOUR_HTTPS_PORT,
+    "hosts" : "YOUR_HOST_IP",
+    "uri": "https://api.trustedservices.intel.com/sgx/certification/v3/",
+    "ApiKey": "YOUR_API_KEY",
+    "proxy" : "YOUR_PROXY",
+    "RefreshSchedule": "0 0 1 * * *",
+    "UserTokenHash" : "YOUR_USER_TOKEN_HASH",
+    "AdminTokenHash" : "YOUR_ADMIN_TOKEN_HASH",
+    "CachingFillMode" : "LAZY",
+    "LogLevel" : "info",
+    "DB_CONFIG" : "sqlite",
+    "sqlite" : {
+        "database" : "database",
+        "username" : "username",
+        "password" : "password",
+        "options" : {
+            "host": "localhost",
+            "dialect": "sqlite",
+            "pool": {
+                "max": 5,
+                "min": 0,
+                "acquire": 30000,
+                "idle": 10000
+            },
+            "define": {
+                "freezeTableName": true
+            },
+            "logging" : false, 
+            "storage": "pckcache.db"
+        }
+    }, 
+    "mysql" : {
+        "database" : "pckcache",
+        "username" : "root",
+        "password" : "mypass",
+        "options" : {
+            "host": "localhost",
+            "dialect": "mysql",
+            "pool": {
+                "max": 5,
+                "min": 0,
+                "acquire": 30000,
+                "idle": 10000
+            },
+            "define": {
+                "freezeTableName": true
+            },
+            "logging" : false
+        }
+    }
+}

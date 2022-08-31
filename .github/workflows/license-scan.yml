@@ -1,0 +1,30 @@
+name: license-scan
+
+on:
+  push:
+    branches: [ "main" ]
+  #pull_request:
+    #branches: [ "main" ]
+  schedule:
+    - cron: '0 3 * * *'
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  fossa-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout Code"
+        uses: actions/checkout@v3
+
+      - name: "Run FOSSA Scan"
+        uses: fossas/fossa-action@main # Use a specific version if locking is preferred
+        with:
+          api-key: ${{ secrets.FOSSAAPIKEY }}
+          
+      - name: "Run FOSSA Test"
+        uses: fossas/fossa-action@main # Use a specific version if locking is preferred
+        with:
+          api-key: ${{ secrets.FOSSAAPIKEY }}
+          run-tests: true

@@ -23,7 +23,10 @@ def roll_timeseries_dataframe(df,
                               lookback,
                               horizon,
                               feature_col,
-                              target_col):
+                              target_col,
+                              id_col=None,
+                              label_len=0,
+                              contain_id=False):
     """
     roll dataframe into numpy ndarray sequence samples.
 
@@ -38,35 +41,47 @@ def roll_timeseries_dataframe(df,
            to the input list. 1 means the timestamp just after the observed data.
     :param feature_col: list, indicate the feature col name.
     :param target_col: list, indicate the target col name.
+    :param id_col: str, indicate the id col name, only needed when contain_id is True.
+    :param label_len: This parameter is only for transformer-based model.
+    :param contain_id: This parameter is only for XShardsTSDataset
     :return: x, y
         x: 3-d numpy array in format (no. of samples, lookback, feature_col length)
         y: 3-d numpy array in format (no. of samples, horizon, target_col length)
     Note: Specially, if `horizon` is set to 0, then y will be None.
     """
-    assert isinstance(df, pd.DataFrame)
-    assert isinstance(lookback, int)
-    assert isinstance(feature_col, list)
-    assert isinstance(target_col, list)
+    from bigdl.nano.utils.log4Error import invalidInputError
+    invalidInputError(isinstance(df, pd.DataFrame), "df is expected to be pandas dataframe")
+    invalidInputError(isinstance(lookback, int), "lookback is expected to be int")
+    invalidInputError(isinstance(feature_col, list), "feature_col is expected to be list")
+    invalidInputError(isinstance(target_col, list), "target_col is expected to be list")
     is_horizon_int = isinstance(horizon, int)
     is_horizon_list = isinstance(horizon, list) and\
         isinstance(horizon[0], int) and\
         min(horizon) > 0
-    assert is_horizon_int or is_horizon_list
+    invalidInputError(is_horizon_int or is_horizon_list,
+                      "horizon is expected to be a list or int")
 
-    is_test = True if (is_horizon_int and horizon == 0) else False
+    # don't enter test mode if label_len!=0
+    # TODO: change to use is_predict.
+    is_test = True if (is_horizon_int and horizon == 0 and label_len == 0) else False
     if not is_test:
         return _roll_timeseries_dataframe_train(df,
                                                 roll_feature_df,
                                                 lookback,
                                                 horizon,
                                                 feature_col,
-                                                target_col)
+                                                target_col,
+                                                id_col=id_col,
+                                                label_len=label_len,
+                                                contain_id=contain_id)
     else:
         return _roll_timeseries_dataframe_test(df,
                                                roll_feature_df,
                                                lookback,
                                                feature_col,
-                                               target_col)
+                                               target_col,
+                                               id_col=id_col,
+                                               contain_id=contain_id)
 
 
 def _append_rolling_feature_df(rolling_result,
@@ -87,7 +102,9 @@ def _roll_timeseries_dataframe_test(df,
                                     roll_feature_df,
                                     lookback,
                                     feature_col,
-                                    target_col):
+                                    target_col,
+                                    id_col,
+                                    contain_id):
     x = df.loc[:, target_col+feature_col].values.astype(np.float32)
 
     output_x, mask_x = _roll_timeseries_ndarray(x, lookback)
@@ -95,7 +112,10 @@ def _roll_timeseries_dataframe_test(df,
 
     x = _append_rolling_feature_df(output_x[mask], roll_feature_df)
 
-    return x, None
+    if contain_id:
+        return x, None, df.loc[:, [id_col]].values
+    else:
+        return x, None
 
 
 def _roll_timeseries_dataframe_train(df,
@@ -103,18 +123,34 @@ def _roll_timeseries_dataframe_train(df,
                                      lookback,
                                      horizon,
                                      feature_col,
-                                     target_col):
+                                     target_col,
+                                     id_col,
+                                     label_len,
+                                     contain_id):
+    from bigdl.nano.utils.log4Error import invalidInputError
+    if label_len != 0 and isinstance(horizon, list):
+        invalidInputError(False,
+                          "horizon should be an integer if label_len is set to larger than 0.")
     max_horizon = horizon if isinstance(horizon, int) else max(horizon)
-    x = df[:-max_horizon].loc[:, target_col+feature_col].values.astype(np.float32)
-    y = df.iloc[lookback:].loc[:, target_col].values.astype(np.float32)
+    if max_horizon > 0:
+        x = df[:-max_horizon].loc[:, target_col+feature_col].values.astype(np.float32)
+    else:
+        x = df.loc[:, target_col+feature_col].values.astype(np.float32)
+    y = df.iloc[lookback-label_len:].loc[:, target_col].values.astype(np.float32)
 
     output_x, mask_x = _roll_timeseries_ndarray(x, lookback)
-    output_y, mask_y = _roll_timeseries_ndarray(y, horizon)
+    if isinstance(horizon, list):
+        output_y, mask_y = _roll_timeseries_ndarray(y, horizon)
+    else:
+        output_y, mask_y = _roll_timeseries_ndarray(y, horizon+label_len)
     mask = (mask_x == 1) & (mask_y == 1)
 
     x = _append_rolling_feature_df(output_x[mask], roll_feature_df)
 
-    return x, output_y[mask]
+    if contain_id:
+        return x, output_y[mask], df.loc[:, [id_col]].values
+    else:
+        return x, output_y[mask]
 
 
 def _shift(arr, num, fill_value=np.nan):
@@ -138,7 +174,9 @@ def _roll_timeseries_ndarray(data, window):
     first dim is timestamp
     second dim is feature
     '''
-    assert data.ndim == 2  # (num_timestep, num_feature)
+    from bigdl.nano.utils.log4Error import invalidInputError
+    invalidInputError(data.ndim == 2,
+                      "data dim is expected to be 2")  # (num_timestep, num_feature)
     data = np.expand_dims(data, axis=1)  # (num_timestep, 1, num_feature)
 
     # window index and capacity

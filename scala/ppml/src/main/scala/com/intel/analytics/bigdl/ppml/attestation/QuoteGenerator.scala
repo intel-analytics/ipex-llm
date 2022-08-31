@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.ppml.attestation
 
-abstract class QuoteGenerator {
+trait QuoteGenerator {
 
   def getQuote(userReport: Array[Byte]): Array[Byte]
 

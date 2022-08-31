@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from bigdl.nano.common.cpu_schedule import schedule_workers
+from bigdl.nano.common.cpu_schedule import schedule_processors
 import os
 import json
 import shutil
@@ -22,6 +22,7 @@ from tempfile import TemporaryDirectory
 from contextlib import closing
 import socket
 import tensorflow as tf
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 def find_free_port():
@@ -110,7 +111,7 @@ def distributed_train_keras(backend, model, nprocs, fit_kwargs=None):
     if fit_kwargs is None:
         fit_kwargs = {}
 
-    cpu_procs = schedule_workers(nprocs)
+    envs = schedule_processors(nprocs)
 
     from tensorflow.python.distribute.coordinator.values import serialize_dataset_to_graph
 
@@ -129,17 +130,9 @@ def distributed_train_keras(backend, model, nprocs, fit_kwargs=None):
 
     # this is to work around a tensorflow bug: https://github.com/keras-team/keras/issues/16023
     model.evaluate(train_dataset, verbose=0, steps=1)
-    assert model.compiled_metrics.built
+    invalidInputError(model.compiled_metrics.built, "model.compiled_metrics.built should be True")
     with TemporaryDirectory() as temp_dir:
         model.save(os.path.join(temp_dir, 'temp_model'))
-        envs = []
-        for i in range(nprocs):
-            env = {
-                "KMP_AFFINITY": f"granularity=fine,proclist"
-                                f"=[{','.join([str(i) for i in cpu_procs[i]])}],explicit",
-                "OMP_NUM_THREADS": str(len(cpu_procs[i])),
-            }
-            envs.append(env)
 
         train_args = (temp_dir, train_ds_def, train_elem_spec,
                       val_ds_def, val_elem_spec, fit_kwargs)

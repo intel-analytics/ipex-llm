@@ -18,6 +18,7 @@ import numpy as np
 
 from bigdl.dllib.utils.file_utils import get_file_list
 from bigdl.dllib.utils.utils import convert_row_to_numpy
+from bigdl.dllib.utils.log4Error import *
 
 
 def list_s3_file(file_path, env):
@@ -74,6 +75,7 @@ def check_type_and_convert(data, allow_tuple=True, allow_list=True):
     :param allow_list: boolean, if the model accepts a list as input. Default: True
     :return:
     """
+
     def check_and_convert(convert_data):
         if isinstance(convert_data, np.ndarray):
             return [convert_data]
@@ -86,12 +88,13 @@ def check_type_and_convert(data, allow_tuple=True, allow_list=True):
             return _convert_list_tuple(convert_data, allow_tuple=allow_tuple,
                                        allow_list=allow_list)
         else:
-            raise ValueError("value of x and y should be a ndarray, "
-                             "a tuple of ndarrays or a list of ndarrays")
+            invalidInputError(False,
+                              "value of x and y should be a ndarray, "
+                              "a tuple of ndarrays or a list of ndarrays")
 
     result = {}
-    assert isinstance(data, dict), "each shard should be an dict"
-    assert "x" in data, "key x should in each shard"
+    invalidInputError(isinstance(data, dict), "each shard should be an dict")
+    invalidInputError("x" in data, "key x should in each shard")
     x = data["x"]
     result["x"] = check_and_convert(x)
     if "y" in data:
@@ -106,6 +109,7 @@ def get_spec(allow_tuple=True, allow_list=True):
     :param allow_list: boolean, if the model accepts a list as input. Default: True
     :return:
     """
+
     def _get_spec(data):
         data = check_type_and_convert(data, allow_tuple, allow_list)
         feature_spec = [(feat.dtype, feat.shape[1:])
@@ -116,6 +120,7 @@ def get_spec(allow_tuple=True, allow_list=True):
         else:
             label_spec = None
         return feature_spec, label_spec
+
     return _get_spec
 
 
@@ -126,6 +131,7 @@ def flatten_xy(allow_tuple=True, allow_list=True):
     :param allow_list: boolean, if the model accepts a list as input. Default: True
     :return:
     """
+
     def _flatten_xy(data):
         data = check_type_and_convert(data, allow_tuple, allow_list)
         features = data["x"]
@@ -141,6 +147,7 @@ def flatten_xy(allow_tuple=True, allow_list=True):
                 yield (fs, ls)
             else:
                 yield (fs,)
+
     return _flatten_xy
 
 
@@ -159,9 +166,9 @@ def combine(data_list):
     elif isinstance(data_list[0], np.ndarray):
         res = np.concatenate(data_list, axis=0)
     else:
-        raise ValueError(
-            "value of x and y should be an ndarray, a dict of ndarrays, a tuple of ndarrays"
-            " or a list of ndarrays, please check your input")
+        invalidInputError(False,
+                          "value of x and y should be an ndarray, a dict of ndarrays, a tuple"
+                          " of ndarrays or a list of ndarrays, please check your input")
     return res
 
 
@@ -200,6 +207,39 @@ def ray_partitions_get_data_label(partition_list,
                                                allow_list=allow_list,
                                                has_label=has_label)
     return data, label
+
+
+def ray_partitions_get_tf_dataset(partition_list, has_label=True):
+    import tensorflow as tf
+    partition_data = [item for partition in partition_list for item in partition]
+    if len(partition_data) != 0:
+
+        sample = partition_data[0]
+        keys = sample.keys()
+        if "x" in keys:
+            if has_label:
+                invalidInputError("y" in keys, "key y should in each shard if has_label=True")
+            data, label = ray_partition_get_data_label(partition_data,
+                                                       allow_tuple=True,
+                                                       allow_list=False)
+            dataset = tf.data.Dataset.from_tensor_slices((data, label))
+        elif "ds_def" in keys and "elem_spec" in keys:
+            from tensorflow.python.distribute.coordinator.values import \
+                deserialize_dataset_from_graph
+            from functools import reduce
+            dataset_list = [deserialize_dataset_from_graph(serialized_dataset["ds_def"],
+                                                           serialized_dataset["elem_spec"])
+                            for serialized_dataset in partition_data]
+            dataset = reduce(lambda x, y: x.concatenate(y), dataset_list)
+        else:
+            invalidInputError(False,
+                              "value of x and y should be a ndarray, "
+                              "a tuple of ndarrays or a list of ndarrays")
+    else:
+        # TODO: may cause error
+        dataset = tf.data.Dataset.from_tensor_slices(([], []))
+
+    return dataset
 
 
 # todo: this might be very slow
@@ -273,8 +313,9 @@ def read_pd_file(path, file_type, **kwargs):
     elif file_type == "json":
         df = pd.read_json(path, **kwargs)
     else:
-        raise Exception("Unsupported file type: %s. Only csv and json files are "
-                        "supported for now" % file_type)
+        invalidInputError(False,
+                          "Unsupported file type: %s. Only csv and json files are "
+                          "supported for now" % file_type)
     return df
 
 
@@ -314,9 +355,9 @@ def index_data(x, i):
     elif isinstance(x, list):
         return [item[i] for item in x]
     else:
-        raise ValueError(
-            "data should be an ndarray, a dict of ndarrays, a tuple of ndarrays"
-            " or a list of ndarrays, please check your input")
+        invalidInputError(False,
+                          "data should be an ndarray, a dict of ndarrays, a tuple of ndarrays"
+                          " or a list of ndarrays, please check your input")
 
 
 def get_size(x):
@@ -328,13 +369,66 @@ def get_size(x):
     elif isinstance(x, tuple) or isinstance(x, list):
         return len(x[0])
     else:
-        raise ValueError(
-            "data should be an ndarray, a dict of ndarrays, a tuple of ndarrays"
-            " or a list of ndarrays, please check your input")
+        invalidInputError(False,
+                          "data should be an ndarray, a dict of ndarrays, a tuple of ndarrays"
+                          " or a list of ndarrays, please check your input")
 
 
-def spark_df_to_pd_sparkxshards(df):
-    def to_pandas(iter, columns, batch_size=None):
+def spark_df_to_rdd_pd(df, squeeze=False, index_col=None,
+                       dtype=None, index_map=None):
+    from bigdl.orca.data import SparkXShards
+    from bigdl.orca import OrcaContext
+    columns = df.columns
+
+    import pyspark.sql.functions as F
+    import pyspark.sql.types as T
+    to_array = F.udf(lambda v: v.toArray().tolist(), T.ArrayType(T.FloatType()))
+    for colName, colType in df.dtypes:
+        if colType == 'vector':
+            df = df.withColumn(colName, to_array(colName))
+
+    shard_size = OrcaContext._shard_size
+    pd_rdd = df.rdd.mapPartitions(to_pandas(df.columns, squeeze, index_col, dtype, index_map,
+                                            batch_size=shard_size))
+    return pd_rdd
+
+
+def spark_df_to_pd_sparkxshards(df, squeeze=False, index_col=None,
+                                dtype=None, index_map=None):
+    pd_rdd = spark_df_to_rdd_pd(df, squeeze, index_col, dtype, index_map)
+    from bigdl.orca.data import SparkXShards
+    spark_xshards = SparkXShards(pd_rdd)
+    df.unpersist()
+    return spark_xshards
+
+
+def to_pandas(columns, squeeze=False, index_col=None, dtype=None, index_map=None,
+              batch_size=None):
+    def postprocess(pd_df):
+        if dtype is not None:
+            if isinstance(dtype, dict):
+                for col, type in dtype.items():
+                    if isinstance(col, str):
+                        if col not in pd_df.columns:
+                            invalidInputError(False,
+                                              "column to be set type is not"
+                                              " in current dataframe")
+                        pd_df[col] = pd_df[col].astype(type)
+                    elif isinstance(col, int):
+                        if index_map[col] not in pd_df.columns:
+                            invalidInputError(False,
+                                              "column index to be set type is not"
+                                              " in current dataframe")
+                        pd_df[index_map[col]] = pd_df[index_map[col]].astype(type)
+            else:
+                pd_df = pd_df.astype(dtype)
+        if squeeze and len(pd_df.columns) == 1:
+            pd_df = pd_df.iloc[:, 0]
+        if index_col:
+            pd_df = pd_df.set_index(index_col)
+        return pd_df
+
+    def f(iter):
         import pandas as pd
         counter = 0
         data = []
@@ -342,18 +436,16 @@ def spark_df_to_pd_sparkxshards(df):
             counter += 1
             data.append(row)
             if batch_size and counter % batch_size == 0:
-                yield pd.DataFrame(data, columns=columns)
+                pd_df = pd.DataFrame(data, columns=columns)
+                pd_df = postprocess(pd_df)
+                yield pd_df
                 data = []
         if data:
-            yield pd.DataFrame(data, columns=columns)
+            pd_df = pd.DataFrame(data, columns=columns)
+            pd_df = postprocess(pd_df)
+            yield pd_df
 
-    from bigdl.orca.data import SparkXShards
-    from bigdl.orca import OrcaContext
-    columns = df.columns
-    shard_size = OrcaContext._shard_size
-    pd_rdd = df.rdd.mapPartitions(lambda iter: to_pandas(iter, columns, shard_size))
-    spark_xshards = SparkXShards(pd_rdd)
-    return spark_xshards
+    return f
 
 
 def spark_xshards_to_ray_dataset(spark_xshards):
@@ -365,3 +457,16 @@ def spark_xshards_to_ray_dataset(spark_xshards):
 
     ray_dataset = ray.data.from_pandas_refs(partition_refs)
     return ray_dataset
+
+
+def generate_string_idx(df, columns, freq_limit, order_by_freq):
+    from bigdl.dllib.utils.file_utils import callZooFunc
+    return callZooFunc("float", "generateStringIdx", df, columns, freq_limit, order_by_freq)
+
+
+def check_col_exists(df, columns):
+    df_cols = df.columns
+    col_not_exist = list(filter(lambda x: x not in df_cols, columns))
+    if len(col_not_exist) > 0:
+        invalidInputError(False,
+                          str(col_not_exist) + " do not exist in this Table")

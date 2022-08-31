@@ -21,6 +21,7 @@ from argparse import ArgumentParser
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.data.file import makedirs, write_text, exists
 from bigdl.friesian.feature import FeatureTable
+from bigdl.dllib.utils.log4Error import *
 
 
 LABEL_COL = 0
@@ -90,8 +91,8 @@ def preprocess_and_save(data_tbl, models, save_path):
         .fillna(0, INT_COLS + CAT_COLS)
     data_tbl, min_max = data_tbl.min_max_scale(INT_COLS)
 
-    data_tbl = data_tbl.cross_columns(crossed_columns=[CAT_COLS[0:2], CAT_COLS[2:4]],
-                                      bucket_sizes=cross_sizes)
+    data_tbl = data_tbl.cross_columns([CAT_COLS[0:2], CAT_COLS[2:4]],
+                                      cross_sizes)
 
     data_tbl = data_tbl.ordinal_shuffle_partition()
 
@@ -116,9 +117,9 @@ if __name__ == '__main__':
     elif args.cluster_mode == "spark-submit":
         init_orca_context("spark-submit")
     else:
-        raise ValueError(
-            "cluster_mode should be one of 'local', 'yarn', 'standalone' and 'spark-submit'"
-            ", but got " + args.cluster_mode)
+        invalidInputError(False,
+                          "cluster_mode should be one of 'local', 'yarn', 'standalone' and"
+                          " 'spark-submit', but got " + args.cluster_mode)
 
     time_start = time()
     paths = [os.path.join(args.input_folder, 'day_%d.parquet' % i) for i in args.day_range]

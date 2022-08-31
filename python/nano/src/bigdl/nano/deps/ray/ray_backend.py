@@ -16,6 +16,7 @@
 
 from bigdl.nano.common.multiprocessing.backend import Backend
 import ray
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class RayBackend(Backend):
@@ -26,14 +27,15 @@ class RayBackend(Backend):
     def shutdown(self) -> None:
         ray.shutdown()
 
-    def run(self, target, args=..., nprocs=1, envs=None) -> None:
+    def run(self, target, args=..., nprocs=1, envs=None):
         if envs is not None:
             if isinstance(envs, list):
-                assert nprocs == len(envs), "envs must have the same length with nprocs"
+                invalidInputError(nprocs == len(envs),
+                                  "envs must have the same length with nprocs")
             elif isinstance(envs, dict):
                 envs = [envs] * nprocs
             else:
-                raise ValueError("envs must be a dict or a list of dict")
+                invalidInputError(False, "envs must be a dict or a list of dict")
 
         results = []
         for i in range(nprocs):

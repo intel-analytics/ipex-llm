@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import copy
 import hashlib
 import os
 import random
@@ -23,6 +23,7 @@ from functools import reduce
 import numpy as np
 import pyspark.sql.functions as F
 from bigdl.friesian.feature.utils import *
+from bigdl.dllib.utils.log4Error import *
 from bigdl.orca import OrcaContext
 from py4j.protocol import Py4JError
 from pyspark.ml import Pipeline
@@ -33,17 +34,41 @@ from pyspark.sql.functions import col as pyspark_col, concat, udf, array, broadc
     lit, rank, monotonically_increasing_id, row_number, desc
 from pyspark.sql.types import ArrayType, DataType, StructType, StringType, StructField
 
+from typing import (
+    TYPE_CHECKING,
+    TypeVar,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    Union,
+)
+NUMERIC_TYPE = TypeVar('NUMERIC_TYPE', int, float, complex)
+
+if TYPE_CHECKING:
+    from pandas.core.frame import DataFrame as PandasDataFrame
+    from pyspark.sql.column import Column
+    from pyspark.sql import Row
+    from pyspark.sql.dataframe import DataFrame as SparkDataFrame
+    from pyspark.sql.types import StructType
+
+
 JAVA_INT_MIN = -2147483648
 JAVA_INT_MAX = 2147483647
 
 
 class Table:
-    def __init__(self, df):
+    def __init__(self, df: "SparkDataFrame") -> None:
         self.df = df
         self.__column_names = self.df.schema.names
 
+    @property
+    def schema(self) -> "StructType":
+        return self.df.schema
+
     @staticmethod
-    def _read_parquet(paths):
+    def _read_parquet(paths: Union[str, List[str]]) -> "SparkDataFrame":
         if not isinstance(paths, list):
             paths = [paths]
         spark = OrcaContext.get_spark_session()
@@ -51,7 +76,7 @@ class Table:
         return df
 
     @staticmethod
-    def _read_json(paths, cols):
+    def _read_json(paths: Union[str, List[str]], cols: Union[str, List[str]]) -> "SparkDataFrame":
         if not isinstance(paths, list):
             paths = [paths]
         spark = OrcaContext.get_spark_session()
@@ -62,11 +87,18 @@ class Table:
             elif isinstance(cols, str):
                 df = df.select(cols)
             else:
-                raise Exception("cols should be a column name or list of column names")
+                invalidInputError(False,
+                                  "cols should be a column name or list of column names")
         return df
 
     @staticmethod
-    def _read_csv(paths, delimiter=",", header=False, names=None, dtype=None):
+    def _read_csv(
+        paths: Union[str, List[str]],
+        delimiter: str = ",",
+        header: bool = False,
+        names: Optional[Union[str, List[str]]]=None,
+        dtype: Optional[Union[List[str], Dict[str, str], str]]=None
+    ) -> "SparkDataFrame":
         if not isinstance(paths, list):
             paths = [paths]
         spark = OrcaContext.get_spark_session()
@@ -75,8 +107,8 @@ class Table:
         if names:
             if not isinstance(names, list):
                 names = [names]
-            assert len(names) == len(columns), \
-                "names should have the same length as the number of columns"
+            invalidInputError(len(names) == len(columns),
+                              "names should have the same length as the number of columns")
             for i in range(len(names)):
                 df = df.withColumnRenamed(columns[i], names[i])
         tbl = Table(df)
@@ -88,25 +120,26 @@ class Table:
                 tbl = tbl.cast(columns=None, dtype=dtype)
             elif isinstance(dtype, list):
                 columns = df.columns
-                assert len(dtype) == len(columns), \
-                    "dtype should have the same length as the number of columns"
+                invalidInputError(len(dtype) == len(columns),
+                                  "dtype should have the same length as the number of columns")
                 for i in range(len(columns)):
                     tbl = tbl.cast(columns=columns[i], dtype=dtype[i])
             else:
-                raise ValueError("dtype should be str or a list of str or dict")
+                invalidInputError(False,
+                                  "dtype should be str or a list of str or dict")
         return tbl.df
 
-    def _clone(self, df):
+    def _clone(self, df: "SparkDataFrame") -> "Table":
         return Table(df)
 
-    def compute(self):
+    def compute(self) -> "Table":
         """
         Trigger computation of the Table.
         """
         compute(self.df)
         return self
 
-    def to_spark_df(self):
+    def to_spark_df(self) -> "SparkDataFrame":
         """
         Convert the current Table to a Spark DataFrame.
 
@@ -114,7 +147,7 @@ class Table:
         """
         return self.df
 
-    def size(self):
+    def size(self) -> int:
         """
         Returns the number of rows in this Table.
 
@@ -123,13 +156,13 @@ class Table:
         cnt = self.df.count()
         return cnt
 
-    def broadcast(self):
+    def broadcast(self) -> None:
         """
         Marks the Table as small enough for use in broadcast join.
         """
         self.df = broadcast(self.df)
 
-    def select(self, *cols):
+    def select(self, *cols: Union[str, List[str]]) -> "Table":
         """
         Select specific columns.
 
@@ -138,13 +171,14 @@ class Table:
 
         :return: A new Table that contains the specified columns.
         """
-        # If cols is None, it makes more sense to raise error
+        # If cols is None, it makes more sense to throw error
         # instead of returning an empty Table.
         if not cols:
-            raise ValueError("cols should be str or a list of str, but got None.")
+            invalidInputError(False,
+                              "cols should be str or a list of str, but got None.")
         return self._clone(self.df.select(*cols))
 
-    def drop(self, *cols):
+    def drop(self, *cols: Union[str, List[str]]) -> "Table":
         """
         Returns a new Table that drops the specified column.
         This is a no-op if schema doesn't contain the given column name(s).
@@ -156,7 +190,39 @@ class Table:
         """
         return self._clone(self.df.drop(*cols))
 
-    def fillna(self, value, columns):
+    def limit(self, num: int) -> "Table":
+        """
+        Limits the result count to the number specified.
+
+        :param num: int that specifies the number of results.
+        :return: A new Table that contains `num` counts of rows.
+        """
+        return self._clone(self.df.limit(num))
+
+    def repartition(self, num_partitions: int) -> "Table":
+        """
+        Return a new Table that has exactly num_partitions partitions.
+
+        :param num_partitions: target number of partitions
+        :return: a new Table that has num_partitions partitions.
+        """
+        return self._clone(self.df.repartition(num_partitions))
+
+    def get_partition_row_number(self) -> "Table":
+        """
+        Return a Table that contains partitionId and corresponding row number.
+
+        :return: a new Table that contains partitionId and corresponding row number.
+        """
+        from pyspark.sql.functions import spark_partition_id
+        return self._clone(self.df.withColumn("partitionId", spark_partition_id())
+                           .groupBy("partitionId").count())
+
+    def fillna(
+        self,
+        value: Union[int, float, str, bool],
+        columns: Optional[Union[str, List[str]]]
+    ) -> "FeatureTable":
         """
         Replace null values.
 
@@ -182,7 +248,12 @@ class Table:
                 return self._clone(fill_na_int(self.df, value, columns))
         return self._clone(fill_na(self.df, value, columns))
 
-    def dropna(self, columns, how='any', thresh=None):
+    def dropna(
+        self,
+        columns: Optional[Union[str, List[str]]],
+        how: str = "any",
+        thresh: Optional[int] = None
+    ) -> "Table":
         """
         Drops the rows containing null values in the specified columns.
 
@@ -198,7 +269,7 @@ class Table:
         """
         return self._clone(self.df.dropna(how, thresh, subset=columns))
 
-    def distinct(self):
+    def distinct(self) -> "Table":
         """
         Select the distinct rows of the Table.
 
@@ -206,7 +277,7 @@ class Table:
         """
         return self._clone(self.df.distinct())
 
-    def filter(self, condition):
+    def filter(self, condition: Union[str, "Column"]) -> "Table":
         """
         Filters the rows that satisfy `condition`. For instance, filter("col_1 == 1") will filter
         the rows that has value 1 at column col_1.
@@ -217,24 +288,32 @@ class Table:
         """
         return self._clone(self.df.filter(condition))
 
-    def random_split(self, weights, seed=None):
+    def random_split(
+        self,
+        weights: List[float],
+        seed: Optional[int] = None
+    ) -> List["Table"]:
         """
-        Randomly splits with the provided weights.
+        Randomly split Table into multiple Tables with the provided weights for train, validation
+        and test.
 
-        :param weights: list of doubles as weights with which to split the table.
-            Weights will be normalized if they don't sum up to 1.0.
+        :param weights: list of doubles as weights with which to split the Table.
+               Weights will be normalized if they don't sum up to 1.0.
         :param seed: The seed for sampling.
 
-        :return A list of Tables
+        :return: A list of Tables split by the provided weights.
         """
-        for w in weights:
-            if w < 0.0:
-                raise ValueError("Weights must be positive. Found weight value: %s" % w)
-        seed = seed if seed is not None else random.randint(0, sys.maxsize)
         df_array = self.df.randomSplit(weights, seed)
         return [self._clone(df) for df in df_array]
 
-    def clip(self, columns, min=None, max=None):
+    split = random_split
+
+    def clip(
+        self,
+        columns: Optional[Union[str, List[str]]]=None,
+        min: Optional[NUMERIC_TYPE] = None,
+        max: Optional[NUMERIC_TYPE] = None
+    ) -> "Table":
         """
         Clips continuous values so that they are within the range [min, max]. For instance, by
         setting the min value to 0, all negative values in columns will be replaced with 0.
@@ -248,15 +327,21 @@ class Table:
         :return: A new Table that replaced the value less than `min` with specified `min` and the
                  value greater than `max` with specified `max`.
         """
-        assert min is not None or max is not None, "at least one of min and max should be not None"
+        invalidInputError(min is not None or max is not None,
+                          "at least one of min and max should be not None")
         if columns is None:
-            raise ValueError("columns should be str or a list of str, but got None.")
+            invalidInputError(False,
+                              "columns should be str or a list of str, but got None.")
         if not isinstance(columns, list):
             columns = [columns]
         check_col_exists(self.df, columns)
         return self._clone(clip(self.df, columns, min, max))
 
-    def log(self, columns, clipping=True):
+    def log(
+        self,
+        columns: Optional[Union[str, List[str]]]=None,
+        clipping: bool = True
+    ) -> "Table":
         """
         Calculates the log of continuous columns.
 
@@ -268,13 +353,14 @@ class Table:
         :return: A new Table that replaced value in columns with logged value.
         """
         if columns is None:
-            raise ValueError("columns should be str or a list of str, but got None.")
+            invalidInputError(False,
+                              "columns should be str or a list of str, but got None.")
         if not isinstance(columns, list):
             columns = [columns]
         check_col_exists(self.df, columns)
         return self._clone(log_with_clip(self.df, columns, clipping))
 
-    def fill_median(self, columns):
+    def fill_median(self, columns: Optional[Union[str, List[str]]]=None) -> "Table":
         """
         Replaces null values with the median in the specified numeric columns. Any column to be
         filled should not contain only null values.
@@ -291,7 +377,7 @@ class Table:
             check_col_exists(self.df, columns)
         return self._clone(fill_median(self.df, columns))
 
-    def median(self, columns):
+    def median(self, columns: Optional[Union[str, List[str]]]=None) -> "Table":
         """
         Returns a new Table that has two columns, `column` and `median`, containing the column
         names and the medians of the specified numeric columns.
@@ -307,7 +393,9 @@ class Table:
             check_col_exists(self.df, columns)
         return self._clone(median(self.df, columns))
 
-    def merge_cols(self, columns, target):
+    def merge_cols(self,
+                   columns: Union[str, List[str]],
+                   target: str) -> "Table":
         """
         Merge the target column values as a list to a new column.
         The original columns will be dropped.
@@ -317,10 +405,11 @@ class Table:
 
         :return: A new Table that replaces columns with a new target column of merged list values.
         """
-        assert isinstance(columns, list), "columns must be a list of column names"
+        invalidInputError(isinstance(columns, list),
+                          "columns must be a list of column names")
         return self._clone(self.df.withColumn(target, array(columns)).drop(*columns))
 
-    def rename(self, columns):
+    def rename(self, columns: Dict[str, str]) -> "Table":
         """
         Rename columns with new column names
 
@@ -329,14 +418,15 @@ class Table:
 
         :return: A new Table with new column names.
         """
-        assert isinstance(columns, dict), "columns should be a dictionary of {'old_name1': " \
-                                          "'new_name1', 'old_name2': 'new_name2'}"
+        invalidInputError(isinstance(columns, dict),
+                          "columns should be a dictionary of"
+                          " {'old_name1': 'new_name1', 'old_name2': 'new_name2'}")
         new_df = self.df
         for old_name, new_name in columns.items():
             new_df = new_df.withColumnRenamed(old_name, new_name)
         return self._clone(new_df)
 
-    def show(self, n=20, truncate=True):
+    def show(self, n: int = 20, truncate: bool = True) -> None:
         """
         Prints the first `n` rows to the console.
 
@@ -347,7 +437,11 @@ class Table:
         """
         self.df.show(n, truncate)
 
-    def get_stats(self, columns, aggr):
+    def get_stats(
+        self,
+        columns: Optional[Union[str, List[str]]],
+        aggr: Union[Dict[str, List[str]], List[str], Dict[str, str], str]
+    ) -> Dict[str, Union[List[NUMERIC_TYPE], NUMERIC_TYPE]]:
         """
         Calculate the statistics of the values over the target column(s).
 
@@ -372,23 +466,26 @@ class Table:
                 aggr_strs = aggr
             elif isinstance(aggr, dict):
                 if column not in aggr:
-                    raise ValueError("aggregate function not defined for the column {}.".
-                                     format(column))
+                    invalidInputError(False,
+                                      "aggregate function not defined for the column {}.".
+                                      format(column))
                 aggr_strs = aggr[column]
             else:
-                raise ValueError("aggr must have type str or a list or dict.")
+                invalidInputError(False,
+                                  "aggr must have type str or a list or dict.")
             if isinstance(aggr_strs, str):
                 aggr_strs = [aggr_strs]
             values = []
             for aggr_str in aggr_strs:
                 if aggr_str not in ["min", "max", "avg", "sum", "count"]:
-                    raise ValueError("aggregate function must be one of min/max/avg/sum/count, \
-                        but got {}.".format(aggr_str))
+                    invalidInputError(False,
+                                      "aggregate function must be one of min/max/avg/sum/count,"
+                                      " but got {}.".format(aggr_str))
                 values.append(self.df.agg({column: aggr_str}).collect()[0][0])
             stats[column] = values[0] if len(values) == 1 else values
         return stats
 
-    def min(self, columns):
+    def min(self, columns: Optional[Union[str, List[str]]]=None) -> "Table":
         """
         Returns a new Table that has two columns, `column` and `min`, containing the column
         names and the minimum values of the specified numeric columns.
@@ -405,7 +502,7 @@ class Table:
         spark = OrcaContext.get_spark_session()
         return self._clone(spark.createDataFrame(data, schema))
 
-    def max(self, columns):
+    def max(self, columns: Optional[Union[str, List[str]]]=None) -> "Table":
         """
         Returns a new Table that has two columns, `column` and `max`, containing the column
         names and the maximum values of the specified numeric columns.
@@ -422,7 +519,7 @@ class Table:
         spark = OrcaContext.get_spark_session()
         return self._clone(spark.createDataFrame(data, schema))
 
-    def to_list(self, column):
+    def to_list(self, column: str) -> List:
         """
         Convert all values of the target column to a list.
         Only call this if the Table is small enough.
@@ -432,11 +529,12 @@ class Table:
         :return: list, contains all values of the target column.
         """
         if not isinstance(column, str):
-            raise ValueError("Column must have type str.")
+            invalidInputError(False,
+                              "Column must have type str.")
         check_col_exists(self.df, [column])
         return self.df.select(column).rdd.flatMap(lambda x: x).collect()
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, List]:
         """
         Convert the Table to a dictionary.
         Only call this if the Table is small enough.
@@ -450,7 +548,7 @@ class Table:
             result[column] = [row[i] for row in rows]
         return result
 
-    def add(self, columns, value=1):
+    def add(self, columns: Union[str, List[str]], value: NUMERIC_TYPE=1) -> "Table":
         """
         Increase all of values of the target numeric column(s) by a constant value.
 
@@ -460,7 +558,8 @@ class Table:
         :return: A new Table with updated numeric values on specified columns.
         """
         if columns is None:
-            raise ValueError("Columns should be str or a list of str, but got None")
+            invalidInputError(False,
+                              "Columns should be str or a list of str, but got None")
         if not isinstance(columns, list):
             columns = [columns]
         check_col_exists(self.df, columns)
@@ -469,13 +568,14 @@ class Table:
             if new_df.schema[column].dataType not in [IntegerType(), ShortType(),
                                                       LongType(), FloatType(),
                                                       DecimalType(), DoubleType()]:
-                raise ValueError("Column type should be numeric, but have type {} \
-                    for column {}".format(new_df.schema[column].dataType, column))
+                invalidInputError(False,
+                                  "Column type should be numeric, but have type {} "
+                                  "for column {}".format(new_df.schema[column].dataType, column))
             new_df = new_df.withColumn(column, pyspark_col(column) + lit(value))
         return self._clone(new_df)
 
     @property
-    def columns(self):
+    def columns(self) -> List[str]:
         """
         Get column names of the Table.
 
@@ -483,7 +583,12 @@ class Table:
         """
         return self.__column_names
 
-    def sample(self, fraction, replace=False, seed=None):
+    def sample(
+        self,
+        fraction: float,
+        replace: bool = False,
+        seed: Optional[int] = None
+    ) -> "Table":
         """
         Return a sampled subset of Table.
 
@@ -496,7 +601,7 @@ class Table:
         """
         return self._clone(self.df.sample(withReplacement=replace, fraction=fraction, seed=seed))
 
-    def ordinal_shuffle_partition(self):
+    def ordinal_shuffle_partition(self) -> "Table":
         """
         Shuffle each partition of the Table by adding a random ordinal column for each row and sort
         by this ordinal column within each partition.
@@ -505,7 +610,7 @@ class Table:
         """
         return self._clone(ordinal_shuffle_partition(self.df))
 
-    def write_parquet(self, path, mode="overwrite"):
+    def write_parquet(self, path: str, mode: str = "overwrite") -> None:
         """
         Write the Table to Parquet file.
 
@@ -518,7 +623,7 @@ class Table:
         """
         write_parquet(self.df, path, mode)
 
-    def cast(self, columns, dtype):
+    def cast(self, columns: Optional[Union[str, List[str]]], dtype: str) -> "Table":
         """
         Cast columns to the specified type.
 
@@ -538,8 +643,8 @@ class Table:
                        "integer", "long", "short", "float", "double"]
         if not (isinstance(dtype, str) and (dtype in valid_types)) \
                 and not isinstance(dtype, DataType):
-            raise ValueError(
-                "dtype should be string, boolean, int, long, short, float, double.")
+            invalidInputError(False,
+                              "dtype should be string, boolean, int, long, short, float, double.")
         transform_dict = {"str": "string", "bool": "boolean", "integer": "int"}
         dtype = transform_dict[dtype] if dtype in transform_dict else dtype
         df_cast = self._clone(self.df)
@@ -547,7 +652,14 @@ class Table:
             df_cast.df = df_cast.df.withColumn(i, pyspark_col(i).cast(dtype))
         return df_cast
 
-    def write_csv(self, path, delimiter=",", mode="overwrite", header=True, num_partitions=None):
+    def write_csv(
+        self,
+        path: str,
+        delimiter: str = ",",
+        mode: str = "overwrite",
+        header: bool = True,
+        num_partitions: Optional[int] = None
+    ) -> None:
         """
         Write the Table to csv file.
 
@@ -568,7 +680,7 @@ class Table:
         else:
             self.df.write.csv(path=path, mode=mode, header=header, sep=delimiter)
 
-    def _concat(self, join="outer"):
+    def _concat(self, join: str = "outer") -> Callable:
         def concat_inner(self, df2):
             col_names_1 = set(self.schema.names)
             col_names_2 = set(df2.schema.names)
@@ -592,7 +704,12 @@ class Table:
         else:
             return concat_inner
 
-    def concat(self, tables, mode="inner", distinct=False):
+    def concat(
+        self,
+        tables: Union["Table", List["Table"]],
+        mode: str = "inner",
+        distinct: bool = False
+    ) -> "Table":
         """
         Concatenate a list of Tables into one Table in the dimension of row.
 
@@ -606,8 +723,9 @@ class Table:
         :return: A single concatenated Table.
         """
         if mode not in ["outer", "inner"]:
-            raise ValueError("concat mode should be either outer or inner,\
-                                     but got {}.".format(mode))
+            invalidInputError(False,
+                              "concat mode should be either outer or inner,"
+                              "but got {}.".format(mode))
         if not isinstance(tables, list):
             tables = [tables]
         dfs = [table.df for table in tables] + [self.df]
@@ -616,7 +734,12 @@ class Table:
             df = df.distinct()
         return self._clone(df)
 
-    def drop_duplicates(self, subset=None, sort_cols=None, keep="min"):
+    def drop_duplicates(
+        self,
+        subset: Optional[Union[str, List[str]]]=None,
+        sort_cols: Optional[Union[str, List[str]]]=None,
+        keep: str = "min"
+    ) -> "Table":
         """
         Return a new Table with duplicate rows removed.
 
@@ -649,13 +772,14 @@ class Table:
             window = Window.partitionBy(subset).orderBy(*[self.df[sort_col].desc()
                                                           for sort_col in sort_cols], 'id')
         else:
-            raise ValueError("keep should be either min or max, but got {}.".format(keep))
+            invalidInputError(False,
+                              "keep should be either min or max, but got {}.".format(keep))
         df = self.df.withColumn('id', monotonically_increasing_id()) \
             .withColumn('rank', rank().over(window))
         df = df.filter(pyspark_col('rank') == 1).drop('rank', 'id')
         return self._clone(df)
 
-    def append_column(self, name, column):
+    def append_column(self, name: str, column: "Column") -> "Table":
         """
         Append a column with a constant value to the Table.
 
@@ -664,10 +788,11 @@ class Table:
 
         :return: A new Table with the appended column.
         """
-        assert(isinstance(column, Column), "column should be a pyspark.sql.column.Column")
+        invalidInputError(isinstance(column, Column),
+                          "column should be a pyspark.sql.column.Column")
         return self._clone(self.df.withColumn(name, column))
 
-    def subtract(self, other):
+    def subtract(self, other: "Table") -> "Table":
         """
         Return a new :class:`Table` containing rows in this :class:`Table`
         but not in another :class:`Table`
@@ -677,19 +802,19 @@ class Table:
         """
         return self._clone(self.df.subtract(other.df))
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> "Column":
         """
         Get the target column of the Table.
         """
         return self.df.__getattr__(name)
 
-    def col(self, name):
+    def col(self, name: str) -> "Column":
         """
         Get the target column of the Table.
         """
         return pyspark_col(name)
 
-    def sort(self, *cols, **kwargs):
+    def sort(self, *cols: List[Union["Column", str]], **kwargs: Union[bool, List[bool]]) -> "Table":
         """
         Sort the Table by specified column(s).
 
@@ -699,15 +824,16 @@ class Table:
                If a list is specified, length of the list must equal length of the `cols`.
         """
         if not cols:
-            raise ValueError("cols should be str or a list of str, but got None.")
+            invalidInputError(False,
+                              "cols should be str or a list of str, but got None.")
         return self._clone(self.df.sort(*cols, **kwargs))
 
     order_by = sort
 
-    def to_pandas(self):
+    def to_pandas(self) -> "PandasDataFrame":
         return self.df.toPandas()
 
-    def cache(self):
+    def cache(self) -> "Table":
         """
         Persist this Table in memory.
 
@@ -716,7 +842,7 @@ class Table:
         self.df.cache()
         return self
 
-    def uncache(self):
+    def uncache(self) -> "Table":
         """
 
         Make this table as non-persistent and remove all its blocks from memory.
@@ -730,10 +856,43 @@ class Table:
                 print("Try to unpersist an uncached table")
         return self
 
+    def coalesce(self, num_partitions: int) -> "Table":
+        """
+        Return a new Table that has exactly num_partitions partitions.
+        coalesce uses existing partitions to minimize the amount of data that's shuffled.
+
+        :param num_partitions: target number of partitions
+        :return: a new Table that has num_partitions partitions.
+        """
+        return self._clone(self.df.coalesce(num_partitions))
+
+    def intersect(self, other: "Table") -> "Table":
+        """
+        Return a new :class:`Table` containing rows only in both this :class:`Table`
+        and another :class:`Table`
+
+        :param other: Table.
+        :return: A new Table.
+        """
+        return self._clone(self.df.intersect(other.df))
+
+    def collect(self) -> List["Row"]:
+        """
+        Returns all the records as a list of :class:`Row`.
+        """
+        return self.df.collect()
+
+    @property
+    def dtypes(self) -> List[Tuple[str, str]]:
+        """
+        Returns all column names and their data types as a list.
+        """
+        return self.df.dtypes()
+
 
 class FeatureTable(Table):
     @classmethod
-    def read_parquet(cls, paths):
+    def read_parquet(cls, paths: Union[str, List[str]]) -> "FeatureTable":
         """
         Loads Parquet files as a FeatureTable.
 
@@ -744,7 +903,9 @@ class FeatureTable(Table):
         return cls(Table._read_parquet(paths))
 
     @classmethod
-    def read_json(cls, paths, cols=None):
+    def read_json(cls,
+                  paths: Union[str, List[str]],
+                  cols: Union[str, List[str]]=None) -> "FeatureTable":
         """
         Loads json files as a FeatureTable.
 
@@ -757,7 +918,14 @@ class FeatureTable(Table):
         return cls(Table._read_json(paths, cols))
 
     @classmethod
-    def read_csv(cls, paths, delimiter=",", header=False, names=None, dtype=None):
+    def read_csv(
+        cls,
+        paths: Union[str, List[str]],
+        delimiter: str = ",",
+        header: bool = False,
+        names: Optional[Union[str, List[str]]]=None,
+        dtype: Optional[Union[str, List[str], Dict[str, str]]]=None
+    ) -> "FeatureTable":
         """
         Loads csv files as a FeatureTable.
 
@@ -782,7 +950,7 @@ class FeatureTable(Table):
         return cls(Table._read_csv(paths, delimiter, header, names, dtype))
 
     @classmethod
-    def read_text(cls, paths, col_name="value"):
+    def read_text(cls, paths: Union[str, List[str]], col_name: str = "value") -> "FeatureTable":
         """
         Loads text files as a FeatureTable.
 
@@ -798,7 +966,7 @@ class FeatureTable(Table):
         return tbl
 
     @staticmethod
-    def from_pandas(pandas_df):
+    def from_pandas(pandas_df: "PandasDataFrame") -> "FeatureTable":
         """
         Returns the contents of of a pandas DataFrame as FeatureTable.
 
@@ -810,8 +978,16 @@ class FeatureTable(Table):
         sparkDF = spark.createDataFrame(pandas_df)
         return FeatureTable(sparkDF)
 
-    def encode_string(self, columns, indices, broadcast=True, do_split=False,
-                      sep=',', sort_for_array=False, keep_most_frequent=False):
+    def encode_string(
+        self,
+        columns: Union[str, List[str]],
+        indices: Union["StringIndex", Dict[str, int], List[Dict[str, int]], List["StringIndex"]],
+        broadcast: bool = True,
+        do_split: bool = False,
+        sep: str = ',',
+        sort_for_array: bool = False,
+        keep_most_frequent: bool = False
+    ) -> "FeatureTable":
         """
         Encode columns with provided list of StringIndex. Unknown string will be
         None after the encoding and you may need to fillna with 0.
@@ -840,7 +1016,8 @@ class FeatureTable(Table):
             columns = [columns]
         if not isinstance(indices, list):
             indices = [indices]
-        assert len(columns) == len(indices)
+        invalidInputError(len(columns) == len(indices),
+                          "columns len doesn't match indices lenngth")
         if isinstance(indices[0], dict):
             indices = list(map(lambda x: StringIndex.from_dict(x[1], columns[x[0]]),
                                enumerate(indices)))
@@ -875,7 +1052,9 @@ class FeatureTable(Table):
 
         return FeatureTable(data_df)
 
-    def filter_by_frequency(self, columns, min_freq=2):
+    def filter_by_frequency(self,
+                            columns: Union[str, List[str]],
+                            min_freq: int = 2) -> "FeatureTable":
         """
         Filter the FeatureTable by the given minimum frequency on the target columns.
 
@@ -896,7 +1075,12 @@ class FeatureTable(Table):
         group = key.filter(key[filter_col_name] >= min_freq).drop(filter_col_name)
         return FeatureTable(group)
 
-    def hash_encode(self, columns, bins, method='md5'):
+    def hash_encode(
+        self,
+        columns: Union[str, List[str]],
+        bins: int,
+        method: str = 'md5'
+    ) -> "FeatureTable":
         """
         Hash encode for categorical column(s).
 
@@ -913,39 +1097,85 @@ class FeatureTable(Table):
         for i in range(len(columns)):
             col_name = columns[i]
             hash_str = lambda x: getattr(hashlib, method)(str(x).encode('utf_8')).hexdigest()
-            hash_int = udf(lambda x: int(hash_str(x), 16) % bins)
+            hash_int = udf(lambda x: int(hash_str(x), 16) % bins, returnType=IntegerType())
             hash_df = hash_df.withColumn(col_name, hash_int(pyspark_col(col_name)))
         return FeatureTable(hash_df)
 
-    def cross_hash_encode(self, columns, bins, cross_col_name=None, method='md5'):
+    def cross_hash_encode(
+        self,
+        cross_columns: Union[List[str], List[List[str]]],
+        bin_sizes: Union[int, List[int]],
+        cross_col_names: Optional[Union[str, List[str]]]=None,
+        method: str = 'md5'
+    ) -> "FeatureTable":
         """
-        Hash encode for cross column(s).
+        Cross columns and hashed to specified bin size.
 
-        :param columns: a list of str, the categorical columns to be encoded as cross features.
+        :param cross_columns: nested list of str, nested list of categorical column names to be
+               encoded as cross features. e.g. [['a', 'b'], ['c', 'd']].
                For dense features, you need to cut them into discrete intervals beforehand.
-        :param bins: int, defined the number of equal-width bins in the range of column(s) values.
-        :param cross_col_name: str, the column name for output cross column. Default is None, and
-               in this case the default cross column name will be 'crossed_col1_col2'
-               for ['col1', 'col2'].
+        :param bin_sizes: list of int, defined the numbers of equal-width bins in the range
+               of columns values. e.g. [100, 200].
+        :param cross_col_names: list of str, the column names for output cross columns.
+               Default is None, and in this case the default cross column name will
+               be 'col1_col2' for ['col1', 'col2']. e.g. ['cross_1', 'cross_2'].
         :param method: hashlib supported method, like md5, sha256 etc.
 
-        :return: A new FeatureTable with the target cross column.
+        :return: A new FeatureTable with the target cross columns.
         """
-        cross_hash_df = self.df
-        assert isinstance(columns, list), "columns should be a list of column names"
-        assert len(columns) >= 2, "cross_hash_encode should have >= 2 columns"
-        if cross_col_name is None:
-            cross_string = ''
-            for column in columns:
-                cross_string = cross_string + '_' + column
-            cross_col_name = 'crossed' + cross_string
-        cross_hash_df = cross_hash_df.withColumn(cross_col_name, concat(*columns))
-        cross_hash_df = FeatureTable(cross_hash_df).hash_encode([cross_col_name], bins, method)
-        return cross_hash_df
+        # For compatibility with previous versions
+        if isinstance(cross_columns, list) and all(isinstance(x, str) for x in cross_columns):
+            cross_columns = [cross_columns]
+            bin_sizes = [bin_sizes]
+            if cross_col_names:
+                cross_col_names = [cross_col_names]
 
-    def category_encode(self, columns, freq_limit=None, order_by_freq=False,
-                        do_split=False, sep=',', sort_for_array=False, keep_most_frequent=False,
-                        broadcast=True):
+        # check input params
+        invalidInputError(
+            isinstance(cross_columns, list) and all(isinstance(x, list) for x in cross_columns),
+            "cross_columns should be a nested list of string")
+        invalidInputError(
+            isinstance(bin_sizes, list) and all(isinstance(x, int) for x in bin_sizes),
+            "bin_sizes should be a list of int")
+        invalidInputError(len(cross_columns) == len(bin_sizes),
+                          "cross_columns and bin_sizes should have the same length")
+        if cross_col_names is not None:
+            invalidInputError(isinstance(cross_col_names, list),
+                              "cross_col_names should be None or a list of string")
+            invalidInputError(len(bin_sizes) == len(cross_col_names),
+                              "cross_columns, bin_sizes and cross_col_names should have the same "
+                              "length")
+
+        cross_hash_df = self.df
+        for i in range(len(cross_columns)):
+            invalidInputError(len(cross_columns[i]) >= 2,
+                              "each element in cross_columns should have >= 2 columns")
+            if cross_col_names is None or cross_col_names[i] is None:
+                cross_col_name = '_'.join(cross_columns[i])
+            else:
+                invalidInputError(isinstance(cross_col_names[i], str),
+                                  "each element in cross_col_names should be None or string")
+                cross_col_name = cross_col_names[i]
+            cross_hash_df = cross_hash_df.withColumn(
+                cross_col_name, concat(*cross_columns[i]))
+
+            cross_hash_df = FeatureTable(cross_hash_df).hash_encode(
+                cross_col_name, bin_sizes[i], method).df
+        return FeatureTable(cross_hash_df)
+
+    cross_columns = cross_hash_encode
+
+    def category_encode(
+        self,
+        columns: Union[str, List[str]],
+        freq_limit: Optional[Union[int, Dict[str, int]]]=None,
+        order_by_freq: bool = False,
+        do_split: bool = False,
+        sep: str = ',',
+        sort_for_array: bool = False,
+        keep_most_frequent: bool = False,
+        broadcast: bool = True
+    ) -> Tuple["FeatureTable", List["StringIndex"]]:
         """
         Category encode the given columns.
 
@@ -977,7 +1207,13 @@ class FeatureTable(Table):
                                   keep_most_frequent=keep_most_frequent,
                                   broadcast=broadcast), indices
 
-    def one_hot_encode(self, columns, sizes=None, prefix=None, keep_original_columns=False):
+    def one_hot_encode(
+        self,
+        columns: Union[str, List[str]],
+        sizes: Union[int, List[int]]=None,
+        prefix: Union[str, List[str]]=None,
+        keep_original_columns: bool = False
+    ) -> "FeatureTable":
         """
         Convert categorical features into ont hot encodings.
         If the features are string, you should first call category_encode to encode them into
@@ -1028,11 +1264,13 @@ class FeatureTable(Table):
             # The vector size is 1 + max (i.e. from 0 to max).
             sizes = [self.select(col_name).group_by(agg="max").df.collect()[0][0] + 1
                      for col_name in columns]
-        assert len(columns) == len(sizes), "columns and sizes should have the same length"
+        invalidInputError(len(columns) == len(sizes),
+                          "columns and sizes should have the same length")
         if prefix:
             if not isinstance(prefix, list):
                 prefix = [prefix]
-            assert len(columns) == len(prefix), "columns and prefix should have the same length"
+            invalidInputError(len(columns) == len(prefix),
+                              "columns and prefix should have the same length")
         data_df = self.df
 
         def one_hot(columns, sizes):
@@ -1068,16 +1306,24 @@ class FeatureTable(Table):
         data_df = data_df.drop("friesian_onehot")
         return FeatureTable(data_df)
 
-    def gen_string_idx(self, columns, freq_limit=None, order_by_freq=False,
-                       do_split=False, sep=','):
+    def gen_string_idx(
+        self,
+        columns: Union[str,
+                       List[Union[str, Dict[str, Union[str, List[str]]]]],
+                       Dict[str, Union[str, List[str]]]],
+        freq_limit: Optional[Union[int, Dict[str, int]]]=None,
+        order_by_freq: bool = False,
+        do_split: bool = False,
+        sep: str = ','
+    ) -> Union["StringIndex", List["StringIndex"]]:
         """
         Generate unique index value of categorical features. The resulting index would
         start from 1 with 0 reserved for unknown features.
 
         :param columns: str, dict or a list of str, dict, target column(s) to generate StringIndex.
-         dict is a mapping of source column names -> target column name if needs to combine multiple
-         source columns to generate index.
-         For example: {'src_cols':['a_user', 'b_user'], 'col_name':'user'}.
+               dict is a mapping of source column names -> target column name
+               if needs to combine multiple source columns to generate index.
+               For example: {'src_cols':['a_user', 'b_user'], 'col_name':'user'}.
         :param freq_limit: int, dict or None. Categories with a count/frequency below freq_limit
                will be omitted from the encoding. Can be represented as either an integer,
                dict. For instance, 15, {'col_4': 10, 'col_5': 2} etc. Default is None,
@@ -1093,7 +1339,8 @@ class FeatureTable(Table):
         :return: A StringIndex or a list of StringIndex.
         """
         if columns is None:
-            raise ValueError("columns should be str or a list of str, but got None.")
+            invalidInputError(False,
+                              "columns should be str or a list of str, but got None.")
         is_single_column = False
         if not isinstance(columns, list):
             is_single_column = True
@@ -1112,8 +1359,9 @@ class FeatureTable(Table):
             elif isinstance(freq_limit, dict):
                 freq_limit = ",".join(str(k) + ":" + str(v) for k, v in freq_limit.items())
             else:
-                raise ValueError("freq_limit only supports int, dict or None, but get " +
-                                 freq_limit.__class__.__name__)
+                invalidInputError(False,
+                                  "freq_limit only supports int, dict or None, but get " +
+                                  freq_limit.__class__.__name__)
         out_columns = []
         simple_columns = []
         df_id_list = []
@@ -1123,7 +1371,8 @@ class FeatureTable(Table):
                 if 'src_cols' in c:
                     src_cols = c['src_cols']
                 else:
-                    raise ValueError("Union columns must has argument 'src_cols'")
+                    invalidInputError(False,
+                                      "Union columns must has argument 'src_cols'")
                 if 'col_name' in c:
                     col_name = c['col_name']
                 else:
@@ -1169,31 +1418,24 @@ class FeatureTable(Table):
         else:
             return string_idx_list
 
-    def _clone(self, df):
+    def _clone(self, df: "SparkDataFrame") -> "FeatureTable":
         return FeatureTable(df)
 
-    def cross_columns(self, crossed_columns, bucket_sizes):
-        """
-        Cross columns and hashed to specified bucket size
-
-        :param crossed_columns: list of column name pairs to be crossed.
-               i.e. [['a', 'b'], ['c', 'd']]
-        :param bucket_sizes: hash bucket size for crossed pairs. i.e. [1000, 300]
-
-        :return: A new FeatureTable with crossed columns.
-        """
-        df = cross_columns(self.df, crossed_columns, bucket_sizes)
-        return FeatureTable(df)
-
-    def min_max_scale(self, columns, min=0.0, max=1.0):
+    def min_max_scale(
+        self,
+        columns: Union[str, List[str]],
+        min: float = 0.0,
+        max: float = 1.0
+    ) -> Tuple["FeatureTable", Dict[str, Union[Tuple[float, float],
+                                    Tuple[List[float], List[float]]]]]:
         """
         Rescale each column individually to a common range [min, max] linearly using
         column summary statistics, which is also known as min-max normalization or rescaling.
 
         :param columns: str or a list of str, the column(s) to be rescaled.
-        :param min: int, the lower bound after transformation, shared by all columns.
+        :param min: float, the lower bound after transformation, shared by all columns.
                     Default is 0.0.
-        :param max: int, the upper bound after transformation, shared by all columns.
+        :param max: float, the upper bound after transformation, shared by all columns.
                     Default is 1.0.
 
         :return: A tuple of a new FeatureTable with rescaled column(s), and a dict of the
@@ -1261,7 +1503,11 @@ class FeatureTable(Table):
 
         return FeatureTable(df), min_max_dict
 
-    def transform_min_max_scale(self, columns, min_max_dict):
+    def transform_min_max_scale(
+        self,
+        columns: Union[str, List[str]],
+        min_max_dict: Dict[str, Union[Tuple[float, float], Tuple[List[float], List[float]]]]
+    ) -> "FeatureTable":
         """
         Rescale each column individually with the given [min, max] range of each column.
 
@@ -1318,7 +1564,13 @@ class FeatureTable(Table):
 
         return tbl
 
-    def add_negative_samples(self, item_size, item_col="item", label_col="label", neg_num=1):
+    def add_negative_samples(
+        self,
+        item_size: int,
+        item_col: str = "item",
+        label_col: str = "label",
+        neg_num: int = 1
+    ) -> "FeatureTable":
         """
         Generate negative records for each record in the FeatureTable. All the records in the
         original FeatureTable will be treated as positive samples with value 1 for label_col
@@ -1335,8 +1587,15 @@ class FeatureTable(Table):
         df = add_negative_samples(self.df, item_size, item_col, label_col, neg_num)
         return FeatureTable(df)
 
-    def add_hist_seq(self, cols, user_col, sort_col='time',
-                     min_len=1, max_len=100, num_seqs=2147483647):
+    def add_hist_seq(
+        self,
+        cols: Union[str, List[str]],
+        user_col: str,
+        sort_col: str = 'time',
+        min_len: int = 1,
+        max_len: int = 100,
+        num_seqs: int = 2147483647
+    ) -> "FeatureTable":
         """
         Add a column of history visits of each user.
 
@@ -1355,7 +1614,12 @@ class FeatureTable(Table):
         df = add_hist_seq(self.df, cols, user_col, sort_col, min_len, max_len, num_seqs)
         return FeatureTable(df)
 
-    def add_neg_hist_seq(self, item_size, item_history_col, neg_num):
+    def add_neg_hist_seq(
+        self,
+        item_size: int,
+        item_history_col: str,
+        neg_num: int
+    ) -> "FeatureTable":
         """
         Generate a list of negative samples for each item in the history sequence.
 
@@ -1368,7 +1632,7 @@ class FeatureTable(Table):
         df = add_neg_hist_seq(self.df, item_size, item_history_col, neg_num)
         return FeatureTable(df)
 
-    def mask(self, mask_cols, seq_len=100):
+    def mask(self, mask_cols: Union[str, List[str]], seq_len: int = 100) -> "FeatureTable":
         """
         Add mask on specified column(s).
 
@@ -1382,24 +1646,38 @@ class FeatureTable(Table):
         df = mask(self.df, mask_cols, seq_len)
         return FeatureTable(df)
 
-    def pad(self, cols, seq_len=100, mask_cols=None):
+    def pad(
+        self,
+        cols: Union[str, List[str]],
+        seq_len: int = 100,
+        mask_cols: Union[str, List[str]]=None,
+        mask_token: Union[NUMERIC_TYPE, str]=0
+    ) -> "FeatureTable":
         """
         Add padding on specified column(s).
 
-        :param cols: str or a list of str, the column(s) to be padded with 0s. Each column
+        :param cols: str or a list of str, the column(s) to be padded with mask_tokens. Each column
                should be of list type.
         :param seq_len: int, the length to be padded to for cols. Default is 100.
         :param mask_cols: str or a list of str, the column(s) to be masked with 1s and 0s.
+        :param mask_token: numeric types or str, should be consistent with element's type of cols.
+               Default is 0.
 
         :return: A new FeatureTable with padded columns.
         """
         cols = str_to_list(cols, "cols")
         if mask_cols:
             mask_cols = str_to_list(mask_cols, "mask_cols")
-        df = pad(self.df, cols, seq_len, mask_cols)
+        df = pad(self.df, cols, seq_len, mask_cols, mask_token)
         return FeatureTable(df)
 
-    def apply(self, in_col, out_col, func, dtype="string"):
+    def apply(
+        self,
+        in_col: Union[str, List[str]],
+        out_col: str,
+        func: Callable,
+        dtype: str = "string"
+    ) -> "FeatureTable":
         """
         Transform a FeatureTable using a user-defined Python function.
 
@@ -1414,16 +1692,23 @@ class FeatureTable(Table):
         :return: A new FeatureTable after column transformation.
         """
         udf_func = udf(func, dtype)
-        assert isinstance(out_col, str), "out_col must be a single column"
+        invalidInputError(isinstance(out_col, str), "out_col must be a single column")
         if isinstance(in_col, str):
             df = self.df.withColumn(out_col, udf_func(pyspark_col(in_col)))
         else:
-            assert isinstance(in_col, list), \
-                "in_col must be a single column of a list of columns"
+            invalidInputError(isinstance(in_col, list),
+                              "in_col must be a single column of a list of columns")
             df = self.df.withColumn(out_col, udf_func(array(in_col)))
         return FeatureTable(df)
 
-    def join(self, table, on=None, how=None, lsuffix=None, rsuffix=None):
+    def join(
+        self,
+        table: "FeatureTable",
+        on: Optional[Union[str, List[str]]]=None,
+        how: str = "inner",
+        lsuffix: Optional[str] = None,
+        rsuffix: Optional[str] = None
+    ) -> "FeatureTable":
         """
         Join a FeatureTable with another FeatureTable.
 
@@ -1437,7 +1722,7 @@ class FeatureTable(Table):
 
         :return: A joined FeatureTable.
         """
-        assert isinstance(table, Table), "the joined table should be a Table"
+        invalidInputError(isinstance(table, Table), "the joined table should be a Table")
         if not isinstance(on, list):
             on = [on]
         overlap_columns = list(set(self.df.schema.names).
@@ -1451,7 +1736,13 @@ class FeatureTable(Table):
         joined_df = self.df.join(table.df, on=on, how=how)
         return FeatureTable(joined_df)
 
-    def add_value_features(self, columns, dict_tbl, key, value):
+    def add_value_features(
+        self,
+        columns: Union[str, List[str]],
+        dict_tbl: "Table",
+        key: str,
+        value: str
+    ) -> "FeatureTable":
         """
          Add features based on key columns and the key value Table.
          For each column in columns, it adds a value column using key-value pairs from dict_tbl.
@@ -1465,12 +1756,16 @@ class FeatureTable(Table):
          """
         if isinstance(columns, str):
             columns = [columns]
-        assert isinstance(columns, list), \
-            "columns should be str or a list of str, but get a " + type(columns)
+        invalidInputError(isinstance(columns, list),
+                          f"columns should be str or a list of str, but get a {str(type(columns))}")
         df = add_value_features(self.df, columns, dict_tbl.df, key, value)
         return FeatureTable(df)
 
-    def reindex(self, columns=[], index_tbls=[]):
+    def reindex(
+        self,
+        columns: Union[str, List[str]]=[],
+        index_tbls: Union["Table", List["Table"]]=[]
+    ) -> "FeatureTable":
         """
         Replace the value using index_dicts for each col in columns, set 0 for default
 
@@ -1483,17 +1778,22 @@ class FeatureTable(Table):
 
         if isinstance(index_tbls, dict):
             index_tbls = [index_tbls]
-        assert isinstance(index_tbls, list), \
-            "index_dicts should be table or a list of table, but get a " + type(index_tbls)
-        assert len(columns) == len(index_tbls), \
-            "each column of columns should have one corresponding index_dict"
+        invalidInputError(isinstance(index_tbls, list),
+                          "index_dicts should be table or a list of table,"
+                          f" but get a {str(type(index_tbls))}")
+        invalidInputError(len(columns) == len(index_tbls),
+                          "each column of columns should have one corresponding index_dict")
 
         tbl = FeatureTable(self.df)
         for i, c in enumerate(columns):
             tbl = tbl.add_value_features(c, index_tbls[i], key=c, value=c)
         return tbl
 
-    def gen_reindex_mapping(self, columns=[], freq_limit=10):
+    def gen_reindex_mapping(
+        self,
+        columns: List[str] = [],
+        freq_limit: Optional[Union[int, Dict[str, int]]]=10
+    ) -> List["FeatureTable"]:
         """
         Generate a mapping from old index to new one based on popularity count on descending order
          :param columns: str or a list of str
@@ -1507,8 +1807,8 @@ class FeatureTable(Table):
         str_to_list(columns, "columns")
         if isinstance(freq_limit, int):
             freq_limit = {col: freq_limit for col in columns}
-        assert isinstance(freq_limit, dict), \
-            "freq_limit should be int or dict, but get a " + type(freq_limit)
+        invalidInputError(isinstance(freq_limit, dict),
+                          f"freq_limit should be int or dict, but get a {str(type(freq_limit))}")
         index_tbls = []
         for c in columns:
             c_count = self.select(c).group_by(c, agg={c: "count"}).rename(
@@ -1523,7 +1823,12 @@ class FeatureTable(Table):
 
         return index_tbls
 
-    def group_by(self, columns=[], agg="count", join=False):
+    def group_by(
+        self,
+        columns: Union[str, List[str]]=[],
+        agg: Union[Dict[str, List[str]], List[str], Dict[str, str], str]="count",
+        join: bool = False
+    ) -> "FeatureTable":
         """
         Group the Table with specified columns and then run aggregation. Optionally join the result
         with the original Table.
@@ -1555,7 +1860,7 @@ class FeatureTable(Table):
         """
         if isinstance(columns, str):
             columns = [columns]
-        assert isinstance(columns, list), "columns should be str or a list of str"
+        invalidInputError(isinstance(columns, list), "columns should be str or a list of str")
         grouped_data = self.df.groupBy(columns)
 
         if isinstance(agg, str):
@@ -1577,38 +1882,36 @@ class FeatureTable(Table):
                 for agg_column, stats in agg.items():
                     if isinstance(stats, str):
                         stats = [stats]
-                    assert isinstance(stats, list), "value in agg should be str or a list of str"
+                    invalidInputError(isinstance(stats, list),
+                                      "value in agg should be str or a list of str")
                     for stat in stats:
                         stat_func = getattr(F, stat)
                         agg_exprs_list += [stat_func(agg_column)]
                 agg_df = grouped_data.agg(*agg_exprs_list)
         else:
-            raise TypeError("agg should be str, list of str, or dict")
+            invalidInputError(False,
+                              "agg should be str, list of str, or dict")
 
         if join:
-            assert columns, "columns can not be empty if join is True"
+            invalidInputError(columns, "columns can not be empty if join is True")
             result_df = self.df.join(agg_df, on=columns, how="left")
             return FeatureTable(result_df)
         else:
             return FeatureTable(agg_df)
 
-    def split(self, ratio, seed=None):
-        """
-        Split the FeatureTable into multiple FeatureTables for train, validation and test.
-
-        :param ratio: a list of portions as weights with which to split the FeatureTable.
-                      Weights will be normalized if they don't sum up to 1.0.
-        :param seed: The seed for sampling.
-
-        :return: A tuple of FeatureTables split by the given ratio.
-        """
-        df_list = self.df.randomSplit(ratio, seed)
-        tbl_list = [FeatureTable(df) for df in df_list]
-        return tuple(tbl_list)
-
-    def target_encode(self, cat_cols, target_cols, target_mean=None, smooth=20, kfold=2,
-                      fold_seed=None, fold_col="__fold__", drop_cat=False, drop_fold=True,
-                      out_cols=None):
+    def target_encode(
+        self,
+        cat_cols: Union[List[str], List[List[str]], str],
+        target_cols: Union[str, List[str]],
+        target_mean: Optional[Dict[str, NUMERIC_TYPE]]=None,
+        smooth: int = 20,
+        kfold: int = 2,
+        fold_seed: Optional[int] = None,
+        fold_col: str = "__fold__",
+        drop_cat: bool = False,
+        drop_fold: bool = True,
+        out_cols: Optional[Union[str, List[str], List[List[str]]]]=None
+    ) -> Tuple["FeatureTable", List["TargetCode"]]:
         """
         For each categorical column or column group in cat_cols, calculate the mean of target
         columns in target_cols and encode the FeatureTable with the target mean(s) to generate
@@ -1650,28 +1953,31 @@ class FeatureTable(Table):
         :return: A tuple of a new FeatureTable with target encoded columns and a list of TargetCodes
                  which contains the target encode values of the whole FeatureTable.
         """
-        assert isinstance(kfold, int) and kfold > 0, "kfold should be an integer larger than 0"
+        invalidInputError(isinstance(kfold, int) and kfold > 0,
+                          "kfold should be an integer larger than 0")
         if isinstance(cat_cols, str):
             cat_cols = [cat_cols]
-        assert isinstance(cat_cols, list), "cat_cols should be str or list"
+        invalidInputError(isinstance(cat_cols, list), "cat_cols should be str or list")
         for cat_col in cat_cols:
             check_col_str_list_exists(self.df, cat_col, "cat_cols")
         if isinstance(target_cols, str):
             target_cols = [target_cols]
-        assert isinstance(target_cols, list), "target_cols should be str or list"
+        invalidInputError(isinstance(target_cols, list), "target_cols should be str or list")
         check_col_exists(self.df, target_cols)
         nonnumeric_target_col_type = get_nonnumeric_col_type(self.df, target_cols)
-        assert not nonnumeric_target_col_type, "target_cols should be numeric but get " + ", ".join(
-            list(map(lambda x: x[0] + " of type " + x[1], nonnumeric_target_col_type)))
+        invalidInputError(not nonnumeric_target_col_type,
+                          "target_cols should be numeric but get " + ", ".join(
+                              list(map(lambda x: x[0] + " of type " + x[1],
+                                       nonnumeric_target_col_type))))
 
         if out_cols is None:
             out_cols = [[gen_cols_name(cat_col, "_") + "_te_" + target_col
                          for target_col in target_cols] for cat_col in cat_cols]
         else:
             if isinstance(out_cols, str):
-                assert len(cat_cols) == 1 and len(target_cols) == 1, \
-                    "out_cols can be string only if both cat_cols and target_cols has only one" + \
-                    " element"
+                invalidInputError(len(cat_cols) == 1 and len(target_cols) == 1,
+                                  "out_cols can be string only if both cat_cols and"
+                                  " target_cols has only one element")
                 out_cols = [[out_cols]]
             elif isinstance(out_cols, list):
                 if all(isinstance(out_col, str) for out_col in out_cols):
@@ -1680,35 +1986,40 @@ class FeatureTable(Table):
                     elif len(target_cols) == 1:
                         out_cols = [[out_col] for out_col in out_cols]
                     else:
-                        raise TypeError("out_cols should be a nested list of str when both " +
-                                        "cat_cols and target_cols have more than one elements")
+                        invalidInputError(False,
+                                          "out_cols should be a nested list of str when both " +
+                                          "cat_cols and target_cols have more than one elements")
                 else:
                     for outs in out_cols:
-                        assert isinstance(outs, list), "out_cols should be str, a list of str, " \
-                                                       "or a nested list of str"
+                        invalidInputError(isinstance(outs, list),
+                                          "out_cols should be str, a list of str,"
+                                          " or a nested list of str")
             else:
-                raise TypeError("out_cols should be str, a list of str, or a nested list of str")
-            assert len(out_cols) == len(cat_cols), "length of out_cols should be equal to " \
-                                                   "length of cat_cols"
+                invalidInputError(False,
+                                  "out_cols should be str, a list of str, or a nested list of str")
+            invalidInputError(len(out_cols) == len(cat_cols),
+                              "length of out_cols should be equal to length of cat_cols")
             for outs in out_cols:
-                assert len(outs) == len(target_cols), "length of element in out_cols should be " \
-                                                      "equal to length of target_cols"
+                invalidInputError(len(outs) == len(target_cols),
+                                  "length of element in out_cols should"
+                                  " be equal to length of target_cols")
 
         # calculate global mean for each target column
         target_mean_dict = {}
         if target_mean is not None:
-            assert isinstance(target_mean, dict), "target_mean should be a dict"
+            invalidInputError(isinstance(target_mean, dict), "target_mean should be a dict")
             for target_col in target_cols:
-                assert target_col in target_mean, \
-                    "target column " + target_col + " should be in target_mean " + str(target_mean)
+                invalidInputError(target_col in target_mean,
+                                  "target column " + target_col + " should be in target_mean"
+                                                                  " " + str(target_mean))
                 target_mean_dict[target_col] = target_mean[target_col]
         else:
             global_mean_list = [F.mean(pyspark_col(target_col)).alias(target_col)
                                 for target_col in target_cols]
             target_mean_dict = self.df.select(*global_mean_list).collect()[0].asDict()
         for target_col in target_mean_dict:
-            assert target_mean_dict[target_col] is not None, "mean of target column {} should " \
-                                                             "not be None".format(target_col)
+            invalidInputError(target_mean_dict[target_col] is not None,
+                              "mean of target column {} should not be None".format(target_col))
 
         # generate fold_col
         result_df = self.df
@@ -1723,9 +2034,9 @@ class FeatureTable(Table):
                     result_df = result_df.withColumn(
                         fold_col, (F.rand(seed=fold_seed) * kfold).cast(IntegerType()))
             else:
-                assert list(filter(lambda x: x[0] == fold_col and x[1] == "int",
-                                   self.df.dtypes)), \
-                    "fold_col should be integer type but get " + fold_col
+                invalidInputError(
+                    list(filter(lambda x: x[0] == fold_col and x[1] == "int", self.df.dtypes)),
+                    "fold_col should be integer type but get " + fold_col)
         else:
             fold_col = None
 
@@ -1782,7 +2093,7 @@ class FeatureTable(Table):
                     )
                     fold_df = fold_df.drop(cat_col_name + "_sum_" + target_col,
                                            cat_col_name + "_all_sum_" + target_col)
-                fold_df = fold_df.drop(cat_col_name + "_count")\
+                fold_df = fold_df.drop(cat_col_name + "_count") \
                     .withColumnRenamed(cat_col_name + "_all_count", "target_encode_count")
 
             out_target_mean_dict = {
@@ -1803,7 +2114,12 @@ class FeatureTable(Table):
 
         return result_tbl, all_targets
 
-    def encode_target(self, targets, target_cols=None, drop_cat=True):
+    def encode_target(
+        self,
+        targets: Union["TargetCode", List["TargetCode"]],
+        target_cols: Union[str, List[str]]=None,
+        drop_cat: bool = True
+    ) -> "FeatureTable":
         """
         Encode columns with the provided TargetCode(s).
 
@@ -1820,16 +2136,19 @@ class FeatureTable(Table):
             targets = [targets]
         elif isinstance(targets, list):
             for target_code in targets:
-                assert isinstance(target_code, TargetCode), \
-                    "element in targets should be TargetCode but get {}".format(type(target_code))
+                invalidInputError(isinstance(target_code, TargetCode),
+                                  "element in targets should be TargetCode"
+                                  " but get {}".format(type(target_code)))
         else:
-            raise TypeError("targets should be TargetCode or list of TargetCode")
+            invalidInputError(False,
+                              "targets should be TargetCode or list of TargetCode")
         for target_code in targets:
-            check_col_str_list_exists(self.df, target_code.cat_col, "TargetCode.cat_col in targets")
+            check_col_str_list_exists(self.df, target_code.cat_col,
+                                      "TargetCode.cat_col in targets")
         if target_cols is not None:
             if isinstance(target_cols, str):
                 target_cols = [target_cols]
-            assert isinstance(target_cols, list), "target_cols should be str or list"
+            invalidInputError(isinstance(target_cols, list), "target_cols should be str or list")
 
         result_tbl = FeatureTable(self.df)
         result_tbl = encode_target_(result_tbl, targets, target_cols=target_cols,
@@ -1837,7 +2156,14 @@ class FeatureTable(Table):
 
         return result_tbl
 
-    def difference_lag(self, columns, sort_cols, shifts=1, partition_cols=None, out_cols=None):
+    def difference_lag(
+        self,
+        columns: Union[str, List[str]],
+        sort_cols: Union[str, List[str]],
+        shifts: Union[int, List[int]]=1,
+        partition_cols: Optional[Union[str, List[str]]]=None,
+        out_cols: Optional[Union[List[str], List[List[str]], str]]=None
+    ) -> "FeatureTable":
         """
         Calculates the difference between two consecutive rows, or two rows with certain interval
         of the specified continuous columns. The table is first partitioned by partition_cols if it
@@ -1860,16 +2186,18 @@ class FeatureTable(Table):
         columns = str_to_list(columns, "columns")
         sort_cols = str_to_list(sort_cols, "sort_cols")
         nonnumeric_col_type = get_nonnumeric_col_type(self.df, columns)
-        assert not nonnumeric_col_type, \
-            "columns should be numeric but get " + \
-            ", ".join(list(map(lambda x: x[0] + " of type " + x[1], nonnumeric_col_type)))
+        msg = "columns should be numeric but get " + \
+              ", ".join(list(map(lambda x: x[0] + " of type " + x[1], nonnumeric_col_type)))
+        invalidInputError(not nonnumeric_col_type, msg)
         if isinstance(shifts, int):
             shifts = [shifts]
         elif isinstance(shifts, list):
             for s in shifts:
-                assert isinstance(s, int), "elements in shift should be integer but get " + str(s)
+                invalidInputError(isinstance(s, int),
+                                  "elements in shift should be integer but get " + str(s))
         else:
-            raise TypeError("shift should be either int or a list of int")
+            invalidInputError(False,
+                              "shift should be either int or a list of int")
         if partition_cols is not None:
             partition_cols = str_to_list(partition_cols, "partition_cols")
         if out_cols is None:
@@ -1878,8 +2206,9 @@ class FeatureTable(Table):
                          for shift in shifts] for column in columns]
         else:
             if isinstance(out_cols, str):
-                assert len(columns) == 1 and len(shifts) == 1, \
-                    "out_cols can be string only if both columns and shifts has only one element"
+                invalidInputError(len(columns) == 1 and len(shifts) == 1,
+                                  "out_cols can be string only if both columns"
+                                  " and shifts has only one element")
                 out_cols = [[out_cols]]
             elif isinstance(out_cols, list):
                 if all(isinstance(out_col, str) for out_col in out_cols):
@@ -1888,19 +2217,24 @@ class FeatureTable(Table):
                     elif len(shifts) == 1:
                         out_cols = [[out_col] for out_col in out_cols]
                     else:
-                        raise TypeError("out_cols should be a list of list of str when both " +
-                                        "columns shifts have more than one elements")
+                        invalidInputError(False,
+                                          "out_cols should be a list of list of str when both " +
+                                          "columns shifts have more than one elements")
                 else:
                     for outs in out_cols:
-                        assert isinstance(outs, list), "out_cols should be str, a list of str, " \
-                                                       "or a list of lists of str"
+                        invalidInputError(isinstance(outs, list),
+                                          "out_cols should be str, a list of str,"
+                                          " or a list of lists of str")
             else:
-                raise TypeError("out_cols should be str, a list of str, or a list of lists of str")
-            assert len(out_cols) == len(columns), "length of out_cols should be equal to length " \
-                                                  "of columns"
+                invalidInputError(False,
+                                  "out_cols should be str, a list of str, or a list"
+                                  " of lists of str")
+            invalidInputError(len(out_cols) == len(columns),
+                              "length of out_cols should be equal to length of columns")
             for outs in out_cols:
-                assert len(outs) == len(shifts), "length of element in out_cols should be " \
-                                                 "equal to length of shifts"
+                invalidInputError(len(outs) == len(shifts),
+                                  "length of element in out_cols should be equal"
+                                  " to length of shifts")
 
         result_df = self.df
         if partition_cols is None:
@@ -1916,7 +2250,14 @@ class FeatureTable(Table):
 
         return FeatureTable(result_df)
 
-    def cut_bins(self, columns, bins, labels=None, out_cols=None, drop=True):
+    def cut_bins(
+        self,
+        columns: Union[str, List[str]],
+        bins: Union[Dict[str, Union[int, List[int]]], int, List[int]],
+        labels: Optional[Union[List[str], Dict[str, List[str]]]]=None,
+        out_cols: Optional[Union[str, List[str]]]=None,
+        drop: bool = True
+    ) -> "FeatureTable":
         """
         Segment values of the target column(s) into bins, which is also known as bucketization.
 
@@ -1953,7 +2294,8 @@ class FeatureTable(Table):
         columns = str_to_list(columns, "columns")
         if out_cols:
             out_cols = str_to_list(out_cols, "out_cols")
-            assert len(columns) == len(out_cols), "columns and out_cols should have the same length"
+            invalidInputError(len(columns) == len(out_cols),
+                              "columns and out_cols should have the same length")
         check_col_exists(self.df, columns)
         df_buck = self.df
         for i in range(len(columns)):
@@ -1962,14 +2304,15 @@ class FeatureTable(Table):
             bin = bins[column] if isinstance(bins, dict) else bins
             label = labels[column] if isinstance(labels, dict) else labels
             if not check_column_numeric(self.df, column):
-                raise ValueError("{} should be a numeric column".format(column))
+                invalidInputError(False, "{} should be a numeric column".format(column))
             if isinstance(bin, int):
                 col_max = self.get_stats(column, "max")[column]
                 col_min = self.get_stats(column, "min")[column]
                 bin = np.linspace(col_min, col_max, bin + 1, endpoint=True).tolist()
             elif not isinstance(bin, list):
-                raise ValueError("bins should int, a list of int or dict with column name "
-                                 "as the key and int or a list of int as the value")
+                invalidInputError(False,
+                                  "bins should int, a list of int or dict with column name "
+                                  "as the key and int or a list of int as the value")
             bin = [float("-inf")] + bin + [float("inf")]
             # For Bucketizer, inputCol and outputCol must be different.
             bucketizer = Bucketizer(splits=bin, inputCol=column, outputCol=temp_out_col)
@@ -1977,11 +2320,12 @@ class FeatureTable(Table):
             # The output of Buckerizer is float, cast to int.
             df_buck = df_buck.withColumn(temp_out_col, pyspark_col(temp_out_col).cast("int"))
             if label is not None:
-                assert isinstance(label, list), \
-                    "labels should be a list of str or a dict with column name as the " \
-                    "key and a list of str as the value"
-                assert len(label) == len(bin) - 1, \
-                    "labels should be of length {} to match bins".format(len(bin) - 1)
+                invalidInputError(isinstance(label, list),
+                                  "labels should be a list of str or a dict with column name as"
+                                  " the key and a list of str as the value")
+                invalidInputError(len(label) == len(bin) - 1,
+                                  "labels should be of length {} to match"
+                                  " bins".format(len(bin) - 1))
                 to_label = {i: l for (i, l) in enumerate(label)}
                 udf_label = udf(lambda i: to_label[i], StringType())
                 df_buck = df_buck.withColumn(temp_out_col, udf_label(temp_out_col))
@@ -1996,19 +2340,230 @@ class FeatureTable(Table):
                     df_buck = df_buck.drop(column)
         return self._clone(df_buck)
 
+    # TODO: Add UT
+    def get_vocabularies(self, columns: Union[str, List[str]]) -> Dict[str, List[str]]:
+        """
+        Create vocabulary for each column, and return dict of vocabularies
+
+        :param columns: str or a list of str. Columns to generate vocabularies.
+
+        :return: A dict of vocabularies.
+        """
+        columns = str_to_list(columns, "columns")
+        vocabularies = {}
+        for col in columns:
+            vocabularies[col] = self.df.select(col) \
+                .distinct().rdd.map(lambda row: row[col]).collect()
+        return vocabularies
+
+    def sample_listwise(
+        self,
+        columns: Union[str, List[str]],
+        num_sampled_list: int,
+        num_sampled_item: int,
+        random_seed: Optional[int] = None,
+        replace: bool = True
+    ) -> "FeatureTable":
+        """
+        Convert the FeatureTable to a sample listwise FeatureTable. The columns should be of list
+        type and have the same length. Note that the rows with list length < num_sampled_item will
+        be dropped since they don't have enough examples.
+
+        You can use groupby to aggregate records under the same key before calling sample_listwise.
+        >>> tbl
+        +----+----+----+
+        |name|   a|   b|
+        +----+----+----+
+        |   a|   1|   1|
+        |   a|   2|   2|
+        |   b|   1|   1|
+        +----+----+----+
+        >>> tbl.group_by("name", agg="collect_list")
+        +----+------------------+------------------+
+        |name|   collect_list(a)|   collect_list(b)|
+        +----+------------------+------------------+
+        |   a|            [1, 2]|            [1, 2]|
+        |   b|               [1]|               [1]|
+        +----+------------------+------------------+
+        >>> tbl
+        +----+------------+------------+--------------------+
+        |name|     int_arr|     str_arr|         int_arr_arr|
+        +----+------------+------------+--------------------+
+        |   a|   [1, 2, 3]|   [1, 2, 3]|     [[1], [2], [3]]|
+        |   b|[1, 2, 3, 4]|[1, 2, 3, 4]|[[1], [2], [3], [4]]|
+        |   c|         [1]|         [1]|               [[1]]|
+        +----+------------+------------+--------------------+
+        >>> tbl.sample_listwise(["int_arr", "str_arr", "int_arr_arr"], num_sampled_list=4,
+        >>>                     num_sampled_item=2)
+        +----+-------+-------+-----------+
+        |name|int_arr|str_arr|int_arr_arr|
+        +----+-------+-------+-----------+
+        |   a| [1, 3]| [1, 3]| [[1], [3]]|
+        |   a| [2, 1]| [2, 1]| [[2], [1]]|
+        |   a| [3, 2]| [3, 2]| [[3], [2]]|
+        |   a| [2, 3]| [2, 3]| [[2], [3]]|
+        |   b| [4, 1]| [4, 1]| [[4], [1]]|
+        |   b| [2, 3]| [2, 3]| [[2], [3]]|
+        |   b| [2, 3]| [2, 3]| [[2], [3]]|
+        |   b| [2, 3]| [2, 3]| [[2], [3]]|
+        +----+-------+-------+-----------+
+        >>> tbl.sample_listwise(["int_arr", "str_arr"], num_sampled_list=2,
+        >>>                     num_sampled_item=2, replace=False)
+        +----+------------+------------+--------------------+---------------+---------------+
+        |name|     int_arr|     str_arr|         int_arr_arr|sampled_int_arr|sampled_str_arr|
+        +----+------------+------------+--------------------+---------------+---------------+
+        |   a|   [1, 2, 3]|   [1, 2, 3]|     [[1], [2], [3]]|         [3, 2]|         [3, 2]|
+        |   a|   [1, 2, 3]|   [1, 2, 3]|     [[1], [2], [3]]|         [2, 1]|         [2, 1]|
+        |   b|[1, 2, 3, 4]|[1, 2, 3, 4]|[[1], [2], [3], [4]]|         [2, 4]|         [2, 4]|
+        |   b|[1, 2, 3, 4]|[1, 2, 3, 4]|[[1], [2], [3], [4]]|         [4, 2]|         [4, 2]|
+        +----+------------+------------+--------------------+---------------+---------------+
+
+        :param columns: str or a list of str. Columns to convert to sampled list. Each column
+               should be of list type. The list length of specified columns in the same row must
+               be the same.
+        :param num_sampled_list: int. The number of lists that should be sampled for each row.
+        :param num_sampled_item: int. The number of elements to be sampled for each list from
+               the list of each column.
+        :param random_seed: int. The number for creating 'np.random.RandomState'. Default: None.
+        :param replace: bool. Indicates whether to replace the original columns. If replace=False,
+               a corresponding column "sampled_col" will be generated for each sampled column.
+
+        :return: A new sampled listwise FeatureTable.
+        """
+        schema = self.schema
+        cols = str_to_list(columns, "cols")
+        for c in cols:
+            invalidInputError(c in self.df.columns, "Column '" + c +
+                              "' does not exist in this FeatureTable.")
+            c_type = schema[c].dataType
+            invalidInputError(isinstance(c_type, ArrayType),
+                              "Each column should be of list type, but the type of column '" + c +
+                              "' is " + c_type.simpleString())
+            if not replace:
+                c_schema = StructField("sampled_" + c, c_type, True)
+                schema.add(c_schema)
+
+        def sample_features(row, random_state):
+            row = row.asDict()
+            len_set = set([len(row[c]) for c in cols])
+            invalidInputError(len(len_set) == 1,
+                              "Each row of the FeatureTable should "
+                              "have the same array length in the specified cols.")
+            length = len_set.pop()
+            sampled_rows = []
+            if length >= num_sampled_item:
+                for _ in range(num_sampled_list):
+                    new_row = copy.deepcopy(row)
+                    sampled_indices = random_state.choice(range(length), size=num_sampled_item,
+                                                          replace=False)
+                    for c in cols:
+                        sampled_list = [new_row[c][idx] for idx in sampled_indices]
+                        if replace:
+                            new_row[c] = sampled_list
+                        else:
+                            new_row["sampled_" + c] = sampled_list
+                    sampled_rows.append(new_row)
+            return sampled_rows
+
+        random_state = np.random.RandomState(seed=random_seed)
+        spark = OrcaContext.get_spark_session()
+        df = spark.createDataFrame(self.df.rdd.flatMap(lambda x:
+                                                       sample_features(x, random_state)), schema)
+
+        return FeatureTable(df)
+
+    def string_embed(
+        self,
+        columns: Union[str, List[str]],
+        bert_model: str = 'distilbert-base-uncased',
+        reduce_dim: Optional[int] = None,
+        replace: bool = True
+    ) -> "FeatureTable":
+        """
+        Convert the columns of string to bert embeddings in FeatureTable. The columns should be of
+        string type.
+
+        >>> tbl
+        +------------------------+
+        |sentence                |
+        +------------------------+
+        |hello BigDL, how are you|
+        |Thanks for visiting     |
+        +------------------------+
+        >>> tbl.string_embed("sentence", reduce_dim=4)
+        +----------------------------------------------------------------------------------+
+        |sentence                                                                          |
+        +----------------------------------------------------------------------------------+
+        |[6.552382655553642, 0.4968299244945677, 0.2790670453414006, -0.2955769430562254]  |
+        |[-4.4477494247704845, 0.4968299244945722, 0.2790670453414017, -0.2955769430562234]|
+        +----------------------------------------------------------------------------------+
+        :param columns: str or a list of str. Columns to convert to sampled list. Each column
+                should be of string type.
+        :param bert_model: str. The pretrained bert model to be used.
+               from https://huggingface.co/sentence-transformers
+        :param reduce_dim: int. PCA will be called to reduce the embedding dimension it's not None.
+               Default: None.
+        :param replace: bool. Indicates whether to replace the original columns. If replace=False,
+                 a corresponding column columname + "_embds" will be generated for each column.
+
+        :return: A FeatureTable with desired columns transformed to embeddings.
+        """
+        cols = str_to_list(columns, "cols")
+        schema = self.schema
+        for c in cols:
+            invalidInputError(c in self.df.columns, "Column '" + c +
+                              "' does not exist in this FeatureTable.")
+            c_type = schema[c].dataType
+            invalidInputError(isinstance(c_type, StringType),
+                              "Each column should be of string type, but the type of column '" + c +
+                              "' is " + c_type.simpleString())
+
+        from sentence_transformers import SentenceTransformer
+
+        sc = OrcaContext.get_spark_context()
+        model = SentenceTransformer(bert_model)
+        model_br = sc.broadcast(model)
+        sentence2embd_udf = udf(lambda x: model_br.value.encode(x).tolist(),
+                                ArrayType(DoubleType()))
+
+        df = self.df
+        for c in cols:
+            df = df.withColumn(c + "_embds", sentence2embd_udf(pyspark_col(c)))
+
+        if reduce_dim:
+            from pyspark.ml.feature import PCA
+            from pyspark.ml.linalg import Vectors, VectorUDT
+            tolist = udf(lambda x: x.toArray().tolist(), ArrayType(DoubleType()))
+            tovec = udf(lambda x: Vectors.dense(x), VectorUDT())
+            for c in cols:
+                df = df.withColumn(c + "_embds", tovec(c + "_embds"))
+                pca = PCA(k=reduce_dim, inputCol=c + "_embds", outputCol=c + "_pcaFeatures")
+                pca_model = pca.fit(df)
+                result = pca_model.transform(df)
+                df = result.drop(c + "_embds")\
+                    .withColumnRenamed(c + "_pcaFeatures", c + "_embds")\
+                    .withColumn(c + "_embds", tolist(c + "_embds"))
+
+        if replace:
+            for c in cols:
+                df = df.drop(c).withColumnRenamed(c + "_embds", c)
+        return FeatureTable(df)
+
 
 class StringIndex(Table):
-    def __init__(self, df, col_name):
+    def __init__(self, df: "SparkDataFrame", col_name: str) -> None:
         super().__init__(df)
         cols = df.columns
-        assert len(cols) >= 2, "StringIndex should have >= 2 columns: col_name, id and other " \
-                               "columns"
-        assert "id" in cols, "id should be a column of the DataFrame"
-        assert col_name in cols, col_name + " should be a column of the DataFrame"
+        invalidInputError(len(cols) >= 2,
+                          "StringIndex should have >= 2 columns: col_name, id and other columns")
+        invalidInputError("id" in cols, "id should be a column of the DataFrame")
+        invalidInputError(col_name in cols, col_name + " should be a column of the DataFrame")
         self.col_name = col_name
 
     @classmethod
-    def read_parquet(cls, paths, col_name=None):
+    def read_parquet(cls,
+                     paths: Union[str, List[str]],
+                     col_name: Optional[str] = None) -> "StringIndex":
         """
         Loads Parquet files as a StringIndex.
 
@@ -2025,7 +2580,11 @@ class StringIndex(Table):
         return cls(Table._read_parquet(paths), col_name)
 
     @classmethod
-    def from_dict(cls, indices, col_name):
+    def from_dict(
+        cls,
+        indices: Dict[str, int],
+        col_name: str
+    ) -> "StringIndex":
         """
         Create the StringIndex from a dict of indices.
 
@@ -2038,18 +2597,21 @@ class StringIndex(Table):
         """
         spark = OrcaContext.get_spark_session()
         if not isinstance(indices, dict):
-            raise ValueError('indices should be dict, but get ' + indices.__class__.__name__)
+            invalidInputError(False,
+                              'indices should be dict, but get ' + indices.__class__.__name__)
         if not col_name:
-            raise ValueError('col_name should be str, but get None')
+            invalidInputError(False,
+                              'col_name should be str, but get None')
         if not isinstance(col_name, str):
-            raise ValueError('col_name should be str, but get ' + col_name.__class__.__name__)
+            invalidInputError(False,
+                              'col_name should be str, but get ' + col_name.__class__.__name__)
         indices = map(lambda x: {col_name: x[0], 'id': x[1]}, indices.items())
         schema = StructType([StructField(col_name, StringType(), False),
                              StructField("id", IntegerType(), False)])
         df = spark.createDataFrame((Row(**x) for x in indices), schema=schema)
         return cls(df, col_name)
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, int]:
         """
         Convert the StringIndex to a dict, with the categorical features as keys and indices
         as values.
@@ -2066,7 +2628,7 @@ class StringIndex(Table):
             res_dict[row[col_id]] = row[index_id]
         return res_dict
 
-    def write_parquet(self, path, mode="overwrite"):
+    def write_parquet(self, path: str, mode: str = "overwrite") -> None:
         """
         Write the StringIndex to Parquet file.
 
@@ -2081,13 +2643,18 @@ class StringIndex(Table):
         path = path + "/" + self.col_name + ".parquet"
         write_parquet(self.df, path, mode)
 
-    def cast(self, columns, dtype):
+    def cast(self, columns: str, dtype: str) -> "StringIndex":
         df_cast = super().cast(columns, dtype)
         return StringIndex(df_cast.df, self.col_name)
 
 
 class TargetCode(Table):
-    def __init__(self, df, cat_col, out_target_mean):
+    def __init__(
+        self,
+        df: "SparkDataFrame",
+        cat_col: Union[str, List[str]],
+        out_target_mean: Dict[str, Tuple[str, NUMERIC_TYPE]]
+    ) -> None:
         """
         Target Encoding output used for encoding new FeatureTables, which consists of the encoded
         categorical column or column group and the target encoded columns (mean statistics of
@@ -2109,14 +2676,15 @@ class TargetCode(Table):
 
         check_col_str_list_exists(df, cat_col, "cat_col")
 
-        assert isinstance(out_target_mean, dict), "out_target_mean should be dict"
+        invalidInputError(isinstance(out_target_mean, dict), "out_target_mean should be dict")
 
-    def _clone(self, df):
+    def _clone(self, df: "SparkDataFrame") -> "TargetCode":
         return TargetCode(df, self.cat_col, self.out_target_mean)
 
-    def rename(self, columns):
-        assert isinstance(columns, dict), "columns should be a dictionary of {'old_name1': " \
-                                          "'new_name1', 'old_name2': 'new_name2'}"
+    def rename(self, columns: Dict[str, str]) -> "TargetCode":
+        invalidInputError(isinstance(columns, dict),
+                          "columns should be a dictionary of "
+                          "{'old_name1': 'new_name1', 'old_name2': 'new_name2'}")
         new_df = self.df
         new_cat_col = self.cat_col
         new_out_target_mean = self.out_target_mean

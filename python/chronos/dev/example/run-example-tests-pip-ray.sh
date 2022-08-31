@@ -57,38 +57,13 @@ if [ ! -f ~/.chronos/dataset/nyc_taxi/nyc_taxi_data.csv ]; then
   mv ~/.chronos/dataset/nyc_taxi/nyc_taxi.csv ~/.chronos/dataset/nyc_taxi/nyc_taxi_data.csv
 fi
 
-# When the thread of onnxruntime is None, "pthread_setaffinity_np failed" may appear.
-# sed -i '/onnx/d' ${BIGDL_ROOT}/python/chronos/example/onnx/onnx_autotsestimator_nyc_taxi.py
-
-execute_ray_test onnx_autotsestimator_nyc_taxi "${BIGDL_ROOT}/python/chronos/example/onnx/onnx_autotsestimator_nyc_taxi.py"
-time5=$?
-
-if [ ! -f ~/.chronos/dataset/network_traffic/network_traffic_data.csv ]; then
-  wget -nv $FTP_URI/analytics-zoo-data/network-traffic/data/data.csv -P ~/.chronos/dataset/network_traffic/
-  mv ~/.chronos/dataset/network_traffic/data.csv ~/.chronos/dataset/network_traffic/network_traffic_data.csv
-fi
-
-# When the thread of onnxruntime is None, "pthread_setaffinity_np failed" may appear.
-# sed -i '/onnx/d' ${BIGDL_ROOT}/python/chronos/example/onnx/onnx_forecaster_network_traffic.py
-
-execute_ray_test onnx_forecaster_network_traffic "${BIGDL_ROOT}/python/chronos/example/onnx/onnx_forecaster_network_traffic.py"
-time6=$?
-
-if [ ! -f ~/.chronos/dataset/nyc_taxi/nyc_taxi_data.csv ]; then
-  wget -nv $FTP_URI/analytics-zoo-data/apps/nyc-taxi/nyc_taxi.csv -P ~/.chronos/dataset/nyc_taxi/
-  mv ~/.chronos/dataset/nyc_taxi/nyc_taxi.csv ~/.chronos/dataset/nyc_taxi/nyc_taxi_data.csv
-fi
-
-sed -i 's/epochs=10/epochs=1/' "${BIGDL_ROOT}/python/chronos/example/quantization/quantization_tcnforecaster_nyc_taxi.py"
-execute_ray_test quantization_tcnforecaster_nyc_taxi "${BIGDL_ROOT}/python/chronos/example/quantization/quantization_tcnforecaster_nyc_taxi.py"
-time7=$?
+execute_ray_test sparkdf_training_nyc_taxi.py "${BIGDL_ROOT}/python/chronos/example/distributed/sparkdf_training_nyc_taxi.py" --datadir ~/.chronos/dataset/nyc_taxi/nyc_taxi_data.csv
+time8=$?
 
 echo "#1 autolstm_nyc_taxi time used:$time1 seconds"
 echo "#2 autoprophet_nyc_taxi time used:$time2 seconds"
 echo "#3 dpgansimulator_wwt time used:$time3 seconds"
 echo "#4 distributed_training_network_traffic time used:$time4 seconds"
-echo "#5 onnx_autotsestimator_nyc_taxi time used:$time5 seconds"
-echo "#6 onnx_forecaster_network_traffic used:$time6 seconds"
-echo "#7 quantization_tcnforecaster_nyc_taxi used:$time7 seconds"
+echo "#8 sparkdf_training_nyc_taxi used:$time8 seconds"
 
 clear_up

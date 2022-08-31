@@ -54,7 +54,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
-from bigdl.nano.pytorch.trainer import Trainer
+from bigdl.nano.pytorch import Trainer
 from torchmetrics import Accuracy
 
 class Net(nn.Module):

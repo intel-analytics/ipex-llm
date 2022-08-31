@@ -19,6 +19,7 @@ import torch.nn as nn
 
 from .utils import PYTORCH_REGRESSION_LOSS_MAP
 import numpy as np
+from pytorch_lightning import seed_everything
 
 
 class LSTMSeq2Seq(nn.Module):
@@ -29,8 +30,10 @@ class LSTMSeq2Seq(nn.Module):
                  lstm_hidden_dim=128,
                  lstm_layer_num=2,
                  dropout=0.25,
-                 teacher_forcing=False):
+                 teacher_forcing=False,
+                 seed=None):
         super(LSTMSeq2Seq, self).__init__()
+        seed_everything(seed, workers=True)
         self.lstm_encoder = nn.LSTM(input_size=input_feature_num,
                                     hidden_size=lstm_hidden_dim,
                                     num_layers=lstm_layer_num,
@@ -73,7 +76,8 @@ def model_creator(config):
                        lstm_hidden_dim=config.get("lstm_hidden_dim", 128),
                        lstm_layer_num=config.get("lstm_layer_num", 2),
                        dropout=config.get("dropout", 0.25),
-                       teacher_forcing=config.get("teacher_forcing", False))
+                       teacher_forcing=config.get("teacher_forcing", False),
+                       seed=config.get("seed", None))
 
 
 def optimizer_creator(model, config):
@@ -86,8 +90,10 @@ def loss_creator(config):
     if loss_name in PYTORCH_REGRESSION_LOSS_MAP:
         loss_name = PYTORCH_REGRESSION_LOSS_MAP[loss_name]
     else:
-        raise RuntimeError(f"Got '{loss_name}' for loss name, "
-                           "where 'mse', 'mae' or 'huber_loss' is expected")
+        from bigdl.nano.utils.log4Error import invalidInputError
+        invalidInputError(False,
+                          f"Got '{loss_name}' for loss name, "
+                          "where 'mse', 'mae' or 'huber_loss' is expected")
     return getattr(torch.nn, loss_name)()
 
 
@@ -102,15 +108,19 @@ try:
                              check_optional_config=check_optional_config)
 
         def _input_check(self, x, y):
+            from bigdl.nano.utils.log4Error import invalidInputError
             if len(x.shape) < 3:
-                raise RuntimeError(f"Invalid data x with {len(x.shape)} "
-                                   "dim where 3 dim is required.")
+                invalidInputError(False,
+                                  f"Invalid data x with {len(x.shape)} "
+                                  "dim where 3 dim is required.")
             if len(y.shape) < 3:
-                raise RuntimeError(f"Invalid data y with {len(y.shape)} dim "
-                                   "where 3 dim is required.")
+                invalidInputError(False,
+                                  f"Invalid data y with {len(y.shape)} dim "
+                                  "where 3 dim is required.")
             if y.shape[-1] > x.shape[-1]:
-                raise RuntimeError("output dim should not larger than input dim "
-                                   f"while we get {y.shape[-1]} > {x.shape[-1]}.")
+                invalidInputError(False,
+                                  "output dim should not larger than input dim "
+                                  f"while we get {y.shape[-1]} > {x.shape[-1]}.")
 
         def _forward(self, x, y):
             self._input_check(x, y)

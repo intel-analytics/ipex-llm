@@ -17,20 +17,25 @@
 import pandas as pd
 import numpy as np
 from bigdl.ppml.fl import *
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 
 def get_input_type(x, y=None):
     if isinstance(x, pd.DataFrame):
         if y is not None and not isinstance(y, pd.DataFrame):
-            raise ValueError(f"Feature is DataFrame, label should be DataFrame, but got {type(y)}")
+            invalidInputError(False,
+                              f"Feature is DataFrame, label should be DataFrame,"
+                              f" but got {type(y)}")
         return "DataFrame"
     elif isinstance(x, np.ndarray):
         if y is not None and not isinstance(y, np.ndarray):
-            raise ValueError(
-                f"Feature is Numpy NdArray, label should be Numpy NdArray, but got {type(y)}")
+            invalidInputError(False,
+                              f"Feature is Numpy NdArray, label should be Numpy NdArray,"
+                              f" but got {type(y)}")
         return "NdArray"
     else:
-        raise ValueError(f"Supported argument types: DataFrame, NdArray, but got {type(x)}")
+        invalidInputError(False,
+                          f"Supported argument types: DataFrame, NdArray, but got {type(x)}")
 
 
 def convert_to_numpy(x, columns=None):
@@ -42,14 +47,16 @@ def convert_to_numpy(x, columns=None):
     elif isinstance(x, np.ndarray):
         return x
     else:
-        raise ValueError(f"{type(x)} can not be converted to numpy")
+        invalidInputError(False,
+                          f"{type(x)} can not be converted to numpy")
 
 
 def convert_to_jtensor(x, y=None, feature_columns=None, label_columns=None):
     arg_type = get_input_type(x, y)
     if arg_type == "DataFrame":
         if feature_columns is None or (y is not None and label_columns is None):
-            raise ValueError("Input DataFrame type must have feature_columns and label_columns")
+            invalidInputError(False,
+                              "Input DataFrame type must have feature_columns and label_columns")
         x = x[feature_columns].to_numpy()
         y = y[label_columns].to_numpy() if y is not None else None
     return JTensor.from_ndarray(x), JTensor.from_ndarray(y)

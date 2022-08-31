@@ -30,7 +30,6 @@ import org.apache.logging.log4j.LogManager
 
 import scala.reflect.ClassTag
 import scala.util.Random
-import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.ppml.fl.FLClient
@@ -104,14 +103,14 @@ object ProtoUtils {
     toFloatTensor(data, Array(data.length))
   }
 
-  def getModelWeightTable(model: Module[Float], version: Int, name: String = "test") = {
+  def getModelWeightTable(model: Module[Float], version: Int, name: String = "test"): TensorMap = {
     val weights = getParametersFromModel(model)._1
     val metadata = MetaData.newBuilder
       .setName(name).setVersion(version).build
     val tensor =
       FloatTensor.newBuilder()
-        .addAllTensor(weights.storage.toList.map(v => float2Float(v)))
-        .addAllShape(weights.size.toList.map(v => int2Integer(v)))
+        .addAllTensor(weights.storage.toList.map(v => float2Float(v)).asJava)
+        .addAllShape(weights.size.toList.map(v => int2Integer(v)).asJava)
         .build()
     val metamodel = TensorMap.newBuilder
       .putTensorMap("weights", tensor)
@@ -149,7 +148,7 @@ object ProtoUtils {
     val counts = lens.map(_ => 0)
     data.foreach{d =>
       var indx = random.nextInt(weight.length)
-      while(counts(indx) == lens(indx)){
+      while(counts(indx) == lens(indx)) {
         indx = (indx + 1) % weight.length
       }
       splits(indx)(counts(indx)) = d
@@ -176,9 +175,10 @@ object ProtoUtils {
   }
 
   def almostEqual(v1: Float, v2: Float): Boolean = {
-    if (math.abs(v1 - v2) <= 1e-1f)
+    if (math.abs(v1 - v2) <= 1e-1f) {
       true
-    else
+    } else {
       false
+    }
   }
 }

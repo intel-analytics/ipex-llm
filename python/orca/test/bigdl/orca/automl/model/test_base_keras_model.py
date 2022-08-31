@@ -120,7 +120,7 @@ class TestBaseKerasModel(TestCase):
             "lr": 1e-2,
             "batch_size": 32,
         })
-        with pytest.raises(ValueError):
+        with pytest.raises(RuntimeError):
             model.fit_eval(data=self.data,
                            validation_data=self.validation_data,
                            epochs=20)
@@ -134,7 +134,7 @@ class TestBaseKerasModel(TestCase):
             return model
 
         modelBuilder_keras = KerasModelBuilder(model_creator)
-        with pytest.raises(ValueError):
+        with pytest.raises(RuntimeError):
             model = modelBuilder_keras.build(config={
                 "lr": 1e-2,
                 "batch_size": 32,
@@ -150,7 +150,7 @@ class TestBaseKerasModel(TestCase):
             "lr": 1e-2,
             "batch_size": 32,
         })
-        with pytest.raises(ValueError):
+        with pytest.raises(RuntimeError):
             model.fit_eval(data=self.data,
                            validation_data=self.validation_data,
                            metric='mae',

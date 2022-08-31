@@ -366,7 +366,7 @@ class SparkRunner:
             ld_path = executor_python_env + "/lib:" + executor_python_env + "/lib/python" + \
                 py_version + "/lib-dynload"
             image_workdir = get_bigdl_image_workdir()
-            tf_libs_path = image_workdir + executor_python_env + "/lib/python" + \
+            tf_libs_path = image_workdir + "/" + executor_python_env + "/lib/python" + \
                 py_version + "/site-packages/bigdl/share/tflibs"
             if "spark.executor.extraLibraryPath" in conf:
                 ld_path = "{}:{}".format(ld_path, conf["spark.executor.extraLibraryPath"])
@@ -439,7 +439,8 @@ class SparkRunner:
         else:
             # BigDL Class path in k8s image
             bigdl_class_version = get_bigdl_class_version()
-            conf["spark.executor.extraClassPath"] = "/opt/" + bigdl_class_version + "/jars/*"
+            conf["spark.executor.extraClassPath"] = "/opt/" + bigdl_class_version + "bigdl-" \
+                + "/jars/*"
         conf["spark.driver.extraClassPath"] = conf["spark.executor.extraClassPath"]
         sys_args = "local://" + " ".join(sys.argv)
         conf = " --conf " + " --conf ".join("{}={}".format(*i) for i in conf.items())

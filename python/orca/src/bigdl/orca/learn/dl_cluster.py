@@ -16,6 +16,7 @@
 
 import ray
 from bigdl.orca.cpu_info import schedule_workers
+from bigdl.dllib.utils.log4Error import invalidInputError
 import os
 import sys
 import logging
@@ -63,7 +64,8 @@ class RayDLCluster:
                  cpu_binding=True,
                  ):
         if not ray.is_initialized():
-            raise RuntimeError("Ray is not initialize. Please initialize ray.")
+            invalidInputError(False,
+                              "Ray is not initialize. Please initialize ray.")
 
         self.num_workers = num_workers
         self.worker_cores = worker_cores

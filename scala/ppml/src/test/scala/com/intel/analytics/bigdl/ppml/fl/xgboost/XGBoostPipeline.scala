@@ -33,7 +33,7 @@ object XGBoostPipeline {
   def process(dataPathTrain: String,
               dataPathTest: String,
               predictResultPath: String,
-              treeDumpPath: String) = {
+              treeDumpPath: String): Unit = {
     val sources = Source.fromFile(dataPathTrain, "utf-8").getLines()
     val testSources = Source.fromFile(dataPathTest, "utf-8").getLines()
     val rowkeyName = "Id"

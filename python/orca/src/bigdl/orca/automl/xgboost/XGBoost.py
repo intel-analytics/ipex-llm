@@ -21,6 +21,7 @@ from xgboost.sklearn import XGBRegressor
 from xgboost.sklearn import XGBClassifier
 from bigdl.orca.automl.metrics import Evaluator
 from bigdl.orca.automl.model.abstract import BaseModel, ModelBuilder
+from bigdl.dllib.utils.log4Error import invalidInputError
 import logging
 
 logger = logging.getLogger(__name__)
@@ -46,7 +47,8 @@ class XGBoost(BaseModel):
 
         valid_model_type = ('regressor', 'classifier')
         if model_type not in valid_model_type:
-            raise ValueError(f"model_type must be between {valid_model_type}. Got {model_type}")
+            invalidInputError(False,
+                              f"model_type must be between {valid_model_type}. Got {model_type}")
         self.model_type = model_type
         self.n_estimators = config.get('n_estimators', 1000)
         self.max_depth = config.get('max_depth', 5)
@@ -114,7 +116,8 @@ class XGBoost(BaseModel):
                                        objective='binary:logistic',
                                        reg_lambda=self.reg_lambda, verbosity=self.verbosity)
         else:
-            raise ValueError("model_type can only be \"regressor\" or \"classifier\"")
+            invalidInputError(False,
+                              "model_type can only be \"regressor\" or \"classifier\"")
 
         self.model_init = True
 
@@ -147,8 +150,9 @@ class XGBoost(BaseModel):
             metric_name = metric or self.metric or default_metric
 
         if not metric_func and metric_name not in valid_metric_names:
-            raise ValueError(f"Got invalid metric name of {metric_name} for XGBoost. Valid metrics "
-                             f"are {valid_metric_names}")
+            invalidInputError(False,
+                              f"Got invalid metric name of {metric_name} for XGBoost."
+                              f" Valid metrics are {valid_metric_names}")
 
         if metric_name in XGB_METRIC_NAME and not metric_func:
             self.model.fit(x, y, eval_set=eval_set, eval_metric=metric_name)
@@ -166,24 +170,25 @@ class XGBoost(BaseModel):
         if callable(data):
             data = data(self.config)
             if not isinstance(data, tuple) or isinstance(data, list):
-                raise ValueError(
-                    f"You must input a data create function which returns a tuple or a list of "
-                    f"(x, y) for {name} in XGBoost. "
-                    f"Your function returns a {data.__class__.__name__} instead")
+                invalidInputError(False,
+                                  f"You must input a data create function which returns a tuple"
+                                  f" or a list of (x, y) for {name} in XGBoost. Your function"
+                                  f" returns a {data.__class__.__name__} instead")
             if len(data) != 2:
-                raise ValueError(
-                    f"You must input a data create function which returns a tuple or a list "
-                    f"containing two elements of (x, y) for {name} in XGBoost. "
-                    f"Your data create function returns {len(data)} elements instead")
+                invalidInputError(False,
+                                  f"You must input a data create function which returns a tuple"
+                                  f" or a list containing two elements of (x, y) for {name} in"
+                                  f" XGBoost. Your data create function returns {len(data)}"
+                                  f" elements instead")
 
         if not (isinstance(data, tuple) or isinstance(data, list)):
-            raise ValueError(
-                f"You must input a tuple or a list of (x, y) for {name} in XGBoost. "
-                f"Got {data.__class__.__name__}")
+            invalidInputError(False,
+                              f"You must input a tuple or a list of (x, y) for {name} in XGBoost."
+                              f"Got {data.__class__.__name__}")
         if len(data) != 2:
-            raise ValueError(
-                f"You must input a tuple or a list containing two elements of (x, y). "
-                f"Got {len(data)} elements for {name} in XGBoost")
+            invalidInputError(False,
+                              f"You must input a tuple or a list containing two elements of (x, y)."
+                              f"Got {len(data)} elements for {name} in XGBoost")
         return data
 
     def predict(self, x):
@@ -195,9 +200,10 @@ class XGBoost(BaseModel):
         :return:
         """
         if x is None:
-            raise Exception("Input invalid x of None")
+            invalidInputError(False, "Input invalid x of None")
         if self.model is None:
-            raise Exception("Needs to call fit_eval or restore first before calling predict")
+            invalidInputError(False,
+                              "Needs to call fit_eval or restore first before calling predict")
         self.model.n_jobs = self.n_jobs
         out = self.model.predict(x)
         return out
@@ -214,11 +220,12 @@ class XGBoost(BaseModel):
         :return: a list of metric evaluation results
         """
         if x is None:
-            raise ValueError("Input invalid x of None")
+            invalidInputError(False, "Input invalid x of None")
         if y is None:
-            raise ValueError("Input invalid y of None")
+            invalidInputError(False, "Input invalid y of None")
         if self.model is None:
-            raise Exception("Needs to call fit_eval or restore first before calling predict")
+            invalidInputError(False, "Needs to call fit_eval or restore first before"
+                                     " calling predict")
 
         if isinstance(y, pd.DataFrame):
             y = y.values
@@ -258,7 +265,7 @@ class XGBoostModelBuilder(ModelBuilder):
         if 'n_jobs' in xgb_configs and xgb_configs['n_jobs'] != cpus_per_trial:
             logger.warning(f"Found n_jobs={xgb_configs['n_jobs']} in xgb_configs. It will not take "
                            f"effect since we assign cpus_per_trials(={cpus_per_trial}) to xgboost "
-                           f"n_jobs. Please raise an issue if you do need different values for "
+                           f"n_jobs. Please throw an issue if you do need different values for "
                            f"xgboost n_jobs and cpus_per_trials.")
         self.model_config['n_jobs'] = cpus_per_trial
 

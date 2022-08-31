@@ -24,6 +24,7 @@ from bigdl.orca.learn.trigger import SeveralIteration
 from bigdl.orca.learn.tf.estimator import Estimator
 from bigdl.dllib.nncontext import *
 from bigdl.orca.learn.utils import convert_predict_rdd_to_dataframe
+from bigdl.orca.learn.tf.estimator import save_model_dir
 
 
 class TestEstimatorForKeras(TestCase):
@@ -680,6 +681,11 @@ class TestEstimatorForKeras(TestCase):
                 label_cols=['label'],
                 validation_data=df)
         assert est.get_model() is model
+
+    def test_model_path_dbfs_from_keras(self):
+        model_dir = "dbfs:/FileStore/shared_uploads/models"
+        processed_model_dir = save_model_dir(model_dir)
+        assert processed_model_dir == "/dbfs/FileStore/shared_uploads/models"
 
 
 if __name__ == "__main__":

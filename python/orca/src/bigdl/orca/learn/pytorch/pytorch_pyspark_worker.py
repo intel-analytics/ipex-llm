@@ -29,6 +29,7 @@
 # limitations under the License.
 
 
+from subprocess import call
 from pyspark import BarrierTaskContext
 from bigdl.orca.learn.pytorch.torch_runner import TorchRunner
 import torch.distributed as dist
@@ -40,6 +41,8 @@ import tempfile
 from pyspark import BarrierTaskContext, TaskContext
 from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file, get_rank
 from bigdl.orca.learn.log_monitor import LogMonitor
+from bigdl.dllib.utils.log4Error import *
+
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +71,8 @@ class PytorchPysparkWorker(TorchRunner):
                  model_dir=None,
                  log_to_driver=True,
                  driver_ip=None,
-                 driver_port=None,
+                 driver_log_port=None,
+                 driver_tcp_store_port=None
                  ):
         super().__init__(model_creator, optimizer_creator, loss_creator, metrics, scheduler_creator,
                          training_operator_cls, config, use_tqdm, scheduler_step_freq, sync_stats,
@@ -79,19 +83,19 @@ class PytorchPysparkWorker(TorchRunner):
         self.mode = mode
         self.backend = backend
         self.cluster_info = cluster_info
-        assert model_dir
+        invalidInputError(model_dir, "model_dir cannot be null")
         self.model_dir = model_dir
         self.log_to_driver = log_to_driver
 
         self.setup(cores_per_worker)
         if self.log_to_driver:
             self.log_path, self.logger_thread, self.thread_stop = \
-                PytorchPysparkWorker._start_log_monitor(driver_ip, driver_port)
+                PytorchPysparkWorker._start_log_monitor(driver_ip, driver_log_port)
         if self.backend == "torch-distributed":
-            self.setup_distributed(self.mode, cluster_info)
+            self.setup_distributed(self.mode, cluster_info, driver_ip, driver_tcp_store_port)
 
     @staticmethod
-    def _start_log_monitor(driver_ip, driver_port):
+    def _start_log_monitor(driver_ip, driver_log_port):
         if TaskContext.get():
             partition_id = TaskContext.get().partitionId()
         else:
@@ -101,17 +105,17 @@ class PytorchPysparkWorker(TorchRunner):
         duplicate_stdout_stderr_to_file(log_path)
         logger_thread, thread_stop = \
             LogMonitor.start_log_monitor(driver_ip=driver_ip,
-                                         driver_port=driver_port,
+                                         driver_port=driver_log_port,
                                          log_path=log_path,
                                          partition_id=partition_id)
         return log_path, logger_thread, thread_stop
 
-    def setup_distributed(self, mode, cluster_info):
+    def setup_distributed(self, mode, cluster_info, driver_ip, driver_tcp_store_port):
         if mode == "fit":
             self.rank = get_rank(cluster_info)
             logger.info(f"cluster is: {cluster_info}")
-            address = f"tcp://{cluster_info[0]}"
-            self.setup_torch_distribute(url=address,
+            self.setup_torch_distribute(tcp_store_host=driver_ip,
+                                        tcp_store_port=driver_tcp_store_port,
                                         world_rank=self.rank,
                                         world_size=self.size)
         else:
@@ -120,10 +124,17 @@ class PytorchPysparkWorker(TorchRunner):
             self.setup_operator(self.models)
 
     def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
-                     info=None, wrap_dataloader=None, callbacks=None):
+                     info=None, wrap_dataloader=None, callbacks=None,
+                     validation_data_creator=None):
         self.load_state_dict(self.state_dict.value)
-        stats_list = super().train_epochs(data_creator, epochs, batch_size, profile, info,
-                                          wrap_dataloader, callbacks)
+        stats_list = super().train_epochs(data_creator=data_creator,
+                                          epochs=epochs,
+                                          batch_size=batch_size,
+                                          profile=profile,
+                                          info=info,
+                                          wrap_dataloader=wrap_dataloader,
+                                          callbacks=callbacks,
+                                          validation_data_creator=validation_data_creator)
         state_dict = self.get_state_dict()
 
         if self.log_to_driver:

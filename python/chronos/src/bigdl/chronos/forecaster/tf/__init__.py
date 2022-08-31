@@ -13,3 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+import importlib
+from bigdl.chronos.utils import LazyImport
+
+tf_spec = bool(importlib.util.find_spec('tensorflow'))
+orca_available = bool(importlib.util.find_spec('bigdl.orca'))
+
+PREFIXNAME_TF2 = 'bigdl.chronos.forecaster.tf.'
+
+if tf_spec:
+    LSTMForecaster = LazyImport(PREFIXNAME_TF2+'lstm_forecaster.LSTMForecaster')
+    Seq2SeqForecaster = LazyImport(PREFIXNAME_TF2+'seq2seq_forecaster.Seq2SeqForecaster')
+    TCNForecaster = LazyImport(PREFIXNAME_TF2+'tcn_forecaster.TCNForecaster')
+    if orca_available:
+        MTNetForecaster = LazyImport(PREFIXNAME_TF2+'metnet_forecaster.MTNetForecaster')

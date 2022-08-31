@@ -36,11 +36,12 @@ def resample_timeseries_dataframe(df,
         we need to merge the values in a mode. "max", "min", "mean"
         or "sum" are supported for now.
     '''
-    assert dt_col in df.columns, f"dt_col {dt_col} can not be found in df."
-    assert pd.isna(df[dt_col]).sum() == 0, "There is N/A in datetime col"
-    assert merge_mode in ['max', 'min', 'mean', 'sum'],\
-        "merge_mode should be one of ['max', 'min', 'mean', 'sum']," \
-        f" but found {merge_mode}."
+    from bigdl.nano.utils.log4Error import invalidInputError
+    invalidInputError(dt_col in df.columns, f"dt_col {dt_col} can not be found in df.")
+    invalidInputError(pd.isna(df[dt_col]).sum() == 0, "There is N/A in datetime col")
+    invalidInputError(merge_mode in ['max', 'min', 'mean', 'sum'],
+                      "merge_mode should be one of ['max', 'min', 'mean', 'sum'],"
+                      " but found {merge_mode}.")
 
     res_df = df.copy()
     id_name = None
@@ -61,7 +62,8 @@ def resample_timeseries_dataframe(df,
 
     start_time_stamp = pd.Timestamp(start_time) if start_time else res_df.index[0]
     end_time_stamp = pd.Timestamp(end_time) if end_time else res_df.index[-1]
-    assert start_time_stamp <= end_time_stamp, "end time must be later than start time."
+    invalidInputError(start_time_stamp <= end_time_stamp,
+                      "end time must be later than start time.")
 
     offset = (start_time_stamp - res_df.index[0]) % pd.Timedelta(interval)
     new_index = pd.date_range(start=start_time_stamp-offset, end=end_time_stamp, freq=interval)

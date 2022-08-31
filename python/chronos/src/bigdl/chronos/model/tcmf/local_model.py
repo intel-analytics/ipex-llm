@@ -410,8 +410,8 @@ class LocalModel(object):
             import ray
 
             # check whether there has been an activate ray context yet.
-            from bigdl.orca.ray import RayContext
-            ray_ctx = RayContext.get()
+            from bigdl.orca.ray import OrcaRayContext
+            ray_ctx = OrcaRayContext.get()
             Ymat_id = ray.put(self.Ymat)
             covariates_id = ray.put(self.covariates)
             Ycov_id = ray.put(self.Ycov)
@@ -579,7 +579,7 @@ class LocalModel(object):
         bsize: batch size for processing (determine according to gopu memory limits)
         normalize: should be set according to the normalization used in the class initialization
         num_workers: number of workers to run prediction. if num_workers > 1, then prediction will
-        run in distributed mode and there has to be an activate RayContext.
+        run in distributed mode and there has to be an activate OrcaRayContext.
         """
         with torch.no_grad():
             if normalize:

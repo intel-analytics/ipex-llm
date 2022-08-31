@@ -5,6 +5,21 @@ spec:
   - name: spark-executor
     securityContext:
       privileged: true
+    env:
+      - name: ATTESTATION
+        value: false
+      - name: ATTESTATION_URL
+        value: your_attestation_url
+      #- name: ATTESTATION_ID
+      #  valueFrom:
+      #    secretKeyRef:
+      #      name: kms-secret
+      #      key: app_id
+      #- name: ATTESTATION_KEY
+      #  valueFrom:
+      #    secretKeyRef:
+      #      name: kms-secret
+      #      key: app_key
     volumeMounts:
       - name: enclave-key
         mountPath: /graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem
@@ -15,7 +30,6 @@ spec:
         mountPath: /var/run/aesmd/aesm.socket
       - name: nfs-storage
         mountPath: /ppml/trusted-big-data-ml/work/data
-        subPath: data
       - name: nfs-storage
         mountPath: /root/.kube/config
         subPath: kubeconfig

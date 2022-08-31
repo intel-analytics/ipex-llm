@@ -21,11 +21,11 @@ from bigdl.orca.automl.search.base import SearchEngine, TrialOutput, GoodError
 from bigdl.orca.automl.search.parameters import DEFAULT_LOGGER_NAME, DEFAULT_METRIC_NAME
 from bigdl.orca.automl.search.ray_tune.utils import convert_bayes_configs
 from bigdl.orca.automl.search.utils import get_ckpt_hdfs, put_ckpt_hdfs
-from bigdl.orca.automl.search import TensorboardLogger
 from ray.tune import Stopper
 from bigdl.orca.automl.model.abstract import ModelBuilder
 from bigdl.orca.data import ray_xshards
 from ray.tune.progress_reporter import TrialProgressCallback
+from bigdl.dllib.utils.log4Error import *
 
 
 class RayTuneSearchEngine(SearchEngine):
@@ -55,9 +55,9 @@ class RayTuneSearchEngine(SearchEngine):
 
     @staticmethod
     def get_default_remote_dir(name):
-        from bigdl.orca.ray import RayContext
+        from bigdl.orca.ray import OrcaRayContext
         from bigdl.orca.automl.search.utils import process
-        ray_ctx = RayContext.get()
+        ray_ctx = OrcaRayContext.get()
         if ray_ctx.is_local:
             return None
         else:
@@ -147,8 +147,9 @@ class RayTuneSearchEngine(SearchEngine):
     def _set_search_alg(search_alg, search_alg_params, metric, mode):
         if search_alg:
             if not isinstance(search_alg, str):
-                raise ValueError(f"search_alg should be of type str."
-                                 f" Got {search_alg.__class__.__name__}")
+                invalidInputError(False,
+                                  f"search_alg should be of type str."
+                                  f" Got {search_alg.__class__.__name__}")
             params = search_alg_params.copy() if search_alg_params else dict()
             if metric and "metric" not in params:
                 params["metric"] = metric
@@ -161,8 +162,9 @@ class RayTuneSearchEngine(SearchEngine):
     def _set_scheduler(scheduler, scheduler_params, metric, mode):
         if scheduler:
             if not isinstance(scheduler, str):
-                raise ValueError(f"Scheduler should be of type str. "
-                                 f"Got {scheduler.__class__.__name__}")
+                invalidInputError(False,
+                                  f"Scheduler should be of type str. "
+                                  f"Got {scheduler.__class__.__name__}")
             params = scheduler_params.copy() if scheduler_params else dict()
             if metric and "metric" not in params:
                 params["metric"] = metric
@@ -200,14 +202,19 @@ class RayTuneSearchEngine(SearchEngine):
         self.trials = analysis.trials
 
         # Visualization code for ray (leaderboard)
-        logger_name = self.name if self.name else DEFAULT_LOGGER_NAME
-        tf_config, tf_metric = TensorboardLogger._ray_tune_searcher_log_adapt(analysis)
+        try:
+            from bigdl.orca.automl.search.tensorboardlogger import TensorboardLogger
+            logger_name = self.name if self.name else DEFAULT_LOGGER_NAME
+            tf_config, tf_metric = TensorboardLogger._ray_tune_searcher_log_adapt(analysis)
 
-        self.logger = TensorboardLogger(logs_dir=os.path.join(self.logs_dir,
-                                                              logger_name+"_leaderboard"),
-                                        name=logger_name)
-        self.logger.run(tf_config, tf_metric)
-        self.logger.close()
+            self.logger = TensorboardLogger(logs_dir=os.path.join(self.logs_dir,
+                                                                  logger_name+"_leaderboard"),
+                                            name=logger_name)
+            self.logger.run(tf_config, tf_metric)
+            self.logger.close()
+        except ImportError:
+            import warnings
+            warnings.warn("torch >= 1.7.0 should be installed to enable the orca.automl logger")
 
         return analysis
 
@@ -256,9 +263,10 @@ class RayTuneSearchEngine(SearchEngine):
 
     def test_run(self):
         def mock_reporter(**kwargs):
-            assert self.metric_name in kwargs, "Did not report proper metric"
-            assert "checkpoint" in kwargs, "Accidentally removed `checkpoint`?"
-            raise GoodError("This works.")
+            invalidInputError(self.metric_name in kwargs, "Did not report proper metric")
+            invalidInputError("checkpoint" in kwargs, "Accidentally removed `checkpoint`?")
+            invalidInputError(False,
+                              "This works.")
 
         try:
             self.train_func({'out_units': 1,
@@ -268,11 +276,11 @@ class RayTuneSearchEngine(SearchEngine):
 
         except TypeError as e:
             print("Forgot to modify function signature?")
-            raise e
+            invalidOperationError(False, str(e), cause=e)
         except GoodError:
             print("Works!")
             return 1
-        raise Exception("Didn't call reporter...")
+        invalidInputError(False, "Didn't call reporter...")
 
     @staticmethod
     def _prepare_train_func(data,
@@ -328,9 +336,6 @@ class RayTuneSearchEngine(SearchEngine):
                 train_data = ray.get(data_ref)
                 val_data = ray.get(validation_data_ref)
             config = convert_bayes_configs(config).copy()
-            # This check is turned off to support ducking typing
-            # if not isinstance(model_builder, ModelBuilder):
-            #     raise ValueError(f"You must input a ModelBuilder instance for model_builder")
             trial_model = model_builder.build(config)
 
             # no need to call build since it is called the first time fit_eval is called.

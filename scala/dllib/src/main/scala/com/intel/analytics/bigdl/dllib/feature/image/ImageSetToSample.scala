@@ -78,7 +78,7 @@ class ImageSetToSample[T: ClassTag](inputKeys: Array[String] = Array(ImageFeatur
       case e: Exception =>
         e.printStackTrace()
         val uri = feature.uri()
-        logger.error(s"The conversion from ImageFeature to Sample fails for $uri")
+        logger.info(s"The conversion from ImageFeature to Sample fails for $uri")
         feature(ImageFeature.originalSize) = (-1, -1, -1)
         feature.isValid = false
     }

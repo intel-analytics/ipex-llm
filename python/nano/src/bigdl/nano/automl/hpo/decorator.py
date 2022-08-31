@@ -29,7 +29,6 @@ import functools
 from collections import OrderedDict
 import numpy as np
 import multiprocessing as mp
-import ConfigSpace as CS
 
 
 from .space import *
@@ -39,6 +38,7 @@ from .callgraph import CallCache
 from bigdl.nano.automl.utils import EasyDict as ezdict
 from bigdl.nano.automl.utils import proxy_methods
 from bigdl.nano.automl.hpo.backend import create_hpo_backend
+from bigdl.nano.deps.automl.hpo_api import create_configuration_space
 
 __all__ = ['args', 'obj', 'func', 'tfmodel', 'plmodel', 'sample_config']
 
@@ -119,7 +119,7 @@ class _automl_method(object):
 
     @property
     def cs(self):
-        cs = CS.ConfigurationSpace()
+        cs = create_configuration_space()
         for k, v in self.kwvars.items():
             if isinstance(v, NestedSpace):
                 _add_cs(cs, v.cs, k)
@@ -351,6 +351,7 @@ def obj(**kwvars):
                 self._inited = False
                 self.kwspaces_ = OrderedDict()
                 self.kwvars = dict()
+                self.sampler_kwargs = dict()
                 self._update_kw()
                 self._callgraph = None  # keep a reference to the call graph
 
@@ -378,6 +379,15 @@ def obj(**kwvars):
                     if isinstance(v, NestedSpace):
                         self.kwspaces_[k] = v
                         self.kwargs[k] = v
+                        for hp in v.cs.get_hyperparameters():
+                            new_parameter = copy.deepcopy(hp)
+                            new_parameter.name = "{}{}{}".format(
+                                k, SPLITTER, new_parameter.name)
+                            # further add the sub_cs prefix onto the param
+                            name = new_parameter.name
+                            if hasattr(new_parameter, "choices"):
+                                choices = tuple(new_parameter.choices)
+                                self.sampler_kwargs[name] = choices
                     elif isinstance(v, Space):
                         self.kwspaces_[k] = v
                         hp = v.get_hp(name=k)
@@ -457,6 +467,30 @@ def tfmodel(**kwvars):
                 model = self.backend.instantiate(trial, self._lazyobj)
                 self._model_compile(model, trial)
                 return model
+
+            def _get_model_builder_args(self):
+                return {'lazyobj': self._lazyobj,
+                        'compile_args': self.compile_args,
+                        'compile_kwargs': self.compile_kwargs,
+                        'backend': self.backend}
+
+            @staticmethod
+            def _get_model_builder(lazyobj,
+                                   compile_args,
+                                   compile_kwargs,
+                                   backend):
+
+                def model_builder(trial):
+                    model = backend.instantiate(trial, lazyobj)
+                    # self._model_compile(model, trial)
+                    # instantiate optimizers if it is autoobj
+                    optimizer = compile_kwargs.get('optimizer', None)
+                    if optimizer and isinstance(optimizer, AutoObject):
+                        optimizer = backend.instantiate(trial, optimizer)
+                        compile_kwargs['optimizer'] = optimizer
+                    model.compile(*compile_args, **compile_kwargs)
+                    return model
+                return model_builder
 
         return TFAutoMdl
 

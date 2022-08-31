@@ -39,18 +39,26 @@ init_instance() {
     # check if occlum_spark exists
     [[ -d occlum_spark ]] || mkdir occlum_spark
     cd occlum_spark
-    /opt/occlum/start_aesm.sh
     occlum init
     new_json="$(jq '.resource_limits.user_space_size = "SGX_MEM_SIZE" |
         .resource_limits.max_num_of_threads = "SGX_THREAD" |
         .process.default_heap_size = "SGX_HEAP" |
-        .metadata.debuggable = false |
+        .metadata.debuggable = "ENABLE_SGX_DEBUG" |
         .resource_limits.kernel_space_heap_size="SGX_KERNEL_HEAP" |
-        .entry_points = [ "/usr/lib/jvm/java-11-openjdk-amd64/bin" ] |
+        .entry_points = [ "/usr/lib/jvm/java-8-openjdk-amd64/bin" ] |
         .env.untrusted = [ "DMLC_TRACKER_URI", "SPARK_DRIVER_URL", "SPARK_TESTING" ] |
-        .env.default = [ "LD_LIBRARY_PATH=/usr/lib/jvm/java-11-openjdk-amd64/lib/server:/usr/lib/jvm/java-11-openjdk-amd64/lib:/usr/lib/jvm/java-11-openjdk-amd64/../lib:/lib","SPARK_CONF_DIR=/bin/conf","SPARK_ENV_LOADED=1","PYTHONHASHSEED=0","SPARK_HOME=/bin","SPARK_SCALA_VERSION=2.12","SPARK_JARS_DIR=/bin/jars","LAUNCH_CLASSPATH=/bin/jars/*",""]' Occlum.json)" && \
+        .env.default = [ "LD_LIBRARY_PATH=/usr/lib/jvm/java-8-openjdk-amd64/lib/server:/usr/lib/jvm/java-8-openjdk-amd64/lib:/usr/lib/jvm/java-8-openjdk-amd64/../lib:/lib","SPARK_CONF_DIR=/opt/spark/conf","SPARK_ENV_LOADED=1","PYTHONHASHSEED=0","SPARK_HOME=/opt/spark","SPARK_SCALA_VERSION=2.12","SPARK_JARS_DIR=/opt/spark/jars","LAUNCH_CLASSPATH=/bin/jars/*",""]' Occlum.json)" && \
     echo "${new_json}" > Occlum.json
     echo "SGX_MEM_SIZE ${SGX_MEM_SIZE}"
+
+    # enable tmp hostfs
+    # --conf spark.executorEnv.USING_TMP_HOSTFS=true \
+    if [ $USING_TMP_HOSTFS == "true" ]; then
+        echo "use tmp hostfs"
+        mkdir ./shuffle
+        edit_json="$(cat Occlum.json | jq '.mount+=[{"target": "/tmp","type": "hostfs","source": "./shuffle"}]')" && \
+        echo "${edit_json}" > Occlum.json
+    fi
 
     if [[ -z "$META_SPACE" ]]; then
         echo "META_SPACE not set, using default value 256m"
@@ -83,18 +91,36 @@ init_instance() {
         sed -i "s/SGX_KERNEL_HEAP/${SGX_KERNEL_HEAP}/g" Occlum.json
     fi
 
+    # check attestation setting
     if [ -z "$ATTESTATION" ]; then
         echo "[INFO] Attestation is disabled!"
         ATTESTATION="false"
     fi
 
-    if [[ $PCCS == "" ]] && [[ $ATTESTATION == "true" ]]; then
-       echo "[ERROR] Attestation set to true but NO PCCS"
-       exit 1
-    else
-       sed -i "s#https://localhost:8081/sgx/certification/v3/#${PCCS_URL}#g" /etc/sgx_default_qcnl.conf
+    if [[ $ATTESTATION == "true" ]]; then
+        if [[ $PCCS_URL == "" ]]; then
+           echo "[ERROR] Attestation set to true but NO PCCS"
+           exit 1
+        else
+           export ENABLE_SGX_DEBUG=false
+           sed -i "s#https://localhost:8081/sgx/certification/v3/#${PCCS_URL}#g" /etc/sgx_default_qcnl.conf
+        fi
     fi
 
+    # check occlum log level for docker
+    export ENABLE_SGX_DEBUG=false
+    export OCCLUM_LOG_LEVEL=off
+    if [[ -z "$SGX_LOG_LEVEL" ]]; then
+        echo "No SGX_LOG_LEVEL specified, set to off."
+    else
+        echo "Set SGX_LOG_LEVEL to $SGX_LOG_LEVEL"
+        if [[ $SGX_LOG_LEVEL == "debug" ]] || [[ $SGX_LOG_LEVEL == "trace" ]]; then
+            export ENABLE_SGX_DEBUG=true
+            export OCCLUM_LOG_LEVEL=$SGX_LOG_LEVEL
+        fi
+    fi
+
+    sed -i "s/\"ENABLE_SGX_DEBUG\"/$ENABLE_SGX_DEBUG/g" Occlum.json
     sed -i "s/#USE_SECURE_CERT=FALSE/USE_SECURE_CERT=FALSE/g" /etc/sgx_default_qcnl.conf
 }
 
@@ -102,8 +128,8 @@ build_spark() {
     # Copy JVM and class file into Occlum instance and build
     cd /opt/occlum_spark
     mkdir -p image/usr/lib/jvm
-    cp -r /usr/lib/jvm/java-11-openjdk-amd64 image/usr/lib/jvm
-    cp -rf /etc/java-11-openjdk image/etc/
+    cp -r /usr/lib/jvm/java-8-openjdk-amd64 image/usr/lib/jvm
+    cp -rf /etc/java-8-openjdk image/etc/
     # Copy K8s secret
     mkdir -p image/var/run/secrets/
     cp -r /var/run/secrets/* image/var/run/secrets/
@@ -170,13 +196,13 @@ run_spark_pi() {
     init_instance spark
     build_spark
     echo -e "${BLUE}occlum run spark Pi${NC}"
-    occlum run /usr/lib/jvm/java-11-openjdk-amd64/bin/java \
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
                 -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
                 -XX:ActiveProcessorCount=4 \
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
                 -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*" \
-                -Xmx10g org.apache.spark.deploy.SparkSubmit \
+                -Xmx512m org.apache.spark.deploy.SparkSubmit \
                 --jars $SPARK_HOME/examples/jars/spark-examples_2.12-3.1.2.jar,$SPARK_HOME/examples/jars/scopt_2.12-3.7.1.jar \
                 --class org.apache.spark.examples.SparkPi spark-internal
 }
@@ -195,7 +221,7 @@ run_spark_unittest_only() {
     echo -e "${BLUE}occlum run spark unit test only ${NC}"
     occlum start
     for suite in `cat /opt/sqlSuites`
-    do occlum exec /usr/lib/jvm/java-11-openjdk-amd64/bin/java -Xmx24g \
+    do occlum exec /usr/lib/jvm/java-8-openjdk-amd64/bin/java -Xmx24g \
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
 		-Djdk.lang.Process.launchMechanism=posix_spawn \
@@ -219,7 +245,7 @@ run_spark_lenet_mnist(){
     build_spark
     echo -e "${BLUE}occlum run BigDL lenet mnist{NC}"
     echo -e "${BLUE}logfile=$log${NC}"
-    occlum run /usr/lib/jvm/java-11-openjdk-amd64/bin/java \
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
                 -XX:-UseCompressedOops -XX:MaxMetaspaceSize=256m \
                 -XX:ActiveProcessorCount=4 \
                 -Divy.home="/tmp/.ivy" \
@@ -247,7 +273,7 @@ run_spark_resnet_cifar(){
     init_instance spark
     build_spark
     echo -e "${BLUE}occlum run BigDL Resnet Cifar10${NC}"
-    occlum run /usr/lib/jvm/java-11-openjdk-amd64/bin/java \
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
                 -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
                 -XX:ActiveProcessorCount=4 \
                 -Divy.home="/tmp/.ivy" \
@@ -275,17 +301,17 @@ run_spark_tpch(){
     init_instance spark
     build_spark
     echo -e "${BLUE}occlum run BigDL spark tpch${NC}"
-    occlum run /usr/lib/jvm/java-11-openjdk-amd64/bin/java \
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
                 -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
                 -XX:ActiveProcessorCount=4 \
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
                 -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
-                -Xmx78g -Xms78g \
+                -Xmx8g -Xms8g \
                 org.apache.spark.deploy.SparkSubmit \
                 --master 'local[4]' \
                 --conf spark.driver.port=54321 \
-                --conf spark.driver.memory=12g \
+                --conf spark.driver.memory=8g \
                 --conf spark.driver.blockManager.port=10026 \
                 --conf spark.blockManager.port=10025 \
                 --conf spark.scheduler.maxRegisteredResourcesWaitingTime=5000000 \
@@ -314,7 +340,7 @@ run_spark_xgboost() {
     init_instance spark
     build_spark
     echo -e "${BLUE}occlum run BigDL Spark XGBoost${NC}"
-    occlum run /usr/lib/jvm/java-11-openjdk-amd64/bin/java \
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
                 -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
                 -XX:ActiveProcessorCount=8 \
                 -Divy.home="/tmp/.ivy" \
@@ -329,7 +355,7 @@ run_spark_xgboost() {
                 --executor-memory 9G \
                 --driver-memory 2G \
                 /bin/jars/bigdl-dllib-spark_3.1.2-2.1.0-SNAPSHOT.jar \
-                /host/data /host/data/model 2 100 2
+                -i /host/data -s /host/data/model -t 2 -r 100 -d 2 -w 1
 }
 
 

@@ -63,6 +63,7 @@ class SqueezeNetWithoutTopLayer(BackboneModule):
     SqueezeNet model with the top convolution layer removed, and with a new method
     `get_output_size` to retrieve the output channel size of the model.
     """
+
     def forward(self, x):
         x = self.net.features(x)
         x = self.net.classifier(x)

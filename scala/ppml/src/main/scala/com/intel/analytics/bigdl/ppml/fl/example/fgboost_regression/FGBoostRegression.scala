@@ -19,13 +19,14 @@ package com.intel.analytics.bigdl.ppml.fl.example
 import com.intel.analytics.bigdl.ppml.fl.algorithms.{FGBoostRegression, HFLLogisticRegression}
 import com.intel.analytics.bigdl.ppml.fl.FLContext
 import com.intel.analytics.bigdl.ppml.fl.example.DebugLogger
+import org.apache.spark.sql.DataFrame
 import scopt.OptionParser
 
 
 // TODO: handle dataset
 object FGBoostRegression extends DebugLogger {
 
-  def getData(dataPath: String, rowKeyName: String, batchSize: Int = 4) = {
+  def getData(dataPath: String, rowKeyName: String, batchSize: Int = 4): (DataFrame, DataFrame) = {
     val spark = FLContext.getSparkSession()
     import spark.implicits._
     val df = spark.read.csv(dataPath)
@@ -59,7 +60,7 @@ object FGBoostRegression extends DebugLogger {
     /**
      * Usage of BigDL PPML starts from here
      */
-    FLContext.initFLContext()
+    FLContext.initFLContext("1")
     val (trainData, testData) = getData(dataPath, rowKeyName)
 
     // create LogisticRegression object to train the model

@@ -16,11 +16,13 @@
 
 import numpy as np
 import pytest
+import time
 from unittest import TestCase
 from numpy.testing import assert_almost_equal
 from numpy.testing import assert_array_almost_equal
 
 from bigdl.chronos.metric.forecast_metrics import Evaluator
+from bigdl.orca.automl.metrics import sMAPE
 
 class TestChronosForecastMetrics(TestCase):
 
@@ -38,7 +40,7 @@ class TestChronosForecastMetrics(TestCase):
         assert_almost_equal(Evaluator.evaluate("mse", y_true, y_pred, aggregate="mean")[0], 1.)
         assert_almost_equal(Evaluator.evaluate("mae", y_true, y_pred, aggregate="mean")[0], 1.)
         assert_almost_equal(Evaluator.evaluate("r2", y_true, y_pred, aggregate="mean")[0], 0.995, 2)
-        assert_almost_equal(Evaluator.evaluate("smape", y_true, y_pred, aggregate="mean")[0], 3.89*2/100, 2)
+        assert_almost_equal(Evaluator.evaluate("smape", y_true, y_pred, aggregate="mean")[0], 3.895, 3)
         # 3-dim r2
         assert_almost_equal(Evaluator.evaluate("r2",
                                                y_true.reshape(5, 5, 2),
@@ -63,7 +65,7 @@ class TestChronosForecastMetrics(TestCase):
         # single metric
         # 3-dim
         assert_almost_equal(Evaluator.evaluate("smape", y_true, y_pred, aggregate=None)[0],
-                            [[9.09*2/100, 25*2/100], [0*2/100, 6.67*2/100]], 2)
+                            [[9.09, 25.], [0., 6.67]], 2)
         assert_almost_equal(Evaluator.evaluate("mape", y_true, y_pred, aggregate=None)[0],
                             [[16.67/100, 40.00/100], [0/100, 14.29/100]], 2)
         assert_almost_equal(Evaluator.evaluate("rmse", y_true, y_pred, aggregate=None)[0],
@@ -77,7 +79,7 @@ class TestChronosForecastMetrics(TestCase):
         assert_almost_equal(Evaluator.evaluate("mse", y_true, y_pred, aggregate=None)[0],
                             [0.52, 2.5], 2)
         assert_almost_equal(Evaluator.evaluate('smape', y_true, y_pred, aggregate=None)[0],
-                            [0.33*2, 0.33+0.25], 2)
+                            [33.33, 29.17], 2)
 
         # multi metrics
         y_true = np.array([[[3, -0.5], [2, 7]], [[3, -0.5], [2, 7]], [[3, -0.5], [2, 7]]])
@@ -89,16 +91,37 @@ class TestChronosForecastMetrics(TestCase):
         assert_almost_equal(mse, [[0.25, 0.04], [0, 1]], 2)
         assert_almost_equal(rmse, [[0.5, 0.2], [0, 1]], 2)
         assert_almost_equal(mape, [[16.67/100, 40.00/100], [0/100, 14.29/100]], 2)
-        assert_almost_equal(smape, [[9.09*2/100, 25*2/100], [0*2/100, 6.67*2/100]], 2)
+        assert_almost_equal(smape, [[9.09, 25.0], [0.0, 6.67]], 2)
 
     def test_standard_input(self):
         y_true = np.random.randn(100, 2, 2)
         y_pred = np.random.randn(100, 2, 2)
 
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             Evaluator.evaluate("test_smape", y_true, y_pred, aggregate=None)
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             Evaluator.evaluate("mse", y_true, y_pred.reshape(100, 4))
         y_true = [10, 2, 5]
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             Evaluator.evaluate('mse', y_true, y_true)
+            
+    def test_smape_equal_orca(self):
+        y_true = np.random.randn(100, 4)
+        y_pred = np.random.randn(100, 4)
+        smape = Evaluator.evaluate("smape", y_true, y_pred, aggregate="mean")[0]
+        orca_smape = sMAPE(y_true, y_pred, multioutput='uniform_average')
+        assert_almost_equal(smape, orca_smape, 6)
+    
+    def test_get_latency(self):
+        def test_func(count):
+            time.sleep(0.001*count)
+        with pytest.raises(RuntimeError):
+            Evaluator.get_latency(test_func, 5, num_running = "10")
+        with pytest.raises(RuntimeError):
+            Evaluator.get_latency(test_func, 5, num_running = -10)
+
+        latency_list = Evaluator.get_latency(test_func, 5)
+        assert isinstance(latency_list, dict)
+        for info in ["p50", "p90", "p95", "p99"]:
+            assert info in latency_list
+            assert isinstance(latency_list[info], float)

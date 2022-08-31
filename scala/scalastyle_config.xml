@@ -205,4 +205,11 @@ You can also disable only one rule, by specifying its rule id, as specified in:
         </parameters>
         <customMessage>require is not allowed to use, please use Log4Error api instead</customMessage>
     </check>
+
+    <check customId="nothrow" enabled="true" class="org.scalastyle.scalariform.TokenChecker" level="error">
+        <parameters>
+            <parameters><parameter name="regex">^throw$</parameter></parameters>
+        </parameters>
+        <customMessage>throw exception is not allowed to use, please use Log4Error api instead</customMessage>
+    </check>
 </scalastyle>

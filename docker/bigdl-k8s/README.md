@@ -160,8 +160,6 @@ To specify more argument, use:
 sudo docker run -itd --net=host \
     -v /etc/kubernetes:/etc/kubernetes \
     -v /root/.kube:/root/.kube \
-    -e NOTEBOOK_PORT=12345 \
-    -e NOTEBOOK_TOKEN="your-token" \
     -e http_proxy=http://your-proxy-host:your-proxy-port \
     -e https_proxy=https://your-proxy-host:your-proxy-port \
     -e RUNTIME_SPARK_MASTER=k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port> \
@@ -179,8 +177,6 @@ sudo docker run -itd --net=host \
     intelanalytics/bigdl-k8s:latest bash 
 ```
 
-- NOTEBOOK_PORT value 12345 is a user specified port number.
-- NOTEBOOK_TOKEN value "your-token" is a user specified string.
 - http_proxy is to specify http proxy.
 - https_proxy is to specify https proxy.
 - RUNTIME_SPARK_MASTER is to specify spark master, which should be `k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port>` or `spark://<spark-master-host>:<spark-master-port>`. 

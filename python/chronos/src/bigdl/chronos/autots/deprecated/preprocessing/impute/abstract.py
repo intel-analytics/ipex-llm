@@ -69,7 +69,8 @@ class BaseImpute(ABC):
         :param df: dataframe containing missing values
         :return: dataframe without missing values
         """
-        raise NotImplementError
+        from bigdl.nano.utils.log4Error import invalidInputError
+        invalidInputError(False, "not implemented")
 
     def evaluate(self, df, drop_rate):
         """

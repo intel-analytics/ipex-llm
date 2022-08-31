@@ -16,6 +16,7 @@
 
 import ray
 import os
+from bigdl.dllib.utils.log4Error import *
 
 
 class HorovodWorker:
@@ -33,7 +34,8 @@ class HorovodWorker:
             for addr in intf_addresses:
                 if addr.family == socket.AF_INET and addr.address == ip_addr:
                     iface_name = intf
-        assert iface_name is not None, "Cannot find network interface with ip {}".format(ip_addr)
+        invalidInputError(iface_name is not None,
+                          "Cannot find network interface with ip {}".format(ip_addr))
 
         os.environ["HOROVOD_GLOO_IFACE"] = iface_name
         return iface_name
@@ -96,8 +98,9 @@ class HorovodRayRunner:
         major, minor, patch, version_str = get_horovod_version()
 
         if major == 0 and minor < 19:
-            raise RuntimeError(f"We only support horovod versions newer "
-                               f"than 0.19.0, but got {version_str}")
+            invalidInputError(False,
+                              f"We only support horovod versions newer "
+                              f"than 0.19.0, but got {version_str}")
         if major == 0 and minor == 19:
             from horovod.run.gloo_run import RendezvousServer, _allocate
             self.host_alloc_plan = _allocate(",".join(hosts_spec), self.num_nodes)

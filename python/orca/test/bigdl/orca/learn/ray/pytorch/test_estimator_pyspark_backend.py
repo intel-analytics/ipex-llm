@@ -30,6 +30,7 @@ from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.data.image.utils import chunks
+from bigdl.orca.learn.pytorch.callbacks.base import Callback
 
 import tempfile
 import shutil
@@ -129,6 +130,19 @@ class SimpleModel(nn.Module):
         return x
 
 
+class CustomCallback(Callback):
+
+    def on_train_end(self, logs=None):
+        assert "train_loss" in logs
+        assert "val_loss" in logs
+        assert self.model
+
+    def on_epoch_end(self, epoch, logs=None):
+        assert "train_loss" in logs 
+        assert "val_loss" in logs
+        assert self.model
+
+
 def train_data_loader(config, batch_size):
     train_dataset = LinearDataset(size=config.get("data_size", 1000))
     train_loader = torch.utils.data.DataLoader(
@@ -182,7 +196,8 @@ class TestPyTorchEstimator(TestCase):
         estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir)
         start_val_stats = estimator.evaluate(val_data_loader, batch_size=64)
         print(start_val_stats)
-        train_stats = estimator.fit(train_data_loader, epochs=4, batch_size=128)
+        train_stats = estimator.fit(train_data_loader, epochs=4, batch_size=128,
+                                    validation_data=val_data_loader)
         print(train_stats)
         end_val_stats = estimator.evaluate(val_data_loader, batch_size=64)
         print(end_val_stats)
@@ -209,7 +224,8 @@ class TestPyTorchEstimator(TestCase):
         train_rdd, val_rdd = rdd.randomSplit([0.9, 0.1])
         train_xshards = SparkXShards(train_rdd)
         val_xshards = SparkXShards(val_rdd)
-        train_stats = estimator.fit(train_xshards, batch_size=256, epochs=2)
+        train_stats = estimator.fit(train_xshards, validation_data=val_xshards,
+                                    batch_size=256, epochs=2)
         print(train_stats)
         val_stats = estimator.evaluate(val_xshards, batch_size=128)
         print(val_stats)
@@ -224,11 +240,13 @@ class TestPyTorchEstimator(TestCase):
 
         estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir)
         estimator.fit(df, batch_size=4, epochs=2,
+                      validation_data=df,
                       feature_cols=["feature"],
                       label_cols=["label"])
         estimator.evaluate(df, batch_size=4,
                            feature_cols=["feature"],
                            label_cols=["label"])
+        estimator.shutdown()
 
     def test_dataframe_shard_size_train_eval(self):
         from bigdl.orca import OrcaContext
@@ -258,6 +276,7 @@ class TestPyTorchEstimator(TestCase):
         assert df.rdd.getNumPartitions() < estimator.num_workers
 
         estimator.fit(df, batch_size=4, epochs=2,
+                      validation_data=df,
                       feature_cols=["feature"],
                       label_cols=["label"])
         estimator.evaluate(df, batch_size=4,
@@ -342,6 +361,7 @@ class TestPyTorchEstimator(TestCase):
                                   model_fn=lambda config: MultiInputNet(),
                                   model_dir=self.model_dir)
         estimator.fit(df, batch_size=4, epochs=2,
+                      validation_data=df,
                       feature_cols=["f1", "f2"],
                       label_cols=["label"])
         estimator.evaluate(df, batch_size=4,
@@ -387,6 +407,7 @@ class TestPyTorchEstimator(TestCase):
                                          model_dir=self.model_dir)
 
         stats = estimator.fit(df, batch_size=4, epochs=2,
+                              validation_data=df,
                               feature_cols=["feature"],
                               label_cols=["label"],
                               reduce_results=False)
@@ -469,6 +490,12 @@ class TestPyTorchEstimator(TestCase):
                 np.testing.assert_almost_equal(value, eval_after[name])
         finally:
             shutil.rmtree(temp_dir)
+
+    def test_custom_callback(self):
+        estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir)
+        callbacks = [CustomCallback()]
+        estimator.fit(train_data_loader, epochs=4, batch_size=128, 
+                      validation_data=val_data_loader, callbacks=callbacks)
 
 
 if __name__ == "__main__":

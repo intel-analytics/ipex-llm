@@ -16,6 +16,7 @@
 
 import importlib
 from bigdl.nano.automl.hpo import obj, func
+from bigdl.nano.utils.log4Error import invalidInputError
 import inspect
 from enum import Enum
 import copy
@@ -78,8 +79,8 @@ def register_module(target_symtab,
             return inspect.isfunction(x)
         decorator = decorate_func
     else:
-        raise ValueError("Unknown Component Type",
-                         "should be either class or function")
+        invalidInputError(False,
+                          "Unknown Component Type, should be either class or function")
 
     added_components = []
     for m, prefix in modules:
@@ -92,11 +93,10 @@ def register_module(target_symtab,
         for c_name in c_names:
             new_c = decorator(module, c_name)
             if target_symtab.get(c_name, None) is not None:
-                raise ValueError(
-                    "Fail to register decorated component to the target nano\
-                    module, as it is already defined in the target module.\
-                    Use register_module_simple instead."
-                )
+                invalidInputError(False,
+                                  "Fail to register decorated component to the target nano"
+                                  " module, as it is already defined in the target module."
+                                  "Use register_module_simple instead.")
             target_symtab[c_name] = new_c
             added_components.append(c_name)
 
@@ -116,7 +116,6 @@ def register_module_simple(target_symtab,
         decorator = decorate_func
     m = importlib.import_module(module)
     for c in subcomponents:
-        # assert(c in vars(m).keys())
         new_f = decorator(m, c)
         target_symtab[c] = new_f
 

@@ -31,10 +31,11 @@ from bigdl.orca.learn.base_estimator import BaseEstimator
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, \
     get_remote_file_to_local
 from bigdl.dllib.utils.common import get_node_and_core_number
-from bigdl.orca.learn.log_monitor import start_log_server
+from bigdl.orca.learn.log_monitor import start_log_server, stop_log_server
 
 from bigdl.orca.learn.utils import find_free_port, find_ip_and_free_port
 from bigdl.dllib.utils.utils import get_node_ip
+from bigdl.dllib.utils.log4Error import *
 
 
 def partition_to_creator(partition):
@@ -96,21 +97,25 @@ class PyTorchPySparkEstimator(BaseEstimator):
                             )
         self.logger = logging.getLogger(__name__)
         if config is not None and "batch_size" in config:
-            raise Exception("Please do not specify batch_size in config. Input batch_size in the"
-                            " fit/evaluate/predict function of the estimator instead.")
+            invalidInputError(False,
+                              "Please do not specify batch_size in config. Input batch_size in the"
+                              " fit/evaluate/predict function of the estimator instead.")
         self.config = {} if config is None else config
 
         sc = OrcaContext.get_spark_context()
         if not (isinstance(model_creator, types.FunctionType) and
                 isinstance(optimizer_creator, types.FunctionType)):  # Torch model is also callable.
-            raise ValueError(
-                "Must provide a function for both model_creator and optimizer_creator")
+            invalidInputError(False,
+                              "Must provide a function for both model_creator and"
+                              " optimizer_creator")
 
         if not training_operator_cls and not loss_creator:
-            raise ValueError("If a loss_creator is not provided, you must "
-                             "provide a custom training operator.")
+            invalidInputError(False,
+                              "If a loss_creator is not provided, you must "
+                              "provide a custom training operator.")
         if not model_dir:
-            raise ValueError("Please specify model directory when using spark backend")
+            invalidInputError(False,
+                              "Please specify model directory when using spark backend")
         self.model_dir = model_dir
 
         self.model_creator = model_creator
@@ -126,11 +131,12 @@ class PyTorchPySparkEstimator(BaseEstimator):
                                         self.total_cores * 4).repartition(self.num_workers)
 
         self.ip = get_node_ip()
-        self.port = find_free_port()
+        self.log_port = find_free_port()
         is_local = sc.master.startswith("local")
         self.need_to_log_to_driver = (not is_local) and log_to_driver
         if self.need_to_log_to_driver:
-            start_log_server(self.ip, self.port)
+            self.log_server_thread = start_log_server(self.ip, self.log_port)
+        self.tcp_store_port = find_free_port()
 
         self.worker_init_params = dict(
             model_creator=self.model_creator,
@@ -149,7 +155,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
             model_dir=self.model_dir,
             log_to_driver=self.need_to_log_to_driver,
             driver_ip=self.ip,
-            driver_port=self.port)
+            driver_log_port=self.log_port,
+            driver_tcp_store_port=self.tcp_store_port)
 
         local_init_params = self.worker_init_params.copy()
         local_init_params["log_to_driver"] = False
@@ -159,6 +166,12 @@ class PyTorchPySparkEstimator(BaseEstimator):
             **local_init_params)
 
         self.state_dict = self.driver_runner.get_state_dict()
+
+    def create_tcpstore_server(self):
+        import torch.distributed as dist
+        server_store = dist.TCPStore(self.ip, self.tcp_store_port, -1, True,
+                                     dist.constants.default_pg_timeout)
+        return server_store
 
     def _get_cluster_info(self, sc):
         cluster_info = self.workerRDD.barrier().mapPartitions(find_ip_and_free_port).collect()
@@ -173,6 +186,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             info=None,
             feature_cols=None,
             label_cols=None,
+            validation_data=None,
             callbacks=[]):
         """
         Trains a PyTorch model given training data for several epochs.
@@ -198,6 +212,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
                train_epoch and train_batch.
         :param feature_cols: feature column names if data is Spark DataFrame.
         :param label_cols: label column names if data is Spark DataFrame.
+        :param validation_data: validation data. Validation data type should be the same
+               as train data.
         :param callbacks: A list for all callbacks.
 
         :return: A list of dictionary of metrics for every training epoch. If reduce_results is
@@ -206,14 +222,15 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 You can also provide custom metrics by passing in a custom training_operator_cls
                 when creating the Estimator.
         """
-        data, _ = maybe_dataframe_to_xshards(data,
-                                             validation_data=None,
-                                             feature_cols=feature_cols,
-                                             label_cols=label_cols,
-                                             mode="fit",
-                                             num_workers=self.num_workers)
+        data, validation_data = maybe_dataframe_to_xshards(data,
+                                                           validation_data=validation_data,
+                                                           feature_cols=feature_cols,
+                                                           label_cols=label_cols,
+                                                           mode="fit",
+                                                           num_workers=self.num_workers)
 
         sc = OrcaContext.get_spark_context()
+        _ = self.create_tcpstore_server()
         cluster_info = self._get_cluster_info(sc)
         state_dict = self._get_broadcasted_state_dict(sc)
         init_params = dict(
@@ -234,24 +251,45 @@ class PyTorchPySparkEstimator(BaseEstimator):
             # set train/validation
             params["wrap_dataloader"] = False
 
-            def transform_func(iter, init_params, param):
-                partition_data = list(iter)
-                param["data_creator"] = partition_to_creator(partition_data)
-                runner = PytorchPysparkWorker(**init_params)
-                result = runner.train_epochs(**param)
-                runner.shutdown()
-                return result
+            if validation_data is None:
+                def transform_func(iter, init_params, param):
+                    partition_data = list(iter)
+                    param["data_creator"] = partition_to_creator(partition_data)
+                    runner = PytorchPysparkWorker(**init_params)
+                    result = runner.train_epochs(**param)
+                    runner.shutdown()
+                    return result
 
-            res = data.rdd.repartition(self.num_workers).barrier() \
-                .mapPartitions(
-                lambda iter: transform_func(iter, init_params, params)).collect()
+                res = data.rdd.repartition(self.num_workers).barrier() \
+                    .mapPartitions(
+                    lambda iter: transform_func(iter, init_params, params)).collect()
+
+            else:
+                def transform_func(iter, init_params, param):
+                    data_tuple_list = list(iter)
+                    data_list = [x for data_tuple in data_tuple_list for x in data_tuple[0]]
+                    valid_list = [x for data_tuple in data_tuple_list for x in data_tuple[1]]
+                    param["data_creator"] = partition_to_creator(data_list)
+                    param["validation_data_creator"] = partition_to_creator(valid_list)
+                    runner = PytorchPysparkWorker(**init_params)
+                    result = runner.train_epochs(**param)
+                    runner.shutdown()
+                    return result
+
+                train_rdd = data.rdd.mapPartitions(lambda iter: [list(iter)])
+                val_rdd = validation_data.rdd.mapPartitions(lambda iter: [list(iter)])
+                res = train_rdd.zip(val_rdd).repartition(self.num_workers).barrier()\
+                    .mapPartitions(
+                    lambda iter: transform_func(iter, init_params, params)).collect()
 
         else:
-            assert isinstance(data, types.FunctionType), \
-                "data should be either an instance of SparkXShards or a callable function, but " \
-                "got type: {}".format(type(data))
+            if not isinstance(data, types.FunctionType):
+                invalidInputError(False,
+                                  "data should be either an instance of SparkXShards or a "
+                                  "callable  function, but got type: {}".format(type(data)))
 
             params["data_creator"] = data
+            params["validation_data_creator"] = validation_data
 
             def transform_func(iter, init_param, param):
                 return PytorchPysparkWorker(**init_param).train_epochs(**param)
@@ -360,7 +398,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
             pred_shards = self._predict_spark_xshards(data, init_params, params)
             result = update_predict_xshards(data, pred_shards)
         else:
-            raise ValueError("Only xshards or Spark DataFrame is supported for predict")
+            invalidInputError(False,
+                              "Only xshards or Spark DataFrame is supported for predict")
 
         return result
 
@@ -523,4 +562,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
         return stats
 
     def shutdown(self):
-        pass
+        """
+        Shutdown estimator and release resources.
+        """
+        if self.need_to_log_to_driver:
+            stop_log_server(self.log_server_thread, self.ip, self.port)

@@ -17,11 +17,11 @@ import pytest
 import pandas as pd
 import random
 
-from bigdl.orca.test_zoo_utils import ZooTestCase
+from unittest import TestCase
 from bigdl.chronos.data.repo_dataset import get_public_dataset
 
 
-class TestRepoDataset(ZooTestCase):
+class TestRepoDataset(TestCase):
     def setup_method(self, method):
         pass
 
@@ -31,15 +31,15 @@ class TestRepoDataset(ZooTestCase):
     def test_init_dataset(self):
         name = random.sample([x for x in range(10)], 5)
         path = '~/.chronos/dataset'
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             get_public_dataset(name, path=path, redownload=False)
 
         name = 'nyc_taxi'
         path = random.sample([x for x in range(10)], 5)
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             get_public_dataset(name, path=path, redownload=False)
 
         name = 'chronos_dataset'
         path = '~/.chorons/dataset/'
-        with pytest.raises(NameError):
+        with pytest.raises(RuntimeError):
             get_public_dataset(name, path=path, redownload=False)

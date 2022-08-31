@@ -19,6 +19,7 @@ import re
 import warnings
 
 from bigdl.orca.learn.pytorch.utils import get_filesystem
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 
 class ModelCheckpoint(Callback):
@@ -77,7 +78,7 @@ class ModelCheckpoint(Callback):
         """
         pass
 
-    def on_epoch_end(self, epoch):
+    def on_epoch_end(self, epoch, logs=None):
         """
         Called at the end of an epoch.
         Subclasses should override for any actions to run. This function should only
@@ -105,11 +106,12 @@ class ModelCheckpoint(Callback):
             files = [x for x in files if "ckpt" in x]
             if len(files) == 0:
                 return None
-            raise ValueError(f"Find non-empty dirname with filepath of {self.filepath}.")
+            invalidInputError(False,
+                              f"Find non-empty dirname with filepath of {self.filepath}.")
         else:
             fs.mkdirs(dirname)
 
-    def on_train_end(self):
+    def on_train_end(self, logs=None):
         """
         Called at the end of training.
         Subclasses should override for any actions to run.
@@ -129,6 +131,9 @@ class ModelCheckpoint(Callback):
     def set_param(self, param):
         self.params = param
 
+    def set_trainer(self, trainer):
+        self.trainer = trainer
+
     @classmethod
     def get_latest_checkpoint(cls, dirname):
         """
@@ -139,7 +144,8 @@ class ModelCheckpoint(Callback):
         ckpt_path = cls._format_checkpoint_name(dirname, filename=cls.CHECKPOINT_NAME_LAST)
         fs = get_filesystem(ckpt_path)
         if not fs.exists(ckpt_path):
-            raise FileNotFoundError(f"Latest checkpoint at {ckpt_path} not found.")
+            invalidInputError(False,
+                              f"Latest checkpoint at {ckpt_path} not found.")
         return ckpt_path
 
     @classmethod

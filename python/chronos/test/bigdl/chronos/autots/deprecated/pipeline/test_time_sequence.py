@@ -220,23 +220,23 @@ class TestTimeSequencePipeline(ZooTestCase):
         # test min_past_seq_len < 2
         tsp.fit(train_df, test_df, recipe=RandomRecipe(look_back=(1, 2)))
         # test max_past_seq_len < 2
-        with pytest.raises(ValueError, match=r".*max look back value*."):
+        with pytest.raises(RuntimeError, match=r".*max look back value*."):
             tsp.fit(train_df, test_df, recipe=RandomRecipe(look_back=(0, 1)))
         # test look_back value < 2
-        with pytest.raises(ValueError, match=r".*look back value should not be smaller than 2*."):
+        with pytest.raises(RuntimeError, match=r".*look back value should not be smaller than 2*."):
             tsp.fit(train_df, test_df, recipe=RandomRecipe(look_back=1))
 
         # test look back is None
-        with pytest.raises(ValueError, match=r".*look_back should be either*."):
+        with pytest.raises(RuntimeError, match=r".*look_back should be either*."):
             tsp.fit(train_df, test_df, recipe=RandomRecipe(look_back=None))
         # test look back is str
-        with pytest.raises(ValueError, match=r".*look_back should be either*."):
+        with pytest.raises(RuntimeError, match=r".*look_back should be either*."):
             tsp.fit(train_df, test_df, recipe=RandomRecipe(look_back="a"))
         # test look back is float
-        with pytest.raises(ValueError, match=r".*look_back should be either*."):
+        with pytest.raises(RuntimeError, match=r".*look_back should be either*."):
             tsp.fit(train_df, test_df, recipe=RandomRecipe(look_back=2.5))
         # test look back range is float
-        with pytest.raises(ValueError, match=r".*look_back should be either*."):
+        with pytest.raises(RuntimeError, match=r".*look_back should be either*."):
             tsp.fit(train_df, test_df, recipe=RandomRecipe(look_back=(2.5, 3)))
 
     def test_predict_with_uncertainty(self):

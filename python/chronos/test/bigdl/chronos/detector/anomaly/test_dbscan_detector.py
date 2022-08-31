@@ -58,5 +58,5 @@ class TestDBScanDetector(TestCase):
             ad.anomaly_indexes()
         y = self.create_data()
         y = y[:-1].reshape(2, -1)
-        with pytest.raises(ValueError):
+        with pytest.raises(RuntimeError):
             ad.fit(y)

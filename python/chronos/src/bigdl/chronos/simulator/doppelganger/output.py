@@ -44,6 +44,7 @@
 
 from enum import Enum
 
+
 '''
 Exactly the same as gan.output
 Add some comments for easy understanding
@@ -69,4 +70,6 @@ class Output(object):
         self.is_gen_flag = is_gen_flag
 
         if type_ == OutputType.CONTINUOUS and normalization is None:
-            raise Exception("normalization must be set for continuous output")
+            from bigdl.nano.utils.log4Error import invalidInputError
+            invalidInputError(False,
+                              "normalization must be set for continuous output")

@@ -27,7 +27,7 @@ import torchmetrics
 
 import numpy as np
 
-from bigdl.nano.pytorch.trainer import Trainer
+from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch.vision.models import vision
 
 batch_size = 256
@@ -63,6 +63,14 @@ class MultiInputModel(nn.Module):
         return self.layer_3(x)
 
 
+def customized_collate_fn(batch):
+    batch, targets = zip(*batch)
+    batch = torch.stack(batch, dim=0)
+    targets = torch.stack(targets, dim=0)
+    batch = batch.permute(0, 3, 1, 2).contiguous()
+    return batch, targets
+
+
 class TestOnnx(TestCase):
 
     def test_trainer_compile_with_onnx_quantize(self):
@@ -71,7 +79,7 @@ class TestOnnx(TestCase):
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
         trainer = Trainer(max_epochs=1)
 
-        pl_model = Trainer.compile(model, loss, optimizer, onnx=True)
+        pl_model = Trainer.compile(model, loss, optimizer)
         x = torch.rand((10, 3, 256, 256))
         y = torch.ones((10, ), dtype=torch.long)
         ds = TensorDataset(x, y)
@@ -79,32 +87,82 @@ class TestOnnx(TestCase):
         trainer.fit(pl_model, train_loader)
 
         # normal usage without tunning
-        pl_model = trainer.quantize(pl_model, train_loader, framework='onnxrt_integerops')
+        onnx_model = trainer.quantize(pl_model,
+                                      accelerator='onnxruntime',
+                                      method='qlinear',
+                                      calib_dataloader=train_loader)
         for x, y in train_loader:
-            onnx_res = pl_model.inference(x.numpy(), backend="onnx", quantize=True).numpy()
-            pl_model.eval_onnx(quantize=True)
-            forward_res = pl_model(x).numpy()
-            np.testing.assert_almost_equal(onnx_res, forward_res, decimal=5)  # same result
+            forward_res = onnx_model(x).numpy()
+            # np.testing.assert_almost_equal(y.numpy(), forward_res, decimal=5)  # same result
 
         # quantization with tunning
-        pl_model.eval(quantize=False)
-        pl_model = trainer.quantize(pl_model,
-                                    calib_dataloader=train_loader,
-                                    val_dataloader=train_loader,
-                                    metric=torchmetrics.F1(10),
-                                    framework='onnxrt_qlinearops',
-                                    accuracy_criterion={'relative': 0.99,
-                                                        'higher_is_better': True})
+        pl_model.eval()
+        onnx_model = trainer.quantize(pl_model,
+                                      accelerator='onnxruntime',
+                                      method='qlinear',
+                                      calib_dataloader=train_loader,
+                                      metric=torchmetrics.F1(10),
+                                      accuracy_criterion={'relative': 0.99,
+                                                          'higher_is_better': True})
         for x, y in train_loader:
-            onnx_res = pl_model.inference(x.numpy(), backend="onnx", quantize=True).numpy()
-            pl_model.eval_onnx()
-            forward_res = pl_model(x).numpy()
-            np.testing.assert_almost_equal(onnx_res, forward_res, decimal=5)  # same result
+            forward_res = onnx_model(x).numpy()
+            # np.testing.assert_almost_equal(y.numpy(), forward_res, decimal=5)  # same result
+
+        # test with pytorch-lightning trainer functions
+        trainer.validate(onnx_model, train_loader)
+        trainer.test(onnx_model, train_loader)
+        trainer.predict(onnx_model, train_loader)
 
         # save the quantized model
         with tempfile.TemporaryDirectory() as tmp_dir_name:
-            ckpt_name = os.path.join(tmp_dir_name, ".onnx")
-            pl_model.to_quantized_onnx(ckpt_name)
+            trainer.save(onnx_model, tmp_dir_name)
+            loaded_onnx_model = trainer.load(tmp_dir_name)
+
+        for x, y in train_loader:
+            forward_res = loaded_onnx_model(x)
+    
+    def test_trainer_compile_with_onnx_quantize_customized_collate_fn(self):
+        model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
+        loss = nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+        trainer = Trainer(max_epochs=1)
+
+        pl_model = Trainer.compile(model, loss, optimizer)
+        x = torch.rand((10, 256, 256, 3))
+        y = torch.ones((10, ), dtype=torch.long)
+        ds = TensorDataset(x, y)
+        train_loader = DataLoader(ds, batch_size=2, collate_fn=customized_collate_fn)
+        trainer.fit(pl_model, train_loader)
+
+        # normal usage without tunning
+        onnx_model = trainer.quantize(pl_model,
+                                      accelerator='onnxruntime',
+                                      method='qlinear',
+                                      calib_dataloader=train_loader)
+        for x, y in train_loader:
+            forward_res = onnx_model(x).numpy()
+            # np.testing.assert_almost_equal(y.numpy(), forward_res, decimal=5)  # same result
+
+        # quantization with tunning
+        pl_model.eval()
+        onnx_model = trainer.quantize(pl_model,
+                                      accelerator='onnxruntime',
+                                      method='qlinear',
+                                      calib_dataloader=train_loader,
+                                      metric=torchmetrics.F1(10),
+                                      accuracy_criterion={'relative': 0.99,
+                                                          'higher_is_better': True})
+        for x, y in train_loader:
+            forward_res = onnx_model(x).numpy()
+            # np.testing.assert_almost_equal(y.numpy(), forward_res, decimal=5)  # same result
+
+        # save the quantized model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            trainer.save(onnx_model, tmp_dir_name)
+            loaded_onnx_model = trainer.load(tmp_dir_name)
+
+        for x, y in train_loader:
+            forward_res = loaded_onnx_model(x)
 
 
 if __name__ == '__main__':

@@ -35,7 +35,7 @@ trait EncryptSupportive {
    * @return cipher text in string
    */
   def encryptWithAESCBC(content: String, secret: String, salt: String,
-                        keyLen: Int = 128): String = {
+                        keyLen: Int = 256): String = {
     val iv = new Array[Byte](BLOCK_SIZE)
     val secureRandom: SecureRandom = SecureRandom.getInstance("SHA1PRNG")
     secureRandom.nextBytes(iv)
@@ -60,7 +60,7 @@ trait EncryptSupportive {
    * @return plain text in string
    */
   def decryptWithAESCBC(content: String, secret: String, salt: String,
-                        keyLen: Int = 128): String = {
+                        keyLen: Int = 256): String = {
     val cipherTextWithIV = Base64.getDecoder.decode(content)
     val iv = cipherTextWithIV.slice(0, BLOCK_SIZE)
     val ivParameterSpec = new IvParameterSpec(iv)
@@ -84,7 +84,7 @@ trait EncryptSupportive {
    * @return cipher text in string
    */
   def encryptWithAESGCM(content: String, secret: String, salt: String,
-                        keyLen: Int = 128): String = {
+                        keyLen: Int = 256): String = {
     Base64.getEncoder.encodeToString(encryptBytesWithAESGCM(content.getBytes(),
       secret, salt, keyLen))
   }
@@ -98,7 +98,7 @@ trait EncryptSupportive {
    * @return cipher text in string
    */
   def encryptBytesWithAESGCM(content: Array[Byte], secret: String, salt: String,
-                        keyLen: Int = 128): Array[Byte] = {
+                        keyLen: Int = 256): Array[Byte] = {
     // Default IV len in GCM is 12
     val iv = new Array[Byte](12)
     val secureRandom: SecureRandom = SecureRandom.getInstance("SHA1PRNG")
@@ -124,7 +124,7 @@ trait EncryptSupportive {
    * @return plain text in string
    */
   def decryptWithAESGCM(content: String, secret: String, salt: String,
-                        keyLen: Int = 128): String = {
+                        keyLen: Int = 256): String = {
     new String(decryptBytesWithAESGCM(Base64.getDecoder.decode(content), secret,
       salt, keyLen))
   }
@@ -138,7 +138,7 @@ trait EncryptSupportive {
    * @return plain text in bytes
    */
   def decryptBytesWithAESGCM(content: Array[Byte], secret: String, salt: String,
-                        keyLen: Int = 128): Array[Byte] = {
+                        keyLen: Int = 256): Array[Byte] = {
     val cipherTextWithIV = content
     val iv = cipherTextWithIV.slice(0, 12)
     // 128 means 16 for tag
@@ -164,7 +164,7 @@ trait EncryptSupportive {
    * @param encoding default is UTF-8
    */
   def encryptFileWithAESCBC(filePath: String, secret: String, salt: String, outputFile: String,
-                            keyLen: Int = 128, encoding: String = "UTF-8")
+                            keyLen: Int = 256, encoding: String = "UTF-8")
   : Unit = {
     val source = scala.io.Source.fromFile(filePath, encoding)
     val content = try source.mkString finally source.close()
@@ -182,7 +182,7 @@ trait EncryptSupportive {
    * @return cipher file in string
    */
   def decryptFileWithAESCBC(filePath: String, secret: String, salt: String,
-                            keyLen: Int = 128, encoding: String = "UTF-8"): String = {
+                            keyLen: Int = 256, encoding: String = "UTF-8"): String = {
     val source = scala.io.Source.fromFile(filePath, encoding)
     val content = try source.mkString finally source.close()
     decryptWithAESCBC(content, secret, salt, keyLen)

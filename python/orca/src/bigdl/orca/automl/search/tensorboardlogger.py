@@ -43,6 +43,7 @@ import math
 
 from torch.utils.tensorboard import SummaryWriter
 from torch.utils.tensorboard.summary import hparams
+from bigdl.dllib.utils.log4Error import *
 
 # types will be supported natively as continuous, which can be supported in both config and metrics
 VALID_SUMMARY_TYPES = (int, float)
@@ -97,8 +98,8 @@ class TensorboardLogger:
         Note that the keys of config and metric should be exactly the same
         '''
         # keys check
-        assert config.keys() == metric.keys(),\
-            "The keys of config and metric should be exactly the same"
+        invalidInputError(config.keys() == metric.keys(),
+                          "The keys of config and metric should be exactly the same")
 
         new_config = {}
         hparam_domain_discrete = {}

@@ -18,8 +18,10 @@ import os
 import subprocess
 import logging
 import shutil
+import functools
 import glob
 from distutils.dir_util import copy_tree
+from bigdl.dllib.utils.log4Error import *
 
 logger = logging.getLogger(__name__)
 
@@ -151,16 +153,16 @@ def exists(path):
         except Exception as ex:
             if ex.response['Error']['Code'] == 'NoSuchKey':
                 return False
-            raise ex
+            invalidOperationError(False, str(ex), cause=ex)
         return True
     elif path.startswith("hdfs://"):
-        import pyarrow as pa
-        host_port = path.split("://")[1].split("/")[0].split(":")
-        classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
-                                     stdout=subprocess.PIPE).communicate()[0]
-        os.environ["CLASSPATH"] = classpath.decode("utf-8")
-        fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
-        return fs.exists(path)
+        cmd = 'hdfs dfs -test -e {}; echo $?'.format(path)
+        result = subprocess.getstatusoutput(cmd)
+        if result[0] == 0:
+            return result[1] == '0'
+        else:
+            invalidOperationError(False, result[1])
+        return False
     else:
         if path.startswith("file://"):
             path = path[len("file://"):]
@@ -192,7 +194,10 @@ def makedirs(path):
         classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
                                      stdout=subprocess.PIPE).communicate()[0]
         os.environ["CLASSPATH"] = classpath.decode("utf-8")
-        fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
+        if len(host_port) > 1:
+            fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
+        else:
+            fs = pa.hdfs.connect(host=host_port[0])
         return fs.mkdir(path)
     else:
         if path.startswith("file://"):
@@ -264,15 +269,15 @@ def is_file(path):
             else:
                 return False
         except Exception as ex:
-            raise ex
+            invalidOperationError(False, str(ex), cause=ex)
     elif path.startswith("hdfs://"):
-        import pyarrow as pa
-        host_port = path.split("://")[1].split("/")[0].split(":")
-        classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
-                                     stdout=subprocess.PIPE).communicate()[0]
-        os.environ["CLASSPATH"] = classpath.decode("utf-8")
-        fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
-        return fs.isfile(path)
+        cmd = 'hdfs dfs -test -f {}; echo $?'.format(path)
+        result = subprocess.getstatusoutput(cmd)
+        if result[0] == 0:
+            return result[1] == '0'
+        else:
+            invalidOperationError(False, result[1])
+        return False
     else:
         if path.startswith("file://"):
             path = path[len("file://"):]
@@ -287,7 +292,10 @@ def put_local_dir_to_remote(local_dir, remote_dir):
         classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
                                      stdout=subprocess.PIPE).communicate()[0]
         os.environ["CLASSPATH"] = classpath.decode("utf-8")
-        fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
+        if len(host_port) > 1:
+            fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
+        else:
+            fs = pa.hdfs.connect(host=host_port[0])
         if not fs.exists(remote_dir):
             fs.mkdir(remote_dir)
         for file in os.listdir(local_dir):
@@ -368,20 +376,14 @@ def put_local_dir_tree_to_remote(local_dir, remote_dir):
 
 def put_local_file_to_remote(local_path, remote_path, filemode=None):
     if remote_path.startswith("hdfs"):  # hdfs://url:port/file_path
-        import pyarrow as pa
-        host_port = remote_path.split("://")[1].split("/")[0].split(":")
-        classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
-                                     stdout=subprocess.PIPE).communicate()[0]
-        os.environ["CLASSPATH"] = classpath.decode("utf-8")
         try:
-            fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
-            remote_dir = os.path.dirname(remote_path)
-            if not fs.exists(remote_dir):
-                fs.mkdir(remote_dir)
-            with open(local_path, "rb") as f:
-                fs.upload(remote_path, f)
+            cmd = 'hdfs dfs -put -f {} {}'.format(local_path, remote_path)
+            process = subprocess.Popen(cmd, shell=True)
+            process.wait()
             if filemode:
-                fs.chmod(remote_path, filemode)
+                chmod_cmd = 'hdfs dfs -chmod {} {}'.format(filemode, remote_path)
+                process = subprocess.Popen(chmod_cmd, shell=True)
+                process.wait()
         except Exception as e:
             logger.error("Cannot upload file {} to {}: error: "
                          .format(local_path, remote_path, str(e)))
@@ -503,8 +505,7 @@ def get_remote_dir_to_local(remote_dir, local_dir):
             [s3_client.download_file(bucket, key, os.path.join(local_dir, os.path.basename(keys)))
              for key in keys]
         except Exception as e:
-            print(str(e))
-            raise e
+            invalidOperationError(False, str(e), cause=e)
         return 0
     else:
         if remote_dir.startswith("file://"):
@@ -535,6 +536,45 @@ def get_remote_files_with_prefix_to_local(remote_path_prefix, local_dir):
             [s3_client.download_file(bucket, key, os.path.join(local_dir, os.path.basename(keys)))
              for key in keys]
         except Exception as e:
-            print(str(e))
-            raise e
+            invalidOperationError(False, str(e), cause=e)
     return os.path.join(local_dir, prefix)
+
+
+def multi_fs_load(load_func):
+    """
+
+    Enable loading file or directory in multiple file systems.
+    It supports local, hdfs, s3 file systems.
+    Note: this decorator is different from dllib decorator @enable_multi_fs_load.
+    This decorator can load on each worker while @enable_multi_fs_load can only load on driver.
+
+    :param load_func: load file or directory function
+    :return: load file or directory function for the specific file system
+    """
+    @functools.wraps(load_func)
+    def fs_load(path, *args, **kwargs):
+        from bigdl.dllib.utils.file_utils import is_local_path
+        if is_local_path(path):
+            return load_func(path, *args, **kwargs)
+        else:
+            import uuid
+            import tempfile
+            from bigdl.dllib.utils.file_utils import append_suffix
+            file_name = str(uuid.uuid1())
+            file_name = append_suffix(file_name, path.strip("/").split("/")[-1])
+            temp_path = os.path.join(tempfile.gettempdir(), file_name)
+            if is_file(path):
+                get_remote_file_to_local(path, temp_path)
+            else:
+                os.mkdir(temp_path)
+                get_remote_dir_to_local(path, temp_path)
+            try:
+                return load_func(temp_path, *args, **kwargs)
+            finally:
+                if os.path.isdir(temp_path):
+                    import shutil
+                    shutil.rmtree(temp_path)
+                else:
+                    os.remove(temp_path)
+
+    return fs_load
