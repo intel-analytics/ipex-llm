@@ -4,16 +4,20 @@
 * __Alibaba__
   <br>• [Deploy Analytics Zoo in Aliyun EMR](https://partners-intl.aliyun.com/help/doc-detail/93155.htm)
   <br>• [Better Together: Privacy-Preserving Machine Learning](https://www.intel.com/content/www/us/en/artificial-intelligence/posts/alibaba-privacy-preserving-machine-learning.html)
+* __AsiaInfo__
+  <br>• [Network AI Applications using BigDL and oneAPI toolkit on Intel Xeon](https://www.intel.cn/content/www/cn/zh/customer-spotlight/cases/asiainfo-taps-intelligent-network-applications.html)
 * __Baosight__
   <br>• [LSTM-Based Time Series Anomaly Detection Using Analytics Zoo for Apache Spark and BigDL at Baosight](https://www.intel.com/content/www/us/en/developer/articles/technical/lstm-based-time-series-anomaly-detection-using-analytics-zoo-for-apache-spark-and-bigdl.html)
 * __BBVA__
   <br>• [A Graph Convolutional Network Implementation](https://emartinezs44.medium.com/graph-convolutions-networks-ad8295b3ce57)
- * __Burger King__
+* __Burger King__
   <br>• [Context-Aware Fast Food Recommendation at Burger King with RayOnSpark](https://medium.com/riselab/context-aware-fast-food-recommendation-at-burger-king-with-rayonspark-2e7a6009dd2d)
   <br>• [How Intel and Burger King built an order recommendation system that preserves customer privacy](https://venturebeat.com/2021/04/06/how-intel-and-burger-king-built-an-order-recommendation-system-that-preserves-customer-privacy/)
   <br>• [Burger King: Context-Aware Recommendations (video)](https://www.intel.com/content/www/us/en/customer-spotlight/stories/burger-king-ai-customer-story.html)
 * __Capgemini__
   <br>• [Intelligent 5G L2 MAC Scheduler: Powered by Capgemini NetAnticipate 5G on Intel Architecture](https://networkbuilders.intel.com/solutionslibrary/intelligent-5g-l2-mac-scheduler-powered-by-capgemini-netanticipate-5g-on-intel-architecture)
+* __China Unicom__
+  <br>• [5G Core Network Power Saving using BigDL Chronos in China Unicom](https://www.intel.cn/content/www/cn/zh/customer-spotlight/cases/china-unicom-bigdl-chronos-framework-5gc.html)
 * __CERN__
  <br>• [Deep Learning Pipelines for High Energy Physics using Apache Spark with Distributed Keras on Analytics Zoo](https://databricks.com/session_eu19/deep-learning-pipelines-for-high-energy-physics-using-apache-spark-with-distributed-keras-on-analytics-zoo)
  <br>• [Topology classification at CERN's Large Hadron Collider using Analytics Zoo](https://db-blog.web.cern.ch/blog/luca-canali/machine-learning-pipelines-high-energy-physics-using-apache-spark-bigdl)
