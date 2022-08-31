@@ -94,11 +94,45 @@ function refresh_cmd(){
         enable(packages);
         enable(hardwares);
         enable(automls);
-    }
-
-    //change cmd according to different choices
-    if(model=="Deep_learning_models"){
-        if(ai=="pytorch"){
+        
+        //change cmd according to different choices
+        if(model=="Deep_learning_models"){
+            if(ai=="pytorch"){
+                if(automl=="automlno"){
+                    if(hardware=="singlenode"){
+                        if(version=="nightly"){
+                            cmd="pip install --pre --upgrade bigdl-chronos[pytorch]";
+                        }else if(version=="stable"){
+                            cmd="pip install bigdl-chronos";
+                        }
+                    }else if(hardware=="cluster"){
+                        if(version=="nightly"){
+                            cmd="pip install --pre --upgrade bigdl-chronos[pytorch,distributed]";
+                        }else if(version=="stable"){
+                            cmd="pip install bigdl-chronos[all]";
+                        }
+                    }
+                }else if(automl=="automlyes"){
+                    if(hardware=="singlenode"){
+                        if(version=="nightly"){
+                            cmd="pip install --pre --upgrade bigdl-chronos[pytorch,automl]";
+                        }else if(version=="stable"){
+                            cmd="pip install bigdl-chronos[all]";
+                        }
+                    }else if(hardware=="cluster"){
+                        if(version=="nightly"){
+                            cmd="pip install --pre --upgrade bigdl-chronos[pytorch,distributed,automl]";
+                        }else if(version=="stable"){
+                            cmd="pip install bigdl-chronos[all]";
+                        }
+                    }
+                }
+            }else if(ai=="tensorflow"){
+                if(package=="pypi"&&os=="linux"){
+                    cmd="Please refer to <a href=' https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html#tensorflow-backend'>tensorflow installation guide.</a>"
+                }
+            }
+        }else if(model=="Prophet"){
             if(automl=="automlno"){
                 if(hardware=="singlenode"){
                     if(version=="nightly"){
@@ -128,76 +162,42 @@ function refresh_cmd(){
                     }
                 }
             }
-        }else if(ai=="tensorflow"){
-            if(package=="pypi"&&os=="linux"){
-                cmd="Please refer to <a href=' https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html#tensorflow-backend'>tensorflow installation guide.</a>"
-            }
-        }
-    }else if(model=="Prophet"){
-        if(automl=="automlno"){
-            if(hardware=="singlenode"){
-                if(version=="nightly"){
-                    cmd="pip install --pre --upgrade bigdl-chronos[pytorch]";
-                }else if(version=="stable"){
-                    cmd="pip install bigdl-chronos";
+        }else if(model=="ARIMA"){
+            if(automl=="automlno"){
+                if(hardware=="singlenode"){
+                    if(version=="nightly"){
+                        cmd="pip install --pre --upgrade bigdl-chronos[pytorch]";
+                    }else if(version=="stable"){
+                        cmd="pip install bigdl-chronos";
+                    }
+                }else if(hardware=="cluster"){
+                    if(version=="nightly"){
+                        cmd="pip install --pre --upgrade bigdl-chronos[pytorch,distributed]";
+                    }else if(version=="stable"){
+                        cmd="pip install bigdl-chronos[all]";
+                    }
                 }
-            }else if(hardware=="cluster"){
-                if(version=="nightly"){
-                    cmd="pip install --pre --upgrade bigdl-chronos[pytorch,distributed]";
-                }else if(version=="stable"){
-                    cmd="pip install bigdl-chronos[all]";
-                }
-            }
-        }else if(automl=="automlyes"){
-            if(hardware=="singlenode"){
-                if(version=="nightly"){
-                    cmd="pip install --pre --upgrade bigdl-chronos[pytorch,automl]";
-                }else if(version=="stable"){
-                    cmd="pip install bigdl-chronos[all]";
-                }
-            }else if(hardware=="cluster"){
-                if(version=="nightly"){
-                    cmd="pip install --pre --upgrade bigdl-chronos[pytorch,distributed,automl]";
-                }else if(version=="stable"){
-                    cmd="pip install bigdl-chronos[all]";
+            }else if(automl=="automlyes"){
+                if(hardware=="singlenode"){
+                    if(version=="nightly"){
+                        cmd="pip install --pre --upgrade bigdl-chronos[pytorch,automl]";
+                    }else if(version=="stable"){
+                        cmd="pip install bigdl-chronos[all]";
+                    }
+                }else if(hardware=="cluster"){
+                    if(version=="nightly"){
+                        cmd="pip install --pre --upgrade bigdl-chronos[pytorch,distributed,automl]";
+                    }else if(version=="stable"){
+                        cmd="pip install bigdl-chronos[all]";
+                    }
                 }
             }
-        }
-    }else if(model=="ARIMA"){
-        if(automl=="automlno"){
-            if(hardware=="singlenode"){
-                if(version=="nightly"){
-                    cmd="pip install --pre --upgrade bigdl-chronos[pytorch]";
-                }else if(version=="stable"){
-                    cmd="pip install bigdl-chronos";
-                }
-            }else if(hardware=="cluster"){
-                if(version=="nightly"){
-                    cmd="pip install --pre --upgrade bigdl-chronos[pytorch,distributed]";
-                }else if(version=="stable"){
-                    cmd="pip install bigdl-chronos[all]";
-                }
+        }else if(model=="Machine_learning_models"){
+            if(version=="nightly"){
+                cmd="pip install --pre --upgrade bigdl-chronos";
+            }else if(version=="stable"){
+                cmd="pip install bigdl-chronos";
             }
-        }else if(automl=="automlyes"){
-            if(hardware=="singlenode"){
-                if(version=="nightly"){
-                    cmd="pip install --pre --upgrade bigdl-chronos[pytorch,automl]";
-                }else if(version=="stable"){
-                    cmd="pip install bigdl-chronos[all]";
-                }
-            }else if(hardware=="cluster"){
-                if(version=="nightly"){
-                    cmd="pip install --pre --upgrade bigdl-chronos[pytorch,distributed,automl]";
-                }else if(version=="stable"){
-                    cmd="pip install bigdl-chronos[all]";
-                }
-            }
-        }
-    }else if(model=="Machine_learning_models"){
-        if(version=="nightly"){
-            cmd="pip install --pre --upgrade bigdl-chronos";
-        }else if(version=="stable"){
-            cmd="pip install bigdl-chronos";
         }
     }
 
