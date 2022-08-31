@@ -27,7 +27,14 @@ runs:
         pip install pytest
         pip install tensorflow==2.8.0
         pip install ray==1.11.0
-        pip install --pre --upgrade bigdl-orca
+
+        sed -i "s/'bigdl-core=='+VERSION/'bigdl-core==2.1.0b20220811'/g" python/dllib/src/setup.py
+        
+        ./python/dllib/dev/release/release.sh linux default false True
+        pip install ./python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl
+
+        ./python/orca/dev/release/release.sh linux default false True
+        pip install ./python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
         
     - name: Run Test
       shell: bash
