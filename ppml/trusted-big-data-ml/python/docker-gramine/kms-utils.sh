@@ -6,9 +6,6 @@ if [ "$action" = "enroll" ]; then
 	if [ "$KMS_TYPE" = "ehsm" ]; then
 		cd /home/ehsm/out/ehsm-kms_enroll_app/
 		./ehsm-kms_enroll_app -a http://$EHSM_KMS_IP:$EHSM_KMS_PORT/ehsm/
-	elif [ "$KMS_TYPE" = "simple" ]; then
-		java -cp /home/spark-encrypt-io.jar \
-		com.intel.analytics.bigdl.ppml.examples.GenerateSimpleAppidAndAppkey
 	elif [ "$KMS_TYPE" = "azure" ]; then
 	    keyVaultName=$2
 	    id=$3
