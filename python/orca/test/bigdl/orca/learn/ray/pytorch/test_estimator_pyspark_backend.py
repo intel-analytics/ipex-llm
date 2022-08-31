@@ -246,6 +246,7 @@ class TestPyTorchEstimator(TestCase):
         estimator.evaluate(df, batch_size=4,
                            feature_cols=["feature"],
                            label_cols=["label"])
+        estimator.shutdown()
 
     def test_dataframe_shard_size_train_eval(self):
         from bigdl.orca import OrcaContext

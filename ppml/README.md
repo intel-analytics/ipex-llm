@@ -9,8 +9,9 @@ Protecting privacy and confidentiality is critical for large-scale data analysis
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 0. Preparation your environment](#step-0-preparation-your-environment): detailed steps in [Prepare Environment](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/prepare_environment.md) \
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 1. Encrypt and Upload Data](#step-1-encrypt-and-upload-data) \
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 2. Build Big Data & AI applications](#step-2-build-big-data--ai-applications) \
-&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 3. Submit Job](#step-3-submit-job): 4 deploy modes and 2 options to submit job  \
-&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 4. Decrypt and Read Result](#step-4-decrypt-and-read-result) \
+&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 3. Attestation ](#step-3-attestation) \
+&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 4. Submit Job](#step-4-submit-job): 4 deploy modes and 2 options to submit job  \
+&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 5. Decrypt and Read Result](#step-5-decrypt-and-read-result) \
 &ensp;&ensp;[3.3 More BigDL PPML Examples](#33-more-bigdl-ppml-examples) \
 [4. Develop your own Big Data & AI applications with BigDL PPML](#4-develop-your-own-big-data--ai-applications-with-bigdl-ppml) \
 &ensp;&ensp;[4.1 Create PPMLContext](#41-create-ppmlcontext) \
@@ -175,7 +176,41 @@ you can use [generate_people_csv.py](https://github.com/analytics-zoo/ppml-e2e-e
 #### Step 2. Build Big Data & AI applications
 To build your own Big Data & AI applications, refer to [develop your own Big Data & AI applications with BigDL PPML](#4-develop-your-own-big-data--ai-applications-with-bigdl-ppml). The code of SimpleQuery is in [here](https://github.com/intel-analytics/BigDL/blob/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/examples/SimpleQuerySparkExample.scala), it is already built into bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar, and the jar is put into PPML image.
 
-#### Step 3. Submit Job
+#### Step 3. Attestation 
+
+To enable attestation, you should have a running Attestation Service (EHSM-KMS here for example) in your environment. (You can start a KMS  refering to [this link](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/kms-utils/docker)). Configure your KMS app_id and app_key with `kubectl`, and then configure KMS settings in `spark-driver-template.yaml` and `spark-executor-template.yaml` in the container.
+``` bash
+kubectl create secret generic kms-secret --from-literal=app_id=your-kms-app-id --from-literal=app_key=your-kms-app-key
+```
+Configure `spark-driver-template.yaml` for example. (`spark-executor-template.yaml` is similar)
+``` yaml
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: spark-driver
+    securityContext:
+      privileged: true
+    env:
+      - name: ATTESTATION
+        value: true
+      - name: ATTESTATION_URL
+        value: your_attestation_url
+      - name: ATTESTATION_ID
+        valueFrom:
+          secretKeyRef:
+            name: kms-secret
+            key: app_id
+      - name: ATTESTATION_KEY
+        valueFrom:
+          secretKeyRef:
+            name: kms-secret
+            key: app_key
+...
+```
+You should get `Attestation Success!` in logs after you [submit a PPML job](#step-4-submit-job) if the quote generated with user report is verified successfully by Attestation Service, or you will get `Attestation Fail! Application killed!` and the job will be stopped.
+
+#### Step 4. Submit Job
 When the Big Data & AI application and its input data is prepared, you are ready to submit BigDL PPML jobs. You need to choose the deploy mode and the way to submit job first.
 
 * **There are 4 modes to submit job**:
@@ -274,7 +309,7 @@ Here we use **k8s client mode** and **PPML CLI** to run SimpleQuery. Check other
   </details>
 <br />
 
-#### Step 4. Decrypt and Read Result
+#### Step 5. Decrypt and Read Result
 When the job is done, you can decrypt and read result of the job. More details in [Decrypt Job Result](./services/kms-utils/docker/README.md#3-enroll-generate-key-encrypt-and-decrypt).
 
   ```
