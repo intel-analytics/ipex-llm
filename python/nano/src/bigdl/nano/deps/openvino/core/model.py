@@ -55,7 +55,7 @@ class OpenVINOModel:
 
     def _save_model(self, path, model):
         """
-        Save PytorchOpenVINOModel to local as xml and bin file
+        Save OpenVINOModel to local as xml and bin file
 
         :param path: Directory to save the model.
         :param model: Model object to get status property
