@@ -18,8 +18,8 @@ jobs:
         uses: schneegans/dynamic-badges-action@v1.4.0
         with:
           auth: ${{ secrets.GIST_SECRET }}
-          gistID: 746dcada5746912c8d6808d71bd6c35b
-          filename: ppml-spark-deploy.json
+          gistID: 4f79dfdd46bd086d4a00287006ba9eaa
+          filename: answer.json
           label: Hello
           message: World
           color: orange
