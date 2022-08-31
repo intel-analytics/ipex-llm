@@ -1,7 +1,7 @@
 # Bigdl-nano InferenceOptimizer example on Cat vs. Dog dataset
 
 This example illustrates how to apply InferenceOptimizer to quickly find acceleration method with the minimum inference latency under specific restrictions or without restrictions for a trained model. 
-For the sake of this example, we first train the proposed network(by default, a ResNet50 is used) on the [cats and dogs dataset](https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip), which consists both [frozen and unfrozen stages](https://github.com/PyTorchLightning/pytorch-lightning/blob/495812878dfe2e31ec2143c071127990afbb082b/pl_examples/domain_templates/computer_vision_fine_tuning.py#L21-L35). Then, by calling `optimize()`, we can obtain all avaliable accelaration combinations provided by BigDL-Nano for inference. By calling `get_best_mdoel()` , we could get an accelerated model whose inference is 7.8x times faster.
+For the sake of this example, we first train the proposed network(by default, a ResNet50 is used) on the [cats and dogs dataset](https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip), which consists both [frozen and unfrozen stages](https://github.com/PyTorchLightning/pytorch-lightning/blob/495812878dfe2e31ec2143c071127990afbb082b/pl_examples/domain_templates/computer_vision_fine_tuning.py#L21-L35). Then, by calling `optimize()`, we can obtain all available accelaration combinations provided by BigDL-Nano for inference. By calling `get_best_mdoel()` , we could get an accelerated model whose inference is 7.8x times faster.
 
 
 ## Prepare the environment
@@ -12,8 +12,8 @@ conda activate nano
 pip install jsonargparse[signatures]
 pip install --pre --upgrade bigdl-nano[pytorch]
 
-# bf16 is avaliable only on torch1.12
-pip install torch==1.12.0 torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu 
+# bf16 is available only on torch1.12
+pip install torch==1.12.0 torchvision --extra-index-url https://download.pytorch.org/whl/cpu 
 # Necessary packages for inference accelaration
 pip install --upgrade intel-extension-for-pytorch
 pip install onnx onnxruntime onnxruntime-extensions
@@ -69,7 +69,7 @@ accleration option: onnxruntime_int8_integer, latency: 43.3232ms, accuracy: 0.98
 accleration option: jit_fp32, latency: 103.0402ms, accuracy: 0.9890
 accleration option: jit_fp32_ipex, latency: 102.9166ms, accuracy: 0.9890
 accleration option: jit_fp32_ipex_clast, latency: 55.8827ms, accuracy: 0.9890
-When accelerator is onnxruntime, the model with the least latency is: inc + onnxruntime + qlinear
-When accuracy drop less than 5%, the model with the least latency is: openvino + pot
-The model with the least latency is: openvino + pot
+When accelerator is onnxruntime, the model with minimal latency is: inc + onnxruntime + qlinear
+When accuracy drop less than 5%, the model with minimal latency is: openvino + pot
+The model with minimal latency is: openvino + pot
 ```
