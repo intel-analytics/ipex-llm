@@ -20,7 +20,7 @@ from bigdl.nano.utils.inference.tf.model import AcceleratedKerasModel
 from .utils import export
 import tensorflow as tf
 from bigdl.nano.utils.log4Error import invalidInputError
-
+from ..core.utils import save
 
 class KerasOpenVINOModel(AcceleratedKerasModel):
     def __init__(self, model):
@@ -40,7 +40,7 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
                 export(model, str(dir / 'tmp.xml'))
                 ov_model_path = dir / 'tmp.xml'
             self.ov_model = OpenVINOModel(ov_model_path)
-            AcceleratedKerasModel.__init__(self, None)
+            super().__init__(self.ov_model)
 
     def forward_step(self, *inputs):
         return self.ov_model.forward_step(*inputs)
@@ -84,4 +84,14 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
         return KerasOpenVINOModel(xml_path)
 
     def _save_model(self, path):
-        self.ov_model._save_model(path, model=self)
+        """
+        Save KerasOpenVINOModel to local as xml and bin file
+
+        :param path: Directory to save the model.
+        """
+        path = Path(path)
+        path.mkdir(exist_ok=True)
+        invalidInputError(self.ov_model.ie_network,
+                          "self.ie_network shouldn't be None.")
+        xml_path = path / self.status['xml_path']
+        save(self.ov_model.ie_network, xml_path)

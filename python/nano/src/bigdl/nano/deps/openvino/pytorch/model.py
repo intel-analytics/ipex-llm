@@ -22,7 +22,7 @@ from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from .utils import export
 import torch
 from bigdl.nano.utils.log4Error import invalidInputError
-
+from ..core.utils import save
 
 class PytorchOpenVINOModel(AcceleratedLightningModule):
     def __init__(self, model, input_sample=None, logging=True, **export_kwargs):
@@ -45,9 +45,6 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
                 ov_model_path = dir / 'tmp.xml'
             self.ov_model = OpenVINOModel(ov_model_path)
             super().__init__(self.ov_model)
-
-    def forward_step(self, *inputs):
-        return self.ov_model.forward_step(*inputs)
 
     def on_forward_start(self, inputs):
         if self.ov_model.ie_network is None:
@@ -108,4 +105,14 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         return PytorchOpenVINOModel(model)
 
     def _save_model(self, path):
-        self.ov_model._save_model(path, model=self)
+        """
+        Save PytorchOpenVINOModel to local as xml and bin file
+
+        :param path: Directory to save the model.
+        """
+        path = Path(path)
+        path.mkdir(exist_ok=True)
+        invalidInputError(self.ov_model.ie_network,
+                          "self.ie_network shouldn't be None.")
+        xml_path = path / self.status['xml_path']
+        save(self.ov_model.ie_network, xml_path)
