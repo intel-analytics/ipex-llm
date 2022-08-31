@@ -33,12 +33,15 @@ import scala.util.parsing.json.{JSON, JSONObject}
  */
 class FGBoostRegression(learningRate: Float = 0.005f,
                         maxDepth: Int = 6,
-                        minChildSize: Int = 1)
+                        minChildSize: Int = 1,
+                        serverModelPath: String = null)
   extends FGBoostModel(continuous = true,
     learningRate = learningRate,
     maxDepth = maxDepth,
     minChildSize = minChildSize,
-    validationMethods = Array(new MAE())) {
+    validationMethods = Array(new MAE()),
+    serverModelPath = serverModelPath) {
+
   def toJSON(): JSONObject = {
     JSONObject(Map(
       "maxDepth" -> maxDepth,
