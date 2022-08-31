@@ -13,6 +13,10 @@ jobs:
     steps:
       - name: "Checkout Code"
         uses: actions/checkout@v3
+      
+      - name: echo
+        run: |
+          echo ${{ secrets.GIST_SECRET }}
 
       - name: Create Awesome Badge
         uses: schneegans/dynamic-badges-action@v1.4.0
