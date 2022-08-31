@@ -23,7 +23,7 @@ from .utils import export
 import torch
 from bigdl.nano.utils.log4Error import invalidInputError
 from ..core.utils import save
-
+from torch.utils.data.dataloader import DataLoader
 
 class PytorchOpenVINOModel(AcceleratedLightningModule):
     def __init__(self, model, input_sample=None, thread_num=None,
@@ -116,3 +116,32 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         path.mkdir(exist_ok=True)
         xml_path = path / self.status['xml_path']
         save(self.ov_model.ie_network, xml_path)
+
+    def async_predict(self, inputs, jobs):
+        """
+        Perfrom model inference using async mode.
+        
+        :param inputs: input data, should be a torch.utils.data.dataloader.DataLoader object or List of torch.Tensor
+        :type Union[torch.utils.data.dataloader.DataLoader, List[torch.Tensor]]
+
+        :param jobs: numer of infer requests in the AsyncInferQueue
+        :type int
+        
+        :return A List containing result of each input
+        :rtype List[torch.Tensor]
+        """
+        if isinstance(inputs, DataLoader):
+            input_data = []
+            for data in inputs:
+                input_data.append(data[0])
+        else:
+            input_data = inputs
+
+        inputs = self.on_forward_start(input_data)
+        results = self.ov_model.async_predict(inputs, jobs)
+        outputs = []
+        for res in results:
+            outputs.append(self.on_forward_end(res))
+
+        return outputs
+
