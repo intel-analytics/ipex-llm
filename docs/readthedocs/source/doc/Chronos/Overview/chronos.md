@@ -36,7 +36,7 @@ You can use _Chronos_ to do:
                     <td colspan="1"><button id="ARIMA">ARIMA</button></td>
                 </tr>
                 <tr>
-                    <td colspan="1" style="font-size: 10px">Deep learning framework</td>
+                    <td colspan="1">DL<br>framework</td>
                     <td colspan="2"><button id="pytorch"
                             title="Use PyTorch as deep learning models' backend. Most of the model support and works better under PyTorch.">PyTorch (Recommended)</button>
                     </td>
@@ -52,9 +52,9 @@ You can use _Chronos_ to do:
                 <tr>
                     <td colspan="1">Auto Tuning</td>
                     <td colspan="2" title="I don't need any hyperparameter auto tuning feature."><button
-                            id="automlyes">Yes</button></td>
-                    <td colspan="2" title="I need chronos to help me tune the hyperparameters."><button
                             id="automlno">No</button></td>
+                    <td colspan="2" title="I need chronos to help me tune the hyperparameters."><button
+                            id="automlyes">Yes</button></td>
                 </tr>
 
 
@@ -73,11 +73,11 @@ You can use _Chronos_ to do:
 
                 <tr>
                     <td colspan="1">Version</td>
-                    <td colspan="2"><button id="stable"
-                            title="For users would like to deploy chronos in their production">Stable (2.0.0)</button>
-                    </td>
                     <td colspan="2"><button id="nightly"
-                            title="For users would like to try chronos's latest feature">Nightly (2.1.0b)</button></td>
+                            title="For users would like to try chronos's latest feature">Nightly (2.1.0b)</button>
+                    </td>
+                    <td colspan="2"><button id="stable"
+                            title="For users would like to deploy chronos in their production">Stable (2.0.0)</button></td>
                 </tr>
 
                 <tr>
