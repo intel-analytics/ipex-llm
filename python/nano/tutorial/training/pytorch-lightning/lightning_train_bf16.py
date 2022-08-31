@@ -100,8 +100,14 @@ if __name__ == "__main__":
     # improve numerical stability than FP16 while delivering increased performance
     # and reducing memory usage.
     #
-    # In BigDL-Nano, you can easily enable both IPEX optimizer fusion
-    # and BFloat16 Mixed precision by setting use_ipex=True and precision='bf16'
+    # In BigDL-Nano, you can easily enable BFloat16 Mixed precision by setting precision='bf16'
+    #
+    # Note: Using BFloat16 precision with torch < 1.12 may result in extremely slow training.
+    trainer = Trainer(max_epochs=5, precision='bf16')
+    trainer.fit(model, train_dataloaders=train_loader)
+    trainer.validate(model, dataloaders=val_loader)
+    # You can also set use_ipex=True and precision='bf16' to enable ipex optimizer fusion
+    # for bf16 to gain more acceleration from BFloat16 data type.
     trainer = Trainer(max_epochs=5, use_ipex=True, precision='bf16')
     trainer.fit(model, train_dataloaders=train_loader)
     trainer.validate(model, dataloaders=val_loader)
