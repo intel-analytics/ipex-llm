@@ -203,7 +203,8 @@ class CatDogImageDataModule(LightningDataModule):
 
     def prepare_data(self):
         """Download images and prepare images datasets."""
-        download_and_extract_archive(url=DATA_URL, download_root=self._dl_path, remove_finished=True)
+        download_and_extract_archive(url=DATA_URL, download_root=self._dl_path,
+                                     remove_finished=True)
 
     @property
     def data_path(self):
@@ -226,7 +227,8 @@ class CatDogImageDataModule(LightningDataModule):
 
     @property
     def valid_transform(self):
-        return transforms.Compose([transforms.Resize((224, 224)), transforms.ToTensor(), self.normalize_transform])
+        return transforms.Compose([transforms.Resize((224, 224)),
+                                   transforms.ToTensor(), self.normalize_transform])
 
     def create_dataset(self, root, transform):
         return ImageFolder(root=root, transform=transform)
@@ -236,11 +238,15 @@ class CatDogImageDataModule(LightningDataModule):
         if batch_size is None:
             batch_size = self._batch_size
         if train:
-            dataset = self.create_dataset(self.data_path.joinpath("train"), self.train_transform)
-            return DataLoader(dataset=dataset, batch_size=batch_size, num_workers=self._num_workers, shuffle=True)
+            dataset = self.create_dataset(self.data_path.joinpath("train"),
+                                          self.train_transform)
+            return DataLoader(dataset=dataset, batch_size=batch_size, 
+                              num_workers=self._num_workers, shuffle=True)
         else:
-            dataset = self.create_dataset(self.data_path.joinpath("validation"), self.valid_transform)
-            return DataLoader(dataset=dataset, batch_size=batch_size, num_workers=self._num_workers, shuffle=False)
+            dataset = self.create_dataset(self.data_path.joinpath("validation"),
+                                          self.valid_transform)
+            return DataLoader(dataset=dataset, batch_size=batch_size, 
+                              num_workers=self._num_workers, shuffle=False)
 
     def train_dataloader(self, batch_size=None):
         log.info("Training data loaded.")
@@ -260,15 +266,18 @@ class MilestonesFinetuning(BaseFinetuning):
     def freeze_before_training(self, pl_module: LightningModule):
         self.freeze(modules=pl_module.feature_extractor, train_bn=self.train_bn)
 
-    def finetune_function(self, pl_module: LightningModule, epoch: int, optimizer: Optimizer, opt_idx: int):
+    def finetune_function(self, pl_module: LightningModule, epoch: int, 
+                          optimizer: Optimizer, opt_idx: int):
         if epoch == self.milestones[0]:
             # unfreeze 5 last layers
             self.unfreeze_and_add_param_group(
-                modules=pl_module.feature_extractor[-5:], optimizer=optimizer, train_bn=self.train_bn
+                modules=pl_module.feature_extractor[-5:],  # type: ignore
+                optimizer=optimizer, train_bn=self.train_bn
             )
 
         elif epoch == self.milestones[1]:
             # unfreeze remaining layers
             self.unfreeze_and_add_param_group(
-                modules=pl_module.feature_extractor[:-5], optimizer=optimizer, train_bn=self.train_bn
+                modules=pl_module.feature_extractor[:-5],  # type: ignore
+                optimizer=optimizer, train_bn=self.train_bn
             )
