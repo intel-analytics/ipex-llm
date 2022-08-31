@@ -598,7 +598,8 @@ class SparkXShards(XShards):
     def get_schema(self):
         if 'schema' in self.type:
             return self.type['schema']
-        else:
+
+        if 'class_name' not in self.type or self.type['class_name'] == 'pandas.core.frame.DataFrame':
             class_name, schema = self._get_schema_class_name()
             self.type['class_name'] = class_name
             self.type['schema'] = schema
