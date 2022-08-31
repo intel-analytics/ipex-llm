@@ -560,21 +560,7 @@ class SparkXShards(XShards):
 
         try:
             import pyarrow as pa
-
-            def getSchemaStructType(iter):
-                for pdf in iter:
-                    schema = [str(x) if not isinstance(x, str) else x for x in pdf.columns]
-                    if isinstance(schema, (list, tuple)):
-                        arrow_schema = pa.Schema.from_pandas(pdf, preserve_index=False)
-                        struct = StructType()
-                        for name, field in zip(schema, arrow_schema):
-                            struct.add(
-                                name, from_arrow_type(field.type), nullable=field.nullable
-                            )
-                        schema = struct
-                        return [schema]
-
-            schema = self.rdd.mapPartitions(getSchemaStructType).first()
+            sdf_schema = self._get_spark_df_schema()
 
             sqlContext = get_spark_sql_context(get_spark_context())
             timezone = sqlContext._conf.sessionLocalTimeZone()
@@ -586,7 +572,7 @@ class SparkXShards(XShards):
                     tmpFile = "/tmp/" + str(uuid.uuid1())
                     os.mkdir(tmpFile)
 
-                    arrow_types = [to_arrow_type(f.dataType) for f in schema.fields]
+                    arrow_types = [to_arrow_type(f.dataType) for f in sdf_schema.fields]
 
                     arrow_data = [[(c, t) for (_, c), t in zip(pdf.iteritems(), arrow_types)]]
                     col_by_name = True
@@ -603,7 +589,7 @@ class SparkXShards(XShards):
             jiter = self.rdd.mapPartitions(f)
             from bigdl.dllib.utils.file_utils import callZooFunc
 
-            df = callZooFunc("float", "orcaToDataFrame", jiter, schema.json(), sqlContext)
+            df = callZooFunc("float", "orcaToDataFrame", jiter, sdf_schema.json(), sqlContext)
             return df
         except Exception as e:
             print(f"createDataFrame from shards attempted Arrow optimization failed as: {str(e)},"
@@ -655,29 +641,64 @@ class SparkXShards(XShards):
         if 'schema' in self.type:
             return self.type['schema']
 
-        if 'class_name' not in self.type or self.type['class_name'] == 'pandas.core.frame.DataFrame':
-            class_name, schema = self._get_schema_class_name()
+        if 'class_name' not in self.type\
+                or self.type['class_name'] == 'pandas.core.frame.DataFrame':
+            class_name, pdf_schema, sdf_schema = self._get_schema_class_name()
             self.type['class_name'] = class_name
-            self.type['schema'] = schema
+            self.type['schema'] = pdf_schema
+            self.type['spark_df_schema'] = sdf_schema
             return self.type['schema']
+
+    def _get_spark_df_schema(self):
+        if 'spark_df_schema' in self.type:
+            return self.type['spark_df_schema']
+
+        if 'class_name' not in self.type\
+                or self.type['class_name'] == 'pandas.core.frame.DataFrame':
+            class_name, pdf_schema, sdf_schema = self._get_schema_class_name()
+            self.type['class_name'] = class_name
+            self.type['schema'] = pdf_schema
+            self.type['spark_df_schema'] = sdf_schema
+            return self.type['spark_df_schema']
 
     def _get_class_name(self):
         if 'class_name' in self.type:
             return self.type['class_name']
         else:
-            class_name, schema = self._get_schema_class_name()
+            class_name, schema, sdf_schema = self._get_schema_class_name()
             self.type['class_name'] = class_name
             self.type['schema'] = schema
+            self.type['spark_df_schema'] = sdf_schema
             return self.type['class_name']
 
     def _get_schema_class_name(self):
-        def func(x):
-            class_name = get_class_name(x)
-            schema = None
-            if class_name == 'pandas.core.frame.DataFrame':
-                schema = {'columns': x.columns, 'dtypes': x.dtypes}
-            return (class_name, schema)
-        return self.rdd.map(lambda x: func(x)).first()
+        class_name = self.type['class_name'] if 'class_name' in self.type else None
+
+        def func(iter):
+            for pdf in iter:
+                pdf_schema = None
+                spark_df_schema = None
+                _class_name = class_name
+                if not _class_name:
+                    _class_name = pdf.__class__.__module__ + '.' + pdf.__class__.__name__
+
+                if _class_name == 'pandas.core.frame.DataFrame':
+                    schema = [str(x) if not isinstance(x, str) else x for x in pdf.columns]
+                    if isinstance(schema, (list, tuple)):
+                        import pyarrow as pa
+                        arrow_schema = pa.Schema.from_pandas(pdf, preserve_index=False)
+                        struct = StructType()
+                        for name, field in zip(schema, arrow_schema):
+                            struct.add(
+                                name, from_arrow_type(field.type), nullable=field.nullable
+                            )
+                        spark_df_schema = struct
+                    pdf_schema = {'columns': schema, 'dtypes': list(pdf.dtypes)}
+
+                return [(_class_name, pdf_schema, spark_df_schema)]
+
+        res = self.rdd.mapPartitions(func).first()
+        return res
 
 
 class SharedValue(object):
