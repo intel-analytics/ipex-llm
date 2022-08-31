@@ -24,13 +24,6 @@ from bigdl.dllib.utils.log4Error import *
 
 import numpy as np
 
-from pyspark.sql.pandas.types import from_arrow_type, to_arrow_type
-
-from pyspark.sql.types import StructType
-from pyspark.sql.pandas.serializers import ArrowStreamPandasSerializer
-from tempfile import NamedTemporaryFile
-from pyspark.context import SparkContext
-
 
 class XShards(object):
     """
@@ -569,6 +562,10 @@ class SparkXShards(XShards):
                 for pdf in iter:
                     import os
                     import uuid
+                    from pyspark.sql.pandas.types import to_arrow_type
+                    from pyspark.sql.pandas.serializers import ArrowStreamPandasSerializer
+                    from tempfile import NamedTemporaryFile
+
                     tmpFile = "/tmp/" + str(uuid.uuid1())
                     os.mkdir(tmpFile)
 
@@ -683,6 +680,9 @@ class SparkXShards(XShards):
                     _class_name = pdf.__class__.__module__ + '.' + pdf.__class__.__name__
 
                 if _class_name == 'pandas.core.frame.DataFrame':
+                    from pyspark.sql.pandas.types import from_arrow_type
+                    from pyspark.sql.types import StructType
+
                     schema = [str(x) if not isinstance(x, str) else x for x in pdf.columns]
                     if isinstance(schema, (list, tuple)):
                         import pyarrow as pa
