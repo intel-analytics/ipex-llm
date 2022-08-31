@@ -89,7 +89,7 @@ class FLServer(object):
 
 
 @click.command()
-@click.option('--client_num', default=2)
+@click.option('--client_num', default=1)
 def run(client_num):
     fl_server = FLServer(client_num)
     fl_server.build()
