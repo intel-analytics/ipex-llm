@@ -66,8 +66,13 @@ class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T])
   }
 
   def createFGBoostRegression(learningRate: Double,
-                              maxDepth: Int, minChildSize: Int): FGBoostRegression = {
-    new FGBoostRegression(learningRate.toFloat, maxDepth, minChildSize)
+                              maxDepth: Int,
+                              minChildSize: Int,
+                              serverModelPath: String): FGBoostRegression = {
+    new FGBoostRegression(learningRate.toFloat, maxDepth, minChildSize, serverModelPath)
+  }
+  def fgBoostLoadServerModel(fgBoost: FGBoostModel, modelPath: String) = {
+    fgBoost.loadServerModel(modelPath)
   }
   def createFGBoostClassification(): Unit = {
 
