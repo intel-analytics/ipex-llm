@@ -22,20 +22,20 @@ from bigdl.nano.pytorch import InferenceOptimizer
 
 
 if __name__ == "__main__":
-    # First finetune on new dataset
+    # 1. Finetune on new dataset
     milestones: tuple = (5, 10)
     trainer = Trainer(max_epochs=15, callbacks=[MilestonesFinetuning(milestones)])
     model = TransferLearningModel(milestones=milestones)
     datamodule = CatDogImageDataModule()
     trainer.fit(model, datamodule)
 
-    # define metric for accuracy calculation
+    # 2. Define metric for accuracy calculation
     def accuracy(pred, target):
         pred = torch.sigmoid(pred)
         target = target.view((-1, 1)).type_as(pred).int()
         return Accuracy()(pred, target)
 
-    # accelaration inference using InferenceOptimizer
+    # 3. Accelaration inference using InferenceOptimizer
     model.eval()
     optimizer = InferenceOptimizer()
     # optimize may take about 10 minutes to run all possible accelaration combinations
@@ -50,6 +50,7 @@ if __name__ == "__main__":
     for key, value in optimizer.optimized_model_dict.items():
         print("accleration option: {}, latency: {:.4f}ms, accuracy: {:.4f}".format(key, value["latency"], value["accuracy"]))
 
+    # 4. Get the best model under specific restrictions or without restrictions
     acc_model, option = optimizer.get_best_model(accelerator="onnxruntime")
     print("When accelerator is onnxruntime, the model with the least latency is: ", option)
 
@@ -58,3 +59,7 @@ if __name__ == "__main__":
 
     acc_model, option = optimizer.get_best_model()
     print("The model with the least latency is: ", option)
+
+    # 5. Inference with accelerated model
+    x_input = next(iter(datamodule.train_dataloader(batch_size=1)))[0]
+    output = acc_model(x_input)
