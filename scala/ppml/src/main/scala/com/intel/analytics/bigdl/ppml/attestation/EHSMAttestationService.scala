@@ -66,10 +66,10 @@ class EHSMAttestationService(kmsServerIP: String, kmsServerPort: String,
       val postString: String = ehsmParams.getPostJSONString()
       postRequest(constructUrl(action), postString)
     }
-    if (challenge != postResult.toString(RES_CHALLENGE)) {
-      Log4Error.invalidInputError(false, "Challenge not matched")
+    if (challenge != postResult.getString(RES_CHALLENGE)) {
+      Log4Error.invalidOperationError(false, "Challenge not matched")
     }
-    postResult.toString(RES_QUOTE)
+    postResult.getString(RES_QUOTE)
   }
 
   override def attestWithServer(quote: String): (Boolean, String) = {
