@@ -440,15 +440,22 @@ def _available_acceleration_combination():
 
 def _throughput_calculate_helper(iterrun, func, *args):
     '''
-    A simple helper to calculate median latency
+    A simple helper to calculate average latency
     '''
+    start_time = time.perf_counter()
     time_list = []
-    for _ in range(iterrun):
-        st = time.time()
+    for i in range(iterrun):
+        st = time.perf_counter()
         func(*args)
-        time_list.append(time.time() - st)
+        end = time.perf_counter()
+        time_list.append(end - st)
+        # at least need 10 iters and try to control calculation
+        # time less than 2 min
+        if i+1 >= min(iterrun, 10) and (end - start_time) > 2:
+            iterrun = i+1
+            break
     time_list.sort()
-    # remove top and least 10% data.ni
+    # remove top and least 10% data
     time_list = time_list[int(0.1 * iterrun): int(0.9 * iterrun)]
     return np.mean(time_list) * 1000
 
