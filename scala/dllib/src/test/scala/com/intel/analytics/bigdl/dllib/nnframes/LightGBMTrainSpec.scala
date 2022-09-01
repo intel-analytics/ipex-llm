@@ -53,22 +53,7 @@ class LightGBMTrainSpec extends ZooSpecHelper {
       .setOutputCol("features")
     val assembledDf = vectorAssembler.transform(df).select("features", "label").cache()
     assembledDf.show()
-
-    trait Human {
-      val x = new IntParam()
-      setDefault(x->100)
-
-      def hello: String = "the Human trait"
-    }
-    class Mother extends Human {
-      def bye: String = "bye"
-    }
-    val mm = new Mother
-    println(mm.bye)
-    println(mm.hello)
-
     val mlightGBMclassifier = new MLightGBMClassifier()
-    print("****************")
     println(mlightGBMclassifier.getClass.getName)
     println(mlightGBMclassifier.getNumIterations)
     print("****************")
