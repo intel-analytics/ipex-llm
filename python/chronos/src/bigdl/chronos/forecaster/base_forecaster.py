@@ -602,12 +602,6 @@ class BasePytorchForecaster(Forecaster):
         if you want to evaluate on a single node(which is common practice), please call
         .to_local().evaluate(data, ...)
 
-        >>> from bigdl.orca.automl.metrics import Evaluator
-        >>> y_hat = forecaster.predict(x)
-        >>> y_hat_unscaled = tsdata.unscale_numpy(y_hat) # or other customized unscale methods
-        >>> y_unscaled = tsdata.unscale_numpy(y) # or other customized unscale methods
-        >>> Evaluator.evaluate(metric=..., y_unscaled, y_hat_unscaled, multioutput=...)
-
         :param data: The data support following formats:
 
                | 1. a numpy ndarray tuple (x, y):
@@ -640,6 +634,11 @@ class BasePytorchForecaster(Forecaster):
         :param quantize: if use the quantized model to predict.
 
         :return: A list of evaluation results. Each item represents a metric.
+
+        Example:
+            >>> # to evaluate using a trained forecaster
+            >>> for x, y in test_loader:
+            >>>     test_eval = forecaster.evaluate((x.numpy(), y.numpy()))
         """
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
 
@@ -699,12 +698,6 @@ class BasePytorchForecaster(Forecaster):
         your data (e.g. use .scale() on the TSDataset) please follow the following code
         snap to evaluate your result if you need to evaluate on unscaled data.
 
-        >>> from bigdl.orca.automl.metrics import Evaluator
-        >>> y_hat = forecaster.predict(x)
-        >>> y_hat_unscaled = tsdata.unscale_numpy(y_hat) # or other customized unscale methods
-        >>> y_unscaled = tsdata.unscale_numpy(y) # or other customized unscale methods
-        >>> Evaluator.evaluate(metric=..., y_unscaled, y_hat_unscaled, multioutput=...)
-
         :param data: The data support following formats:
 
                | 1. a numpy ndarray tuple (x, y):
@@ -733,6 +726,11 @@ class BasePytorchForecaster(Forecaster):
         :param quantize: if use the quantized onnx model to evaluate.
 
         :return: A list of evaluation results. Each item represents a metric.
+
+        Example:
+            >>> # to evaluate using a trained forecaster with onnxruntime
+            >>> for x, y in test_loader:
+            >>>     test_eval = forecaster.evaluate_with_onnx((x.numpy(), y.numpy()))
         """
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
         from bigdl.nano.utils.log4Error import invalidInputError

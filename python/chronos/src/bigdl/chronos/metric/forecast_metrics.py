@@ -182,6 +182,11 @@ class Evaluator(object):
         :return: Float or ndarray of floats.
                  A floating point value, or an
                  array of floating point values, one for each individual target.
+        
+        Example:
+            >>> for x, y in test_loader:
+            >>>     yhat = forecaster.predict(x.numpy())
+            >>>     metric = Evaluator.evaluate("mse", y.numpy(), yhat)
         """
         metrics, y_true, y_pred, original_shape = _standard_input(metrics, y_true, y_pred)
 
@@ -222,7 +227,7 @@ class Evaluator(object):
             >>> # run forecaster.predict(x.numpy()) for len(tsdata_test.df) times
             >>> # to evaluate the time cost
             >>> latency = Evaluator.get_latency(forecaster.predict, x.numpy(),\
-                          num_running = len(tsdata_test.df))
+num_running = len(tsdata_test.df))
             >>> # an example output:
             >>> # {"p50": 3.853, "p90": 3.881, "p95": 3.933, "p99": 4.107}
         """
