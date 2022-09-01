@@ -25,7 +25,7 @@ from bigdl.ppml.fl import *
 from bigdl.ppml.fl.nn.fl_server import FLServer
 from bigdl.ppml.fl.nn.fl_client import FLClient
 from bigdl.ppml.fl.nn.pytorch.utils import set_one_like_parameter
-from bigdl.ppml.fl.utils import init_fl_context
+from bigdl.ppml.fl.nn.fl_context import init_fl_context
 from bigdl.ppml.fl.estimator import Estimator
 
 from torch import Tensor, nn
@@ -108,16 +108,15 @@ class TestMnist(FLTest):
 
         
         train(train_dataloader, model, loss_fn, optimizer)
+        init_fl_context('1', self.target)
         vfl_model_1 = NeuralNetworkPart1()
         set_one_like_parameter(vfl_model_1)
         vfl_model_2 = NeuralNetworkPart2()
         set_one_like_parameter(vfl_model_2)
         vfl_client_ppl = Estimator.from_torch(client_model=vfl_model_1,
-                                              client_id="1",
                                               loss_fn=loss_fn,
                                               optimizer_cls=torch.optim.SGD,
                                               optimizer_args={'lr':1e-3},
-                                              target=self.target,
                                               server_model=vfl_model_2)
         vfl_client_ppl.fit(train_dataloader)
         assert np.allclose(pytorch_loss_list, vfl_client_ppl.loss_history), \

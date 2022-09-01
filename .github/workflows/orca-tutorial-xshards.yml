@@ -85,10 +85,9 @@ jobs:
         pip install jep==3.9.0
         pip install cloudpickle
     - name: Run Test
-      #run: python -m build
       run: |
         export SPARK_LOCAL_HOSTNAME=localhost
-        export FTP_URI=ftp://zoo:1234qwer@10.112.231.51
+        export FTP_URI=${FTP_URI}
         chmod a+x python/orca/dev/test/run-tutorial-xshards.sh
         python/orca/dev/test/run-tutorial-xshards.sh
       env:

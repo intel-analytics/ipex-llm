@@ -832,6 +832,7 @@ class TSDataset:
                               "Please call 'roll' method "
                               "before transform a TSDataset to tf dataset!")
         data = tf.data.Dataset.from_tensor_slices((self.numpy_x, self.numpy_y))
+        batch_size = 32 if batch_size is None else batch_size
         if shuffle:
             data = data.cache().shuffle(self.numpy_x.shape[0]).batch(batch_size)
         else:

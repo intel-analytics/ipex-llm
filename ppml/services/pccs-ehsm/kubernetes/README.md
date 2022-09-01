@@ -123,8 +123,7 @@ curl http://<external_kms_ip>:9000/ehsm/?Action=GetVersion
 We encapsulate eHSM enroll into a docker image, you can pull it or build by yourself like below:
 
 ```bash
-docker pull intelanalytics/kms-utils:0.3.0 # 0.3.0 is the latest version when writting (to do)
-tod
+docker pull intelanalytics/kms-utils:0.3.0-SNAPSHOT
 # OR
 
 cd ../kms-utils

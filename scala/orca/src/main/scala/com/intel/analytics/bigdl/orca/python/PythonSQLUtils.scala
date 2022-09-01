@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package org.apache.spark.sql
 
 import java.io.{DataOutputStream, FileInputStream, FileOutputStream}
@@ -32,6 +31,7 @@ import org.apache.spark.sql.execution.python.BatchIterator
 import org.apache.spark.sql.types.{DataType, StructType}
 import org.apache.spark.sql.util.ArrowUtils
 import org.apache.spark.util.Utils
+
 import org.apache.spark.util.{ShutdownHookManager, Utils}
 
 import java.io._

@@ -209,7 +209,7 @@ class BasePytorchForecaster(Forecaster):
     def search_summary(self):
         # add tuning check
         invalidOperationError(self.use_hpo, "No search summary when HPO is disabled.")
-        return self.trainer.search_summary()
+        return self.tune_trainer.search_summary()
 
     def fit(self, data, validation_data=None, epochs=1, batch_size=32, validation_mode='output',
             earlystop_patience=1, use_trial_id=None):
@@ -1161,6 +1161,13 @@ class BasePytorchForecaster(Forecaster):
 def _str2metric(metric):
     # map metric str to function
     if isinstance(metric, str):
-        from bigdl.chronos.metric.forecast_metrics import TORCHMETRICS_REGRESSION_MAP
-        metric = TORCHMETRICS_REGRESSION_MAP[metric]
+        metric_name = metric
+        from bigdl.chronos.metric.forecast_metrics import REGRESSION_MAP
+        metric_func = REGRESSION_MAP[metric_name]
+
+        def metric(y_label, y_predict):
+            y_label = y_label.numpy()
+            y_predict = y_predict.numpy()
+            return metric_func(y_label, y_predict)
+        metric.__name__ = metric_name
     return metric

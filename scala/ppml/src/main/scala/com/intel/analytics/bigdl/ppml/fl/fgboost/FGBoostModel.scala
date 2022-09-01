@@ -38,7 +38,8 @@ abstract class FGBoostModel(continuous: Boolean,
                             learningRate: Float = 0.005f,
                             maxDepth: Int = 6,
                             minChildSize: Int = 1,
-                            validationMethods: Array[ValidationMethod[Float]] = null)
+                            validationMethods: Array[ValidationMethod[Float]] = null,
+                            serverModelPath: String = null)
   extends FLClientClosable {
   val logger = LogManager.getLogger(getClass)
   var splitVersion = 0
@@ -49,6 +50,10 @@ abstract class FGBoostModel(continuous: Boolean,
   var xTrainBuffer: ArrayBuffer[Tensor[Float]] = new ArrayBuffer[Tensor[Float]]()
   val trees = new mutable.Queue[RegressionTree]()
   var curLoss: Float = Float.MaxValue
+
+  def loadServerModel(modelPath: String): Unit = {
+    flClient.fgbostStub.loadServerModel(modelPath)
+  }
   def fit(feature: Array[Tensor[Float]],
           label: Array[Float],
           boostRound: Int): Unit = {
@@ -158,6 +163,9 @@ abstract class FGBoostModel(continuous: Boolean,
     trees.enqueue(currTree)
     // Evaluate tree and update residual and grads (g and h)
     uploadResidual(tree.dataset)
+    if (serverModelPath != null) {
+      flClient.fgbostStub.saveServerModel(serverModelPath)
+    }
     true
   }
 

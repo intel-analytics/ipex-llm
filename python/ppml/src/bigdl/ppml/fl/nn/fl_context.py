@@ -17,6 +17,8 @@
 from ..nn.fl_client import FLClient
 
 def init_fl_context(client_id, target="localhost:8980"):
+    FLClient.load_config()
     FLClient.set_client_id(client_id)
+    # target can be set in config file, and also could be overwritten here
     FLClient.set_target(target)
     FLClient.ensure_initialized()
