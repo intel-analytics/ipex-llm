@@ -636,6 +636,12 @@ class SparkXShards(XShards):
 
     def get_schema(self):
         if 'schema' in self.type:
+            import pandas as pd
+            pdf_schema = self.type['schema']
+            dtypes = pd.Series(pdf_schema['dtypes'])
+            dtypes.index = pdf_schema['columns']
+            pdf_schema['dtypes'] = dtypes
+            self.type['schema'] = pdf_schema
             return self.type['schema']
 
         if 'class_name' not in self.type\
@@ -683,7 +689,7 @@ class SparkXShards(XShards):
 
             if _class_name == 'pandas.core.frame.DataFrame':
                 schema = [str(x) if not isinstance(x, str) else x for x in pdf.columns]
-                pdf_schema = {'columns': schema, 'dtypes': pdf.dtypes}
+                pdf_schema = {'columns': schema, 'dtypes': list(pdf.dtypes)}
 
                 if major_version >= '3':
                     from pyspark.sql.pandas.types import from_arrow_type
@@ -701,8 +707,7 @@ class SparkXShards(XShards):
 
             return (_class_name, pdf_schema, spark_df_schema)
 
-        res = self.rdd.map(lambda x: func(x)).first()
-        return res
+        return self.rdd.map(lambda x: func(x)).first()
 
 
 class SharedValue(object):
