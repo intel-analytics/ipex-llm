@@ -82,17 +82,21 @@ ppl = Estimator.from_torch(client_model=model,
                            optimizer_cls=torch.optim.SGD,
                            optimizer_args={'lr':1e-3},
                            target='localhost:8980',
-                           server_model=server_model)
-                           # if you want to upload server model from this estimator, pass server_model
-                           # otherwise, ignore this argument
-
+                           server_model=server_model,
+                           server_model_path=/path/to/model/on/server,
+                           client_model_path=/path/to/model/on/client)
 ```
+Note that
+* If you want to upload server model from this estimator, provide `server_model` argument.
+* If you want server to automatically trigger model autosave, provide `server_model_path` with the path for server to save the model.
+* If you want client to automatically trigger model autosave, provide `client_model_path` with the path for client to save the model.
+We will also show how to use the saved model to resume training or predict in [2.7](#27-saveload)
 
 ### 2.5 Training
 Then call `fit` method to train
 
 ```python
-response = ppl.fit(x, y)
+response = ppl.fit(x, y, epoch=5)
 ```
 
 ### 2.6 Predict
@@ -101,23 +105,34 @@ result = ppl.predict(x)
 ```
 
 ### 2.7 Save/Load
-After training, save the client and server model by
+In [2.4](#24-create-estimator) we provided the model paths while creating estimator. Thus, client model and server model would both be automatically saved.
+
+You can also call save explicitly by
 ```python
-torch.save(ppl.model, model_path)
-ppl.save_server_model(server_model_path)
+torch.save(ppl.model, model_path) # save client model on local
+ppl.save_server_model(server_model_path) # save server model on server
 ```
-To start a new application to continue training
+To start a new application to resume training or predict
 ```python
-client_model = torch.load(model_path)
-# we do not pass server model this time, instead, we load it directly from server machine
+client_model = torch.load(model_path) # load client model first
+
+# create estimator using the loaded client model
+# the server_model_path should be consistant with the one in 2.4
+# because server would load model from this path if model exists
 ppl = Estimator.from_torch(client_model=model,
                            client_id=client_id,
                            loss_fn=loss_fn,
                            optimizer_cls=torch.optim.SGD,
                            optimizer_args={'lr':1e-3},
-                           target='localhost:8980')
-ppl.load_server_model(server_model_path)
+                           target='localhost:8980',
+                           server_model_path=/path/to/model/on/server,
+                           client_model_path=/path/to/model/on/client)
+ppl.load_server_model(server_model_path) # trigger model loading on server
 
+# Then you can use the loaded model to resume training or predict
+ppl.fit(x, y, epoch=5)
+result = ppl.predict(x)
+```
 ## 3 Run FGBoost
 FL Server is required before running any federated applications. Check [Start FL Server]() section for details.
 ### 3.1 Start FL Server in SGX
@@ -126,9 +141,8 @@ FL Server is required before running any federated applications. Check [Start FL
 Before running FL Server in SGX, please prepare keys and start the BigDL PPML container first. Check  [3.1 BigDL PPML Hello World](https://github.com/intel-analytics/BigDL/tree/main/ppml#31-bigdl-ppml-hello-world) for details.
 #### 3.1.2 Run FL Server in SGX
 You can run FL Server in SGX with the following command:
-
 ```bash
-bash start-python-fl-server-sgx.sh -p 8980 -c 2
+docker exec -it YOUR_DOCKER bash /ppml/trusted-big-data-ml/work/start-scripts/start-python-fl-server-sgx.sh -p 8980 -c 2
 ```
 You can set port with `-p` and set client number with `-c`  while the default settings are `port=8980` and `client-num=2`.
 ### 3.2 Start FGBoost Clients

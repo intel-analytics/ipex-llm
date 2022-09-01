@@ -72,7 +72,7 @@ object DeprecatedUtils {
       secureConfig, "secure_trust_store_path", defaultPath)
       .asInstanceOf[String]
     clusterServingHelper.redisSecureTrustStorePassword = getYaml(
-      secureConfig, "secure_struct_store_password", "1234qwer").asInstanceOf[String]
+      secureConfig, "secure_struct_store_password", "default_password").asInstanceOf[String]
     clusterServingHelper.modelEncrypted = getYaml(
       secureConfig, "model_encrypted", false).asInstanceOf[Boolean]
     clusterServingHelper.recordEncrypted = getYaml(

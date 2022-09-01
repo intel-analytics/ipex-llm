@@ -538,4 +538,5 @@ class SparkTFEstimator():
         """
         Shutdown estimator and release resources.
         """
-        stop_log_server(self.log_server_thread, self.ip, self.port)
+        if self.need_to_log_to_driver:
+            stop_log_server(self.log_server_thread, self.ip, self.port)

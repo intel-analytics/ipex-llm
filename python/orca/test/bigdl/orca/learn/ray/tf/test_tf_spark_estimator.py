@@ -359,6 +359,7 @@ class TestTFEstimator(TestCase):
 
         res = trainer.predict(df, feature_cols=["feature"]).collect()
         print("predict result: ", res)
+        trainer.shutdown()
 
     def test_tensorboard(self):
         sc = OrcaContext.get_spark_context()

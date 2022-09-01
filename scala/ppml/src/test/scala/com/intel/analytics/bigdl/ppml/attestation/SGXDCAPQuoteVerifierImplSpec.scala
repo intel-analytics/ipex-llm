@@ -34,26 +34,30 @@ class SGXDCAPQuoteVerifierImplSpec extends FlatSpec with Matchers {
   var tmpDir: File = _
   val sGXDCAPQuoteVerifierImplSpec = new SGXDCAPQuoteVerifierImpl()
 
-  val quoteUrl = if (env.contains("FTP_URI")) {
-    env("FTP_URI").toString
-  }
-
-  tmpDir = zooUtils.createTmpDir("ZooPPML").toFile()
-  val dir = new File(s"${tmpDir.getAbsolutePath}/SGXDCAPQuoteVerifierImplSpec").getCanonicalPath
-  s"wget -nv -P $dir $quoteUrl" !;
-  val quotePath = s"$dir/sgxdcap_quote.dat"
-
   // SGXDCAPQuoteVerifierImplSpec
   "SGX DCAP verify Quote " should "work" in {
-    val quoteFile = new File(quotePath)
-    val in = new FileInputStream(quoteFile)
-    val bufIn = new BufferedInputStream(in)
-    val quote = Iterator.continually(bufIn.read()).takeWhile(_ != -1).map(_.toByte).toArray
-    bufIn.close()
-    in.close()
-    logger.info(quote)
-    val verifyQuoteResult = sGXDCAPQuoteVerifierImplSpec.verifyQuote(quote)
-    verifyQuoteResult shouldNot equal(-1)
-    logger.info(verifyQuoteResult)
+    if (env.contains("SGXSDK")) {
+      if (env("SGXSDK").toBoolean == true) {
+        val FTP_URI = if (env.contains("FTP_URI")) {
+          env("FTP_URI").toString
+        }
+        val quoteUrl = s"$FTP_URI/bigdl/ppml/test/sgxdcap_quote.dat"
+        tmpDir = zooUtils.createTmpDir("ZooPPML").toFile()
+        val tmpPath = s"${tmpDir.getAbsolutePath}/SGXDCAPQuoteVerifierImplSpec"
+        val dir = new File(tmpPath).getCanonicalPath
+        s"wget -nv -P $dir $quoteUrl" !;
+        val quotePath = s"$dir/sgxdcap_quote.dat"
+        val quoteFile = new File(quotePath)
+        val in = new FileInputStream(quoteFile)
+        val bufIn = new BufferedInputStream(in)
+        val quote = Iterator.continually(bufIn.read()).takeWhile(_ != -1).map(_.toByte).toArray
+        bufIn.close()
+        in.close()
+        logger.info(quote)
+        val verifyQuoteResult = sGXDCAPQuoteVerifierImplSpec.verifyQuote(quote)
+        verifyQuoteResult shouldNot equal(-1)
+        logger.info(verifyQuoteResult)
+      }
+    }
   }
 }

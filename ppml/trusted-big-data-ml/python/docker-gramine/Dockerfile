@@ -186,6 +186,7 @@ ADD ./clean.sh /ppml/trusted-big-data-ml/clean.sh
 ADD ./bigdl-ppml-submit.sh /ppml/trusted-big-data-ml/bigdl-ppml-submit.sh
 ADD ./examples /ppml/trusted-big-data-ml/work/examples
 ADD ./start-scripts /ppml/trusted-big-data-ml/work/start-scripts
+ADD ./test-suites /ppml/trusted-big-data-ml/work/test-suites
 ADD ./tracker.py /tracker.py
 ADD ./_dill.py.patch /_dill.py.patch
 ADD ./python-uuid.patch /python-uuid.patch

@@ -20,7 +20,7 @@ import torch
 from torch import nn
 from bigdl.ppml.fl.nn.fl_client import FLClient
 from torch.utils.data import DataLoader
-from bigdl.dllib.utils.log4Error import invalidInputError
+from bigdl.dllib.utils.log4Error import invalidInputError, invalidOperationError
 from bigdl.ppml.fl.nn.utils import file_chunk_generate, tensor_map_to_ndarray_map
 import os
 import tempfile
@@ -88,12 +88,12 @@ class PytorchEstimator:
             logging.info(f'optimizer on FLServer not specified, \
                 using same as client: {self.optimizer} (with no args)')
             optimizer_cls = self.optimizer.__class__
-        msg_model = self.fl_client.nn_stub.upload_file(
-            PytorchEstimator.load_model_as_bytes(model))
-        logging.info(msg_model)
+        response = self.fl_client.nn_stub.upload_file(
+            PytorchEstimator.load_model_as_bytes(model))        
+        invalidOperationError(response.code == 0, response.message)
         
-        msg = self.fl_client.upload_meta(loss_fn, optimizer_cls, optimizer_args).message
-        logging.info(msg)
+        response = self.fl_client.upload_meta(loss_fn, optimizer_cls, optimizer_args)
+        invalidOperationError(response.code == 0, response.message)
 
     def train_step(self, x, y):
         """
