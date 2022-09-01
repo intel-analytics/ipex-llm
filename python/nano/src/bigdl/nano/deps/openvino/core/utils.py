@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os
+import subprocess
 from pathlib import Path
 from bigdl.nano.utils.log4Error import invalidInputError
 from openvino.runtime.passes import Manager
@@ -26,22 +26,21 @@ def convert_onnx_to_xml(onnx_file_path, xml_path, logging=True, batch_size=1):
         mo_cmd = "mo -m {} -n {} -o {}".format(str(onnx_file_path), model_name, output_dir)
     else:
         mo_cmd = "mo -m {} --silent -n {} -o {}".format(str(onnx_file_path), model_name, output_dir)
-    if os.system(mo_cmd) == 0:
-        return
-    else:
-        invalidInputError(False,
-                          "ModelOptimizer fails to convert {}.".format(str(onnx_file_path)))
+
+    p = subprocess.Popen(mo_cmd.split())
+    p.communicate()
+    invalidInputError(not p.returncode,
+                      "ModelOptimizer fails to convert {}.".format(str(onnx_file_path)))
 
 
 def convert_pb_to_xml(pb_file_path, xml_path, batch_size=1):
     xml_path = Path(xml_path)
     model_name, output_dir = str(xml_path.stem), str(xml_path.parent)
     mo_cmd = "mo --saved_model_dir {} -n {} -o {}".format(str(pb_file_path), model_name, output_dir)
-    if os.system(mo_cmd) == 0:
-        return
-    else:
-        invalidInputError(False,
-                          "ModelOptimizer fails to convert {}.".format(str(pb_file_path)))
+    p = subprocess.Popen(mo_cmd.split())
+    p.communicate()
+    invalidInputError(not p.returncode,
+                      "ModelOptimizer fails to convert {}.".format(str(pb_file_path)))
 
 
 def save(model, xml_path):
