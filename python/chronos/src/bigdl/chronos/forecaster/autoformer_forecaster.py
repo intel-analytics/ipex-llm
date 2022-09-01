@@ -441,6 +441,7 @@ def _str2metric(metric):
         metric_name = metric
         from bigdl.chronos.metric.forecast_metrics import REGRESSION_MAP
         metric_func = REGRESSION_MAP[metric_name]
+
         def metric(y_label, y_predict):
             y_label = y_label.numpy()
             y_predict = y_predict.numpy()

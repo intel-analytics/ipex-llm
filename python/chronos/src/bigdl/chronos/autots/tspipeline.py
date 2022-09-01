@@ -504,6 +504,7 @@ class TSPipeline:
         from bigdl.chronos.metric.forecast_metrics import REGRESSION_MAP
         if isinstance(metric, str):
             metric_func = REGRESSION_MAP[metric]
+
             def metric(y_label, y_predict):
                 y_label = y_label.numpy()
                 y_predict = y_predict.numpy()
