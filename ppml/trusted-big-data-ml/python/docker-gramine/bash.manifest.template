@@ -10,6 +10,9 @@ loader.env.LD_PRELOAD  = ""
 loader.insecure_disable_aslr = true
 loader.argv_src_file = "file:/ppml/trusted-big-data-ml/secured_argvs"
 
+sgx.remote_attestation = true
+sgx.ra_client_spid = ""
+
 sgx.allow_file_creation = true
 sgx.debug = false
 sgx.nonpie_binary = true
