@@ -72,14 +72,13 @@ class TestInferencePipeline(TestCase):
 
     def test_pipeline_with_metric(self):
         inference_opt = InferenceOptimizer()
-        inference_opt.optimize(model=self.model, 
+        inference_opt.optimize(model=self.model,
                                training_data=self.train_loader,
-                               validation_data=self.test_loader, 
+                               validation_data=self.test_loader,
                                metric=self.metric,
                                direction="max",
                                cpu_num=1)
-        for key, value in inference_opt.optimized_model_dict.items():
-            print(key, value["latency"], value["accuracy"])
+
         acc_model, option = inference_opt.get_best_model()
         print(option)
         acc_model, option = inference_opt.get_best_model(accelerator="onnxruntime")
@@ -94,8 +93,7 @@ class TestInferencePipeline(TestCase):
         inference_opt.optimize(model=self.model,
                                training_data=self.train_loader,
                                cpu_num=1)
-        for key, value in inference_opt.optimized_model_dict.items():
-            print(key, value["latency"], value["accuracy"])
+
         acc_model, option = inference_opt.get_best_model()
         print(option)
         acc_model, option = inference_opt.get_best_model(accelerator="onnxruntime")

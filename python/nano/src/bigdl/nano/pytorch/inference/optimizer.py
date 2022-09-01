@@ -247,6 +247,15 @@ class InferenceOptimizer:
                 pass
 
         self.optimized_model_dict: Dict = result_map
+        print("==========================Optimization Results==========================")
+        if self._calculate_accuracy:
+            for key, value in self.optimized_model_dict.items():
+                print("accleration option: {}, latency: {:.4f}ms, accuracy : {:.4f}"
+                        .format(key, value["latency"], value["accuracy"]))
+        else:
+            for key, value in self.optimized_model_dict.items():
+                print("accleration option: {}, latency: {:.4f}ms : {:.4f}"
+                        .format(key, value["latency"]))
 
     def get_best_model(self,
                        accelerator: str = None,
