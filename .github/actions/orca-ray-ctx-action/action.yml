@@ -30,11 +30,11 @@ runs:
         pip uninstall -y bigdl-dllib bigdl-orca
 
         #build dllib whl without make_dist
-        ./python/dllib/dev/release/release.sh linux default false True
+        ./python/dllib/dev/release/release.sh linux 2.0dev false True
         pip install ./python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl
 
         #build orca whl without make_dist
-        ./python/orca/dev/release/release.sh linux default True True
+        ./python/orca/dev/release/release.sh linux 2.0dev True True
         pip install ./python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
         
     - name: Run Test
