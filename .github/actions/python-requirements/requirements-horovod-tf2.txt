@@ -21,7 +21,6 @@ tensorboard-plugin-wit==1.7.0
 tensorboardX==2.1
 tensorflow==2.3.0
 tensorflow-estimator==2.3.0
-mxnet==1.6.0
 xgboost_ray
 argparse
 Pillow
