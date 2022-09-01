@@ -13,7 +13,7 @@ dm_tree
 gym[atari]==0.17.1
 atari-py==0.2.5
 tabulate==0.8.7
-tensorboard==2.6.0
+tensorboard==2.3.0
 tensorboard-data-server==0.6.1
 tensorboard-plugin-wit==1.7.0
 tensorboardX==2.1
