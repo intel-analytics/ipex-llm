@@ -38,7 +38,7 @@ if __name__ == "__main__":
     # 3. Accelaration inference using InferenceOptimizer
     model.eval()
     optimizer = InferenceOptimizer()
-    # optimize may take about 4 minutes to run all possible accelaration combinations
+    # optimize may take about 2 minutes to run all possible accelaration combinations
     optimizer.optimize(model=model,
                        # To obtain the latency of single sample, set batch_size=1
                        training_data=datamodule.train_dataloader(batch_size=1),
