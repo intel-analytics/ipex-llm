@@ -1,0 +1,40 @@
+name: self-runner-create-badge
+
+on:
+  pull_request:
+
+# env:
+#   http_proxy: 'http://child-prc.intel.com:913'
+#   https_proxy: 'http://child-prc.intel.com:913'
+
+jobs:
+  test-self-runner-create-badge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout Code"
+        uses: actions/checkout@v3
+      
+      - name: echo
+        run: |
+          echo "${{ secrets.GIST_SECRET }}"
+          echo "${{ secrets.HTTP_PROXY_HOST }}"
+
+          
+
+      - name: Create Awesome Badge
+        uses: schneegans/dynamic-badges-action@v1.4.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: 4f79dfdd46bd086d4a00287006ba9eaa
+          filename: answer.json
+          label: Hello
+          message: World
+          color: orange
+
+      - name: Create Job Badge
+        uses: ./.github/actions/create-job-status-badge
+        if: ${{ always() }}
+        with:
+          secret: ${{ secrets.GIST_SECRET }}
+          gist-id: 7495dccc42118020c12de5a095cfa2a6
+          file-name: nb-scala-build.json
