@@ -24,9 +24,7 @@ import os
 
 from bigdl.ppml.fl import *
 from bigdl.ppml.fl.nn.fl_server import FLServer
-from bigdl.ppml.fl.nn.fl_client import FLClient
-from bigdl.ppml.fl.nn.pytorch.utils import set_one_like_parameter
-from bigdl.ppml.fl.utils import init_fl_context
+from bigdl.ppml.fl.nn.fl_context import init_fl_context
 from bigdl.ppml.fl.estimator import Estimator
 
 from torch import Tensor, nn
@@ -89,40 +87,16 @@ class TestSaveLoad(FLTest):
             print(f"Shape of y: {y.shape} {y.dtype}")
             break
 
-        model = NeuralNetwork()
         loss_fn = nn.CrossEntropyLoss()
-        optimizer = torch.optim.SGD(model.parameters(), lr=1e-3)
 
         # list for result validation
-        pytorch_loss_list = []
-        def train(dataloader, model, loss_fn, optimizer):
-            size = len(dataloader.dataset)
-            model.train()
-            for batch, (X, y) in enumerate(dataloader):
-                # Compute prediction error
-                pred = model(X)
-                loss = loss_fn(pred, y)
-
-                # Backpropagation
-                optimizer.zero_grad()
-                loss.backward()
-                optimizer.step()
-
-                if batch % 100 == 0:
-                    loss, current = loss.item(), batch * len(X)
-                    pytorch_loss_list.append(np.array(loss))
-                    print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
-
-        # for i in range(2):
-        #     train(train_dataloader, model, loss_fn, optimizer)
+        init_fl_context('1', self.target)
         vfl_model_1 = NeuralNetworkPart1()
         vfl_model_2 = NeuralNetworkPart2()
         vfl_client_ppl = Estimator.from_torch(client_model=vfl_model_1,
-                                              client_id="1",
                                               loss_fn=loss_fn,
                                               optimizer_cls=torch.optim.SGD,
                                               optimizer_args={'lr':1e-3},
-                                              target=self.target,
                                               server_model=vfl_model_2,
                                               server_model_path=TestSaveLoad.server_model_path,
                                               client_model_path=TestSaveLoad.client_model_path)
@@ -131,11 +105,9 @@ class TestSaveLoad(FLTest):
         self.setUp()
         client_model_loaded = torch.load(TestSaveLoad.client_model_path)
         ppl_from_file = Estimator.from_torch(client_model=client_model_loaded,
-                                              client_id="1",
-                                              loss_fn=loss_fn,
-                                              optimizer_cls=torch.optim.SGD,
-                                              optimizer_args={'lr':1e-3},
-                                              target=self.target)
+                                             loss_fn=loss_fn,
+                                             optimizer_cls=torch.optim.SGD,
+                                             optimizer_args={'lr':1e-3})
         ppl_from_file.load_server_model(TestSaveLoad.server_model_path)
         ppl_from_file.fit(train_dataloader)
 

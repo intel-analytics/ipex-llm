@@ -15,6 +15,7 @@
 #
 
 import logging
+import time
 
 from bigdl.dllib.utils.log4Error import invalidOperationError
 from bigdl.ppml.fl.psi.utils import to_hex_string
@@ -42,14 +43,17 @@ class PSI(object):
         for i in range(max_try):
             intersection = self.stub.downloadIntersection(
                 DownloadIntersectionRequest()).intersection
-            if intersection is not None:
+            if intersection is not None and len(intersection) != 0:
                 hashed_intersection = list(intersection)
                 logging.info(f"Intersection completed, size {len(intersection)}")
                 intersection = [self.hashed_ids_to_ids[i] for i in hashed_intersection]
                 return intersection
+            else:
+                logging.info(f"Got empty intersection, will retry in {retry} s... {i}/{max_try}")
+                time.sleep(retry)
         invalidOperationError(False, "Max retry reached, could not get intersection, exiting.")
 
     def get_intersection(self, ids, secure_code="", max_try=100, retry=3):
-        salt = self.stub.getSalt(SaltRequest(secure_code=secure_code)).salt_reply
+        salt = self.get_salt(secure_code)
         self.upload_set(ids, salt)
         return self.download_intersection(max_try, retry)
