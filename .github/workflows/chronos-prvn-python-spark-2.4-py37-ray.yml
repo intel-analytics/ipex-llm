@@ -48,6 +48,8 @@ jobs:
           pip install optuna==2.10.1
           pip install onnxruntime==1.11.1
           pip install onnx==1.11.0
+          pip uninstall -y intel-tensorflow
+          pip install intel-tensorflow==2.9.1
           apt-get update
           apt-get install patchelf
 
