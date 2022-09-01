@@ -62,28 +62,9 @@ class MLP(Module):
         X = self.act3(X)
         return X
 
-# init_orca_context(memory="4g")
+init_orca_context(memory="4g")
 
-import numpy as np
-from bigdl.orca import OrcaContext
-from bigdl.dllib.nncontext import *
-from bigdl.orca.data import SparkXShards
-file_path = "/home/ding/proj/spark-dl-master/BigDL/python/orca/test/bigdl/orca/resources/orca/data/json"
-OrcaContext.pandas_read_backend = "pandas"
-
-
-
-
-
-
-
-
-
-
-
-
-
-path = '/home/ding/data/ionosphere.csv'
+path = 'ionosphere.csv'
 data_shard = bigdl.orca.data.pandas.read_csv(path, header=None)
 
 column = data_shard.get_schema()['columns']
