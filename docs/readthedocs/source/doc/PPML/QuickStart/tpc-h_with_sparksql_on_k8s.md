@@ -8,8 +8,8 @@
 ### Prepare TPC-H kit and data ###
 1. Generate data
 
-Go to [TPC Download](https://www.tpc.org/tpc_documents_current_versions/current_specifications5.asp) site, choose `TPC-H` source code, then download the TPC-H toolkits.
-After you download the tpc-h tools zip and uncompressed the zip file. Go to `dbgen` directory, and create `makefile` based on `makefile.suite`, and run `make`.
+Go to [TPC Download](https://www.tpc.org/tpc_documents_current_versions/current_specifications5.asp) site, choose `TPC-H` source code, then download the TPC-H toolkits. **Follow the download instructions carefully**
+After you download the tpc-h tools zip and uncompressed the zip file. Go to `dbgen` directory, and create `makefile` based on `makefile.suite`, and modify `makefile` according to the prompts inside, and run `make`.
 
 This should generate an executable called `dbgen`
 ```
