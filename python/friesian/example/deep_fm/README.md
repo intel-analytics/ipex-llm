@@ -6,7 +6,7 @@ We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux)
 ```
 conda create -n bigdl python=3.7  # "bigdl" is the conda environment name, you can use any name you like.
 conda activate bigdl
-pip install --pre --upgrade bigdl-friesian
+pip install --pre --upgrade bigdl-friesian[train]
 pip install deepctr-torch==0.2.6
 pip install numba
 ```
