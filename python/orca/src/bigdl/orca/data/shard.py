@@ -24,13 +24,6 @@ from bigdl.dllib.utils.log4Error import *
 
 import numpy as np
 
-from pyspark.sql.pandas.types import from_arrow_type, to_arrow_type
-
-from pyspark.sql.types import StructType
-from pyspark.sql.pandas.serializers import ArrowStreamPandasSerializer
-from tempfile import NamedTemporaryFile
-from pyspark.context import SparkContext
-
 
 class XShards(object):
     """

@@ -393,7 +393,7 @@ def spark_df_to_rdd_pd(df, squeeze=False, index_col=None,
 
     try:
         pd_rdd = to_pandas(df, squeeze, index_col, dtype, index_map,
-                         batch_size=shard_size)
+                           batch_size=shard_size)
         return pd_rdd
     except Exception as e:
         print(f"create shards from Spark DataFrame attempted Arrow optimization failed as:"
@@ -410,6 +410,7 @@ def spark_df_to_pd_sparkxshards(df, squeeze=False, index_col=None,
     from bigdl.orca.data import SparkXShards
     spark_xshards = SparkXShards(pd_rdd)
     return spark_xshards
+
 
 def postprocess(pd_df, squeeze=False, index_col=None, dtype=None, index_map=None):
     if dtype is not None:
@@ -435,6 +436,7 @@ def postprocess(pd_df, squeeze=False, index_col=None, dtype=None, index_map=None
         pd_df = pd_df.set_index(index_col)
     return pd_df
 
+
 def to_pandas_without_arrow(columns, squeeze=False, index_col=None, dtype=None, index_map=None,
                             batch_size=None):
     def f(iter):
@@ -455,6 +457,7 @@ def to_pandas_without_arrow(columns, squeeze=False, index_col=None, dtype=None, 
             yield pd_df
 
     return f
+
 
 def to_pandas(df, squeeze=False, index_col=None, dtype=None, index_map=None, batch_size=None):
     def farrow(iter):
