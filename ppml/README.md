@@ -450,6 +450,9 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
 
    - For `AzureKeyManagementService`
 
+   
+     the parameter `clientId` is not necessary, you don't have to provide this parameter.
+
       <details open>
        <summary>scala</summary>
       
@@ -473,7 +476,16 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
        <summary>python</summary>
    
        ```python
-       # not support yet
+       from bigdl.ppml.ppml_context import *
+   
+       ppml_args = {"kms_type": "AzureKeyManagementService",
+                    "azure_vault": "your_azure_vault",
+                    "azure_client_id": "your_azure_client_id",
+                    "primary_key_path": "/your/primary/key/path/primaryKey",
+                    "data_key_path": "/your/data/key/path/dataKey"
+                   }
+   
+       sc = PPMLContext("MyApp", ppml_args)
        ```
    
      </details>
