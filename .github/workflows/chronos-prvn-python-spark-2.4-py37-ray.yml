@@ -22,36 +22,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 8
-        uses: actions/setup-java@v3
-        with:
-          java-version: '8'
-          distribution: 'temurin'
-          #server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
-          settings-path: ${{ github.workspace }} # location for the settings.xml file
-
+        uses: ./.github/actions/jdk-setup-action
       - name: Set up Maven
-        uses: stCarolas/setup-maven@v4.4
-        with:
-          maven-version: 3.8.2
-
-      - name: Set up Maven Settings
-        uses: s4u/maven-settings-action@v2.6.0
-        with:
-          sonatypeSnapshots: true
-          apacheSnapshots: true
-          servers: |
-            [{
-              "id": "central",
-              "configuration": {
-                "httpConfiguration": {
-                  "all": {
-                    "connectionTimeout": "3600000",
-                    "readTimeout": "3600000"
-                    }    
-                  }
-                }
-            }]
-          mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${NEXUS_URL}" }]'
+        uses: ./.github/actions/maven-setup-action
 
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -75,6 +48,8 @@ jobs:
           pip install optuna==2.10.1
           pip install onnxruntime==1.11.1
           pip install onnx==1.11.0
+          pip uninstall -y numpy
+          pip install numpy==1.21.5
           apt-get update
           apt-get install patchelf
 
@@ -92,8 +67,8 @@ jobs:
           pip install python/chronos/src/dist/bigdl_chronos-*-py3-none-manylinux1_x86_64.whl
           export SPARK_LOCAL_HOSTNAME=localhost
           export KERAS_BACKEND=tensorflow
-          python --version
           pip install scipy==1.5.4
           bash python/chronos/dev/test/run-pytests.sh
         env:
+          BIGDL_ROOT: ${{ github.workspace }}
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
