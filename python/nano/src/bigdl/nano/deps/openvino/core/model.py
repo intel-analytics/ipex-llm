@@ -59,11 +59,11 @@ class OpenVINOModel:
 
         :param path: Directory to save the model.
         """
-        if self._model_exists_or_err("self.ie_network shouldn't be None."):
-            path = Path(path)
-            path.mkdir(exist_ok=True)
-            xml_path = path / 'ov_saved_model.xml'
-            save(self.ie_network, xml_path)
+        self._model_exists_or_err()
+        path = Path(path)
+        path.mkdir(exist_ok=True)
+        xml_path = path / 'ov_saved_model.xml'
+        save(self.ie_network, xml_path)
 
     def pot(self,
             dataloader,
@@ -151,7 +151,5 @@ class OpenVINOModel:
             model.reshape(orig_shape)
         return model
 
-    def _model_exists_or_err(self, err_msg):
-        if self.ie_network is None:
-            invalidInputError(False, err_msg)
-        return True
+    def _model_exists_or_err(self):
+        invalidInputError(self.ie_network is not None, "self.ie_network shouldn't be None.")

@@ -48,10 +48,9 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
             super().__init__(self.ov_model)
 
     def on_forward_start(self, inputs):
-        if self.ov_model._model_exists_or_err("Please create an instance by PytorchOpenVINOModel()"
-                                              " or PytorchOpenVINOModel.load()"):
-            inputs = self.tensors_to_numpy(inputs)
-            return inputs
+        self.ov_model._model_exists_or_err()
+        inputs = self.tensors_to_numpy(inputs)
+        return inputs
 
     def on_forward_end(self, outputs):
         outputs = self.numpy_to_tensors(outputs.values())
@@ -109,8 +108,8 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
 
         :param path: Directory to save the model.
         """
-        if self.ov_model._model_exists_or_err(err_msg="model shouldn't be None"):
-            path = Path(path)
-            path.mkdir(exist_ok=True)
-            xml_path = path / self.status['xml_path']
-            save(self.ov_model.ie_network, xml_path)
+        self.ov_model._model_exists_or_err()
+        path = Path(path)
+        path.mkdir(exist_ok=True)
+        xml_path = path / self.status['xml_path']
+        save(self.ov_model.ie_network, xml_path)
