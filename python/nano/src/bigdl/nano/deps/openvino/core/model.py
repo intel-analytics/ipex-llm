@@ -157,10 +157,9 @@ class OpenVINOModel:
             model.reshape(orig_shape)
         return model
 
-<<<<<<< HEAD
     def _model_exists_or_err(self):
         invalidInputError(self.ie_network is not None, "self.ie_network shouldn't be None.")
-=======
+
     def async_predict(self, inputs, jobs):
         """
         Perfrom model inference using async mode.
@@ -186,6 +185,5 @@ class OpenVINOModel:
             infer_queue.start_async([model_input], userdata=id)
 
         infer_queue.wait_all()
- 
+
         return results
->>>>>>> add openvino async_predict api

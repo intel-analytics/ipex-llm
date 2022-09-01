@@ -120,13 +120,13 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
     def async_predict(self, inputs, jobs):
         """
         Perfrom model inference using async mode.
-        
-        :param inputs: input data, should be a torch.utils.data.dataloader.DataLoader object or List of torch.Tensor
+
+        :param inputs: input data, can be a DataLoader object or List of torch.Tensor
         :type Union[torch.utils.data.dataloader.DataLoader, List[torch.Tensor]]
 
         :param jobs: numer of infer requests in the AsyncInferQueue
         :type int
-        
+
         :return A List containing result of each input
         :rtype List[torch.Tensor]
         """
