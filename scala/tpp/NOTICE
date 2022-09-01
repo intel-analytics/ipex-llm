@@ -26,12 +26,17 @@ Two Sigma Open Source
 
 =====================================================================================
 
-io.grpc:grpc-core
+io.grpc:grpc-api
 Copyright 2014 The gRPC Authors
 
 =====================================================================================
 
-Lettuce
+io.grpc:grpc-stub
+Copyright 2014 The gRPC Authors
+
+=====================================================================================
+
+io.grpc:grpc-core
 Copyright 2014 The gRPC Authors
 
 =====================================================================================
@@ -51,48 +56,43 @@ Copyright 2014 The gRPC Authors
 
 =====================================================================================
 
-io.grpc:grpc-context
-Copyright 2014 The gRPC Authors
-
-=====================================================================================
-
 io.grpc:grpc-services
 Copyright 2014 The gRPC Authors
 
 =====================================================================================
 
-io.grpc:grpc-stub
+Lettuce
 Copyright 2014 The gRPC Authors
 
 =====================================================================================
 
-io.grpc:grpc-api
+io.grpc:grpc-context
 Copyright 2014 The gRPC Authors
 
 =====================================================================================
 
-Netty/Codec/HTTP2
-Netty/Resolver
-Netty/Buffer
-Netty/Codec/DNS
-Netty/Transport/Native/Epoll
-Netty/Codec/HTTP
-Netty/Handler/Proxy
-Netty/TomcatNative [OpenSSL - Classes]
-Netty/Common
-Netty/Resolver/DNS/Native/MacOS
-Netty/Codec/Socks
-Netty/Transport/Native/Unix/Common
-Netty/Codec
 Netty/All-in-One
-Netty/Resolver/DNS/Classes/MacOS
-Netty/TomcatNative [BoringSSL - Static]
-Netty/Transport/Classes/Epoll
+Netty/Codec/HTTP2
 Netty/Transport
+Netty/Handler/Proxy
 Netty/Handler
 Netty/Resolver/DNS
+Netty/Codec
+Netty/Resolver
 Netty/Transport/Native/KQueue
+Netty/Transport/Classes/Epoll
+Netty/Transport/Native/Epoll
+Netty/Resolver/DNS/Classes/MacOS
+Netty/TomcatNative [OpenSSL - Classes]
+Netty/TomcatNative [BoringSSL - Static]
+Netty/Codec/HTTP
+Netty/Buffer
 Netty/Transport/Classes/KQueue
+Netty/Codec/Socks
+Netty/Transport/Native/Unix/Common
+Netty/Resolver/DNS/Native/MacOS
+Netty/Codec/DNS
+Netty/Common
 
               The Netty Project
               =================
@@ -256,8 +256,8 @@ Copyright 2000-2019 The Apache Software Foundation. All Rights Reserved
 =====================================================================================
 
 Plexus Common Utilities
-Plexus Interpolation API
 Default Plexus Container
+Plexus Interpolation API
 
  == Apache Plexus' Proposal ==
 
@@ -361,16 +361,16 @@ We kindly request the Incubator PMC to accept sponsorship for this proposal.
 
 =====================================================================================
 
-Jackson-dataformat-YAML
+Jackson-annotations
 Jackson datatype: JSR310
-Jackson module: Paranamer
-jackson-module-scala
-jackson-databind
 Woodstox
+Jackson module: Paranamer
+jackson-databind
 Jackson-core
 Jackson module: JAXB Annotations
+jackson-module-scala
+Jackson-dataformat-YAML
 Jackson-dataformat-XML
-Jackson-annotations
 
 # Jackson JSON processor
 
@@ -409,12 +409,12 @@ Copyright 2008-2011 Google Inc
 
 =====================================================================================
 
-chill
+chill-java
 Copyright 2012 Twitter, Inc
 
 =====================================================================================
 
-chill-java
+chill
 Copyright 2012 Twitter, Inc
 
 =====================================================================================
@@ -434,17 +434,12 @@ akka-stream
 
 =====================================================================================
 
-akka-slf4j
-2011-2022 Lightbend, Inc
-
-=====================================================================================
-
 akka-protobuf
 2011-2022 Lightbend, Inc
 
 =====================================================================================
 
-akka-http
+akka-slf4j
 2011-2022 Lightbend, Inc
 
 =====================================================================================
@@ -464,8 +459,8 @@ akka-parsing
 
 =====================================================================================
 
-Commons CLI
-Copyright 2002-2021 The Apache Software Foundation. All Rights Reserved
+akka-http
+2011-2022 Lightbend, Inc
 
 =====================================================================================
 
@@ -479,7 +474,12 @@ Copyright 2002-2021 The Apache Software Foundation. All Rights Reserved
 
 =====================================================================================
 
-Apache Commons CLI
+Commons CLI
+Copyright 2002-2021 The Apache Software Foundation. All Rights Reserved
+
+=====================================================================================
+
+Commons IO
 Copyright 2002-2021 The Apache Software Foundation. All Rights Reserved
 
 =====================================================================================
@@ -489,7 +489,7 @@ Copyright 2002-2021 The Apache Software Foundation. All Rights Reserved
 
 =====================================================================================
 
-Commons IO
+Apache Commons CLI
 Copyright 2002-2021 The Apache Software Foundation. All Rights Reserved
 
 =====================================================================================
@@ -539,6 +539,13 @@ Copyright 2010-2013 Coda Hale and Yammer, Inc., 2014-2020 Dropwizard Team
 
 =====================================================================================
 
+HTTP functionality for the Reactor Netty library
+Powered by Reactive Streams Commons
+Licensed under Apache Software License 2.0
+Sponsored by Vmware
+
+=====================================================================================
+
 Non-Blocking Reactive Foundation for the JVM
 Powered by Reactive Streams Commons
 Licensed under Apache Software License 2.0
@@ -553,20 +560,13 @@ Sponsored by Vmware
 
 =====================================================================================
 
-HTTP functionality for the Reactor Netty library
-Powered by Reactive Streams Commons
-Licensed under Apache Software License 2.0
-Sponsored by Vmware
-
-=====================================================================================
-
-Prometheus Java Span Context Supplier - Common
-Prometheus Java Span Context Supplier - OpenTelemetry
-Prometheus Java Simpleclient Httpserver
-Prometheus Java Span Context Supplier - OpenTelemetry Agent
-Prometheus Java Simpleclient Hotspot
 Prometheus Java Simpleclient Common
 Prometheus Java Simpleclient
+Prometheus Java Simpleclient Httpserver
+Prometheus Java Span Context Supplier - OpenTelemetry Agent
+Prometheus Java Span Context Supplier - OpenTelemetry
+Prometheus Java Simpleclient Hotspot
+Prometheus Java Span Context Supplier - Common
 
 Prometheus instrumentation library for JVM applications
 Copyright 2012-2015 The Prometheus Authors
@@ -583,23 +583,13 @@ Ocelli project by Netflix Inc. (https://github.com/Netflix/ocelli/)
 
 =====================================================================================
 
-xgboost4j_2.12
-Copyright 2019 by Contributors
-
-=====================================================================================
-
 xgboost4j-spark_2.12
 Copyright 2019 by Contributors
 
 =====================================================================================
 
-Arrow Format
-2016-2022 The Apache Software Foundation
-
-=====================================================================================
-
-Arrow Vectors
-2016-2022 The Apache Software Foundation
+xgboost4j_2.12
+Copyright 2019 by Contributors
 
 =====================================================================================
 
@@ -608,7 +598,17 @@ Arrow Memory - Core
 
 =====================================================================================
 
+Arrow Format
+2016-2022 The Apache Software Foundation
+
+=====================================================================================
+
 Arrow Memory - Netty
+2016-2022 The Apache Software Foundation
+
+=====================================================================================
+
+Arrow Vectors
 2016-2022 The Apache Software Foundation
 
 =====================================================================================
@@ -623,12 +623,7 @@ Copyright 2001-2021 The Apache Software Foundation.
 
 =====================================================================================
 
-flink-optimizer
-Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
-
-=====================================================================================
-
-flink-shaded-netty-4
+Apache Directory LDAP API Utilities
 Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
 
 =====================================================================================
@@ -638,72 +633,7 @@ Copyright 2022 The Apache Software Foundation, Licensed under the Apache License
 
 =====================================================================================
 
-flink-streaming-java
-Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
-
-=====================================================================================
-
-flink-annotations
-Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
-
-=====================================================================================
-
-flink-hadoop-fs
-Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
-
-=====================================================================================
-
-flink-core
-Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
-
-=====================================================================================
-
-flink-java
-Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
-
-=====================================================================================
-
-flink-runtime
-Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
-
-=====================================================================================
-
-Apache Directory LDAP API Utilities
-Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
-
-=====================================================================================
-
 ApacheDS I18n
-Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
-
-=====================================================================================
-
-flink-streaming-scala
-Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
-
-=====================================================================================
-
-ApacheDS Protocol Kerberos Codec
-Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
-
-=====================================================================================
-
-flink-clients
-Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
-
-=====================================================================================
-
-force-shading
-Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
-
-=====================================================================================
-
-Apache Directory API ASN.1 API
-Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
-
-=====================================================================================
-
-flink-scala
 Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
 
 =====================================================================================
@@ -713,12 +643,57 @@ Copyright 2022 The Apache Software Foundation, Licensed under the Apache License
 
 =====================================================================================
 
-flink-shaded-asm-7
+flink-shaded-guava-18
 Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
 
 =====================================================================================
 
-flink-metrics-core
+flink-streaming-java
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+ApacheDS Protocol Kerberos Codec
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+flink-core
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+Apache Directory API ASN.1 API
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+flink-clients
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+flink-optimizer
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+flink-java
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+flink-scala
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+flink-hadoop-fs
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+flink-streaming-scala
 Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
 
 =====================================================================================
@@ -728,28 +703,37 @@ Copyright 2022 The Apache Software Foundation, Licensed under the Apache License
 
 =====================================================================================
 
-flink-shaded-guava-18
+flink-runtime
 Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
 
 =====================================================================================
 
-hadoop-yarn-common
-Copyright 2006 and onwards The Apache Software Foundation.
+flink-shaded-netty-4
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
 
-This product includes software developed at
-The Apache Software Foundation (http://www.apache.org/)
+=====================================================================================
+
+flink-metrics-core
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+flink-shaded-asm-7
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+flink-annotations
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
+
+=====================================================================================
+
+force-shading
+Copyright 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0
 
 =====================================================================================
 
 hadoop-mapreduce-client-core
-Copyright 2006 and onwards The Apache Software Foundation.
-
-This product includes software developed at
-The Apache Software Foundation (http://www.apache.org/)
-
-=====================================================================================
-
-Apache Hadoop HDFS
 Copyright 2006 and onwards The Apache Software Foundation.
 
 This product includes software developed at
@@ -765,47 +749,7 @@ The Apache Software Foundation (http://www.apache.org/)
 
 =====================================================================================
 
-hadoop-mapreduce-client-jobclient
-Copyright 2006 and onwards The Apache Software Foundation.
-
-This product includes software developed at
-The Apache Software Foundation (http://www.apache.org/)
-
-=====================================================================================
-
-Apache Hadoop Common
-Copyright 2006 and onwards The Apache Software Foundation.
-
-This product includes software developed at
-The Apache Software Foundation (http://www.apache.org/)
-
-=====================================================================================
-
-Apache Hadoop Annotations
-Copyright 2006 and onwards The Apache Software Foundation.
-
-This product includes software developed at
-The Apache Software Foundation (http://www.apache.org/)
-
-=====================================================================================
-
-hadoop-mapreduce-client-app
-Copyright 2006 and onwards The Apache Software Foundation.
-
-This product includes software developed at
-The Apache Software Foundation (http://www.apache.org/)
-
-=====================================================================================
-
-hadoop-mapreduce-client-common
-Copyright 2006 and onwards The Apache Software Foundation.
-
-This product includes software developed at
-The Apache Software Foundation (http://www.apache.org/)
-
-=====================================================================================
-
-hadoop-mapreduce-client-shuffle
+hadoop-yarn-server-common
 Copyright 2006 and onwards The Apache Software Foundation.
 
 This product includes software developed at
@@ -821,7 +765,63 @@ The Apache Software Foundation (http://www.apache.org/)
 
 =====================================================================================
 
+hadoop-mapreduce-client-shuffle
+Copyright 2006 and onwards The Apache Software Foundation.
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/)
+
+=====================================================================================
+
+hadoop-mapreduce-client-jobclient
+Copyright 2006 and onwards The Apache Software Foundation.
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/)
+
+=====================================================================================
+
+Apache Hadoop HDFS
+Copyright 2006 and onwards The Apache Software Foundation.
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/)
+
+=====================================================================================
+
+Apache Hadoop Annotations
+Copyright 2006 and onwards The Apache Software Foundation.
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/)
+
+=====================================================================================
+
 hadoop-yarn-api
+Copyright 2006 and onwards The Apache Software Foundation.
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/)
+
+=====================================================================================
+
+Apache Hadoop Common
+Copyright 2006 and onwards The Apache Software Foundation.
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/)
+
+=====================================================================================
+
+hadoop-mapreduce-client-common
+Copyright 2006 and onwards The Apache Software Foundation.
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/)
+
+=====================================================================================
+
+hadoop-yarn-common
 Copyright 2006 and onwards The Apache Software Foundation.
 
 This product includes software developed at
@@ -837,7 +837,7 @@ The Apache Software Foundation (http://www.apache.org/)
 
 =====================================================================================
 
-hadoop-yarn-server-common
+hadoop-mapreduce-client-app
 Copyright 2006 and onwards The Apache Software Foundation.
 
 This product includes software developed at
@@ -845,7 +845,7 @@ The Apache Software Foundation (http://www.apache.org/)
 
 =====================================================================================
 
-HttpClient
+Apache HttpClient
 Copyright 2009-2022 The Apache Software Foundation
 
 =====================================================================================
@@ -855,7 +855,12 @@ Copyright 2009-2022 The Apache Software Foundation
 
 =====================================================================================
 
-Apache HttpClient
+htrace-core
+Copyright 2009-2022 The Apache Software Foundation
+
+=====================================================================================
+
+HttpClient
 Copyright 2009-2022 The Apache Software Foundation
 
 =====================================================================================
@@ -865,22 +870,7 @@ Copyright 2009-2022 The Apache Software Foundation
 
 =====================================================================================
 
-htrace-core
-Copyright 2009-2022 The Apache Software Foundation
-
-=====================================================================================
-
 Apache Log4j 1.x Compatibility API
-Copyright 1999-2022 The Apache Software Foundation. All Rights Reserved
-
-=====================================================================================
-
-Apache Log4j API
-Copyright 1999-2022 The Apache Software Foundation. All Rights Reserved
-
-=====================================================================================
-
-Apache Log4j Core
 Copyright 1999-2022 The Apache Software Foundation. All Rights Reserved
 
 =====================================================================================
@@ -890,42 +880,17 @@ Copyright 1999-2022 The Apache Software Foundation. All Rights Reserved
 
 =====================================================================================
 
-Maven Plugin API
-2001-2009 The Apache Software Foundation - Privacy Policy
+Apache Log4j Core
+Copyright 1999-2022 The Apache Software Foundation. All Rights Reserved
 
 =====================================================================================
 
-Maven Profile Model
-2001-2009 The Apache Software Foundation - Privacy Policy
-
-=====================================================================================
-
-Maven Local Settings Model
-2001-2009 The Apache Software Foundation - Privacy Policy
+Apache Log4j API
+Copyright 1999-2022 The Apache Software Foundation. All Rights Reserved
 
 =====================================================================================
 
 Maven Project Builder
-2001-2009 The Apache Software Foundation - Privacy Policy
-
-=====================================================================================
-
-Maven Artifact Manager
-2001-2009 The Apache Software Foundation - Privacy Policy
-
-=====================================================================================
-
-Maven Model
-2001-2009 The Apache Software Foundation - Privacy Policy
-
-=====================================================================================
-
-Maven Wagon API
-2001-2009 The Apache Software Foundation - Privacy Policy
-
-=====================================================================================
-
-Maven Artifact
 2001-2009 The Apache Software Foundation - Privacy Policy
 
 =====================================================================================
@@ -935,7 +900,42 @@ Maven Repository Metadata Model
 
 =====================================================================================
 
+Maven Plugin API
+2001-2009 The Apache Software Foundation - Privacy Policy
+
+=====================================================================================
+
+Maven Model
+2001-2009 The Apache Software Foundation - Privacy Policy
+
+=====================================================================================
+
 Maven Plugin Registry Model
+2001-2009 The Apache Software Foundation - Privacy Policy
+
+=====================================================================================
+
+Maven Profile Model
+2001-2009 The Apache Software Foundation - Privacy Policy
+
+=====================================================================================
+
+Maven Artifact Manager
+2001-2009 The Apache Software Foundation - Privacy Policy
+
+=====================================================================================
+
+Maven Artifact
+2001-2009 The Apache Software Foundation - Privacy Policy
+
+=====================================================================================
+
+Maven Wagon API
+2001-2009 The Apache Software Foundation - Privacy Policy
+
+=====================================================================================
+
+Maven Local Settings Model
 2001-2009 The Apache Software Foundation - Privacy Policy
 
 =====================================================================================
@@ -1058,7 +1058,7 @@ Copyright 2011-2022 Lightbend, Inc
 
 =====================================================================================
 
-scala-collection-compat
+Scala Library
 Copyright 2002-2022 EPFL
 Copyright 2011-2022 Lightbend, Inc
 
@@ -1070,24 +1070,15 @@ Copyright 2011-2022 Lightbend, Inc
 
 =====================================================================================
 
+scala-collection-compat
+Copyright 2002-2022 EPFL
+Copyright 2011-2022 Lightbend, Inc
+
+=====================================================================================
+
 Scalap
 Copyright 2002-2022 EPFL
 Copyright 2011-2022 Lightbend, Inc
-
-=====================================================================================
-
-Scala Library
-Copyright 2002-2022 EPFL
-Copyright 2011-2022 Lightbend, Inc
-
-=====================================================================================
-
-breeze-macros
-Breeze is the merger of the ScalaNLP and Scalala projects, because one of the original maintainers is unable to continue development. The Scalala parts are largely rewritten.
-
- David Hall, 2009 -
-
-Portions Daniel Ramage, 2009 - 2011
 
 =====================================================================================
 
@@ -1100,8 +1091,12 @@ Portions Daniel Ramage, 2009 - 2011
 
 =====================================================================================
 
-proto
-Except as otherwise noted, the content of this page is licensed under the Creative Commons Attribution 4.0 License, and code samples are licensed under the Apache 2.0 License. For details, see the Google Developers Site Policies. Java is a registered trademark of Oracle and/or its affiliates
+breeze-macros
+Breeze is the merger of the ScalaNLP and Scalala projects, because one of the original maintainers is unable to continue development. The Scalala parts are largely rewritten.
+
+ David Hall, 2009 -
+
+Portions Daniel Ramage, 2009 - 2011
 
 =====================================================================================
 
@@ -1111,6 +1106,11 @@ Except as otherwise noted, the content of this page is licensed under the Creati
 =====================================================================================
 
 libtensorflow
+Except as otherwise noted, the content of this page is licensed under the Creative Commons Attribution 4.0 License, and code samples are licensed under the Apache 2.0 License. For details, see the Google Developers Site Policies. Java is a registered trademark of Oracle and/or its affiliates
+
+=====================================================================================
+
+proto
 Except as otherwise noted, the content of this page is licensed under the Creative Commons Attribution 4.0 License, and code samples are licensed under the Apache 2.0 License. For details, see the Google Developers Site Policies. Java is a registered trademark of Oracle and/or its affiliates
 
 =====================================================================================
@@ -1157,17 +1157,17 @@ All rights reserved
 
 =====================================================================================
 
+Kryo
+Copyright 2008-2022, Nathan Sweet All rights reserved
+
+=====================================================================================
+
 Kryo Shaded
 Copyright 2008-2022, Nathan Sweet All rights reserved
 
 =====================================================================================
 
 MinLog
-Copyright 2008-2022, Nathan Sweet All rights reserved
-
-=====================================================================================
-
-Kryo
 Copyright 2008-2022, Nathan Sweet All rights reserved
 
 =====================================================================================
@@ -1206,13 +1206,13 @@ All rights reserved
 
 =====================================================================================
 
-scala-java8-compat
+scala-xml
 Copyright 2002-2022 EPFL
 Copyright 2011-2022 Lightbend, Inc
 
 =====================================================================================
 
-scala-xml
+scala-java8-compat
 Copyright 2002-2022 EPFL
 Copyright 2011-2022 Lightbend, Inc
 
@@ -1231,13 +1231,13 @@ All rights reserved
 
 =====================================================================================
 
-TwelveMonkeys :: Common :: Image
+TwelveMonkeys :: Common :: Language support
 Copyright 2008-2020, Harald Kuhr
 All rights reserved
 
 =====================================================================================
 
-TwelveMonkeys :: Common :: Language support
+TwelveMonkeys :: Common :: Image
 Copyright 2008-2020, Harald Kuhr
 All rights reserved
 
@@ -1300,7 +1300,7 @@ Copyright 2002 JSON.org
 
 =====================================================================================
 
-Microsoft Azure Java Core Library
+Microsoft Azure Netty HTTP Client Library
 Copyright 2015 Microsoft
 
 =====================================================================================
@@ -1310,7 +1310,7 @@ Copyright 2015 Microsoft
 
 =====================================================================================
 
-Microsoft Azure Netty HTTP Client Library
+Microsoft Azure Java Core Library
 Copyright 2015 Microsoft
 
 =====================================================================================
@@ -1340,13 +1340,13 @@ Copyright 2004-present by the Checker Framework developers
 
 =====================================================================================
 
-slf4j-log4j12
+SLF4J API Module
 Copyright 2004-2017 QOS.ch
  All rights reserved
 
 =====================================================================================
 
-SLF4J API Module
+slf4j-log4j12
 Copyright 2004-2017 QOS.ch
  All rights reserved
 
@@ -1367,7 +1367,7 @@ Copyright 2011-2014 Erik Osheim, Tom Switzer
 
 =====================================================================================
 
-util
+platform
 Copyright 2011-2012 Erik Osheim, Tom Switzer
 
 =====================================================================================
@@ -1377,7 +1377,7 @@ Copyright 2011-2012 Erik Osheim, Tom Switzer
 
 =====================================================================================
 
-platform
+util
 Copyright 2011-2012 Erik Osheim, Tom Switzer
 
 =====================================================================================
