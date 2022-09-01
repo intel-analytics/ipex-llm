@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.7.6"]
+        python-version: ["3.7.13"]
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 8
@@ -48,6 +48,11 @@ jobs:
           pip install optuna==2.10.1
           pip install onnxruntime==1.11.1
           pip install onnx==1.11.0
+          pip uninstall -y intel-tensorflow
+          pip install intel-tensorflow==2.9.1
+          pip uninstall -y numpy
+          pip install numpy==1.21.5
+          pip install scipy==1.5.4
           apt-get update
           apt-get install patchelf
 
@@ -65,9 +70,6 @@ jobs:
           pip install python/chronos/src/dist/bigdl_chronos-*-py3-none-manylinux1_x86_64.whl
           export SPARK_LOCAL_HOSTNAME=localhost
           export KERAS_BACKEND=tensorflow
-          pip uninstall -y numpy
-          pip install numpy==1.19.5
-          pip install scipy==1.5.4
           bash python/chronos/dev/test/run-pytests.sh
         env:
           BIGDL_ROOT: ${{ github.workspace }}
