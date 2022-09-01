@@ -182,7 +182,7 @@ class Evaluator(object):
         :return: Float or ndarray of floats.
                  A floating point value, or an
                  array of floating point values, one for each individual target.
-        
+
         Example:
             >>> for x, y in test_loader:
             >>>     yhat = forecaster.predict(x.numpy())
