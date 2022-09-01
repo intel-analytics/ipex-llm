@@ -23,8 +23,8 @@ from bigdl.nano.pytorch import InferenceOptimizer
 
 if __name__ == "__main__":
     # 1. Finetune on new dataset
-    milestones: tuple = (5, 10)
-    trainer = Trainer(max_epochs=15, callbacks=[MilestonesFinetuning(milestones)])
+    milestones: tuple = (1, 2)
+    trainer = Trainer(max_epochs=2, callbacks=[MilestonesFinetuning(milestones)])
     model = TransferLearningModel(milestones=milestones)
     datamodule = CatDogImageDataModule()
     trainer.fit(model, datamodule)
@@ -38,10 +38,12 @@ if __name__ == "__main__":
     # 3. Accelaration inference using InferenceOptimizer
     model.eval()
     optimizer = InferenceOptimizer()
-    # optimize may take about 10 minutes to run all possible accelaration combinations
+    # optimize may take about 4 minutes to run all possible accelaration combinations
     optimizer.optimize(model=model,
+                       # To obtain the latency of single sample, set batch_size=1
                        training_data=datamodule.train_dataloader(batch_size=1),
-                       validation_data=datamodule.val_dataloader(),
+                       # here we only take part samples to calculate a rough accuracy
+                       validation_data=datamodule.val_dataloader(limit_num_samples=160),
                        metric=accuracy,
                        direction="max",
                        cpu_num=1,

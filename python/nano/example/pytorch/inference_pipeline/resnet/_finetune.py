@@ -58,13 +58,14 @@ Note:
 import logging
 from pathlib import Path
 from typing import Union
+import numpy as np
 
 import torch
 import torch.nn.functional as F
 from torch import nn, optim
 from torch.optim.lr_scheduler import MultiStepLR
 from torch.optim.optimizer import Optimizer
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Subset
 from torchmetrics import Accuracy
 from torchvision import models, transforms
 from torchvision.datasets import ImageFolder
@@ -82,7 +83,7 @@ DATA_URL = "https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered
 class TransferLearningModel(LightningModule):
     def __init__(
         self,
-        backbone: str = "resnet50",
+        backbone: str = "resnet18",
         milestones: tuple = (5, 10),
         lr: float = 1e-3,
         lr_scheduler_gamma: float = 1e-1,
@@ -122,7 +123,7 @@ class TransferLearningModel(LightningModule):
         self.feature_extractor = nn.Sequential(*_layers)
 
         # 2. Classifier:
-        _fc_layers = [nn.Linear(2048, 256), nn.ReLU(), nn.Linear(256, 32), nn.Linear(32, 1)]
+        _fc_layers = [nn.Linear(512, 256), nn.ReLU(), nn.Linear(256, 32), nn.Linear(32, 1)]
         self.fc = nn.Sequential(*_fc_layers)
 
         # 3. Loss:
@@ -233,7 +234,7 @@ class CatDogImageDataModule(LightningDataModule):
     def create_dataset(self, root, transform):
         return ImageFolder(root=root, transform=transform)
 
-    def __dataloader(self, train: bool, batch_size=None):
+    def __dataloader(self, train: bool, batch_size=None, limit_num_samples=None):
         """Train/validation loaders."""
         if batch_size is None:
             batch_size = self._batch_size
@@ -245,16 +246,20 @@ class CatDogImageDataModule(LightningDataModule):
         else:
             dataset = self.create_dataset(self.data_path.joinpath("validation"),
                                           self.valid_transform)
-            return DataLoader(dataset=dataset, batch_size=batch_size, 
+            if limit_num_samples is not None:
+                indices = np.random.permutation(len(dataset))[:limit_num_samples]
+                dataset = Subset(dataset, indices)
+            return DataLoader(dataset=dataset, batch_size=batch_size,
                               num_workers=self._num_workers, shuffle=False)
 
     def train_dataloader(self, batch_size=None):
         log.info("Training data loaded.")
         return self.__dataloader(train=True, batch_size=batch_size)
 
-    def val_dataloader(self, batch_size=None):
+    def val_dataloader(self, batch_size=None, limit_num_samples=None):
         log.info("Validation data loaded.")
-        return self.__dataloader(train=False, batch_size=batch_size)
+        return self.__dataloader(train=False, batch_size=batch_size,
+                                 limit_num_samples=limit_num_samples)
 
 
 class MilestonesFinetuning(BaseFinetuning):
