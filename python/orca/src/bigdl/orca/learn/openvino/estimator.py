@@ -179,6 +179,7 @@ class OpenvinoEstimator(SparkEstimator):
                         for r, p in zip(batch_row, pred):
                             row = Row(*([r[col] for col in r.__fields__] + p))
                             yield row
+                        del pred
                         batch_dict = {col: [] for col in feature_cols}
                         batch_row = []
                         cnt = 0
@@ -187,6 +188,7 @@ class OpenvinoEstimator(SparkEstimator):
                     for r, p in zip(batch_row, pred):
                         row = Row(*([r[col] for col in r.__fields__] + p))
                         yield row
+                    del pred
             del local_model
             del net
 
