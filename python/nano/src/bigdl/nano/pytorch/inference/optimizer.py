@@ -143,7 +143,12 @@ class InferenceOptimizer:
         # get the available methods whose dep is met
         available_dict: Dict = _available_acceleration_combination()
 
-        self.direction: str = direction  # save direction as attr
+        self._direction: str = direction  # save direction as attr
+        # record whether calculate accuracy in optimize by this attr
+        if validation_data is not None and metric is not None:
+            self._calculate_accuracy = True
+        else:
+            self._calculate_accuracy = False
 
         default_threads: int = torch.get_num_threads()
         cpu_num: int = default_threads if cpu_num is None else int(cpu_num)
@@ -159,6 +164,8 @@ class InferenceOptimizer:
         # TODO: set cpu num for openvino
 
         result_map: Dict[str, Dict] = {}
+
+        model.eval()  # change model to eval state
 
         for method, available in available_dict.items():
             if available:
@@ -228,11 +235,12 @@ class InferenceOptimizer:
                     continue
 
                 torch.set_num_threads(default_threads)
-                if validation_data is not None and metric is not None:
+                if self._calculate_accuracy:
                     result_map[method]["accuracy"] =\
                         _accuracy_calculate_helper(acce_model,
                                                    metric, validation_data)
-
+                else:
+                    result_map[method]["accuracy"] = None
                 result_map[method]["model"] = acce_model
 
             else:
@@ -266,6 +274,9 @@ class InferenceOptimizer:
         # TODO: include fp16?
         invalidInputError(precision in [None, 'int8', 'bf16'],
                           "Only support precision 'int8', 'bf16'.")
+        if accuracy_criterion is not None and not self._calculate_accuracy:
+            invalidInputError(False, "If you want to specify accuracy_criterion, you need "
+                              "to set metric and validation_data when call 'optimize'.")
 
         best_model = self.optimized_model_dict["original"]["model"]
         best_metric = CompareMetric("original",
@@ -292,7 +303,7 @@ class InferenceOptimizer:
             if accuracy_criterion is not None:
                 accuracy: float = result["accuracy"]
                 compare_acc: float = best_metric.accuracy
-                if self.direction == "min":
+                if self._direction == "min":
                     if (accuracy - compare_acc) / compare_acc > accuracy_criterion:
                         continue
                 else:
