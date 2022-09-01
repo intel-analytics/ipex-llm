@@ -1,5 +1,7 @@
 Nano How-to Guides
 =========================
+.. note::
+    This page is still a work in progress. We are adding more guides.
 
 In Nano How-to Guides, you could expect to find multiple task-oriented, bite-sized, and executable examples. These examples will show you various tasks that BigDL-Nano could help you accomplish smoothly.
 

@@ -1,11 +1,16 @@
 # Install BigDL-Nano in Google Colab
 
-In this guide, we will show you how to install BigDL-Nano in Google Colab, and the solutions to possible version conflicts caused by pre-installed packages in Colab.
+```eval_rst
+.. note::
+    This page is still a work in progress.
+```
+
+In this guide, we will show you how to install BigDL-Nano in Google Colab, and the solutions to possible version conflicts caused by pre-installed packages in Colab hosted runtime.
 
 Please select the corresponding section to follow for your specific usage. 
 
 ## PyTorch
-For PyTorch users, you could add the following code snippet to your notebook to install BigDL-Nano and set environment variables for acceleration based on your current hardware:
+For PyTorch users, you need to install BigDL-Nano for PyTorch first:
 
 ```eval_rst
 .. tabs::
@@ -15,14 +20,17 @@ For PyTorch users, you could add the following code snippet to your notebook to 
         .. code-block:: python
 
             !pip install bigdl-nano[pytorch]
-            !source bigdl-nano-init
 
     .. tab:: Nightly-Built
 
         .. code-block:: python
 
             !pip install --pre --upgrade bigdl-nano[pytorch]
-            !source bigdl-nano-init
+```
+
+```eval_rst
+.. warning::
+    For Google Colab hosted runtime, ``source bigdl-nano-init`` is hardly to take effect as environment variables need to be set before jupyter kernel is started.
 ```
 
 To avoid version conflicts caused by `trochtext`, you should uninstall it:
