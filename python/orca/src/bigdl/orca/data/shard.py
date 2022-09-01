@@ -670,6 +670,7 @@ class SparkXShards(XShards):
 
     def _get_schema_class_name(self):
         class_name = self.type['class_name'] if 'class_name' in self.type else None
+        import pyspark
         spark_version = pyspark.version.__version__
         major_version = spark_version.split(".")[0]
 
