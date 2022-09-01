@@ -303,8 +303,8 @@ def _format_metric_str(prefix, metric):
                 metrics.append(_format_metric_str(prefix, target_metric))
         return metrics
     if isinstance(metric, str):
-        from bigdl.chronos.metric.forecast_metrics import TORCHMETRICS_REGRESSION_MAP
-        metric_func = TORCHMETRICS_REGRESSION_MAP.get(metric, None)
+        from bigdl.chronos.metric.forecast_metrics import REGRESSION_MAP
+        metric_func = REGRESSION_MAP.get(metric, None)
         invalidInputError(metric_func is not None,
                           "{} is not found in available metrics.".format(metric))
     return _format_metric(prefix, metric_func)
