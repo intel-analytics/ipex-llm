@@ -670,6 +670,8 @@ class SparkXShards(XShards):
 
     def _get_schema_class_name(self):
         class_name = self.type['class_name'] if 'class_name' in self.type else None
+        spark_version = pyspark.version.__version__
+        major_version = spark_version.split(".")[0]
 
         def func(iter):
             for pdf in iter:
@@ -680,20 +682,22 @@ class SparkXShards(XShards):
                     _class_name = pdf.__class__.__module__ + '.' + pdf.__class__.__name__
 
                 if _class_name == 'pandas.core.frame.DataFrame':
-                    from pyspark.sql.pandas.types import from_arrow_type
-                    from pyspark.sql.types import StructType
-
                     schema = [str(x) if not isinstance(x, str) else x for x in pdf.columns]
-                    if isinstance(schema, (list, tuple)):
-                        import pyarrow as pa
-                        arrow_schema = pa.Schema.from_pandas(pdf, preserve_index=False)
-                        struct = StructType()
-                        for name, field in zip(schema, arrow_schema):
-                            struct.add(
-                                name, from_arrow_type(field.type), nullable=field.nullable
-                            )
-                        spark_df_schema = struct
                     pdf_schema = {'columns': schema, 'dtypes': list(pdf.dtypes)}
+
+                    if major_version >= '3':
+                        from pyspark.sql.pandas.types import from_arrow_type
+                        from pyspark.sql.types import StructType
+
+                        if isinstance(schema, (list, tuple)):
+                            import pyarrow as pa
+                            arrow_schema = pa.Schema.from_pandas(pdf, preserve_index=False)
+                            struct = StructType()
+                            for name, field in zip(schema, arrow_schema):
+                                struct.add(
+                                    name, from_arrow_type(field.type), nullable=field.nullable
+                                )
+                            spark_df_schema = struct
 
                 return [(_class_name, pdf_schema, spark_df_schema)]
 
