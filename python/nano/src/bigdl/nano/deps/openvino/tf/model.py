@@ -22,6 +22,7 @@ import tensorflow as tf
 from bigdl.nano.utils.log4Error import invalidInputError
 from ..core.utils import save
 
+
 class KerasOpenVINOModel(AcceleratedKerasModel):
     def __init__(self, model):
         """
@@ -46,12 +47,10 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
         return self.ov_model.forward_step(*inputs)
 
     def on_forward_start(self, inputs):
-        if self.ov_model.ie_network is None:
-            invalidInputError(False,
-                              "Please create an instance by KerasOpenVINOModel()"
-                              " or KerasOpenVINOModel.load()")
-        inputs = self.tensors_to_numpy(inputs)
-        return inputs
+        if self.ov_model._model_exists_or_err("Please create an instance by KerasOpenVINOModel()"
+                                              " or KerasOpenVINOModel.load()"):
+            inputs = self.tensors_to_numpy(inputs)
+            return inputs
 
     def on_forward_end(self, outputs):
         outputs = tuple(outputs.values())
@@ -89,9 +88,8 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
 
         :param path: Directory to save the model.
         """
-        path = Path(path)
-        path.mkdir(exist_ok=True)
-        invalidInputError(self.ov_model.ie_network,
-                          "self.ie_network shouldn't be None.")
-        xml_path = path / self.status['xml_path']
-        save(self.ov_model.ie_network, xml_path)
+        if self.ov_model._model_exists_or_err("model shouldn't be None"):
+            path = Path(path)
+            path.mkdir(exist_ok=True)
+            xml_path = path / self.status['xml_path']
+            save(self.ov_model.ie_network, xml_path)

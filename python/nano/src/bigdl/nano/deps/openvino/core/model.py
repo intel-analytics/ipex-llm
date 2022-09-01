@@ -53,18 +53,17 @@ class OpenVINOModel:
         input_names = [t.any_name for t in self._ie_network.inputs]
         self._forward_args = input_names
 
-    def _save_model(self, path):
+    def _save(self, path):
         """
         Save OpenVINOModel to local as xml and bin file
 
         :param path: Directory to save the model.
         """
-        path = Path(path)
-        path.mkdir(exist_ok=True)
-        invalidInputError(self.ie_network,
-                          "self.ie_network shouldn't be None.")
-        xml_path = path / self.status['xml_path']
-        save(self.ie_network, xml_path)
+        if self._model_exists_or_err("self.ie_network shouldn't be None."):
+            path = Path(path)
+            path.mkdir(exist_ok=True)
+            xml_path = path / 'ov_saved_model.xml'
+            save(self.ie_network, xml_path)
 
     def pot(self,
             dataloader,
@@ -151,3 +150,8 @@ class OpenVINOModel:
             model = Core().read_model(model_path)
             model.reshape(orig_shape)
         return model
+
+    def _model_exists_or_err(self, err_msg):
+        if self.ie_network is None:
+            invalidInputError(False, err_msg)
+        return True
