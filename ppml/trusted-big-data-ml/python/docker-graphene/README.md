@@ -125,10 +125,10 @@ The result should be similar to
 
 ## Run Python code with dependencies
 
-It usually happens that your code needs to depend on some other packages. In this section, we will show how to inject python dependencies into the ppml running environment by using **conda** or python **eggs**.
+It usually happens that your code needs to depend on some other packages. In this section, we will show how to install python dependencies within the ppml running environment without changing the Dockerfile by using **conda** or python **eggs**.
 
 
-### Inject python dependencies using Conda
+### Install python dependencies using Conda
 
 The code used in this example can be found [here](https://spark.apache.org/docs/latest/api/python/user_guide/python_packaging.html).
 
@@ -212,11 +212,11 @@ The result should be
 which, indicates that the dependency **pyarrow** and **pandas** has been successfully loaded into the running environment.
 
 
-### Inject python dependencies using egg
+### Install python dependencies using egg
 
 Although the use of eggs is deprecated, the **spark-submit** command allow users to pass dependencies to the executors through python eggs and the `--py-files` option.
 
-In this section, we will show how to use python eggs to inject a `demo` package into spark executors.
+In this section, we will show how to use python eggs to install a `demo` package into spark executors.
 
 #### Prepare your Python eggs
 You can prepare the eggs you need by either  searching [PyPI](https://pypi.org/) or packaging the source code with the [Setuptools](https://setuptools.pypa.io/en/latest/setuptools.html#develop-deploy-the-project-source-in-development-mode).
@@ -227,7 +227,7 @@ Here, we will use a very simple egg file for demonstration purpose. The egg name
 #### Submit the task and watch result
 Please refer to the above subsections for starting the container and transferring the egg file into the container.
 
-The following bash command shows an example on how to inject dependencies to the spark executors running in kubernetes cluster.
+The following bash command shows an example on how to install dependencies within the spark executors running in kubernetes clusters.
 
 ```bash
 export secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
@@ -261,7 +261,7 @@ kubectl logs $(kubectl get pods | grep spark-test | grep driver | awk '{print $1
 The result should be
 >Hello World
 
-which, indicates that the dependency `demo` egg has been successfully loaded into the running environment.
+which, indicates that the dependency `demo` package has been successfully loaded into the running environment.
 ## Run as Spark Local Mode
 
 #### 1. Start the container to run spark applications in spark local mode
