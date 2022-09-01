@@ -9,6 +9,8 @@ tqdm
 protobuf==3.15.3
 pandas
 ray[default]==1.9.2
+aiohttp==3.8.1
+async-timeout==4.0.1
 dm_tree
 gym[atari]==0.17.1
 atari-py==0.2.5
