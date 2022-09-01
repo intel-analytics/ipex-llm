@@ -42,6 +42,29 @@ class LightGBMTrainSpec extends ZooSpecHelper {
 
   "LightGBMClassifer train" should "work" in {
     val spark = SparkSession.builder().getOrCreate()
+    System.setProperty("KMP_DUPLICATE_LIB_OK", "TRUE")
+
+    import spark.implicits._
+    Engine.init
+    val df = Seq(
+      (1.0, 2.0, 3.0, 4.0, 1),
+      (1.0, 3.0, 8.0, 2.0, 0)
+    ).toDF("f1", "f2", "f3", "f4", "label")
+    val vectorAssembler = new VectorAssembler()
+      .setInputCols(Array("f1", "f2", "f3", "f4"))
+      .setOutputCol("features")
+    val assembledDf = vectorAssembler.transform(df).select("features", "label").cache()
+    val lightGBMclassifier = new LightGBMClassifier()
+    val classifier = new MLightGBMClassifier()
+    val model = lightGBMclassifier.fit(assembledDf)
+    val res = model.transform(assembledDf)
+    res.show()
+
+    TestUtils.conditionFailTest(res.count() == 2)
+    }
+
+  "LightGBMClassifer save" should "work" in {
+    val spark = SparkSession.builder().getOrCreate()
     import spark.implicits._
     Engine.init
     val df = Seq(
@@ -53,33 +76,17 @@ class LightGBMTrainSpec extends ZooSpecHelper {
       .setOutputCol("features")
     val assembledDf = vectorAssembler.transform(df).select("features", "label").cache()
     assembledDf.show()
-    val mlightGBMclassifier = new MLightGBMClassifier()
-    println(mlightGBMclassifier.getClass.getName)
-    println(mlightGBMclassifier.getNumIterations)
-    print("****************")
-    print("****************")
-    val params = new LightGBMCommons
-    println(params.getClass.getName)
-    println(params.params.getNumIterations)
-    print("****************")
+    println("***********************")
     val lightGBMclassifier = new LightGBMClassifier()
-    print("****************")
-    println(lightGBMclassifier.getClass.getName)
-    println(lightGBMclassifier.params.getNumIterations)
-    print("****************")
-    lightGBMclassifier.setNumIterations(3)
-    println(lightGBMclassifier.params.getNumIterations)
-    println(lightGBMclassifier.getClass.getName)
-    val num = lightGBMclassifier.params.getNumIterations
     val model = lightGBMclassifier.fit(assembledDf)
-
-    df.show()
     val res = model.transform(assembledDf)
     res.show()
-    TestUtils.conditionFailTest(1 == 2)
-
-      //      TestUtils.conditionFailTest(res.count() == 2)
-    }
+    model.save ("/tmp/lightgbm/classifier1")
+    val model2 = LightGBMClassifierModel.load("/tmp/lightgbm/classifier1")
+    val res2 = model2.transform(assembledDf)
+    res2.show()
+    TestUtils.conditionFailTest(res2.count() == 2)
+  }
 
   "LightGBMRegressor train" should "work" in {
     val spark = SparkSession.builder().getOrCreate()

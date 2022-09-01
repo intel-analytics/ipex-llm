@@ -426,106 +426,138 @@ object XGBRegressorModel {
   }
 }
 
-class ParamsCommon extends MLightGBMParams {
-  override def copy(extra: ParamMap): MLightGBMParams = defaultCopy(extra)
-  override val uid: String = Identifiable.randomUID("LightGBMParams")
-}
-
-class LightGBMCommons {
-  val params = new ParamsCommon()
-  println(params.uid)
-  println(params.learningRate)
-
-  def setBoostingType(value: String): this.type = {
-    params.setBoostingType(value)
-    this
-  }
-  // for regularization
-  def setMaxBin(value: Int): this.type = {
-    params.setMaxBin(value)
-    this
-  }
-
-  def setNumLeaves(value: Int): this.type = {
-    params.setNumLeaves(value)
-    this
-  }
-
-  def setMinDataInLeaf(value: Int): this.type = {
-    params.setMinDataInLeaf(value)
-    this
-  }
-
-  def setMinSumHessianInLeaf(value: Int): this.type = {
-    params.setMinSumHessianInLeaf(value)
-    this
-  }
-
-  def setBaggingFraction(value: Double): this.type = {
-    params.setBaggingFraction(value)
-    this
-  }
-
-  def setBaggingFreq(value: Int): this.type = {
-    params.setBaggingFreq(value)
-    this
-  }
-
-  def setFeatureFraction(value: Double): this.type = {
-    params.setFeatureFraction(value)
-    this
-  }
-
-  def setLambdaL1(value: Double): this.type = {
-    params.setLambdaL1(value)
-    this
-  }
-
-  def setLambdaL2(value: Double): this.type = {
-    params.setLambdaL2(value)
-    this
-  }
-
-  def setMaxDepth(value: Int): this.type = {
-    params.setMaxDepth(value)
-    this
-  }
-  // training
-  def setNumIterations(value: Int): this.type = {
-    params.setNumIterations(value)
-    this
-  }
-
-  def setEarlyStoppingRound(value: Int): this.type = {
-    params.setEarlyStoppingRound(value)
-    this
-  }
-  def setObjective(value: String): this.type = {
-    params.setObjective(value)
-    this
-  }
-
-  def setMaxDeltaStep(value: Double): this.type = {
-    params.setMaxDeltaStep(value)
-    this
-  }
-
-  def setSkipDrop(value: Double): this.type = {
-    params.setSkipDrop(value)
-    this
-  }
-}
-
 /**
- * [[lightGBM wrapper]]
+ * [[lightGBMClassifier wrapper]]
  */
-class LightGBMClassifier extends LightGBMCommons {
+class LightGBMClassifier {
+  System.setProperty("KMP_DUPLICATE_LIB_OK", "true")
+
   val sc = SparkSession.active.sparkContext
   sc.getConf.set("spark.task.cpus", Engine.coreNumber().toString)
 
   val estimator = new MLightGBMClassifier()
+  estimator.setNumThreads(Engine.coreNumber())
+
+  def setLabelCol(labelColName : String) : this.type = {
+    estimator.setLabelCol(labelColName)
+    this
+  }
+
+  def setFeaturesCol(featuresColName: String): this.type = {
+    estimator.setFeaturesCol(featuresColName)
+    this
+  }
+
+  def setBoostingType(value: String): this.type = {
+    estimator.setBoostingType(value)
+    this
+  }
+  // for regularization
+  def setMaxBin(value: Int): this.type = {
+    estimator.setMaxBin(value)
+    this
+  }
+
+  def setNumLeaves(value: Int): this.type = {
+    estimator.setNumLeaves(value)
+    this
+  }
+
+  def setMinDataInLeaf(value: Int): this.type = {
+    estimator.setMinDataInLeaf(value)
+    this
+  }
+
+  def setMinSumHessianInLeaf(value: Int): this.type = {
+    estimator.setMinSumHessianInLeaf(value)
+    this
+  }
+
+  def setBaggingFraction(value: Double): this.type = {
+    estimator.setBaggingFraction(value)
+    this
+  }
+
+  def setBaggingFreq(value: Int): this.type = {
+    estimator.setBaggingFreq(value)
+    this
+  }
+
+  def setFeatureFraction(value: Double): this.type = {
+    estimator.setFeatureFraction(value)
+    this
+  }
+
+  def setLambdaL1(value: Double): this.type = {
+    estimator.setLambdaL1(value)
+    this
+  }
+
+  def setLambdaL2(value: Double): this.type = {
+    estimator.setLambdaL2(value)
+    this
+  }
+
+  def setMaxDepth(value: Int): this.type = {
+    estimator.setMaxDepth(value)
+    this
+  }
+
+  def setMinGainToSplit(value: Double): this.type = {
+    estimator.setMinGainToSplit(value)
+    this
+  }
+
+  def setMaxDeltaStep(value: Double): this.type = {
+    estimator.setMaxDeltaStep(value)
+    this
+  }
+
+  def setSkipDrop(value: Double): this.type = {
+    estimator.setSkipDrop(value)
+    this
+  }
+
+  // training
+  def setNumIterations(value: Int): this.type = {
+    estimator.setNumIterations(value)
+    this
+  }
+  def getNumIterations: Int = {
+    estimator.getNumIterations
+  }
+
+  def setLearningRate(value: Double): this.type = {
+    estimator.setLearningRate(value)
+    this
+  }
+
+  def setEarlyStoppingRound(value: Int): this.type = {
+    estimator.setEarlyStoppingRound(value)
+    this
+  }
+
+  def setCategoricalSlotNames(value: Array[String]): this.type = {
+    estimator.setCategoricalSlotNames(value)
+    this
+  }
+  def setCategoricalSlotIndexes(value: Array[Int]): this.type = {
+    estimator.setCategoricalSlotIndexes(value)
+    this
+  }
+
+  def setObjective(value: String): this.type = {
+    estimator.setObjective(value)
+    this
+  }
+
+
   def setIsUnbalance(value: Boolean): this.type = {
     estimator.setIsUnbalance(value)
+    this
+  }
+  def setNumThreads(value: Int): this.type = {
+    estimator.setNumThreads(value)
     this
   }
   def fit(df: DataFrame): LightGBMClassifierModel = {
@@ -579,12 +611,132 @@ object LightGBMClassifierModel {
 /**
  * [[XGBRegressor]] xgboost wrapper of XGBRegressor.
  */
-class LightGBMRegressor extends LightGBMCommons {
+class LightGBMRegressor {
+
+  val sc = SparkSession.active.sparkContext
+  sc.getConf.set("spark.task.cpus", Engine.coreNumber().toString)
 
   private val estimator = new MLightGBMRegressor()
+  estimator.setNumThreads(Engine.coreNumber())
 
   def setAlpha(value: Double): this.type = {
     estimator.setAlpha(value)
+    this
+  }
+
+  def setLabelCol(labelColName : String) : this.type = {
+    estimator.setLabelCol(labelColName)
+    this
+  }
+
+  def setFeaturesCol(featuresColName: String): this.type = {
+    estimator.setFeaturesCol(featuresColName)
+    this
+  }
+
+  def setBoostingType(value: String): this.type = {
+    estimator.setBoostingType(value)
+    this
+  }
+  // for regularization
+  def setMaxBin(value: Int): this.type = {
+    estimator.setMaxBin(value)
+    this
+  }
+
+  def setNumLeaves(value: Int): this.type = {
+    estimator.setNumLeaves(value)
+    this
+  }
+
+  def setMinDataInLeaf(value: Int): this.type = {
+    estimator.setMinDataInLeaf(value)
+    this
+  }
+
+  def setMinSumHessianInLeaf(value: Int): this.type = {
+    estimator.setMinSumHessianInLeaf(value)
+    this
+  }
+
+  def setBaggingFraction(value: Double): this.type = {
+    estimator.setBaggingFraction(value)
+    this
+  }
+
+  def setBaggingFreq(value: Int): this.type = {
+    estimator.setBaggingFreq(value)
+    this
+  }
+
+  def setFeatureFraction(value: Double): this.type = {
+    estimator.setFeatureFraction(value)
+    this
+  }
+
+  def setLambdaL1(value: Double): this.type = {
+    estimator.setLambdaL1(value)
+    this
+  }
+
+  def setLambdaL2(value: Double): this.type = {
+    estimator.setLambdaL2(value)
+    this
+  }
+
+  def setMaxDepth(value: Int): this.type = {
+    estimator.setMaxDepth(value)
+    this
+  }
+
+  def setMinGainToSplit(value: Double): this.type = {
+    estimator.setMinGainToSplit(value)
+    this
+  }
+
+  def setMaxDeltaStep(value: Double): this.type = {
+    estimator.setMaxDeltaStep(value)
+    this
+  }
+
+  def setSkipDrop(value: Double): this.type = {
+    estimator.setSkipDrop(value)
+    this
+  }
+
+  // training
+  def setNumIterations(value: Int): this.type = {
+    estimator.setNumIterations(value)
+    this
+  }
+
+
+  def setLearningRate(value: Double): this.type = {
+    estimator.setLearningRate(value)
+    this
+  }
+
+  def setEarlyStoppingRound(value: Int): this.type = {
+    estimator.setEarlyStoppingRound(value)
+    this
+  }
+
+  def setCategoricalSlotNames(value: Array[String]): this.type = {
+    estimator.setCategoricalSlotNames(value)
+    this
+  }
+  def setCategoricalSlotIndexes(value: Array[Int]): this.type = {
+    estimator.setCategoricalSlotIndexes(value)
+    this
+  }
+
+  def setObjective(value: String): this.type = {
+    estimator.setObjective(value)
+    this
+  }
+
+  def setNumThreads(value: Int): this.type = {
+    estimator.setNumThreads(value)
     this
   }
 
@@ -644,61 +796,3 @@ object LightGBMRegressorModel {
   }
 }
 
-/**
- * [[LightGBMRegressorModel]] lightGBM wrapper of LightGBMRegressorModel.
- */
-class LightGBMRankerModel private[bigdl](val model: MLightGBMRankerModel) {
-  var predictionCol: String = null
-  var featuresCol: String = "features"
-  var featurearray: Array[String] = Array("features")
-  def setPredictionCol(value: String): this.type = {
-    predictionCol = value
-    this
-  }
-
-  def setFeaturesCol(value: String): this.type = {
-    model.setFeaturesCol(value)
-    featuresCol = value
-    this
-  }
-
-  def transform(dataset: DataFrame): DataFrame = {
-    val featureVectorAssembler = new VectorAssembler()
-      .setInputCols(featurearray)
-      .setOutputCol("featureAssembledVector")
-    val assembledDF = featureVectorAssembler.transform(dataset)
-    import org.apache.spark.ml.linalg.Vector
-    import org.apache.spark.sql.functions.{col, udf}
-    val asDense = udf((v: Vector) => v.toDense)
-    val xgbInput = assembledDF.withColumn("DenseFeatures", asDense(col("featureAssembledVector")))
-    model.setFeaturesCol("DenseFeatures")
-    var output = model.transform(xgbInput).drop("DenseFeatures", "featureAssembledVector")
-    if(predictionCol != null) {
-      output = output.withColumnRenamed("prediction", predictionCol)
-    }
-    output
-  }
-
-  def save(path: String): Unit = {
-    model.write.overwrite().save(path)
-  }
-}
-
-object LightGBMRankerModel {
-  /**
-   * Load pretrained Zoo XGBRegressorModel.
-   */
-  def load(path: String): LightGBMRankerModel = {
-    new LightGBMRankerModel(MLightGBMRankerModel.load(path))
-  }
-}
-
-object LightGBMUtils {
-  def getEstimater(estType: String): Any = {
-    estType match {
-      case "LightGBMClassifier" => new MLightGBMClassifier()
-      case "lightGBMregressor" => new MLightGBMRegressor()
-      case "lightGBMranker" => new MLightGBMRanker()
-    }
-  }
-}
