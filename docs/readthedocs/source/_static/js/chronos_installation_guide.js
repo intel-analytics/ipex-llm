@@ -136,29 +136,29 @@ function refresh_cmd(){
             if(automl=="automlno"){
                 if(hardware=="singlenode"){
                     if(version=="nightly"){
-                        cmd="pip install --pre --upgrade bigdl-chronos[pytorch]";
+                        cmd="pip install --pre --upgrade bigdl-chronos; pip install prophet==1.1.0";
                     }else if(version=="stable"){
-                        cmd="pip install bigdl-chronos";
+                        cmd="pip install bigdl-chronos; pip install prophet==1.1.0";
                     }
                 }else if(hardware=="cluster"){
                     if(version=="nightly"){
-                        cmd="pip install --pre --upgrade bigdl-chronos[pytorch,distributed]";
+                        cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install prophet==1.1.0";
                     }else if(version=="stable"){
-                        cmd="pip install bigdl-chronos[all]";
+                        cmd="pip install bigdl-chronos[all]; pip install prophet==1.1.0";
                     }
                 }
             }else if(automl=="automlyes"){
                 if(hardware=="singlenode"){
                     if(version=="nightly"){
-                        cmd="pip install --pre --upgrade bigdl-chronos[pytorch,automl]";
+                        cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install prophet==1.1.0";
                     }else if(version=="stable"){
-                        cmd="pip install bigdl-chronos[all]";
+                        cmd="pip install bigdl-chronos[all]; pip install prophet==1.1.0";
                     }
                 }else if(hardware=="cluster"){
                     if(version=="nightly"){
-                        cmd="pip install --pre --upgrade bigdl-chronos[pytorch,distributed,automl]";
+                        cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install prophet==1.1.0";
                     }else if(version=="stable"){
-                        cmd="pip install bigdl-chronos[all]";
+                        cmd="pip install bigdl-chronos[all]; pip install prophet==1.1.0";
                     }
                 }
             }
@@ -166,29 +166,29 @@ function refresh_cmd(){
             if(automl=="automlno"){
                 if(hardware=="singlenode"){
                     if(version=="nightly"){
-                        cmd="pip install --pre --upgrade bigdl-chronos[pytorch]";
+                        cmd="pip install --pre --upgrade bigdl-chronos; pip install pmdarima==1.8.5";
                     }else if(version=="stable"){
-                        cmd="pip install bigdl-chronos";
+                        cmd="pip install bigdl-chronos; pip install pmdarima==1.8.5";
                     }
                 }else if(hardware=="cluster"){
                     if(version=="nightly"){
-                        cmd="pip install --pre --upgrade bigdl-chronos[pytorch,distributed]";
+                        cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install pmdarima==1.8.5";
                     }else if(version=="stable"){
-                        cmd="pip install bigdl-chronos[all]";
+                        cmd="pip install bigdl-chronos[all]; pip install pmdarima==1.8.5";
                     }
                 }
             }else if(automl=="automlyes"){
                 if(hardware=="singlenode"){
                     if(version=="nightly"){
-                        cmd="pip install --pre --upgrade bigdl-chronos[pytorch,automl]";
+                        cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install pmdarima==1.8.5";
                     }else if(version=="stable"){
-                        cmd="pip install bigdl-chronos[all]";
+                        cmd="pip install bigdl-chronos[all]; pip install pmdarima==1.8.5";
                     }
                 }else if(hardware=="cluster"){
                     if(version=="nightly"){
-                        cmd="pip install --pre --upgrade bigdl-chronos[pytorch,distributed,automl]";
+                        cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install pmdarima==1.8.5";
                     }else if(version=="stable"){
-                        cmd="pip install bigdl-chronos[all]";
+                        cmd="pip install bigdl-chronos[all]; pip install pmdarima==1.8.5";
                     }
                 }
             }
