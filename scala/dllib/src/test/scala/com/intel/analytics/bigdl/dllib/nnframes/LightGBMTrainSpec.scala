@@ -82,30 +82,29 @@ class LightGBMTrainSpec extends ZooSpecHelper {
     }
 
   "LightGBMRegressor train" should "work" in {
-    if (!(scala.util.Properties.isMac || scala.util.Properties.isWin)) {
-      val spark = SparkSession.builder().getOrCreate()
-      import spark.implicits._
-      Engine.init
-      val df = Seq(
-        (1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 1.0f, 2.0f, 4.0f, 8.0f, 3.0f, 116.3668f),
-        (1.0f, 3.0f, 8.0f, 6.0f, 5.0f, 9.0f, 5.0f, 6.0f, 7.0f, 4.0f, 116.367f),
-        (2.0f, 1.0f, 5.0f, 7.0f, 6.0f, 7.0f, 4.0f, 1.0f, 2.0f, 3.0f, 116.367f),
-        (2.0f, 1.0f, 4.0f, 3.0f, 6.0f, 1.0f, 3.0f, 2.0f, 1.0f, 3.0f, 116.3668f)
-      ).toDF("f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "label")
-      val vectorAssembler = new VectorAssembler()
-        .setInputCols(Array("f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10"))
-        .setOutputCol("features")
-      val assembledDf = vectorAssembler.transform(df).select("features", "label").cache()
-      val lightGBMRegressor = new LightGBMRegressor()
-      val regressorModel0 = lightGBMRegressor.fit(assembledDf)
-      val y0 = regressorModel0.transform(assembledDf)
-      regressorModel0.save("/tmp/test")
-      val model = XGBRegressorModel.load("/tmp/test")
-      val y0_0 = model.transform(assembledDf)
-      TestUtils.conditionFailTest(y0.count() == 4)
-      TestUtils.conditionFailTest(y0_0.count() == 4)
-    }
+    val spark = SparkSession.builder().getOrCreate()
+    import spark.implicits._
+    Engine.init
+    val df = Seq(
+      (1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 1.0f, 2.0f, 4.0f, 8.0f, 3.0f, 116.3668f),
+      (1.0f, 3.0f, 8.0f, 6.0f, 5.0f, 9.0f, 5.0f, 6.0f, 7.0f, 4.0f, 116.367f),
+      (2.0f, 1.0f, 5.0f, 7.0f, 6.0f, 7.0f, 4.0f, 1.0f, 2.0f, 3.0f, 116.367f),
+      (2.0f, 1.0f, 4.0f, 3.0f, 6.0f, 1.0f, 3.0f, 2.0f, 1.0f, 3.0f, 116.3668f)
+    ).toDF("f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "label")
+    val vectorAssembler = new VectorAssembler()
+      .setInputCols(Array("f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10"))
+      .setOutputCol("features")
+    val assembledDf = vectorAssembler.transform(df).select("features", "label").cache()
+    val lightGBMRegressor = new LightGBMRegressor()
+    val regressorModel0 = lightGBMRegressor.fit(assembledDf)
+    val y0 = regressorModel0.transform(assembledDf)
+    regressorModel0.save("/tmp/test")
+    val model = XGBRegressorModel.load("/tmp/test")
+    val y0_0 = model.transform(assembledDf)
+    TestUtils.conditionFailTest(y0.count() == 4)
+    TestUtils.conditionFailTest(y0_0.count() == 4)
   }
+
 
 }
 
