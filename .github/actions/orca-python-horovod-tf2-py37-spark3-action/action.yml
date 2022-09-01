@@ -35,8 +35,7 @@ runs:
 
         # install orca
         pip install python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
-        #pip install -i https://pypi.org/simple --pre --upgrade bigdl-orca-spark3
-
+        
     - name: Run Test
       shell: bash
       run: |
