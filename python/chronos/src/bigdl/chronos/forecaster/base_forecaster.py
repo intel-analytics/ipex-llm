@@ -1161,6 +1161,12 @@ class BasePytorchForecaster(Forecaster):
 def _str2metric(metric):
     # map metric str to function
     if isinstance(metric, str):
+        metric_name = metric
         from bigdl.chronos.metric.forecast_metrics import REGRESSION_MAP
-        metric = REGRESSION_MAP[metric]
+        metric_func = REGRESSION_MAP[metric_name]
+        def metric(y_label, y_predict):
+            y_label = y_label.numpy()
+            y_predict = y_predict.numpy()
+            return metric_func(y_label, y_predict)
+        metric.__name__ = metric_name
     return metric
