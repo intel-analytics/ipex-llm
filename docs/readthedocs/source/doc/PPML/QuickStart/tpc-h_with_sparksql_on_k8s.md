@@ -9,7 +9,7 @@
 1. Generate data
 
 Go to [TPC Download](https://www.tpc.org/tpc_documents_current_versions/current_specifications5.asp) site, choose `TPC-H` source code, then download the TPC-H toolkits.
-After you download the tpc-h tools zip and uncompressed the zip file. Go to `dbgen` directory, and create a makefile based on `makefile.suite`, and run `make`.
+After you download the tpc-h tools zip and uncompressed the zip file. Go to `dbgen` directory, and create `makefile` based on `makefile.suite`, and run `make`.
 
 This should generate an executable called `dbgen`
 ```
@@ -28,7 +28,7 @@ will generate roughly 10GB of input data.
 
 You can then either upload your data to remote file system or read them locally.
 
-2. Encrypt Data
+1. Encrypt Data
 
 Encrypt data with specified Key Management Service (`SimpleKeyManagementService`, or `EHSMKeyManagementService` , or `AzureKeyManagementService`)
 
