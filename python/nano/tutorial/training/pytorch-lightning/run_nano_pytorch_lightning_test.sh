@@ -9,3 +9,9 @@ python $NANO_TUTORIAL_TEST_DIR/lightning_channel_last.py
 
 sed -i s/Trainer\(max_epochs=5\)/Trainer\(max_epochs=5,\ fast_dev_run=True\)/ $NANO_TUTORIAL_TEST_DIR/lightning_cv_data_pipeline.py
 python $NANO_TUTORIAL_TEST_DIR/lightning_cv_data_pipeline.py
+
+sed -i s/max_epochs=5,/max_epochs=5,\ fast_dev_run=True,/ $NANO_TUTORIAL_TEST_DIR/lightning_train_ipex.py
+python $NANO_TUTORIAL_TEST_DIR/lightning_train_ipex.py
+
+sed -i s/max_epochs=5,/max_epochs=5,\ fast_dev_run=True,/ $NANO_TUTORIAL_TEST_DIR/lightning_train_multi_instance.py
+python $NANO_TUTORIAL_TEST_DIR/lightning_train_multi_instance.py
