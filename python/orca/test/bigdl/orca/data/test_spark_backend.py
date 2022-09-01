@@ -214,6 +214,13 @@ class TestSparkBackend(TestCase):
         finally:
             shutil.rmtree(temp_dir)
 
+    def test_to_spark_df(self):
+        file_path = os.path.join(self.resource_path, "orca/data/csv")
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path, header=0, names=['user', 'item'],
+                                                   usecols=[0, 1])
+        df = data_shard.to_spark_df()
+        df.show()
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
