@@ -214,7 +214,8 @@ class SparkTFEstimator():
             res = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
 
-        if self.model_dir:
+        if self.model_dir is not None:
+            result = res
             try:
                 temp_dir = tempfile.mkdtemp()
                 get_remote_file_to_local(os.path.join(self.model_dir, "state.pkl"),
@@ -225,8 +226,11 @@ class SparkTFEstimator():
                     self.model_weights = state['weights']
             finally:
                 shutil.rmtree(temp_dir)
+        else:
+            result = res[0]
+            self.model_weights = res[1]
 
-        return res[0]
+        return result[0]
 
     def evaluate(self, data, batch_size=32, num_steps=None, verbose=1,
                  sample_weight=None, callbacks=None, data_config=None,
@@ -489,7 +493,7 @@ class SparkTFEstimator():
             saving to SavedModel.
         """
         # get current model
-        if exists(self._model_saved_path):
+        if self.model_dir is not None and exists(self._model_saved_path):
             model = load_model(self._model_saved_path)
         else:
             model = self.get_model()
@@ -513,7 +517,8 @@ class SparkTFEstimator():
         model = load_model(filepath, custom_objects=custom_objects, compile=compile)
         self.model_weights = model.get_weights()
         # update remote model
-        save_model(model, self._model_saved_path, save_format="h5", filemode=0o666)
+        if self.model_dir is not None:
+            save_model(model, self._model_saved_path, save_format="h5", filemode=0o666)
 
     def get_model(self):
         """
