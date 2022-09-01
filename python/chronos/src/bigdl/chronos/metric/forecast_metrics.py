@@ -131,6 +131,7 @@ class Evaluator(object):
                     res_list.append(res.numpy())
         return res_list
 
+    @staticmethod
     def get_latency(func, *args, num_running=100, **kwargs):
         """
         Return the time cost in milliseconds of a specific function by running multiple times.
