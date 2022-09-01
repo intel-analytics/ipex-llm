@@ -271,7 +271,7 @@ class SparkRunner:
         runs a training epoch and updates the model parameters
         """
         with self.strategy.scope():
-            if exists(self._model_saved_path):
+            if self.model_dir is not None and exists(self._model_saved_path):
                 # for continous training
                 model = load_model(self._model_saved_path)
             else:
@@ -336,7 +336,6 @@ class SparkRunner:
                                                      validation_steps=validation_steps,
                                                      validation_freq=validation_freq
                                                      )
-        weights = model.get_weights()
         if history is None:
             stats = {}
         else:
@@ -345,14 +344,19 @@ class SparkRunner:
             if self.model_dir is not None:
                 save_model(model, self._model_saved_path, save_format="h5")
                 model_state = {
-                    "weights": weights,
+                    "weights": model.get_weights(),
                     "optimizer_weights": model.optimizer.get_weights()
                 }
                 save_pkl(model_state, os.path.join(self.model_dir, "state.pkl"))
+            else:
+                weights = model.get_weights()
 
             if self.need_to_log_to_driver:
                 LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
-            return [stats]
+            if self.model_dir is not None:
+                return [stats]
+            else:
+                return [stats], weights
         else:
             temp_dir = tempfile.mkdtemp()
             try:
