@@ -10,6 +10,13 @@ Training Optimization
 
 PyTorch-Lightning
 ~~~~~~~~~~~~~~~~~~~~~~~~~
+* `How to accelerate a PyTorch-Lightning application on training workloads through Intel® Extension for PyTorch* <Training/PyTorchLightning/accelerate_pytorch_lightning_training_ipex.html>`_
+
+.. toctree::
+    :maxdepth: 1
+    :hidden:
+
+    Training/PyTorchLightning/accelerate_pytorch_lightning_training_ipex
 
 Inference Optimization
 -------------------------
