@@ -58,7 +58,7 @@ class TestInferencePipeline(TestCase):
     num_workers = 0
     data_dir = os.path.join(os.path.dirname(__file__), "data")
     metric = torchmetrics.Accuracy(num_classes=10, top_k=1)
-    max_epochs = 10
+    max_epochs = 1
 
     model = Net()
     test_loader = create_data_loader(data_dir, 1, num_workers, data_transform, subset=10, shuffle=False)
@@ -69,6 +69,14 @@ class TestInferencePipeline(TestCase):
     trainer = Trainer(max_epochs=max_epochs)
     model = Trainer.compile(model, loss, optimizer)
     trainer.fit(model, train_loader)
+    
+    def test_get_model_without_optimize(self):
+        inference_opt = InferenceOptimizer()
+        with pytest.raises(RuntimeError) as e:
+            acc_model, option = inference_opt.get_best_model()
+        error_msg = e.value.args[0]
+        assert error_msg == "There is no optimized model. You should call .optimize() " \
+                            "before get_best_model()"
 
     def test_pipeline_with_metric(self):
         inference_opt = InferenceOptimizer()
@@ -109,5 +117,6 @@ class TestInferencePipeline(TestCase):
 
 if __name__ == "__main__":
     test = TestInferencePipeline()
+    test.test_get_model_without_optimize()
     test.test_pipeline_with_metric()
     test.test_pipeline_without_metric()

@@ -276,15 +276,15 @@ class InferenceOptimizer:
         :return: best model, corresponding acceleration option
         '''
         invalidOperationError(len(self.optimized_model_dict) > 0,
-                              "There is no optimized model. You should call .optimize() \
-                              before get_best_model()")
+                              "There is no optimized model. You should call .optimize() " +
+                              "before get_best_model()")
         invalidInputError(accelerator in [None, 'onnxruntime', 'openvino', 'jit'],
                           "Only support accelerator 'onnxruntime', 'openvino' and 'jit'.")
         # TODO: include fp16?
         invalidInputError(precision in [None, 'int8', 'bf16'],
                           "Only support precision 'int8', 'bf16'.")
         if accuracy_criterion is not None and not self._calculate_accuracy:
-            invalidInputError(False, "If you want to specify accuracy_criterion, you need "
+            invalidInputError(False, "If you want to specify accuracy_criterion, you need " +
                               "to set metric and validation_data when call 'optimize'.")
 
         best_model = self.optimized_model_dict["original"]["model"]
