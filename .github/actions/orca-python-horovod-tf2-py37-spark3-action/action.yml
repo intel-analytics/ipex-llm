@@ -24,7 +24,7 @@ runs:
         HOROVOD_WITH_PYTORCH=1; HOROVOD_WITH_GLOO=1; pip install --no-cache-dir horovod==0.19.2
         pip uninstall -r .github/actions/python-requirements/requirements-horovod-tf2.txt -y
         pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r .github/actions/python-requirements/requirements-horovod-tf2.txt 
-        pip install pytest ray[default]==1.9.1 aiohttp==3.8.1 async-timeout==4.0.1 numpy==1.19.5  prophet==1.0.1
+        pip install pytest ray[default]==0.8.4 aiohttp==3.6.2 async-timeout==3.0.1 numpy==1.19.5  prophet==1.0.1
         pip uninstall -y opencv-python-headless
         pip install opencv-python-headless
         sed -i "s/'bigdl-core=='+VERSION/'bigdl-core==2.1.0b20220811'/g" python/dllib/src/setup.py
