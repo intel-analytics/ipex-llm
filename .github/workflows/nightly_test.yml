@@ -98,7 +98,7 @@ jobs:
 
   Orca-Python-Horovod-Tf2-Py37-Spark3:
     #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Horovod-Tf2-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+    runs-on: [self-hosted, Gondolin-test, ubuntu-20.04-lts]
 
     steps:
     - uses: actions/checkout@v3
