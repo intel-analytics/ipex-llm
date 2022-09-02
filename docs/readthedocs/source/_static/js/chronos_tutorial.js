@@ -51,7 +51,7 @@ $(".checkboxes").click(function(){
             var ids = ["ChronosForecaster","TuneaForecasting","AutoTSEstimator","AutoWIDE",
             "MultvarWIDE","MultstepWIDE","LSTMForecaster","AutoProphet","AnomalyDetection",
             "DeepARmodel","TFTmodel","hyperparameter","taxiDataset","distributedFashion",
-            "ONNX","Quantize","TCMFForecaster", "PenalizeUnderestimation"];
+            "ONNX","Quantize","TCMFForecaster","PenalizeUnderestimation"];
             showTutorials(ids);
             var disIds = ["simulation"];
             disCheck(disIds);
