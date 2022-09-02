@@ -247,6 +247,8 @@ RUN apt install software-properties-common -y && \
     ln -s /usr/bin/python3.7 /usr/bin/python3 && \
     pip3 install --upgrade pip && \
     pip install setuptools==58.4.0 && \
+    rm -rf /usr/lib/python3/dist-packages/protobuf-3.6.1.egg-info && \
+    rm -rf /usr/lib/python3/dist-packages/google/protobuf && \
     pip install --no-cache-dir numpy scipy && \
     pip install --no-cache-dir pandas && \
     pip install --no-cache-dir scikit-learn matplotlib seaborn jupyter wordcloud moviepy requests h5py opencv-python protobuf==3.19.0 tensorflow==1.15 && \
@@ -263,8 +265,6 @@ RUN apt install software-properties-common -y && \
     pip install --no-cache-dir dill==0.3.4 && \
     python3 -m pip install toml==0.10.2 click jinja2 && \
     python3 -m ipykernel.kernelspec && \
-    rm -rf /usr/lib/python3/dist-packages/protobuf-3.6.1.egg-info && \
-    rm -rf /usr/lib/python3/dist-packages/google/protobuf && \
     ln -s /usr/lib/x86_64-linux-gnu/libtinfo.so.6 /usr/lib/x86_64-linux-gnu/libtinfo.so.5 && \
     pip install --no-cache-dir pyyaml
 
