@@ -342,18 +342,18 @@ run_spark_xgboost() {
     echo -e "${BLUE}occlum run BigDL Spark XGBoost${NC}"
     occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
                 -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
-                -XX:ActiveProcessorCount=8 \
+                -XX:ActiveProcessorCount=4 \
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
                 -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
-                -Xmx18g -Xms18g org.apache.spark.deploy.SparkSubmit \
-                --master local[16] \
-                --conf spark.task.cpus=8 \
+                -Xmx10g -Xms10g org.apache.spark.deploy.SparkSubmit \
+                --master local[4] \
+                --conf spark.task.cpus=2 \
                 --class com.intel.analytics.bigdl.dllib.examples.nnframes.xgboost.xgbClassifierTrainingExampleOnCriteoClickLogsDataset \
                 --num-executors 2 \
                 --executor-cores 2 \
                 --executor-memory 9G \
-                --driver-memory 2G \
+                --driver-memory 10G \
                 /bin/jars/bigdl-dllib-spark_3.1.2-2.1.0-SNAPSHOT.jar \
                 -i /host/data -s /host/data/model -t 2 -r 100 -d 2 -w 1
 }
