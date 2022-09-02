@@ -171,7 +171,7 @@ You can enlarge the configuration in [start-spark-local.sh](https://github.com/i
 -e SGX_MEM_SIZE=60GB \
 -e SGX_THREAD=1024 \
 -e SGX_HEAP=1GB \
--e SGX_KERNEL_HEAP=5GB \
+-e SGX_KERNEL_HEAP=1GB \
 ```
 
 To run Spark Sql Scala Unit Tests, start the docker container with:
