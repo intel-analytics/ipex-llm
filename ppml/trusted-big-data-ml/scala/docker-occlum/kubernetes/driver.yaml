@@ -20,11 +20,11 @@ spec:
       privileged: true
     env:
     - name: DRIVER_MEMORY
-      value: "5g"
+      value: "2g"
     - name: SGX_MEM_SIZE
-      value: "12GB"
+      value: "20GB"
     - name: SGX_THREAD
-      value: "128"
+      value: "512"
     - name: SGX_HEAP
       value: "512MB"
     - name: SGX_KERNEL_HEAP
