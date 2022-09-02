@@ -158,7 +158,7 @@ RUN cd /opt && \
     sed -i 's/2.4.0/3.1.2/g' tpch.sbt && \
     sbt package
 
-FROM volcano0dr/occlum:0.28.1-dev-d025bd3-ubuntu20.04 as ppml
+FROM volcano0dr/occlum:0.28.1-dev-731f835-ubuntu20.04 as ppml
 
 ARG BIGDL_VERSION=2.1.0-SNAPSHOT
 ARG SPARK_VERSION
