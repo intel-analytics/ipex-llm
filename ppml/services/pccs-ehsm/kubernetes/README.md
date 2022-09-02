@@ -200,7 +200,7 @@ Then, you will find a new target file `ehsm-kms_enroll_app` generated.
 Now, you can enroll your app through command below, and you will receive a appid-appkey pair from the server:
 
 ```bash
-./ehsm-kms_enroll_app http://<your_kms_external_ipaddr>:9000/ehsm/
+./ehsm-kms_enroll_app -a http://<your_kms_external_ipaddr>:9000/ehsm/
 
 
 INFO [main.cpp(45) -> main]: ehsm-kms enroll app start.
