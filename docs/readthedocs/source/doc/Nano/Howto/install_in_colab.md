@@ -33,7 +33,7 @@ For PyTorch users, you need to install BigDL-Nano for PyTorch first:
     For Google Colab hosted runtime, ``source bigdl-nano-init`` is hardly to take effect as environment variables need to be set before jupyter kernel is started.
 ```
 
-To avoid version conflicts caused by `trochtext`, you should uninstall it:
+To avoid version conflicts caused by `torchtext`, you should uninstall it:
 
 ```python
 !pip uninstall -y torchtext
