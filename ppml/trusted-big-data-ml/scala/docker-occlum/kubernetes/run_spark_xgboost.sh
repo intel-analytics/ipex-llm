@@ -5,7 +5,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --deploy-mode cluster \
     --name spark-xgboost \
     --class com.intel.analytics.bigdl.dllib.examples.nnframes.xgboost.xgbClassifierTrainingExample \
-    --conf spark.executor.instances=2 \
+    --conf spark.executor.instances=1 \
     --conf spark.rpc.netty.dispatcher.numThreads=32 \
     --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT \
     --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
