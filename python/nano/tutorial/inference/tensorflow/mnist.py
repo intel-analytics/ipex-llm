@@ -100,16 +100,7 @@ print("Test accuracy:", score[1])
 tune_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))
 
 # Execute quantization
-q_model = model.quantize(precision='int8',
-                         accelerator=None,
-                         calib_dataset=tune_dataset,
-                         accuracy_criterion={
-                             'relative': 0.01, 'higher_is_better': True},
-                         approach='static',
-                         tuning_strategy='bayesian',
-                         timeout=0,
-                         max_trials=10,
-                         )
+q_model = model.quantize(calib_dataset=tune_dataset)
 
 y_test_hat = q_model(x_test)
 loss = float(tf.reduce_mean(
@@ -119,3 +110,8 @@ categorical_accuracy.update_state(y_test, y_test_hat)
 accuracy = categorical_accuracy.result().numpy()
 print("Quantization test loss:", loss)
 print("Quantization test accuracy:", accuracy)
+# Raw model test loss: 0.024767747148871422
+# Raw model test accuracy: 0.9918000102043152
+# Quantized model test loss: 0.02494174614548683
+# Quantized model test accuracy: 0.9917
+# Accuracy loss: 0.01%
