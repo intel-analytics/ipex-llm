@@ -276,7 +276,7 @@ class InferenceOptimizer:
         :return: best model, corresponding acceleration option
         '''
         invalidOperationError(len(self.optimized_model_dict) > 0,
-                              "There is no optimized model. You should call .optimize() "\
+                              "There is no optimized model. You should call .optimize() "
                               "before get_best_model()")
         invalidInputError(accelerator in [None, 'onnxruntime', 'openvino', 'jit'],
                           "Only support accelerator 'onnxruntime', 'openvino' and 'jit'.")
@@ -284,7 +284,7 @@ class InferenceOptimizer:
         invalidInputError(precision in [None, 'int8', 'bf16'],
                           "Only support precision 'int8', 'bf16'.")
         if accuracy_criterion is not None and not self._calculate_accuracy:
-            invalidInputError(False, "If you want to specify accuracy_criterion, you need "\
+            invalidInputError(False, "If you want to specify accuracy_criterion, you need "
                               "to set metric and validation_data when call 'optimize'.")
 
         best_model = self.optimized_model_dict["original"]["model"]
@@ -465,10 +465,11 @@ def _accuracy_calculate_helper(model, metric, data):
     A quick helper to calculate accuracy
     '''
     metric_list = []
-    # TODO: data should have same batchsize
+    sample_num = 0
     for i, (data_input, target) in enumerate(data):
-        metric_list.append(metric(model(data_input), target).numpy())
-    return np.mean(metric_list)
+        metric_list.append(metric(model(data_input), target).numpy() * data_input.shape[0])
+        sample_num += data_input.shape[0]
+    return np.sum(metric_list) / sample_num
 
 
 def _format_acceleration_info(method_name):
