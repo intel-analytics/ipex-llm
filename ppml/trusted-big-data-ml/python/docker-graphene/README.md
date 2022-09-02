@@ -141,7 +141,7 @@ Run the following command in the terminal with **conda installed**.
 conda create -y -n pyspark_conda_env -c conda-forge pyarrow pandas conda-pack
 ```
 
-At this step, please add any dependencies you need when creating the conda environment.  We use pyarrow and pandas here because our example code only needs these two packages.
+At this step, please add any dependencies you need when creating the conda environment. We use pyarrow and pandas here because our example code only needs these two packages.
 
 ##### Pack the conda environment
 Run the following command in the terminal to pack the environment
@@ -219,7 +219,7 @@ Although the use of eggs is deprecated, the **spark-submit** command allow users
 In this section, we will show how to use python eggs to install a `demo` package into spark executors.
 
 #### Prepare your Python eggs
-You can prepare the eggs you need by either  searching [PyPI](https://pypi.org/) or packaging the source code with the [Setuptools](https://setuptools.pypa.io/en/latest/setuptools.html#develop-deploy-the-project-source-in-development-mode).
+You can prepare the eggs you need by either searching [PyPI](https://pypi.org/) or packaging the source code with the [Setuptools](https://setuptools.pypa.io/en/latest/setuptools.html#develop-deploy-the-project-source-in-development-mode).
 
 Here, we will use a very simple egg file for demonstration purpose. The egg named `demo` only contains a function `test()` whose function is to print "Hello World" to the terminal.
 
