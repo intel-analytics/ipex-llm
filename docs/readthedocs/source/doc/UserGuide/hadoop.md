@@ -119,7 +119,7 @@ Follow the steps below if you need to run BigDL with [spark-submit](https://spar
       --archives environment.tar.gz#environment \
       script.py
   ```
-  Note: For `yarn-client`, the Spark driver is running on local and it will use the Python interpreter in the current active conda environment while the executors will use the Python interpreter in `environment.tar.gz`.
+  Note: For `yarn-cluster`, the Spark driver is running in a YARN container as well and thus both the driver and executors will use the Python interpreter in `environment.tar.gz`. If you want to operate HDFS as some certain user, you can add `spark.yarn.appMasterEnv.HADOOP_USER_NAME=username` to SparkConf.
 
 
   For `yarn-client` mode:
@@ -134,4 +134,4 @@ Follow the steps below if you need to run BigDL with [spark-submit](https://spar
       --archives environment.tar.gz#environment \
       script.py
   ```
-  Note: For `yarn-cluster`, the Spark driver is running in a YARN container as well and thus both the driver and executors will use the Python interpreter in `environment.tar.gz`.
+  Note: For `yarn-client`, the Spark driver is running on local and it will use the Python interpreter in the current active conda environment while the executors will use the Python interpreter in `environment.tar.gz`.
