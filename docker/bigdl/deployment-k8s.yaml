@@ -178,6 +178,20 @@ roleRef:
 
 ---
 apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: bigdl-resources
+  namespace: bigdl
+spec:
+  hard:
+    pods: "10"
+    requests.cpu: "10"
+    requests.memory: 10Gi
+    limits.cpu: "20"
+    limits.memory: 20Gi
+
+---
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: bigdl-notebook-config
