@@ -225,7 +225,7 @@ class NBeatsForecaster(BasePytorchForecaster):
                           fixMsg="Do not specify past_seq_len and future seq_len "
                           "or call tsdataset.roll method again and specify time step")
         
-        invalidInputError(tsdataset.id_sensitive and len(tsdataset._id_list) > 1,
+        invalidInputError(not all([tsdataset.id_sensitive, len(tsdataset._id_list) > 1]),
                           "NBeats only supports univariate forecasting.")
 
         return cls(past_seq_len=past_seq_len,
