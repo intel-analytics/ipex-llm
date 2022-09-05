@@ -80,7 +80,7 @@ class _TorchNanoModule(_LiteModule):
                 return t.to(memory_format=torch.channels_last) if t.dim() == 4 else t
             args, kwargs = apply_to_collection([args, kwargs], function=_convert_to_channels_last,
                                                dtype=torch.Tensor)
-        return super().forward(args, kwargs)
+        return super().forward(*args, **kwargs)
 
 
 class TorchNano(LightningLite):
@@ -106,6 +106,8 @@ class TorchNano(LightningLite):
         :param precision: Double precision (64), full precision (32), half precision (16)
             or bfloat16 precision (bf16), defaults to 32.
             Enable ipex bfloat16 weight prepack when `use_ipex=True` and `precision='bf16'`
+        :param channels_last: whether convert input to channels last memory formats, \
+            defaults to False
         """
         self.num_processes = num_processes
         self.use_ipex = use_ipex

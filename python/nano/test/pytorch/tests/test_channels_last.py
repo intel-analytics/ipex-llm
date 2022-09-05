@@ -103,8 +103,34 @@ class ConvModel(torch.nn.Module):
         output = torch.flatten(x, 1)
         return output
 
+
+class MyNano(TorchNano):
+    def train(self):
+        model = CustomResNet()
+        loss_func = torch.nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+        train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
+
+        model, optimizer, train_loader = self.setup(model, optimizer, train_loader)
+
+        model.train()
+
+        num_epochs = 1
+        for _i in range(num_epochs):
+            total_loss, num = 0, 0
+            for X, y in train_loader:
+                optimizer.zero_grad()
+                loss = loss_func(model(X), y)
+                self.backward(loss)
+                optimizer.step()
+
+                total_loss += loss.sum()
+                num += 1
+            print(f'avg_loss: {total_loss / num}')
+
+
 class MyNanoChannelsLastCorrectness(TorchNano):
-    def train(self, lr):
+    def train(self):
         x = torch.Tensor([
             [[[1, 0]], [[1, 0]]],
             [[[1, 0]], [[2, 0]]],
@@ -114,11 +140,11 @@ class MyNanoChannelsLastCorrectness(TorchNano):
         y = torch.Tensor([[0.0], [1.0], [0.0], [1.0]])
         train_dataset = torch.utils.data.TensorDataset(x, y)
         train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=4, shuffle=False)
-        model = ConvModel()
+        origin_model = ConvModel()
         loss_fuc = torch.nn.MSELoss()
-        optimizer = torch.optim.SGD(model.parameters(), lr=0.25)
+        optimizer = torch.optim.SGD(origin_model.parameters(), lr=0.25)
 
-        model, optimizer, train_loader = self.setup(model, optimizer, train_loader)
+        model, optimizer, train_loader = self.setup(origin_model, optimizer, train_loader)
 
         model.train()
 
@@ -129,7 +155,7 @@ class MyNanoChannelsLastCorrectness(TorchNano):
             optimizer.step()
 
         result = torch.tensor([[[[0.0, -1.0]], [[-1.25, 0.5]]]])
-        assert model.conv1.weight.equal(result)
+        assert origin_model.conv1.weight.equal(result)
 
 
 class TestChannelsLast(TestCase):
@@ -224,6 +250,18 @@ class TestChannelsLast(TestCase):
         result = torch.tensor([[[[0.0, -1.0]], [[-1.25, 0.5]]]])
         assert pl_module.model.conv1.weight.equal(result)
 
+    def test_torch_nano_channels_last(self):
+        MyNano(channels_last=True).train()
+
+    def test_torch_nano_channels_last_subprocess(self):
+        MyNano(num_processes=2, strategy="subprocess", channels_last=True).train()
+
+    def test_torch_nano_channels_last_correctness(self):
+        MyNanoChannelsLastCorrectness(channels_last=True).train()
+
+    def test_torch_nano_channels_last_subprocess_correctness(self):
+        MyNanoChannelsLastCorrectness(num_processes=2, strategy="subprocess", channels_last=True).train()
+
 
 class TestChannelsLastSpawn(TestCase):
     data_loader = create_data_loader(data_dir, batch_size, num_workers,
@@ -265,6 +303,12 @@ class TestChannelsLastSpawn(TestCase):
         trainer.fit(pl_module, data_loader)
         result = torch.tensor([[[[0.0, -1.0]], [[-1.25, 0.5]]]])
         assert pl_module.model.conv1.weight.equal(result)
+
+    def test_torch_nano_channels_last_spawn(self):
+        MyNano(num_processes=2, strategy="spawn", channels_last=True).train()
+
+    def test_torch_nano_channels_last_spawn_correctness(self):
+        MyNanoChannelsLastCorrectness(num_processes=2, strategy="spawn", channels_last=True).train()
 
 
 if __name__ == '__main__':
