@@ -75,9 +75,12 @@ class _TorchNanoModule(_LiteModule):
             return getattr(self.module, name)
 
     def forward(self, *args: Any, **kwargs: Any) -> Any:
+        """Casts all inputs to the right memory format"""
         if self.channels_last:
             def _convert_to_channels_last(t: torch.Tensor) -> torch.Tensor:
-                return t.to(memory_format=torch.channels_last) if t.dim() == 4 else t
+                if t.dim() == 4:
+                    return t.to(memory_format=torch.channels_last)  # type: ignore
+                return t
             args, kwargs = apply_to_collection([args, kwargs], function=_convert_to_channels_last,
                                                dtype=torch.Tensor)
         return super().forward(*args, **kwargs)
