@@ -75,7 +75,7 @@ class _TorchNanoModule(_LiteModule):
             return getattr(self.module, name)
 
     def forward(self, *args: Any, **kwargs: Any) -> Any:
-        """Casts all inputs to the right memory format"""
+        """Casts all inputs to the right memory format."""
         if self.channels_last:
             def _convert_to_channels_last(t: torch.Tensor) -> torch.Tensor:
                 if t.dim() == 4:
