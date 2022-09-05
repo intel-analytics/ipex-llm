@@ -20,6 +20,7 @@ from bigdl.nano.utils.log4Error import invalidInputError
 from openvino.runtime import Model
 from .utils import save
 from openvino.runtime import AsyncInferQueue
+import numpy as np
 
 class OpenVINOModel:
     def __init__(self, ie_network: str, device='CPU', thread_num=None):
@@ -28,11 +29,27 @@ class OpenVINOModel:
         self.thread_num = thread_num
         self.ie_network = ie_network
 
+    def on_forward_start(self, inputs):
+        invalidInputError(self.ie_network,
+                          "self.ie_network shouldn't be None.")
+        return inputs
+
     def forward_step(self, *inputs):
         return self._infer_request.infer(list(inputs))
 
+    def on_forward_end(self, outputs):
+        arrays = tuple(map(lambda x: x, outputs.values()))
+        if len(arrays) == 1:
+            arrays = arrays[0]
+        return arrays
+
+    def forward(self, *inputs):
+        inputs = self.on_forward_start(inputs)
+        outputs = self.forward_step(*inputs)
+        return self.on_forward_end(outputs)
+
     def __call__(self, *inputs):
-        return self.forward_step(*inputs)
+        return self.forward(*inputs)
 
     @property
     def forward_args(self):
@@ -160,29 +177,35 @@ class OpenVINOModel:
     def _model_exists_or_err(self):
         invalidInputError(self.ie_network is not None, "self.ie_network shouldn't be None.")
 
-    def async_predict(self, inputs, jobs):
+    def async_predict(self, input_data, num_infer_requests=0):
         """
         Perfrom model inference using async mode.
-        
-        :param inputs: List of input data
-        :type List[numpy.array]
-        :param jobs: numer of infer requests in the AsyncInferQueue
-        :type int
-        
-        :return A List containing result of each input
-        :rtype List[Dict[openvino.runtime.ConstOutput, numpy.array]]
+
+        :param input_data: Input data to be inferenced.
+                           Users can put multiple input data in a list to infer them together.
+                           Can be List[numpy.ndarray] or
+                           List[List[numpy.ndarray]] if the model has multiple inputs.
+        :param num_infer_requests: Number of infer requests in the AsyncInferQueue, default to 0.
+                                   If 0, it will be set automatically in
+                                   constructor of AsyncInferQueue.
+
+        :return: A List containing result of each inference. Type: List[numpy.ndarray]
         """
-        results = [0 for _ in range(len(inputs))]
+        results = [0 for _ in range(len(input_data))]
 
         # call back function is called when a infer_request in the infer_queue finishes the inference
         def call_back(requests, idx):
-            results[idx] = requests.results
+            results[idx] = self.on_forward_end(requests.results)
 
-        infer_queue = AsyncInferQueue(self._compiled_model, jobs=jobs)
+        infer_queue = AsyncInferQueue(self._compiled_model, jobs=num_infer_requests)
         infer_queue.set_callback(call_back)
 
-        for id, model_input in enumerate(inputs):
-            infer_queue.start_async([model_input], userdata=id)
+        for id, model_input in enumerate(input_data):
+            if isinstance(model_input, np.ndarray):
+                # start_async accpet a list of input data
+                # so put data in a list
+                model_input = [model_input]
+            infer_queue.start_async(model_input, userdata=id)
 
         infer_queue.wait_all()
 

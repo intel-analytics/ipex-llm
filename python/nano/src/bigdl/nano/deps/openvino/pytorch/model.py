@@ -117,31 +117,49 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         xml_path = path / self.status['xml_path']
         save(self.ov_model.ie_network, xml_path)
 
-    def async_predict(self, inputs, jobs):
+    def async_predict(self, input_data, num_infer_requests=0):
         """
         Perfrom model inference using async mode.
 
-        :param inputs: input data, can be a DataLoader object or List of torch.Tensor
-        :type Union[torch.utils.data.dataloader.DataLoader, List[torch.Tensor]]
+        :param input_data: Input data to be inferenced.
+                           Users can put multiple input data in a list or
+                           put all data in a DataLoader to infer and get results of all input data.
+                           Can be torch.utils.data.dataloader.DataLoader and
+                           List[torch.Tensor] or
+                           List[List[torch.Tensor]] if the model has multiple inputs.
+                           If input_data is a DataLoader object,the format in DataLoader should be
+                           (x1, x2, ..., xn, y).
+        :param jobs: Numer of infer requests in the AsyncInferQueue, default to 0.
+                     If 0, it will be set automatically in constructor of AsyncInferQueue.
 
-        :param jobs: numer of infer requests in the AsyncInferQueue
-        :type int
-
-        :return A List containing result of each input
-        :rtype List[torch.Tensor]
+        :return: A List of torch.Tensor containing result of each input
         """
-        if isinstance(inputs, DataLoader):
-            input_data = []
-            for data in inputs:
-                input_data.append(data[0])
+        if isinstance(input_data, DataLoader):
+            # input_data is a DataLoader, retrieve every batch and put them in a list.
+            input_list = []
+            for data in input_data:
+                all_inputs = list(data)[:-1]
+                input_list.append(all_inputs)
         else:
-            input_data = inputs
+            # input_data is list of torch.Tensor
+            input_list = input_data
 
-        inputs = self.on_forward_start(input_data)
-        results = self.ov_model.async_predict(inputs, jobs)
-        outputs = []
-        for res in results:
-            outputs.append(self.on_forward_end(res))
+        if isinstance(input_list[0], list) and len(input_list[0]) > 1:
+            # multiple inputs
+            for i, inputs in enumerate(input_list):
+                input_list[i] = list(self.on_forward_start(inputs))
+        else:
+            # single input
 
-        return outputs
+            # if single input in dataloader, the format is [[batch1], [batch2]]
+            # after being converted to list
+            # convert to [batch1, batch2] here.
+            if isinstance(input_list[0], list):
+                input_list = [x[0] for x in input_list]
 
+            input_list = list(self.on_forward_start(input_list))
+
+        results = super().async_predict(input_list, num_infer_requests)
+        # results are already list of torch.Tensor
+        # because on_forward_end is called in OpenVINOMOdel.async_predict
+        return results
