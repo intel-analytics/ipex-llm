@@ -69,7 +69,9 @@ def create_dataloaders():
     return train_dataloader, val_dataloader
 
 
+# subclass TorchNano and override its train() method
 class MyNano(TorchNano):
+    # move the body of your existing train function into TorchNano train method
     def train(self):
         seed_everything(42)
         model = MyPytorchModule()
@@ -92,28 +94,13 @@ class MyNano(TorchNano):
                 optimizer.zero_grad()
                 output = model(data)
                 loss = loss_fuc(output, target)
+                # replace the loss.backward() with self.backward(loss)
                 self.backward(loss)
                 optimizer.step()
 
                 train_loss += loss.sum()
                 num += 1
             print(f'Train Epoch: {epoch}, loss: {train_loss/num}')
-
-        # TESTING LOOP
-        model.eval()
-        test_loss, num = 0, 0
-        test_acc = Accuracy()
-        with torch.no_grad():
-            for data, target in val_loader:
-                output = model(data)
-                loss = loss_fuc(output, target)
-                test_loss += loss.sum()
-                num += 1
-
-                test_acc(output, target)
-
-        print(f"Test set: Average loss: {self.all_gather(test_loss).sum()/num}, "
-              f"Accuracy: {test_acc.compute()}")
 
 
 if __name__ == '__main__':
