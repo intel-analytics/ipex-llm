@@ -23,7 +23,7 @@ torch = LazyImport('torch')
 Seq2SeqForecaster = LazyImport('bigdl.chronos.forecaster.seq2seq_forecaster.Seq2SeqForecaster')
 from unittest import TestCase
 import pytest
-from .. import op_torch, op_distributed, op_all, op_onnxrt16, op_automl
+from .. import op_torch, op_distributed, op_all, op_onnxrt16, op_automl, op_diff_set_all
 
 
 def create_data(loader=False):
@@ -121,6 +121,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         test_mse = forecaster.evaluate(test_data)
         assert test_mse[0].shape == test_data[1].shape[1:]
 
+    @op_diff_set_all
     @op_onnxrt16
     def test_s2s_forecaster_fit_loader(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
@@ -167,6 +168,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         except ImportError:
             pass
 
+    @op_diff_set_all
     def test_s2s_forecaster_openvino_methods(self):
         train_data, val_data, test_data = create_data()
         forecaster = Seq2SeqForecaster(past_seq_len=24,
@@ -190,6 +192,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
             forecaster.export_openvino_file(dirname=ckpt_name, quantized_dirname=ckpt_name_q)
 
     @op_all
+    @op_diff_set_all
     def test_s2s_forecaster_quantization(self):
         train_data, val_data, test_data = create_data()
         forecaster = Seq2SeqForecaster(past_seq_len=24,
@@ -277,6 +280,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         stop_orca_context()
 
     @op_distributed
+    @op_diff_set_all
     @op_onnxrt16
     def test_s2s_forecaster_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context
@@ -419,6 +423,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         _, y_test = test.to_numpy()
         assert yhat.shape == y_test.shape
 
+    @op_diff_set_all
     @op_onnxrt16
     def test_forecaster_from_tsdataset_data_loader_onnx(self):
         train, test = create_tsdataset(roll=False)

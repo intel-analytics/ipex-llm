@@ -23,7 +23,7 @@ from bigdl.chronos.utils import LazyImport
 ProphetForecaster = LazyImport('bigdl.chronos.forecaster.prophet_forecaster.ProphetForecaster')
 from unittest import TestCase
 import pytest
-from .. import op_all
+from .. import op_all, op_diff_set_all
 
 
 def create_data():
@@ -37,6 +37,7 @@ def create_data():
 
 
 @op_all
+@op_diff_set_all
 class TestChronosModelProphetForecaster(TestCase):
 
     def setUp(self):
