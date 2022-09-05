@@ -37,15 +37,15 @@ runs:
         pip uninstall -y opencv-python-headless
         pip install opencv-python-headless
 
-        sed -i "s/'bigdl-core=='+VERSION/'bigdl-core==2.1.0b20220811'/g" python/dllib/src/setup.py
-        bash python/dev/release_default_linux_spark312.sh default false false
+        #sed -i "s/'bigdl-core=='+VERSION/'bigdl-core==2.1.0b20220811'/g" python/dllib/src/setup.py
+        #bash python/dev/release_default_linux_spark312.sh default false false
         
         # install dllib
-        pip install python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl
+        #pip install python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl
 
         # install orca
-        pip install python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
-       
+        #pip install python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
+        pip install --pre --upgrade bigdl-orca-spark3
         export SPARK_LOCAL_HOSTNAME=localhost
         chmod a+x python/orca/dev/test/run-pytests-horovod-tf.sh
         python/orca/dev/test/run-pytests-horovod-tf.sh
