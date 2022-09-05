@@ -77,7 +77,7 @@ class _TorchNanoModule(_LiteModule):
     def forward(self, *args: Any, **kwargs: Any) -> Any:
         if self.channels_last:
             def _convert_to_channels_last(t: torch.Tensor) -> torch.Tensor:
-                return t.to(memory_format=torch.channels_last)
+                return t.to(memory_format=torch.channels_last) if t.dim() == 4 else t
             args, kwargs = apply_to_collection([args, kwargs], function=_convert_to_channels_last,
                                                dtype=torch.Tensor)
         return super().forward(args, kwargs)

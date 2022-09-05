@@ -120,7 +120,16 @@ class MyNanoChannelsLastCorrectness(TorchNano):
 
         model, optimizer, train_loader = self.setup(model, optimizer, train_loader)
 
-        
+        model.train()
+
+        for X, y in train_loader:
+            optimizer.zero_grad()
+            loss = loss_fuc(model(X), y)
+            self.backward(loss)
+            optimizer.step()
+
+        result = torch.tensor([[[[0.0, -1.0]], [[-1.25, 0.5]]]])
+        assert model.conv1.weight.equal(result)
 
 
 class TestChannelsLast(TestCase):
