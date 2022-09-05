@@ -19,6 +19,7 @@ import pytest
 import torch
 from unittest import TestCase
 from bigdl.nano.pytorch import Trainer
+from bigdl.nano.pytorch import TorchNano
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_12
 from torchvision.models.resnet import ResNet, BasicBlock
 from torchmetrics.functional import accuracy
@@ -101,6 +102,25 @@ class ConvModel(torch.nn.Module):
             assert x.is_contiguous(memory_format=torch.channels_last)
         output = torch.flatten(x, 1)
         return output
+
+class MyNanoChannelsLastCorrectness(TorchNano):
+    def train(self, lr):
+        x = torch.Tensor([
+            [[[1, 0]], [[1, 0]]],
+            [[[1, 0]], [[2, 0]]],
+            [[[0, 3]], [[1, 0]]],
+            [[[1, 1]], [[2, 1]]]
+        ])
+        y = torch.Tensor([[0.0], [1.0], [0.0], [1.0]])
+        train_dataset = torch.utils.data.TensorDataset(x, y)
+        train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=4, shuffle=False)
+        model = ConvModel()
+        loss_fuc = torch.nn.MSELoss()
+        optimizer = torch.optim.SGD(model.parameters(), lr=0.25)
+
+        model, optimizer, train_loader = self.setup(model, optimizer, train_loader)
+
+        
 
 
 class TestChannelsLast(TestCase):
