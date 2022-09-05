@@ -1,4 +1,4 @@
-export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
+export ANALYTICS_ZOO_ROOT=/home/projects/BigDL
 export NANO_HOME=${ANALYTICS_ZOO_ROOT}/python/nano/src
 export NANO_TUTORIAL_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/tutorial/training/pytorch-lightning
 
@@ -18,9 +18,9 @@ python $NANO_TUTORIAL_TEST_DIR/lightning_train_ipex.py
 sed -i s/max_epochs=5,/max_epochs=5,\ fast_dev_run=True,/ $NANO_TUTORIAL_TEST_DIR/lightning_train_multi_instance.py
 python $NANO_TUTORIAL_TEST_DIR/lightning_train_multi_instance.py
 
-sed -i s/max_epochs,/max_epochs=5,\ fast_dev_run=True,/ $NANO_TUTORIAL_TEST_DIR/lightning_train_bf16.py
+sed -i s/max_epochs=5,/max_epochs=5,\ fast_dev_run=True,/ $NANO_TUTORIAL_TEST_DIR/lightning_train_bf16.py
 if [ $TORCH_VERSION == True ]
 then
-    sed -i '106.108d' $NANO_TUTORIAL_TEST_DIR/lightning_train_bf16.py
+    sed -i '106,108d' $NANO_TUTORIAL_TEST_DIR/lightning_train_bf16.py
 fi
 python $NANO_TUTORIAL_TEST_DIR/lightning_train_bf16.py
