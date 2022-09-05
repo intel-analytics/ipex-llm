@@ -162,7 +162,7 @@ class TorchNano(LightningLite):
 
     def _setup(
         self,
-        model: nn.Module,
+        model: nn.Module,  # type: ignore[override]
         optimizers: List[Optimizer],
         move_to_device: bool = True,
     ) -> Any:
