@@ -162,13 +162,13 @@ class TorchNano(LightningLite):
 
     def _setup(
         self,
-        model: nn.Module,  # type: ignore[override]
+        model: nn.Module,
         optimizers: List[Optimizer],
         move_to_device: bool = True,
     ) -> Any:
         """Used to replace LightningLite's setup method."""
         if self.channels_last:
-            model = model.to(memory_format=torch.channels_last)
+            model = model.to(memory_format=torch.channels_last)  # type: ignore
         # LightningLite won't call `Strategy.setup()` method,
         # in which we add IPEX's optimization when using `trainer`.
 
