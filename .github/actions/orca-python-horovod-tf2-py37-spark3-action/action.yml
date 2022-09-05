@@ -23,6 +23,7 @@ runs:
     - name: Run Test
       shell: bash
       run: |
+        conda remove -n orca-python-horovod-tf2-py37 -y --all
         conda create -n orca-python-horovod-tf2-py37 -y python==3.7.10 setuptools==58.0.4
         conda info -e
         source activate orca-python-horovod-tf2-py37
