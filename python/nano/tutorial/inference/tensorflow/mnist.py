@@ -116,10 +116,6 @@ accuracy = categorical_accuracy.result().numpy()
 
 print("Quantization test loss:", loss)
 print("Quantization test accuracy:", accuracy)
-# Raw model test loss: 0.024767747148871422
-# Raw model test accuracy: 0.9918000102043152
-# Quantized model test loss: 0.02494174614548683
-# Quantized model test accuracy: 0.9917
 # Accuracy loss: about 0.1% in this case
 # Note: accuracy loss varies from different tasks and situations,
 # but you can set a quantization threshold when making a quantization model.
