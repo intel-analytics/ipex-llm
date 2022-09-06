@@ -46,7 +46,7 @@ runs:
         ray stop
 
         source deactivate
-        conda remove -n orca-python-horovod-pytorch-py37 --all
+        conda remove -n orca-python-horovod-pytorch-py37 -y --all
       env:
         BIGDL_ROOT: ${{ github.workspace }}
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
