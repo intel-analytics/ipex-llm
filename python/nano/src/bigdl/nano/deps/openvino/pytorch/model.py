@@ -15,6 +15,7 @@
 #
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import List, Union  # for typehint
 from .dataloader import PytorchOpenVINODataLoader
 from .metric import PytorchOpenVINOMetric
 from ..core.model import OpenVINOModel
@@ -117,7 +118,9 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         xml_path = path / self.status['xml_path']
         save(self.ov_model.ie_network, xml_path)
 
-    def async_predict(self, input_data, num_infer_requests=0):
+    def async_predict(self,
+                      input_data: Union[DataLoader, List[torch.Tensor], List[List[torch.Tensor]]],
+                      num_requests: int = 0) -> List[torch.Tensor]:
         """
         Perfrom model inference using async mode.
 
@@ -129,8 +132,11 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
                            List[List[torch.Tensor]] if the model has multiple inputs.
                            If input_data is a DataLoader object,the format in DataLoader should be
                            (x1, x2, ..., xn, y).
-        :param jobs: Numer of infer requests in the AsyncInferQueue, default to 0.
-                     If 0, it will be set automatically in constructor of AsyncInferQueue.
+        :param num_requests: Numer of requests in the asynchronous infer requests pool.
+                             Each element in input_data will be bound to an idle async
+                             infer request in the pool to do inference.
+                             Defaults to 0.
+                             If 0, it will be set automatically to the optimal number.
 
         :return: A List of torch.Tensor containing result of each input
         """
@@ -159,7 +165,7 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
 
             input_list = list(self.on_forward_start(input_list))
 
-        results = super().async_predict(input_list, num_infer_requests)
+        results = super().async_predict(input_list, num_requests)
         # results are already list of torch.Tensor
         # because on_forward_end is called in OpenVINOMOdel.async_predict
         return results

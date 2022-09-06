@@ -31,6 +31,6 @@ class TestOpenVINO(TestCase):
         openvino_model = OpenVINOModel("./intel/resnet18-xnor-binary-onnx-0001/FP16-INT1/resnet18-xnor-binary-onnx-0001.xml")
         x = [np.random.randn(1, 3, 224, 224) for i in range(5)]
 
-        result = openvino_model.async_predict(x, num_infer_requests=5)
+        result = openvino_model.async_predict(x, num_requests=5)
         for res in result:
             assert res.shape == (1, 1000)

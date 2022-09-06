@@ -82,12 +82,12 @@ class TestOpenVINO(TestCase):
         dataloader = DataLoader(ds, batch_size=2)
 
         # do async_predict use dataloader as input
-        result = openvino_model.async_predict(dataloader, num_infer_requests=3)
+        result = openvino_model.async_predict(dataloader, num_requests=3)
         for res in result:
             assert res.shape == (2, 10)
 
         # do async_predict use List of Tensor as input
         x = [torch.rand((10, 3, 256, 256)) for i in range(3)]
-        result = openvino_model.async_predict(x, num_infer_requests=3)
+        result = openvino_model.async_predict(x, num_requests=3)
         for res in result:
             assert res.shape == (10, 10)

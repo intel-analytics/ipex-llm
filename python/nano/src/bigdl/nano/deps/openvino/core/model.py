@@ -15,6 +15,7 @@
 #
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import List, Union  # for typehint
 from openvino.runtime import Core
 from bigdl.nano.utils.log4Error import invalidInputError
 from openvino.runtime import Model
@@ -177,7 +178,9 @@ class OpenVINOModel:
     def _model_exists_or_err(self):
         invalidInputError(self.ie_network is not None, "self.ie_network shouldn't be None.")
 
-    def async_predict(self, input_data, num_infer_requests=0):
+    def async_predict(self,
+                      input_data: Union[List[np.ndarray], List[List[np.ndarray]]],
+                      num_requests: int = 0) -> List[np.ndarray]:
         """
         Perfrom model inference using async mode.
 
@@ -185,9 +188,11 @@ class OpenVINOModel:
                            Users can put multiple input data in a list to infer them together.
                            Can be List[numpy.ndarray] or
                            List[List[numpy.ndarray]] if the model has multiple inputs.
-        :param num_infer_requests: Number of infer requests in the AsyncInferQueue, default to 0.
-                                   If 0, it will be set automatically in
-                                   constructor of AsyncInferQueue.
+        :param num_requests: Number of requests in the asynchronous infer requests pool.
+                             Each element in input_data will be bound to an idle async
+                             infer request in the pool to do inference.
+                             Defaults to 0.
+                             If 0, it will be set automatically to the optimal number.
 
         :return: A List containing result of each inference. Type: List[numpy.ndarray]
         """
@@ -197,7 +202,7 @@ class OpenVINOModel:
         def call_back(requests, idx):
             results[idx] = self.on_forward_end(requests.results)
 
-        infer_queue = AsyncInferQueue(self._compiled_model, jobs=num_infer_requests)
+        infer_queue = AsyncInferQueue(self._compiled_model, jobs=num_requests)
         infer_queue.set_callback(call_back)
 
         for id, model_input in enumerate(input_data):
