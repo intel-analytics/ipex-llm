@@ -22,14 +22,15 @@ import org.apache.spark.SparkContext
 import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMClassifier => MLightGBMClassifier}
-import org.apache.spark.ml.param.IntParam
+import org.apache.spark.SparkConf
+
 
 class LightGBMTrainSpec extends ZooSpecHelper {
   var sc : SparkContext = _
   var sqlContext : SQLContext = _
 
   override def doBefore(): Unit = {
-    val conf = Engine.createSparkConf().setAppName("Test NNClassifier").setMaster("local[1]")
+    val conf = new SparkConf().setAppName("Test NNClassifier").setMaster("local[1]")
     sc = SparkContext.getOrCreate(conf)
     sqlContext = new SQLContext(sc)
   }
@@ -54,10 +55,10 @@ class LightGBMTrainSpec extends ZooSpecHelper {
     val assembledDf = vectorAssembler.transform(df).select("features", "label").cache()
     val lightGBMclassifier = new LightGBMClassifier()
     val classifier = new MLightGBMClassifier()
-    val model = lightGBMclassifier.fit(assembledDf)
+    val model = classifier.fit(assembledDf)
     val res = model.transform(assembledDf)
     TestUtils.conditionFailTest(res.count() == 2)
-    }
+  }
 
   "LightGBMClassifer save" should "work" in {
     val spark = SparkSession.builder().getOrCreate()
@@ -102,6 +103,5 @@ class LightGBMTrainSpec extends ZooSpecHelper {
     TestUtils.conditionFailTest(y0.count() == 4)
     TestUtils.conditionFailTest(y0_0.count() == 4)
   }
-
 }
 

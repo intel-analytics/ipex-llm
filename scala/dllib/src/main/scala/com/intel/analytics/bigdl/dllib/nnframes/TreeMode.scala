@@ -36,78 +36,78 @@ import org.apache.spark.ml.util.Identifiable
 class XGBClassifier (val xgboostParams: Map[String, Any] = Map()) {
   val sc = SparkSession.active.sparkContext
   sc.getConf.set("spark.task.cpus", Engine.coreNumber().toString)
-  private val model = new XGBoostClassifier(xgboostParams)
-  model.setNthread(Engine.coreNumber())
-  model.setNumWorkers(Engine.nodeNumber())
-  model.setMaxBins(256)
+  private val estimator = new XGBoostClassifier(xgboostParams)
+  estimator.setNthread(Engine.coreNumber())
+  estimator.setNumWorkers(Engine.nodeNumber())
+  estimator.setMaxBins(256)
 
   def setFeaturesCol(featuresColName: String): this.type = {
-    model.setFeaturesCol(featuresColName)
+    estimator.setFeaturesCol(featuresColName)
     this
   }
 
   def fit(df: DataFrame): XGBClassifierModel = {
     df.repartition(Engine.nodeNumber())
-    val xgbmodel = model.fit(df)
+    val xgbmodel = estimator.fit(df)
     new XGBClassifierModel(xgbmodel)
   }
 
   def setNthread(value: Int): this.type = {
-    model.setNthread(value)
+    estimator.setNthread(value)
     this
   }
 
   def setNumRound(value: Int): this.type = {
-    model.setNumRound(value)
+    estimator.setNumRound(value)
     this
   }
 
   def setNumWorkers(value: Int): this.type = {
-    model.setNumWorkers(value)
+    estimator.setNumWorkers(value)
     this
   }
 
   def setEta(value: Double): this.type = {
-    model.setEta(value)
+    estimator.setEta(value)
     this
   }
 
   def setGamma(value: Int): this.type = {
-    model.setGamma(value)
+    estimator.setGamma(value)
     this
   }
 
   def setMaxDepth(value: Int): this.type = {
-    model.setMaxDepth(value)
+    estimator.setMaxDepth(value)
     this
   }
 
   def setMissing(value: Float): this.type = {
-    model.setMissing(value)
+    estimator.setMissing(value)
     this
   }
 
   def setLabelCol(labelColName: String): this.type = {
-    model.setLabelCol(labelColName)
+    estimator.setLabelCol(labelColName)
     this
   }
   def setTreeMethod(value: String): this.type = {
-    model.setTreeMethod(value)
+    estimator.setTreeMethod(value)
     this
   }
 
   def setObjective(value: String): this.type = {
-    model.setObjective(value)
+    estimator.setObjective(value)
     this
   }
 
   def setNumClass(value: Int): this.type = {
-    model.setNumClass(value)
+    estimator.setNumClass(value)
     this
   }
 
   def setTimeoutRequestWorkers(value: Long): this.type = {
-    model.setTimeoutRequestWorkers(value)
+    estimator.setTimeoutRequestWorkers(value)
     this
   }
 }
@@ -169,198 +169,198 @@ object XGBClassifierModel {
  */
 class XGBRegressor () {
 
-  private val model = new XGBoostRegressor()
-  model.setNthread(Engine.coreNumber())
-  model.setMaxBins(256)
+  private val estimator = new XGBoostRegressor()
+  estimator.setNthread(Engine.coreNumber())
+  estimator.setMaxBins(256)
 
   def setLabelCol(labelColName : String) : this.type = {
-    model.setLabelCol(labelColName)
+    estimator.setLabelCol(labelColName)
     this
   }
 
   def setFeaturesCol(featuresColName: String): this.type = {
-    model.setFeaturesCol(featuresColName)
+    estimator.setFeaturesCol(featuresColName)
     this
   }
 
   def fit(df: DataFrame): XGBRegressorModel = {
     df.repartition(Engine.nodeNumber())
-    val xgbModel = model.fit(df)
+    val xgbModel = estimator.fit(df)
     new XGBRegressorModel(xgbModel)
   }
 
   def setNumRound(value: Int): this.type = {
-    model.setNumRound(value)
+    estimator.setNumRound(value)
     this
   }
 
   def setNumWorkers(value: Int): this.type = {
-    model.setNumWorkers(value)
+    estimator.setNumWorkers(value)
     this
   }
 
   def setNthread(value: Int): this.type = {
-    model.setNthread(value)
+    estimator.setNthread(value)
     this
   }
 
   def setSilent(value: Int): this.type = {
-    model.setSilent(value)
+    estimator.setSilent(value)
     this
   }
 
   def setMissing(value: Float): this.type = {
-    model.setMissing(value)
+    estimator.setMissing(value)
     this
   }
 
   def setCheckpointPath(value: String): this.type = {
-    model.setCheckpointPath(value)
+    estimator.setCheckpointPath(value)
     this
   }
 
   def setCheckpointInterval(value: Int): this.type = {
-    model.setCheckpointInterval(value)
+    estimator.setCheckpointInterval(value)
     this
   }
 
   def setSeed(value: Long): this.type = {
-    model.setSeed(value)
+    estimator.setSeed(value)
     this
   }
 
   def setEta(value: Double): this.type = {
-    model.setEta(value)
+    estimator.setEta(value)
     this
   }
 
   def setGamma(value: Double): this.type = {
-    model.setGamma(value)
+    estimator.setGamma(value)
     this
   }
 
   def setMaxDepth(value: Int): this.type = {
-    model.setMaxDepth(value)
+    estimator.setMaxDepth(value)
     this
   }
 
   def setMinChildWeight(value: Double): this.type = {
-    model.setMinChildWeight(value)
+    estimator.setMinChildWeight(value)
     this
   }
 
   def setMaxDeltaStep(value: Double): this.type = {
-    model.setMaxDeltaStep(value)
+    estimator.setMaxDeltaStep(value)
     this
   }
 
   def setColsampleBytree(value: Double): this.type = {
-    model.setColsampleBytree(value)
+    estimator.setColsampleBytree(value)
     this
   }
 
   def setColsampleBylevel(value: Double): this.type = {
-    model.setColsampleBylevel(value)
+    estimator.setColsampleBylevel(value)
     this
   }
 
   def setLambda(value: Double): this.type = {
-    model.setLambda(value)
+    estimator.setLambda(value)
     this
   }
 
   def setAlpha(value: Double): this.type = {
-    model.setAlpha(value)
+    estimator.setAlpha(value)
     this
   }
 
   def setTreeMethod(value: String): this.type = {
-    model.setTreeMethod(value)
+    estimator.setTreeMethod(value)
     this
   }
 
   def setGrowPolicy(value: String): this.type = {
-    model.setGrowPolicy(value)
+    estimator.setGrowPolicy(value)
     this
   }
 
   def setMaxBins(value: Int): this.type = {
-    model.setMaxBins(value)
+    estimator.setMaxBins(value)
     this
   }
 
   def setMaxLeaves(value: Int): this.type = {
-    model.setMaxLeaves(value)
+    estimator.setMaxLeaves(value)
     this
   }
 
   def setSketchEps(value: Double): this.type = {
-    model.setSketchEps(value)
+    estimator.setSketchEps(value)
     this
   }
 
   def setScalePosWeight(value: Double): this.type = {
-    model.setScalePosWeight(value)
+    estimator.setScalePosWeight(value)
     this
   }
 
   def setSampleType(value: String): this.type = {
-    model.setSampleType(value)
+    estimator.setSampleType(value)
     this
   }
 
   def setNormalizeType(value: String): this.type = {
-    model.setNormalizeType(value)
+    estimator.setNormalizeType(value)
     this
   }
 
   def setRateDrop(value: Double): this.type = {
-    model.setRateDrop(value)
+    estimator.setRateDrop(value)
     this
   }
 
   def setSkipDrop(value: Double): this.type = {
-    model.setSkipDrop(value)
+    estimator.setSkipDrop(value)
     this
   }
 
   def setLambdaBias(value: Double): this.type = {
-    model.setLambdaBias(value)
+    estimator.setLambdaBias(value)
     this
   }
 
   def setObjective(value: String): this.type = {
-    model.setObjective(value)
+    estimator.setObjective(value)
     this
   }
 
   def setObjectiveType(value: String): this.type = {
-    model.setObjectiveType(value)
+    estimator.setObjectiveType(value)
     this
   }
 
   def setSubsample(value: Double): this.type = {
-    model.setSubsample(value)
+    estimator.setSubsample(value)
     this
   }
 
   def setBaseScore(value: Double): this.type = {
-    model.setBaseScore(value)
+    estimator.setBaseScore(value)
     this
   }
 
   def setEvalMetric(value: String): this.type = {
-    model.setEvalMetric(value)
+    estimator.setEvalMetric(value)
     this
   }
 
   def setNumEarlyStoppingRounds(value: Int): this.type = {
-    model.setNumEarlyStoppingRounds(value)
+    estimator.setNumEarlyStoppingRounds(value)
     this
   }
 
   def setMaximizeEvaluationMetrics(value: Boolean): this.type = {
-    model.setMaximizeEvaluationMetrics(value)
+    estimator.setMaximizeEvaluationMetrics(value)
     this
   }
 }
