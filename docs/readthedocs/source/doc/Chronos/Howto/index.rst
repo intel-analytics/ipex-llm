@@ -4,8 +4,15 @@ How-to guides are bite-sized, executable examples where users could check when m
 
 Install
 -------------------------
-* `Install Chronos on Windows` <windows_guide.html>`__
-* `Use Chronos in container(docker)` <docker_guide_single_node.html>`__
+* `Install Chronos on Windows <windows_guide.html>`__
+* `Use Chronos in container(docker) <docker_guide_single_node.html>`__
+
+.. toctree::
+    :maxdepth: 1
+    :hidden:
+
+    windows_guide
+    docker_guide_single_node
 
 Forecasting
 -------------------------
