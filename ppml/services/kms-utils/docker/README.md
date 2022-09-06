@@ -59,6 +59,7 @@ export appid=your_appid
 export appkey=your_apikey
 
 # Generatekeys
+# Reminder: Simple KMS is dummy. You can choose any appid and appkey. If you want to generate the corresponding primarykey and datakey, the appid must be 12 characters long.
 docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh generatekeys $appid $appkey"
 
 # Encrypt a single data file
