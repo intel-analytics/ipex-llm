@@ -56,7 +56,7 @@ class ServerModel(nn.Module):
 @click.option('--load_model', default=False)
 @click.option('--data_path', default="./data/diabetes-vfl-1.csv")
 def run_client(load_model, data_path):
-    init_fl_context('1')
+    init_fl_context(1)
     df_train = pd.read_csv(data_path)   
     
     df_train['ID'] = df_train['ID'].astype(str)

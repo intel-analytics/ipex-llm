@@ -90,7 +90,7 @@ class TestSaveLoad(FLTest):
         loss_fn = nn.CrossEntropyLoss()
 
         # list for result validation
-        init_fl_context('1', self.target)
+        init_fl_context(1, self.target)
         vfl_model_1 = NeuralNetworkPart1()
         vfl_model_2 = NeuralNetworkPart2()
         vfl_client_ppl = Estimator.from_torch(client_model=vfl_model_1,

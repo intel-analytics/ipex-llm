@@ -62,7 +62,7 @@ class TestFGBoostRegression(FLTest):
         self.update_available_port()
         self.fl_server = FLServer()
         self.fl_server.set_port(self.port)
-        init_fl_context("1", self.target)
+        init_fl_context(1, self.target)
         # this explicit set is needed, default value is 'fork' on Unix
         # if 'fork', the resources would be inherited and thread crash would occur
         # (to be verified)
