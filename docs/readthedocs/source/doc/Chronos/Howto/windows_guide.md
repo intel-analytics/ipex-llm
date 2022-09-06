@@ -27,4 +27,4 @@ chmod +x Miniconda3-4.5.4-Linux-x86_64.sh
 ```
 
 ## Step 3: Install Chronos
-For more installation options, please refer to [Chronos User Guide.](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html#install)
+For more installation options, please refer to [Chronos User Guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html#install).
