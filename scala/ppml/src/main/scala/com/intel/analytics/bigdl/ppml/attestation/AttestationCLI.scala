@@ -33,7 +33,7 @@ object AttestationCLI {
                              appKey: String = "test",
                              asType: String = ATTESTATION_CONVENTION.MODE_EHSM_KMS,
                              asURL: String = "127.0.0.1",
-                             challenge: String = "", 
+                             challenge: String = "",
                              userReport: String = "ppml")
 
         val cmdParser = new OptionParser[CmdParams]("PPML Attestation Quote Generation Cmd tool") {
@@ -50,8 +50,8 @@ object AttestationCLI {
               .text("attestation service type, default is EHSMKeyManagementService")
               .action((x, c) => c.copy(asType = x))
             opt[String]('c', "challenge")
-              .text("challenge to attestation service, should be BASE64 string, default is '' which means skip bi-attestation")
-              .action((x, c) => c.copy(challenge = x))  
+              .text("challenge to attestation service, default is '' which skip bi-attestation")
+              .action((x, c) => c.copy(challenge = x))
             opt[String]('p', "userReport")
               .text("userReportDataPath, default is test")
               .action((x, c) => c.copy(userReport = x))
@@ -87,7 +87,6 @@ object AttestationCLI {
               System.exit(1)
             }
         }
-        
         // val attResult = as.attestWithServer(Base64.getEncoder.encodeToString(quote))
         // // System.out.print(as.attestWithServer(quote))
         // if (attResult._1) {
