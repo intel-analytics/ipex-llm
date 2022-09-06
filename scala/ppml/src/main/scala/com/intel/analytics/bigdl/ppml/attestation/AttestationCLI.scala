@@ -33,6 +33,7 @@ object AttestationCLI {
                              appKey: String = "test",
                              asType: String = ATTESTATION_CONVENTION.MODE_EHSM_KMS,
                              asURL: String = "127.0.0.1",
+                             challenge: String = "", 
                              userReport: String = "ppml")
 
         val cmdParser = new OptionParser[CmdParams]("PPML Attestation Quote Generation Cmd tool") {
@@ -47,7 +48,10 @@ object AttestationCLI {
               .action((x, c) => c.copy(asURL = x))
             opt[String]('t', "asType")
               .text("attestation service type, default is EHSMKeyManagementService")
-              .action((x, c) => c.copy(asURL = x))
+              .action((x, c) => c.copy(asType = x))
+            opt[String]('c', "challenge")
+              .text("challenge to attestation service, should be BASE64 string, default is '' which means skip bi-attestation")
+              .action((x, c) => c.copy(challenge = x))  
             opt[String]('p', "userReport")
               .text("userReportDataPath, default is test")
               .action((x, c) => c.copy(userReport = x))
@@ -57,8 +61,8 @@ object AttestationCLI {
 
         // Generate quote
         val userReportData = params.userReport
-        val quoteGenerator = new GramineQuoteGeneratorImpl()
-        val quote = quoteGenerator.getQuote(userReportData.getBytes)
+        // val quoteGenerator = new GramineQuoteGeneratorImpl()
+        // val quote = quoteGenerator.getQuote(userReportData.getBytes)
 
         // Attestation Client
         val as = params.asType match {
@@ -69,16 +73,31 @@ object AttestationCLI {
                 new DummyAttestationService()
             case _ => throw new AttestationRuntimeException("Wrong Attestation service type")
         }
-        val attResult = as.attestWithServer(Base64.getEncoder.encodeToString(quote))
-        // System.out.print(as.attestWithServer(quote))
-        if (attResult._1) {
-            System.out.println("Attestation Success!")
-            // Bash success
-            System.exit(0)
-        } else {
-            System.out.println("Attestation Fail! Application killed!")
-            // bash fail
-            System.exit(1)
+
+        val challengeString = params.challenge
+        if (challengeString != "") {
+            val asQuote = as.getQuoteFromServer(challengeString)
+            val quoteVerifier = new SGXDCAPQuoteVerifierImpl()
+            val verifyQuoteResult = quoteVerifier.verifyQuote(asQuote.getBytes())
+            if (verifyQuoteResult == 0) {
+              System.out.println("Quote Verification Success!")
+              System.exit(0)
+            } else {
+              System.out.println("Quote Verification Fail! Application killed")
+              System.exit(1)
+            }
         }
+        
+        // val attResult = as.attestWithServer(Base64.getEncoder.encodeToString(quote))
+        // // System.out.print(as.attestWithServer(quote))
+        // if (attResult._1) {
+        //     System.out.println("Attestation Success!")
+        //     // Bash success
+        //     System.exit(0)
+        // } else {
+        //     System.out.println("Attestation Fail! Application killed!")
+        //     // bash fail
+        //     System.exit(1)
+        // }
     }
 }
