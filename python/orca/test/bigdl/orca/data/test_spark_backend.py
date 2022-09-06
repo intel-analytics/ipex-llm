@@ -25,6 +25,7 @@ import bigdl.orca.data.pandas
 from bigdl.orca import OrcaContext
 from bigdl.dllib.nncontext import *
 from bigdl.orca.data.image import write_tfrecord, read_tfrecord
+from bigdl.orca.data.utils import *
 
 
 class TestSparkBackend(TestCase):
@@ -228,8 +229,6 @@ class TestSparkBackend(TestCase):
             .appName('test_spark_backend')\
             .config("spark.driver.memory", "6g").getOrCreate()
         df = spark.read.csv(file_path)
-
-        from bigdl.orca.data.utils import *
         data_shards = spark_df_to_pd_sparkxshards(df)
 
 
