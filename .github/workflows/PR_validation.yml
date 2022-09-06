@@ -62,7 +62,6 @@ jobs:
       - name: Run test
         uses: ./.github/actions/dllib-scala-ut-action
 
-
   Dllib-Scala-UT:
     needs: changes
     if: ${{ needs.changes.outputs.dllib == 'true' }}
@@ -77,6 +76,75 @@ jobs:
       - name: Run test
         uses: ./.github/actions/dllib-scala-ut-action
 
+  Orca-Python-ExampleTest-Py37-Spark3:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca == 'true' }} 
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Run test
+      uses: ./.github/actions/orca-python-exampletest-action
+
+  Orca-Python-ExampleTest-Ray-Py37-Spark3:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca == 'true' }} 
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Run test
+      uses: ./.github/actions/orca-python-exampletest-ray-action
+
+  Orca-Jep-ExampleTest-Py37-Spark2:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca == 'true' }} 
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Run test
+      uses: ./.github/actions/orca-jep-exampletest-action
+
+  Orca-Python-Ray-Py37-Spark3:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca == 'true' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Run test
+      uses: ./.github/actions/orca-python-ray-py37-spark3-action
+
+  Orca-Python-Py37-Spark3:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca == 'true' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Run test
+      uses: ./.github/actions/orca-python-py37-spark3-action
 
   Orca-Ray-Ctx-Example:
     needs: changes
