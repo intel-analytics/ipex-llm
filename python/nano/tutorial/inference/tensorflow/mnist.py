@@ -38,6 +38,7 @@ from tensorflow import keras
 from keras import layers
 from keras import losses, metrics
 
+# keras.Model is injected with customized functions
 from bigdl.nano.tf.keras import Model
 
 # Model / data parameters
@@ -75,7 +76,8 @@ model = keras.Sequential(
     ]
 )
 
-model = Model(inputs=model.inputs, outputs=model.outputs)
+# this line is optional
+# model = Model(inputs=model.inputs, outputs=model.outputs)
 
 model.summary()
 
@@ -102,16 +104,22 @@ tune_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))
 # Execute quantization
 q_model = model.quantize(calib_dataset=tune_dataset)
 
+# Inference using quantized model
 y_test_hat = q_model(x_test)
+
+# Evaluate the quantized model
 loss = float(tf.reduce_mean(
              losses.categorical_crossentropy(y_test, y_test_hat)))
 categorical_accuracy = metrics.CategoricalAccuracy()
 categorical_accuracy.update_state(y_test, y_test_hat)
 accuracy = categorical_accuracy.result().numpy()
+
 print("Quantization test loss:", loss)
 print("Quantization test accuracy:", accuracy)
 # Raw model test loss: 0.024767747148871422
 # Raw model test accuracy: 0.9918000102043152
 # Quantized model test loss: 0.02494174614548683
 # Quantized model test accuracy: 0.9917
-# Accuracy loss: 0.01%
+# Accuracy loss: about 0.1% in this case
+# Note: accuracy loss varies from different tasks and situations,
+# but you can set a quantization threshold when making a quantization model.
