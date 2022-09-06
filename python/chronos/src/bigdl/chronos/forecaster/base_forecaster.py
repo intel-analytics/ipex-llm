@@ -595,14 +595,14 @@ class BasePytorchForecaster(Forecaster):
         """
         Evaluate using a trained forecaster.
 
-        Please note that evaluate result is calculated by scaled y and yhat. If you scaled
-        your data (e.g. use .scale() on the TSDataset) please follow the following code
-        snap to evaluate your result if you need to evaluate on unscaled data.
-
-        if you want to evaluate on a single node(which is common practice), please call
+        If you want to evaluate on a single node(which is common practice), please call
         .to_local().evaluate(data, ...)
 
-        >>> from bigdl.orca.automl.metrics import Evaluator
+        Please note that evaluate result is calculated by scaled y and yhat. If you scaled
+        your data (e.g. use .scale() on the TSDataset), please follow the following code
+        snap to evaluate your result if you need to evaluate on unscaled data.
+
+        >>> from bigdl.chronos.metric.forecast_metrics import Evaluator
         >>> y_hat = forecaster.predict(x)
         >>> y_hat_unscaled = tsdata.unscale_numpy(y_hat) # or other customized unscale methods
         >>> y_unscaled = tsdata.unscale_numpy(y) # or other customized unscale methods
@@ -699,8 +699,8 @@ class BasePytorchForecaster(Forecaster):
         your data (e.g. use .scale() on the TSDataset) please follow the following code
         snap to evaluate your result if you need to evaluate on unscaled data.
 
-        >>> from bigdl.orca.automl.metrics import Evaluator
-        >>> y_hat = forecaster.predict(x)
+        >>> from bigdl.chronos.metric.forecast_metrics import Evaluator
+        >>> y_hat = forecaster.predict_with_onnx(x)
         >>> y_hat_unscaled = tsdata.unscale_numpy(y_hat) # or other customized unscale methods
         >>> y_unscaled = tsdata.unscale_numpy(y) # or other customized unscale methods
         >>> Evaluator.evaluate(metric=..., y_unscaled, y_hat_unscaled, multioutput=...)
