@@ -98,6 +98,8 @@ jobs:
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch
           pip install pytest
+          # fix issue, see https://github.com/intel-analytics/BigDL/blob/main/docs/readthedocs/source/doc/Nano/Overview/known_issues.md#ray-issues
+          pip install google-api-core==2.8.2
           pip install ray[default]==1.11.0 prometheus_client==0.13.0
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
             pip install ${{matrix.pytorch-version}} -f https://download.pytorch.org/whl/torch_stable.html
