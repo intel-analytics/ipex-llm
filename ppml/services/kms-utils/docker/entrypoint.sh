@@ -7,8 +7,7 @@ if [ "$action" = "enroll" ]; then
 		cd /home/ehsm/out/ehsm-kms_enroll_app/
 		./ehsm-kms_enroll_app -a http://$EHSM_KMS_IP:$EHSM_KMS_PORT/ehsm/
 	elif [ "$KMS_TYPE" = "simple" ]; then
-		java -cp /home/spark-encrypt-io.jar \
-		com.intel.analytics.bigdl.ppml.examples.GenerateSimpleAppidAndAppkey
+		echo "Simple KMS is dummy. You can choose any appid and appkey. If you want to generate the corresponding primarykey and datakey, the appid must be 12 characters long."
 	elif [ "$KMS_TYPE" = "azure" ]; then
 	    keyVaultName=$2
 	    id=$3
