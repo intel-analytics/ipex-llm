@@ -644,6 +644,7 @@ class SparkXShards(XShards):
             self.type['schema'] = pdf_schema
             self.type['spark_df_schema'] = sdf_schema
             return self.type['schema']
+        return None
 
     def _get_spark_df_schema(self):
         if 'spark_df_schema' in self.type:
@@ -656,6 +657,7 @@ class SparkXShards(XShards):
             self.type['schema'] = pdf_schema
             self.type['spark_df_schema'] = sdf_schema
             return self.type['spark_df_schema']
+        return None
 
     def _get_class_name(self):
         if 'class_name' in self.type:
