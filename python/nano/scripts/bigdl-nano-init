@@ -47,9 +47,6 @@ function display-help {
 		echo "    -c, --disable-tcmalloc   Disable tcmalloc and unset related variables"
 }
 
-# set jemalloc as the default allocator
-ENABLE_JEMALLOC_VAR=1
-
 while getopts ":ojhc-:" opt; do
 	case ${opt} in
 		- )
