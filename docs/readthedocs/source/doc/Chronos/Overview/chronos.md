@@ -157,7 +157,7 @@ pip install --pre --upgrade bigdl-nano[tensorflow]
 
         +++
 
-        `Data process <./data_processing_feature_engineering.html>`_ / 
+        `Data <./data_processing_feature_engineering.html>`_ / 
         `Forecast <./forecasting.html>`_ / 
         `Detect <./anomaly_detection.html>`_ / 
         `Simulate <./simulation.html>`_
@@ -175,7 +175,7 @@ pip install --pre --upgrade bigdl-nano[tensorflow]
 
         +++
 
-        `Quick Tour <../Howto/index.html>`_
+        `How-to-Guide <../Howto/index.html>`_
 
     .. grid-item-card::
         :class-footer: sd-bg-light
