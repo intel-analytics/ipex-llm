@@ -597,14 +597,14 @@ class LightGBMClassifierModel private[bigdl](val model: MLightGBMClassificationM
     output
   }
 
-  def save(path: String): Unit = {
-    model.write.overwrite().save(path)
+  def saveNativeModel(path: String): Unit = {
+    model.saveNativeModel(path, overwrite = true)
   }
 }
 
 object LightGBMClassifierModel {
-  def load(path: String): LightGBMClassifierModel = {
-    new LightGBMClassifierModel(MLightGBMClassificationModel.load(path))
+  def loadNativeModel(path: String): LightGBMClassifierModel = {
+    new LightGBMClassifierModel(MLightGBMClassificationModel.loadNativeModelFromFile(path))
   }
 }
 
@@ -782,8 +782,8 @@ class LightGBMRegressorModel private[bigdl](val model: MLightGBMRegressionModel)
     output
   }
 
-  def save(path: String): Unit = {
-    model.write.overwrite().save(path)
+  def saveNativeModel(path: String): Unit = {
+    model.saveNativeModel(path, overwrite = true)
   }
 }
 
@@ -791,8 +791,8 @@ object LightGBMRegressorModel {
   /**
    * Load pretrained Zoo XGBRegressorModel.
    */
-  def load(path: String): LightGBMRegressorModel = {
-    new LightGBMRegressorModel(MLightGBMRegressionModel.load(path))
+  def loadNativeModel(path: String): LightGBMRegressorModel = {
+    new LightGBMRegressorModel(MLightGBMRegressionModel.loadNativeModelFromFile(path))
   }
 }
 

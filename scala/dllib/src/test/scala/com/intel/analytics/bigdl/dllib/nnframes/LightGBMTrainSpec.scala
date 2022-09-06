@@ -42,8 +42,6 @@ class LightGBMTrainSpec extends ZooSpecHelper {
 
   "LightGBMClassifer train" should "work" in {
     val spark = SparkSession.builder().getOrCreate()
-    System.setProperty("KMP_DUPLICATE_LIB_OK", "TRUE")
-
     import spark.implicits._
     Engine.init
     val df = Seq(
@@ -58,8 +56,6 @@ class LightGBMTrainSpec extends ZooSpecHelper {
     val classifier = new MLightGBMClassifier()
     val model = lightGBMclassifier.fit(assembledDf)
     val res = model.transform(assembledDf)
-    res.show()
-
     TestUtils.conditionFailTest(res.count() == 2)
     }
 
@@ -75,16 +71,11 @@ class LightGBMTrainSpec extends ZooSpecHelper {
       .setInputCols(Array("f1", "f2", "f3", "f4"))
       .setOutputCol("features")
     val assembledDf = vectorAssembler.transform(df).select("features", "label").cache()
-    assembledDf.show()
-    println("***********************")
     val lightGBMclassifier = new LightGBMClassifier()
     val model = lightGBMclassifier.fit(assembledDf)
-    val res = model.transform(assembledDf)
-    res.show()
-    model.save ("/tmp/lightgbm/classifier1")
-    val model2 = LightGBMClassifierModel.load("/tmp/lightgbm/classifier1")
+    model.saveNativeModel("/tmp/lightgbm/classifier1")
+    val model2 = LightGBMClassifierModel.loadNativeModel("/tmp/lightgbm/classifier1")
     val res2 = model2.transform(assembledDf)
-    res2.show()
     TestUtils.conditionFailTest(res2.count() == 2)
   }
 
@@ -105,13 +96,12 @@ class LightGBMTrainSpec extends ZooSpecHelper {
     val lightGBMRegressor = new LightGBMRegressor()
     val regressorModel0 = lightGBMRegressor.fit(assembledDf)
     val y0 = regressorModel0.transform(assembledDf)
-    regressorModel0.save("/tmp/test")
-    val model = XGBRegressorModel.load("/tmp/test")
+    regressorModel0.saveNativeModel("/tmp/test")
+    val model = LightGBMRegressorModel.loadNativeModel("/tmp/test")
     val y0_0 = model.transform(assembledDf)
     TestUtils.conditionFailTest(y0.count() == 4)
     TestUtils.conditionFailTest(y0_0.count() == 4)
   }
-
 
 }
 
