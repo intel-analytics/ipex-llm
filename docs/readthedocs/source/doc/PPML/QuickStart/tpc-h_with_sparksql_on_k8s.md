@@ -2,13 +2,13 @@
 
 ### Prerequisites ###
 - Hardware that supports SGX
-- A fully configured Kubernetes cluster 
+- A fully configured Kubernetes cluster
 - Intel SGX Device Plugin to use SGX in K8S cluster (install following instructions [here](https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html "here"))
 
 ### Prepare TPC-H kit and data ###
 1. Generate data
 
-Go to [TPC Download](https://www.tpc.org/tpc_documents_current_versions/current_specifications5.asp) site, choose `TPC-H` source code, then download the TPC-H toolkits. **Follow the download instructions carefully**
+Go to [TPC Download](https://www.tpc.org/tpc_documents_current_versions/current_specifications5.asp) site, choose `TPC-H` source code, then download the TPC-H toolkits. **Follow the download instructions carefully.**
 After you download the tpc-h tools zip and uncompressed the zip file. Go to `dbgen` directory, and create `makefile` based on `makefile.suite`, and modify `makefile` according to the prompts inside, and run `make`.
 
 This should generate an executable called `dbgen`
@@ -28,7 +28,7 @@ will generate roughly 10GB of input data.
 
 You can then either upload your data to remote file system or read them locally.
 
-1. Encrypt Data
+2. Encrypt Data
 
 Encrypt data with specified Key Management Service (`SimpleKeyManagementService`, or `EHSMKeyManagementService` , or `AzureKeyManagementService`)
 
@@ -49,8 +49,8 @@ sudo docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2
 2. Prepare SGX keys (following instructions [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-graphene#11-prepare-the-keyspassworddataenclave-keypem "here")), make sure keys and tpch-spark can be accessed on each K8S node
 3. Start a bigdl-ppml enabled Spark K8S client container with configured local IP, key, tpch and kuberconfig path
 ```
-export ENCLAVE_KEY=/root/keys/enclave-key.pem
-export DATA_PATH=/root/zoo-tutorials/tpch-spark
+export ENCLAVE_KEY=/path/to/enclave-key.pem
+export DATA_PATH=/path/to/tpch
 export KEYS_PATH=/root/keys
 export KUBERCONFIG_PATH=/root/kuberconfig
 export LOCAL_IP=$local_ip
