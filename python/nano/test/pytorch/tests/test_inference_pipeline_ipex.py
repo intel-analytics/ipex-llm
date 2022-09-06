@@ -88,11 +88,10 @@ class TestInferencePipeline(TestCase):
                                cpu_num=1)
 
         acc_model, option = inference_opt.get_best_model()
-        print(option)
         acc_model, option = inference_opt.get_best_model(accelerator="onnxruntime")
         assert option == "" or "onnxruntime" in option
         acc_model, option = inference_opt.get_best_model(precision="int8")
-        assert option == "" or "inc" in option
+        assert option == "" or "inc" in option or "pot" in option
         acc_model, option = inference_opt.get_best_model(accuracy_criterion=0.1)
         acc_model(next(iter(self.train_loader))[0])
 
@@ -103,20 +102,12 @@ class TestInferencePipeline(TestCase):
                                cpu_num=1)
 
         acc_model, option = inference_opt.get_best_model()
-        print(option)
         acc_model, option = inference_opt.get_best_model(accelerator="onnxruntime")
         assert option == "" or "onnxruntime" in option
         acc_model, option = inference_opt.get_best_model(precision="int8")
-        assert option == "" or "inc" in option
+        assert option == "" or "inc" in option or "pot" in option
         with pytest.raises(RuntimeError) as e:
             acc_model, option = inference_opt.get_best_model(accuracy_criterion=0.1)
         error_msg = e.value.args[0]
         assert error_msg == "If you want to specify accuracy_criterion, you need "\
                             "to set metric and validation_data when call 'optimize'."
-
-
-if __name__ == "__main__":
-    test = TestInferencePipeline()
-    test.test_get_model_without_optimize()
-    test.test_pipeline_with_metric()
-    test.test_pipeline_without_metric()

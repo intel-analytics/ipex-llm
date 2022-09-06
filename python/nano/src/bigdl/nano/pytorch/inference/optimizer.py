@@ -165,6 +165,7 @@ class InferenceOptimizer:
 
         result_map: Dict[str, Dict] = {}
 
+        training_state = model.training
         model.eval()  # change model to eval state
 
         for method, available in available_dict.items():
@@ -245,6 +246,10 @@ class InferenceOptimizer:
 
             else:
                 pass
+
+        # restore model's state
+        if training_state:
+            model.train()
 
         self.optimized_model_dict: Dict = result_map
         print("==========================Optimization Results==========================")
