@@ -78,7 +78,7 @@ class TestSparkBackend(TestCase):
         df = data[0]
         assert df.location.dtype == "float64"
         assert df.ID.dtype == "float64"
-        data_shard = bigdl.orca.data.pandas.read_csv(file_path, dtype={"sale_price": np.float32})
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path, dtype={"sale_price": np.float32, "ID": np.int64})
         data = data_shard.collect()
         df2 = data[0]
         assert df2.sale_price.dtype == "float32" and df2.ID.dtype == "int64"
