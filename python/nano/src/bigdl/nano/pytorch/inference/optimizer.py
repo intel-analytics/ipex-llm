@@ -242,8 +242,8 @@ class InferenceOptimizer:
                                                    metric, validation_data)
                 else:
                     result_map[method]["accuracy"] = None
-                result_map[method]["model"] = acce_model
 
+                result_map[method]["model"] = acce_model
             else:
                 pass
 
