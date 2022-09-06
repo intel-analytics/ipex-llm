@@ -594,11 +594,9 @@ class TestChronosModelTCNForecaster(TestCase):
         train.gen_dt_feature(one_hot_features=['WEEK'])
         test.gen_dt_feature(one_hot_features=['WEEK'])
 
-        loader = train.to_torch_data_loader(roll=True,
-                                            lookback=24,
+        loader = train.to_torch_data_loader(lookback=24,
                                             horizon=5)
-        test_loader = test.to_torch_data_loader(roll=True,
-                                                lookback=24,
+        test_loader = test.to_torch_data_loader(lookback=24,
                                                 horizon=5)
         tcn = TCNForecaster.from_tsdataset(train)
 
