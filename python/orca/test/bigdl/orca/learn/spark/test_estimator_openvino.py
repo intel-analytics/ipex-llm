@@ -91,7 +91,14 @@ class TestEstimatorForOpenVINO(TestCase):
         self.est = Estimator.from_openvino(model_path=model_path)
 
     def load_multi_output_model(self):
-        model_path = "/home/yina/Documents/data/myissue/openvino_model/FP32/model_float32.xml"
+        os.makedirs(local_path, exist_ok=True)
+        model_url = data_url + "/analytics-zoo-data/ov_multi_output.tar"
+        model_path = maybe_download("ov_multi_output.tar",
+                                    local_path, model_url)
+        tar = tarfile.open(model_path)
+        tar.extractall(path=local_path)
+        tar.close()
+        model_path = os.path.join(local_path, "FP32/model_float32.xml")
         self.est = Estimator.from_openvino(model_path=model_path)
 
     def test_openvino_predict_ndarray(self):
