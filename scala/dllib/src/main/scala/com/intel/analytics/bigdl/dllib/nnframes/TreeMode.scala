@@ -430,7 +430,6 @@ object XGBRegressorModel {
  * [[lightGBMClassifier wrapper]]
  */
 class LightGBMClassifier {
-  System.setProperty("KMP_DUPLICATE_LIB_OK", "true")
 
   val sc = SparkSession.active.sparkContext
   sc.getConf.set("spark.task.cpus", Engine.coreNumber().toString)
