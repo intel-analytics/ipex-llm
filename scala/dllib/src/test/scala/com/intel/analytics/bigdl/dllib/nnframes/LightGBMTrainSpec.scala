@@ -30,7 +30,7 @@ class LightGBMTrainSpec extends ZooSpecHelper {
   var sqlContext : SQLContext = _
 
   override def doBefore(): Unit = {
-    val conf = new SparkConf().setAppName("Test NNClassifier").setMaster("local[1]")
+    val conf = new SparkConf().setAppName("Test lightGBM").setMaster("local[1]")
     sc = SparkContext.getOrCreate(conf)
     sqlContext = new SQLContext(sc)
   }
@@ -55,9 +55,10 @@ class LightGBMTrainSpec extends ZooSpecHelper {
     val assembledDf = vectorAssembler.transform(df).select("features", "label").cache()
     val lightGBMclassifier = new LightGBMClassifier()
     val classifier = new MLightGBMClassifier()
+    val model1 = lightGBMclassifier.fit(assembledDf)
     val model = classifier.fit(assembledDf)
-    val res = model.transform(assembledDf)
-    TestUtils.conditionFailTest(res.count() == 2)
+    val res1 = model1.transform(assembledDf)
+    TestUtils.conditionFailTest(res1.count() == 2)
   }
 
   "LightGBMClassifer save" should "work" in {

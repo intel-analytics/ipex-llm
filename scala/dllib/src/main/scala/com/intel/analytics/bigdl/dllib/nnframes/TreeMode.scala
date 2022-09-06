@@ -608,7 +608,7 @@ object LightGBMClassifierModel {
 }
 
 /**
- * [[XGBRegressor]] xgboost wrapper of XGBRegressor.
+ * [[LightGBMRegressor]] lightGBM wrapper of LightGBMRegressor.
  */
 class LightGBMRegressor {
 

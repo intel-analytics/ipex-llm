@@ -16,10 +16,10 @@
 
 package com.intel.analytics.bigdl.dllib.nnframes
 
-import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.{Engine, TestUtils}
 import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
 import org.apache.spark.SparkContext
-import org.apache.spark.ml.feature.{VectorAssembler}
+import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.sql.{SQLContext, SparkSession}
 
 class XgboostTrainSpec extends ZooSpecHelper {
@@ -87,6 +87,7 @@ class XgboostTrainSpec extends ZooSpecHelper {
       val model = XGBRegressorModel.load("/tmp/test")
       val y0_0 = model.transform(assembledDf)
       y0_0.show()
+      TestUtils.conditionFailTest(y0_0.except(y0).count()==0)
     }
   }
 }
