@@ -438,11 +438,9 @@ class TestChronosNBeatsForecaster(TestCase):
     @op_onnxrt16
     def test_forecaster_from_tsdataset_data_loader_onnx(self):
         train, test = create_tsdataset(roll=False)
-        loader = train.to_torch_data_loader(roll=True,
-                                            lookback=24,
+        loader = train.to_torch_data_loader(lookback=24,
                                             horizon=5)
-        test_loader = test.to_torch_data_loader(roll=True,
-                                                lookback=24,
+        test_loader = test.to_torch_data_loader(lookback=24,
                                                 horizon=5)
         nbeats = NBeatsForecaster.from_tsdataset(train)
         nbeats.fit(loader, epochs=2)

@@ -41,11 +41,11 @@ def create_data(loader=False):
         TSDataset.from_pandas(df, dt_col="datetime", target_col=target,
                               with_split=True, test_ratio=0.1, val_ratio=0.1)
     if loader:
-        train_loader = tsdata_train.to_torch_data_loader(roll=True, lookback=24, horizon=5,
+        train_loader = tsdata_train.to_torch_data_loader(lookback=24, horizon=5,
                                                         time_enc=True, label_len=12)
-        val_loader = tsdata_val.to_torch_data_loader(roll=True, lookback=24, horizon=5,
+        val_loader = tsdata_val.to_torch_data_loader(lookback=24, horizon=5,
                                                     time_enc=True, label_len=12, shuffle=False)
-        test_loader = tsdata_test.to_torch_data_loader(roll=True, lookback=24, horizon=5,
+        test_loader = tsdata_test.to_torch_data_loader(lookback=24, horizon=5,
                                                     time_enc=True, label_len=12, shuffle=False,
                                                     is_predict=True)
         return train_loader, val_loader, test_loader

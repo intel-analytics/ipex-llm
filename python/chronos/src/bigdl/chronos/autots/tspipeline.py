@@ -557,7 +557,6 @@ class TSPipeline:
         horizon = 0 if is_predict else self._best_config["future_seq_len"]
         selected_features = self._best_config["selected_features"]
         data_loader = data.to_torch_data_loader(batch_size=batch_size,
-                                                roll=True,
                                                 lookback=lookback,
                                                 horizon=horizon,
                                                 feature_col=selected_features)
