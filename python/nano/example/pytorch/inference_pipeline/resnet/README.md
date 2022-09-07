@@ -59,6 +59,7 @@ python inference_pipeline.py
 
 It will take about 2 minutes to run inference optimization. Then you may find the result for inference as follows:
 ```
+==========================Optimization Results==========================
 accleration option: original, latency: 54.2669ms, accuracy: 0.9937
 accleration option: fp32_ipex, latency: 40.3075ms, accuracy: 0.9937
 accleration option: bf16_ipex, latency: 115.6182ms, accuracy: 0.9937
