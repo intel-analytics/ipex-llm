@@ -109,11 +109,11 @@ jobs:
     - name: Remove env
       uses: ./.github/actions/orca-python-horovod-tf2-py37-spark3-action/remove-env 
     - name: Setup env
-      uses: ./.github/actions/orca-python-horovod-tf2-py37-spark3-action/setup-env
+      uses: ./.github/actions/orca/setup-env/setup-horovod-tf2-py37
     - name: Run Test
-      uses: ./.github/actions/orca-python-horovod-tf2-py37-spark3-action/nightly-test
+      uses: ./.github/actions/orca/orca-python-horovod-tf2-py37-spark3-action/nightly-test
     - name: Remove env
-      uses: ./.github/actions/orca-python-horovod-tf2-py37-spark3-action/remove-env
+      uses: ./.github/actions/remove-env
       
   Dllib-Scala-UT:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Dllib-Scala-UT' || github.event.inputs.artifact == 'all' }} 
