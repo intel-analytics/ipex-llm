@@ -2,15 +2,12 @@ Chronos How-to Guides
 =========================
 How-to guides are bite-sized, executable examples where users could check when meeting with some specific topic during the usage.
 
-
-Create a Forecasting
+Forecasting
 -------------------------
 * `Create a forecaster <how-to-create-forecaster.html>`__
 
-    In this guidance, we demonstrate **How to create a Forecaster**. Including two ways of creating a forecaster and an explanation of some important parameters.
+    In this guidance, we demonstrate **how to create a Forecaster**. Including two ways of creating a forecaster and an explanation of some important parameters.
 
-Forecasting
--------------------------
 * `Train forecaster on single node <how_to_train_forecaster_on_one_node.html>`__
 
     In this guidance, **we demonstrate how to train forecasters on one node**. In the training process, forecaster will learn the pattern (like the period, scale...) in history data. Although Chronos supports training on a cluster, it's highly recommeneded to try one node first before allocating a cluster to make life easier.
