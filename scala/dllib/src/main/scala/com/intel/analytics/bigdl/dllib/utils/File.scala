@@ -24,7 +24,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataInputStream, FSDataOutputStream, FileSystem, Path}
 import org.apache.hadoop.io.IOUtils
 
-import scala.reflect.classTag
+import scala.reflect.{ClassTag, classTag}
 
 object File {
   private[bigdl] val hdfsPrefix: String = "hdfs:"
@@ -153,7 +153,7 @@ object File {
    *
    * @param fileName
    */
-  def loadFromHdfs[T](fileName: String): T = {
+  def loadFromHdfs[T: ClassTag](fileName: String): T = {
     val byteArrayOut = readHdfsByte(fileName)
     var objFile: ObjectInputStream = null
     try {
