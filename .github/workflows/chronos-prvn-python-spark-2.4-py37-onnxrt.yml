@@ -54,7 +54,6 @@ jobs:
           pip uninstall -y numpy
           pip install numpy==1.19.5
           pip install scipy==1.5.4
-          pip install torch==1.9.0 torchvision==0.10.0
           apt-get update
           apt-get install patchelf
 
@@ -72,6 +71,7 @@ jobs:
           pip install python/chronos/src/dist/bigdl_chronos-*-py3-none-manylinux1_x86_64.whl
           export SPARK_LOCAL_HOSTNAME=localhost
           export KERAS_BACKEND=tensorflow
+          pip install torch==1.9.0 torchvision==0.10.0
           bash python/chronos/dev/test/run-pytests-onnxrt16.sh
         env:
           BIGDL_ROOT: ${{ github.workspace }}
