@@ -28,7 +28,7 @@ import org.apache.commons.lang.SerializationUtils
 import org.apache.commons.lang3.SerializationException
 import org.apache.spark.rdd.RDD
 
-import scala.reflect.ClassTag
+import scala.reflect.{ClassTag, classTag}
 import scala.util.Try
 
 object Util {
@@ -261,7 +261,7 @@ object Util {
           ).getOrElse(super.resolveClass(desc))
         }
       }
-      in.accept(classOf[T])
+      in.accept(classTag[T].runtimeClass)
       in.readObject().asInstanceOf[T]
     } catch {
       case ex: ClassCastException =>

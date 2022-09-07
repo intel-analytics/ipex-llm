@@ -24,6 +24,8 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataInputStream, FSDataOutputStream, FileSystem, Path}
 import org.apache.hadoop.io.IOUtils
 
+import scala.reflect.classTag
+
 object File {
   private[bigdl] val hdfsPrefix: String = "hdfs:"
   private[bigdl] val s3aPrefix: String = "s3a:"
@@ -157,7 +159,7 @@ object File {
     try {
       objFile = new ObjectInputStream(new ByteArrayInputStream(byteArrayOut))
       val validFile = new ValidatingObjectInputStream(new ByteArrayInputStream(byteArrayOut))
-      validFile.accept(classOf[T])
+      validFile.accept(classTag[T].runtimeClass)
       val result = validFile.readObject()
       objFile.close()
       result.asInstanceOf[T]
