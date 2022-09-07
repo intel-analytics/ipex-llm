@@ -12,12 +12,10 @@ Folder --> set as local_data_folder_path when creating container
 |
 │
 └───folder1 --> set as input_folder_path when running command (used below)
-│       file011.txt --> data file to be encrpted or decrypted
-│       file012.txt
+│       file11.txt --> data file to be encrpted or decrypted
 |
 └───folder2
-        file021.txt
-        file022.txt
+        file21.txt
 ```
 
 If image is ready, you can run the container and enroll by using `run-docker-container.sh` in order to get a appid and appkey pair like below:
