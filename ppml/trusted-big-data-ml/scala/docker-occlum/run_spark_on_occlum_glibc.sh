@@ -53,7 +53,7 @@ init_instance() {
 
     # enable tmp hostfs
     # --conf spark.executorEnv.USING_TMP_HOSTFS=true \
-    if [ $USING_TMP_HOSTFS == "true" ]; then
+    if [[ $USING_TMP_HOSTFS == "true" ]]; then
         echo "use tmp hostfs"
         mkdir ./shuffle
         edit_json="$(cat Occlum.json | jq '.mount+=[{"target": "/tmp","type": "hostfs","source": "./shuffle"}]')" && \
