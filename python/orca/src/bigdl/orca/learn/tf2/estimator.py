@@ -73,6 +73,8 @@ class Estimator(object):
                 invalidInputError(False,
                                   "cpu_binding should not be True when using spark backend")
             from bigdl.orca.learn.tf2.pyspark_estimator import SparkTFEstimator
+            if model_dir.startswith("dbfs:/"):
+                model_dir = "/dbfs/" + model_dir[len("dbfs:/"):]
             return SparkTFEstimator(model_creator=model_creator,
                                     config=config, verbose=verbose,
                                     compile_args_creator=compile_args_creator,
