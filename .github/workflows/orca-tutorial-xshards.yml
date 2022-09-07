@@ -93,9 +93,7 @@ jobs:
         pip install pandas
         pip install jep==3.9.0
         pip install cloudpickle
-        pip install protobuf==3.15.3
-        pip install torch==1.7.1
-        pip install pyarrow
+        pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r python/orca/dev/example/requirements-ray.txt 
         export SPARK_LOCAL_HOSTNAME=localhost
         export FTP_URI=${FTP_URI}
         chmod a+x python/orca/dev/test/run-tutorial-xshards.sh
