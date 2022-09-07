@@ -1,6 +1,4 @@
-from model import LitTCN
 import torch
-import matplotlib.pyplot as plt
 from bigdl.nano.pytorch import Trainer
 from bigdl.chronos.model.tcn import model_creator
 from bigdl.chronos.metric.forecast_metrics import Evaluator
@@ -29,8 +27,7 @@ def gen_dataloader():
 
     return tsdata_traindataloader,\
            tsdata_valdataloader,\
-           tsdata_testdataloader,\
-           tsdata_test 
+           tsdata_testdataloader
 
 def predict_wraper(model, input_sample):
     model(input_sample)
@@ -38,8 +35,7 @@ def predict_wraper(model, input_sample):
 if __name__ == '__main__':
     tsdata_traindataloader,\
     tsdata_valdataloader,\
-    tsdata_testdataloader,\
-    tsdata_test = gen_dataloader()
+    tsdata_testdataloader = gen_dataloader()
     
     config = {'input_feature_num':8,
               'output_feature_num':1,
