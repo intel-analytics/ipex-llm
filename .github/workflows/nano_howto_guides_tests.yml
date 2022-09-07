@@ -43,6 +43,7 @@ jobs:
             $CONDA/bin/conda info
             bash python/nano/dev/build_and_install.sh linux default false pytorch
             source bigdl-nano-init
+            pip install pytest nbmake
             bash python/nano/tutorial/notebook/inference/pytorch/run-nano-howto-guides-inference-pytorch-tests.sh
             source $CONDA/bin/deactivate
             $CONDA/bin/conda remove -n howto-guides-inference-pytorch --all
