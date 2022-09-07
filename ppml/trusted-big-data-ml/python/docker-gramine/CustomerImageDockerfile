@@ -46,7 +46,12 @@ RUN chmod -x /opt/kms-utils.sh && \
     apt-get install -y libsgx-enclave-common-dev libsgx-ae-qe3 libsgx-ae-qve libsgx-urts libsgx-dcap-ql libsgx-dcap-default-qpl libsgx-dcap-quote-verify-dev libsgx-dcap-default-qpl-dev libsgx-quote-ex-dev libsgx-uae-service libsgx-ra-network libsgx-ra-uefi libsgx-dcap-ql-dev && \
 # build enroll app from source
     cd /opt && \
-    git clone -b $EHSM_KMS_BRANCH_VERSION https://github.com/analytics-zoo/ehsm.git && cd ehsm && wget https://download.01.org/intel-sgx/sgx-linux/2.16/as.ld.objdump.r4.tar.gz && tar -zxf as.ld.objdump.r4.tar.gz && cp external/toolset/ubuntu20.04/* /usr/local/bin && make && cd out/ehsm-kms_enroll_app && ls ehsm-kms_enroll_app
+    git clone -b $EHSM_KMS_BRANCH_VERSION https://github.com/analytics-zoo/ehsm.git && cd ehsm && wget https://download.01.org/intel-sgx/sgx-linux/2.16/as.ld.objdump.r4.tar.gz && tar -zxf as.ld.objdump.r4.tar.gz && cp external/toolset/ubuntu20.04/* /usr/local/bin && make && cd out/ehsm-kms_enroll_app && ls ehsm-kms_enroll_app && \
+# output mr_enclave and mr_signer
+   cd /ppml/trusted-big-data-ml && \
+   echo "[INFO] Use the below hash values of mr_enclave and mr_signer to register enclave:" && \
+   gramine-sgx-quote-dump -m bash.sig|grep mr_enclave && \
+   gramine-sgx-quote-dump -m bash.sig|grep mr_signer
 
 WORKDIR /ppml/trusted-big-data-ml
 
