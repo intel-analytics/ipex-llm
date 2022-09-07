@@ -6,7 +6,7 @@ bash build-docker-image.sh
 
 ## 2. Run container
 
-If image is ready, you can run the container and enroll by using `run-docker-container.sh` in order to get a appid and appkey pair like below:
+If image is ready, you can run the container and enroll by using `run-docker-container.sh` in order to get a appid and apikey pair like below:
 
 ```bash
 export KMS_TYPE=an_optional_kms_type # KMS_TYPE can be (1) ehsm, (2) simple
@@ -55,19 +55,19 @@ INFO [main.cpp(159) -> main]: ehsm-kms enroll app end.
 
 
 export appid=your_appid
-export appkey=your_apikey
+export apikey=your_apikey
 
 # Generatekeys
-docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh generatekeys $appid $appkey"
+docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh generatekeys $appid $apikey"
 
 # Encrypt a single data file
-docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh encrypt $appid $appkey $primary_key_name_in_key_folder $data_key_name_in_key_folder $plaintext_data_file_name_in_data_shared_folder"
+docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh encrypt $appid $apikey $primary_key_name_in_key_folder $data_key_name_in_key_folder $plaintext_data_file_name_in_data_shared_folder"
 
 # Decrypt a single data file
-docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh decrypt $appid $appkey $primary_key_name_in_key_folder $data_key_name_in_key_folder $encrypted_data_file_name_in_data_shared_folder"
+docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh decrypt $appid $apikey $primary_key_name_in_key_folder $data_key_name_in_key_folder $encrypted_data_file_name_in_data_shared_folder"
 
 # SpliteAndEncrypt
-docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh splitandencrypt $appid $appkey $primary_key_name_in_key_folder $data_key_name_in_key_folder $plaintext_data_file_name_in_data_shared_folder $to_save_encrypted_file_name_in_data_shared_folder"
+docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh splitandencrypt $appid $apikey $primary_key_name_in_key_folder $data_key_name_in_key_folder $plaintext_data_file_name_in_data_shared_folder $to_save_encrypted_file_name_in_data_shared_folder"
 ```
 ## 4. Stop container:
 ```
