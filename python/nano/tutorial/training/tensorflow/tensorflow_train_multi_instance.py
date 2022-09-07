@@ -75,11 +75,23 @@ if __name__ == '__main__':
     # It is often beneficial to use multiple instances for training
     # if a server contains multiple sockets or many cores, 
     # so that the workload can make full use of all CPU cores.
-    # BigDL-Nano makes it very easy to conduct multi-instance training correctly.
+    #
+    # When using data-parallel training, the batch size is equivalent to
+    # becoming n times larger, where n is the number of parallel processes.
+    # We should to scale the learning rate to n times as well to achieve the
+    # same effect as single instance training.
+    # However, scaling the learning rate linearly may lead to poor convergence
+    # at the beginning of training, so we should gradually increase the
+    # learning rate to n times, and this is called 'learning rate warmup'.
+    # 
+    # Fortunately, BigDL-Nano makes it very easy to conduct multi-instance 
+    # training correctly. It will handle all these for you.
     # 
     # Use `Model` or `Sequential` in `bigdl.nano.tf.keras` to create model,
     # then just set the `num_processes` parameter in the `fit` method.
-    # BigDL-Nano will launch the specific number of processes to perform data-parallel training.
+    # BigDL-Nano will launch the specific number of processes to perform
+    # data-parallel training, in addition, it will automatically apply
+    # learning rate scaling and warmup for your training.
     #
     model = create_model(num_classes, img_size)
     model.fit(train_ds,
