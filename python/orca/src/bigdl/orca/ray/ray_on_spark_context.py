@@ -528,6 +528,9 @@ class RayOnSparkContext(object):
             for k, v in extra_params.items():
                 kw = k.replace("-", "_")
                 kwargs[kw] = v
+        if "redis_password" in kwargs:
+            kwargs["_redis_password"] = kwargs["redis_password"]
+            kwargs.pop("redis_password")
         return kwargs
 
     def init(self, driver_cores=0):
@@ -555,9 +558,6 @@ class RayOnSparkContext(object):
                     dashboard_host="0.0.0.0",
                     _system_config=self.system_config
                 )
-                if "redis_password" in kwargs:
-                    kwargs["_redis_password"] = kwargs["redis_password"]
-                    kwargs.pop("redis_password")
                 init_params.update(kwargs)
                 if version.parse(ray.__version__) >= version.parse("1.4.0"):
                     init_params["namespace"] = "az"
@@ -647,9 +647,6 @@ class RayOnSparkContext(object):
             address=redis_address,
             _node_ip_address=node_ip
         )
-        if "redis_password" in kwargs:
-            kwargs["_redis_password"] = kwargs["redis_password"]
-            kwargs.pop("redis_password")
         init_params.update(kwargs)
         if version.parse(ray.__version__) >= version.parse("1.4.0"):
             init_params["namespace"] = "az"
