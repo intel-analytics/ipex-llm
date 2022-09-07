@@ -80,9 +80,9 @@ docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh $kms_typ
 # encrpted data is next to $input_path
 
 # Decrypt a single data file
-docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh decrypt $appid $appkey $input_folder_path"
+docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh decrypt $appid $appkey $input_path"
 
-# SpliteAndEncrypt
+# SplitAndEncrypt
 docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh encryptwithrepartition $appid $appkey $input_folder_path"
 # encrpted data is in a directory next to $input_folder_path
 ```
