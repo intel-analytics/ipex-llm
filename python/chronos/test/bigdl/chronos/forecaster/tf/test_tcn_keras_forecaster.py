@@ -23,6 +23,7 @@ import numpy as np
 
 from bigdl.chronos.utils import LazyImport
 tf = LazyImport('tensorflow')
+TCNForecaster = LazyImport('bigdl.chronos.forecaster.tf.tcn_forecaster.TCNForecaster')
 from test.bigdl.chronos import op_tf2, op_all
 
 

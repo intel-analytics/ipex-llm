@@ -21,6 +21,7 @@ import os
 from unittest import TestCase
 import numpy as np
 from bigdl.chronos.utils import LazyImport
+LSTMForecaster = LazyImport('bigdl.chronos.forecaster.tf.lstm_forecaster.LSTMForecaster')
 tf = LazyImport('tensorflow')
 from test.bigdl.chronos import op_tf2, op_all
 

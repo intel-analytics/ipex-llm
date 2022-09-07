@@ -22,6 +22,7 @@ import numpy as np
 
 from bigdl.chronos.utils import LazyImport
 tf = LazyImport('tensorflow')
+Seq2SeqForecaster = LazyImport('bigdl.chronos.forecaster.tf.seq2seq_forecaster.Seq2SeqForecaster')
 from test.bigdl.chronos import op_tf2, op_all
 
 
