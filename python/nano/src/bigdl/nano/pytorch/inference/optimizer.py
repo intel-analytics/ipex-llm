@@ -468,10 +468,10 @@ class InferenceOptimizer:
                         # input_sample can be a dataloader
                         input_sample = calib_dataloader
                     model = InferenceOptimizer.trace(model,
-                                          input_sample=input_sample,
-                                          accelerator='openvino',
-                                          logging=logging,
-                                          **export_kwargs)
+                                                     input_sample=input_sample,
+                                                     accelerator='openvino',
+                                                     logging=logging,
+                                                     **export_kwargs)
                 invalidInputError(type(model).__name__ == 'PytorchOpenVINOModel',
                                   "Invalid model to quantize. Please use a nn.Module or a model "
                                   "from trainer.trance(accelerator=='openvino')")

@@ -269,12 +269,12 @@ class Trainer(pl.Trainer):
               logging: bool = True,
               **export_kwargs) -> nn.Module:
         return InferenceOptimizer.trace(model=model,
-                             input_sample=input_sample,
-                             accelerator=accelerator,
-                             use_ipex=use_ipex,
-                             onnxruntime_session_options=onnxruntime_session_options,
-                             logging=logging,
-                             **export_kwargs)
+                                        input_sample=input_sample,
+                                        accelerator=accelerator,
+                                        use_ipex=use_ipex,
+                                        onnxruntime_session_options=onnxruntime_session_options,
+                                        logging=logging,
+                                        **export_kwargs)
 
     @staticmethod
     def quantize(model: nn.Module,
@@ -295,22 +295,22 @@ class Trainer(pl.Trainer):
                  logging: bool = True,
                  **export_kwargs) -> nn.Module:
         return InferenceOptimizer.quantize(model=model,
-                                precision=precision,
-                                accelerator=accelerator,
-                                use_ipex=use_ipex,
-                                calib_dataloader=calib_dataloader,
-                                metric=metric,
-                                accuracy_criterion=accuracy_criterion,
-                                approach=approach,
-                                method=method,
-                                conf=conf,
-                                tuning_strategy=tuning_strategy,
-                                timeout=timeout,
-                                max_trials=max_trials,
-                                input_sample=input_sample,
-                                onnxruntime_session_options=onnxruntime_session_options,
-                                logging=logging,
-                                **export_kwargs)
+                                           precision=precision,
+                                           accelerator=accelerator,
+                                           use_ipex=use_ipex,
+                                           calib_dataloader=calib_dataloader,
+                                           metric=metric,
+                                           accuracy_criterion=accuracy_criterion,
+                                           approach=approach,
+                                           method=method,
+                                           conf=conf,
+                                           tuning_strategy=tuning_strategy,
+                                           timeout=timeout,
+                                           max_trials=max_trials,
+                                           input_sample=input_sample,
+                                           onnxruntime_session_options=onnxruntime_session_options,
+                                           logging=logging,
+                                           **export_kwargs)
 
     @staticmethod
     def save(model: pl.LightningModule, path):
