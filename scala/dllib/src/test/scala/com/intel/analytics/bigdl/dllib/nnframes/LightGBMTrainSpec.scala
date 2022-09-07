@@ -53,12 +53,14 @@ class LightGBMTrainSpec extends ZooSpecHelper {
       .setInputCols(Array("f1", "f2", "f3", "f4"))
       .setOutputCol("features")
     val assembledDf = vectorAssembler.transform(df).select("features", "label").cache()
-    val lightGBMclassifier = new LightGBMClassifier()
-    val classifier = new MLightGBMClassifier()
-    val model1 = lightGBMclassifier.fit(assembledDf)
-    val model = classifier.fit(assembledDf)
-    val res1 = model1.transform(assembledDf)
-    TestUtils.conditionFailTest(res1.count() == 2)
+    if (spark.version.substring(0, 3).toDouble >= 3.1) {
+      val lightGBMclassifier = new LightGBMClassifier()
+      val classifier = new MLightGBMClassifier()
+      val model1 = lightGBMclassifier.fit(assembledDf)
+      val model = classifier.fit(assembledDf)
+      val res1 = model1.transform(assembledDf)
+      TestUtils.conditionFailTest(res1.count() == 2)
+    }
   }
 
   "LightGBMClassifer save" should "work" in {
@@ -73,12 +75,14 @@ class LightGBMTrainSpec extends ZooSpecHelper {
       .setInputCols(Array("f1", "f2", "f3", "f4"))
       .setOutputCol("features")
     val assembledDf = vectorAssembler.transform(df).select("features", "label").cache()
-    val lightGBMclassifier = new LightGBMClassifier()
-    val model = lightGBMclassifier.fit(assembledDf)
-    model.saveNativeModel("/tmp/lightgbm/classifier1")
-    val model2 = LightGBMClassifierModel.loadNativeModel("/tmp/lightgbm/classifier1")
-    val res2 = model2.transform(assembledDf)
-    TestUtils.conditionFailTest(res2.count() == 2)
+    if (spark.version.substring(0, 3).toDouble >= 3.1) {
+      val lightGBMclassifier = new LightGBMClassifier()
+      val model = lightGBMclassifier.fit(assembledDf)
+      model.saveNativeModel("/tmp/lightgbm/classifier1")
+      val model2 = LightGBMClassifierModel.loadNativeModel("/tmp/lightgbm/classifier1")
+      val res2 = model2.transform(assembledDf)
+      TestUtils.conditionFailTest(res2.count() == 2)
+    }
   }
 
   "LightGBMRegressor train" should "work" in {
@@ -95,14 +99,16 @@ class LightGBMTrainSpec extends ZooSpecHelper {
       .setInputCols(Array("f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10"))
       .setOutputCol("features")
     val assembledDf = vectorAssembler.transform(df).select("features", "label").cache()
-    val lightGBMRegressor = new LightGBMRegressor()
-    val regressorModel0 = lightGBMRegressor.fit(assembledDf)
-    val y0 = regressorModel0.transform(assembledDf)
-    regressorModel0.saveNativeModel("/tmp/test")
-    val model = LightGBMRegressorModel.loadNativeModel("/tmp/test")
-    val y0_0 = model.transform(assembledDf)
-    TestUtils.conditionFailTest(y0.count() == 4)
-    TestUtils.conditionFailTest(y0_0.count() == 4)
+    if (spark.version.substring(0, 3).toDouble >= 3.1) {
+      val lightGBMRegressor = new LightGBMRegressor()
+      val regressorModel0 = lightGBMRegressor.fit(assembledDf)
+      val y0 = regressorModel0.transform(assembledDf)
+      regressorModel0.saveNativeModel("/tmp/test")
+      val model = LightGBMRegressorModel.loadNativeModel("/tmp/test")
+      val y0_0 = model.transform(assembledDf)
+      TestUtils.conditionFailTest(y0.count() == 4)
+      TestUtils.conditionFailTest(y0_0.count() == 4)
+    }
   }
 }
 
