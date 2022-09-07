@@ -26,8 +26,11 @@ EPSILON = 1e-10
 def mae(y_label, y_predict):
     """
     Calculate the mean absolute error (MAE).
+
     .. math::
+
         \\text{MAE} = \\frac{1}{n}\\sum_{t=1}^n |y_t-\\hat{y_t}|
+
     :param y_label: Array-like of shape = (n_samples, \*).
            Ground truth (correct) target values.
     :param y_predict: Array-like of shape = (n_samples, \*).
@@ -42,8 +45,11 @@ def mae(y_label, y_predict):
 def mse(y_label, y_predict):
     """
     Calculate the mean squared error (MSE).
+
     .. math::
+
         \\text{MSE} = \\frac{1}{n}\\sum_{t=1}^n (y_t-\\hat{y_t})^2
+
     :param y_label: Array-like of shape = (n_samples, \*).
            Ground truth (correct) target values.
     :param y_predict: Array-like of shape = (n_samples, \*).
@@ -58,8 +64,11 @@ def mse(y_label, y_predict):
 def rmse(y_label, y_predict):
     """
     Calculate square root of the mean squared error (RMSE).
+
     .. math::
+
         \\text{RMSE} = \\sqrt{(\\frac{1}{n}\\sum_{t=1}^n (y_t-\\hat{y_t})^2)}
+
     :param y_label: Array-like of shape = (n_samples, \*).
            Ground truth (correct) target values.
     :param y_predict: Array-like of shape = (n_samples, \*).
@@ -73,8 +82,11 @@ def rmse(y_label, y_predict):
 def mape(y_label, y_predict):
     """
     Calculate mean absolute percentage error (MAPE).
+
     .. math::
+
         \\text{MAPE} = \\frac{100\%}{n}\\sum_{t=1}^n  |\\frac{y_t-\\hat{y_t}}{y_t}|
+
     :param y_label: Array-like of shape = (n_samples, \*).
            Ground truth (correct) target values.
     :param y_predict: Array-like of shape = (n_samples, \*).
@@ -88,8 +100,11 @@ def mape(y_label, y_predict):
 def smape(y_label, y_predict):
     """
     Calculate Symmetric mean absolute percentage error (sMAPE).
+
     .. math::
+
         \\text{sMAPE} = \\frac{100\%}{n} \\sum_{t=1}^n \\frac{|y_t-\\hat{y_t}|}{|y_t|+|\\hat{y_t}|}
+
     :param y_label: Array-like of shape = (n_samples, \*).
            Ground truth (correct) target values.
     :param y_predict: Array-like of shape = (n_samples, \*).
@@ -106,8 +121,11 @@ def smape(y_label, y_predict):
 def r2(y_label, y_predict):
     """
     Calculate the r2 score.
+
     .. math::
+
         R^2 = 1-\\frac{\\sum_{t=1}^n (y_t-\\hat{y_t})^2}{\\sum_{t=1}^n (y_t-\\bar{y})^2}
+
     :param y_label: Array-like of shape = (n_samples, \*).
            Ground truth (correct) target values.
     :param y_predict: Array-like of shape = (n_samples, \*).
