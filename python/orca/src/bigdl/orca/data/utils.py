@@ -412,7 +412,7 @@ def spark_df_to_pd_sparkxshards(df, squeeze=False, index_col=None,
     return spark_xshards
 
 
-def postprocess(pd_df, squeeze=False, index_col=None, dtype=None, index_map=None):
+def set_pandas_df_type_index(pd_df, squeeze=False, index_col=None, dtype=None, index_map=None):
     if dtype is not None:
         if isinstance(dtype, dict):
             for col, type in dtype.items():
@@ -448,12 +448,12 @@ def to_pandas_without_arrow(columns, squeeze=False, index_col=None, dtype=None, 
             data.append(row)
             if batch_size and counter % batch_size == 0:
                 pd_df = pd.DataFrame(data, columns=columns)
-                pd_df = postprocess(pd_df, squeeze, index_col, dtype, index_map)
+                pd_df = set_pandas_df_type_index(pd_df, squeeze, index_col, dtype, index_map)
                 yield pd_df
                 data = []
         if data:
             pd_df = pd.DataFrame(data, columns=columns)
-            pd_df = postprocess(pd_df, squeeze, index_col, dtype, index_map)
+            pd_df = set_pandas_df_type_index(pd_df, squeeze, index_col, dtype, index_map)
             yield pd_df
 
     return f
@@ -467,7 +467,7 @@ def to_pandas(df, squeeze=False, index_col=None, dtype=None, index_map=None, bat
             with open(fileName, "rb") as stream:
                 t = ser.load_stream(stream)
                 pd_df = pd.concat(next(t), axis=1)
-                pd_df = postprocess(pd_df, squeeze, index_col, dtype, index_map)
+                pd_df = set_pandas_df_type_index(pd_df, squeeze, index_col, dtype, index_map)
                 yield pd_df
 
     sqlContext = get_spark_sql_context(get_spark_context())
