@@ -180,11 +180,11 @@ class InferenceOptimizer:
                     input_sample = tuple(next(iter(training_data))[:-1])
                     try:
                         if accelerator is None and use_ipex is False:
-                            acce_model = deepcopy(model)
+                            acce_model = model
                         else:
                             if accelerator in ("jit", None):
                                 acce_model = \
-                                    InferenceOptimizer.trace(model=deepcopy(model),
+                                    InferenceOptimizer.trace(model=model,
                                                              accelerator=accelerator,
                                                              use_ipex=use_ipex,
                                                              # channels_last is only for jit
@@ -192,7 +192,7 @@ class InferenceOptimizer:
                                                              input_sample=input_sample)
                             else:
                                 acce_model = \
-                                    InferenceOptimizer.trace(model=deepcopy(model),
+                                    InferenceOptimizer.trace(model=model,
                                                              accelerator=accelerator,
                                                              input_sample=input_sample,
                                                              onnxruntime_session_options=sessoption,
