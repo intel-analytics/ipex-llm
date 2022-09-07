@@ -363,8 +363,6 @@ class TestTFRayEstimator(TestCase):
                 (-2.456, 1), (3.21, 0), (11.28, 1)]
         df = spark.createDataFrame(data=data, schema=schema)
         df = df.withColumn("feature", col("feature").cast("decimal(38,2)"))
-        res = df.collect()
-        features = [x[0] for x in res]
 
         config = {
             "lr": 0.8
