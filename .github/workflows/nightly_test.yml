@@ -98,7 +98,7 @@ jobs:
 
   Orca-Python-Horovod-Tf2-Py37-Spark3:
     #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Horovod-Tf2-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Gondolin-test, ubuntu-20.04-lts]
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
     - uses: actions/checkout@v3
@@ -106,8 +106,14 @@ jobs:
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
-    - name: Run test
-      uses: ./.github/actions/orca-python-horovod-tf2-py37-spark3-action
+    - name: Remove env
+      uses: ./.github/actions/orca-python-horovod-tf2-py37-spark3-action/remove-env 
+    - name: Setup env
+      uses: ./.github/actions/orca-python-horovod-tf2-py37-spark3-action/setup-env
+    - name: Run Test
+      uses: ./.github/actions/orca-python-horovod-tf2-py37-spark3-action/nightly-test
+    - name: Remove env
+      uses: ./.github/actions/orca-python-horovod-tf2-py37-spark3-action/remove-env
       
   Dllib-Scala-UT:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Dllib-Scala-UT' || github.event.inputs.artifact == 'all' }} 

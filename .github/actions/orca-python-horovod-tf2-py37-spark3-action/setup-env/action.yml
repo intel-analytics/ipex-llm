@@ -1,0 +1,42 @@
+name: 'Run Orca Python Horovod Tf2 Py37 Spark3'
+description: 'Run Orca Python Horovod Tf2 Py37 Spark3'
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Env
+      shell: bash
+      run: |
+        apt-get update
+        apt-get install wget
+
+    - name: Set up Python 
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7.10'
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install --upgrade setuptools==58.0.4
+
+    - name: Run Test
+      shell: bash
+      run: |
+        conda remove -n orca-python-horovod-tf2-py37 -y --all
+        conda create -n orca-python-horovod-tf2-py37 -y python==3.7.10 setuptools==58.0.4
+        conda info -e
+        source activate orca-python-horovod-tf2-py37
+        pip uninstall -y intel-tensorflow
+        pip install cmake mxnet==1.6.0
+        pip uninstall -r .github/actions/python-requirements/requirements-horovod-tf2.txt -y
+        pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r .github/actions/python-requirements/requirements-horovod-tf2.txt 
+        pip install pytest
+        HOROVOD_WITH_PYTORCH=1; HOROVOD_WITH_GLOO=1; pip install --no-cache-dir horovod==0.19.2
+        pip uninstall -y opencv-python-headless
+        pip install opencv-python-headless
+        pip install --pre --upgrade bigdl-orca-spark3
+
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

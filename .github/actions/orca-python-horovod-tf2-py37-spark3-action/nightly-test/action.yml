@@ -1,0 +1,15 @@
+name: 'Run Orca Python Horovod Tf2 Py37 Spark3'
+description: 'Run Orca Python Horovod Tf2 Py37 Spark3'
+runs:
+  using: "composite"
+  steps:
+    - name: Run Test
+      shell: bash
+      run: |
+        export SPARK_LOCAL_HOSTNAME=localhost
+        chmod a+x python/orca/dev/test/run-pytests-horovod-tf.sh
+        python/orca/dev/test/run-pytests-horovod-tf.sh
+        ray stop
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
