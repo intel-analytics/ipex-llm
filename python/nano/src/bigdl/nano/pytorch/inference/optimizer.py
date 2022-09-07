@@ -109,7 +109,7 @@ class InferenceOptimizer:
         '''
         This function will give all available inference acceleration methods a try
         and record the latency, accuracy and model instance inside the Optimizer for
-        future usage.
+        future usage. All model instance is setting to eval mode.
 
         :param model: A nn.module to be optimized
         :param training_data: A pytorch dataloader for training dataset.
@@ -165,7 +165,6 @@ class InferenceOptimizer:
 
         result_map: Dict[str, Dict] = {}
 
-        training_state = model.training
         model.eval()  # change model to eval state
 
         for method, available in available_dict.items():
@@ -246,10 +245,6 @@ class InferenceOptimizer:
                 result_map[method]["model"] = acce_model
             else:
                 pass
-
-        # restore model's state
-        if training_state:
-            model.train()
 
         self.optimized_model_dict: Dict = result_map
         print("==========================Optimization Results==========================")
