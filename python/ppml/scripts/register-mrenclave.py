@@ -67,7 +67,7 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--appid', type=str, help='your ehsm appid obtained from enroll', required=True)
     parser.add_argument('--apikey', type=str, help='your ehsm apikey obtained from enroll', required=True)
-    parser.add_argument('--url', type=str, help='the address of the ehsm_kms_server, fornmat likes https://1.2.3.4', required=True)
+    parser.add_argument('--url', type=str, help='the address of the ehsm_kms_server, fornmat likes https://1.2.3.4:9000', required=True)
     parser.add_argument('--mr_enclave', type=str, help='mr_enclave you will upload', required=True)
     parser.add_argument('--mr_signer', type=str, help='mr_signer you will upload', required=True)
     args = parser.parse_args()
@@ -82,14 +82,13 @@ def register(base_url, mr_enclave, mr_signer, appid, apikey):
     payload["mr_signer"] = mr_signer
     init_appid_apikey(appid, apikey)
     params = init_params(payload)
-    print('register req:\n%s\n' %(params))
-
     resp = requests.post(url=base_url + "UploadQuotePolicy", data=json.dumps(params), headers=headers, verify=use_secure_cert)
     if(check_result(resp, 'UploadQuotePolicy') == False):
         return
-    print('register resp:\n%s\n' %(resp.text))
+    print('[INFO] register resp:\n%s\n' %(resp.text))
 
     policyId = json.loads(resp.text)['result']['policyId']
+    print('[INFO] policyID:\n%s\n' %(policyId))
     return policyId
 
 if __name__ == "__main__":
