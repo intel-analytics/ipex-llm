@@ -131,7 +131,7 @@ class TestCorrectness(FLTest):
             )
         
         # TODO: set fixed parameters
-        init_fl_context('1', self.target)
+        init_fl_context(1, self.target)
         vfl_model_1 = build_client_model()
         set_one_like_parameter(vfl_model_1)
         vfl_model_2 = build_server_model()

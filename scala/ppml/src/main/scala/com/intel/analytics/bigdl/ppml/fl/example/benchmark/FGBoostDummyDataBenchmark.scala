@@ -42,7 +42,7 @@ object FGBoostDummyDataBenchmark extends TimingSupportive {
 
     val param = parser.parse(args, Params()).get
 
-    FLContext.initFLContext("1")
+    FLContext.initFLContext(1)
     val random = new Random()
     val data = (0 until param.dataSize).map(_ => Tensor[Float](param.dataDim).rand()).toArray
     val label = (0 until param.dataSize).map(_ => random.nextFloat()).toArray
