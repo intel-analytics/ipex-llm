@@ -20,7 +20,7 @@ spec:
       #    secretKeyRef:
       #      name: kms-secret
       #      key: app_key
-      #- name: BI-ATTESTATION
+      #- name: BI_ATTESTATION
       #  value: false
     volumeMounts:
       - name: enclave-key
