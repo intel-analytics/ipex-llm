@@ -94,7 +94,13 @@ elif [ "$ATTESTATION" = "true" ]; then
     echo "[INFO] PPML Application Exit!"
     exit 1
   fi
-  ATTESTATION_COMMAND="/opt/jdk8/bin/java -Xmx1g -cp $SPARK_CLASSPATH:$BIGDL_HOME/jars/* com.intel.analytics.bigdl.ppml.attestation.AttestationCLI -u ${ATTESTATION_URL} -i ${ATTESTATION_ID}  -k ${ATTESTATION_KEY}"
+  if [ "$BI_ATTESTATION" = "true" ]; then 
+    echo "[INFO] Bi-attestation is enabled!"
+    ATTESTATION_CHALLENGE=`openssl rand -base64 16`
+  else 
+    ATTESTATION_CHALLENGE=""
+  fi
+  ATTESTATION_COMMAND="/opt/jdk8/bin/java -Xmx1g -cp $SPARK_CLASSPATH:$BIGDL_HOME/jars/* com.intel.analytics.bigdl.ppml.attestation.AttestationCLI -u ${ATTESTATION_URL} -i ${ATTESTATION_ID}  -k ${ATTESTATION_KEY} -c ${ATTESTATION_CHALLENGE}"
 fi
 
 
