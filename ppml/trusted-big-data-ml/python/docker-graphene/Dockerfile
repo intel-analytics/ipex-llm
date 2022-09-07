@@ -35,7 +35,8 @@ RUN mkdir /opt/intel && \
     wget https://download.01.org/intel-sgx/sgx-dcap/1.13/linux/distro/ubuntu20.04-server/sgx_linux_x64_sdk_2.16.100.4.bin && \
     chmod a+x ./sgx_linux_x64_sdk_2.16.100.4.bin && \
     printf "no\n/opt/intel\n"|./sgx_linux_x64_sdk_2.16.100.4.bin && \
-    . /opt/intel/sgxsdk/environment
+    . /opt/intel/sgxsdk/environment && \
+    rm ./sgx_linux_x64_sdk_2.16.100.4.bin
 
 # stage.2 jdk & scala & spark & hadoop
 FROM ubuntu:20.04 as spark
