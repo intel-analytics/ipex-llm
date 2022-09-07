@@ -531,9 +531,13 @@ object Engine {
     val master = conf.get("spark.master", null)
     if (master.toLowerCase.startsWith("local")) {
       // Spark local mode
+      // patternLocalN example: local[4]
       val patternLocalN = "local\\[(\\d+)\\]".r
+      // patternLocalNF example: local[4,2]
       val patternLocalNF = "local\\[(\\d+),\\s*(\\d+)\\]".r
+      // patternLocalStar example: local[*]
       val patternLocalStar = "local\\[\\*\\]".r
+      // patternLocalStarF example: local[*,4]
       val patternLocalStarF = "local\\[\\*,\\s*(\\d+)\\]".r
       master match {
         case patternLocalN(n) => Some(1, n.toInt)
@@ -541,7 +545,7 @@ object Engine {
         case patternLocalStar(_*) => Some(1, getNumMachineCores)
         case patternLocalStarF(_*) => Some(1, getNumMachineCores)
         case _ =>
-          Log4Error.invalidOperationError(false, s"Can't parser master $master")
+          Log4Error.invalidOperationError(false, s"Can't parse master $master")
           Some(1, 0)
       }
     } else if (master.toLowerCase.startsWith("spark")) {
