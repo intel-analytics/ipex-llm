@@ -24,6 +24,7 @@ bash build-docker-image.sh
 2. Download [Spark 3.1.2](https://archive.apache.org/dist/spark/spark-3.1.2/spark-3.1.2-bin-hadoop2.7.tgz), and setup `SPARK_HOME`.
 3. `export kubernetes_master_url=your_k8s_master` or replace `${kubernetes_master_url}` with your k8s master url in `run_spark_xxx.sh`.
 4. Modify `driver.yaml` and `executor.yaml` for your applications.
+   In our demo example, we mount SGX devices into container or pod. Mount device requires privileged: true. In production deployment, please use K8S SGX device plugin with device-plugin setting in yaml.
 
 ## Examples
 
