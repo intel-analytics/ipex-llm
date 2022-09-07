@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.orca.python
+package org.apache.spark.sql
 
-import org.apache.spark.sql.OrcaArrowUtils
+import org.apache.spark.api.java.JavaRDD
+import org.apache.spark.rdd.RDD
 
-import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 
-import scala.reflect.ClassTag
+class OrcaArrowUtils() {
+  def orcaToDataFrame(jrdd: JavaRDD[String], schemaString: String,
+  sqlContext: SQLContext): DataFrame = {
+    null.asInstanceOf[DataFrame]
+  }
 
-object PythonOrcaSQLUtils {
-
-  def ofFloat(): PythonOrcaSQLUtils[Float] = new PythonOrcaSQLUtils[Float]()
-
-  def ofDouble(): PythonOrcaSQLUtils[Double] = new PythonOrcaSQLUtils[Double]()
-}
-
-class PythonOrcaSQLUtils[T: ClassTag](implicit ev: TensorNumeric[T]) extends OrcaArrowUtils {
+  def sparkdfTopdf(sdf: DataFrame, sqlContext: SQLContext, batchSize: Int = -1): RDD[String] = {
+    null.asInstanceOf[RDD[String]]
+  }
 }
