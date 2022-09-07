@@ -20,16 +20,25 @@ from bigdl.chronos.metric.forecast_metrics import Evaluator
 import keras
 import tensorflow as tf
 import numpy as np
+import types
 
 
 class BaseTF2Forecaster(Forecaster):
     def __init__(self, **kwargs):
-        self.fitted = False
-        self.internal = self.model_creator({**self.model_config})
         # TF seed can't be set to None, just to be consistent with torch.
         if self.seed:
             from tensorflow.keras.utils import set_random_seed
             set_random_seed(seed=self.seed)
+
+        if self.distributed:
+            from bigdl.orca.learn.tf2.estimator import Estimator
+            self.internal = Estimator.from_keras(model_creator=self.model_creator,
+                                                 config=self.model_config,
+                                                 workers_per_node=self.workers_per_node,
+                                                 backend=self.remote_distributed_backend)
+        else:
+            self.fitted = False
+            self.internal = self.model_creator({**self.model_config})
 
     def fit(self, data, epochs=1, batch_size=32):
         """
@@ -63,10 +72,20 @@ class BaseTF2Forecaster(Forecaster):
                 data.roll(lookback=self.model_config['past_seq_len'],
                           horizon=self.model_config['future_seq_len'])
             data = data.to_tf_dataset(shuffle=True, batch_size=batch_size)
-        if isinstance(data, tuple):
-            self.internal.fit(x=data[0], y=data[1], epochs=epochs, batch_size=batch_size)
+
+        from bigdl.chronos.forecaster.tf.utils import np_to_data_creator, rollback_tf_dataset
+
+
+        if self.distributed:
+            if isinstance(data, TSDataset):
+                data = rollback_tf_dataset(data)
+                data = np_to_data_creator(data)
+            self.internal.fit(data, epochs=epochs, batch_size=batch_size)
         else:
-            self.internal.fit(x=data, epochs=epochs)
+            if isinstance(data, tuple):
+                self.internal.fit(x=data[0], y=data[1], epochs=epochs, batch_size=batch_size)
+            else:
+                self.internal.fit(x=data, epochs=epochs)
         self.fitted = True
 
     def predict(self, data, batch_size=32):
