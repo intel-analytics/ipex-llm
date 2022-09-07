@@ -8,8 +8,9 @@ on:
   pull_request:
     branches: [ main ]
     paths:
-      - 'python/nano/**'
-      - '.github/workflows/nano_notebooks_tests.yml'
+      #- 'python/nano/**'
+      #- '.github/workflows/nano_notebooks_tests.yml'
+      - 'docs/**' # add a unrelated folder to disable the tests
 
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
