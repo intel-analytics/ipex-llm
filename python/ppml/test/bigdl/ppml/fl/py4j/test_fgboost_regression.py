@@ -62,7 +62,7 @@ class TestFGBoostRegression(FLTest):
         self.update_available_port()
         self.fl_server = FLServer()
         self.fl_server.set_port(self.port)
-        init_fl_context("1", self.target)
+        init_fl_context(1, self.target)
         # this explicit set is needed, default value is 'fork' on Unix
         # if 'fork', the resources would be inherited and thread crash would occur
         # (to be verified)
@@ -112,10 +112,10 @@ class TestFGBoostRegression(FLTest):
         self.fl_server.build()
         self.fl_server.start()
         mock_party1 = Process(target=mock_process, 
-        args=('2', 'house-prices-train-preprocessed-1.csv', 'house-prices-test-preprocessed-1.csv', self.target))
+        args=(2, 'house-prices-train-preprocessed-1.csv', 'house-prices-test-preprocessed-1.csv', self.target))
         mock_party1.start()
         mock_party2 = Process(target=mock_process, 
-        args=('3', 'house-prices-train-preprocessed-2.csv', 'house-prices-test-preprocessed-2.csv', self.target))
+        args=(3, 'house-prices-train-preprocessed-2.csv', 'house-prices-test-preprocessed-2.csv', self.target))
         mock_party2.start()        
 
         df_train = pd.read_csv(

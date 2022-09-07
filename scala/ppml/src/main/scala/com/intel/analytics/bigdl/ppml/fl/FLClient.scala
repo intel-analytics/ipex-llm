@@ -38,14 +38,15 @@ class FLClient(val _args: Array[String]) extends GrpcClientBase(_args) {
   var fgbostStub: FGBoostStub = null
   var psiSalt: String = null
   privateKeyFilePath = null
+  var clientID: Int = 0
   parseConfig()
 
   def this() {
     this(null)
   }
 
-  def setClientId(clientId: String): Unit = {
-    clientUUID = clientId
+  def setClientId(clientId: Int): Unit = {
+    clientID = clientId
   }
 
   @throws[IOException]
@@ -62,9 +63,9 @@ class FLClient(val _args: Array[String]) extends GrpcClientBase(_args) {
   }
 
   override def loadServices(): Unit = {
-    psiStub = new PSIStub(channel)
-    nnStub = new NNStub(channel, clientUUID)
-    fgbostStub = new FGBoostStub(channel, clientUUID)
+    psiStub = new PSIStub(channel, clientID)
+    nnStub = new NNStub(channel, clientID)
+    fgbostStub = new FGBoostStub(channel, clientID)
   }
 
   override def shutdown(): Unit = {
