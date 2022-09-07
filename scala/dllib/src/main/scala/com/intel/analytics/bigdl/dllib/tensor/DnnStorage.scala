@@ -16,10 +16,10 @@
 package com.intel.analytics.bigdl.dllib.tensor
 
 import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
-
 import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.dllib.nn.mkldnn.MemoryOwner
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
+import org.apache.commons.io.serialization.ValidatingObjectInputStream
 
 import scala.reflect._
 
@@ -134,7 +134,8 @@ private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
 
   @throws(classOf[IOException])
   private def readObject(in: ObjectInputStream): Unit = {
-    in.defaultReadObject()
+    val in1 = new ValidatingObjectInputStream(in)
+    in1.defaultReadObject()
     if (!_isReleased) {
       ptr = new Pointer(allocate(this.size))
       val elements = in.readObject().asInstanceOf[Array[Float]]

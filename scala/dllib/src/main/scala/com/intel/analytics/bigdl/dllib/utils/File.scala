@@ -16,9 +16,10 @@
 
 package com.intel.analytics.bigdl.dllib.utils
 
+import org.apache.commons.io.serialization.ValidatingObjectInputStream
+
 import java.io._
 import java.net.URI
-
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataInputStream, FSDataOutputStream, FileSystem, Path}
 import org.apache.hadoop.io.IOUtils
@@ -155,7 +156,9 @@ object File {
     var objFile: ObjectInputStream = null
     try {
       objFile = new ObjectInputStream(new ByteArrayInputStream(byteArrayOut))
-      val result = objFile.readObject()
+      val validFile = new ValidatingObjectInputStream(new ByteArrayInputStream(byteArrayOut))
+      validFile.accept(classOf[T])
+      val result = validFile.readObject()
       objFile.close()
       result.asInstanceOf[T]
     } finally {

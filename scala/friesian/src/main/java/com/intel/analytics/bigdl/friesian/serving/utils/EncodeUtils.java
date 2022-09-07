@@ -16,6 +16,8 @@
 
 package com.intel.analytics.bigdl.friesian.serving.utils;
 
+import org.apache.commons.io.serialization.ValidatingObjectInputStream;
+
 import java.io.*;
 
 public class EncodeUtils {
@@ -40,9 +42,10 @@ public class EncodeUtils {
 
     public static Object bytesToObj(byte[] bytes) {
         ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-        ObjectInputStream in;
+        ValidatingObjectInputStream in;
         try {
-            in = new ObjectInputStream(bis);
+            in = new ValidatingObjectInputStream(bis);
+            in.accept(Object.class);
             return in.readObject();
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();

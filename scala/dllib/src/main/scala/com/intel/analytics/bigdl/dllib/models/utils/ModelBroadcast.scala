@@ -18,9 +18,8 @@ package com.intel.analytics.bigdl.dllib.models.utils
 
 import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
 import java.util.UUID
-
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.dllib.nn.Container
+import com.intel.analytics.bigdl.dllib.nn.{Container, Module}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.nn.mkldnn.{MklDnnLayer, TensorMMap}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
@@ -28,13 +27,14 @@ import com.intel.analytics.bigdl.dllib.tensor._
 import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error, MklDnn}
 import com.intel.analytics.bigdl.dllib.utils.Util._
 import com.intel.analytics.bigdl.dllib.utils.intermediate.IRGraph
+import org.apache.commons.io.serialization.ValidatingObjectInputStream
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
 import org.apache.zookeeper.KeeperException.UnimplementedException
 
 import scala.collection.mutable.ArrayBuffer
-import scala.reflect.ClassTag
+import scala.reflect.{ClassTag, classTag}
 
 /**
  * ModelBroadcast is used to broadcast model
@@ -289,8 +289,11 @@ private[bigdl] class ModelInfo[T: ClassTag](val uuid: String, @transient var mod
 
   @throws(classOf[IOException])
   private def readObject(in: ObjectInputStream): Unit = {
-    in.defaultReadObject()
-    model = in.readObject().asInstanceOf[Module[T]]
+    val in1 = new ValidatingObjectInputStream(in);
+    in1.accept(Module.getClass)
+    in1.defaultReadObject()
+    // test.accept(classTag$T$0.getClass)
+    model = in1.readObject().asInstanceOf[Module[T]]
     CachedModels.add(uuid, model)
   }
 }
