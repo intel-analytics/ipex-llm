@@ -75,14 +75,13 @@ object AttestationCLI {
         }
 
         val challengeString = params.challenge
-        if (challengeString != "") {
+        if (challengeString.length() > 0) {
             val asQuote = as.getQuoteFromServer(challengeString)
-            System.out.print(asQuote)
+            // System.out.print(asQuote)
             val quoteVerifier = new SGXDCAPQuoteVerifierImpl()
-            val verifyQuoteResult = quoteVerifier.verifyQuote(Base64.getDecoder().decode(asQuote))
+            val verifyQuoteResult = quoteVerifier.verifyQuote(asQuote.getBytes())
             if (verifyQuoteResult == 0) {
               System.out.println("Quote Verification Success!")
-              System.exit(0)
             } else {
               System.out.println("Quote Verification Fail! Application killed")
               System.exit(1)
