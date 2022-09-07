@@ -111,7 +111,19 @@ if __name__ == '__main__':
     # many cores, so that the workload can make full use of
     # all CPU cores.
     #
+    # When using data-parallel training, the batch size is equivalent to
+    # becoming n times larger, where n is the number of parallel processes.
+    # We should to scale the learning rate to n times as well to achieve the
+    # same effect as single instance training.
+    # However, scaling the learning rate linearly may lead to poor convergence
+    # at the beginning of training, so we should gradually increase the
+    # learning rate to n times, and this is called 'learning rate warmup'.
+    # 
+    # Fortunately, BigDL-Nano makes it very easy to conduct multi-instance 
+    # training correctly. It will handle all these for you.
+    #
     # In BigDL-Nano, you can simply set the num_processes in
-    # TorchNano to enable multi-instance training.
+    # TorchNano to enable multi-instance training. In addition, it will automatically
+    # apply learning rate scaling and warmup for your training.
     #
     MyNano(num_processes=2).train()
