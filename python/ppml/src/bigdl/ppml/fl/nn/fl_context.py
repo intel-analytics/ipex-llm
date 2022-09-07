@@ -16,14 +16,14 @@
 
 from ..nn.fl_client import FLClient
 
-def init_fl_context(client_id, target="localhost:8980"):
+def init_fl_context(client_id, server_addr="localhost:8980"):
     """Initialize FL Context. Need to be called before calling any FL Client algorithms.
     
-    :param client_id: A number, should be in range of [1, total_party_number].
-    :param target: FL Server address.
+    :param client_id: An integer, should be in range of [1, total_party_number].
+    :param server_addr: FL Server address.
     """
     FLClient.load_config()
     FLClient.set_client_id(client_id)
     # target can be set in config file, and also could be overwritten here
-    FLClient.set_target(target)
+    FLClient.set_target(server_addr)
     FLClient.ensure_initialized()
