@@ -32,7 +32,8 @@ object AttestationCLI {
         case class CmdParams(appID: String = "test",
                              appKey: String = "test",
                              asType: String = ATTESTATION_CONVENTION.MODE_EHSM_KMS,
-                             asURL: String = "127.0.0.1",
+                             asURL: String = "127.0.0.1:9000",
+                             challenge: String = "",
                              userReport: String = "ppml")
 
         val cmdParser = new OptionParser[CmdParams]("PPML Attestation Quote Generation Cmd tool") {
@@ -43,11 +44,14 @@ object AttestationCLI {
               .text("app key for this app")
               .action((x, c) => c.copy(appKey = x))
             opt[String]('u', "asURL")
-              .text("attestation service url, default is 127.0.0.1")
+              .text("attestation service url, default is 127.0.0.1:9000")
               .action((x, c) => c.copy(asURL = x))
             opt[String]('t', "asType")
               .text("attestation service type, default is EHSMKeyManagementService")
-              .action((x, c) => c.copy(asURL = x))
+              .action((x, c) => c.copy(asType = x))
+            opt[String]('c', "challenge")
+              .text("challenge to attestation service, default is '' which skip bi-attestation")
+              .action((x, c) => c.copy(challenge = x))
             opt[String]('p', "userReport")
               .text("userReportDataPath, default is test")
               .action((x, c) => c.copy(userReport = x))
@@ -68,6 +72,20 @@ object AttestationCLI {
             case ATTESTATION_CONVENTION.MODE_DUMMY =>
                 new DummyAttestationService()
             case _ => throw new AttestationRuntimeException("Wrong Attestation service type")
+        }
+
+        val challengeString = params.challenge
+        if (challengeString.length() > 0) {
+            val asQuote = as.getQuoteFromServer(challengeString)
+            // System.out.print(asQuote)
+            val quoteVerifier = new SGXDCAPQuoteVerifierImpl()
+            val verifyQuoteResult = quoteVerifier.verifyQuote(asQuote.getBytes())
+            if (verifyQuoteResult == 0) {
+              System.out.println("Quote Verification Success!")
+            } else {
+              System.out.println("Quote Verification Fail! Application killed")
+              System.exit(1)
+            }
         }
         val attResult = as.attestWithServer(Base64.getEncoder.encodeToString(quote))
         // System.out.print(as.attestWithServer(quote))
