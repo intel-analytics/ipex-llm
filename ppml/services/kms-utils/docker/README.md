@@ -12,7 +12,7 @@ Folder --> set as local_data_folder_path when creating container
 |
 │
 └───folder1 --> set as input_folder_path when running command (used below)
-│       file11.txt --> data file to be encrpted or decrypted
+│       file11.txt --> data file to be encrpted or decrypted, and set as input_path when running command (used below)
 |
 └───folder2
         file21.txt
@@ -68,19 +68,23 @@ INFO [main.cpp(159) -> main]: ehsm-kms enroll app end.
 
 export appid=your_appid
 export appkey=your_apikey
+export input_path=your_input_path
 export input_folder_path=your_input_folder_path
+
 
 # Generatekeys
 docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh generatekeys $appid $appkey"
 
 # Encrypt a single data file
-docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh $kms_type encrypt $appid $appkey $input_folder_path"
+docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh $kms_type encrypt $appid $appkey $input_path"
+# encrpted data is next to $input_path
 
 # Decrypt a single data file
 docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh decrypt $appid $appkey $input_folder_path"
 
 # SpliteAndEncrypt
 docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh encryptwithrepartition $appid $appkey $input_folder_path"
+# encrpted data is in a directory next to $input_folder_path
 ```
 ## 4. Stop container:
 ```
