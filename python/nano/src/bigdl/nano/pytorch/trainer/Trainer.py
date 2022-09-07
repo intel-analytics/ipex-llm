@@ -35,6 +35,10 @@ from bigdl.nano.pytorch.plugins.ddp_subprocess import DDPSubprocessPlugin
 from bigdl.nano.deps.automl.hpo_api import create_hpo_searcher, check_hpo_status
 from bigdl.nano.deps.ray.ray_api import distributed_ray
 from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.deps.openvino.openvino_api import load_openvino_model
+from bigdl.nano.deps.ipex.ipex_api import load_ipexjit_model
+from bigdl.nano.deps.onnxruntime.onnxruntime_api import load_onnxruntime_model
+from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model
 from bigdl.nano.common import check_avx512
 
 from BigDL.python.nano.src.bigdl.nano.pytorch.inference.optimizer import InferenceOptimizer
