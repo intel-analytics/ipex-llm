@@ -36,7 +36,6 @@ if __name__ == "__main__":
         return Accuracy()(pred, target)
 
     # 3. Accelaration inference using InferenceOptimizer
-    model.eval()
     optimizer = InferenceOptimizer()
     # optimize may take about 2 minutes to run all possible accelaration combinations
     optimizer.optimize(model=model,
@@ -48,9 +47,6 @@ if __name__ == "__main__":
                        direction="max",
                        cpu_num=1,
                        latency_sample_num=30)
-
-    for key, value in optimizer.optimized_model_dict.items():
-        print("accleration option: {}, latency: {:.4f}ms, accuracy: {:.4f}".format(key, value["latency"], value["accuracy"]))
 
     # 4. Get the best model under specific restrictions or without restrictions
     acc_model, option = optimizer.get_best_model(accelerator="onnxruntime")
