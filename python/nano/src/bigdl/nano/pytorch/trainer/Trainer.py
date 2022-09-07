@@ -41,7 +41,6 @@ from bigdl.nano.deps.onnxruntime.onnxruntime_api import load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model
 from bigdl.nano.common import check_avx512
 
-from BigDL.python.nano.src.bigdl.nano.pytorch.inference.optimizer import InferenceOptimizer
 distributed_backends = ["spawn", "ray", "subprocess"]
 
 
