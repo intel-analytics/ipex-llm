@@ -28,7 +28,7 @@ permissions:
   contents: read
   packages: write
 
-jobs:
+jobs: 
   Orca-Python-ExampleTest-Py37-Spark3:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-ExampleTest-Py37-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
