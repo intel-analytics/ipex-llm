@@ -33,7 +33,8 @@ object AttestationCLI {
                              appKey: String = "test",
                              asType: String = ATTESTATION_CONVENTION.MODE_EHSM_KMS,
                              asURL: String = "127.0.0.1",
-                             userReport: String = "ppml")
+                             userReport: String = "ppml",
+                             policyId: String = "8ccc898a-bf40-4272-9f24-e54627f997ed")
 
         val cmdParser = new OptionParser[CmdParams]("PPML Attestation Quote Generation Cmd tool") {
             opt[String]('i', "appID")
@@ -51,7 +52,9 @@ object AttestationCLI {
             opt[String]('p', "userReport")
               .text("userReportDataPath, default is test")
               .action((x, c) => c.copy(userReport = x))
-
+            opt[String]('pid', "policyId")
+              .text("policy id of customer registered mrenclave")
+              .action((x, c) => c.copy(policyId = x))
         }
         val params = cmdParser.parse(args, CmdParams()).get
 
@@ -59,6 +62,7 @@ object AttestationCLI {
         val userReportData = params.userReport
         val quoteGenerator = new GramineQuoteGeneratorImpl()
         val quote = quoteGenerator.getQuote(userReportData.getBytes)
+        val policyId = params.policyId
 
         // Attestation Client
         val as = params.asType match {
@@ -69,7 +73,7 @@ object AttestationCLI {
                 new DummyAttestationService()
             case _ => throw new AttestationRuntimeException("Wrong Attestation service type")
         }
-        val attResult = as.attestWithServer(Base64.getEncoder.encodeToString(quote))
+        val attResult = as.attestWithServer(Base64.getEncoder.encodeToString(quote), policyId)
         // System.out.print(as.attestWithServer(quote))
         if (attResult._1) {
             System.out.println("Attestation Success!")

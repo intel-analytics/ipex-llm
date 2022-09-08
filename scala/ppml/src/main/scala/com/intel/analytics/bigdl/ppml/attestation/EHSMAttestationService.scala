@@ -39,6 +39,7 @@ class EHSMAttestationService(kmsServerIP: String, kmsServerPort: String,
   // Quote
   val PAYLOAD_QUOTE = "quote"
   val PAYLOAD_NONCE = "nonce"
+  val PAYLOAD_POLICYID = "policyId"
 
   val ACTION_VERIFY_QUOTE = "VerifyQuote"
   // Respone keys
@@ -56,12 +57,16 @@ class EHSMAttestationService(kmsServerIP: String, kmsServerPort: String,
     "test"
   }
 
-  override def attestWithServer(quote: String): (Boolean, String) = {
+  override def attestWithServer(quote: String, policyId: String): (Boolean, String) = {
     // TODO nonce
     val nonce: String = "test"
     if (quote == null) {
       Log4Error.invalidInputError(false,
         "Quote should be specified")
+    }
+    if (policyId == null) {
+      Log4Error.invalidInputError(false,
+        "PolicyId should be specified")
     }
     val action: String = ACTION_VERIFY_QUOTE
     val currentTime = System.currentTimeMillis() // ms
@@ -69,6 +74,8 @@ class EHSMAttestationService(kmsServerIP: String, kmsServerPort: String,
     val ehsmParams = new EHSMParams(ehsmAPPID, ehsmAPPKEY, timestamp)
     ehsmParams.addPayloadElement(PAYLOAD_QUOTE, quote)
     ehsmParams.addPayloadElement(PAYLOAD_NONCE, nonce)
+    ehsmParams.addPayloadElement(PAYLOAD_POLICYID, policyId)
+
     val postResult: JSONObject = timing("EHSMKeyManagementService request for VerifyQuote") {
       val postString: String = ehsmParams.getPostJSONString()
       postRequest(constructUrl(action), postString)
