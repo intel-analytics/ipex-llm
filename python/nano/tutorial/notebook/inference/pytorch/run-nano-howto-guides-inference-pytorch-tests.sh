@@ -12,7 +12,7 @@ set -e
 sed -i 's/Trainer(max_epochs=1)/Trainer(max_epochs=1, fast_dev_run=True)/' $NANO_HOWTO_GUIDES_TEST_DIR/quantize_pytorch_inference_inc.ipynb $NANO_HOWTO_GUIDES_TEST_DIR/quantize_pytorch_inference_pot.ipynb
 
 # comment out the install commands
-sed -i 's/!pip install/#!pip install/' $NANO_HOWTO_GUIDES_TEST_DIR/*
+sed -i 's/!pip install/#!pip install/' $NANO_HOWTO_GUIDES_TEST_DIR/*.ipynb
 
 echo 'Start testing'
 start=$(date "+%s")
