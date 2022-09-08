@@ -107,13 +107,14 @@ class RayServiceFuncGenerator(object):
             print("The $PATH is: {}".format(modified_env["PATH"]))
         return modified_env
 
-    def __init__(self, python_loc, redis_port, ray_node_cpu_cores,
+    def __init__(self, python_loc, redis_port, redis_password, ray_node_cpu_cores,
                  object_store_memory, verbose=False, env=None,
                  include_webui=False, extra_params=None, system_config=None):
         """object_store_memory: integer in bytes"""
         self.env = env
         self.python_loc = python_loc
         self.redis_port = redis_port
+        self.redis_password = redis_password
         self.ray_node_cpu_cores = ray_node_cpu_cores
         self.ray_exec = self._get_ray_exec()
         self.object_store_memory = object_store_memory
@@ -158,8 +159,10 @@ class RayServiceFuncGenerator(object):
         webui = "true" if self.include_webui else "false"
         command = "{} start --head " \
                   "--include-dashboard {} --dashboard-host 0.0.0.0 --port {} " \
-                  "--num-cpus {}". \
+                  "--num-cpus {}" \
             format(self.ray_exec, webui, self.redis_port, self.ray_node_cpu_cores)
+        if self.redis_password:
+            command = command + " --redis-password {}".format(self.redis_password)
         if self.labels:
             command = command + " " + self.labels
         if self.system_config:
@@ -172,12 +175,15 @@ class RayServiceFuncGenerator(object):
     @staticmethod
     def _get_raylet_command(redis_address,
                             ray_exec,
+                            redis_password,
                             ray_node_cpu_cores,
                             labels="",
                             object_store_memory=None,
                             extra_params=None):
         command = "{} start --address {} --num-cpus {}".format(
             ray_exec, redis_address, ray_node_cpu_cores)
+        if redis_password:
+            command = command + " --redis-password {}".format(redis_password)
         if labels:
             command = command + " " + labels
         return RayServiceFuncGenerator._enrich_command(command=command,
@@ -260,6 +266,7 @@ class RayServiceFuncGenerator(object):
                         command=RayServiceFuncGenerator._get_raylet_command(
                             redis_address=redis_address,
                             ray_exec=self.ray_exec,
+                            redis_password=self.redis_password,
                             ray_node_cpu_cores=self.ray_node_cpu_cores,
                             labels=self.labels,
                             object_store_memory=self.object_store_memory,
@@ -309,6 +316,7 @@ class RayServiceFuncGenerator(object):
                         command=RayServiceFuncGenerator._get_raylet_command(
                             redis_address=redis_address,
                             ray_exec=self.ray_exec,
+                            redis_password=self.redis_password,
                             ray_node_cpu_cores=self.ray_node_cpu_cores,
                             labels=self.labels,
                             object_store_memory=self.object_store_memory,
@@ -325,7 +333,7 @@ class RayServiceFuncGenerator(object):
 class RayOnSparkContext(object):
     _active_ray_context = None
 
-    def __init__(self, sc, redis_port=None, object_store_memory=None,
+    def __init__(self, sc, redis_port=None, redis_password=None, object_store_memory=None,
                  verbose=False, env=None, extra_params=None, include_webui=True,
                  num_ray_nodes=None, ray_node_cpu_cores=None, system_config=None):
         """
@@ -342,13 +350,14 @@ class RayOnSparkContext(object):
         :param sc: An instance of SparkContext.
         :param redis_port: The redis port for the ray head node. Default is None.
         The value would be randomly picked if not specified.
+        :param redis_password: The password for redis. Default to be None if not specified.
         :param object_store_memory: The memory size for ray object_store in string.
         This can be specified in bytes(b), kilobytes(k), megabytes(m) or gigabytes(g).
         For example, "50b", "100k", "250m", "30g".
         :param verbose: True for more logs when starting ray. Default is False.
         :param env: The environment variable dict for running ray processes. Default is None.
         :param extra_params: The key value dict for extra options to launch ray.
-        For example, extra_params={"temp-dir": "/tmp/ray/", "redis-password": "xxxxxx"}
+        For example, extra_params={"temp-dir": "/tmp/ray/"}
         :param include_webui: True for including web ui when starting ray. Default is False.
         :param num_ray_nodes: The number of raylets to start across the cluster.
         For Spark local mode, you don't need to specify this value.
@@ -374,6 +383,7 @@ class RayOnSparkContext(object):
         self.initialized = False
         self.is_local = is_local(sc)
         self.verbose = verbose
+        self.redis_password = redis_password
         self.object_store_memory = resource_to_bytes(object_store_memory)
         self.ray_processesMonitor = None
         self.env = env
@@ -456,6 +466,7 @@ class RayOnSparkContext(object):
             self.ray_service = RayServiceFuncGenerator(
                 python_loc=self.python_loc,
                 redis_port=self.redis_port,
+                redis_password=self.redis_password,
                 ray_node_cpu_cores=self.ray_node_cpu_cores,
                 object_store_memory=self.object_store_memory,
                 verbose=self.verbose,
@@ -528,9 +539,6 @@ class RayOnSparkContext(object):
             for k, v in extra_params.items():
                 kw = k.replace("-", "_")
                 kwargs[kw] = v
-        if "redis_password" in kwargs:
-            kwargs["_redis_password"] = kwargs["redis_password"]
-            kwargs.pop("redis_password")
         return kwargs
 
     def init(self, driver_cores=0):
@@ -558,6 +566,8 @@ class RayOnSparkContext(object):
                     dashboard_host="0.0.0.0",
                     _system_config=self.system_config
                 )
+                if self.redis_password:
+                    init_params["_redis_password"] = self.redis_password
                 init_params.update(kwargs)
                 if version.parse(ray.__version__) >= version.parse("1.4.0"):
                     init_params["namespace"] = "az"
@@ -623,6 +633,7 @@ class RayOnSparkContext(object):
         command = RayServiceFuncGenerator._get_raylet_command(
             redis_address=redis_address,
             ray_exec="ray",
+            redis_password=self.redis_password,
             ray_node_cpu_cores=num_cores,
             object_store_memory=self.object_store_memory,
             extra_params=extra_param)
@@ -642,12 +653,12 @@ class RayOnSparkContext(object):
                                       node_ip_address=node_ip,
                                       redis_address=redis_address)
         ray.shutdown()
-        kwargs = self._update_extra_params(self.extra_params)
         init_params = dict(
             address=redis_address,
             _node_ip_address=node_ip
         )
-        init_params.update(kwargs)
+        if self.redis_password:
+            init_params["_redis_password"] = self.redis_password
         if version.parse(ray.__version__) >= version.parse("1.4.0"):
             init_params["namespace"] = "az"
         return ray.init(**init_params)

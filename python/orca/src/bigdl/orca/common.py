@@ -341,7 +341,7 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=None, memory="2g
                                   "spark-submit or bigdl-submit, "
                                   "but got: %s".format(cluster_mode))
         ray_args = {}
-        for key in ["redis_port", "object_store_memory", "verbose", "env",
+        for key in ["redis_port", "redis_password", "object_store_memory", "verbose", "env",
                     "extra_params", "num_ray_nodes", "ray_node_cpu_cores", "include_webui",
                     "system_config"]:
             if key in kwargs:
