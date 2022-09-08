@@ -290,9 +290,8 @@ private[bigdl] class ModelInfo[T: ClassTag](val uuid: String, @transient var mod
   @throws(classOf[IOException])
   private def readObject(in: ObjectInputStream): Unit = {
     val in1 = new ValidatingObjectInputStream(in);
-    in1.accept(Module.getClass)
+    in1.accept(classOf[Module[T]])
     in1.defaultReadObject()
-    // test.accept(classTag$T$0.getClass)
     model = in1.readObject().asInstanceOf[Module[T]]
     CachedModels.add(uuid, model)
   }

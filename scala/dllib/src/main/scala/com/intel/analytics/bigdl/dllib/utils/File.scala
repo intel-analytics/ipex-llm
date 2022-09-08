@@ -155,12 +155,11 @@ object File {
    */
   def loadFromHdfs[T: ClassTag](fileName: String): T = {
     val byteArrayOut = readHdfsByte(fileName)
-    var objFile: ObjectInputStream = null
+    var objFile: ValidatingObjectInputStream = null
     try {
-      objFile = new ObjectInputStream(new ByteArrayInputStream(byteArrayOut))
-      val validFile = new ValidatingObjectInputStream(new ByteArrayInputStream(byteArrayOut))
-      validFile.accept(classTag[T].runtimeClass)
-      val result = validFile.readObject()
+      objFile = new ValidatingObjectInputStream(new ByteArrayInputStream(byteArrayOut))
+      objFile.accept(classTag[T].runtimeClass)
+      val result = objFile.readObject()
       objFile.close()
       result.asInstanceOf[T]
     } finally {

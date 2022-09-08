@@ -42,7 +42,7 @@ public class EncodeUtils {
 
     public static Object bytesToObj(byte[] bytes) {
         ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-        ValidatingObjectInputStream in;
+        ValidatingObjectInputStream in = null;
         try {
             in = new ValidatingObjectInputStream(bis);
             in.accept(Object.class);
@@ -52,6 +52,7 @@ public class EncodeUtils {
         } finally {
             try {
                 bis.close();
+                in.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
