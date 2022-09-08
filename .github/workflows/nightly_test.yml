@@ -149,7 +149,7 @@ jobs:
 
   Orca-Ray-Ctx:
     #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Ray-Ctx' || github.event.inputs.artifact == 'all' }} 
-    runs-on: [self-hosted, Gondolin-ctx, ubuntu-20.04-lts]
+    runs-on: [Gondolin-ctx, ubuntu-20.04-lts]
 
     steps:
     - uses: actions/checkout@v3
