@@ -22,6 +22,9 @@ import pytest
 import torch
 import torch.nn as nn
 
+from pyspark.sql import SparkSession
+from pyspark.sql.types import FloatType, ArrayType, StructType, StructField
+
 from bigdl.orca import OrcaContext
 from bigdl.orca.data.pandas import read_csv
 from bigdl.orca.learn.metrics import Accuracy
@@ -138,7 +141,7 @@ class CustomCallback(Callback):
         assert self.model
 
     def on_epoch_end(self, epoch, logs=None):
-        assert "train_loss" in logs 
+        assert "train_loss" in logs
         assert "val_loss" in logs
         assert self.model
 
@@ -303,7 +306,7 @@ class TestPyTorchEstimator(TestCase):
     def test_xshards_predict_save_load(self):
 
         sc = init_nncontext()
-        rdd = sc.range(0, 110).map(lambda x: np.array([x]*50))
+        rdd = sc.range(0, 110).map(lambda x: np.array([x] * 50))
         shards = rdd.mapPartitions(lambda iter: chunks(iter, 5)).map(lambda x: {"x": np.stack(x)})
         shards = SparkXShards(shards)
 
@@ -373,6 +376,7 @@ class TestPyTorchEstimator(TestCase):
 
     def test_data_parallel_sgd_correctness(self):
         sc = init_nncontext()
+        spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(0, 100).repartition(2)
 
         # partition 0: [(0, 0), (0, 0)]
@@ -390,8 +394,12 @@ class TestPyTorchEstimator(TestCase):
         #    partition 1 loss: 0.25
         #    avg_grad = avg([0, 0, 1, 1]) = 0.5
         #    weight = 0.5 - 0.5 * avg_grad = 0.25
-        df = rdd.mapPartitionsWithIndex(lambda idx, iter: [([float(idx)], [0.0]) for _ in iter][:2]
-                        ).toDF(["feature", "label"])
+        data = rdd.mapPartitionsWithIndex(lambda idx, iter: [([float(idx)], [0.0]) for _ in iter][:2])
+        schema = StructType([
+            StructField("feature", ArrayType(FloatType()), True),
+            StructField("label", ArrayType(FloatType()), True)
+        ])
+        df = spark.createDataFrame(data=data, schema=schema)
 
         def get_optimizer(model, config):
             return torch.optim.SGD(model.parameters(), lr=0.5)
@@ -446,7 +454,7 @@ class TestPyTorchEstimator(TestCase):
         latest_checkpoint_path = Estimator.latest_checkpoint(self.model_dir)
         assert os.path.isfile(latest_checkpoint_path)
         estimator.shutdown()
-        new_estimator = get_estimator(workers_per_node=2,  model_dir=self.model_dir,
+        new_estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir,
                                       log_level=logging.DEBUG)
         new_estimator.load_checkpoint(latest_checkpoint_path)
         eval_after = new_estimator.evaluate(df, batch_size=4,
@@ -494,7 +502,7 @@ class TestPyTorchEstimator(TestCase):
     def test_custom_callback(self):
         estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir)
         callbacks = [CustomCallback()]
-        estimator.fit(train_data_loader, epochs=4, batch_size=128, 
+        estimator.fit(train_data_loader, epochs=4, batch_size=128,
                       validation_data=val_data_loader, callbacks=callbacks)
 
 
