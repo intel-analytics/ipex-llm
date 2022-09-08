@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+from tkinter.messagebox import NO
 from bigdl.chronos.forecaster.abstract import Forecaster
 from bigdl.chronos.forecaster.utils import *
 from bigdl.chronos.metric.forecast_metrics import Evaluator
@@ -778,6 +779,108 @@ class BasePytorchForecaster(Forecaster):
 
         aggregate = 'mean' if multioutput == 'uniform_average' else None
         return Evaluator.evaluate(self.metrics, target, yhat, aggregate=aggregate)
+
+    def predict_interval(self, data, validation_data, batch_size=None, B=5):
+        """
+
+        :param data: The data support following formats:
+
+               | 1. a numpy ndarray x:
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | 2. a xshard item:
+               | each partition can be a dictionary of {'x': x}, where x's shape
+               | should follow the shape stated before.
+               | 3. pytorch dataloader:
+               | the dataloader needs to return at least x in each iteration
+               | with the shape as following:
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | If returns x and y only get x.
+               | 4. A bigdl.chronos.data.tsdataset.TSDataset instance:
+               | Forecaster will automatically process the TSDataset.
+               | By default, TSDataset will be transformed to a pytorch dataloader,
+               | which is memory-friendly while a little bit slower.
+               | Users may call `roll` on the TSDataset before calling `fit`
+               | Then the training speed will be faster but will consume more memory.
+
+        :param batch_size: predict batch size. The value will not affect predict
+               result but will affect resources cost(e.g. memory and time).
+        """
+        from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
+
+        # step1, according to validation dataset, calculate inherent noise
+        output = self.evaluate(data=validation_data, multioutput='uniform_average')
+        sig1 = output["mse"]
+
+        # step2: data preprocess
+        if isinstance(data, TSDataset):
+            _rolled = data.numpy_x is None
+            data = data.to_torch_data_loader(batch_size=batch_size,
+                                             roll=_rolled,
+                                             lookback=self.data_config['past_seq_len'],
+                                             horizon=self.data_config['future_seq_len'],
+                                             feature_col=data.roll_feature,
+                                             target_col=data.roll_target,
+                                             shuffle=False)
+        # data transform
+        is_local_data = isinstance(data, (np.ndarray, DataLoader))
+        if is_local_data and self.distributed:
+            if isinstance(data, DataLoader):
+                from bigdl.nano.utils.log4Error import invalidInputError
+                invalidInputError(False,
+                                  "We will be support input dataloader later.")
+            data = np_to_xshard(data)
+        if not is_local_data and not self.distributed:
+            data = xshard_to_np(data, mode="predict")
+
+        def calculate(data, model):
+            if self.distributed:
+                yhat = model.predict(data, batch_size=batch_size)
+                expand_dim = []
+                if self.data_config["future_seq_len"] == 1:
+                    expand_dim.append(1)
+                if self.data_config["output_feature_num"] == 1:
+                    expand_dim.append(2)
+                if is_local_data:
+                    yhat = xshard_to_np(yhat, mode="yhat", expand_dim=expand_dim)
+                else:
+                    yhat = yhat.transform_shard(xshard_expand_dim, expand_dim)
+            else:
+                if not self.fitted:
+                    from bigdl.nano.utils.log4Error import invalidInputError
+                    invalidInputError(False,
+                                    "You must call fit or restore first before calling predict!")
+                self.internal.eval()
+                yhat = _pytorch_fashion_inference(model=model,
+                                                input_data=data,
+                                                batch_size=batch_size)
+                if not is_local_data:
+                    yhat = np_to_xshard(yhat, prefix="prediction")
+
+        # step3: calculate y_hat
+        y_hat = calculate(data, self.internal)
+
+        # step4: calculate model uncertainty based MC Dropout
+        def apply_dropout(m):
+            if type(m) == torch.nn.Dropout:
+                m.train()
+        # turn on dropout
+        self.internal.apply(apply_dropout)
+        y_hat_list = []
+        for i in range(B):
+            y_hat_list.append(calculate(data, self.internal))
+        y_hat_mean = np.mean(y_hat_list)
+        assert y_hat_mean.shape == y_hat.shape
+        
+        sig2 = np.zeros_like(y_hat_mean)
+        for i in  range(B):
+            sig2 += (y_hat_list[i] - y_hat_mean)**2
+        sig2 /= B
+        sig = np.sqrt(sig1 + sig2)
+
+        return y_hat, sig
+
 
     def save(self, checkpoint_file, quantize_checkpoint_file=None):
         """
