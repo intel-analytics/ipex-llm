@@ -29,14 +29,6 @@ RUN cd /graphene/Pal/src/host/Linux-SGX && \
 RUN cd /graphene && \
     ISGX_DRIVER_PATH=/graphene/Pal/src/host/Linux-SGX/linux-sgx-driver make -s -j4 SGX=1 WERROR=1 && true
 RUN for f in $(find /graphene/Runtime -type l); do cp --remove-destination $(realpath $f) $f; done
-# install sgxsdk
-RUN mkdir /opt/intel && \
-    cd /opt/intel && \
-    wget https://download.01.org/intel-sgx/sgx-dcap/1.13/linux/distro/ubuntu20.04-server/sgx_linux_x64_sdk_2.16.100.4.bin && \
-    chmod a+x ./sgx_linux_x64_sdk_2.16.100.4.bin && \
-    printf "no\n/opt/intel\n"|./sgx_linux_x64_sdk_2.16.100.4.bin && \
-    . /opt/intel/sgxsdk/environment && \
-    rm ./sgx_linux_x64_sdk_2.16.100.4.bin
 
 # stage.2 jdk & scala & spark & hadoop
 FROM ubuntu:20.04 as spark
@@ -334,6 +326,15 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
 # Azure support
 RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 ADD azure /ppml/trusted-big-data-ml/azure
+
+# install sgxsdk
+RUN mkdir /opt/intel && \
+    cd /opt/intel && \
+    wget https://download.01.org/intel-sgx/sgx-dcap/1.13/linux/distro/ubuntu20.04-server/sgx_linux_x64_sdk_2.16.100.4.bin && \
+    chmod a+x ./sgx_linux_x64_sdk_2.16.100.4.bin && \
+    printf "no\n/opt/intel\n"|./sgx_linux_x64_sdk_2.16.100.4.bin && \
+    . /opt/intel/sgxsdk/environment && \
+    rm ./sgx_linux_x64_sdk_2.16.100.4.bin
 
 WORKDIR /ppml/trusted-big-data-ml
 
