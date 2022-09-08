@@ -226,7 +226,7 @@ def init_spark_standalone(num_executors,
     Create a SparkContext with BigDL configurations on Spark standalone cluster.
 
     You need to specify master if you already have a Spark standalone cluster. For a
-    standalone cluster with multiple nodes, make sure that bigdl is installed via
+    standalone cluster with multiple nodes, make sure that BigDL is installed via
     pip in the Python environment on every node.
     If master is not specified, a new Spark standalone cluster on the current single node
     would be started first and the SparkContext would use its master address. You need to
