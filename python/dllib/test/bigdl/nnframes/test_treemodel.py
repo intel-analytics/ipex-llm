@@ -14,20 +14,10 @@
 # limitations under the License.
 #
 
-import errno
-import shutil
-
 import pytest
-from bigdl.dllib.nn.criterion import *
-from bigdl.dllib.nn.layer import *
-from bigdl.dllib.optim.optimizer import *
-from numpy.testing import assert_allclose
-from pyspark.ml import Pipeline, PipelineModel
-from pyspark.ml.feature import MinMaxScaler
 from bigdl.dllib.nncontext import *
 from bigdl.dllib.nnframes.tree_model import *
 from bigdl.dllib.utils.tf import *
-from pyspark.sql.functions import array
 from pyspark.ml.linalg import DenseVector, VectorUDT
 from pyspark.sql.functions import udf, array
 
