@@ -45,7 +45,7 @@ You can input the following RayOnSpark related arguments when you `init_orca_con
 - `extra_params`: The key value dict for extra options to launch ray. For example, `extra_params={"dashboard-port": "11281", "temp-dir": "/tmp/ray/"}`.
 - `include_webui`: Default is True for including web ui when starting ray.
 - `system_config`: The key value dict for overriding RayConfig defaults. Mainly for testing purposes. An example for system_config could be: `{"object_spilling_config":"{\"type\":\"filesystem\", \"params\":{\"directory_path\":\"/tmp/spill\"}}"}`.
-- `num_ray_nodes`: The number of raylets to start across the cluster. For Spark local mode, you don't need to specify this value. 
+- `num_ray_nodes`: The number of ray processes to start across the cluster. For Spark local mode, you don't need to specify this value. 
 For Spark cluster mode, it is default to be the number of Spark executors. If spark.executor.instances can't be detected in your SparkContext, you need to explicitly specify this. It is recommended that num_ray_nodes is not larger than the number of Spark executors to make sure there are enough resources in your cluster.
 - `ray_node_cpu_cores`: The number of available cores for each ray process. For Spark local mode, it is default to be the number of Spark local cores. 
 For Spark cluster mode, it is default to be the number of cores for each Spark executor. If spark.executor.cores or spark.cores.max can't be detected in your SparkContext, you need to explicitly specify this. It is recommended that ray_node_cpu_cores is not larger than the number of cores for each Spark executor to make sure there are enough resources in your cluster.
