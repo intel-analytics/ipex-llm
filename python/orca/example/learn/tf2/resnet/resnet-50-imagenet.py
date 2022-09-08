@@ -438,3 +438,4 @@ if __name__ == "__main__":
             )
             epoch += args.epochs
         trainer.save(os.path.join(args.log_dir, f"model-{epoch}.pkl"))
+    stop_orca_context()
