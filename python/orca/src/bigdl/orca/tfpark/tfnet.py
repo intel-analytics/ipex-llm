@@ -266,9 +266,7 @@ class TFNet(Layer):
         try:
             if generate_backward:
                 logging.warning("generate_backward option is deprecated, and will be removed in"
-                                + "in future releases, please use TFPark "
-                                + "(https://analytics-zoo.github.io/master/"
-                                + "#ProgrammingGuide/TFPark/tensorflow/) for TensorFlow training")
+                                + "in future releases, please use TFPark for TensorFlow training")
                 export_tf(sess, temp, inputs, outputs,
                           generate_backward, allow_non_differentiable_input)
                 net = TFNet.from_export_folder(temp, tf_session_config)
