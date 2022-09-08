@@ -61,6 +61,7 @@ jobs:
             bash python/nano/dev/build_and_install.sh linux default false pytorch
             source bigdl-nano-init
             pip install pytest nbmake
+            pip install ipykernel==5.5.6
             pip install openvino-dev
             bash python/nano/tutorial/notebook/inference/pytorch/run-nano-howto-guides-inference-pytorch-tests.sh openvino
             source $CONDA/bin/deactivate
