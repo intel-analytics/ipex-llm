@@ -69,7 +69,7 @@ jobs:
           pip install  python/chronos/src/dist/bigdl_chronos_*-py3-none-manylinux1_x86_64.whl
           export SPARK_LOCAL_HOSTNAME=localhost
           export KERAS_BACKEND=tensorflow
-          bash python/chronos/dev/test/run-pytests.sh 1
+          bash python/chronos/dev/test/run-pytests.sh
         env:
           BIGDL_ROOT: ${{ github.workspace }}
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
