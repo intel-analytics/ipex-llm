@@ -870,8 +870,8 @@ class BasePytorchForecaster(Forecaster):
         y_hat_list = []
         for i in range(B):
             y_hat_list.append(calculate(data, self.internal))
-        y_hat_mean = np.mean(y_hat_list)
-        invalidInputError(y_hat_mean.shape == y_hat.shape, 
+        y_hat_mean = np.mean(np.stack(y_hat_list, axis=0), axis=0)
+        invalidInputError(y_hat_mean.shape == y_hat.shape,
                           "dismatch shape between y_hat_mean and y_hat")
 
         sig2 = np.zeros_like(y_hat_mean)
