@@ -850,11 +850,11 @@ class BasePytorchForecaster(Forecaster):
                 if not self.fitted:
                     from bigdl.nano.utils.log4Error import invalidInputError
                     invalidInputError(False,
-                                    "You must call fit or restore first before calling predict!")
+                                      "You must call fit or restore first before calling predict!")
                 self.internal.eval()
                 yhat = _pytorch_fashion_inference(model=model,
-                                                input_data=data,
-                                                batch_size=batch_size)
+                                                  input_data=data,
+                                                  batch_size=batch_size)
                 if not is_local_data:
                     yhat = np_to_xshard(yhat, prefix="prediction")
 
@@ -871,16 +871,15 @@ class BasePytorchForecaster(Forecaster):
         for i in range(B):
             y_hat_list.append(calculate(data, self.internal))
         y_hat_mean = np.mean(y_hat_list)
-        assert y_hat_mean.shape == y_hat.shape
-        
+        invalidInputError(y_hat_mean.shape == y_hat.shape, "dismatch shape between y_hat_mean and y_hat")
+
         sig2 = np.zeros_like(y_hat_mean)
-        for i in  range(B):
+        for i in range(B):
             sig2 += (y_hat_list[i] - y_hat_mean)**2
         sig2 /= B
         sig = np.sqrt(sig1 + sig2)
 
         return y_hat, sig
-
 
     def save(self, checkpoint_file, quantize_checkpoint_file=None):
         """
