@@ -95,14 +95,14 @@ class Net:
     @staticmethod
     def load(model_path, weight_path=None, bigdl_type="float"):
         """
-        Load an existing Analytics Zoo model defined in Keras-style(with weights).
+        Load an existing BigDL model defined in Keras-style(with weights).
 
         :param model_path: The path to load the saved model.
                           Local file system, HDFS and Amazon S3 are supported.
                           HDFS path should be like 'hdfs://[host]:[port]/xxx'.
                           Amazon S3 path should be like 's3a://bucket/xxx'.
         :param weight_path: The path for pre-trained weights if any. Default is None.
-        :return: An Analytics Zoo model.
+        :return: A BigDL model.
         """
         jmodel = callZooFunc(bigdl_type, "netLoad", model_path, weight_path)
         return Net.from_jvalue(jmodel, bigdl_type)

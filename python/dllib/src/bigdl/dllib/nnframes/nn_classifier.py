@@ -154,7 +154,7 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
     Using the Preprocessing allows NNEstimator to cache only the raw data and decrease the
     memory consumption during feature conversion and training.
 
-    More concrete examples are available in package com.intel.analytics.zoo.examples.nnframes
+    More concrete examples are available in package com.intel.analytics.bigdl.dllib.example.nnframes
     """
 
     def __init__(self, model, criterion,
@@ -522,7 +522,7 @@ class NNModel(JavaTransformer, MLWritable, MLReadable, HasFeaturesCol, HasPredic
     NNModel extends Spark ML Transformer and supports BigDL model with Spark DataFrame.
 
     NNModel supports different feature data type through Preprocessing. Some common
-    Preprocessing have been defined in com.intel.analytics.zoo.feature.
+    Preprocessing have been defined in com.intel.analytics.bigdl.dllib.feature.
 
     After transform, the prediction column contains the output of the model as Array[T], where
     T (Double or Float) is decided by the model type.
