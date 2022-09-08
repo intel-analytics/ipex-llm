@@ -1,7 +1,7 @@
 name: Nightly Test
 
 on:
-  #pull_request:
+  pull_request:
   schedule:
     - cron: '0 13 * * *' # GMT time, 13:00 GMT == 21:00 China
   workflow_dispatch:
@@ -28,7 +28,7 @@ permissions:
   contents: read
   packages: write
 
-jobs:
+jobs: 
   Orca-Python-ExampleTest-Py37-Spark3:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-ExampleTest-Py37-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
@@ -146,3 +146,16 @@ jobs:
       uses: ./.github/actions/maven-setup-action
     - name: Run test
       uses: ./.github/actions/orca-ray-ctx-example-action
+
+  Orca-Ray-Ctx:
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Ray-Ctx' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [Gondolin-ctx, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Run test
+      uses: ./.github/actions/orca-ray-ctx-action

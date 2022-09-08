@@ -1,0 +1,46 @@
+name: 'Run Orca Python Py37 Spark3'
+description: 'Run Orca Python Py37 Spark3'
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Env
+      shell: bash
+      run: |
+        apt-get update
+        apt-get install wget
+
+    - name: Set up Python 
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7'
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install --upgrade setuptools==58.0.4
+        
+
+    - name: Run Test
+      shell: bash
+      run: |
+        conda remove -n orca-python-ray-ctx -y --all
+        conda create -n orca-python-ray-ctx -y python==3.7.10 setuptools==58.0.4
+        conda info -e
+        source activate orca-python-ray-ctx
+        export SPARK_LOCAL_HOSTNAME=localhost
+
+        pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-friesian bigdl-friesian-spark3
+        pip uninstall -r python/orca/dev/example/requirements-ray.txt -y
+        pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r python/orca/dev/example/requirements-ray.txt
+        pip install pytest
+        pip install tensorflow==2.8.0
+        pip install ray==1.11.0
+        pip install --pre --upgrade bigdl-orca
+        chmod a+x python/orca/dev/test/run-pytests-ray-ctx.sh
+        python/orca/dev/test/run-pytests-ray-ctx.sh
+        source deactivate
+         conda remove -n orca-python-ray-ctx -y --all
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
