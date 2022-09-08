@@ -134,8 +134,9 @@ private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
 
   @throws(classOf[IOException])
   private def readObject(in: ObjectInputStream): Unit = {
-    val in1 = new ValidatingObjectInputStream(in)
-    in1.defaultReadObject()
+//    val in1 = new ValidatingObjectInputStream(in)
+//    in1.defaultReadObject()
+    in.defaultReadObject()
     if (!_isReleased) {
       ptr = new Pointer(allocate(this.size))
       val elements = in.readObject().asInstanceOf[Array[Float]]
