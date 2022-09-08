@@ -6,7 +6,7 @@ runs:
     - name: Run Test
       shell: bash
       run: |
-        source activate ${{ conda-env }}
+        source activate orca-oython-horovod-tf2-py37-spark3
         export SPARK_LOCAL_HOSTNAME=localhost
         chmod a+x python/orca/dev/test/run-pytests-horovod-tf.sh
         python/orca/dev/test/run-pytests-horovod-tf.sh

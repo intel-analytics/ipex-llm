@@ -113,17 +113,8 @@ jobs:
       uses: ./.github/actions/maven-setup-action 
     - name: Setup env
       uses: ./.github/actions/orca/setup-env/setup-horovod-tf2-py37
-      with:
-         conda-env: Orca-Python-Horovod-Tf2-Py37-Spark3 
     - name: Run Test
       uses: ./.github/actions/orca/orca-python-horovod-tf2-py37-spark3-action/nightly-test
-      with:
-         conda-env: Orca-Python-Horovod-Tf2-Py37-Spark3 
-    - name: Remove env
-      if: ${{ always() }}
-      uses: ./.github/actions/remove-env
-      with:
-         conda-env: Orca-Python-Horovod-Tf2-Py37-Spark3 
       
   Dllib-Scala-UT:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Dllib-Scala-UT' || github.event.inputs.artifact == 'all' }} 

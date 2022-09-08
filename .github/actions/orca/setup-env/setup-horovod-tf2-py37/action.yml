@@ -23,10 +23,10 @@ runs:
     - name: Run Test
       shell: bash
       run: |
-        conda remove -n ${{ conda-env }} -y --all
-        conda create -n ${{ conda-env }} -y python==3.7.10 setuptools==58.0.4
+        conda remove -n orca-oython-horovod-tf2-py37-spark3 -y --all
+        conda create -n orca-oython-horovod-tf2-py37-spark3 -y python==3.7.10 setuptools==58.0.4
         conda info -e
-        source activate ${{ conda-env }}
+        source activate orca-oython-horovod-tf2-py37-spark3
         pip uninstall -y intel-tensorflow
         pip install cmake mxnet==1.6.0
         pip uninstall -r .github/actions/python-requirements/requirements-horovod-tf2.txt -y
