@@ -119,14 +119,13 @@ if __name__ == '__main__':
     evals_result = {}
     # Train the model
     bst = train(
-            config,
-            dtrain,
-            evals=[(dtest, "eval")],
-            evals_result=evals_result,
-            ray_params=RayParams(max_actor_restarts=1,
-                                 num_actors=opt.num_workers,
-                                 cpus_per_actor=1),
-            num_boost_round=10)
+        config,
+        dtrain,
+        evals=[(dtest, "eval")],
+        evals_result=evals_result,
+        ray_params=RayParams(max_actor_restarts=1,
+                             num_actors=opt.num_workers,
+                             cpus_per_actor=1),
+        num_boost_round=10)
     # print evaluation stats
-    print("Final validation error: {:.4f}".format(
-            evals_result["eval"]["rmse"][-1]))
+    print("Final validation error: {:.4f}".format(evals_result["eval"]["rmse"][-1]))
