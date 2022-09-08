@@ -80,13 +80,10 @@ class TestTreeModel():
             .withColumn("features", udf(lambda x: DenseVector(x), VectorUDT())("features"))
         params = {"eta": 0.2, "max_depth":4, "max_leaf_nodes": 8, "objective": "binary:logistic",
                   "num_round": 100}
-        df.show()
         classifier = XGBClassifier(params)
         xgbmodel = classifier.fit(df)
         xgbmodel.setFeaturesCol("features")
         predicts = xgbmodel.transform(df)
-        predicts.show(14)
-        # assert 1 > 2
         assert predicts.count() == 14
 
     def test_XGBRegressor(self):
@@ -114,14 +111,10 @@ class TestTreeModel():
             xgbmodel = xgbRf0.fit(assembledf)
             xgbmodel.save("/tmp/modelfile/")
             xgbmodel.setFeaturesCol("features")
-            assembledf.show()
             yxgb = xgbmodel.transform(assembledf)
             model = xgbmodel.load("/tmp/modelfile/")
-            yxgb.show()
             model.setFeaturesCol("features")
             y0 = model.transform(assembledf)
-            y0.show()
-            assert 1 > 2
             assert (y0.subtract(yxgb).count() == 0)
 
     def test_LGBMClassifier_fit_transform(self):
@@ -130,14 +123,16 @@ class TestTreeModel():
         df = self.sqlContext.read.csv(filePath, sep=",", inferSchema=True, header=True)
         df = df.select(array("age", "gender", "jointime", "star").alias("features"), "label")\
             .withColumn("features", udf(lambda x: DenseVector(x), VectorUDT())("features"))
+
+        # input_path = "/Users/guoqiong/intelWork/data/tweet/xgb_processed"
+        # df = self.sqlContext.read.parquet(input_path + "/train")
         classifier = LightGBMClassifier()
         classifier.setObjective("binary")
         classifier.setMaxDepth(4)
         classifier.setLearningRate(0.2)
         model = classifier.fit(df)
         predicts = model.transform(df)
-        predicts.show()
-        # assert 1 > 2
+        print(predicts.filter(predicts["prediction"] == 1.0).count())
         assert predicts.count() == 14
 
     def test_LGBMClassifierModel_save_load(self):
@@ -173,7 +168,7 @@ class TestTreeModel():
         model = regressor.fit(assembledf)
         predicts = model.transform(assembledf)
         predicts.show()
-        assert 1 > 2
+        assert (predicts.count() == 4)
 
     def test_LGBMRegressorModel_save_load(self):
         data = self.sc.parallelize([
@@ -193,9 +188,6 @@ class TestTreeModel():
         model.saveModel("/tmp/lightgbmRegressor1")
         model1 = LightGBMRegressorModel.loadModel("/tmp/lightgbmRegressor1")
         predicts1 = model1.transform(df)
-        predicts.show()
-        predicts1.show()
-        assert 1 > 2
         assert (predicts1.count() == 4)
 
 

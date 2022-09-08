@@ -236,7 +236,7 @@ class LightGBMRegressor():
 
     def fit(self, df):
         model = callZooFunc("float", "fitLGBMRegressor", self.value, df)
-        model = LightGBMClassifierModel(model)
+        model = LightGBMRegressorModel(model)
         return model
 
     def setMaxDepth(self, value: int):
@@ -282,4 +282,4 @@ class LightGBMRegressorModel:
         :param path: pretrained model path
         """
         jvalue = callZooFunc("float", "loadLGBMRegressorModel", path)
-        return LightGBMClassifierModel(jvalue=jvalue)
+        return LightGBMRegressorModel(jvalue=jvalue)
