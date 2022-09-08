@@ -110,7 +110,7 @@ class TorchNano(LightningLite):
             or bfloat16 precision (bf16), defaults to 32.
             Enable ipex bfloat16 weight prepack when `use_ipex=True` and `precision='bf16'`
         :param channels_last: whether convert input to channels last memory formats, \
-            defaults to False
+            defaults to False.
         """
         self.num_processes = num_processes
         self.use_ipex = use_ipex
