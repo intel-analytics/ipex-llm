@@ -159,7 +159,7 @@ class RayServiceFuncGenerator(object):
         webui = "true" if self.include_webui else "false"
         command = "{} start --head " \
                   "--include-dashboard {} --dashboard-host 0.0.0.0 --port {} " \
-                  "--num-cpus {}" \
+                  "--num-cpus {}". \
             format(self.ray_exec, webui, self.redis_port, self.ray_node_cpu_cores)
         if self.redis_password:
             command = command + " --redis-password {}".format(self.redis_password)
