@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-from tkinter.messagebox import NO
 from bigdl.chronos.forecaster.abstract import Forecaster
 from bigdl.chronos.forecaster.utils import *
 from bigdl.chronos.metric.forecast_metrics import Evaluator

@@ -696,7 +696,3 @@ class TestChronosModelTCNForecaster(TestCase):
                                                 B=5)
         assert y_pred.shape == test_data[1].shape
         assert y_pred.shape == sigma.shape
-
-if __name__ == "__main__":
-    test = TestChronosModelTCNForecaster()
-    test.test_predict_interval()
