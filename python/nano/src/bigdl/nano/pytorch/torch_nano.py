@@ -14,13 +14,15 @@
 # limitations under the License.
 #
 
-from typing import Any, Union, List
+import copy
+from typing import Any, Union, List, Dict
 from logging import warning
 from functools import partial
 from abc import abstractmethod
+from collections import OrderedDict
 
 import torch
-from torch import nn
+from torch import nn, Tensor
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 from pytorch_lightning.lite import LightningLite
@@ -32,6 +34,44 @@ from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS
 from bigdl.nano.pytorch.strategies.ipex.ipex_api import ipex_optimize
 from bigdl.nano.pytorch.strategies import create_IPEXStrategy, DDPSpawnStrategy, \
     DDPSubprocessStrategy, create_RayStrategy
+
+
+class _TorchNanoModuleWrapper():
+    def __init__(self, model: "_TorchNanoModule", torch_nano: "TorchNano", backup_model: nn.Module,
+                 backup_optimizers: List[Optimizer], move_to_device: bool):
+        self.model = model
+        self.torch_nano = torch_nano
+        self.backup_model = backup_model
+        self.backup_optimizers = backup_optimizers
+        self.move_to_device = move_to_device
+
+    def state_dict(self, *args, **kwargs):
+        return self.model._module.state_dict(*args, **kwargs)
+
+    def load_state_dict(self, state_dict: 'OrderedDict[str, Tensor]', strict: bool = True,
+                        optimizer_state_dict: 'Union[Dict, List[Dict]]' = None):
+        # load model and optimizer's state dict
+        self.backup_model.load_state_dict(state_dict, strict)
+        if optimizer_state_dict is not None:
+            optimizer_state_dict_list = optimizer_state_dict \
+                if isinstance(optimizer_state_dict, list) else [optimizer_state_dict]
+            for optimizer, state in zip(self.backup_optimizers, optimizer_state_dict_list):
+                optimizer.load_state_dict(state)
+
+        # re-setup loaded model and optimizer
+        model, optimizers = self.torch_nano._setup(self.backup_model, self.backup_optimizers,
+                                                   self.move_to_device)
+        self.model = model
+
+        if optimizer_state_dict is not None:
+            optimizer = optimizers if isinstance(optimizer_state_dict, list) else optimizers[0]
+            return optimizer
+
+    def __call__(self, *args, **kwargs):
+        return self.model(*args, **kwargs)
+
+    def __getattr__(self, name: str):
+        return getattr(self.model, name)
 
 
 class _TorchNanoModule(_LiteModule):
@@ -145,12 +185,16 @@ class TorchNano(LightningLite):
         # which is not supported by ddp currently,
         # so add IPEX 1.11's optimization after `_setup_model`
         if self.use_ipex and not TORCH_VERSION_LESS_1_10:
+            training = model.training
             if len(optimizers) == 0:
+                model.eval()
                 ipex_optimize(model, inplace=True, dtype=self.dtype)
             elif len(optimizers) == 1:
+                model.train()
                 ipex_optimize(model, optimizer=optimizers[0], inplace=True, dtype=self.dtype)
             else:
                 invalidInputError(False, "Ipex does not support more than one optimizers.")
+            model.train(training)
 
         if move_to_device:
             model = self._move_model_to_device(model=model, optimizers=optimizers)
@@ -180,12 +224,20 @@ class TorchNano(LightningLite):
         # convert single optimizer to a optimizer list
         optimizers = [optimizer] if isinstance(optimizer, Optimizer) else optimizer
 
-        model, optimizers = self._setup(model, optimizers, move_to_device=move_to_device)
+        if self.use_ipex:
+            (backup_model, backup_optimizers) = copy.deepcopy((model, optimizers))
+            model, optimizers = self._setup(model, optimizers, move_to_device=move_to_device)
+            model_wrapper = _TorchNanoModuleWrapper(model, self, backup_model,  # type: ignore
+                                                    backup_optimizers, move_to_device)
+        else:
+            model, optimizers = self._setup(model, optimizers, move_to_device=move_to_device)
+            model_wrapper = model   # type: ignore
+
         dataloaders = self.setup_dataloaders(*dataloaders,  # type: ignore
                                              move_to_device=move_to_device)
         # convert optimizer list to single optimizer
         optimizer = optimizers[0] if isinstance(optimizer, Optimizer) else optimizers
-        return model, optimizer, dataloaders
+        return model_wrapper, optimizer, dataloaders
 
     @abstractmethod
     def train(self, *args: Any, **kwargs: Any) -> Any:
