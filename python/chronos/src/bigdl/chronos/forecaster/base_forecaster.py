@@ -810,7 +810,8 @@ class BasePytorchForecaster(Forecaster):
 
         # step1, according to validation dataset, calculate inherent noise
         output = self.evaluate(data=validation_data, multioutput='uniform_average')
-        sig1 = output["mse"]
+        # TODO: index for mse
+        sig1 = output[0]
 
         # step2: data preprocess
         if isinstance(data, TSDataset):
