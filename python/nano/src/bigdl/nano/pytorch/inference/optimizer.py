@@ -176,8 +176,13 @@ class InferenceOptimizer:
 
         model.eval()  # change model to eval state
 
+        print("==========================Start Optimization==========================")
         for method, available in available_dict.items():
-            if available:
+            if available is False:
+                result_map[method] = {}
+                result_map[method]["status"] = "lack dependency"
+            else:
+                print(f"*** Start to try method {method}***")
                 option: AccelerationOption = ALL_INFERENCE_ACCELERATION_METHOD[method]
                 use_ipex: bool = option.ipex
                 use_channels_last: bool = option.channels_last
@@ -208,6 +213,9 @@ class InferenceOptimizer:
                                                              logging=logging)
                     except Exception as e:
                         print(e)
+                        result_map[method] = {}
+                        result_map[method]["status"] = "fail to convert"
+                        print(f"*** Failed to convert to {method}***")
                         continue
 
                 # if precision is int8 or bf16, then we will use quantize method
@@ -226,12 +234,17 @@ class InferenceOptimizer:
                                                         logging=logging)
                     except Exception as e:
                         print(e)
+                        result_map[method] = {}
+                        result_map[method]["status"] = "fail to convert"
+                        print(f"*** Failed to convert to {method}***")
                         continue
 
                 result_map[method] = {}
+                result_map[method]["status"] = "successful"
 
                 def func_test(model, input_sample):
-                    model(*input_sample)
+                    with torch.no_grad():
+                        model(*input_sample)
 
                 torch.set_num_threads(cpu_num)
                 try:
@@ -239,7 +252,7 @@ class InferenceOptimizer:
                         _throughput_calculate_helper(latency_sample_num, func_test,
                                                      acce_model, input_sample)
                 except Exception as e:
-                    result_map.pop(method)
+                    result_map[method]["status"] = "fail to forward"
                     torch.set_num_threads(default_threads)
                     continue
 
@@ -256,6 +269,7 @@ class InferenceOptimizer:
                 pass
 
         self.optimized_model_dict: Dict = result_map
+        # TODO: format the results
         print("==========================Optimization Results==========================")
         if self._calculate_accuracy:
             for key, value in self.optimized_model_dict.items():
@@ -265,6 +279,7 @@ class InferenceOptimizer:
             for key, value in self.optimized_model_dict.items():
                 print("accleration option: {}, latency: {:.4f}ms :"
                       .format(key, value["latency"]))
+        print("===========================Stop Optimization===========================")
 
     def get_best_model(self,
                        accelerator: str = None,
@@ -623,7 +638,8 @@ def _throughput_calculate_helper(iterrun, func, *args):
     time_list = []
     for i in range(iterrun):
         st = time.perf_counter()
-        func(*args)
+        with torch.no_grad():
+            func(*args)
         end = time.perf_counter()
         time_list.append(end - st)
         # at least need 10 iters and try to control calculation
