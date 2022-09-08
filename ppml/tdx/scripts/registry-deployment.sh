@@ -36,7 +36,14 @@ done
 
 echo $RegistryName
 
-# Part1: create docker registry container
+# Part1: generate certificate for docker registry
+echo "generate certificate for docker registry"
+openssl req \
+-newkey rsa:4096 -nodes -sha256 -keyout certs/domain.key \
+-addext "subjectAltName = DNS:$RegistryName" \
+-x509 -days 365 -out certs/domain.crt
+
+# Part2: create docker registry container
 echo "create docker registry"
 docker run -d \
 --restart=always \
@@ -47,12 +54,5 @@ docker run -d \
 -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key \
 -p 443:443 \
 registry:2
-
-# Part2: generate certificate for docker registry
-echo "generate certificate for docker registry"
-openssl req \
--newkey rsa:4096 -nodes -sha256 -keyout certs/domain.key \
--addext "subjectAltName = DNS:$RegistryName" \
--x509 -days 365 -out certs/domain.crt
 
 echo "registry is created successfully"
