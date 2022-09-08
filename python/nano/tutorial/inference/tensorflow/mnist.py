@@ -43,17 +43,14 @@ from bigdl.nano.tf.keras import Model
 
 # Model / data parameters
 num_classes = 10
-input_shape = (28, 28, 1)
+input_shape = (32, 32, 3)
 
 # Load the data and split it between train and test sets
-(x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
+(x_train, y_train), (x_test, y_test) = keras.datasets.cifar10.load_data()
 
 # Scale images to the [0, 1] range
 x_train = x_train.astype("float32") / 255
 x_test = x_test.astype("float32") / 255
-# Make sure images have shape (28, 28, 1)
-x_train = np.expand_dims(x_train, -1)
-x_test = np.expand_dims(x_test, -1)
 print("x_train shape:", x_train.shape)
 print(x_train.shape[0], "train samples")
 print(x_test.shape[0], "test samples")
@@ -63,18 +60,34 @@ print(x_test.shape[0], "test samples")
 y_train = keras.utils.to_categorical(y_train, num_classes)
 y_test = keras.utils.to_categorical(y_test, num_classes)
 
-model = keras.Sequential(
-    [
-        keras.Input(shape=input_shape),
-        layers.Conv2D(32, kernel_size=(3, 3), activation="relu"),
-        layers.MaxPooling2D(pool_size=(2, 2)),
-        layers.Conv2D(64, kernel_size=(3, 3), activation="relu"),
-        layers.MaxPooling2D(pool_size=(2, 2)),
-        layers.Flatten(),
-        layers.Dropout(0.5),
-        layers.Dense(num_classes, activation="softmax"),
-    ]
-)
+model = keras.Sequential()
+
+model.add(layers.Conv2D(32, (3,3), padding='same', activation='relu', input_shape=(32,32,3)))
+model.add(layers.BatchNormalization())
+model.add(layers.Conv2D(32, (3,3), padding='same', activation='relu'))
+model.add(layers.BatchNormalization())
+model.add(layers.MaxPooling2D(pool_size=(2,2)))
+model.add(layers.Dropout(0.3))
+
+model.add(layers.Conv2D(64, (3,3), padding='same', activation='relu'))
+model.add(layers.BatchNormalization())
+model.add(layers.Conv2D(64, (3,3), padding='same', activation='relu'))
+model.add(layers.BatchNormalization())
+model.add(layers.MaxPooling2D(pool_size=(2,2)))
+model.add(layers.Dropout(0.5))
+
+model.add(layers.Conv2D(128, (3,3), padding='same', activation='relu'))
+model.add(layers.BatchNormalization())
+model.add(layers.Conv2D(128, (3,3), padding='same', activation='relu'))
+model.add(layers.BatchNormalization())
+model.add(layers.MaxPooling2D(pool_size=(2,2)))
+model.add(layers.Dropout(0.5))
+
+model.add(layers.Flatten())
+model.add(layers.Dense(128, activation='relu'))
+model.add(layers.BatchNormalization())
+model.add(layers.Dropout(0.5))
+model.add(layers.Dense(num_classes, activation='softmax'))  
 
 # this line is optional
 # model = Model(inputs=model.inputs, outputs=model.outputs)
@@ -82,7 +95,7 @@ model = keras.Sequential(
 model.summary()
 
 batch_size = 128
-epochs = 15
+epochs = 20
 
 model.compile(loss="categorical_crossentropy",
               optimizer="adam", metrics=["accuracy"])
@@ -116,6 +129,6 @@ accuracy = categorical_accuracy.result().numpy()
 
 print("Quantization test loss:", loss)
 print("Quantization test accuracy:", accuracy)
-# Accuracy loss: about 0.1% in this case
-# Note: accuracy loss varies from different tasks and situations,
-# but you can set a quantization threshold when making a quantization model.
+# Note: accuracy decrease varies from different tasks and situations,
+# and sometimes the accuracy is even higher.
+# You can set a quantization threshold when making a quantization model.
