@@ -12,6 +12,7 @@ PyTorch Lightning
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 * `How to accelerate a PyTorch Lightning application on training workloads through Intel® Extension for PyTorch* <Training/PyTorchLightning/accelerate_pytorch_lightning_training_ipex.html>`_
 * `How to accelerate a PyTorch Lightning application on training workloads through multiple instances <Training/PyTorchLightning/accelerate_pytorch_lightning_training_multi_instance.html>`_
+* `How to use the channels last memory format in your PyTorch Lightning application for training <Training/PyTorchLightning/pytorch_lightning_training_channels_last.html>`_
 
 .. toctree::
     :maxdepth: 1
@@ -19,6 +20,7 @@ PyTorch Lightning
 
     Training/PyTorchLightning/accelerate_pytorch_lightning_training_ipex
     Training/PyTorchLightning/accelerate_pytorch_lightning_training_multi_instance
+    Training/PyTorchLightning/pytorch_lightning_training_channels_last
 
 Inference Optimization
 -------------------------
