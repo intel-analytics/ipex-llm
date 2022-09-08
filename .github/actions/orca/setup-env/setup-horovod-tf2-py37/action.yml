@@ -3,14 +3,22 @@ description: 'Run Orca Python Horovod Tf2 Py37 Spark3'
 runs:
   using: "composite"
   steps:
-    - name: Setup env
+    - name: Set up Python 
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7.10'
+
+    - name: Install dependencies
       shell: bash
       run: |
-        apt-get update
+      apt-get update
         apt-get install wget
         python -m pip install --upgrade pip
         python -m pip install --upgrade setuptools==58.0.4
 
+    - name: Setup env
+      shell: bash
+      run: |
         if conda info --env | grep "orca-oython-horovod-tf2-py37-spark3"; then
             source activate orca-oython-horovod-tf2-py37-spark3
         else
@@ -18,6 +26,7 @@ runs:
             conda info --env
             source activate orca-oython-horovod-tf2-py37-spark3
         fi
+        pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-friesian bigdl-friesian-spark3
         pip uninstall -y intel-tensorflow
         pip install cmake mxnet==1.6.0
         pip uninstall -r .github/actions/python-requirements/requirements-horovod-tf2.txt -y
