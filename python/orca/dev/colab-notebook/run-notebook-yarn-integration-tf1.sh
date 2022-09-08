@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 clear_up() {
-  echo "Clearing up environment. Uninstalling bigdl"
+  echo "Clearing up environment. Uninstalling BigDL"
   pip uninstall -y bigdl-dllib
   pip uninstall -y bigdl-orca
   pip uninstall -y pyspark
