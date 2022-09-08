@@ -49,12 +49,18 @@ then
     exit $exit_status_2
 fi
 
+ray stop -f
+ray start --head
+
 python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf2estimator_ray_runtime.py
 exit_status_3=$?
 if [ $exit_status_3 -ne 0 ];
 then
     exit $exit_status_3
 fi
+
+ray stop -f
+ray start --head
 
 echo "Running PyTorch Estimator Ray Dataset tests"
 python -m pytest -v test/bigdl/orca/learn/ray/pytorch/test_estimator_ray_dataset.py
@@ -63,6 +69,9 @@ if [ $exit_status_4 -ne 0 ];
 then
     exit $exit_status_4
 fi
+
+ray stop -f
+ray start --head
 
 echo "Running TF2Estimator Ray Dataset tests"
 python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf2estimator_ray_dataset.py
