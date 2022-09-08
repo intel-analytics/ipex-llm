@@ -28,12 +28,12 @@ def check_tf_version():
     if v_str != "1.15.0":
         if int(major) == 1:
             logging.warning("\n######################### WARNING ##########################\n"
-                            "\nAnalytics Zoo TFPark has only been tested on TensorFlow 1.15.0,"
+                            "\nBigDL TFPark has only been tested on TensorFlow 1.15.0,"
                             " but your current TensorFlow installation is {}.".format(v_str) +
                             "\nYou may encounter some version incompatibility issues. "
                             "\n##############################################################")
         else:
-            message = "Currently Analytics Zoo TFPark only supports TensorFlow 1.15.0, " + \
+            message = "Currently BigDL TFPark only supports TensorFlow 1.15.0, " + \
                       "but your current TensorFlow installation is {}".format(v_str)
             return False, RuntimeError(message)
     return True, None

@@ -47,6 +47,12 @@ from bigdl.dllib.utils.log4Error import invalidInputError
 logger = logging.getLogger(__name__)
 
 
+def parse_model_dir(model_dir):
+    if model_dir and model_dir.startswith("dbfs:/"):
+        model_dir = "/dbfs/" + model_dir[len("dbfs:/"):]
+    return model_dir
+
+
 class SparkTFEstimator():
     def __init__(self,
                  model_creator,
@@ -83,7 +89,7 @@ class SparkTFEstimator():
             invalidInputError(False,
                               "Please do not specify batch_size in config. Input batch_size in the"
                               " fit/evaluate function of the estimator instead.")
-        self.model_dir = model_dir
+        self.model_dir = parse_model_dir(model_dir)
         master = sc.getConf().get("spark.master")
         if not master.startswith("local"):
             logger.info("For cluster mode, make sure to use shared filesystem path "
