@@ -8,10 +8,10 @@ In Nano How-to Guides, you could expect to find multiple task-oriented, bite-siz
 Training Optimization
 -------------------------
 
-PyTorch-Lightning
+PyTorch Lightning
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-* `How to accelerate a PyTorch-Lightning application on training workloads through Intel® Extension for PyTorch* <Training/PyTorchLightning/accelerate_pytorch_lightning_training_ipex.html>`_
-* `How to accelerate a PyTorch-Lightning application on training workloads through multiple instances <Training/PyTorchLightning/accelerate_pytorch_lightning_training_multi_instance.html>`_
+* `How to accelerate a PyTorch Lightning application on training workloads through Intel® Extension for PyTorch* <Training/PyTorchLightning/accelerate_pytorch_lightning_training_ipex.html>`_
+* `How to accelerate a PyTorch Lightning application on training workloads through multiple instances <Training/PyTorchLightning/accelerate_pytorch_lightning_training_multi_instance.html>`_
 
 .. toctree::
     :maxdepth: 1
