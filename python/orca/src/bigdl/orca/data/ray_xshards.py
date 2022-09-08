@@ -250,7 +250,7 @@ class RayXShards(XShards):
         invalidInputError(self.num_partitions() >= len(actors),
                           f"Get number of partitions ({self.num_partitions()}) smaller than "
                           f"number of actors ({len(actors)}). Please submit an issue to"
-                          f" analytics zoo.")
+                          f" BigDL.")
         assigned_partitions, _, _ = self.assign_partitions_to_actors(actors)
         result_refs = []
         for actor, part_ids in zip(actors, assigned_partitions):
@@ -269,7 +269,7 @@ class RayXShards(XShards):
         invalidInputError(self.num_partitions() >= len(actors),
                           f"Get number of partitions ({self.num_partitions()}) smaller than"
                           f" number of actors ({len(actors)}). Please submit an issue"
-                          f" to analytics zoo.")
+                          f" to BigDL.")
         assigned_partitions, _, _ = self.assign_partitions_to_actors(actors)
         result_refs = []
         for actor, part_ids in zip(actors, assigned_partitions):

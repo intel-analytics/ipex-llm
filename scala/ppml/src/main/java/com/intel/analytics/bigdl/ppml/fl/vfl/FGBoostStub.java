@@ -29,8 +29,8 @@ import java.util.List;
 public class FGBoostStub {
     private static final Logger logger = LoggerFactory.getLogger(FGBoostStub.class);
     private static FGBoostServiceGrpc.FGBoostServiceBlockingStub stub;
-    String clientID;
-    public FGBoostStub(Channel channel, String clientID) {
+    Integer clientID;
+    public FGBoostStub(Channel channel, Integer clientID) {
         this.clientID = clientID;
         stub = FGBoostServiceGrpc.newBlockingStub(channel);
     }
@@ -115,5 +115,23 @@ public class FGBoostStub {
                 .setTreeLeaf(treeLeaf)
                 .build();
         return stub.uploadTreeLeaf(uploadTreeLeafRequest);
+    }
+
+    public SaveModelResponse saveServerModel(String modelPath) {
+        SaveModelRequest saveModelRequest = SaveModelRequest
+                .newBuilder()
+                .setClientuuid(clientID)
+                .setModelPath(modelPath)
+                .build();
+        return stub.saveServerModel(saveModelRequest);
+    }
+
+    public LoadModelResponse loadServerModel(String modelPath) {
+        LoadModelRequest loadModelRequest = LoadModelRequest
+                .newBuilder()
+                .setClientId(clientID)
+                .setModelPath(modelPath)
+                .build();
+        return stub.loadServerModel(loadModelRequest);
     }
 }

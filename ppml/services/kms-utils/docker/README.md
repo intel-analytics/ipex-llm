@@ -54,19 +54,20 @@ INFO [main.cpp(156) -> main]: Third handle success.
 INFO [main.cpp(159) -> main]: ehsm-kms enroll app end.
 
 
-export kms_type=ehsm_or_simple_or_azure
+export appid=your_appid
+export appkey=your_apikey
 
 # Generatekeys
-docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh $kms_type generatekeys"
+docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh generatekeys $appid $appkey"
 
 # Encrypt a single data file
-docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh $kms_type encrypt $appid $appkey $primary_key_name_in_key_folder $data_key_name_in_key_folder $plaintext_data_file_name_in_data_shared_folder"
+docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh encrypt $appid $appkey $primary_key_name_in_key_folder $data_key_name_in_key_folder $plaintext_data_file_name_in_data_shared_folder"
 
 # Decrypt a single data file
-docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh $kms_type decrypt $appid $appkey $primary_key_name_in_key_folder $data_key_name_in_key_folder $encrypted_data_file_name_in_data_shared_folder"
+docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh decrypt $appid $appkey $primary_key_name_in_key_folder $data_key_name_in_key_folder $encrypted_data_file_name_in_data_shared_folder"
 
 # SpliteAndEncrypt
-docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh $kms_type splitandencrypt $appid $appkey $primary_key_name_in_key_folder $data_key_name_in_key_folder $plaintext_data_file_name_in_data_shared_folder $to_save_encrypted_file_name_in_data_shared_folder"
+docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh splitandencrypt $appid $appkey $primary_key_name_in_key_folder $data_key_name_in_key_folder $plaintext_data_file_name_in_data_shared_folder $to_save_encrypted_file_name_in_data_shared_folder"
 ```
 ## 4. Stop container:
 ```

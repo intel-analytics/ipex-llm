@@ -294,9 +294,9 @@ case class FrontEndApp2Arguments(
                                  tokenAcquireTimeout: Int = 100,
                                  httpsEnabled: Boolean = false,
                                  httpsKeyStorePath: String = null,
-                                 httpsKeyStoreToken: String = "1234qwer",
+                                 httpsKeyStoreToken: String = null,
                                  redisSecureEnabled: Boolean = false,
                                  redissTrustStorePath: String = null,
-                                 redissTrustStoreToken: String = "1234qwer"
+                                 redissTrustStoreToken: String = null
                                )
 

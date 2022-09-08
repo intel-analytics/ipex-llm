@@ -93,7 +93,7 @@ def setup_package():
         author='BigDL Authors',
         author_email='bigdl-user-group@googlegroups.com',
         license='Apache License, Version 2.0',
-        url='https://github.com/intel-analytics/analytics-zoo',
+        url='https://github.com/intel-analytics/BigDL',
         packages=get_bigdl_packages(),
         install_requires=['packaging', 'filelock',
                           'bigdl-tf==0.14.0.dev1', 'bigdl-math==0.14.0.dev1',

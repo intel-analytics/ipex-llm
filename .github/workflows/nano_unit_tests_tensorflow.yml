@@ -81,6 +81,8 @@ jobs:
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false tensorflow
           pip install pytest
+          # fix issue, see https://github.com/intel-analytics/BigDL/blob/main/docs/readthedocs/source/doc/Nano/Overview/known_issues.md#ray-issues
+          pip install google-api-core==2.8.2
           pip install ray[default]==1.11.0 prometheus_client==0.13.0
           source bigdl-nano-init
           bash python/nano/test/run-nano-tf-ray-tests.sh

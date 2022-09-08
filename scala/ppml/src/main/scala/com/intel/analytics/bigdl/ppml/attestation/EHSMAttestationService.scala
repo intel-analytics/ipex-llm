@@ -20,6 +20,7 @@ package com.intel.analytics.bigdl.ppml.attestation
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.ppml.utils.EHSMParams
 import com.intel.analytics.bigdl.ppml.utils.HTTPUtil.postRequest
+import java.util.Base64
 import org.apache.logging.log4j.LogManager
 import org.json.JSONObject
 
@@ -39,11 +40,15 @@ class EHSMAttestationService(kmsServerIP: String, kmsServerPort: String,
   // Quote
   val PAYLOAD_QUOTE = "quote"
   val PAYLOAD_NONCE = "nonce"
+  val PAYLOAD_CHALLENGE = "challenge"
 
+  val ACTION_GENERATE_QUOTE = "GenerateQuote"
   val ACTION_VERIFY_QUOTE = "VerifyQuote"
   // Respone keys
   val RES_RESULT = "result"
   val RES_SIGN = "sign"
+  val RES_QUOTE = "quote"
+  val RES_CHALLENGE = "challenge"
 
   override def register(appID: String): String = "true"
 
@@ -51,9 +56,21 @@ class EHSMAttestationService(kmsServerIP: String, kmsServerPort: String,
 
   override def setPolicy(policy: JSONObject): String = "true"
 
-  def getQuoteFromServer(): String = {
-    // TODO Get qutoe from ehsm
-    "test"
+  def getQuoteFromServer(challenge: String): String = {
+    val action: String = ACTION_GENERATE_QUOTE
+    val currentTime = System.currentTimeMillis()
+    val timestamp = s"$currentTime"
+    val ehsmParams = new EHSMParams(ehsmAPPID, ehsmAPPKEY, timestamp)
+    ehsmParams.addPayloadElement(PAYLOAD_CHALLENGE, challenge)
+    val postResult: JSONObject = timing("EHSMKeyManagementService request for GenerateQuote") {
+      val postString: String = ehsmParams.getPostJSONString()
+      postRequest(constructUrl(action), postString)
+    }
+    if (challenge != postResult.getString(RES_CHALLENGE)) {
+      Log4Error.invalidOperationError(false, "Challenge not matched")
+    }
+    val quote = Base64.getDecoder().decode(postResult.getString(RES_QUOTE))
+    new String(quote)
   }
 
   override def attestWithServer(quote: String): (Boolean, String) = {

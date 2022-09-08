@@ -234,6 +234,16 @@
         </details>
         <hr>
 
+        <details id="PenalizeUnderestimation">
+            <summary>
+                <a href="https://github.com/intel-analytics/BigDL/tree/main/python/chronos/example/loss/penalize_underestimation.ipynb">Penalize underestimation with LinexLoss</a>
+                <p>Tag: <button value="forecast">forecast</button></p>
+            </summary>
+            <img src="../../../_images/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/tree/main/python/chronos/example/loss/penalize_underestimation.ipynb">View source on GitHub</a>
+            <p>This example demonstrates how to use TCNForecaster to penalize underestimation based on a built-in loss function LinexLoss.</p>
+        </details>
+        <hr>
+
     </div>
 
     <script src="../../../_static/js/chronos_tutorial.js"></script> 

@@ -28,10 +28,12 @@ service FGBoostService {
     rpc uploadTreeLeaf(UploadTreeLeafRequest) returns (UploadResponse) {}
     rpc evaluate(EvaluateRequest) returns (EvaluateResponse) {}
     rpc predict(PredictRequest) returns (PredictResponse) {}
+    rpc saveServerModel(SaveModelRequest) returns (SaveModelResponse) {}
+    rpc loadServerModel(LoadModelRequest) returns (LoadModelResponse) {}
 }
 
 message UploadLabelRequest {
-    string clientuuid = 1;
+    int32 clientuuid = 1;
     TensorMap data = 2;
     string algorithm = 3;
 }
@@ -53,7 +55,7 @@ message TreeLeaf {
 }
 
 message UploadTreeLeafRequest {
-    string clientuuid = 1;
+    int32 clientuuid = 1;
     TreeLeaf treeLeaf = 2;
 }
 message DataSplit {
@@ -86,7 +88,7 @@ message BoostEval {
 }
 
 message RegisterRequest {
-    string clientuuid = 1;
+    int32 clientuuid = 1;
     string token = 2;
 }
 
@@ -96,7 +98,7 @@ message RegisterResponse {
 }
 
 message UploadTreeEvalRequest {
-    string clientuuid = 1;
+    int32 clientuuid = 1;
     int32 version = 2;
     repeated BoostEval treeEval = 3;
 }
@@ -104,7 +106,7 @@ message UploadTreeEvalRequest {
 
 
 message EvaluateRequest {
-    string clientuuid = 1;
+    int32 clientuuid = 1;
     repeated BoostEval treeEval = 2;
     int32 version = 3;
     bool lastBatch = 4;
@@ -117,13 +119,13 @@ message EvaluateResponse {
     string message = 4;
 }
 message PredictRequest {
-    string clientuuid = 1;
+    int32 clientuuid = 1;
     repeated BoostEval treeEval = 2;
     int32 version = 3;
     bool lastBatch = 4;
 }
 message SplitRequest {
-    string clientuuid = 1;
+    int32 clientuuid = 1;
     DataSplit split = 2;
 }
 message PredictResponse {
@@ -139,4 +141,20 @@ message SplitResponse {
     string response = 2;
     int32 code = 3;
 }
+message SaveModelRequest {
+    int32 clientuuid = 1;
+    string modelPath = 2;
+}
+message SaveModelResponse {
+    string message = 1;
+    int32 code = 2;
+}
+message LoadModelRequest {
+    int32 client_id = 1;
+    string model_path = 2;
+}
 
+message LoadModelResponse {
+    string message = 1;
+    int32 code = 2;
+}

@@ -25,6 +25,7 @@ import bigdl.orca.data.pandas
 from bigdl.orca import OrcaContext
 from bigdl.dllib.nncontext import *
 from bigdl.orca.data.image import write_tfrecord, read_tfrecord
+from bigdl.orca.data.utils import *
 
 
 class TestSparkBackend(TestCase):
@@ -77,7 +78,7 @@ class TestSparkBackend(TestCase):
         df = data[0]
         assert df.location.dtype == "float64"
         assert df.ID.dtype == "float64"
-        data_shard = bigdl.orca.data.pandas.read_csv(file_path, dtype={"sale_price": np.float32})
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path, dtype={"sale_price": np.float32, "ID": np.int64})
         data = data_shard.collect()
         df2 = data[0]
         assert df2.sale_price.dtype == "float32" and df2.ID.dtype == "int64"
@@ -213,6 +214,22 @@ class TestSparkBackend(TestCase):
             train_dataset.take(1)
         finally:
             shutil.rmtree(temp_dir)
+
+    def test_to_spark_df(self):
+        file_path = os.path.join(self.resource_path, "orca/data/csv")
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path, header=0, names=['user', 'item'],
+                                                   usecols=[0, 1])
+        df = data_shard.to_spark_df()
+        df.show()
+
+    def test_spark_df_to_shards(self):
+        file_path = os.path.join(self.resource_path, "orca/data/csv")
+        from pyspark.sql import SparkSession
+        spark = SparkSession.builder.master("local[1]")\
+            .appName('test_spark_backend')\
+            .config("spark.driver.memory", "6g").getOrCreate()
+        df = spark.read.csv(file_path)
+        data_shards = spark_df_to_pd_sparkxshards(df)
 
 
 if __name__ == "__main__":

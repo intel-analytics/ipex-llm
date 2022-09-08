@@ -4,6 +4,7 @@ import grpc
 
 import fgboost_service_pb2 as fgboost__service__pb2
 
+
 class FGBoostServiceStub(object):
     """Missing associated documentation comment in .proto file."""
 
@@ -47,6 +48,16 @@ class FGBoostServiceStub(object):
                 '/fgboost.FGBoostService/predict',
                 request_serializer=fgboost__service__pb2.PredictRequest.SerializeToString,
                 response_deserializer=fgboost__service__pb2.PredictResponse.FromString,
+                )
+        self.saveServerModel = channel.unary_unary(
+                '/fgboost.FGBoostService/saveServerModel',
+                request_serializer=fgboost__service__pb2.SaveModelRequest.SerializeToString,
+                response_deserializer=fgboost__service__pb2.SaveModelResponse.FromString,
+                )
+        self.loadServerModel = channel.unary_unary(
+                '/fgboost.FGBoostService/loadServerModel',
+                request_serializer=fgboost__service__pb2.LoadModelRequest.SerializeToString,
+                response_deserializer=fgboost__service__pb2.LoadModelResponse.FromString,
                 )
 
 
@@ -95,6 +106,18 @@ class FGBoostServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def saveServerModel(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def loadServerModel(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_FGBoostServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -132,6 +155,16 @@ def add_FGBoostServiceServicer_to_server(servicer, server):
                     servicer.predict,
                     request_deserializer=fgboost__service__pb2.PredictRequest.FromString,
                     response_serializer=fgboost__service__pb2.PredictResponse.SerializeToString,
+            ),
+            'saveServerModel': grpc.unary_unary_rpc_method_handler(
+                    servicer.saveServerModel,
+                    request_deserializer=fgboost__service__pb2.SaveModelRequest.FromString,
+                    response_serializer=fgboost__service__pb2.SaveModelResponse.SerializeToString,
+            ),
+            'loadServerModel': grpc.unary_unary_rpc_method_handler(
+                    servicer.loadServerModel,
+                    request_deserializer=fgboost__service__pb2.LoadModelRequest.FromString,
+                    response_serializer=fgboost__service__pb2.LoadModelResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -259,5 +292,39 @@ class FGBoostService(object):
         return grpc.experimental.unary_unary(request, target, '/fgboost.FGBoostService/predict',
             fgboost__service__pb2.PredictRequest.SerializeToString,
             fgboost__service__pb2.PredictResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def saveServerModel(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/fgboost.FGBoostService/saveServerModel',
+            fgboost__service__pb2.SaveModelRequest.SerializeToString,
+            fgboost__service__pb2.SaveModelResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def loadServerModel(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/fgboost.FGBoostService/loadServerModel',
+            fgboost__service__pb2.LoadModelRequest.SerializeToString,
+            fgboost__service__pb2.LoadModelResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

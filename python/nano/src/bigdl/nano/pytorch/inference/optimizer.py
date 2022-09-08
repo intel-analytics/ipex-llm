@@ -109,7 +109,7 @@ class InferenceOptimizer:
         '''
         This function will give all available inference acceleration methods a try
         and record the latency, accuracy and model instance inside the Optimizer for
-        future usage.
+        future usage. All model instance is setting to eval mode.
 
         :param model: A nn.module to be optimized
         :param training_data: A pytorch dataloader for training dataset.
@@ -143,7 +143,12 @@ class InferenceOptimizer:
         # get the available methods whose dep is met
         available_dict: Dict = _available_acceleration_combination()
 
-        self.direction: str = direction  # save direction as attr
+        self._direction: str = direction  # save direction as attr
+        # record whether calculate accuracy in optimize by this attr
+        if validation_data is not None and metric is not None:
+            self._calculate_accuracy = True
+        else:
+            self._calculate_accuracy = False
 
         default_threads: int = torch.get_num_threads()
         cpu_num: int = default_threads if cpu_num is None else int(cpu_num)
@@ -159,6 +164,8 @@ class InferenceOptimizer:
         # TODO: set cpu num for openvino
 
         result_map: Dict[str, Dict] = {}
+
+        model.eval()  # change model to eval state
 
         for method, available in available_dict.items():
             if available:
@@ -228,17 +235,27 @@ class InferenceOptimizer:
                     continue
 
                 torch.set_num_threads(default_threads)
-                if validation_data is not None and metric is not None:
+                if self._calculate_accuracy:
                     result_map[method]["accuracy"] =\
                         _accuracy_calculate_helper(acce_model,
                                                    metric, validation_data)
+                else:
+                    result_map[method]["accuracy"] = None
 
                 result_map[method]["model"] = acce_model
-
             else:
                 pass
 
         self.optimized_model_dict: Dict = result_map
+        print("==========================Optimization Results==========================")
+        if self._calculate_accuracy:
+            for key, value in self.optimized_model_dict.items():
+                print("accleration option: {}, latency: {:.4f}ms, accuracy : {:.4f}"
+                      .format(key, value["latency"], value["accuracy"]))
+        else:
+            for key, value in self.optimized_model_dict.items():
+                print("accleration option: {}, latency: {:.4f}ms :"
+                      .format(key, value["latency"]))
 
     def get_best_model(self,
                        accelerator: str = None,
@@ -259,13 +276,16 @@ class InferenceOptimizer:
         :return: best model, corresponding acceleration option
         '''
         invalidOperationError(len(self.optimized_model_dict) > 0,
-                              "There is no optimized model. You should call .optimize() \
-                              before get_best_model()")
+                              "There is no optimized model. You should call .optimize() "
+                              "before get_best_model()")
         invalidInputError(accelerator in [None, 'onnxruntime', 'openvino', 'jit'],
                           "Only support accelerator 'onnxruntime', 'openvino' and 'jit'.")
         # TODO: include fp16?
         invalidInputError(precision in [None, 'int8', 'bf16'],
                           "Only support precision 'int8', 'bf16'.")
+        if accuracy_criterion is not None and not self._calculate_accuracy:
+            invalidInputError(False, "If you want to specify accuracy_criterion, you need "
+                              "to set metric and validation_data when call 'optimize'.")
 
         best_model = self.optimized_model_dict["original"]["model"]
         best_metric = CompareMetric("original",
@@ -292,7 +312,7 @@ class InferenceOptimizer:
             if accuracy_criterion is not None:
                 accuracy: float = result["accuracy"]
                 compare_acc: float = best_metric.accuracy
-                if self.direction == "min":
+                if self._direction == "min":
                     if (accuracy - compare_acc) / compare_acc > accuracy_criterion:
                         continue
                 else:
@@ -420,15 +440,22 @@ def _available_acceleration_combination():
 
 def _throughput_calculate_helper(iterrun, func, *args):
     '''
-    A simple helper to calculate median latency
+    A simple helper to calculate average latency
     '''
+    start_time = time.perf_counter()
     time_list = []
-    for _ in range(iterrun):
-        st = time.time()
+    for i in range(iterrun):
+        st = time.perf_counter()
         func(*args)
-        time_list.append(time.time() - st)
+        end = time.perf_counter()
+        time_list.append(end - st)
+        # at least need 10 iters and try to control calculation
+        # time less than 2 min
+        if i + 1 >= min(iterrun, 10) and (end - start_time) > 2:
+            iterrun = i + 1
+            break
     time_list.sort()
-    # remove top and least 10% data.ni
+    # remove top and least 10% data
     time_list = time_list[int(0.1 * iterrun): int(0.9 * iterrun)]
     return np.mean(time_list) * 1000
 
@@ -438,10 +465,11 @@ def _accuracy_calculate_helper(model, metric, data):
     A quick helper to calculate accuracy
     '''
     metric_list = []
-    # TODO: data should have same batchsize
+    sample_num = 0
     for i, (data_input, target) in enumerate(data):
-        metric_list.append(metric(model(data_input), target).numpy())
-    return np.mean(metric_list)
+        metric_list.append(metric(model(data_input), target).numpy() * data_input.shape[0])
+        sample_num += data_input.shape[0]
+    return np.sum(metric_list) / sample_num
 
 
 def _format_acceleration_info(method_name):

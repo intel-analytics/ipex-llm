@@ -478,7 +478,7 @@ class KerasNet(ZooKerasLayer):
 
     def summary(self, line_length=120, positions=[.33, .55, .67, 1.]):
         """
-        Print out the summary information of an Analytics Zoo Keras Model.
+        Print out the summary information of a BigDL Keras Model.
 
         For each layer in the model, there will be a separate row containing four columns:
         ________________________________________________________________________________
