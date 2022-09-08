@@ -17,17 +17,7 @@
 package com.intel.analytics.bigdl.dllib.nnframes.python
 
 import com.intel.analytics.bigdl.dllib.common.PythonZoo
-import com.intel.analytics.bigdl.dllib.feature.common._
-import com.intel.analytics.bigdl.dllib.feature.dataset.{Sample, Transformer}
-import com.intel.analytics.bigdl.dllib.feature.image.{ImageProcessing, RowToImageFeature}
-import com.intel.analytics.bigdl.dllib.optim.{OptimMethod, Trigger, ValidationMethod}
-import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Log4Error
-import com.intel.analytics.bigdl.dllib.utils.python.api.EvaluatedResult
-import com.intel.analytics.bigdl.dllib.visualization.{TrainSummary, ValidationSummary}
-import com.intel.analytics.bigdl.{Criterion, Module}
-
 import java.util.{ArrayList => JArrayList, List => JList, Map => JMap}
 // import com.intel.analytics.bigdl.dllib.feature.pmem._
 import com.intel.analytics.bigdl.dllib.nnframes._
@@ -37,8 +27,15 @@ import org.apache.spark.sql.DataFrame
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
+object PythonTreeModel {
 
-class PythonTreeMode[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo[T] {
+  def ofFloat(): PythonTreeModel[Float] = new PythonTreeModel[Float]()
+
+  def ofDouble(): PythonTreeModel[Double] = new PythonTreeModel[Double]()
+}
+
+
+class PythonTreeModel[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo[T] {
 
   def getXGBClassifier(xgbparamsin: JMap[String, Any]): XGBClassifier = {
     val xgbparams = if (xgbparamsin == null) Map[String, Any]() else xgbparamsin.asScala.toMap
@@ -194,7 +191,7 @@ class PythonTreeMode[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     estimator.setMinDataInLeaf(value)
   }
 
-  def setLGBMClassifierminSumHessainInLeaf(estimator: LightGBMClassifier, value: Int): Unit = {
+  def setLGBMClassifierMinSumHessainInLeaf(estimator: LightGBMClassifier, value: Int): Unit = {
     estimator.setMinSumHessianInLeaf(value)
   }
 
@@ -298,39 +295,39 @@ class PythonTreeMode[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     new LightGBMRegressor()
   }
 
-  def setLGBMClassifierFeaturesCol(estimator: LightGBMRegressor, value: String): Unit = {
+  def setLGBMRegressorFeaturesCol(estimator: LightGBMRegressor, value: String): Unit = {
     estimator.setFeaturesCol(value)
   }
 
-  def setLGBMClassifierLabelCol(estimator: LightGBMRegressor, value: String): Unit = {
+  def setLGBMRegressorLabelCol(estimator: LightGBMRegressor, value: String): Unit = {
     estimator.setLabelCol(value)
   }
 
-  def setLGBMClassifierBoostType(estimator: LightGBMRegressor, value: String): Unit = {
+  def setLGBMRegressorBoostType(estimator: LightGBMRegressor, value: String): Unit = {
     estimator.setBoostingType(value)
   }
 
-  def setLGBMClassifierMaxBin(estimator: LightGBMRegressor, value: Int): Unit = {
+  def setLGBMRegressorMaxBin(estimator: LightGBMRegressor, value: Int): Unit = {
     estimator.setMaxBin(value)
   }
 
-  def setLGBMClassifierNumLeaves(estimator: LightGBMRegressor, value: Int): Unit = {
+  def setLGBMRegressorNumLeaves(estimator: LightGBMRegressor, value: Int): Unit = {
     estimator.setNumLeaves(value)
   }
 
-  def setLGBMClassifierMinDataInLeaf(estimator: LightGBMRegressor, value: Int): Unit = {
+  def setLGBMRegressorMinDataInLeaf(estimator: LightGBMRegressor, value: Int): Unit = {
     estimator.setMinDataInLeaf(value)
   }
 
-  def setLGBMClassifierminSumHessainInLeaf(estimator: LightGBMRegressor, value: Int): Unit = {
+  def setLGBMRegressorMinSumHessainInLeaf(estimator: LightGBMRegressor, value: Int): Unit = {
     estimator.setMinSumHessianInLeaf(value)
   }
 
-  def setLGBMClassifierBaggingFraction(estimator: LightGBMRegressor, value: Int): Unit = {
+  def setLGBMRegressorBaggingFraction(estimator: LightGBMRegressor, value: Int): Unit = {
     estimator.setBaggingFraction(value)
   }
 
-  def setLGBMClassifierBaggingFreq(estimator: LightGBMRegressor, value: Int): Unit = {
+  def setLGBMRegressorBaggingFreq(estimator: LightGBMRegressor, value: Int): Unit = {
     estimator.setBaggingFreq(value)
   }
 
@@ -342,7 +339,7 @@ class PythonTreeMode[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     estimator.setLambdaL1(value)
   }
 
-  def setLGBMClassifierLambdaL2(estimator: LightGBMRegressor, value: Double): Unit = {
+  def setLGBMRegressorLambdaL2(estimator: LightGBMRegressor, value: Double): Unit = {
     estimator.setLambdaL2(value)
   }
 
@@ -350,50 +347,50 @@ class PythonTreeMode[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     estimator.setMaxDepth(value)
   }
 
-  def setLGBMClassifierMinGainToSplit(estimator: LightGBMRegressor, value: Double): Unit = {
+  def setLGBMRegressorMinGainToSplit(estimator: LightGBMRegressor, value: Double): Unit = {
     estimator.setMinGainToSplit(value)
   }
 
-  def setLGBMClassifierMaxDeltaStep(estimator: LightGBMRegressor, value: Double): Unit = {
+  def setLGBMRegressorMaxDeltaStep(estimator: LightGBMRegressor, value: Double): Unit = {
     estimator.setMaxDeltaStep(value)
   }
 
-  def setLGBMClassifierSkipDrop(estimator: LightGBMRegressor, value: Double): Unit = {
+  def setLGBMRegressorSkipDrop(estimator: LightGBMRegressor, value: Double): Unit = {
     estimator.setSkipDrop(value)
   }
 
-  def setLGBMClassifierNumInterations(estimator: LightGBMRegressor, value: Int): Unit = {
+  def setLGBMRegressorNumInterations(estimator: LightGBMRegressor, value: Int): Unit = {
     estimator.setNumIterations(value)
   }
 
-  def setLGBMClassifierLearningRate(estimator: LightGBMRegressor, value: Double): Unit = {
+  def setLGBMRegressorLearningRate(estimator: LightGBMRegressor, value: Double): Unit = {
     estimator.setLearningRate(value)
   }
 
-  def setLGBMClassifierEarlyStopRound(estimator: LightGBMRegressor, value: Int): Unit = {
+  def setLGBMRegressorEarlyStopRound(estimator: LightGBMRegressor, value: Int): Unit = {
     estimator.setEarlyStoppingRound(value)
   }
 
-  def setLGBMClassifierCategoricalSlotNames(estimator: LightGBMRegressor,
+  def setLGBMRegressorCategoricalSlotNames(estimator: LightGBMRegressor,
                                             value: Array[String]): Unit = {
     estimator.setCategoricalSlotNames(value)
   }
 
-  def setLGBMClassifierCategoricalSlotIndexes(estimator: LightGBMRegressor,
+  def setLGBMRegressorCategoricalSlotIndexes(estimator: LightGBMRegressor,
                                               value: Array[Int]): Unit = {
     estimator.setCategoricalSlotIndexes(value)
   }
 
-  def setLGBMClassifierObjective(estimator: LightGBMRegressor, value: String): Unit = {
+  def setLGBMRegressorObjective(estimator: LightGBMRegressor, value: String): Unit = {
     estimator.setObjective(value)
   }
 
 
-  def setLGBMClassifierNumThreads(estimator: LightGBMRegressor, value: Int): Unit = {
+  def setLGBMRegressorNumThreads(estimator: LightGBMRegressor, value: Int): Unit = {
     estimator.setNumThreads(value)
   }
 
-  def fitLGBMClassifier(estimator: LightGBMRegressor, df : DataFrame): LightGBMRegressorModel = {
+  def fitLGBMRegressor(estimator: LightGBMRegressor, df : DataFrame): LightGBMRegressorModel = {
     estimator.fit(df)
   }
 
