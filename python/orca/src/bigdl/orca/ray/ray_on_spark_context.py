@@ -353,15 +353,15 @@ class RayOnSparkContext(object):
         :param verbose: True for more logs when starting ray. Default is False.
         :param env: The environment variable dict for running ray processes. Default is None.
         :param extra_params: The key value dict for extra options to launch ray.
-        For example, extra_params={"temp-dir": "/tmp/ray/"}
-        :param include_webui: True for including web ui when starting ray. Default is False.
-        :param num_ray_nodes: The number of raylets to start across the cluster.
+        For example, extra_params={"dashboard-port": "11281", "temp-dir": "/tmp/ray/"}.
+        :param include_webui: Default is True for including web ui when starting ray.
+        :param num_ray_nodes: The number of ray processes to start across the cluster.
         For Spark local mode, you don't need to specify this value.
         For Spark cluster mode, it is default to be the number of Spark executors. If
         spark.executor.instances can't be detected in your SparkContext, you need to explicitly
         specify this. It is recommended that num_ray_nodes is not larger than the number of
         Spark executors to make sure there are enough resources in your cluster.
-        :param ray_node_cpu_cores: The number of available cores for each raylet.
+        :param ray_node_cpu_cores: The number of available cores for each ray process.
         For Spark local mode, it is default to be the number of Spark local cores.
         For Spark cluster mode, it is default to be the number of cores for each Spark executor. If
         spark.executor.cores or spark.cores.max can't be detected in your SparkContext, you need to
