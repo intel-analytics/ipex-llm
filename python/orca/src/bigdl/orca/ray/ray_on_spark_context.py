@@ -90,7 +90,7 @@ class RayServiceFuncGenerator(object):
             modified_env["PATH"] = executor_python_path
         modified_env.pop("MALLOC_ARENA_MAX", None)
         modified_env.pop("RAY_BACKEND_LOG_LEVEL", None)
-        # Unset all MKL setting as Analytics Zoo would give default values when init env.
+        # Unset all MKL setting as BigDL would give default values when init env.
         # Running different programs may need different configurations.
         modified_env.pop("intra_op_parallelism_threads", None)
         modified_env.pop("inter_op_parallelism_threads", None)
