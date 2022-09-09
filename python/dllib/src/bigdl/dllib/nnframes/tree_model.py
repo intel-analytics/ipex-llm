@@ -125,7 +125,6 @@ class XGBRegressor():
         return XGBRegressorModel(model)
 
 
-
 class XGBRegressorModel:
     def __init__(self, jvalue):
         super(XGBRegressorModel, self).__init__()
@@ -159,6 +158,8 @@ class LightGBMClassifier():
         super(LightGBMClassifier, self).__init__()
         bigdl_type = "float"
         self.value = callZooFunc("float", "getLightGBMClassifier")
+        self.setObjective("binary")
+        self.setMaxDepth(100)
 
     def setFeaturesCol(self, value: str):
         return callZooFunc("float", "setLGBMClassifierFeaturesCol", self.value, value)
