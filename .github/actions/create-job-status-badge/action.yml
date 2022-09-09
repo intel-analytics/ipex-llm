@@ -15,6 +15,10 @@ inputs:
     required: true
   job-name:
     description: 'job name'
+  is-self-hosted-runner:
+    description: 'If use self-hosted runner it will be true'
+    required: true
+    default: false
 runs:
   using: "composite"
   steps:
@@ -38,6 +42,7 @@ runs:
       with:
         auth: ${{ inputs.secret }}
         gistID: ${{ inputs.gist-id }}
+        isSelfHostedRunner: ${{ inputs.is-self-hosted-runner }}
         filename: ${{ inputs.file-name }}
         label: ${{ inputs.job-name }}
         message: ${{ env.JOB-STATUS }}
@@ -49,6 +54,7 @@ runs:
       with:
         auth: ${{ inputs.secret }}
         gistID: ${{ inputs.gist-id }}
+        isSelfHostedRunner: ${{ inputs.is-self-hosted-runner }}
         filename: ${{ inputs.file-name }}
         label: Time is
         message: ${{ env.TIME }}

@@ -121,4 +121,3 @@ if __name__ == '__main__':
                   epochs=opt.epochs, batch_size=opt.batch_size)
     estimator.shutdown()
     stop_orca_context()
-    
