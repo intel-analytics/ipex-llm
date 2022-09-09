@@ -35,15 +35,15 @@ runs:
         HOROVOD_WITH_PYTORCH=1; HOROVOD_WITH_GLOO=1; pip install --no-cache-dir horovod==0.19.2
         pip uninstall -y opencv-python-headless
         pip install opencv-python-headless
-        #pip install --pre --upgrade bigdl-orca-spark3
-        sed -i "s/'bigdl-core=='+VERSION/'bigdl-core==2.1.0b20220811'/g" python/dllib/src/setup.py
-        bash python/dev/release_default_linux_spark312.sh default false false
+        pip install --pre --upgrade bigdl-orca-spark3
+        #sed -i "s/'bigdl-core=='+VERSION/'bigdl-core==2.1.0b20220811'/g" python/dllib/src/setup.py
+        #bash python/dev/release_default_linux_spark312.sh default false false
         
         # install dllib
-        pip install python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl
+        #pip install python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl
 
         # install orca
-        pip install python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
+        #pip install python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
 
       env:
         BIGDL_ROOT: ${{ github.workspace }}
