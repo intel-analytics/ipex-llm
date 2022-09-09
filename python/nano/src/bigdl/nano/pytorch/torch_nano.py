@@ -50,6 +50,18 @@ class _TorchNanoModuleWrapper():
 
     def load_state_dict(self, state_dict: 'OrderedDict[str, Tensor]', strict: bool = True,
                         optimizer_state_dict: 'Union[Dict, List[Dict]]' = None):
+        """
+        Load the state dict of model and optimizer(s)(optional).
+
+        After calling this method, the original optimizer(s) will be invalid,
+        if you want new optimizer(s), you should pass the `optimizer_state_dict`
+        parameter, then new optimizer(s) will be returned.
+
+        :param state_dict: the model's state dict
+        :param strict: whether use strict mode, defaults to True
+        :param optimizer_state_dict: the optimizer(s)'s state dict, defaults to None
+        :return: return optimizers if passed `optimizer_state_dict`, otherwise return nothing
+        """
         # load optimizer's state dict using backup optimizers
         if optimizer_state_dict is not None:
             optimizer_state_dict_list = optimizer_state_dict \
