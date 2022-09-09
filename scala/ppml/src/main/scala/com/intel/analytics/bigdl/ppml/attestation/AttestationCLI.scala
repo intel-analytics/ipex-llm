@@ -34,9 +34,9 @@ object AttestationCLI {
                              asType: String = ATTESTATION_CONVENTION.MODE_EHSM_KMS,
                              asURL: String = "127.0.0.1",
                              userReport: String = "ppml",
-                             policyId: String = "8ccc898a-bf40-4272-9f24-e54627f997ed")
+                             policyId: String = "test")
 
-        val cmdParser = new OptionParser[CmdParams]("PPML Attestation Quote Generation Cmd tool") {
+        val cmdParser: OptionParser[CmdParams] = new OptionParser[CmdParams]("PPML Attestation Quote Generation Cmd tool") {
             opt[String]('i', "appID")
               .text("app id for this app")
               .action((x, c) => c.copy(appID = x))
@@ -52,7 +52,7 @@ object AttestationCLI {
             opt[String]('p', "userReport")
               .text("userReportDataPath, default is test")
               .action((x, c) => c.copy(userReport = x))
-            opt[String]('pid', "policyId")
+            opt[String]('d', "policyId")
               .text("policy id of customer registered mrenclave")
               .action((x, c) => c.copy(policyId = x))
         }
