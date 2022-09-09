@@ -28,3 +28,27 @@ jobs:
         with:
           api-key: ${{ secrets.FOSSAAPIKEY }}
           run-tests: true
+
+      - name: Create Job Badge
+        if: ${{ always() }}
+        uses: ./.github/actions/create-job-status-badge
+        with:
+          secret: ${{ secrets.GIST_SECRET }}
+          gist-id: f91eb10af4d9dbe216ba0f0da71cace9
+          isSelfHostedRunner: false
+          file-name: fossa-scan.json
+          type: job
+          job-name: fossa-scan
+
+  create-workflow-badge:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: create workflow badge
+      if: ${{ always() }}
+      uses: ./.github/actions/create-job-status-badge
+      with:
+        secret: ${{ secrets.GIST_SECRET }}
+        gist-id: 966d4c0bf23c67662120d1bf4b1c88dc
+        file-name: license-scan.json
+        type: workflow
