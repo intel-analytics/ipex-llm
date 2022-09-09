@@ -151,42 +151,10 @@
                 </executions>
 	    </plugin>
             <plugin>
-                <!--Please don't merge this shade plugin with spark-version's shade plugin to spark/pom.xml,
-                 or shade plugin will be executed after assembly plugin. -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>3.2.1</version>
-                <configuration>
-                    <filters>
-                        <filter>
-                            <artifact>com.google.protobuf</artifact>
-                            <excludes>
-                                <exclude>META-INF/maven/com.google.protobuf/protobuf-java/*</exclude>
-                            </excludes>
-                        </filter>
-                    </filters>
-                    <relocations>
-                        <relocation>
-                            <pattern>com.google.protobuf</pattern>
-                            <shadedPattern>com.intel.analytics.shaded.protobuf_v_3_5_1</shadedPattern>
-                        </relocation>
-                    </relocations>
-                </configuration>
                 <executions>
-                    <execution>
-                        <id>shade</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <artifactSet>
-                                <includes>
-                                    <include>com.google.protobuf</include>
-                                </includes>
-                            </artifactSet>
-                        </configuration>
-                    </execution>
                     <execution>
                         <id>without-spark</id>
                         <phase>package</phase>
