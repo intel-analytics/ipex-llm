@@ -73,6 +73,11 @@ class AccelerationOption(object):
             return "jit"
         return None
 
+    def get_method_type(self):
+        if self.inc or self.pot or self.bf16:
+            return "quantize"
+        return "trace"
+
 
 # acceleration method combinations, developers may want to register some new
 # combinations here
@@ -183,6 +188,8 @@ class InferenceOptimizer:
             result_map[method] = {}
             if available is False:
                 result_map[method]["status"] = "lack dependency"
+                option: AccelerationOption = ALL_INFERENCE_ACCELERATION_METHOD[method]
+                result_map[method]["method_type"] = option.get_method_type()
             else:
                 print(f"**********Start test {method} model**********")
                 option: AccelerationOption = ALL_INFERENCE_ACCELERATION_METHOD[method]
