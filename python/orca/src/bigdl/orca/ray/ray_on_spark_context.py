@@ -397,7 +397,7 @@ class RayOnSparkContext(object):
                 self.system_config = self.extra_params.pop("_system_config")
         self.include_webui = include_webui
         self._address_info = None
-        self.redis_port = random.randint(10000, 65535) if not redis_port else int(redis_port)
+        self.redis_port = random.randint(20000, 65535) if not redis_port else int(redis_port)
         self.ray_node_cpu_cores = ray_node_cpu_cores
         self.num_ray_nodes = num_ray_nodes
         RayOnSparkContext._active_ray_context = self
