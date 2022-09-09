@@ -34,7 +34,8 @@ if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("-f", type=str, dest="file_path",
                       help="The file path to be read")
-    parser.add_option("--deploy-mode", type=str, dest="deployMode", default="local", help="deploy mode, local, spark-submit, yarn-client or yarn-cluster")
+    parser.add_option("--deploy-mode", type=str, dest="deployMode", default="local",
+                      help="deploy mode, local, spark-submit, yarn-client or yarn-cluster")
     (options, args) = parser.parse_args(sys.argv)
 
     sc = init_orca_context(cluster_mode=options.deployMode)
