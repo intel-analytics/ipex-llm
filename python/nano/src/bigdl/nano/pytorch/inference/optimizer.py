@@ -118,7 +118,7 @@ class InferenceOptimizer:
                  validation_data: DataLoader = None,
                  metric: Callable = None,
                  direction: str = "max",
-                 cpu_num: int = None,
+                 thread_num: int = None,
                  logging: bool = False,
                  latency_sample_num: int = 100) -> None:
         '''
@@ -141,7 +141,7 @@ class InferenceOptimizer:
         :param direction: (optional) A string that indicates the higher/lower
                better for the metric, "min" for the lower the better and "max" for the
                higher the better. Default value is "max".
-        :param cpu_num: (optional) a int represents how many cores is needed for
+        :param thread_num: (optional) a int represents how many threads(cores) is needed for
                inference.
         :param logging: whether to log detailed information of model conversion.
                default: False.
@@ -166,17 +166,7 @@ class InferenceOptimizer:
             self._calculate_accuracy = False
 
         default_threads: int = torch.get_num_threads()
-        cpu_num: int = default_threads if cpu_num is None else int(cpu_num)
-
-        # set cpu num for onnxruntime
-        if _onnxruntime_checker():
-            import onnxruntime
-            sessoption = onnxruntime.SessionOptions()
-            sessoption.intra_op_num_threads = cpu_num
-            sessoption.inter_op_num_threads = cpu_num
-        else:
-            sessoption = None
-        # TODO: set cpu num for openvino
+        thread_num: int = default_threads if thread_num is None else int(thread_num)
 
         result_map: Dict[str, Dict] = {}
 
@@ -219,7 +209,7 @@ class InferenceOptimizer:
                                     InferenceOptimizer.trace(model=model,
                                                              accelerator=accelerator,
                                                              input_sample=input_sample,
-                                                             onnxruntime_session_options=sessoption,
+                                                             thread_num=thread_num,
                                                              # remove output of openvino
                                                              logging=logging)
                     except Exception as e:
@@ -378,6 +368,7 @@ class InferenceOptimizer:
                  timeout: int = None,
                  max_trials: int = None,
                  input_sample=None,
+                 thread_num: int = None,
                  onnxruntime_session_options=None,
                  logging: bool = True,
                  **export_kwargs):
@@ -422,6 +413,9 @@ class InferenceOptimizer:
                             "timeout=0, max_trials=1" means it will try quantization only once and
                             return satisfying best model.
         :param input_sample:      An input example to convert pytorch model into ONNX/OpenVINO.
+        :param thread_num: (optional) a int represents how many threads(cores) is needed for
+                           inference, only valid for accelerator='onnxruntime'
+                           or accelerator='openvino'.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
         :param logging: whether to log detailed information of model conversion, only valid when
@@ -467,10 +461,16 @@ class InferenceOptimizer:
                         if input_sample is None:
                             # input_sample can be a dataloader
                             input_sample = calib_dataloader
+                        if onnxruntime_session_options is None:
+                            import onnxruntime
+                            onnxruntime_session_options = onnxruntime.SessionOptions()
+                        onnxruntime_session_options.intra_op_num_threads = thread_num
+                        onnxruntime_session_options.inter_op_num_threads = thread_num
                         model = InferenceOptimizer.trace(
                             model,
                             input_sample=input_sample,
                             accelerator='onnxruntime',
+                            onnxruntime_session_options=onnxruntime_session_options,
                             **export_kwargs)
                 """
                 If accelerator==None, quantized model returned should be an object of PytorchModel
@@ -498,6 +498,7 @@ class InferenceOptimizer:
                     model = InferenceOptimizer.trace(model,
                                                      input_sample=input_sample,
                                                      accelerator='openvino',
+                                                     thread_num=thread_num,
                                                      logging=logging,
                                                      **export_kwargs)
                 invalidInputError(type(model).__name__ == 'PytorchOpenVINOModel',
@@ -536,6 +537,7 @@ class InferenceOptimizer:
               input_sample=None,
               accelerator: str = None,
               use_ipex: bool = False,
+              thread_num: int = None,
               onnxruntime_session_options=None,
               logging: bool = True,
               **export_kwargs):
@@ -550,6 +552,9 @@ class InferenceOptimizer:
         :param accelerator: The accelerator to use, defaults to None meaning staying in Pytorch
                             backend. 'openvino', 'onnxruntime' and 'jit' are supported for now.
         :param use_ipex: whether we use ipex as accelerator for inferencing. default: False.
+        :param thread_num: (optional) a int represents how many threads(cores) is needed for
+                           inference, only valid for accelerator='onnxruntime'
+                           or accelerator='openvino'.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
         :param logging: whether to log detailed information of model conversion, only valid when
@@ -568,8 +573,13 @@ class InferenceOptimizer:
             "but got type {}".format(type(model))
         )
         if accelerator == 'openvino':  # openvino backend will not care about ipex usage
-            return PytorchOpenVINOModel(model, input_sample, logging, **export_kwargs)
+            return PytorchOpenVINOModel(model, input_sample, thread_num, logging, **export_kwargs)
         if accelerator == 'onnxruntime':  # onnxruntime backend will not care about ipex usage
+            if onnxruntime_session_options is None:
+                import onnxruntime
+                onnxruntime_session_options = onnxruntime.SessionOptions()
+            onnxruntime_session_options.intra_op_num_threads = thread_num
+            onnxruntime_session_options.inter_op_num_threads = thread_num
             return PytorchONNXRuntimeModel(model, input_sample, onnxruntime_session_options,
                                            **export_kwargs)
         if accelerator == 'jit' or use_ipex:
