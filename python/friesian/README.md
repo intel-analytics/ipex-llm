@@ -11,8 +11,8 @@ Friesian provides end-to-end support for three typical stages in a production re
 
 The overall architecture of Friesian is as follows:
 
-<img src="../scala/friesian/src/main/resources/images/architecture.png" width="800" />
+<img src="../../scala/friesian/src/main/resources/images/architecture.png" width="800" />
 
-See [here](./friesian/example) for the uses cases of various recommendation models implemented in Friesian.
+See [here](./example) for the uses cases of various recommendation models implemented in Friesian.
 
-See [here](../scala/friesian) for the end-to-end serving pipeline in Friesian.
+See [here](../../scala/friesian) for the end-to-end serving pipeline in Friesian.
