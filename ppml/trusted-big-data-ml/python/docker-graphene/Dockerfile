@@ -252,7 +252,7 @@ RUN apt install software-properties-common -y && \
     pip install --no-cache-dir numpy scipy && \
     pip install --no-cache-dir pandas && \
     pip install --no-cache-dir scikit-learn matplotlib seaborn jupyter wordcloud moviepy requests h5py opencv-python protobuf==3.19.0 tensorflow==1.15 && \
-    pip install --no-cache-dir torch==1.5.0 torchvision==0.9.1 -f https://download.pytorch.org/whl/torch_stable.html && \
+    pip install --no-cache-dir torch==1.5.0 torchvision==0.6.0 -f https://download.pytorch.org/whl/torch_stable.html && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     #Fix tornado await process
     pip uninstall -y -q tornado && \
