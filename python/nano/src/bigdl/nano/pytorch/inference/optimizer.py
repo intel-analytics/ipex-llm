@@ -85,8 +85,8 @@ ALL_INFERENCE_ACCELERATION_METHOD = \
         "int8": AccelerationOption(inc=True),
         "jit_fp32": AccelerationOption(jit=True),
         "jit_fp32_ipex": AccelerationOption(jit=True, ipex=True),
-        "jit_fp32_ipex_clast": AccelerationOption(jit=True, ipex=True,
-                                                  channels_last=True),
+        "jit_fp32_ipex_channels_last": AccelerationOption(jit=True, ipex=True,
+                                                          channels_last=True),
         "openvino_fp32": AccelerationOption(openvino=True),
         "openvino_int8": AccelerationOption(openvino=True, pot=True),
         "onnxruntime_fp32": AccelerationOption(onnxtunrime=True),
@@ -106,6 +106,7 @@ class InferenceOptimizer:
         # optimized_model_dict handles the optimized model and some metadata
         # in {"method_name": {"latency": ..., "accuracy": ..., "model": ...}}
         self.optimized_model_dict = {}
+        self._optimize_result = None
 
     def optimize(self, model: nn.Module,
                  training_data: DataLoader,
@@ -174,15 +175,16 @@ class InferenceOptimizer:
 
         result_map: Dict[str, Dict] = {}
 
-        model.eval()  # change model to eval state
+        model.eval()  # change model to eval mode
 
         print("==========================Start Optimization==========================")
+        start_time = time.perf_counter()
         for method, available in available_dict.items():
+            result_map[method] = {}
             if available is False:
-                result_map[method] = {}
                 result_map[method]["status"] = "lack dependency"
             else:
-                print(f"*** Start to try method {method}***")
+                print(f"********************Start test {method} model********************")
                 option: AccelerationOption = ALL_INFERENCE_ACCELERATION_METHOD[method]
                 use_ipex: bool = option.ipex
                 use_channels_last: bool = option.channels_last
@@ -194,7 +196,9 @@ class InferenceOptimizer:
                     try:
                         if accelerator is None and use_ipex is False:
                             acce_model = model
+                            result_map[method]["method_type"] = "none"
                         else:
+                            result_map[method]["method_type"] = "trace"
                             if accelerator in ("jit", None):
                                 acce_model = \
                                     InferenceOptimizer.trace(model=model,
@@ -213,13 +217,13 @@ class InferenceOptimizer:
                                                              logging=logging)
                     except Exception as e:
                         print(e)
-                        result_map[method] = {}
                         result_map[method]["status"] = "fail to convert"
-                        print(f"*** Failed to convert to {method}***")
+                        print(f"********************Failed to convert to {method}********************")
                         continue
 
                 # if precision is int8 or bf16, then we will use quantize method
                 elif precision in ("int8", "bf16"):
+                    result_map[method]["method_type"] = "quantize"
                     ort_method: str = option.method
                     try:
                         acce_model = \
@@ -234,12 +238,10 @@ class InferenceOptimizer:
                                                         logging=logging)
                     except Exception as e:
                         print(e)
-                        result_map[method] = {}
                         result_map[method]["status"] = "fail to convert"
-                        print(f"*** Failed to convert to {method}***")
+                        print(f"********************Failed to convert to {method}********************")
                         continue
 
-                result_map[method] = {}
                 result_map[method]["status"] = "successful"
 
                 def func_test(model, input_sample):
@@ -265,21 +267,25 @@ class InferenceOptimizer:
                     result_map[method]["accuracy"] = None
 
                 result_map[method]["model"] = acce_model
-            else:
-                pass
+                print(f"********************Finish test {method} model********************")
 
         self.optimized_model_dict: Dict = result_map
+        print("\n\n==========================Optimization Results==========================")
         # TODO: format the results
-        print("==========================Optimization Results==========================")
-        if self._calculate_accuracy:
-            for key, value in self.optimized_model_dict.items():
-                print("accleration option: {}, latency: {:.4f}ms, accuracy : {:.4f}"
-                      .format(key, value["latency"], value["accuracy"]))
-        else:
-            for key, value in self.optimized_model_dict.items():
-                print("accleration option: {}, latency: {:.4f}ms :"
-                      .format(key, value["latency"]))
+        self._optimize_result = _format_optimize_result(self.optimized_model_dict, 
+                                                        self._calculate_accuracy)
+        print(self._optimize_result)
+        print("Optimization cost {:.3}ms at all.".format(time.perf_counter() - start_time))
         print("===========================Stop Optimization===========================")
+
+    def summary(self):
+        '''
+        Print format string represation for optimization result
+        '''
+        invalidOperationError(len(self.optimized_model_dict) > 0,
+                              "There is no optimization result. You should call .optimize() "
+                              "before summary()")
+        print(self._optimize_result)
 
     def get_best_model(self,
                        accelerator: str = None,
@@ -317,7 +323,7 @@ class InferenceOptimizer:
                                     self.optimized_model_dict["original"]["accuracy"])
 
         for method in self.optimized_model_dict.keys():
-            if method == "original":
+            if method == "original" or self.optimized_model_dict[method]["status"] != "successful":
                 continue
             option: AccelerationOption = ALL_INFERENCE_ACCELERATION_METHOD[method]
             result: Dict = self.optimized_model_dict[method]
@@ -348,7 +354,7 @@ class InferenceOptimizer:
                 best_model = result["model"]
                 best_metric = CompareMetric(method, result["latency"], result["accuracy"])
 
-        return best_model, _format_acceleration_info(best_metric.method_name)
+        return best_model, _format_acceleration_option(best_metric.method_name)
 
     @staticmethod
     def quantize(model: nn.Module,
@@ -598,7 +604,7 @@ def _openvino_checker():
     '''
     check if openvino-dev is installed
     '''
-    return not find_spec("openvino-dev") is None
+    return not find_spec("openvino") is None
 
 
 def _bf16_checker():
@@ -665,7 +671,7 @@ def _accuracy_calculate_helper(model, metric, data):
     return np.sum(metric_list) / sample_num
 
 
-def _format_acceleration_info(method_name):
+def _format_acceleration_option(method_name: str) -> str:
     '''
     Get a string represation for current method's acceleration option
     '''
@@ -678,4 +684,47 @@ def _format_acceleration_info(method_name):
             repr_str = repr_str + value + " + "
     if len(repr_str) > 0:
         repr_str = repr_str[:-2]
+    return repr_str
+
+
+def _format_optimize_result(optimize_result_dict: dict, 
+                            calculate_accuracy: bool) -> str:
+    '''
+    Get a format string represation for optimization result
+    '''
+    if calculate_accuracy is True:
+        horizontal_line = " {0} {1} {2} {3} {4}\n" \
+            .format("-"*32, "-"*22, "-"*12, "-"*12, "-"*12)
+        repr_str = horizontal_line
+        repr_str += "| {0:^30} | {1:^20} | {2:^10} | {3:^10} | {4:^10} |\n" \
+            .format("method", "status", "type", "latency", "accuracy")
+        repr_str += horizontal_line
+        for method, result in optimize_result_dict.items():
+            status = result["status"]
+            method_type = result["method_type"]
+            latency = result.get("latency", "None")
+            if latency != "None":
+                latency = round(latency, 3)
+            accuracy = result.get("accuracy", "None")
+            if accuracy != "None":
+                accuracy = round(accuracy, 3)
+            method_str = f"| {method:^30} | {status:^20} | {method_type:^10} | {latency:^10} | {accuracy:^10} |\n"
+            repr_str += method_str
+        repr_str += horizontal_line
+    else:
+        horizontal_line = " {0} {1} {2} {3}\n" \
+            .format("-"*32, "-"*22, "-"*12, "-"*12)
+        repr_str = horizontal_line
+        repr_str += "| {0:^30} | {1:^20} | {2:^10} | {3:^10} |\n" \
+            .format("method", "status", "type", "latency")
+        repr_str += horizontal_line
+        for method, result in optimize_result_dict.items():
+            status = result["status"]
+            method_type = result["method_type"]
+            latency = result.get("latency", "None")
+            if latency != "None":
+                latency = round(latency, 3)
+            method_str = f"| {method:^30} | {status:^20} | {method_type:^10} | {latency:^10} |\n"
+            repr_str += method_str
+        repr_str += horizontal_line
     return repr_str
