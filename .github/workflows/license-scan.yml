@@ -29,8 +29,8 @@ jobs:
           api-key: ${{ secrets.FOSSAAPIKEY }}
           run-tests: true
 
-      - name: "Scan Dependency"
-        if: always()
+      - name: "Filter the Dependency Tree"
+        if: ${{ failure() }}
         run: |
           sed -i 's/<artifactId>${spark-version.project}<\/artifactId>/<artifactId>${spark-version.project}-${SPARK_PLATFORM}<\/artifactId>/' scala/dllib/pom.xml
           sed -i 's/<artifactId>3.0<\/artifactId>/<artifactId>3.0-${SPARK_PLATFORM}<\/artifactId>/' scala/common/spark-version/3.0/pom.xml
