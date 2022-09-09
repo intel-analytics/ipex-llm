@@ -16,6 +16,7 @@
 
 import argparse
 import os
+from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.automl.xgboost import AutoXGBRegressor
 from bigdl.orca.automl import hp
@@ -131,7 +132,7 @@ if __name__ == '__main__':
         )
     elif opt.mode == 'sigopt':
         if "SIGOPT_KEY" not in os.environ:
-            raise RuntimeError("Environment Variable 'SIGOPT_KEY' is not set")
+            invalidInputError(False, "Environment Variable 'SIGOPT_KEY' is not set")
         space = [
             {
                 "name": "n_estimators",

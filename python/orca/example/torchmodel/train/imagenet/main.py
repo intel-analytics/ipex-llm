@@ -26,7 +26,7 @@ from bigdl.dllib.estimator import *
 from bigdl.dllib.nncontext import *
 from bigdl.dllib.feature.common import FeatureSet
 from bigdl.dllib.keras.metrics import Accuracy, Top5Accuracy
-from bigdl.dllib.utils.utils import detect_conda_env_name
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 import math
 
@@ -86,7 +86,7 @@ def main():
                         help='size of driver memory.')
     parser.add_argument('--driver_cores', default=1, type=int,
                         help='num of driver cores to use.')
-    parser.add_argument("--num_executors", type=int, default=16,\
+    parser.add_argument("--num_executors", type=int, default=16,
                         help="number of executors")
     parser.add_argument("--deploy_mode", type=str, default="yarn-client",
                         help="yarn deploy mode, yarn-client or yarn-cluster")
@@ -94,14 +94,15 @@ def main():
 
     # init
     hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
-    assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
-            "set the environment variable HADOOP_CONF_DIR"
+    invalidInputError(hadoop_conf is not None,
+                      "Directory path to hadoop conf not found for yarn-client mode. Please "
+                      "set the environment variable HADOOP_CONF_DIR")
 
     sc = init_orca_context(cluster_mode=args.deploy_mode, hadoop_conf=hadoop_conf,
-        conf={"spark.executor.memory": args.executor_memory,
-                "spark.executor.cores": args.cores,
-                "spark.executor.instances": args.num_executors
-    })
+                           conf={"spark.executor.memory": args.executor_memory,
+                                 "spark.executor.cores": args.cores,
+                                 "spark.executor.instances": args.num_executors
+                                 })
 
     # Data loading code
     traindir = os.path.join(args.data, 'train')
@@ -148,4 +149,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

@@ -1,0 +1,60 @@
+name: 'Create Job Status Badge'
+description: 'In a workflow with multiple jobs, create a badge that can display the completion time and status of the job'
+inputs:
+  secret:
+    description: 'use to access gist'
+    required: true
+  gist-id:
+    description: 'gist-id'
+    required: true
+  file-name:
+    description: 'gist file name(.json)'
+    required: true
+  type:
+    description: 'workflow or job'
+    required: true
+  job-name:
+    description: 'job name'
+  isSelfHostedRunner:
+    description: 'If use self-hosted runner it will be true'
+    required: true
+    default: false
+runs:
+  using: "composite"
+  steps:
+    - name: print time
+      shell: bash
+      run: |
+        export NOW=$( date '+%F_%H:%M:%S' )
+        echo "TIME=${NOW}" >> $GITHUB_ENV
+        
+    - name: get job status
+      shell: bash
+      run: |
+        echo "JOB-STATUS=${{ job.status }}" >>$GITHUB_ENV
+    - name: set badge color
+      shell: bash
+      run: if [ ${{ env.JOB-STATUS }} == "success" ] ; then echo "COLOR=green" >> $GITHUB_ENV ; else echo "COLOR=red" >> $GITHUB_ENV; fi
+    
+    - name: Create job badge
+      if: ${{ inputs.type == 'job' }}
+      uses: analytics-zoo/dynamic-badges-action@master
+      with:
+        auth: ${{ inputs.secret }}
+        gistID: ${{ inputs.gist-id }}
+        isSelfHostedRunner: ${{ inputs.isSelfHostedRunner }}
+        filename: ${{ inputs.file-name }}
+        label: ${{ inputs.job-name }}
+        message: ${{ env.JOB-STATUS }}
+        color: ${{ env.COLOR }}
+        
+    - name: Create time badge
+      if: ${{ inputs.type == 'workflow' }}
+      uses: analytics-zoo/dynamic-badges-action@master
+      with:
+        auth: ${{ inputs.secret }}
+        gistID: ${{ inputs.gist-id }}
+        isSelfHostedRunner: ${{ inputs.isSelfHostedRunner }}
+        filename: ${{ inputs.file-name }}
+        label: Time is
+        message: ${{ env.TIME }}

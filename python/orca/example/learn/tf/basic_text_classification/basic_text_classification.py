@@ -60,6 +60,7 @@ from tensorflow import keras
 
 import argparse
 
+from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf.estimator import Estimator
 
@@ -68,13 +69,14 @@ parser.add_argument('--cluster_mode', type=str, default="local",
                     help='The mode for the Spark cluster. local, yarn or spark-submit.')
 parser.add_argument('--epochs', type=int, default=2, help='number of epochs to train for')
 parser.add_argument('--download', type=bool, default=True, help='download dataset or not')
-parser.add_argument('--data_dir', type=str, default="./dataset", help='The path of datesets where includes imdb.npz.')
+parser.add_argument('--data_dir', type=str, default="./dataset",
+                    help='The path of datesets where includes imdb.npz.')
 parser.add_argument("--container_image", type=str, default="", help="The runtime k8s image. "
                     "You can change it with your k8s image.")
 parser.add_argument('--k8s_master', type=str, default="",
-                        help="The k8s master. "
-                             "It should be k8s://https://<k8s-apiserver-host>: "
-                             "<k8s-apiserver-port>.")
+                    help="The k8s master. "
+                         "It should be k8s://https://<k8s-apiserver-host>: "
+                         "<k8s-apiserver-port>.")
 args = parser.parse_args()
 cluster_mode = args.cluster_mode
 download = args.download
@@ -89,27 +91,27 @@ elif cluster_mode == "k8s":
 elif cluster_mode == "spark-submit":
     init_orca_context(cluster_mode="spark-submit")
 else:
-    print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn' and 'spark-submit' but got "
-          + cluster_mode)
+    print("init_orca_context failed. cluster_mode should be one of 'local', "
+          "'yarn' and 'spark-submit' but got " + cluster_mode)
 
 print(tf.__version__)
 
 imdb = keras.datasets.imdb
 
-if download == True:
+if download:
     (train_data, train_labels), (test_data, test_labels) = imdb.load_data(num_words=10000)
 else:
     import numpy as np
     import os
     from tensorflow.keras.utils import get_file
     path = os.path.join(args.data_dir, 'imdb.npz')
-    num_words=10000
-    skip_top=0
-    maxlen=None
-    seed=113
-    start_char=1
-    oov_char=2
-    index_from=3
+    num_words = 10000
+    skip_top = 0
+    maxlen = None
+    seed = 113
+    start_char = 1
+    oov_char = 2
+    index_from = 3
     with np.load(path, allow_pickle=True) as f:  # pylint: disable=unexpected-keyword-arg
         x_train, labels_train = f['x_train'], f['y_train']
         x_test, labels_test = f['x_test'], f['y_test']
@@ -136,8 +138,8 @@ else:
         x_train, labels_train = _remove_long_seq(maxlen, x_train, labels_train)
         x_test, labels_test = _remove_long_seq(maxlen, x_test, labels_test)
     if not x_train or not x_test:
-        raise ValueError('After filtering for sequences shorter than maxlen='
-                        f'{str(maxlen)}, no sequence was kept. Increase maxlen.')
+        invalidInputError(False, 'After filtering for sequences shorter than maxlen='
+                          f'{str(maxlen)}, no sequence was kept. Increase maxlen.')
 
     xs = x_train + x_test
     labels = np.concatenate([labels_train, labels_test])
@@ -167,7 +169,7 @@ print(train_data[0])
 len(train_data[0]), len(train_data[1])
 
 # A dictionary mapping words to an integer index
-if download == True:
+if download:
     word_index = imdb.get_word_index()
 else:
     import json

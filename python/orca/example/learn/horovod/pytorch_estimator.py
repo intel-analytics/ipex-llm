@@ -135,10 +135,10 @@ if __name__ == "__main__":
     elif args.cluster_mode.startswith("yarn"):
         if args.cluster_mode == "yarn-client":
             init_orca_context(cluster_mode="yarn-client", cores=args.cores,
-                            num_nodes=args.num_nodes, memory=args.memory)
+                              num_nodes=args.num_nodes, memory=args.memory)
         else:
             init_orca_context(cluster_mode="yarn-cluster", cores=args.cores,
-                            num_nodes=args.num_nodes, memory=args.memory)
+                              num_nodes=args.num_nodes, memory=args.memory)
     elif args.cluster_mode == "k8s":
         if not args.k8s_master or not args.container_image \
                 or not args.k8s_driver_host or not args.k8s_driver_port:

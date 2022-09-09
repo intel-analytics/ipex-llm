@@ -40,7 +40,7 @@ object PythonPPML {
 }
 class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T])
   extends PythonBigDL with TimingSupportive {
-  def initFLContext(id: String, target: String): Unit = {
+  def initFLContext(id: Int, target: String): Unit = {
     FLContext.initFLContext(id, target)
   }
   def setPsiSalt(psiSalt: String): Unit = {
@@ -66,8 +66,13 @@ class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T])
   }
 
   def createFGBoostRegression(learningRate: Double,
-                              maxDepth: Int, minChildSize: Int): FGBoostRegression = {
-    new FGBoostRegression(learningRate.toFloat, maxDepth, minChildSize)
+                              maxDepth: Int,
+                              minChildSize: Int,
+                              serverModelPath: String): FGBoostRegression = {
+    new FGBoostRegression(learningRate.toFloat, maxDepth, minChildSize, serverModelPath)
+  }
+  def fgBoostLoadServerModel(fgBoost: FGBoostModel, modelPath: String): Unit = {
+    fgBoost.loadServerModel(modelPath)
   }
   def createFGBoostClassification(): Unit = {
 

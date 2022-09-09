@@ -65,25 +65,19 @@ class FGBoostAggregator(config: FLConfig,
   def getResultStorage(): Storage[TensorMap] =
     aggregateTypeMap.get(FLPhase.RESULT).getTensorMapStorage()
 
-  loadConfig()
-
-  def loadConfig(): Unit = {
-    if (config.modelPath != null) {
-      logger.info(s"Loading FGBoostAggregator model from ${config.modelPath}")
-      if (new File(config.modelPath).exists()) {
-        val is = new ObjectInputStream(new FileInputStream(config.modelPath))
-        serverTreeLeaf = is.readObject().asInstanceOf[ArrayBuffer[Map[Int, Float]]]
-      } else {
-        logger.warn(s"${config.modelPath} does not exist, will create new model")
-      }
-
+  def loadModel(modelPath: String): Unit = {
+    if (new File(modelPath).exists()) {
+      val is = new ObjectInputStream(new FileInputStream(modelPath))
+      serverTreeLeaf = is.readObject().asInstanceOf[ArrayBuffer[Map[Int, Float]]]
+    } else {
+      logger.warn(s"$modelPath does not exist, will create new model")
     }
   }
 
-  def saveModel(): Unit = {
-    if (config.modelPath != null) {
-      logger.info(s"Saving FGBoostAggregator model to ${config.modelPath}")
-      val os = new ObjectOutputStream(new FileOutputStream(config.modelPath))
+  def saveModel(modelPath: String): Unit = {
+    if (modelPath != null) {
+      logger.info(s"Saving FGBoostAggregator model to ${modelPath}")
+      val os = new ObjectOutputStream(new FileOutputStream(modelPath))
       os.writeObject(serverTreeLeaf)
       os.close()
     }
@@ -239,7 +233,6 @@ class FGBoostAggregator(config: FLConfig,
     serverTreeLeaf += treeLeaf
     leafMap.clear()
     getEvalStorage().version += 1
-    saveModel()
   }
 
   def updateGradient(newPredict: Array[Float]): Unit = {

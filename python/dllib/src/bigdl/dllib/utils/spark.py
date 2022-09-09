@@ -319,7 +319,7 @@ class SparkRunner:
                 "{}/sbin/stop-master.sh".format(env["ZOO_STANDALONE_HOME"]), shell=True, env=env)
             os.waitpid(stop_master_pro.pid, 0)
         else:
-            # if env is None, then the standalone cluster is not started by analytics zoo
+            # if env is None, then the standalone cluster is not started by BigDL
             pass
 
     def init_spark_on_k8s(self,
