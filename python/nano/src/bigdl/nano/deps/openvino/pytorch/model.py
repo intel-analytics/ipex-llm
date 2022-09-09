@@ -48,13 +48,17 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
             if isinstance(model, torch.nn.Module):
                 export(model, input_sample, str(dir / 'tmp.xml'), logging, **export_kwargs)
                 ov_model_path = dir / 'tmp.xml'
+
             self.ov_model = OpenVINOModel(ov_model_path, thread_num=thread_num)
-            super().__init__(self.ov_model)
+            super().__init__(None)
 
     def on_forward_start(self, inputs):
         self.ov_model._model_exists_or_err()
         inputs = self.tensors_to_numpy(inputs)
         return inputs
+
+    def forward_step(self, *inputs):
+        return self.ov_model.forward_step(*inputs)
 
     def on_forward_end(self, outputs):
         outputs = self.numpy_to_tensors(outputs.values())
@@ -165,7 +169,6 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
 
             input_list = list(self.on_forward_start(input_list))
 
-        results = super().async_predict(input_list, num_requests)
-        # results are already list of torch.Tensor
-        # because on_forward_end is called in OpenVINOMOdel.async_predict
+        results = self.ov_model.async_predict(input_list, num_requests)
+        results = self.numpy_to_tensors(results)
         return results
