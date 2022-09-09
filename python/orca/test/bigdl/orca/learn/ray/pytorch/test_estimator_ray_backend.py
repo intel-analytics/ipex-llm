@@ -266,9 +266,10 @@ class TestPyTorchEstimator(TestCase):
         df = spark.createDataFrame(data=data, schema=schema)
 
         val_rdd = sc.range(0, 40)
-        val_df = val_rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
-                                        [int(np.random.randint(0, 2, size=()))])
-                             ).toDF(["feature", "label"])
+        val_data = val_rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+                                          [float(np.random.randint(0, 2, size=()))])
+                               )
+        val_df = spark.createDataFrame(data=val_data, schema=schema)
 
         estimator = get_estimator(workers_per_node=2)
         estimator.fit(df, batch_size=4, epochs=2,
