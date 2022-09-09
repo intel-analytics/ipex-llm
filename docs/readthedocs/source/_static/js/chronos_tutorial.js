@@ -51,7 +51,8 @@ $(".checkboxes").click(function(){
             var ids = ["ChronosForecaster","TuneaForecasting","AutoTSEstimator","AutoWIDE",
             "MultvarWIDE","MultstepWIDE","LSTMForecaster","AutoProphet","AnomalyDetection",
             "DeepARmodel","TFTmodel","hyperparameter","taxiDataset","distributedFashion",
-            "ONNX","Quantize","TCMFForecaster","PenalizeUnderestimation"];
+            "ONNX","Quantize","TCMFForecaster","PenalizeUnderestimation",
+            "GPUtrainingCPUacceleration"];
             showTutorials(ids);
             var disIds = ["simulation"];
             disCheck(disIds);
@@ -94,7 +95,7 @@ $(".checkboxes").click(function(){
             disCheck(disIds);
         }
         else if(vals.includes("customized_model")){
-            var ids = ["AutoTSEstimator","DeepARmodel","TFTmodel"];
+            var ids = ["AutoTSEstimator","DeepARmodel","TFTmodel", "GPUtrainingCPUacceleration"];
             showTutorials(ids);
             var disIds = ["anomaly_detection","simulation","onnxruntime","quantization","distributed"];
             disCheck(disIds);
@@ -114,7 +115,7 @@ $(".checkboxes").click(function(){
             disCheck(disIds);
         }
         else if(vals.includes("forecast") && vals.includes("customized_model")){
-            var ids = ["DeepARmodel","TFTmodel","AutoTSEstimator"];
+            var ids = ["DeepARmodel","TFTmodel","AutoTSEstimator","GPUtrainingCPUacceleration"];
             showTutorials(ids);
             var disIds = ["anomaly_detection","simulation","onnxruntime","quantization","distributed"];
             disCheck(disIds);
