@@ -56,10 +56,27 @@ class LightGBMTrainSpec extends ZooSpecHelper {
     if (spark.version.substring(0, 3).toDouble >= 3.1) {
       val lightGBMclassifier = new LightGBMClassifier()
       val classifier = new MLightGBMClassifier()
-      val model1 = lightGBMclassifier.fit(assembledDf)
-      val model = classifier.fit(assembledDf)
-      val res1 = model1.transform(assembledDf)
-      TestUtils.conditionFailTest(res1.count() == 2)
+//      val model1 = lightGBMclassifier.fit(assembledDf)
+//      val model = classifier.fit(assembledDf)
+//      val res1 = model1.transform(assembledDf)
+//      TestUtils.conditionFailTest(res1.count() == 2)
+      val input_path = "/Users/guoqiong/intelWork/data/tweet/xgb_processed" // path to iris.data
+      val modelsave_path = input_path + "model" // save model to this path
+      val train_df = spark.read.parquet(input_path + "/train")
+      val test_df = spark.read.parquet(input_path + "/train")
+      val model1 = lightGBMclassifier.fit(train_df)
+      val model = classifier.fit(train_df)
+      val res = model.transform(train_df)
+      val res1 = model1.transform(train_df)
+      res.show(20)
+      res1.show(20)
+      println("***************")
+      println(res.filter(res("prediction")===1.0).count())
+      println("***************")
+      println(res1.filter(res1("prediction")===1.0).count())
+      println(res.count())
+      println(res1.count())
+
     }
   }
 
