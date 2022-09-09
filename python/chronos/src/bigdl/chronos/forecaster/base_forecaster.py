@@ -846,6 +846,7 @@ class BasePytorchForecaster(Forecaster):
                     yhat = xshard_to_np(yhat, mode="yhat", expand_dim=expand_dim)
                 else:
                     yhat = yhat.transform_shard(xshard_expand_dim, expand_dim)
+                return yhat
             else:
                 if not self.fitted:
                     from bigdl.nano.utils.log4Error import invalidInputError
@@ -857,6 +858,7 @@ class BasePytorchForecaster(Forecaster):
                                                   batch_size=batch_size)
                 if not is_local_data:
                     yhat = np_to_xshard(yhat, prefix="prediction")
+                return yhat
 
         # step3: calculate y_hat
         y_hat = calculate(data, self.internal)
