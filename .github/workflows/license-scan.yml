@@ -2,7 +2,7 @@ name: license-scan
 
 on:
   push:
-    branches: [ "wip/shaojun/licensescan" ]
+    branches: [ "main" ]
   #pull_request:
     #branches: [ "main" ]
   schedule:
