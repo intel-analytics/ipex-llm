@@ -29,6 +29,7 @@ jobs:
           api-key: ${{ secrets.FOSSAAPIKEY }}
           run-tests: true
 
+
       - name: "Scan Dependency"
         run: |
           sed -i 's/<artifactId>${spark-version.project}<\/artifactId>/<artifactId>${spark-version.project}-${SPARK_PLATFORM}<\/artifactId>/' scala/dllib/pom.xml
