@@ -4,8 +4,8 @@ on:
   push:
     branches: 
       - 'wip/shaojun/license_scan'
-  #pull_request:
-    #branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
   schedule:
     - cron: '0 3 * * *'
 
