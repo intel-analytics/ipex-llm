@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>bigdl-assembly-spark_${spark.version}</artifactId>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
 
     <properties>
         <bigdl.basedir>${project.parent.basedir}</bigdl.basedir>
@@ -146,6 +146,24 @@
                                     <type>zip</type>
                                 </artifact>
                             </artifacts>
+                        </configuration>
+                    </execution>
+                </executions>
+	    </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.1</version>
+                <executions>
+                    <execution>
+                        <id>without-spark</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
                         </configuration>
                     </execution>
                 </executions>
