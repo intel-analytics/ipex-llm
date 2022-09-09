@@ -22,9 +22,3 @@ java -cp [dependent-jars] com.intel.analytics.bigdl.ppml.attestation.Attestation
 `-c` **challenge** Challenge to get quote of attestation service which will be verified by local SGXSDK. Used only for bi-attestation. Should be a BASE64 string, default is "" and will skip bi-attestation.
 
 `-p` **userReport** User report to generate quote and attested by attestation service. Default is `test`.
-
-## Example command
-
-```
-java -cp /opt/scala-2.11.8/lib/*:bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar com.intel.analytics.bigdl.ppml.attestation.AttestationCLI -i be3f95e3-3bbe-424a-a6fe-e5ee936b75b3 -k KfVVXz8i94NwivSEJ3fDcGcQ8JrbQbqC -u 172.168.0.242:9000 -c Y2hhbGxlbmdl -p test
-```
