@@ -50,18 +50,25 @@ class _TorchNanoModuleWrapper():
 
     def load_state_dict(self, state_dict: 'OrderedDict[str, Tensor]', strict: bool = True,
                         optimizer_state_dict: 'Union[Dict, List[Dict]]' = None):
-        # load model and optimizer's state dict
-        self.backup_model.load_state_dict(state_dict, strict)
+        # load optimizer's state dict using backup optimizers
         if optimizer_state_dict is not None:
             optimizer_state_dict_list = optimizer_state_dict \
                 if isinstance(optimizer_state_dict, list) else [optimizer_state_dict]
             for optimizer, state in zip(self.backup_optimizers, optimizer_state_dict_list):
                 optimizer.load_state_dict(state)
 
-        # re-setup loaded model and optimizer
-        model, optimizers = self.torch_nano._setup(self.backup_model, self.backup_optimizers,
-                                                   self.move_to_device)
-        self.model = model
+        if self.torch_nano.use_ipex and not TORCH_VERSION_LESS_1_10:
+            # load model's state dict using backup model
+            self.backup_model.load_state_dict(state_dict, strict)
+            # re-setup loaded model and optimizer
+            model, optimizers = self.torch_nano._setup(self.backup_model, self.backup_optimizers,
+                                                       self.move_to_device)
+            self.model = model
+        else:
+            # load model's state dict directly
+            self.model._module.load_state_dict(state_dict, strict)
+            # no need to create new optimizers
+            optimizers = self.backup_optimizers
 
         if optimizer_state_dict is not None:
             optimizer = optimizers if isinstance(optimizer_state_dict, list) else optimizers[0]
@@ -231,7 +238,8 @@ class TorchNano(LightningLite):
                                                     backup_optimizers, move_to_device)
         else:
             model, optimizers = self._setup(model, optimizers, move_to_device=move_to_device)
-            model_wrapper = model   # type: ignore
+            model_wrapper = _TorchNanoModuleWrapper(model, self, model,  # type: ignore
+                                                    optimizers, move_to_device)
 
         dataloaders = self.setup_dataloaders(*dataloaders,  # type: ignore
                                              move_to_device=move_to_device)
