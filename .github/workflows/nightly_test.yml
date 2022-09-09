@@ -146,3 +146,16 @@ jobs:
       uses: ./.github/actions/maven-setup-action
     - name: Run test
       uses: ./.github/actions/orca-ray-ctx-example-action
+
+  create-workflow-badge:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: create workflow badge
+      if: ${{ always() }}
+      uses: ./.github/actions/create-job-status-badge
+      with:
+        secret: ${{ secrets.GIST_SECRET }}
+        gist-id: bc8a699b455bced4a1aef138ad5df07e
+        file-name: nightly-test.json
+        type: workflow
