@@ -44,6 +44,7 @@ jobs:
           pip install tsfresh==0.17.0
           pip install ray==1.9.2 ray[tune]==1.9.2 ray[default]==1.9.2
           pip install pyarrow==6.0.1
+          pip install openvino-dev
           pip install ConfigSpace==0.5.0
           pip install optuna==2.10.1
           pip install onnxruntime==1.11.1
