@@ -24,6 +24,7 @@ init_orca_context(cluster_mode="local", cores=4, memory="3g")
 file_path = "titanic.csv"
 data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
+
 # drop
 def drop_passenger(df):
     df = df.drop(['PassengerId'], axis=1)

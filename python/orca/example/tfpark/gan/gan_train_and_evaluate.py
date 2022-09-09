@@ -20,6 +20,7 @@ from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca.tfpark import TFDataset
 from bigdl.orca.tfpark import ZooOptimizer
 from bigdl.dllib.utils.common import *
+from bigdl.dllib.utils.log4Error import invalidInputError
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -36,6 +37,7 @@ NOISE_DIM = 64
 parser = argparse.ArgumentParser()
 parser.add_argument('--cluster_mode', type=str, default="local",
                     help='The mode for the Spark cluster. local, yarn or spark-submit.')
+
 
 def eval():
 
@@ -65,8 +67,10 @@ if __name__ == "__main__":
     cluster_mode = args.cluster_mode
     if cluster_mode.startswith("yarn"):
         hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
-        assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
-                "set the environment variable HADOOP_CONF_DIR"
+        invalidInputError(
+            hadoop_conf is not None,
+            "Directory path to hadoop conf not found for yarn-client mode. Please "
+            "set the environment variable HADOOP_CONF_DIR")
         spark_conf = create_spark_conf().set("spark.executor.memory", "5g") \
             .set("spark.executor.cores", 2) \
             .set("spark.executor.instances", 2) \
