@@ -120,7 +120,7 @@ for neg_index in range(min_user_id, max_user_id):
 #for neg_index in range(1,2):
     dfs = df.select("item").where("user == %d"%neg_index)
     pdf = set(dfs.toPandas()['item'].values)
-    cont = int(len(dfs.collect()) // 5)
+    cont = len(dfs.collect()) * 5
     neg_item = random.sample(set(range(min_item_id, max_item_id)) - pdf, cont)
     
     for k in neg_item:
