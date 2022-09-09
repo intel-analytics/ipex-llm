@@ -28,14 +28,16 @@ from tensorflow.keras.layers import Dense
 init_orca_context(memory="4g")
 
 path = 'auto-mpg.csv'
-column_names = ['MPG','Cylinders','Displacement','Horsepower','Weight',
+column_names = ['MPG', 'Cylinders', 'Displacement', 'Horsepower', 'Weight',
                 'Acceleration', 'Model Year', 'Origin']
 data_shard = bigdl.orca.data.pandas.read_csv(path, names=column_names, header=0)
+
 
 def drop_na(df):
     df = df.dropna()
     return df
 data_shard = data_shard.transform_shard(drop_na)
+
 
 def generate_extra_cols(df):
     origin = df.pop('Origin')
@@ -51,6 +53,7 @@ column = data_shard.get_schema()['columns']
 scaler = MinMaxScaler(inputCol=list(column[1:]), outputCol="scaled_vec")
 data_shard = scaler.fit_transform(data_shard)
 
+
 def split_train_test(df):
     train_df = df.sample(frac=0.8, random_state=0)
     test_df = df.drop(train_df.index)
@@ -58,19 +61,20 @@ def split_train_test(df):
 
 shards_train, shards_val = data_shard.transform_shard(split_train_test).split()
 
+
 def build_model():
-  model = Sequential([
-    Dense(64, activation=tf.nn.relu, input_shape=[9]),
-    Dense(64, activation=tf.nn.relu),
-    Dense(1)
-  ])
+    model = Sequential([
+        Dense(64, activation=tf.nn.relu, input_shape=[9]),
+        Dense(64, activation=tf.nn.relu),
+        Dense(1)
+    ])
 
-  optimizer = tf.keras.optimizers.RMSprop(0.001)
+    optimizer = tf.keras.optimizers.RMSprop(0.001)
 
-  model.compile(loss='mean_squared_error',
-                optimizer=optimizer,
-                metrics=['mean_absolute_error', 'mean_squared_error'])
-  return model
+    model.compile(loss='mean_squared_error',
+                  optimizer=optimizer,
+                  metrics=['mean_absolute_error', 'mean_squared_error'])
+    return model
 
 model = build_model()
 

@@ -47,11 +47,15 @@ from bigdl.orca.learn.tf.estimator import Estimator
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--cluster_mode', type=str, default="local",
-                    help='The mode for the Spark cluster. local, yarn-client, yarn-cluster or spark-submit.')
-parser.add_argument('--data_dir', type=str, default="/data", help='The path of datesets where includes folder datasets/cats_and_dogs_filtered.')
+                    help='The mode for the Spark cluster. local, yarn or spark-submit.')
+parser.add_argument('--data_dir', type=str, default="/data",
+                    help='The path of datesets where includes folder '
+                         'datasets/cats_and_dogs_filtered.')
 parser.add_argument('--batch_size', type=int, default=64, help='The training batch size')
 parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
-parser.add_argument('--download_url', type=str, default="https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip",
+parser.add_argument('--download_url', type=str,
+                    default="https://storage.googleapis.com/mledu-datasets/"
+                            "cats_and_dogs_filtered.zip",
                     help="The url of cats_and_dogs_filtered.zip.")
 parser.add_argument('--download', type=bool, default=True, help='download dataset or not')
 args = parser.parse_args()
@@ -62,7 +66,7 @@ download_url = args.download_url
 download = args.download
 if not exists(dataset_dir):
     makedirs(dataset_dir)
-if download == True:
+if download:
     zip_file = tf.keras.utils.get_file(
         origin=download_url,
         fname="cats_and_dogs_filtered.zip", extract=True, cache_dir=dataset_dir)
@@ -75,10 +79,10 @@ if cluster_mode == "local":
 elif cluster_mode.startswith("yarn"):
     init_orca_context(cluster_mode=cluster_mode, num_nodes=2, cores=2, driver_memory="3g")
 elif cluster_mode == "spark-submit":
-    init_orca_context(cluster_mode="spark-submit")                      
+    init_orca_context(cluster_mode="spark-submit")
 else:
-    print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn' and 'spark-submit' but got "
-          + cluster_mode)
+    print("init_orca_context failed. cluster_mode should be one of 'local', "
+          "'yarn' and 'spark-submit' but got " + cluster_mode)
 
 train_dir = os.path.join(base_dir, 'train')
 validation_dir = os.path.join(base_dir, 'validation')

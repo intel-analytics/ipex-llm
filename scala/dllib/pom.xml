@@ -332,6 +332,11 @@
             <version>1.7.16</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>synapseml-lightgbm_2.12</artifactId>
+            <version>0.9.5</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -372,6 +377,14 @@
                             <artifact>com.google.protobuf</artifact>
                             <excludes>
                                 <exclude>META-INF/maven/com.google.protobuf/protobuf-java/*</exclude>
+                            </excludes>
+                        </filter>
+                        <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
                             </excludes>
                         </filter>
                     </filters>

@@ -33,9 +33,9 @@ import torch.optim as optim
 import torch.utils.data as data
 from torchvision.utils import make_grid
 
+from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.pytorch import Estimator
-from bigdl.dllib.utils.log4Error import invalidInputError
 
 from Unet import UNet
 from dataset import *
@@ -47,11 +47,13 @@ def dataset(root_path):
     files_df = pd.DataFrame({"image_path": image_files,
                              "mask_path": mask_files,
                              "diagnosis": [diagnosis(x) for x in mask_files]})
-    train_df, val_df = train_test_split(files_df, stratify=files_df['diagnosis'], test_size=0.1, random_state=0)
+    train_df, val_df = train_test_split(
+        files_df, stratify=files_df['diagnosis'], test_size=0.1, random_state=0)
     train_df = train_df.reset_index(drop=True)
     val_df = val_df.reset_index(drop=True)
 
-    train_df, test_df = train_test_split(train_df, stratify=train_df['diagnosis'], test_size=0.15, random_state=0)
+    train_df, test_df = train_test_split(
+        train_df, stratify=train_df['diagnosis'], test_size=0.15, random_state=0)
     train_df = train_df.reset_index(drop=True)
     test_df = test_df.reset_index(drop=True)
     print("Train: {}\nVal: {}\nTest: {}".format(train_df.shape, val_df.shape, test_df.shape))
@@ -110,7 +112,8 @@ def train_loader_creator(config, batch_size):
     ])
 
     train_ds = BrainDataset(config['train'], train_transform)
-    train_loader = torch.utils.data.DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=0)
+    train_loader = torch.utils.data.DataLoader(
+        train_ds, batch_size=batch_size, shuffle=True, num_workers=0)
     return train_loader
 
 
@@ -121,7 +124,8 @@ def val_loader_creator(config, batch_size):
     ])
 
     val_ds = BrainDataset(config['val'], val_transform)
-    val_loader = torch.utils.data.DataLoader(val_ds, batch_size=batch_size, shuffle=False, num_workers=0)
+    val_loader = torch.utils.data.DataLoader(
+        val_ds, batch_size=batch_size, shuffle=False, num_workers=0)
     return val_loader
 
 
@@ -131,7 +135,8 @@ def test_loader_creator(config, batch_size):
     ])
 
     test_ds = BrainDataset(config['test'], test_transform)
-    test_loader = torch.utils.data.DataLoader(test_ds, batch_size=batch_size, shuffle=False, num_workers=0)
+    test_loader = torch.utils.data.DataLoader(
+        test_ds, batch_size=batch_size, shuffle=False, num_workers=0)
     return test_loader
 
 
@@ -173,7 +178,8 @@ args = parser.parse_args()
 if args.cluster_mode == "local":
     init_orca_context(memory='4g')
 elif args.cluster_mode.startswith('yarn'):
-    init_orca_context(cluster_mode="yarn-client", cores=2, num_nodes=2, additional_archive=args.additional_archive,
+    init_orca_context(cluster_mode="yarn-client", cores=2,
+                      num_nodes=2, additional_archive=args.additional_archive,
                       extra_python_lib='dataset.py,Unet.py', num_executors=2, memory='4g')
 elif args.cluster_mode == "spark-submit":
     init_orca_context(cluster_mode="spark-submit")
@@ -227,7 +233,7 @@ elif args.backend in ["ray", "spark"]:
     for r, value in res.items():
         print(r, ":", value)
 else:
-    raise NotImplementedError("Only bigdl, ray, and spark are supported as the backend,"
-                              " but got {}".format(args.backend))
+    invalidInputError(False, "Only bigdl, ray, and spark are supported as the backend,"
+                             " but got {}".format(args.backend))
 
 stop_orca_context()
