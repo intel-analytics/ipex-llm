@@ -26,6 +26,7 @@ from bigdl.nano.utils.log4Error import invalidInputError
 from ..core.utils import save
 from torch.utils.data.dataloader import DataLoader
 
+
 class PytorchOpenVINOModel(AcceleratedLightningModule):
     def __init__(self, model, input_sample=None, thread_num=None,
                  logging=True, **export_kwargs):
