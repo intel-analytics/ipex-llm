@@ -101,7 +101,7 @@ class MyNano(TorchNano):
 
 
 if __name__ == '__main__':
-    # IPEX Accelerated Training
+    # BF16 Training
     #
     # BFloat16 is a custom 16-bit floating point format for machine learning
     # that’s comprised of one sign bit, eight exponent bits, and seven mantissa bits.
