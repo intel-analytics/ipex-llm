@@ -23,8 +23,8 @@ from setuptools import setup
 long_description = '''
 BigDL Chronos provides scalable time series analysis solutions using AutoML.
 
-See [here](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html) 
-for more information.
+See [here](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html)
+ for more information.
 '''
 
 bigdl_home = os.path.abspath(__file__ + "/../../../..")
