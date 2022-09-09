@@ -23,7 +23,7 @@ import torch
 import torch.nn as nn
 
 from pyspark.sql import SparkSession
-from pyspark.sql.types import FloatType, ArrayType, StructType, StructField
+from pyspark.sql.types import FloatType, IntegerType, ArrayType, StructType, StructField
 
 from bigdl.orca import OrcaContext
 from bigdl.orca.data.pandas import read_csv
@@ -236,10 +236,17 @@ class TestPyTorchEstimator(TestCase):
     def test_dataframe_train_eval(self):
 
         sc = init_nncontext()
+        spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(0, 100)
-        df = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
-                                [int(np.random.randint(0, 2, size=()))])
-                     ).toDF(["feature", "label"])
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+                                  [int(np.random.randint(0, 2, size=()))])
+                       )
+        schema = StructType([
+            StructField("feature", ArrayType(FloatType()), True),
+            StructField("label", ArrayType(IntegerType()), True)
+        ])
+
+        df = spark.createDataFrame(data=data, schema=schema)
 
         estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir)
         estimator.fit(df, batch_size=4, epochs=2,
@@ -255,10 +262,16 @@ class TestPyTorchEstimator(TestCase):
         from bigdl.orca import OrcaContext
         OrcaContext._shard_size = 30
         sc = init_nncontext()
+        spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(0, 100)
-        df = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
-                                [int(np.random.randint(0, 2, size=()))])
-                     ).toDF(["feature", "label"])
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+                                  [int(np.random.randint(0, 2, size=()))])
+                       )
+        schema = StructType([
+            StructField("feature", ArrayType(FloatType()), True),
+            StructField("label", ArrayType(IntegerType()), True)
+        ])
+        df = spark.createDataFrame(data=data, schema=schema)
 
         estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir)
         estimator.fit(df, batch_size=4, epochs=2,
@@ -270,10 +283,17 @@ class TestPyTorchEstimator(TestCase):
 
     def test_partition_num_less_than_workers(self):
         sc = init_nncontext()
+        spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(200, numSlices=1)
-        df = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
-                                [int(np.random.randint(0, 2, size=()))])
-                     ).toDF(["feature", "label"])
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+                                  [int(np.random.randint(0, 2, size=()))])
+                       )
+        schema = StructType([
+            StructField("feature", ArrayType(FloatType()), True),
+            StructField("label", ArrayType(IntegerType()), True)
+        ])
+
+        df = spark.createDataFrame(data=data, schema=schema)
 
         estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir)
         assert df.rdd.getNumPartitions() < estimator.num_workers
@@ -355,10 +375,17 @@ class TestPyTorchEstimator(TestCase):
         rdd = sc.parallelize(range(100))
 
         from pyspark.sql import SparkSession
-        spark = SparkSession(sc)
-        df = rdd.map(lambda x: ([float(x)] * 25, [float(x)] * 25,
-                                [int(np.random.randint(0, 2, size=()))])
-                     ).toDF(["f1", "f2", "label"])
+        spark = SparkSession.builder.getOrCreate()
+        data = rdd.map(lambda x: ([float(x)] * 25, [float(x)] * 25,
+                                  [int(np.random.randint(0, 2, size=()))])
+                       )
+        schema = StructType([
+            StructField("f1", ArrayType(FloatType()), True),
+            StructField("f2", ArrayType(FloatType()), True),
+            StructField("label", ArrayType(IntegerType()), True)
+        ])
+
+        df = spark.createDataFrame(data=data, schema=schema)
 
         estimator = get_estimator(workers_per_node=2,
                                   model_fn=lambda config: MultiInputNet(),
@@ -426,11 +453,17 @@ class TestPyTorchEstimator(TestCase):
     def test_checkpoint_callback(self):
         from bigdl.orca.learn.pytorch.callbacks.model_checkpoint import ModelCheckpoint
         sc = OrcaContext.get_spark_context()
+        spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(0, 100)
         epochs = 2
-        df = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
-                                [int(np.random.randint(0, 2, size=()))])
-                     ).toDF(["feature", "label"])
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+                                  [int(np.random.randint(0, 2, size=()))])
+                       )
+        schema = StructType([
+            StructField("feature", ArrayType(FloatType()), True),
+            StructField("label", ArrayType(IntegerType()), True)
+        ])
+        df = spark.createDataFrame(data=data, schema=schema)
         df = df.cache()
 
         estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir,
@@ -467,11 +500,18 @@ class TestPyTorchEstimator(TestCase):
 
     def test_manual_ckpt(self):
         sc = OrcaContext.get_spark_context()
+        spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(0, 100)
         epochs = 2
-        df = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
-                                [int(np.random.randint(0, 2, size=()))])
-                     ).toDF(["feature", "label"])
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+                                  [int(np.random.randint(0, 2, size=()))])
+                       )
+        schema = StructType([
+            StructField("feature", ArrayType(FloatType()), True),
+            StructField("label", ArrayType(IntegerType()), True)
+        ])
+
+        df = spark.createDataFrame(data=data, schema=schema)
         df = df.cache()
 
         estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir,
