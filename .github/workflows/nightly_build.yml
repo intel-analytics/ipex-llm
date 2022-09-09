@@ -157,7 +157,7 @@ jobs:
       with:
         secret: ${{ secrets.GIST_SECRET}}
         gist-id: 7495dccc42118020c12de5a095cfa2a6
-        isSelfHostedRunner: true
+        is-self-hosted-runner: true
         file-name: nb-scala-build.json
         type: job
         job-name: scala-build
@@ -222,7 +222,7 @@ jobs:
       with:
         secret: ${{ secrets.GIST_SECRET }}
         gist-id: aaee1abb17ed9aad37e19256787c52b2
-        isSelfHostedRunner: true
+        is-self-hosted-runner: true
         file-name: nb-docker-build-bigdl.json
         type: job
         job-name: docker-build-bigdl
@@ -273,7 +273,7 @@ jobs:
       with:
         secret: ${{ secrets.GIST_SECRET }}
         gist-id: 983672c70e351381418fdf6f9076637a
-        isSelfHostedRunner: true
+        is-self-hosted-runner: true
         file-name: nb-python-build.json
         type: job
         job-name: python-build
@@ -398,7 +398,7 @@ jobs:
       with:
         secret: ${{ secrets.GIST_SECRET }}
         gist-id: 6d878630c0c8f50c388bb7e196354ca8
-        isSelfHostedRunner: true
+        is-self-hosted-runner: true
         file-name: nb-python-sourceforge-build.json
         type: job
         job-name: python-build-sourceforge

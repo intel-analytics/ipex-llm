@@ -35,7 +35,7 @@ jobs:
         with:
           secret: ${{ secrets.GIST_SECRET }}
           gist-id: f91eb10af4d9dbe216ba0f0da71cace9
-          isSelfHostedRunner: false
+          is-self-hosted-runner: false
           file-name: fossa-scan.json
           type: job
           job-name: fossa-scan
