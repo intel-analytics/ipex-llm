@@ -23,6 +23,7 @@ from .utils import save
 from openvino.runtime import AsyncInferQueue
 import numpy as np
 
+
 class OpenVINOModel:
     def __init__(self, ie_network: str, device='CPU', thread_num=None):
         self._ie = Core()
@@ -198,7 +199,8 @@ class OpenVINOModel:
         """
         results = [0 for _ in range(len(input_data))]
 
-        # call back function is called when a infer_request in the infer_queue finishes the inference
+        # call back function is called when a infer_request in the infer_queue
+        # finishes the inference
         def call_back(requests, idx):
             results[idx] = self.on_forward_end(requests.results)
 
