@@ -184,7 +184,7 @@ class InferenceOptimizer:
             if available is False:
                 result_map[method]["status"] = "lack dependency"
             else:
-                print(f"********************Start test {method} model********************")
+                print(f"**********Start test {method} model**********")
                 option: AccelerationOption = ALL_INFERENCE_ACCELERATION_METHOD[method]
                 use_ipex: bool = option.ipex
                 use_channels_last: bool = option.channels_last
@@ -218,7 +218,7 @@ class InferenceOptimizer:
                     except Exception as e:
                         print(e)
                         result_map[method]["status"] = "fail to convert"
-                        print(f"********************Failed to convert to {method}********************")
+                        print(f"**********Failed to convert to {method}**********")
                         continue
 
                 # if precision is int8 or bf16, then we will use quantize method
@@ -239,7 +239,7 @@ class InferenceOptimizer:
                     except Exception as e:
                         print(e)
                         result_map[method]["status"] = "fail to convert"
-                        print(f"********************Failed to convert to {method}********************")
+                        print(f"**********Failed to convert to {method}**********")
                         continue
 
                 result_map[method]["status"] = "successful"
@@ -267,12 +267,12 @@ class InferenceOptimizer:
                     result_map[method]["accuracy"] = None
 
                 result_map[method]["model"] = acce_model
-                print(f"********************Finish test {method} model********************")
+                print(f"**********Finish test {method} model**********")
 
         self.optimized_model_dict: Dict = result_map
         print("\n\n==========================Optimization Results==========================")
-        # TODO: format the results
-        self._optimize_result = _format_optimize_result(self.optimized_model_dict, 
+
+        self._optimize_result = _format_optimize_result(self.optimized_model_dict,
                                                         self._calculate_accuracy)
         print(self._optimize_result)
         print("Optimization cost {:.3}ms at all.".format(time.perf_counter() - start_time))
@@ -687,14 +687,14 @@ def _format_acceleration_option(method_name: str) -> str:
     return repr_str
 
 
-def _format_optimize_result(optimize_result_dict: dict, 
+def _format_optimize_result(optimize_result_dict: dict,
                             calculate_accuracy: bool) -> str:
     '''
     Get a format string represation for optimization result
     '''
     if calculate_accuracy is True:
         horizontal_line = " {0} {1} {2} {3} {4}\n" \
-            .format("-"*32, "-"*22, "-"*12, "-"*12, "-"*12)
+            .format("-" * 32, "-" * 22, "-" * 12, "-" * 12, "-" * 12)
         repr_str = horizontal_line
         repr_str += "| {0:^30} | {1:^20} | {2:^10} | {3:^10} | {4:^10} |\n" \
             .format("method", "status", "type", "latency", "accuracy")
@@ -708,12 +708,13 @@ def _format_optimize_result(optimize_result_dict: dict,
             accuracy = result.get("accuracy", "None")
             if accuracy != "None":
                 accuracy = round(accuracy, 3)
-            method_str = f"| {method:^30} | {status:^20} | {method_type:^10} | {latency:^10} | {accuracy:^10} |\n"
+            method_str = f"| {method:^30} | {status:^20} | {method_type:^10} | " \
+                         f"{latency:^10} | {accuracy:^10} |\n"
             repr_str += method_str
         repr_str += horizontal_line
     else:
         horizontal_line = " {0} {1} {2} {3}\n" \
-            .format("-"*32, "-"*22, "-"*12, "-"*12)
+            .format("-" * 32, "-" * 22, "-" * 12, "-" * 12)
         repr_str = horizontal_line
         repr_str += "| {0:^30} | {1:^20} | {2:^10} | {3:^10} |\n" \
             .format("method", "status", "type", "latency")
