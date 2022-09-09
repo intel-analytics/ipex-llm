@@ -239,11 +239,11 @@ class TestPyTorchEstimator(TestCase):
         spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(0, 100)
         data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
-                                  [int(np.random.randint(0, 2, size=()))])
+                                  [float(np.random.randint(0, 2, size=()))])
                        )
         schema = StructType([
             StructField("feature", ArrayType(FloatType()), True),
-            StructField("label", ArrayType(IntegerType()), True)
+            StructField("label", ArrayType(FloatType()), True)
         ])
 
         df = spark.createDataFrame(data=data, schema=schema)
@@ -265,11 +265,11 @@ class TestPyTorchEstimator(TestCase):
         spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(0, 100)
         data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
-                                  [int(np.random.randint(0, 2, size=()))])
+                                  [float(np.random.randint(0, 2, size=()))])
                        )
         schema = StructType([
             StructField("feature", ArrayType(FloatType()), True),
-            StructField("label", ArrayType(IntegerType()), True)
+            StructField("label", ArrayType(FloatType()), True)
         ])
         df = spark.createDataFrame(data=data, schema=schema)
 
@@ -286,11 +286,11 @@ class TestPyTorchEstimator(TestCase):
         spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(200, numSlices=1)
         data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
-                                  [int(np.random.randint(0, 2, size=()))])
+                                  [float(np.random.randint(0, 2, size=()))])
                        )
         schema = StructType([
             StructField("feature", ArrayType(FloatType()), True),
-            StructField("label", ArrayType(IntegerType()), True)
+            StructField("label", ArrayType(FloatType()), True)
         ])
 
         df = spark.createDataFrame(data=data, schema=schema)
@@ -377,12 +377,12 @@ class TestPyTorchEstimator(TestCase):
         from pyspark.sql import SparkSession
         spark = SparkSession.builder.getOrCreate()
         data = rdd.map(lambda x: ([float(x)] * 25, [float(x)] * 25,
-                                  [int(np.random.randint(0, 2, size=()))])
+                                  [float(np.random.randint(0, 2, size=()))])
                        )
         schema = StructType([
             StructField("f1", ArrayType(FloatType()), True),
             StructField("f2", ArrayType(FloatType()), True),
-            StructField("label", ArrayType(IntegerType()), True)
+            StructField("label", ArrayType(FloatType()), True)
         ])
 
         df = spark.createDataFrame(data=data, schema=schema)
@@ -457,11 +457,11 @@ class TestPyTorchEstimator(TestCase):
         rdd = sc.range(0, 100)
         epochs = 2
         data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
-                                  [int(np.random.randint(0, 2, size=()))])
+                                  [float(np.random.randint(0, 2, size=()))])
                        )
         schema = StructType([
             StructField("feature", ArrayType(FloatType()), True),
-            StructField("label", ArrayType(IntegerType()), True)
+            StructField("label", ArrayType(FloatType()), True)
         ])
         df = spark.createDataFrame(data=data, schema=schema)
         df = df.cache()
@@ -504,11 +504,11 @@ class TestPyTorchEstimator(TestCase):
         rdd = sc.range(0, 100)
         epochs = 2
         data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
-                                  [int(np.random.randint(0, 2, size=()))])
+                                  [float(np.random.randint(0, 2, size=()))])
                        )
         schema = StructType([
             StructField("feature", ArrayType(FloatType()), True),
-            StructField("label", ArrayType(IntegerType()), True)
+            StructField("label", ArrayType(FloatType()), True)
         ])
 
         df = spark.createDataFrame(data=data, schema=schema)
