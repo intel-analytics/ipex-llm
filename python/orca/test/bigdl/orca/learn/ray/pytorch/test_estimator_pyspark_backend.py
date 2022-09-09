@@ -23,7 +23,7 @@ import torch
 import torch.nn as nn
 
 from pyspark.sql import SparkSession
-from pyspark.sql.types import FloatType, IntegerType, ArrayType, StructType, StructField
+from pyspark.sql.types import FloatType, ArrayType, StructType, StructField
 
 from bigdl.orca import OrcaContext
 from bigdl.orca.data.pandas import read_csv
