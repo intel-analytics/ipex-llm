@@ -2,7 +2,7 @@ name: license-scan
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "wip/shaojun/license_scan" ]
   #pull_request:
     #branches: [ "main" ]
   schedule:
@@ -28,3 +28,20 @@ jobs:
         with:
           api-key: ${{ secrets.FOSSAAPIKEY }}
           run-tests: true
+
+      - name: "Scan Dependency"
+        run: |
+          sed -i 's/<artifactId>${spark-version.project}<\/artifactId>/<artifactId>${spark-version.project}-${SPARK_PLATFORM}<\/artifactId>/' scala/dllib/pom.xml
+          sed -i 's/<artifactId>3.0<\/artifactId>/<artifactId>3.0-${SPARK_PLATFORM}<\/artifactId>/' scala/common/spark-version/3.0/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/common/spark-version/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/common/spark-version/3.0/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/dllib/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/orca/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/friesian/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/grpc/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/serving/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/ppml/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/assembly/pom.xml
+          cd scala
+          mvn -P spark_3.x dependency:tree
