@@ -8,11 +8,11 @@ bash build-docker-image.sh
 
 This is the file structure we expect:
 ```
-Folder --> set as local_data_folder_path when creating container
+Folder --> set as host_data_folder_path when creating container
 |
 │
-└───folder1 --> set as input_folder_path when running command (used below)
-│       file11.txt --> data file to be encrpted or decrypted, and set as input_path when running command (used below)
+└───folder1 --> The corresponding mounted address will be set as container_input_folder_path
+│       file11.txt --> Data file to be encrpted or decrypted, and the corresponding mounted address set as container_input_file_path
 |
 └───folder2
         file21.txt
@@ -34,8 +34,8 @@ sudo docker run -itd \
     --name=$ENROLL_CONTAINER_NAME \
     -v /dev/sgx/enclave:/dev/sgx/enclave \
     -v /dev/sgx/provision:/dev/sgx/provision \
-    -v $local_data_folder_path:/home/data \
-    -v $local_key_folder_path:/home/key \
+    -v $host_data_folder_path:/home/data \
+    -v $host_key_folder_path:/home/key \
     -e EHSM_KMS_IP=$EHSM_KMS_IP \ # optional
     -e EHSM_KMS_PORT=$EHSM_KMS_PORT \ # optional
     -e KMS_TYPE=$KMS_TYPE \
@@ -68,23 +68,23 @@ INFO [main.cpp(159) -> main]: ehsm-kms enroll app end.
 
 export appid=your_appid
 export appkey=your_apikey
-export input_path=your_input_path
-export input_folder_path=your_input_folder_path
+export container_input_file_path=mounted_address_of_host_input_file_path
+export container_input_folder_path=mounted_address_of_host_input_folder_path
 
 
 # Generatekeys
 docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh generatekeys $appid $appkey"
 
 # Encrypt a single data file
-# encrpted data is next to $input_path
-docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh $kms_type encrypt $appid $appkey $input_path"
+# encrpted data is next to $container_input_file_path
+docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh $kms_type encrypt $appid $appkey $container_input_file_path"
 
 # Decrypt a single data file
-docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh decrypt $appid $appkey $input_path"
+docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh decrypt $appid $appkey $container_input_file_path"
 
 # SplitAndEncrypt
-# encrpted data is in a directory next to $input_folder_path
-docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh encryptwithrepartition $appid $appkey $input_folder_path"
+# encrpted data is in a directory next to $container_input_folder_path
+docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh encryptwithrepartition $appid $appkey $container_input_folder_path"
 ```
 ## 4. Stop container:
 ```
