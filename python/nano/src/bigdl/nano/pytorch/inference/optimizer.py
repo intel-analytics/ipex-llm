@@ -89,7 +89,7 @@ ALL_INFERENCE_ACCELERATION_METHOD = \
                                                           channels_last=True),
         "openvino_fp32": AccelerationOption(openvino=True),
         "openvino_int8": AccelerationOption(openvino=True, pot=True),
-        "onnxruntime_fp32": AccelerationOption(onnxtunrime=True),
+        "onnxruntime_fp32": AccelerationOption(onnxruntime=True),
         "onnxruntime_int8_qlinear": AccelerationOption(onnxruntime=True, inc=True,
                                                        method="qlinear"),
         "onnxruntime_int8_integer": AccelerationOption(onnxruntime=True, inc=True,
@@ -280,7 +280,7 @@ class InferenceOptimizer:
 
     def summary(self):
         '''
-        Print format string represation for optimization result
+        Print format string representation for optimization result
         '''
         invalidOperationError(len(self.optimized_model_dict) > 0,
                               "There is no optimization result. You should call .optimize() "
@@ -604,7 +604,7 @@ def _openvino_checker():
     '''
     check if openvino-dev is installed
     '''
-    return not find_spec("openvino") is None
+    return not find_spec("openvino-dev") is None
 
 
 def _bf16_checker():
