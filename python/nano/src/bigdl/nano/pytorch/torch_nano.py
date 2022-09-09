@@ -224,7 +224,7 @@ class TorchNano(LightningLite):
         # convert single optimizer to a optimizer list
         optimizers = [optimizer] if isinstance(optimizer, Optimizer) else optimizer
 
-        if self.use_ipex:
+        if self.use_ipex and not TORCH_VERSION_LESS_1_10:
             (backup_model, backup_optimizers) = copy.deepcopy((model, optimizers))
             model, optimizers = self._setup(model, optimizers, move_to_device=move_to_device)
             model_wrapper = _TorchNanoModuleWrapper(model, self, backup_model,  # type: ignore
