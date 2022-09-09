@@ -827,7 +827,6 @@ class BasePytorchForecaster(Forecaster):
         is_local_data = isinstance(data, (np.ndarray, DataLoader))
         if is_local_data and self.distributed:
             if isinstance(data, DataLoader):
-                from bigdl.nano.utils.log4Error import invalidInputError
                 invalidInputError(False,
                                   "We will be support input dataloader later.")
             data = np_to_xshard(data)
@@ -849,7 +848,6 @@ class BasePytorchForecaster(Forecaster):
                 return yhat
             else:
                 if not self.fitted:
-                    from bigdl.nano.utils.log4Error import invalidInputError
                     invalidInputError(False,
                                       "You must call fit or restore first before calling predict!")
                 self.internal.eval()
