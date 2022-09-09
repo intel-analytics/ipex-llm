@@ -77,8 +77,7 @@ class BaseTF2Forecaster(Forecaster):
 
 
         if self.distributed:
-            if isinstance(data, TSDataset):
-                data = rollback_tf_dataset(data)
+            if isinstance(data, tuple):
                 data = np_to_data_creator(data)
             self.internal.fit(data, epochs=epochs, batch_size=batch_size)
         else:
