@@ -217,7 +217,7 @@ pip install --pre --upgrade bigdl-nano[tensorflow]
 
         +++
 
-        `How-to-Guide <../Howto/index.html>`_ / `Example <../QuickStart/index.html>_`
+        `How-to-Guide <../Howto/index.html>`_ / `Example <../QuickStart/index.html>`_
 
     .. grid-item-card::
         :class-footer: sd-bg-light
