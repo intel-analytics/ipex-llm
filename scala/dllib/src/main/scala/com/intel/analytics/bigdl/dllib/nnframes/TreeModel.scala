@@ -429,13 +429,14 @@ object XGBRegressorModel {
 /**
  * [[lightGBMClassifier wrapper]]
  */
-class LightGBMClassifier {
+class LightGBMClassifier (val lgbmParams: Map[String, Any] = Map()) {
 
   val sc = SparkSession.active.sparkContext
   sc.getConf.set("spark.task.cpus", Engine.coreNumber().toString)
 
   val estimator = new MLightGBMClassifier()
   estimator.setNumThreads(Engine.coreNumber())
+  TreeModelUtils.setParams(estimator, lgbmParams)
 
   def setLabelCol(labelColName : String) : this.type = {
     estimator.setLabelCol(labelColName)
@@ -610,13 +611,14 @@ object LightGBMClassifierModel {
 /**
  * [[LightGBMRegressor]] lightGBM wrapper of LightGBMRegressor.
  */
-class LightGBMRegressor {
+class LightGBMRegressor (val lgbmParams: Map[String, Any] = Map()) {
 
   val sc = SparkSession.active.sparkContext
   sc.getConf.set("spark.task.cpus", Engine.coreNumber().toString)
 
-  private val estimator = new MLightGBMRegressor()
+  val estimator = new MLightGBMRegressor()
   estimator.setNumThreads(Engine.coreNumber())
+  TreeModelUtils.setParams(estimator, lgbmParams)
 
   def setAlpha(value: Double): this.type = {
     estimator.setAlpha(value)
