@@ -57,7 +57,6 @@ subtrees:
       - file: doc/Chronos/Howto/index
       - file: doc/Chronos/QuickStart/index
       - file: doc/Chronos/Overview/deep_dive
-      - file: doc/PythonAPI/Chronos/index
       - file: doc/Chronos/Overview/chronos_known_issue
 
   - caption: PPML
