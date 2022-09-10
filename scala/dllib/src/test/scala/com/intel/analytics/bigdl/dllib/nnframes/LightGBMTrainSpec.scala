@@ -247,8 +247,8 @@ class LightGBMTrainSpec extends ZooSpecHelper {
       "max_bin_by_feature" -> "maxBinByFeature")
 
     paramsMap.foreach(kv => {
-      println(kv._1, TreeModelUtils.converToCamelCase(kv._1))
-      TestUtils.conditionFailTest(kv._2 == TreeModelUtils.converToCamelCase(kv._1))
+      println(kv._1, TreeModelUtils.convert2CamelCase(kv._1))
+      TestUtils.conditionFailTest(kv._2 == TreeModelUtils.convert2CamelCase(kv._1))
     })
   }
 

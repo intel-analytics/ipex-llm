@@ -25,13 +25,7 @@ import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMClassificationModel => M
 import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMClassifier => MLightGBMClassifier}
 import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMRegressionModel => MLightGBMRegressionModel}
 import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMRegressor => MLightGBMRegressor}
-import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMRankerModel => MLightGBMRankerModel}
-import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMRanker => MLightGBMRanker}
-import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMBase => MLightGBMBase}
-import com.microsoft.azure.synapse.ml.lightgbm.params.{LightGBMParams => MLightGBMParams}
-import org.apache.spark.ml.Model
-import org.apache.spark.ml.param.{ParamMap, Params}
-import org.apache.spark.ml.util.Identifiable
+
 
 class XGBClassifier (val xgboostParams: Map[String, Any] = Map()) {
   val sc = SparkSession.active.sparkContext

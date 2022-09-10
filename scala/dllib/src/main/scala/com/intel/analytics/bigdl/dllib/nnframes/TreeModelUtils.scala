@@ -21,7 +21,7 @@ import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMRegressor => MLightGBMRe
 
 object TreeModelUtils {
 
-  def converToCamelCase(pythonStyle: String): String = {
+  def convert2CamelCase(pythonStyle: String): String = {
     val data = pythonStyle.split("_")
     data(0) + data.slice(1, data.size)
       .map(x => x.substring(0, 1).toUpperCase() + x.substring(1)).mkString("")
