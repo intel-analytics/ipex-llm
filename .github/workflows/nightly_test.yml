@@ -1,6 +1,7 @@
 name: Nightly Test
 
 on:
+  #pull_request:
   schedule:
     - cron: '0 13 * * *' # GMT time, 13:00 GMT == 21:00 China
   workflow_dispatch:
@@ -16,11 +17,12 @@ on:
         - Orca-Python-ExampleTest-Ray-Py37-Spark3
         - Orca-Jep-ExampleTest-Py37-Spark2
         - Orca-Python-Ray-Py37-Spark3
-        - Scala-App
+        - Orca-Python-Py37-Spark3
+        - Orca-Ray-Ctx-Example
         - Dllib-Scala-UT
         - Friesian-Scala-UT
         - PPML-Scala-UT
-        - Orca-Ray-Ctx-Example
+        
 
 permissions:
   contents: read
@@ -80,8 +82,8 @@ jobs:
     - name: Run test
       uses: ./.github/actions/orca-python-ray-py37-spark3-action
 
-  Scala-App:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Scala-App' || github.event.inputs.artifact == 'all' }} 
+  Orca-Python-Py37-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -90,29 +92,8 @@ jobs:
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
-    - name: Set up Python 
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.7'
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install numpy
-        pip install tensorflow==1.15.0
-        pip install jupyter
-        apt-get update
-        apt-get install wget 
-
-        wget https://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz
-        gunzip scala-2.11.8.tgz
-        tar -xf scala-2.11.8.tar -C /opt
-        rm scala-2.11.8.tar
-        ln -s /opt/scala-2.11.8 /opt/scala
-    - name: Run Test
-      run: |
-          export SCALA_HOME=/opt/scala
-          chmod a+x apps/run-scala-app-test.sh
-          apps/run-scala-app-test.sh
+    - name: Run test
+      uses: ./.github/actions/orca-python-py37-spark3-action
 
   Dllib-Scala-UT:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Dllib-Scala-UT' || github.event.inputs.artifact == 'all' }} 
@@ -165,3 +146,16 @@ jobs:
       uses: ./.github/actions/maven-setup-action
     - name: Run test
       uses: ./.github/actions/orca-ray-ctx-example-action
+
+  create-workflow-badge:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: create workflow badge
+      if: ${{ always() }}
+      uses: ./.github/actions/create-job-status-badge
+      with:
+        secret: ${{ secrets.GIST_SECRET }}
+        gist-id: bc8a699b455bced4a1aef138ad5df07e
+        file-name: nightly-test.json
+        type: workflow

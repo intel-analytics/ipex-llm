@@ -18,40 +18,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.7"]
+        python-version: ["3.7.6"]
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 8
-        uses: actions/setup-java@v3
-        with:
-          java-version: '8'
-          distribution: 'temurin'
-          #server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
-          settings-path: ${{ github.workspace }} # location for the settings.xml file
-
+        uses: ./.github/actions/jdk-setup-action
       - name: Set up Maven
-        uses: stCarolas/setup-maven@v4.4
-        with:
-          maven-version: 3.8.2
-
-      - name: Set up Maven Settings
-        uses: s4u/maven-settings-action@v2.6.0
-        with:
-          sonatypeSnapshots: true
-          apacheSnapshots: true
-          servers: |
-            [{
-              "id": "central",
-              "configuration": {
-                "httpConfiguration": {
-                  "all": {
-                    "connectionTimeout": "3600000",
-                    "readTimeout": "3600000"
-                    }    
-                  }
-                }
-            }]
-          mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${NEXUS_URL}" }]'
+        uses: ./.github/actions/maven-setup-action
 
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -67,21 +40,25 @@ jobs:
           pip install pytest==5.4.1
           pip install prophet==1.1
           pip install pmdarima==1.8.4
-          pip install neural_compressor==1.11
+          pip install neural-compressor==1.11
           pip install tsfresh==0.17.0
           pip install ray==1.9.2 ray[tune]==1.9.2 ray[default]==1.9.2
           pip install pyarrow==6.0.1
           pip install ConfigSpace==0.5.0
           pip install optuna==2.10.1
-          pip install onnxruntime==1.11.1
           pip install onnx==1.11.0
+          pip install onnxruntime==1.11.1
+          pip install openvino-dev==2022.1.0
+          pip uninstall -y numpy
+          pip install numpy==1.19.5
+          pip install scipy==1.5.4
           apt-get update
           apt-get install patchelf
 
       - name: Run Chronos python test
         shell: bash
         run: |
-          pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-friesian bigdl-friesian-spark3
+          pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-nano bigdl-friesian bigdl-friesian-spark3
           sed -i "s/'bigdl-core=='+VERSION/'bigdl-core==2.1.0b20220811'/g" python/dllib/src/setup.py
           bash python/dev/release_default_linux_spark246.sh default false false
           bash python/nano/dev/build_and_install.sh linux default false pytorch --force-reinstall --no-deps -U
@@ -92,8 +69,7 @@ jobs:
           pip install python/chronos/src/dist/bigdl_chronos-*-py3-none-manylinux1_x86_64.whl
           export SPARK_LOCAL_HOSTNAME=localhost
           export KERAS_BACKEND=tensorflow
-          python --version
-          pip install scipy==1.5.4
           bash python/chronos/dev/test/run-pytests.sh
         env:
+          BIGDL_ROOT: ${{ github.workspace }}
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

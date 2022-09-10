@@ -50,15 +50,14 @@ from tensorflow.keras.layers import Add, Concatenate, Conv2D, Input, Lambda, \
     LeakyReLU, MaxPool2D, UpSampling2D, ZeroPadding2D, BatchNormalization
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.losses import binary_crossentropy, sparse_categorical_crossentropy
+from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.orca.data.image.parquet_dataset import read_parquet, write_parquet
 from bigdl.orca.learn.tf2 import Estimator
 from bigdl.orca import init_orca_context, stop_orca_context
 import numpy as np
-import ray
 import tempfile
 import os
 import argparse
-import sys
 
 DEFAULT_IMAGE_SIZE = 416
 
@@ -234,7 +233,7 @@ def load_darknet_weights(model, weights_file, tiny=False):
                 layer.set_weights([conv_weights])
                 batch_norm.set_weights(bn_weights)
 
-    assert len(wf.read()) == 0, 'failed to read all data'
+    invalidInputError(len(wf.read()) == 0, 'failed to read all data')
     wf.close()
 
 

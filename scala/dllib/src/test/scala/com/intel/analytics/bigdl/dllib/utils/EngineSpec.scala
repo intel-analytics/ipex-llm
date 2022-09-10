@@ -128,6 +128,17 @@
     nExecutor should be(1)
   }
 
+   "sparkExecutorAndCore" should "parse local[*,4]" in {
+     val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("local[*,4]")
+     val (nExecutor, _) = Engine.parseExecutorAndCore(conf).get
+     nExecutor should be(1)
+   }
+
+   "sparkExecutorAndCore" should "parse local[4,2]" in {
+     val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("local[4,2]")
+     Engine.parseExecutorAndCore(conf) should be(Some(1, 4))
+   }
+
   "readConf" should "be right" in {
     val conf = Engine.readConf
     val target = Map(

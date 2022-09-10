@@ -91,11 +91,11 @@ pod/dkeycache-86f8b5456b-8ml57                        1/1     Running   0       
 pod/dkeyserver-0                                      1/1     Running   0          4h57m
 pod/pccs-0                                            1/1     Running   0          4h57m
 
-NAME                                  TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
-service/bigdl-pccs-ehsm-kms-service   LoadBalancer   10.103.155.211   <pending>     9000:30000/TCP   4h57m
-service/couchdb                       ClusterIP      10.97.91.172     <none>        5984/TCP         4h57m
-service/dkeyserver                    ClusterIP      10.98.66.45      1.2.4.114     8888/TCP         4h57m
-service/pccs                          ClusterIP      10.98.213.70     1.2.4.115     18081/TCP        4h57m
+NAME                                  TYPE           CLUSTER-IP       EXTERNAL-IP           PORT(S)          AGE
+service/bigdl-pccs-ehsm-kms-service   LoadBalancer   10.103.155.211   <kms_external_ip>     9000:30000/TCP   4h57m
+service/couchdb                       ClusterIP      10.97.91.172     <none>                5984/TCP         4h57m
+service/dkeyserver                    ClusterIP      10.98.66.45      1.2.4.114             8888/TCP         4h57m
+service/pccs                          ClusterIP      10.98.213.70     1.2.4.115             18081/TCP        4h57m
 
 NAME                                             READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/bigdl-pccs-ehsm-kms-deployment   1/1     1            1           4h57m
@@ -111,7 +111,7 @@ statefulset.apps/dkeyserver   1/1     4h57m
 statefulset.apps/pccs         1/1     4h57m
 
 # Check the status of KMS
-curl http://<external_kms_ip>:9000/ehsm/?Action=GetVersion
+curl -v -k -G "https://<external_kms_ip>:9000/ehsm/?Action=GetVersion"
 
 {"code":200,"message":"success!","result":{"git_sha":"5c91d6d","version":"0.2.1"}}
 
@@ -200,7 +200,7 @@ Then, you will find a new target file `ehsm-kms_enroll_app` generated.
 Now, you can enroll your app through command below, and you will receive a appid-appkey pair from the server:
 
 ```bash
-./ehsm-kms_enroll_app http://<your_kms_external_ipaddr>:9000/ehsm/
+./ehsm-kms_enroll_app -a http://<your_kms_external_ipaddr>:9000/ehsm/
 
 
 INFO [main.cpp(45) -> main]: ehsm-kms enroll app start.
@@ -214,6 +214,16 @@ apikey: TKLJ9ZqL1gusW7FnGBGh9apk5iJZFVkB
 INFO [main.cpp(138) -> main]: decrypt APP ID and API Key success.
 INFO [main.cpp(139) -> main]: Third handle success.
 INFO [main.cpp(142) -> main]: ehsm-kms enroll app end.
+```
+
+### Scheme 3: through RestAPI
+
+```bash
+curl -v -k -G "https://<kms_ip>:9000/ehsm?Action=Enroll"
+
+......
+
+{"code":200,"message":"successful","result":{"apikey":"E8QKpBBapaknprx44FaaTY20rptg54Sg","appid":"8d5dd3b8-3996-40f5-9785-dcb8265981ba"}}
 ```
 
 ## 4. Test BigDL-PCCS-eHSM-KMS with SimpleQuerySparkExample

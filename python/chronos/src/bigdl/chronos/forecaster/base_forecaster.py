@@ -209,7 +209,7 @@ class BasePytorchForecaster(Forecaster):
     def search_summary(self):
         # add tuning check
         invalidOperationError(self.use_hpo, "No search summary when HPO is disabled.")
-        return self.trainer.search_summary()
+        return self.tune_trainer.search_summary()
 
     def fit(self, data, validation_data=None, epochs=1, batch_size=32, validation_mode='output',
             earlystop_patience=1, use_trial_id=None):
@@ -595,14 +595,14 @@ class BasePytorchForecaster(Forecaster):
         """
         Evaluate using a trained forecaster.
 
-        Please note that evaluate result is calculated by scaled y and yhat. If you scaled
-        your data (e.g. use .scale() on the TSDataset) please follow the following code
-        snap to evaluate your result if you need to evaluate on unscaled data.
-
-        if you want to evaluate on a single node(which is common practice), please call
+        If you want to evaluate on a single node(which is common practice), please call
         .to_local().evaluate(data, ...)
 
-        >>> from bigdl.orca.automl.metrics import Evaluator
+        Please note that evaluate result is calculated by scaled y and yhat. If you scaled
+        your data (e.g. use .scale() on the TSDataset), please follow the following code
+        snap to evaluate your result if you need to evaluate on unscaled data.
+
+        >>> from bigdl.chronos.metric.forecast_metrics import Evaluator
         >>> y_hat = forecaster.predict(x)
         >>> y_hat_unscaled = tsdata.unscale_numpy(y_hat) # or other customized unscale methods
         >>> y_unscaled = tsdata.unscale_numpy(y) # or other customized unscale methods
@@ -699,8 +699,8 @@ class BasePytorchForecaster(Forecaster):
         your data (e.g. use .scale() on the TSDataset) please follow the following code
         snap to evaluate your result if you need to evaluate on unscaled data.
 
-        >>> from bigdl.orca.automl.metrics import Evaluator
-        >>> y_hat = forecaster.predict(x)
+        >>> from bigdl.chronos.metric.forecast_metrics import Evaluator
+        >>> y_hat = forecaster.predict_with_onnx(x)
         >>> y_hat_unscaled = tsdata.unscale_numpy(y_hat) # or other customized unscale methods
         >>> y_unscaled = tsdata.unscale_numpy(y) # or other customized unscale methods
         >>> Evaluator.evaluate(metric=..., y_unscaled, y_hat_unscaled, multioutput=...)
@@ -1096,7 +1096,7 @@ class BasePytorchForecaster(Forecaster):
         """
         Build a Forecaster Model.
 
-        :param tsdataset: A bigdl.chronos.data.tsdataset.TSDataset instance.
+        :param tsdataset: Train tsdataset, a bigdl.chronos.data.tsdataset.TSDataset instance.
         :param past_seq_len: int or "auto", Specify the history time steps (i.e. lookback).
                Do not specify the 'past_seq_len' if your tsdataset has called
                the 'TSDataset.roll' method or 'TSDataset.to_torch_data_loader'.
@@ -1151,6 +1151,11 @@ class BasePytorchForecaster(Forecaster):
                           fixMsg="Do not specify past_seq_len and future seq_len "
                           "or call tsdataset.roll method again and specify time step")
 
+        if tsdataset.id_sensitive:
+            _id_list_len = len(tsdataset.id_col)
+            input_feature_num *= _id_list_len
+            output_feature_num *= _id_list_len
+
         return cls(past_seq_len=past_seq_len,
                    future_seq_len=future_seq_len,
                    input_feature_num=input_feature_num,
@@ -1161,6 +1166,13 @@ class BasePytorchForecaster(Forecaster):
 def _str2metric(metric):
     # map metric str to function
     if isinstance(metric, str):
-        from bigdl.chronos.metric.forecast_metrics import TORCHMETRICS_REGRESSION_MAP
-        metric = TORCHMETRICS_REGRESSION_MAP[metric]
+        metric_name = metric
+        from bigdl.chronos.metric.forecast_metrics import REGRESSION_MAP
+        metric_func = REGRESSION_MAP[metric_name]
+
+        def metric(y_label, y_predict):
+            y_label = y_label.numpy()
+            y_predict = y_predict.numpy()
+            return metric_func(y_label, y_predict)
+        metric.__name__ = metric_name
     return metric

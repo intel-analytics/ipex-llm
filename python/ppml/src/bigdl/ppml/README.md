@@ -42,6 +42,13 @@ if the `kms_type` is `EHSMKeyManagementService`, then need
 - `primary_key_path`: the path of your primaryKey
 - `data_key_path`:  the path of your dataKey
 
+if the `kms_type` is `AzureKeyManagementService`, then need
+
+- `azure_vault`: your azure vault name
+- `azure_client_id(not necessary)`: your azure client id, default is empty.
+- `primary_key_path`: the path of your primaryKey
+- `data_key_path`:  the path of your dataKey
+
 > How to generate appId, appKey, primaryKey and dataKey, please refer to [this](https://github.com/intel-analytics/BigDL/blob/main/ppml/services/kms-utils/docker/README.md)
 
 Example

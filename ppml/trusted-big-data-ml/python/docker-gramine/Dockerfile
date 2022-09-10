@@ -171,8 +171,10 @@ RUN mkdir -p /ppml/trusted-big-data-ml/work && \
     mkdir -p /root/.keras/datasets && \
     mkdir -p /root/.zinc && \
     mkdir -p /root/.m2 && \
-    mkdir -p /root/.kube/
+    mkdir -p /root/.kube/ && \
+    mkdir -p /ppml/trusted-big-data-ml/fl
 
+COPY --from=bigdl /bigdl-${BIGDL_VERSION}/python/start-fl-server.py /ppml/trusted-big-data-ml/fl
 COPY --from=spark /opt/jdk  /opt/jdk8
 COPY --from=spark /opt/scala-2.11.8  /opt/scala-2.11.8
 COPY --from=spark /opt/spark-${SPARK_VERSION} /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}
@@ -201,9 +203,11 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     ln -s /usr/bin/python3.7 /usr/bin/python3 && \
     pip3 install --upgrade pip && \
     pip install setuptools==58.4.0 && \
+    rm -rf /usr/lib/python3/dist-packages/protobuf-3.6.1.egg-info && \
+    rm -rf /usr/lib/python3/dist-packages/google/protobuf && \
     pip install --no-cache-dir numpy scipy && \
     pip install --no-cache-dir pandas && \
-    pip install --no-cache-dir scikit-learn matplotlib seaborn jupyter wordcloud moviepy requests h5py opencv-python tensorflow==1.15 protobuf==3.19.0 && \
+    pip install --no-cache-dir scikit-learn matplotlib seaborn jupyter wordcloud moviepy requests h5py opencv-python protobuf==3.19.0 tensorflow==1.15 && \
     pip install --no-cache-dir torch==1.8.1 torchvision==0.9.1 -f https://download.pytorch.org/whl/torch_stable.html && \
     ln -s /usr/bin/python3 /usr/bin/python && \
 # Fix tornado await process
@@ -217,6 +221,8 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     pip install --no-cache-dir dill==0.3.4 && \
     python3 -m pip install toml==0.10.2 click jinja2 && \
     python3 -m ipykernel.kernelspec && \
+    ln -s /usr/lib/x86_64-linux-gnu/libtinfo.so.6 /usr/lib/x86_64-linux-gnu/libtinfo.so.5 && \
+    pip install --no-cache-dir pyyaml && \
 # Gramine
     env DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential autoconf bison gawk git ninja-build python3-click python3-jinja2 wget pkg-config cmake libcurl4-openssl-dev libprotobuf-c-dev protobuf-c-compiler python3-cryptography python3-pip python3-protobuf nasm && \
     git clone https://github.com/analytics-zoo/gramine.git /gramine && \

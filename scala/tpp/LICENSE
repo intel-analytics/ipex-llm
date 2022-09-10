@@ -400,6 +400,10 @@ org.typelevel:macro-compat_2.12
 org.xerial.snappy:snappy-java
 org.yaml:snakeyaml
 
+Tensorflow
+oneDNN
+oneMKL
+openvino
 threading_building_blocks
 com.intel.analytics.bigdl.core.native.opencv:opencv-java-x86_64-linux
 io.perfmark:perfmark-api
@@ -526,12 +530,17 @@ black.ninia:jep
 
 zlib
 
-Plexus Classworlds License
+ISSL
+------------
+intel-openmp
+
+
+Plexus
 ------------
 classworlds:classworlds
 
 
-Unicode
+Unicode-DFS-2016
 ------------
 icu
 

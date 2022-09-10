@@ -27,7 +27,7 @@ if sys.version >= '3':
 
 class LossFunction(ZooKerasCreator, Criterion):
     """
-    The base class for Keras-style API objectives in Analytics Zoo.
+    The base class for Keras-style API objectives in BigDL.
     """
     def __init__(self, jvalue, bigdl_type, *args):
         super(Criterion, self).__init__(jvalue, bigdl_type, *args)

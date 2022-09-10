@@ -42,7 +42,7 @@ def Processdata(filepath, demo):
     :param filepath:
     :return: assembledf:
     '''
-    sparkConf = init_spark_conf().setMaster("local[1]").setAppName("testNNClassifer")
+    sparkConf = init_spark_conf().setAppName("testNNClassifer")
     sc = init_nncontext(sparkConf)
     sqlContext = SQLContext(sc)
     if demo:

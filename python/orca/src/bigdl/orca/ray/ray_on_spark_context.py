@@ -90,7 +90,7 @@ class RayServiceFuncGenerator(object):
             modified_env["PATH"] = executor_python_path
         modified_env.pop("MALLOC_ARENA_MAX", None)
         modified_env.pop("RAY_BACKEND_LOG_LEVEL", None)
-        # Unset all MKL setting as Analytics Zoo would give default values when init env.
+        # Unset all MKL setting as BigDL would give default values when init env.
         # Running different programs may need different configurations.
         modified_env.pop("intra_op_parallelism_threads", None)
         modified_env.pop("inter_op_parallelism_threads", None)
@@ -353,15 +353,15 @@ class RayOnSparkContext(object):
         :param verbose: True for more logs when starting ray. Default is False.
         :param env: The environment variable dict for running ray processes. Default is None.
         :param extra_params: The key value dict for extra options to launch ray.
-        For example, extra_params={"temp-dir": "/tmp/ray/"}
-        :param include_webui: True for including web ui when starting ray. Default is False.
-        :param num_ray_nodes: The number of raylets to start across the cluster.
+        For example, extra_params={"dashboard-port": "11281", "temp-dir": "/tmp/ray/"}.
+        :param include_webui: Default is True for including web ui when starting ray.
+        :param num_ray_nodes: The number of ray processes to start across the cluster.
         For Spark local mode, you don't need to specify this value.
         For Spark cluster mode, it is default to be the number of Spark executors. If
         spark.executor.instances can't be detected in your SparkContext, you need to explicitly
         specify this. It is recommended that num_ray_nodes is not larger than the number of
         Spark executors to make sure there are enough resources in your cluster.
-        :param ray_node_cpu_cores: The number of available cores for each raylet.
+        :param ray_node_cpu_cores: The number of available cores for each ray process.
         For Spark local mode, it is default to be the number of Spark local cores.
         For Spark cluster mode, it is default to be the number of cores for each Spark executor. If
         spark.executor.cores or spark.cores.max can't be detected in your SparkContext, you need to
@@ -397,7 +397,7 @@ class RayOnSparkContext(object):
                 self.system_config = self.extra_params.pop("_system_config")
         self.include_webui = include_webui
         self._address_info = None
-        self.redis_port = random.randint(10000, 65535) if not redis_port else int(redis_port)
+        self.redis_port = random.randint(20000, 65535) if not redis_port else int(redis_port)
         self.ray_node_cpu_cores = ray_node_cpu_cores
         self.num_ray_nodes = num_ray_nodes
         RayOnSparkContext._active_ray_context = self

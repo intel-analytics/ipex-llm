@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dllib.examples.nnframes.xgboost
+package com.intel.analytics.bigdl.dllib.example.nnframes.xgboost
 
 import com.intel.analytics.bigdl.dllib.NNContext
 import com.intel.analytics.bigdl.dllib.nnframes.XGBClassifierModel

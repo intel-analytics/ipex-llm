@@ -236,7 +236,7 @@ def read_file_spark(file_path, file_type, **kwargs):
         pd_rdd = spark_df_to_rdd_pd(df, squeeze, index_col, dtype, index_map)
 
     try:
-        data_shards = SparkXShards(pd_rdd)
+        data_shards = SparkXShards(pd_rdd, class_name="pandas.core.frame.DataFrame")
     except Exception as e:
         alternative_backend = "pandas" if backend == "spark" else "spark"
         print("An error occurred when reading files with '%s' backend, you may switch to '%s' "

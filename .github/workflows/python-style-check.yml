@@ -89,3 +89,16 @@ jobs:
 
       - name: Serving style checking
         run: bash python/serving/dev/lint-python
+
+  create-workflow-badge:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: create workflow badge
+      if: ${{ always() }}
+      uses: ./.github/actions/create-job-status-badge
+      with:
+        secret: ${{ secrets.GIST_SECRET }}
+        gist-id: 515298657716ead4615f539244730bf0
+        file-name: python-style-check.json
+        type: workflow
