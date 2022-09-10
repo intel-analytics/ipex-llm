@@ -13,7 +13,6 @@ You can use _Chronos_ to:
         :class-footer: sd-bg-light
 
         **Forecasting**
-        <img src="../Image/forecasting.svg" alt="getting_started" height="100px">
         ^^^
 
         .. image:: ../Image/forecasting.svg
@@ -144,7 +143,7 @@ conda create -n my_env python=3.7 setuptools=58.0.4
 conda activate my_env
 # click the installation panel above to find which installation option to use
 pip install --pre --upgrade bigdl-chronos[pytorch]  # or other options you may want to use
-source bigdl-nano-init
+source bigdl-nano-init  # accelerate the conda env
 ```
 
 #### **2.2 Tensorflow backend**
