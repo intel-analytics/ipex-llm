@@ -54,11 +54,11 @@ subtrees:
     entries:
       - file: doc/Chronos/Overview/chronos
       - file: doc/Chronos/Overview/quick-tour
-      - file: doc/Chronos/Overview/deep_dive
       - file: doc/Chronos/Howto/index
       - file: doc/Chronos/QuickStart/index
+      - file: doc/Chronos/Overview/deep_dive
+      - file: doc/PythonAPI/Chronos/index
       - file: doc/Chronos/Overview/chronos_known_issue
-
 
   - caption: PPML
     entries:

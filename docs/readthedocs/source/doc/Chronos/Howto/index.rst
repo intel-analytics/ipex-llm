@@ -16,7 +16,7 @@ Install
 
 Forecasting
 -------------------------
-* `Create a forecaster <how-to-create-forecaster.html>`__
+* `Create a forecaster <how_to_create_forecaster.html>`__
 * `Train forecaster on single node <how_to_train_forecaster_on_one_node.html>`__
 * `Tune forecaster on single node <how_to_tune_forecaster_model.html>`__
 * `Speed up inference of forecaster through ONNXRuntime <how_to_speedup_inference_of_forecaster_through_ONNXRuntime.html>`__
