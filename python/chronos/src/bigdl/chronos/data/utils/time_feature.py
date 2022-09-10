@@ -127,18 +127,18 @@ def time_features_from_frequency_str(offset) -> List[TimeFeature]:
             HourOfDay,
             DayOfWeek,
             DayOfMonth,
-            DayOfYear]),
+            DayOfYear]),  # 6 for second - minutes
         (Timedelta(minutes=60), [
             MinuteOfHour,
             HourOfDay,
             DayOfWeek,
             DayOfMonth,
             DayOfYear,
-        ]),
-        (Timedelta(hours=24), [HourOfDay, DayOfWeek, DayOfMonth, DayOfYear]),
-        (Timedelta(days=7), [DayOfWeek, DayOfMonth, DayOfYear]),
-        (Timedelta(days=30), [DayOfMonth, WeekOfYear]),
-        (Timedelta(days=365), [MonthOfYear]),
+        ]),  # 5 for minutes - hour
+        (Timedelta(hours=24), [HourOfDay, DayOfWeek, DayOfMonth, DayOfYear]),  # 4 for hour - day
+        (Timedelta(days=7), [DayOfWeek, DayOfMonth, DayOfYear]),  # 3 for day - week
+        (Timedelta(days=30), [DayOfMonth, WeekOfYear]),  # 2 for week - month
+        (Timedelta(days=365), [MonthOfYear]),  # 1 for month - year
     )
 
     for offset_type, feature_classes in features_by_offsets:

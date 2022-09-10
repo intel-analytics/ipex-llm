@@ -24,6 +24,7 @@ from bigdl.chronos.model.autoformer.Autoformer import AutoFormer, _transform_con
 from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
 from bigdl.chronos.forecaster.utils import check_transformer_data
 from bigdl.chronos.pytorch import TSTrainer as Trainer
+from bigdl.chronos.data import TSDataset
 from bigdl.nano.automl.hpo.space import Space
 from bigdl.chronos.forecaster.utils_hpo import GenericTSTransformerLightningModule, \
     _config_has_search_space
@@ -38,8 +39,8 @@ class AutoformerForecaster(Forecaster):
                  future_seq_len,
                  input_feature_num,
                  output_feature_num,
-                 label_len,
                  freq,
+                 label_len=None,
                  output_attention=False,
                  moving_avg=25,
                  d_model=128,
@@ -68,9 +69,9 @@ class AutoformerForecaster(Forecaster):
         :param future_seq_len: Specify the output time steps (i.e. horizon).
         :param input_feature_num: Specify the feature dimension.
         :param output_feature_num: Specify the output dimension.
-        :param label_len: Start token length of AutoFormer decoder.
         :param freq: Freq for time features encoding. You may choose from "s",
                "t","h","d","w","m" for second, minute, hour, day, week or month.
+        :param label_len: Start token length of AutoFormer decoder.
         :param optimizer: Specify the optimizer used for training. This value
                defaults to "Adam".
         :param loss: str or pytorch loss instance, Specify the loss function
@@ -109,11 +110,11 @@ class AutoformerForecaster(Forecaster):
             "future_seq_len": future_seq_len,
             "input_feature_num": input_feature_num,
             "output_feature_num": output_feature_num,
-            "label_len": label_len
+            "label_len": past_seq_len//2 if label_len is None else label_len
         }
         self.model_config = {
             "seq_len": past_seq_len,
-            "label_len": label_len,
+            "label_len": past_seq_len//2 if label_len is None else label_len,
             "pred_len": future_seq_len,
             "output_attention": output_attention,
             "moving_avg": moving_avg,
@@ -533,6 +534,82 @@ class AutoformerForecaster(Forecaster):
             self.trainer.model = self.trainer.model.model
         self.trainer.save_checkpoint(checkpoint_file)
 
+    @classmethod
+    def from_tsdataset(cls,
+                       tsdataset,
+                       past_seq_len,
+                       future_seq_len,
+                       freq=None,
+                       **kwargs):
+        """
+        Build a Forecaster Model.
+
+        :param tsdataset: A bigdl.chronos.data.tsdataset.TSDataset instance.
+        :param past_seq_len: int or "auto", Specify the history time steps (i.e. lookback).
+               Do not specify the 'past_seq_len' if your tsdataset has called
+               the 'TSDataset.roll' method or 'TSDataset.to_torch_data_loader'.
+               If "auto", the mode of time series' cycle length will be taken as the past_seq_len.
+        :param future_seq_len: int or list, Specify the output time steps (i.e. horizon).
+               Do not specify the 'future_seq_len' if your tsdataset has called
+               the 'TSDataset.roll' method or 'TSDataset.to_torch_data_loader'.
+        :param kwargs: Specify parameters of Forecaster,
+               e.g. loss and optimizer, etc.
+               More info, please refer to Forecaster.__init__ methods.
+
+        :return: A Forecaster Model.
+        """
+        from bigdl.nano.utils.log4Error import invalidInputError
+        invalidInputError(isinstance(tsdataset, TSDataset),
+                          f"We only supports input a TSDataset, but get{type(tsdataset)}.")
+
+        def check_time_steps(tsdataset, past_seq_len, future_seq_len):
+            if tsdataset.lookback is not None and past_seq_len is not None:
+                future_seq_len = future_seq_len if isinstance(future_seq_len, int)\
+                    else max(future_seq_len)
+                return tsdataset.lookback == past_seq_len and tsdataset.horizon == future_seq_len
+            return True
+
+        invalidInputError(not tsdataset._has_generate_agg_feature,
+                          "We will add support for 'gen_rolling_feature' method later.")
+
+        if tsdataset.lookback is not None:  # called roll or to_torch_data_loader
+            past_seq_len = tsdataset.lookback
+            future_seq_len = tsdataset.horizon if isinstance(tsdataset.horizon, int) \
+                else max(tsdataset.horizon)
+            output_feature_num = len(tsdataset.roll_target)
+            input_feature_num = len(tsdataset.roll_feature) + output_feature_num
+        elif past_seq_len is not None and future_seq_len is not None:  # initialize only
+            past_seq_len = past_seq_len if isinstance(past_seq_len, int)\
+                else tsdataset.get_cycle_length()
+            future_seq_len = future_seq_len if isinstance(future_seq_len, int) \
+                else max(future_seq_len)
+            output_feature_num = len(tsdataset.target_col)
+            input_feature_num = len(tsdataset.feature_col) + output_feature_num
+        else:
+            invalidInputError(False,
+                              "Forecaster requires 'past_seq_len' and 'future_seq_len' to specify "
+                              "the history time step and output time step.")
+
+        invalidInputError(check_time_steps(tsdataset, past_seq_len, future_seq_len),
+                          "tsdataset already has history time steps and "
+                          "differs from the given past_seq_len and future_seq_len "
+                          "Expected past_seq_len and future_seq_len to be "
+                          f"{tsdataset.lookback, tsdataset.horizon}, "
+                          f"but found {past_seq_len, future_seq_len}.",
+                          fixMsg="Do not specify past_seq_len and future seq_len "
+                          "or call tsdataset.roll method again and specify time step")
+
+        if tsdataset._freq is not None:
+            infer_freq_str = _timedelta_to_delta_str(tsdataset._freq)
+            freq = infer_freq_str
+
+        return cls(past_seq_len=past_seq_len,
+                   future_seq_len=future_seq_len,
+                   input_feature_num=input_feature_num,
+                   output_feature_num=output_feature_num,
+                   freq=freq,
+                   **kwargs)
+
 
 def _str2metric(metric):
     # map metric str to function
@@ -547,3 +624,18 @@ def _str2metric(metric):
             return metric_func(y_label, y_predict)
         metric.__name__ = metric_name
     return metric
+
+
+def _timedelta_to_delta_str(offset):
+    features_by_offsets = (
+        (Timedelta(seconds=60), 's'),  # 6 for second - minutes
+        (Timedelta(minutes=60), 't'),  # 5 for minutes - hour
+        (Timedelta(hours=24), 'h'),  # 4 for hour - day
+        (Timedelta(days=7), 'd'),  # 3 for day - week
+        (Timedelta(days=30), 'w'),  # 2 for week - month
+        (Timedelta(days=365), 'm'),  # 1 for month - year
+    )
+    for offset_type, offset_str in features_by_offsets:
+        if offset < offset_type:
+            return offset_str
+    return 'a'  # freq larger than 1 year
