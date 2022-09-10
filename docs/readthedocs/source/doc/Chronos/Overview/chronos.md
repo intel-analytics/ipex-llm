@@ -17,7 +17,11 @@ You can use _Chronos_ to:
         ^^^
         .. raw:: html
 
-            <img src="../Image/forecasting.svg" alt="getting_started" height="100px">
+            <img src="https://raw.githubusercontent.com/TheaperDeng/BigDL/chronos-howto-guide-clean/docs/readthedocs/source/doc/Chronos/Image/forecasting.svg" alt="getting_started" height="100px">
+        
+        .. image:: ../Image/forecasting.svg
+            :width: 120
+            :alt: Alternative text
 
         Predict future using history data.
 
