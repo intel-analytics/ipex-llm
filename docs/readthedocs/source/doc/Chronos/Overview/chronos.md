@@ -13,9 +13,11 @@ You can use _Chronos_ to:
         :class-footer: sd-bg-light
 
         **Time Series Forecasting**
-        ^^^
-
         <img src="../Image/forecasting.svg" alt="getting_started" height="100px">
+        ^^^
+        .. raw:: html
+
+            <img src="../Image/forecasting.svg" alt="getting_started" height="100px">
 
         Predict future using history data.
 
