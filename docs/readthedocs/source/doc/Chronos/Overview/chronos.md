@@ -3,13 +3,52 @@
 ### **1. Overview**
 _BigDL-Chronos_ (_Chronos_ for short) is an application framework for building a fast, accurate and scalable time series analysis application.
 
-You can use _Chronos_ to do:
+You can use _Chronos_ to:
 
-- **Data pre/post-processing and feature generation** (using [TSDataset](./data_processing_feature_engineering.html))
-- **Time Series Forecasting** (using [Standalone Forecasters](./forecasting.html#use-standalone-forecaster-pipeline), [Auto Models](./forecasting.html#use-auto-forecasting-model) (with HPO) or [AutoTS](./forecasting.html#use-autots-pipeline) (full AutoML enabled pipelines))
-- **Anomaly Detection** (using [Anomaly Detectors](./anomaly_detection.html#anomaly-detection))
-- **Synthetic Data Generation** (using [Simulators](./simulation.html#generate-synthetic-data))
-- **Speed up or tune your customized time-series model** (using TSTrainer and [AutoTS](./forecasting.html#use-autots-pipeline))
+```eval_rst
+.. grid:: 3
+    :gutter: 1
+
+    .. grid-item-card::
+        :class-footer: sd-bg-light
+
+        **Time Series Forecasting**
+        ^^^
+
+        <img src="../Image/forecasting.svg" alt="getting_started" height="100px">
+
+        Predict future using history data.
+
+    .. grid-item-card::
+        :class-footer: sd-bg-light
+
+        **User Guides**
+        ^^^
+
+        Our user guides provide you with in-depth information, concepts and knowledges about Chronos.
+
+        +++
+
+        `Data process <./data_processing_feature_engineering.html>`_ / 
+        `Forecast <./forecasting.html>`_ / 
+        `Detect <./anomaly_detection.html>`_ / 
+        `Simulate <./simulation.html>`_
+    
+    .. grid-item-card::
+        :class-footer: sd-bg-light
+
+        **User Guides**
+        ^^^
+
+        Our user guides provide you with in-depth information, concepts and knowledges about Chronos.
+
+        +++
+
+        `Data process <./data_processing_feature_engineering.html>`_ / 
+        `Forecast <./forecasting.html>`_ / 
+        `Detect <./anomaly_detection.html>`_ / 
+        `Simulate <./simulation.html>`_
+```
 
 ---
 ### **2. Install**
