@@ -209,14 +209,15 @@ pip install --pre --upgrade bigdl-nano[tensorflow]
     .. grid-item-card::
         :class-footer: sd-bg-light
 
-        **How-to-Guide**
+        **How-to-Guide** / **Example**
         ^^^
 
         If you are meeting with some specific problems during the usage, how-to guides are good place to be checked.
+        Examples provides short, high quality use case that users can emulated in their own works.
 
         +++
 
-        `How-to-Guide <../Howto/index.html>`_
+        `How-to-Guide <../Howto/index.html>`_ / `Example <../QuickStart/index.html>`
 
     .. grid-item-card::
         :class-footer: sd-bg-light
