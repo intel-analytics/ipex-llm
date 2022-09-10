@@ -434,7 +434,7 @@ class LightGBMClassifier (val lgbmParams: Map[String, Any] = Map()) {
   val sc = SparkSession.active.sparkContext
   sc.getConf.set("spark.task.cpus", Engine.coreNumber().toString)
 
-  val estimator = new MLightGBMClassifier()
+  private val estimator = new MLightGBMClassifier()
   estimator.setNumThreads(Engine.coreNumber())
   TreeModelUtils.setParams(estimator, lgbmParams)
 
@@ -616,7 +616,7 @@ class LightGBMRegressor (val lgbmParams: Map[String, Any] = Map()) {
   val sc = SparkSession.active.sparkContext
   sc.getConf.set("spark.task.cpus", Engine.coreNumber().toString)
 
-  val estimator = new MLightGBMRegressor()
+  private val estimator = new MLightGBMRegressor()
   estimator.setNumThreads(Engine.coreNumber())
   TreeModelUtils.setParams(estimator, lgbmParams)
 
