@@ -12,48 +12,45 @@ You can use _Chronos_ to:
     .. grid-item-card::
         :class-footer: sd-bg-light
 
-        **Time Series Forecasting**
+        **Forecasting**
         <img src="../Image/forecasting.svg" alt="getting_started" height="100px">
         ^^^
-        .. raw:: html
 
-            <img src="https://raw.githubusercontent.com/TheaperDeng/BigDL/chronos-howto-guide-clean/docs/readthedocs/source/doc/Chronos/Image/forecasting.svg" alt="getting_started" height="100px">
-        
         .. image:: ../Image/forecasting.svg
-            :width: 120
+            :width: 200
             :alt: Alternative text
+
+        +++
 
         Predict future using history data.
 
     .. grid-item-card::
         :class-footer: sd-bg-light
 
-        **User Guides**
+        **Anomaly Detection**
         ^^^
 
-        Our user guides provide you with in-depth information, concepts and knowledges about Chronos.
+        .. image:: ../Image/anomaly_detection.svg
+            :width: 200
+            :alt: Alternative text
 
         +++
 
-        `Data process <./data_processing_feature_engineering.html>`_ / 
-        `Forecast <./forecasting.html>`_ / 
-        `Detect <./anomaly_detection.html>`_ / 
-        `Simulate <./simulation.html>`_
+        Discover unexpected items in data.
     
     .. grid-item-card::
         :class-footer: sd-bg-light
 
-        **User Guides**
+        **Simulation**
         ^^^
 
-        Our user guides provide you with in-depth information, concepts and knowledges about Chronos.
+        .. image:: ../Image/simulation.svg
+            :width: 200
+            :alt: Alternative text
 
         +++
 
-        `Data process <./data_processing_feature_engineering.html>`_ / 
-        `Forecast <./forecasting.html>`_ / 
-        `Detect <./anomaly_detection.html>`_ / 
-        `Simulate <./simulation.html>`_
+        Generate similar data as history data.
 ```
 
 ---
