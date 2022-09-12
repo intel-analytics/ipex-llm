@@ -25,13 +25,7 @@ import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMClassificationModel => M
 import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMClassifier => MLightGBMClassifier}
 import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMRegressionModel => MLightGBMRegressionModel}
 import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMRegressor => MLightGBMRegressor}
-import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMRankerModel => MLightGBMRankerModel}
-import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMRanker => MLightGBMRanker}
-import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMBase => MLightGBMBase}
-import com.microsoft.azure.synapse.ml.lightgbm.params.{LightGBMParams => MLightGBMParams}
-import org.apache.spark.ml.Model
-import org.apache.spark.ml.param.{ParamMap, Params}
-import org.apache.spark.ml.util.Identifiable
+
 
 class XGBClassifier (val xgboostParams: Map[String, Any] = Map()) {
   val sc = SparkSession.active.sparkContext
@@ -429,13 +423,14 @@ object XGBRegressorModel {
 /**
  * [[lightGBMClassifier wrapper]]
  */
-class LightGBMClassifier {
+class LightGBMClassifier (val lgbmParams: Map[String, Any] = Map()) {
 
   val sc = SparkSession.active.sparkContext
   sc.getConf.set("spark.task.cpus", Engine.coreNumber().toString)
 
-  val estimator = new MLightGBMClassifier()
+  private val estimator = new MLightGBMClassifier()
   estimator.setNumThreads(Engine.coreNumber())
+  TreeModelUtils.setParams(estimator, lgbmParams)
 
   def setLabelCol(labelColName : String) : this.type = {
     estimator.setLabelCol(labelColName)
@@ -610,13 +605,14 @@ object LightGBMClassifierModel {
 /**
  * [[LightGBMRegressor]] lightGBM wrapper of LightGBMRegressor.
  */
-class LightGBMRegressor {
+class LightGBMRegressor (val lgbmParams: Map[String, Any] = Map()) {
 
   val sc = SparkSession.active.sparkContext
   sc.getConf.set("spark.task.cpus", Engine.coreNumber().toString)
 
   private val estimator = new MLightGBMRegressor()
   estimator.setNumThreads(Engine.coreNumber())
+  TreeModelUtils.setParams(estimator, lgbmParams)
 
   def setAlpha(value: Double): this.type = {
     estimator.setAlpha(value)

@@ -22,6 +22,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMClassifier => MLightGBMClassifier}
+import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMRegressor => MLightGBMRegressor}
 import org.apache.spark.SparkConf
 
 
@@ -45,6 +46,7 @@ class LightGBMTrainSpec extends ZooSpecHelper {
     val spark = SparkSession.builder().getOrCreate()
     import spark.implicits._
     Engine.init
+
     val df = Seq(
       (1.0, 2.0, 3.0, 4.0, 1),
       (1.0, 3.0, 8.0, 2.0, 0)
@@ -77,6 +79,29 @@ class LightGBMTrainSpec extends ZooSpecHelper {
       println(res.count())
       println(res1.count())
 
+    }
+  }
+
+  "LightGBMClassifer train with params" should "work" in {
+    val spark = SparkSession.builder().getOrCreate()
+    import spark.implicits._
+    Engine.init
+
+    val df = Seq(
+      (1.0, 2.0, 3.0, 4.0, 1),
+      (1.0, 3.0, 8.0, 2.0, 0)
+    ).toDF("f1", "f2", "f3", "f4", "label")
+    val vectorAssembler = new VectorAssembler()
+      .setInputCols(Array("f1", "f2", "f3", "f4"))
+      .setOutputCol("features")
+    val assembledDf = vectorAssembler.transform(df).select("features", "label").cache()
+    if (spark.version.substring(0, 3).toDouble >= 3.1) {
+      val params = Map("earlyStoppingRound" -> 10,
+        "maxBin" -> 100)
+      val lightGBMclassifier = new LightGBMClassifier(params)
+      val model1 = lightGBMclassifier.fit(assembledDf)
+      val res1 = model1.transform(assembledDf)
+      TestUtils.conditionFailTest(res1.count() == 2)
     }
   }
 
@@ -129,5 +154,122 @@ class LightGBMTrainSpec extends ZooSpecHelper {
       TestUtils.conditionFailTest(y0_0.count() == 4)
     }
   }
+
+  "LightGBMRegressor train with params" should "work" in {
+    val spark = SparkSession.builder().getOrCreate()
+    import spark.implicits._
+    Engine.init
+    val df = Seq(
+      (1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 1.0f, 2.0f, 4.0f, 8.0f, 3.0f, 116.3668f),
+      (1.0f, 3.0f, 8.0f, 6.0f, 5.0f, 9.0f, 5.0f, 6.0f, 7.0f, 4.0f, 116.367f),
+      (2.0f, 1.0f, 5.0f, 7.0f, 6.0f, 7.0f, 4.0f, 1.0f, 2.0f, 3.0f, 116.367f),
+      (2.0f, 1.0f, 4.0f, 3.0f, 6.0f, 1.0f, 3.0f, 2.0f, 1.0f, 3.0f, 116.3668f)
+    ).toDF("f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "label")
+    val vectorAssembler = new VectorAssembler()
+      .setInputCols(Array("f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10"))
+      .setOutputCol("features")
+    val assembledDf = vectorAssembler.transform(df).select("features", "label").cache()
+    if (spark.version.substring(0, 3).toDouble >= 3.1) {
+      val params = Map(
+        "boostingType" -> "dart",
+        "numLeaves" -> 1,
+        "maxDepth" -> 2,
+        "learningRate" -> 0.3,
+        "numIterations" -> 10,
+        "binConstructSampleCnt" -> 5,
+        "objective" -> "huber",
+        "minSplitGain" -> 0.1,
+        "minSumHessianInLeaf" -> 0.01,
+        "minDataInLeaf" -> 1,
+        "baggingFraction" -> 0.2,
+        "baggingFraq" -> 1,
+        "featureFraction" -> 0.2,
+        "lambdaL1" -> 0.1,
+        "lambdaL2" -> 0.1,
+        "numThreads" -> 2,
+        "earlyStoppingRound" -> 10,
+        "maxBin" -> 100)
+      val lightGBMRegressor = new LightGBMRegressor(params)
+      val regressorModel0 = lightGBMRegressor.fit(assembledDf)
+      val y0 = regressorModel0.transform(assembledDf)
+      regressorModel0.saveNativeModel("/tmp/test")
+      val model = LightGBMRegressorModel.loadNativeModel("/tmp/test")
+      val y0_0 = model.transform(assembledDf)
+      TestUtils.conditionFailTest(y0.count() == 4)
+      TestUtils.conditionFailTest(y0_0.count() == 4)
+    }
+  }
+
+  "setParams for LightGBMClassifer " should "work" in {
+    Engine.init
+    val spark = SparkSession.builder().getOrCreate()
+    if (spark.version.substring(0, 3).toDouble >= 3.1) {
+      val params = Map("earlyStoppingRound" -> 10,
+        "maxBin" -> 100)
+      val mclassifier = new MLightGBMClassifier()
+      TreeModelUtils.setParams(mclassifier, params)
+      TestUtils.conditionFailTest(mclassifier.getEarlyStoppingRound == 10)
+      TestUtils.conditionFailTest(mclassifier.getMaxBin == 100)
+    }
+  }
+
+  "setParams for LightGBMRegressor" should "work" in {
+    Engine.init
+    val spark = SparkSession.builder().getOrCreate()
+    if (spark.version.substring(0, 3).toDouble >= 3.1) {
+      val params = Map(
+        "boostingType" -> "dart",
+        "numLeaves" -> 1,
+        "maxDepth" -> 2,
+        "learningRate" -> 0.3,
+        "numIterations" -> 10,
+        "binConstructSampleCnt" -> 5,
+        "objective" -> "huber",
+        "minSplitGain" -> 0.1,
+        "minSumHessianInLeaf" -> 0.01,
+        "minDataInLeaf" -> 1,
+        "baggingFraction" -> 0.2,
+        "baggingFreq" -> 1,
+        "featureFraction" -> 0.2,
+        "lambdaL1" -> 0.1,
+        "lambdaL2" -> 0.1,
+        "numThreads" -> 2,
+        "earlyStoppingRound" -> 10,
+        "maxBin" -> 100)
+      val mclassifier = new MLightGBMRegressor()
+      TreeModelUtils.setParams(mclassifier, params)
+      TestUtils.conditionFailTest(mclassifier.getEarlyStoppingRound == 10)
+      TestUtils.conditionFailTest(mclassifier.getMaxBin == 100)
+    }
+  }
+
+  "convertToCamelCase" should "work" in {
+    val paramsMap = Map(
+      "boosting_type" -> "boostingType",
+      "num_leaves" -> "numLeaves",
+      "max_depth" -> "maxDepth",
+      "learning_rate" -> "learningRate",
+      "num_iterations" -> "numIterations",
+      "bin_construct_sample_cnt" -> "binConstructSampleCnt",
+      "objective" -> "objective",
+      "min_split_gain" -> "minSplitGain",
+      "min_sum_hessian_in_leaf" -> "minSumHessianInLeaf",
+      "min_data_in_leaf" -> "minDataInLeaf",
+      "bagging_fraction" -> "baggingFraction",
+      "bagging_freq" -> "baggingFreq",
+      "feature_fraction" -> "featureFraction",
+      "lambda_l1" -> "lambdaL1",
+      "lambda_l2" -> "lambdaL2",
+      "num_threads" -> "numThreads",
+      "early_stopping_round" -> "earlyStoppingRound",
+      "max_bin" -> "maxBin",
+      "max_bin_by_feature" -> "maxBinByFeature")
+
+    paramsMap.foreach(kv => {
+      println(kv._1, TreeModelUtils.convert2CamelCase(kv._1))
+      TestUtils.conditionFailTest(kv._2 == TreeModelUtils.convert2CamelCase(kv._1))
+    })
+  }
+
 }
 
