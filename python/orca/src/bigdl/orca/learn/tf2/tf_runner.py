@@ -522,6 +522,31 @@ class TFRunner:
                 shutil.rmtree(temp_path)
             else:
                 os.remove(temp_path)
+    
+    def load_weights(self, filepath, by_name, skip_mismatch, options):
+        """Loads all layer weights from a TensorFlow or an HDF5 weight file."""
+        self.model.load_weights(filepath, by_name, skip_mismatch, options)
+
+    def load_remote_weights(self, filepath, by_name, skip_mismatch, options):\
+        """Loads all layer weights from a remote weight file (Tensorflow or HDF5 format)."""
+        file_name = os.path.basename(filepath)
+        temp_dir = tempfile.mkdtemp()
+        if is_file(filepath):
+            # h5 format
+            temp_path = os.path.join(temp_dir, file_name)
+            get_remote_file_to_local(filepath, temp_path)
+        else:
+            # tensorflow format
+            prefix = os.path.basename(filepath)
+            get_remote_files_with_prefix_to_local(filepath, temp_dir)
+            temp_path = os.path.join(temp_dir, prefix)
+        try:
+            self.model.load_weights(temp_path, by_name, skip_mismatch, options)
+        finally:
+            if os.path.isdir(temp_path):
+                shutil.rmtree(temp_path)
+            else:
+                os.remove(temp_path)
 
     def shutdown(self):
         """Attempts to shut down the worker."""
