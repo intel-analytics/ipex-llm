@@ -17,8 +17,10 @@
 package com.intel.analytics.bigdl.friesian.serving.utils;
 
 import org.apache.commons.io.serialization.ValidatingObjectInputStream;
+import org.apache.spark.SparkConf;
 
 import java.io.*;
+import java.util.regex.Pattern;
 
 public class EncodeUtils {
     public static byte[] objToBytes(Object o) {
@@ -45,7 +47,11 @@ public class EncodeUtils {
         ValidatingObjectInputStream in = null;
         try {
             in = new ValidatingObjectInputStream(bis);
-            in.accept(Object.class);
+            Pattern compile = Pattern.compile("java.*");
+            Pattern compile1 = Pattern.compile("org.apache.*");
+            Pattern compile2 = Pattern.compile("scala.*");
+            Pattern compile3 = Pattern.compile("com.intel.analytics.bigdl.*");
+            in.accept(compile.pattern(), compile1.pattern(), compile2.pattern(), compile3.pattern());
             return in.readObject();
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
