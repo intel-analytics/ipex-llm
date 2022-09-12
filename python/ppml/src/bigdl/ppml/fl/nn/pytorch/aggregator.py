@@ -31,7 +31,7 @@ class Aggregator(object):
         self.client_data = {'train':{}, 'eval':{}, 'pred':{}}
         self.server_data = {'train':{}, 'eval':{}, 'pred':{}}
         self.client_num = conf['clientNum']
-	self.client_num = int(self.client_num)
+        self.client_num = int(self.client_num)
         self.condition = Condition()
         self._lock = threading.Lock()
         self.optimizer_cls = None
