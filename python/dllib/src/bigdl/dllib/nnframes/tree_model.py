@@ -154,38 +154,36 @@ class XGBRegressorModel:
         return XGBRegressorModel(jvalue=jvalue)
 
 class LightGBMClassifier():
-    def __init__(self):
+    def __init__(self,  params=None):
         super(LightGBMClassifier, self).__init__()
         bigdl_type = "float"
-        self.value = callZooFunc("float", "getLightGBMClassifier")
-        self.setObjective("binary")
-        self.setMaxDepth(100)
+        self.value = callZooFunc("float", "getLightGBMClassifier", params)
 
     def setFeaturesCol(self, value: str):
-        return callZooFunc("float", "setLGBMClassifierFeaturesCol", self.value, value)
+        return callZooFunc("float", "setLGBMFeaturesCol", self.value, value)
 
     def setLabelCol(self, value: str):
-        callZooFunc("float", "setLGBMClassifierLabelCol", self.value, value)
+        return callZooFunc("float", "setLGBMLabelCol", self.value, value)
 
     def setBoostType(self, value: int):
-        callZooFunc("float", "setLGBMClassifierBoostType", self.value, value)
+        return callZooFunc("float", "setLGBMBoostType", self.value, value)
 
     def fit(self, df):
-        model = callZooFunc("float", "fitLGBMClassifier", self.value, df)
+        model = callZooFunc("float", "fitLGBM", self.value, df)
         model = LightGBMClassifierModel(model)
         return model
 
     def setMaxDepth(self, value: int):
-        return callZooFunc("float", "setLGBMClassifierMaxDepth", self.value, value)
+        return callZooFunc("float", "setLGBMMaxDepth", self.value, value)
 
     def setObjective(self, value: str):
-        return callZooFunc("float", "setLGBMClassifierObjective", self.value, value)
+        return callZooFunc("float", "setLGBMObjective", self.value, value)
 
     def setLearningRate(self, value: str):
-        return callZooFunc("float", "setLGBMClassifierLearningRate", self.value, value)
+        return callZooFunc("float", "setLGBMLearningRate", self.value, value)
 
     def setNumIterations(self, value: int):
-        return callZooFunc("float", "setLGBMClassifierNumIterations", self.value, value)
+        return callZooFunc("float", "setLGBMNumIterations", self.value, value)
 
 class LightGBMClassifierModel:
     """
@@ -199,17 +197,17 @@ class LightGBMClassifierModel:
         self.value = jvalue
 
     def setFeaturesCol(self, features):
-        callZooFunc("float", "setFeaturesLGBMClassifierModel", self.value, features)
+        return callZooFunc("float", "setFeaturesLGBMModel", self.value, features)
 
     def setPredictionCol(self, prediction):
-        callZooFunc("float", "setPredictionLGBMClassifierModel", self.value, prediction)
+        return callZooFunc("float", "setPredictionLGBMModel", self.value, prediction)
 
     def transform(self, dataset):
-        df = callZooFunc("float", "transformLGBMClassifierModel", self.value, dataset)
+        df = callZooFunc("float", "transformLGBMModel", self.value, dataset)
         return df
 
     def saveModel(self, path):
-        callZooFunc("float", "saveLGBMClassifierModel", self.value, path)
+        callZooFunc("float", "saveLGBMModel", self.value, path)
 
     @staticmethod
     def loadModel(path):
@@ -227,30 +225,30 @@ class LightGBMRegressor():
         self.value = callZooFunc("float", "getLightGBMRegressor")
 
     def setFeaturesCol(self, value: str):
-        return callZooFunc("float", "setLGBMRegressorFeaturesCol", self.value, value)
+        return callZooFunc("float", "setLGBMFeaturesCol", self.value, value)
 
     def setLabelCol(self, value: str):
-        callZooFunc("float", "setLGBMRegressorLabelCol", self.value, value)
+        return callZooFunc("float", "setLGBMLabelCol", self.value, value)
 
     def setBoostType(self, value: int):
-        callZooFunc("float", "setLGBMRegressorBoostType", self.value, value)
+        return callZooFunc("float", "setLGBMBoostType", self.value, value)
 
     def fit(self, df):
-        model = callZooFunc("float", "fitLGBMRegressor", self.value, df)
+        model = callZooFunc("float", "fitLGBM", self.value, df)
         model = LightGBMRegressorModel(model)
         return model
 
     def setMaxDepth(self, value: int):
-        return callZooFunc("float", "setLGBMRegressorMaxDepth", self.value, value)
+        return callZooFunc("float", "setLGBMMaxDepth", self.value, value)
 
     def setObjective(self, value: str):
-        return callZooFunc("float", "setLGBMRegressorObjective", self.value, value)
+        return callZooFunc("float", "setLGBMObjective", self.value, value)
 
     def setLearningRate(self, value: str):
-        return callZooFunc("float", "setLGBMRegressorLearningRate", self.value, value)
+        return callZooFunc("float", "setLGBMLearningRate", self.value, value)
 
     def setNumIterations(self, value: int):
-        return callZooFunc("float", "setLGBMRegressorNumIterations", self.value, value)
+        return callZooFunc("float", "setLGBMNumIterations", self.value, value)
 
 class LightGBMRegressorModel:
     """
@@ -264,17 +262,17 @@ class LightGBMRegressorModel:
         self.value = jvalue
 
     def setFeaturesCol(self, features):
-        callZooFunc("float", "setFeaturesLGBMRegressorModel", self.value, features)
+        return callZooFunc("float", "setFeaturesLGBMModel", self.value, features)
 
     def setPredictionCol(self, prediction):
-        callZooFunc("float", "setPredictionLGBMRegressorModel", self.value, prediction)
+        return callZooFunc("float", "setPredictionLGBMModel", self.value, prediction)
 
     def transform(self, dataset):
-        df = callZooFunc("float", "transformLGBMRegressorModel", self.value, dataset)
+        df = callZooFunc("float", "transformLGBMModel", self.value, dataset)
         return df
 
     def saveModel(self, path):
-        callZooFunc("float", "saveLGBMRegressorModel", self.value, path)
+        callZooFunc("float", "saveLGBMModel", self.value, path)
 
     @staticmethod
     def loadModel(path):

@@ -125,6 +125,28 @@ class TestTreeModel():
         print(predicts.filter(predicts["prediction"] == 1.0).count())
         # assert predicts.count() == 14
 
+    def test_LGBMClassifier_param_map(self):
+        path = os.path.join(self.resource_path, "xgbclassifier/")
+        filePath = path + "test.csv"
+        df = self.sqlContext.read.csv(filePath, sep=",", inferSchema=True, header=True)
+        df = df.select(array("age", "gender", "jointime", "star").alias("features"), "label")\
+            .withColumn("features", udf(lambda x: DenseVector(x), VectorUDT())("features"))
+
+        # input_path = "/Users/guoqiong/intelWork/data/tweet/xgb_processed"
+        # df = self.sqlContext.read.parquet(input_path + "/train")
+        parammap = {"boosting_type": "dart",  "num_leaves": 1, "max_depth": 2, "learning_rate": 0.3,
+                    "num_iterations": 10, "bin_construct_sample_cnt": 5, "objective": "huber",
+                    "min_split_gain": 0.1, "min_sum_hessian_in_leaf": 0.01, "min_data_in_lLeaf": 1,
+                    "baggingF_faction": 0.2, "bagging_fraq": 1, "feature_fraction": 0.2,
+                    "lambda_l1": 0.1, "lambda_l2": 0.1, "num_threads": 2,
+                    "early_stopping_round": 10, "max_bin": 100}
+        classifier = LightGBMClassifier(parammap)
+        classifier.setObjective("binary")
+        model = classifier.fit(df)
+        predicts = model.transform(df)
+        print(predicts.filter(predicts["prediction"] == 1.0).count())
+        assert predicts.count() == 14
+
     def test_LGBMClassifierModel_save_load(self):
         path = os.path.join(self.resource_path, "xgbclassifier/")
         filePath = path + "test.csv"
@@ -139,6 +161,32 @@ class TestTreeModel():
         model1 = LightGBMClassifierModel.loadModel("/tmp/lightgbmClassifier1")
         predicts1 = model1.transform(df)
         assert predicts1.count() == 14
+
+    def test_LGBMRegressor_param_map(self):
+        data = self.sc.parallelize([
+            (1.0, 2.0, 3.0, 4.0, 5.0, 1.0, 2.0, 4.0, 8.0, 3.0, 116.3668),
+            (1.0, 3.0, 8.0, 6.0, 5.0, 9.0, 5.0, 6.0, 7.0, 4.0, 116.367),
+            (2.0, 1.0, 5.0, 7.0, 6.0, 7.0, 4.0, 1.0, 2.0, 3.0, 116.367),
+            (2.0, 1.0, 4.0, 3.0, 6.0, 1.0, 3.0, 2.0, 1.0, 3.0, 116.3668)
+        ])
+        columns = ["f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "label"]
+        df = data.toDF(columns)
+        from pyspark.ml.feature import VectorAssembler
+        vecasembler = VectorAssembler(inputCols=columns, outputCol="features")
+        assembledf = vecasembler.transform(df).select("features", "label").cache()
+        assembledf.printSchema()
+        testdf = vecasembler.transform(df).select("features", "label").cache()
+        parammap = {"boosting_type": "dart",  "num_leaves": 1, "max_depth": 2, "learning_rate": 0.3,
+                    "num_iterations": 10, "bin_construct_sample_cnt": 5, "objective": "huber",
+                    "min_split_gain": 0.1, "min_sum_hessian_in_leaf": 0.01, "min_data_in_lLeaf": 1,
+                    "baggingF_faction": 0.2, "bagging_fraq": 1, "feature_fraction": 0.2,
+                    "lambda_l1": 0.1, "lambda_l2": 0.1, "num_threads": 2,
+                    "early_stopping_round": 10, "max_bin": 100}
+        regressor = LightGBMRegressor(parammap)
+        model = regressor.fit(assembledf)
+        predicts = model.transform(assembledf)
+        predicts.show()
+        assert (predicts.count() == 4)
 
     def test_LGBMRegressor_train_transform(self):
         data = self.sc.parallelize([

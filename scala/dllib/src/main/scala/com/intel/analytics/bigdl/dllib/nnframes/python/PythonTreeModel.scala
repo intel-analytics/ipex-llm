@@ -18,10 +18,8 @@ package com.intel.analytics.bigdl.dllib.nnframes.python
 
 import com.intel.analytics.bigdl.dllib.common.PythonZoo
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import java.util.{ArrayList => JArrayList, List => JList, Map => JMap}
-// import com.intel.analytics.bigdl.dllib.feature.pmem._
+import java.util.{ArrayList => JArrayList, Map => JMap}
 import com.intel.analytics.bigdl.dllib.nnframes._
-import org.apache.spark.api.java.JavaSparkContext
 import org.apache.spark.sql.DataFrame
 
 import scala.collection.JavaConverters._
@@ -163,110 +161,239 @@ class PythonTreeModel[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
     model.save(path)
   }
 
-  def getLightGBMClassifier(): LightGBMClassifier = {
-    new LightGBMClassifier()
+  // lightGBM support
+  def getLightGBMClassifier(lgbmParamsin: JMap[String, Any]): LightGBMClassifier = {
+    val lgbmParams = if (lgbmParamsin == null) Map[String, Any]() else lgbmParamsin.asScala.toMap
+    new LightGBMClassifier(lgbmParams)
   }
 
-  def setLGBMClassifierFeaturesCol(estimator: LightGBMClassifier, value: String): Unit = {
+  def getLightGBMRegressor(lgbmParamsin: JMap[String, Any]): LightGBMRegressor = {
+    val lgbmParams = if (lgbmParamsin == null) Map[String, Any]() else lgbmParamsin.asScala.toMap
+    new LightGBMRegressor(lgbmParams)
+  }
+
+  def setLGBMFeaturesCol(estimator: LightGBMClassifier, value: String): Unit = {
     estimator.setFeaturesCol(value)
   }
 
-  def setLGBMClassifierLabelCol(estimator: LightGBMClassifier, value: String): Unit = {
+  def setLGBMFeaturesCol(estimator: LightGBMRegressor, value: String): Unit = {
+    estimator.setFeaturesCol(value)
+  }
+
+  def setLGBMLabelCol(estimator: LightGBMClassifier, value: String): Unit = {
     estimator.setLabelCol(value)
   }
 
-  def setLGBMClassifierBoostType(estimator: LightGBMClassifier, value: String): Unit = {
+  def setLGBMLabelCol(estimator: LightGBMRegressor, value: String): Unit = {
+    estimator.setLabelCol(value)
+  }
+
+  def setLGBMBoostType(estimator: LightGBMClassifier, value: String): Unit = {
     estimator.setBoostingType(value)
   }
 
-  def setLGBMClassifierMaxBin(estimator: LightGBMClassifier, value: Int): Unit = {
+  def setLGBMBoostType(estimator: LightGBMRegressor, value: String): Unit = {
+    estimator.setBoostingType(value)
+  }
+
+  def setLGBMMaxBin(estimator: LightGBMClassifier, value: Int): Unit = {
     estimator.setMaxBin(value)
   }
 
-  def setLGBMClassifierNumLeaves(estimator: LightGBMClassifier, value: Int): Unit = {
+  def setLGBMMaxBin(estimator: LightGBMRegressor, value: Int): Unit = {
+    estimator.setMaxBin(value)
+  }
+
+  def setLGBMNumLeaves(estimator: LightGBMClassifier, value: Int): Unit = {
     estimator.setNumLeaves(value)
   }
 
-  def setLGBMClassifierMinDataInLeaf(estimator: LightGBMClassifier, value: Int): Unit = {
+  def setLGBMNumLeaves(estimator: LightGBMRegressor, value: Int): Unit = {
+    estimator.setNumLeaves(value)
+  }
+
+  def setLGBMMinDataInLeaf(estimator: LightGBMClassifier, value: Int): Unit = {
     estimator.setMinDataInLeaf(value)
   }
 
-  def setLGBMClassifierMinSumHessainInLeaf(estimator: LightGBMClassifier, value: Int): Unit = {
+  def setLGBMMinDataInLeaf(estimator: LightGBMRegressor, value: Int): Unit = {
+    estimator.setMinDataInLeaf(value)
+  }
+
+  def setLGBMMinSumHessainInLeaf(estimator: LightGBMClassifier, value: Int): Unit = {
     estimator.setMinSumHessianInLeaf(value)
   }
 
-  def setLGBMClassifierBaggingFraction(estimator: LightGBMClassifier, value: Int): Unit = {
+  def setLGBMMinSumHessainInLeaf(estimator: LightGBMRegressor, value: Int): Unit = {
+    estimator.setMinSumHessianInLeaf(value)
+  }
+
+  def setLGBMBaggingFraction(estimator: LightGBMClassifier, value: Int): Unit = {
     estimator.setBaggingFraction(value)
   }
 
-  def setLGBMClassifierBaggingFreq(estimator: LightGBMClassifier, value: Int): Unit = {
+  def setLGBMBaggingFraction(estimator: LightGBMRegressor, value: Int): Unit = {
+    estimator.setBaggingFraction(value)
+  }
+
+  def setLGBMBaggingFreq(estimator: LightGBMClassifier, value: Int): Unit = {
     estimator.setBaggingFreq(value)
   }
 
-  def setLGBMClassifierFeatureFraction(estimator: LightGBMClassifier, value: Double): Unit = {
+  def setLGBMBaggingFreq(estimator: LightGBMRegressor, value: Int): Unit = {
+    estimator.setBaggingFreq(value)
+  }
+
+  def setLGBMFeatureFraction(estimator: LightGBMClassifier, value: Double): Unit = {
     estimator.setFeatureFraction(value)
   }
 
-  def setLGBMClassifierLambdaL1(estimator: LightGBMClassifier, value: Double): Unit = {
+  def setLGBMFeatureFraction(estimator: LightGBMRegressor, value: Double): Unit = {
+    estimator.setFeatureFraction(value)
+  }
+
+  def setLGBMLambdaL1(estimator: LightGBMClassifier, value: Double): Unit = {
     estimator.setLambdaL1(value)
   }
 
-  def setLGBMClassifierLambdaL2(estimator: LightGBMClassifier, value: Double): Unit = {
+  def setLGBMLambdaL1(estimator: LightGBMRegressor, value: Double): Unit = {
+    estimator.setLambdaL1(value)
+  }
+
+  def setLGBMLambdaL2(estimator: LightGBMClassifier, value: Double): Unit = {
     estimator.setLambdaL2(value)
   }
 
-  def setLGBMClassifierMaxDepth(estimator: LightGBMClassifier, value: Int): Unit = {
+  def setLGBMLambdaL2(estimator: LightGBMRegressor, value: Double): Unit = {
+    estimator.setLambdaL2(value)
+  }
+
+  def setLGBMMaxDepth(estimator: LightGBMClassifier, value: Int): Unit = {
     estimator.setMaxDepth(value)
   }
 
-  def setLGBMClassifierMinGainToSplit(estimator: LightGBMClassifier, value: Double): Unit = {
+  def setLGBMMaxDepth(estimator: LightGBMRegressor, value: Int): Unit = {
+    estimator.setMaxDepth(value)
+  }
+
+  def setLGBMMinGainToSplit(estimator: LightGBMClassifier, value: Double): Unit = {
     estimator.setMinGainToSplit(value)
   }
 
-  def setLGBMClassifierMaxDeltaStep(estimator: LightGBMClassifier, value: Double): Unit = {
+  def setLGBMMinGainToSplit(estimator: LightGBMRegressor, value: Double): Unit = {
+    estimator.setMinGainToSplit(value)
+  }
+
+  def setLGBMMaxDeltaStep(estimator: LightGBMClassifier, value: Double): Unit = {
     estimator.setMaxDeltaStep(value)
   }
 
-  def setLGBMClassifierSkipDrop(estimator: LightGBMClassifier, value: Double): Unit = {
-    estimator.setSkipDrop(value)
+  def setLGBMMaxDeltaStep(estimator: LightGBMRegressor, value: Double): Unit = {
+    estimator.setMaxDeltaStep(value)
   }
 
-  def setLGBMClassifierNumInterations(estimator: LightGBMClassifier, value: Int): Unit = {
-    estimator.setNumIterations(value)
+  def setLGBMNumThreads(estimator: LightGBMRegressor, value: Int): Unit = {
+    estimator.setNumThreads(value)
   }
-
-  def setLGBMClassifierLearningRate(estimator: LightGBMClassifier, value: Double): Unit = {
-    estimator.setLearningRate(value)
-  }
-
-  def setLGBMClassifierEarlyStopRound(estimator: LightGBMClassifier, value: Int): Unit = {
-    estimator.setEarlyStoppingRound(value)
-  }
-
-  def setLGBMClassifierCategoricalSlotNames(estimator: LightGBMClassifier,
-                                            value: Array[String]): Unit = {
-    estimator.setCategoricalSlotNames(value)
-  }
-
-  def setLGBMClassifierCategoricalSlotIndexes(estimator: LightGBMClassifier,
-                                            value: Array[Int]): Unit = {
-    estimator.setCategoricalSlotIndexes(value)
-  }
-
-  def setLGBMClassifierObjective(estimator: LightGBMClassifier, value: String): Unit = {
-    estimator.setObjective(value)
-  }
-
-  def setLGBMClassifierIsUnbalance(estimator: LightGBMClassifier, value: Boolean): Unit = {
-    estimator.setIsUnbalance(value)
-  }
-
-  def setLGBMClassifierNumThreads(estimator: LightGBMClassifier, value: Int): Unit = {
+  def setLGBMNumThreads(estimator: LightGBMClassifier, value: Int): Unit = {
     estimator.setNumThreads(value)
   }
 
-  def fitLGBMClassifier(estimator: LightGBMClassifier, df : DataFrame): LightGBMClassifierModel = {
+  def setLGBMSkipDrop(estimator: LightGBMRegressor, value: Double): Unit = {
+    estimator.setSkipDrop(value)
+  }
+
+  def setLGBMSkipDrop(estimator: LightGBMClassifier, value: Double): Unit = {
+    estimator.setSkipDrop(value)
+  }
+
+  def setLGBMNumIterations(estimator: LightGBMRegressor, value: Int): Unit = {
+    estimator.setNumIterations(value)
+  }
+
+  def setLGBMNumIterations(estimator: LightGBMClassifier, value: Int): Unit = {
+    estimator.setNumIterations(value)
+  }
+
+  def setLGBMLearningRate(estimator: LightGBMRegressor, value: Double): Unit = {
+    estimator.setLearningRate(value)
+  }
+
+  def setLGBMLearningRate(estimator: LightGBMClassifier, value: Double): Unit = {
+    estimator.setLearningRate(value)
+  }
+
+  def setLGBMEarlyStopRound(estimator: LightGBMRegressor, value: Int): Unit = {
+    estimator.setEarlyStoppingRound(value)
+  }
+
+  def setLGBMEarlyStopRound(estimator: LightGBMClassifier, value: Int): Unit = {
+    estimator.setEarlyStoppingRound(value)
+  }
+
+  def setLGBMCategoricalSlotNames(estimator: LightGBMRegressor,
+                                  value: JArrayList[String]): Unit = {
+    estimator.setCategoricalSlotNames(value.asScala.toArray)
+  }
+
+  def setLGBMCategoricalSlotNames(estimator: LightGBMClassifier,
+  value: JArrayList[String]): Unit = {
+    estimator.setCategoricalSlotNames(value.asScala.toArray)
+  }
+
+
+  def setLGBMCategoricalSlotIndexes(estimator: LightGBMRegressor,
+                                    value: JArrayList[Int]): Unit = {
+    estimator.setCategoricalSlotIndexes(value.asScala.toArray)
+  }
+
+  def setLGBMCategoricalSlotIndexes(estimator: LightGBMClassifier,
+                                    value: JArrayList[Int]): Unit = {
+    estimator.setCategoricalSlotIndexes(value.asScala.toArray)
+  }
+
+  def setLGBMObjective(estimator: LightGBMRegressor, value: String): Unit = {
+    estimator.setObjective(value)
+  }
+
+  def setLGBMObjective(estimator: LightGBMClassifier, value: String): Unit = {
+    estimator.setObjective(value)
+  }
+
+  def fitLGBM(estimator: LightGBMClassifier, df : DataFrame): LightGBMClassifierModel = {
     estimator.fit(df)
+  }
+
+  def fitLGBM(estimator: LightGBMRegressor, df : DataFrame): LightGBMRegressorModel = {
+    estimator.fit(df)
+  }
+
+  def setFeaturesLGBMModel(model: LightGBMClassifierModel, features: String): Unit = {
+    model.setFeaturesCol(features)
+  }
+
+  def setFeaturesLGBMModel(model: LightGBMRegressorModel, features: String): Unit = {
+    model.setFeaturesCol(features)
+  }
+
+  def setPredictionLGBMModel(model: LightGBMClassifierModel,
+  prediction: String): Unit = {
+    model.setPredictionCol(prediction)
+  }
+
+  def setPredictionLGBMModel(model: LightGBMRegressorModel,
+                             prediction: String): Unit = {
+    model.setPredictionCol(prediction)
+  }
+
+  def transformLGBMModel(model: LightGBMClassifierModel,
+  dataset: DataFrame): DataFrame = {
+    model.transform(dataset)
+  }
+
+  def transformLGBMModel(model: LightGBMRegressorModel,
+                         dataset: DataFrame): DataFrame = {
+    model.transform(dataset)
   }
 
   def loadLGBMClassifierModel(path: String): LightGBMClassifierModel = {
@@ -277,142 +404,19 @@ class PythonTreeModel[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
     model.saveNativeModel(path)
   }
 
-  def setFeaturesLGBMClassifierModel(model: LightGBMClassifierModel, features: String): Unit = {
-    model.setFeaturesCol(features)
-  }
-
-  def setPredictionLGBMClassifierModel(model: LightGBMClassifierModel,
-                                      prediction: String): Unit = {
-    model.setPredictionCol(prediction)
-  }
-
-  def transformLGBMClassifierModel(model: LightGBMClassifierModel,
-                                  dataset: DataFrame): DataFrame = {
-    model.transform(dataset)
-  }
-
-  def getLightGBMRegressor(): LightGBMRegressor = {
-    new LightGBMRegressor()
-  }
-
-  def setLGBMRegressorFeaturesCol(estimator: LightGBMRegressor, value: String): Unit = {
-    estimator.setFeaturesCol(value)
-  }
-
-  def setLGBMRegressorLabelCol(estimator: LightGBMRegressor, value: String): Unit = {
-    estimator.setLabelCol(value)
-  }
-
-  def setLGBMRegressorBoostType(estimator: LightGBMRegressor, value: String): Unit = {
-    estimator.setBoostingType(value)
-  }
-
-  def setLGBMRegressorMaxBin(estimator: LightGBMRegressor, value: Int): Unit = {
-    estimator.setMaxBin(value)
-  }
-
-  def setLGBMRegressorNumLeaves(estimator: LightGBMRegressor, value: Int): Unit = {
-    estimator.setNumLeaves(value)
-  }
-
-  def setLGBMRegressorMinDataInLeaf(estimator: LightGBMRegressor, value: Int): Unit = {
-    estimator.setMinDataInLeaf(value)
-  }
-
-  def setLGBMRegressorMinSumHessainInLeaf(estimator: LightGBMRegressor, value: Int): Unit = {
-    estimator.setMinSumHessianInLeaf(value)
-  }
-
-  def setLGBMRegressorBaggingFraction(estimator: LightGBMRegressor, value: Int): Unit = {
-    estimator.setBaggingFraction(value)
-  }
-
-  def setLGBMRegressorBaggingFreq(estimator: LightGBMRegressor, value: Int): Unit = {
-    estimator.setBaggingFreq(value)
-  }
-
-  def setLGBMClassifierFeatureFraction(estimator: LightGBMRegressor, value: Double): Unit = {
-    estimator.setFeatureFraction(value)
-  }
-
-  def setLGBMClassifierLambdaL1(estimator: LightGBMRegressor, value: Double): Unit = {
-    estimator.setLambdaL1(value)
-  }
-
-  def setLGBMRegressorLambdaL2(estimator: LightGBMRegressor, value: Double): Unit = {
-    estimator.setLambdaL2(value)
-  }
-
-  def setLGBMClassifierMaxDepth(estimator: LightGBMRegressor, value: Int): Unit = {
-    estimator.setMaxDepth(value)
-  }
-
-  def setLGBMRegressorMinGainToSplit(estimator: LightGBMRegressor, value: Double): Unit = {
-    estimator.setMinGainToSplit(value)
-  }
-
-  def setLGBMRegressorMaxDeltaStep(estimator: LightGBMRegressor, value: Double): Unit = {
-    estimator.setMaxDeltaStep(value)
-  }
-
-  def setLGBMRegressorSkipDrop(estimator: LightGBMRegressor, value: Double): Unit = {
-    estimator.setSkipDrop(value)
-  }
-
-  def setLGBMRegressorNumInterations(estimator: LightGBMRegressor, value: Int): Unit = {
-    estimator.setNumIterations(value)
-  }
-
-  def setLGBMRegressorLearningRate(estimator: LightGBMRegressor, value: Double): Unit = {
-    estimator.setLearningRate(value)
-  }
-
-  def setLGBMRegressorEarlyStopRound(estimator: LightGBMRegressor, value: Int): Unit = {
-    estimator.setEarlyStoppingRound(value)
-  }
-
-  def setLGBMRegressorCategoricalSlotNames(estimator: LightGBMRegressor,
-                                            value: Array[String]): Unit = {
-    estimator.setCategoricalSlotNames(value)
-  }
-
-  def setLGBMRegressorCategoricalSlotIndexes(estimator: LightGBMRegressor,
-                                              value: Array[Int]): Unit = {
-    estimator.setCategoricalSlotIndexes(value)
-  }
-
-  def setLGBMRegressorObjective(estimator: LightGBMRegressor, value: String): Unit = {
-    estimator.setObjective(value)
-  }
-
-
-  def setLGBMRegressorNumThreads(estimator: LightGBMRegressor, value: Int): Unit = {
-    estimator.setNumThreads(value)
-  }
-
-  def fitLGBMRegressor(estimator: LightGBMRegressor, df : DataFrame): LightGBMRegressorModel = {
-    estimator.fit(df)
-  }
-
   def loadLGBMRegressorModel(path: String): LightGBMRegressorModel = {
     LightGBMRegressorModel.loadNativeModel(path)
   }
 
-  def saveLGBMRegressorModel(model: LightGBMRegressorModel, path: String): Unit = {
+  def saveLGBMModel(model: LightGBMRegressorModel, path: String): Unit = {
     model.saveNativeModel(path)
   }
 
-  def setFeaturesLGBMRegressorModel(model: LightGBMRegressorModel, features: String): Unit = {
-    model.setFeaturesCol(features)
+  def setLGBMClassifierIsUnbalance(estimator: LightGBMClassifier, value: Boolean): Unit = {
+    estimator.setIsUnbalance(value)
   }
 
-  def setPredictionLGBMRegressorModel(model: LightGBMRegressorModel,
-                                       prediction: String): Unit = {
-    model.setPredictionCol(prediction)
-  }
-
-  def transformLGBMRegressorModel(model: LightGBMRegressorModel,
-                                  dataset: DataFrame): DataFrame = {
-    model.transform(dataset)
+  def setLGBMRegressorAlpha(estimator: LightGBMRegressor, value: Double): Unit = {
+    estimator.setAlpha(value)
   }
 }
