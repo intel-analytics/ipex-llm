@@ -32,7 +32,7 @@ runs:
         pip install cmake
 
         HOROVOD_WITH_PYTORCH=1; HOROVOD_WITH_GLOO=1; pip install --no-cache-dir horovod==0.19.2
-        pip uninstall -r .github/actions/python-requirements/requirements-horovod-pytorch.txt -y
+        pip uninstall -r .github/actions/python-requirements/requirements-orca-horovod-pytorch.txt -y
         pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r .github/actions/python-requirements/requirements-horovod-pytorch.txt 
         pip install -i https://pypi.org/simple --pre --upgrade bigdl-orca-spark3
         pip uninstall -y opencv-python-headless
