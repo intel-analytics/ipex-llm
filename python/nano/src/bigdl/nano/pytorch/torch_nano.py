@@ -192,8 +192,8 @@ class TorchNano(LightningLite):
         """
         # convert single optimizer to a optimizer list
         optimizers = [optimizer] if isinstance(optimizer, Optimizer) else optimizer
-        model, optimizers = self._setup(model, optimizers, move_to_device=move_to_device)
 
+        model, optimizers = self._setup(model, optimizers, move_to_device=move_to_device)
         dataloaders = self.setup_dataloaders(*dataloaders,  # type: ignore
                                              move_to_device=move_to_device)
         # convert optimizer list to single optimizer
