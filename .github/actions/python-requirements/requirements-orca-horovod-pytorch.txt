@@ -1,15 +1,15 @@
-pip install ray[default]==1.9.1
-pip install psutil==5.7.0
-pip install aiohttp==3.8.1
-pip install async-timeout==4.0.1
-pip install setproctitle==1.1.0
-pip install pyarrow==0.17.0
-pip install pandas==1.0.3
-pip install scikit-learn==0.22.0
-pip install convertdate==2.3.2
-pip install pystan==2.19.1.1
-pip install prophet==1.0.1
-pip install tsfresh==0.18.0
-pip install aioredis==1.1.0
-pip install pytest==5.4.1
-pip install protobuf==3.12.0
+ray[default]==1.9.1
+psutil==5.7.0
+aiohttp==3.8.1
+async-timeout==4.0.1
+setproctitle==1.1.0
+pyarrow==0.17.0
+pandas==1.0.3
+scikit-learn==0.22.0
+convertdate==2.3.2
+pystan==2.19.1.1
+prophet==1.0.1
+tsfresh==0.18.0
+aioredis==1.1.0
+pytest==5.4.1
+ protobuf==3.12.0
