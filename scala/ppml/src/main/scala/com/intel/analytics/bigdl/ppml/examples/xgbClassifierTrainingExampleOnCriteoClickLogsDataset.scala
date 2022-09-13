@@ -59,9 +59,9 @@ case class Params(
                    kmsServerIP: String = "0.0.0.0",
                    kmsServerPort: String = "5984",
                    ehsmAPPID: String = "ehsmAPPID",
-                   ehsmAPPKEY: String = "ehsmAPPKEY",
+                   ehsmAPIKEY: String = "ehsmAPIKEY",
                    simpleAPPID: String = "simpleAPPID",
-                   simpleAPPKEY: String = "simpleAPPKEY",
+                   simpleAPIKEY: String = "simpleAPIKEY",
                    modelSavePath: String = "/host/data/model",
                    numThreads: Int = 2,
                    numRound: Int = 100,
@@ -76,10 +76,10 @@ case class Params(
         kmsArgs("spark.bigdl.kms.ehs.ip") = kmsServerIP
         kmsArgs("spark.bigdl.kms.ehs.port") = kmsServerPort
         kmsArgs("spark.bigdl.kms.ehs.id") = ehsmAPPID
-        kmsArgs("spark.bigdl.kms.ehs.key") = ehsmAPPKEY
+        kmsArgs("spark.bigdl.kms.ehs.key") = ehsmAPIKEY
       case KMS_CONVENTION.MODE_SIMPLE_KMS =>
         kmsArgs("spark.bigdl.kms.simple.id") = simpleAPPID
-        kmsArgs("spark.bigdl.kms.simple.key") = simpleAPPKEY
+        kmsArgs("spark.bigdl.kms.simple.key") = simpleAPIKEY
       case _ =>
         throw new EncryptRuntimeException("Wrong kms type")
     }
@@ -248,17 +248,17 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
       .action((v, p) => p.copy(ehsmAPPID = v))
       .text("ehsmAPPID")
 
-    opt[String]('k', "ehsmAPPKEY")
-      .action((v, p) => p.copy(ehsmAPPKEY = v))
-      .text("ehsmAPPKEY")
+    opt[String]('k', "ehsmAPIKEY")
+      .action((v, p) => p.copy(ehsmAPIKEY = v))
+      .text("ehsmAPIKEY")
 
     opt[String]('s', "simpleAPPID")
       .action((v, p) => p.copy(simpleAPPID = v))
       .text("simpleAPPID")
 
-    opt[String]('k', "simpleAPPKEY")
-      .action((v, p) => p.copy(simpleAPPKEY = v))
-      .text("simpleAPPKEY")
+    opt[String]('k', "simpleAPIKEY")
+      .action((v, p) => p.copy(simpleAPIKEY = v))
+      .text("simpleAPIKEY")
 
     opt[Int]('t', "numThreads")
       .text("threads num")
