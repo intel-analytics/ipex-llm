@@ -21,6 +21,8 @@ import org.apache.logging.log4j.LogManager
 import scopt.OptionParser
 
 import java.util.Base64
+import java.io._
+import java.nio.charset.StandardCharsets
 
 /**
  * Simple Attestation Command Line tool for attestation service
@@ -76,10 +78,16 @@ object AttestationCLI {
 
         val challengeString = params.challenge
         if (challengeString.length() > 0) {
-            val asQuote = as.getQuoteFromServer(challengeString)
-            // System.out.print(asQuote)
+            val asQuote = params.asType match {
+              case ATTESTATION_CONVENTION.MODE_EHSM_KMS =>
+                Base64.getDecoder().decode(as.getQuoteFromServer(challengeString))
+              case ATTESTATION_CONVENTION.MODE_DUMMY =>
+                as.getQuoteFromServer(challengeString).getBytes()
+              case _ => throw new AttestationRuntimeException("Wrong Attestation service type")
+            }
+            
             val quoteVerifier = new SGXDCAPQuoteVerifierImpl()
-            val verifyQuoteResult = quoteVerifier.verifyQuote(asQuote.getBytes())
+            val verifyQuoteResult = quoteVerifier.verifyQuote(asQuote)
             if (verifyQuoteResult == 0) {
               System.out.println("Quote Verification Success!")
             } else {
