@@ -49,7 +49,7 @@ class OpenVINOModel:
         else:
             self._ie_network = model
         if self.thread_num is not None:
-            config = {"CPU_THREADS_NUM": "8"}
+            config = {"CPU_THREADS_NUM": str(self.thread_num)}
         else:
             config = {}
         self._compiled_model = self._ie.compile_model(model=self.ie_network,
