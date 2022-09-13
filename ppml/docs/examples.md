@@ -175,7 +175,7 @@ bash bigdl-ppml-submit.sh \
         --kmsServerIP kms_server_ip \
         --kmsServerPort kms_server_port \
         --ehsmAPPID appid \
-        --ehsmAPPKEY apikey
+        --ehsmAPIKEY apikey
 ```
 
 spark native mode, sgx enabled
@@ -214,7 +214,7 @@ bash bigdl-ppml-submit.sh \
         --kmsServerIP kms_server_ip \
         --kmsServerPort kms_server_port \
         --ehsmAPPID appid \
-        --ehsmAPPKEY apikey
+        --ehsmAPIKEY apikey
 ```
 
 k8s client mode, sgx enabled
@@ -256,7 +256,7 @@ bash bigdl-ppml-submit.sh \
         --kmsServerIP kms_server_ip \
         --kmsServerPort kms_server_port \
         --ehsmAPPID appid \
-        --ehsmAPPKEY apikey
+        --ehsmAPIKEY apikey
 ```
   
 k8s cluster mode, sgx enabled
@@ -298,7 +298,7 @@ bash bigdl-ppml-submit.sh \
         --kmsServerIP kms_server_ip \
         --kmsServerPort kms_server_port \
         --ehsmAPPID appid \
-        --ehsmAPPKEY apikey
+        --ehsmAPIKEY apikey
 ```
 </details>
 
