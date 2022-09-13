@@ -4,7 +4,7 @@ Support Grapmine, Occlum and SGX SDK.
 
 ## Environment
 You should have an available attestation service to attest with. You can use `EHSMAttestationService` and configure eHSM-KMS according to [this link](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/pccs-ehsm/kubernetes), or you can just use `DummyAttestationService` for debug. 
-To enable bi-attestation, you also need SGXSDK to do quote verification. [Here](https://github.com/intel-analytics/BigDL-core/tree/master/ppml#requirements) is the guide to install SGXSDK and SGX DCAP verification libs.
+To enable bi-attestation, you also need SGX SDK to fulfill quote verification. [Here](https://github.com/intel-analytics/BigDL-core/tree/master/ppml#requirements) is the guide to install SGX SDK with verification libs.
 
 ## Usage
 You can attest your environment with AttestationCLI by command like:
@@ -19,6 +19,6 @@ java -cp [dependent-jars] com.intel.analytics.bigdl.ppml.attestation.Attestation
 
 `-t` **asType** Type of attestation service. Currently support `DummyAttestationService` and `EHSMAttestationService`, default is `EHSMAttestationService`.
 
-`-c` **challenge** Challenge to get quote of attestation service which will be verified by local SGXSDK. Used only for bi-attestation. Should be a BASE64 string, default is "" and will skip bi-attestation.
+`-c` **challenge** Challenge to get quote of attestation service which will be verified by local SGX SDK. Used only for bi-attestation. Should be a BASE64 string, default is "" and will skip bi-attestation.
 
 `-p` **userReport** User report to generate quote and attested by attestation service. Default is `test`.
