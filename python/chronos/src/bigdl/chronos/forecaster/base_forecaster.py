@@ -802,7 +802,7 @@ class BasePytorchForecaster(Forecaster):
                | which is memory-friendly while a little bit slower.
                | Users may call `roll` on the TSDataset before calling `fit`
                | Then the training speed will be faster but will consume more memory.
-    
+
         :param validation_data: The validation_data support following formats:
 
                | 1. a numpy ndarray tuple (x, y):
@@ -828,7 +828,7 @@ class BasePytorchForecaster(Forecaster):
 
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time).
-        :param repetition_times : Defines repeate how many times to calculate model 
+        :param repetition_times : Defines repeate how many times to calculate model
                                   uncertainty based on MC Dropout.
 
         :return: A numpy array with shape (num_samples, horizon, target_dim)
