@@ -15,21 +15,21 @@ jobs:
   fossa-scan:
     runs-on: ubuntu-latest
     steps:
-      - name: "Checkout Code"
-        uses: actions/checkout@v3
+    - name: "Checkout Code"
+      uses: actions/checkout@v3
 
-      - name: "Run FOSSA Scan"
-        uses: fossas/fossa-action@main # Use a specific version if locking is preferred
-        with:
-          api-key: ${{ secrets.FOSSAAPIKEY }}
-          
-      - name: "Run FOSSA Test"
-        uses: fossas/fossa-action@main # Use a specific version if locking is preferred
-        with:
-          api-key: ${{ secrets.FOSSAAPIKEY }}
-          run-tests: true
-          
-      - name: "Filter the Dependency Tree"
+    - name: "Run FOSSA Scan"
+      uses: fossas/fossa-action@main # Use a specific version if locking is preferred
+      with:
+        api-key: ${{ secrets.FOSSAAPIKEY }}
+        
+    - name: "Run FOSSA Test"
+      uses: fossas/fossa-action@main # Use a specific version if locking is preferred
+      with:
+        api-key: ${{ secrets.FOSSAAPIKEY }}
+        run-tests: true
+        
+    - name: "Filter the Dependency Tree"
       if: ${{ failure() }}
       run: |
         sed -i 's/<artifactId>${spark-version.project}<\/artifactId>/<artifactId>${spark-version.project}-${SPARK_PLATFORM}<\/artifactId>/' scala/dllib/pom.xml
@@ -47,16 +47,16 @@ jobs:
         cd scala
         mvn -P spark_3.x dependency:tree -Dspark.version=3.1.2 -DSPARK_PLATFORM=SPARK_3.1
 
-      - name: Create Job Badge
-        if: ${{ always() }}
-        uses: ./.github/actions/create-job-status-badge
-        with:
-          secret: ${{ secrets.GIST_SECRET }}
-          gist-id: f91eb10af4d9dbe216ba0f0da71cace9
-          is-self-hosted-runner: false
-          file-name: fossa-scan.json
-          type: job
-          job-name: fossa-scan
+    - name: Create Job Badge
+      if: ${{ always() }}
+      uses: ./.github/actions/create-job-status-badge
+      with:
+        secret: ${{ secrets.GIST_SECRET }}
+        gist-id: f91eb10af4d9dbe216ba0f0da71cace9
+        is-self-hosted-runner: false
+        file-name: fossa-scan.json
+        type: job
+        job-name: fossa-scan
          
 
   create-workflow-badge:
