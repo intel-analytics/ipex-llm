@@ -120,7 +120,7 @@ jobs:
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
 
-Orca-Python-Horovod-Horovod-Py37-Spark3:
+  Orca-Python-Horovod-Horovod-Py37-Spark3:
     #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Horovod-Horovod-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
@@ -138,7 +138,7 @@ Orca-Python-Horovod-Horovod-Py37-Spark3:
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
 
-Orca-Python-Jep-Exampletests-Py37:
+  Orca-Python-Jep-Exampletests-Py37:
     #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Jep-Exampletests-Py37' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
@@ -156,7 +156,7 @@ Orca-Python-Jep-Exampletests-Py37:
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
 
-Orca-Python-Exampletests-Py37:
+  Orca-Python-Exampletests-Py37:
     #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Exampletests-Py37' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
@@ -174,7 +174,7 @@ Orca-Python-Exampletests-Py37:
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
 
-Orca-Python-Exampletests-Ray-Py37:
+  Orca-Python-Exampletests-Ray-Py37:
     #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Exampletests-Ray-Py37' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
@@ -192,7 +192,7 @@ Orca-Python-Exampletests-Ray-Py37:
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
 
-Orca-Python-Py37-Spark3:
+  Orca-Python-Py37-Spark3:
     #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
@@ -210,7 +210,7 @@ Orca-Python-Py37-Spark3:
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
 
-Orca-Python-Ray-Py37-Spark3:
+  Orca-Python-Ray-Py37-Spark3:
     #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Ray-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
