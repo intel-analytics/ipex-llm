@@ -50,14 +50,10 @@ object gbtClassifierTrainingExampleOnCriteoClickLogsDataset {
     val params = parser.parse(args, new Params).get
     val trainingDataPath = params.trainingDataPath // path to data
     val modelSavePath = params.modelSavePath // save model to this path
-    val numThreads = params.numThreads // xgboost threads
-    val maxIter = params.maxIter //  train round
+    val maxIter = params.maxIter //  train max Iter
     val maxDepth = params.maxDepth // tree max depth
-    val numWorkers = params.numWorkers //  Workers num
-
 
     val sc = NNContext.initNNContext()
-    //    val sc = new SparkContext()
     val spark = SQLContext.getOrCreate(sc)
 
     val task = new Task()
@@ -129,14 +125,7 @@ object gbtClassifierTrainingExampleOnCriteoClickLogsDataset {
     gbtClassifier.setLabelCol("classIndex")
     gbtClassifier.setMaxDepth(maxDepth)
     gbtClassifier.setMaxIter(maxIter)
-//    gbtClassifier.setNumClass(2)
-//    gbtClassifier.setNumWorkers(numWorkers)
-//    gbtClassifier.setNthread(numThreads)
-//    gbtClassifier.setNumRound(numRound)
     gbtClassifier.setFeatureSubsetStrategy("auto")
-//    gbtClassifier.setObjective("multi:softprob")
-//    gbtClassifier.setTimeoutRequestWorkers(180000L)
-
 
     // Train model. This also runs the indexer.
     val gbtClassificationModel = gbtClassifier.fit(train)
@@ -165,10 +154,6 @@ object gbtClassifierTrainingExampleOnCriteoClickLogsDataset {
       .action((v, p) => p.copy(modelSavePath = v))
       .required()
 
-    opt[Int]('t', "numThreads")
-      .text("threads num")
-      .action((v, p) => p.copy(numThreads = v))
-
     opt[Int]('I', "maxIter")
       .text("maxIter")
       .action((v, p) => p.copy(maxIter = v))
@@ -176,10 +161,6 @@ object gbtClassifierTrainingExampleOnCriteoClickLogsDataset {
     opt[Int]('d', "maxDepth")
       .text("maxDepth")
       .action((v, p) => p.copy(maxDepth = v))
-
-    opt[Int]('w', "numWorkers")
-      .text("Workers num")
-      .action((v, p) => p.copy(numWorkers = v))
 
   }
 }
