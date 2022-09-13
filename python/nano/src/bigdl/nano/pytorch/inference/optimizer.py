@@ -255,7 +255,8 @@ class InferenceOptimizer:
                     result_map[method]["accuracy"] = None
 
                 result_map[method]["model"] = acce_model
-                print(f"----------Finish test {method} model----------")
+                print(f"----------Finish test {method} model "
+                      f"({idx+1}/{len(ALL_INFERENCE_ACCELERATION_METHOD)})----------")
 
         self.optimized_model_dict: Dict = result_map
         print("\n\n==========================Optimization Results==========================")
