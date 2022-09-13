@@ -156,6 +156,24 @@ jobs:
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
 
+  Orca-Python-Exampletests-Py37:
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Exampletests-Py37' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action 
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-spark3
+    - name: Run Test
+      uses: ./.github/actions/orca/oorca-python-exampletest-action/nightly-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+
   Dllib-Scala-UT:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Dllib-Scala-UT' || github.event.inputs.artifact == 'all' }} 
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
