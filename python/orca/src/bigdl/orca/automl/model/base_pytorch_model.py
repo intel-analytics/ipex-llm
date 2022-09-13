@@ -22,6 +22,7 @@ import math
 import pandas as pd
 import tempfile
 import os
+from copy import copy
 
 from bigdl.orca.automl.model.abstract import BaseModel, ModelBuilder
 from bigdl.orca.automl.metrics import Evaluator
@@ -143,7 +144,7 @@ class PytorchBaseModel(BaseModel):
             update_config()
             self.build(config)
         else:
-            tmp_config = self.config.copy()
+            tmp_config = copy(self.config)
             tmp_config.update(config)
             self._check_config(**tmp_config)
             self.config.update(config)
