@@ -341,8 +341,21 @@
                     <groupId>org.apache.spark</groupId>
                     <artifactId>*</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-*</artifactId>
+                </exclusion>
+                <exclusion>
+                <groupId>com.linkedin.isolation-forest</groupId>
+                <artifactId>isolation-forest*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.jcraft</groupId>
+                    <artifactId>jsch</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
+
     </dependencies>
 
     <build>

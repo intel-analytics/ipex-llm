@@ -81,11 +81,13 @@ class LazyImport:
         return getattr(module, name)
 
     def __call__(self, *args, **kwargs):
-        function_name = self.module_name.split('.')[-1]
-        module_name = self.module_name.split(f'.{function_name}')[0]
+        function_name = self.module_name.rpartition('.')[-1]
+        module_name = self.module_name.rpartition(f'.{function_name}')[0]
         try:
             module = sys.modules[module_name]
         except KeyError:
-            module = importlib.import_module(module_name, package=self.pkg)
+            pass
+
+        module = importlib.import_module(module_name, package=self.pkg)
         function = getattr(module, function_name)
         return function(*args, **kwargs)
