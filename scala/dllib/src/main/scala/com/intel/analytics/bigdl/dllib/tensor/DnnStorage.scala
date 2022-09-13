@@ -15,12 +15,10 @@
  */
 package com.intel.analytics.bigdl.dllib.tensor
 
-import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
-import com.intel.analytics.bigdl.mkl.Memory
-import com.intel.analytics.bigdl.dllib.nn.mkldnn.MemoryOwner
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
-import org.apache.commons.io.serialization.ValidatingObjectInputStream
+import com.intel.analytics.bigdl.mkl.Memory
 
+import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
 import scala.reflect._
 
 /**
