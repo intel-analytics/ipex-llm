@@ -297,8 +297,12 @@ class PyTorchPySparkEstimator(BaseEstimator):
             res = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
 
-        self.state_dict = PyTorchPySparkEstimator._get_state_dict_from_remote(self.model_dir)
-        worker_stats = res
+        if self.model_dir is not None:
+            self.state_dict = PyTorchPySparkEstimator._get_state_dict_from_remote(self.model_dir)
+            worker_stats = res
+        else:
+            self.state_dict = res[0]
+            worker_stats = res[1]
 
         epoch_stats = list(map(list, zip(*worker_stats)))
         if reduce_results:
