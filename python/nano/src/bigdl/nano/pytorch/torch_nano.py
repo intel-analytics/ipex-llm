@@ -171,7 +171,7 @@ class TorchNano(LightningLite):
         optimizers = [_LiteOptimizer(optimizer=optimizer, strategy=self._strategy)  # type: ignore
                       for optimizer in optimizers]
         self._models_setup += 1
-        if optimizers:
+        if optimizers is not None:
             # join both types in a list for API convenience
             return model, optimizers  # type: ignore
         return model
