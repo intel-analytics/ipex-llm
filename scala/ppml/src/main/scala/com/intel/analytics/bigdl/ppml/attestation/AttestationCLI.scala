@@ -75,12 +75,10 @@ object AttestationCLI {
         }
 
         val challengeString = params.challenge
-        if (challengeString.length() > 0) {
+        if (challengeString.length() > 0 && params.asType != ATTESTATION_CONVENTION.MODE_DUMMY) {
             val asQuote = params.asType match {
               case ATTESTATION_CONVENTION.MODE_EHSM_KMS =>
                 Base64.getDecoder().decode(as.getQuoteFromServer(challengeString))
-              case ATTESTATION_CONVENTION.MODE_DUMMY =>
-                as.getQuoteFromServer(challengeString).getBytes()
               case _ => throw new AttestationRuntimeException("Wrong Attestation service type")
             }
             val quoteVerifier = new SGXDCAPQuoteVerifierImpl()
