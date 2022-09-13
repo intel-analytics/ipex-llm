@@ -253,7 +253,12 @@ object Util {
     var in: ValidatingObjectInputStream = null
     try {
       // stream closed in the finally
-      in = new ValidatingObjectInputStream(inputStream)
+      in = new ValidatingObjectInputStream(inputStream) {
+        override def resolveClass(desc: ObjectStreamClass): Class[_] = {
+          Try(Class.forName(desc.getName, false, getClass.getClassLoader)
+          ).getOrElse(super.resolveClass(desc))
+        }
+      }
       in.accept(classTag[T].runtimeClass)
       in.readObject().asInstanceOf[T]
     } catch {
