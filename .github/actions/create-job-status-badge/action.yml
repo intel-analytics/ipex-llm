@@ -37,7 +37,7 @@ runs:
       run: if [ ${{ env.JOB-STATUS }} == "success" ] ; then echo "COLOR=green" >> $GITHUB_ENV ; else echo "COLOR=red" >> $GITHUB_ENV; fi
     
     - name: Create job badge
-      if: ${{ inputs.type == 'job' }}
+      if: ${{ inputs.type == 'job' && inputs.secret != '' }}
       uses: analytics-zoo/dynamic-badges-action@master
       with:
         auth: ${{ inputs.secret }}
@@ -49,7 +49,7 @@ runs:
         color: ${{ env.COLOR }}
         
     - name: Create time badge
-      if: ${{ inputs.type == 'workflow' }}
+      if: ${{ inputs.type == 'workflow' && inputs.secret != '' }}
       uses: analytics-zoo/dynamic-badges-action@master
       with:
         auth: ${{ inputs.secret }}
@@ -58,3 +58,9 @@ runs:
         filename: ${{ inputs.file-name }}
         label: Time is
         message: ${{ env.TIME }}
+
+    - name: print error message
+      if: ${{ inputs.secret == '' }}
+      shell: bash
+      run: |
+        echo "Can not get secret! Please check out your workflow!(mainly caused by pr trigger)"
