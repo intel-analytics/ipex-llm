@@ -46,6 +46,15 @@ spec:
     name: cache-volume
 ```
 
+### Enable multi-thread for inference, but run on a single core
+When you use `trace`, `quantize` or `optimize` to accelerate your inference pipeline with `thread_num` greater than 1, you may find all threads running on a single core and inference speed is slower than single thread. 
+
+This usually is because we set `KMP_AFFINITY` environment variable as `KMP_AFFINITY=granularity=fine,compact` when `source bigdl-nano-init`.
+
+You can use the following command to fix this issue.
+
+* `unset KMP_AFFINITY` 
+
 ## **TensorFlow Issues**
 
 ### **Nano keras multi-instance training currently does not suport tensorflow dataset.from_generators, numpy_function, py_function**
