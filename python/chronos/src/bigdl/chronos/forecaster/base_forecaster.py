@@ -779,7 +779,7 @@ class BasePytorchForecaster(Forecaster):
         aggregate = 'mean' if multioutput == 'uniform_average' else None
         return Evaluator.evaluate(self.metrics, target, yhat, aggregate=aggregate)
 
-    def predict_interval(self, data, validation_data, batch_size=None, B=5):
+    def predict_interval(self, data, validation_data, batch_size=None, repetition_times=5):
         """
 
         :param data: The data support following formats:
@@ -805,13 +805,20 @@ class BasePytorchForecaster(Forecaster):
 
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time).
+        :repetition_times : Defines repeate how many times to calculate model uncertainty
+                            based MC Dropout.
         """
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
 
         # step1, according to validation dataset, calculate inherent noise
-        output = self.evaluate(data=validation_data, multioutput='uniform_average')
-        # TODO: index for mse
-        sig1 = output[0]
+        # which should be done during fit
+        if not hasattr(self, "data_noise"):
+            invalidInputError(validation_data is not None,
+                              "When call predict_interval for the first time, you must pass in "
+                              "validation data to calculate data noise.")
+            output = self.evaluate(data=validation_data, multioutput='uniform_average')
+            # TODO: index for mse
+            self.data_noise = output[0]
 
         # step2: data preprocess
         if isinstance(data, TSDataset):
@@ -868,17 +875,17 @@ class BasePytorchForecaster(Forecaster):
         # turn on dropout
         self.internal.apply(apply_dropout)
         y_hat_list = []
-        for i in range(B):
+        for i in range(repetition_times):
             y_hat_list.append(calculate(data, self.internal))
         y_hat_mean = np.mean(np.stack(y_hat_list, axis=0), axis=0)
         invalidInputError(y_hat_mean.shape == y_hat.shape,
                           "dismatch shape between y_hat_mean and y_hat")
 
-        sig2 = np.zeros_like(y_hat_mean)
-        for i in range(B):
-            sig2 += (y_hat_list[i] - y_hat_mean)**2
-        sig2 /= B
-        sig = np.sqrt(sig1 + sig2)
+        model_bias = np.zeros_like(y_hat_mean)
+        for i in range(repetition_times):
+            model_bias += (y_hat_list[i] - y_hat_mean)**2
+        model_bias /= repetition_times
+        sig = np.sqrt(self.data_noise + model_bias)
 
         return y_hat, sig
 
