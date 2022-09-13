@@ -39,6 +39,8 @@ java -cp "$BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME
    com.intel.analytics.bigdl.ppml.examples.tpch.EncryptFiles \
    --inputPath xxx/dbgen \
    --outputPath xxx/dbgen-encrypted
+   --simpleAPPID xxxxxxxxxxxx
+   --simpleAPPKEY xxxxxxxxxxxx
 ```
 
 ### Deploy PPML TPC-H on Kubernetes ###
