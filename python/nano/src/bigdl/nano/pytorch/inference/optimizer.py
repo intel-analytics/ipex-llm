@@ -73,11 +73,6 @@ class AccelerationOption(object):
             return "jit"
         return None
 
-    def get_method_type(self):
-        if self.inc or self.pot or self.bf16:
-            return "quantize"
-        return "trace"
-
 
 # acceleration method combinations, developers may want to register some new
 # combinations here
@@ -174,14 +169,13 @@ class InferenceOptimizer:
 
         print("==========================Start Optimization==========================")
         start_time = time.perf_counter()
-        for method, available in available_dict.items():
+        for idx, (method, available) in enumerate(available_dict.items()):
             result_map[method] = {}
             if available is False:
                 result_map[method]["status"] = "lack dependency"
-                option: AccelerationOption = ALL_INFERENCE_ACCELERATION_METHOD[method]
-                result_map[method]["method_type"] = option.get_method_type()
             else:
-                print(f"**********Start test {method} model**********")
+                print(f"----------Start test {method} model "
+                      f"({idx+1}/{len(ALL_INFERENCE_ACCELERATION_METHOD)})----------")
                 option: AccelerationOption = ALL_INFERENCE_ACCELERATION_METHOD[method]
                 use_ipex: bool = option.ipex
                 use_channels_last: bool = option.channels_last
@@ -193,9 +187,7 @@ class InferenceOptimizer:
                     try:
                         if accelerator is None and use_ipex is False:
                             acce_model = model
-                            result_map[method]["method_type"] = "none"
                         else:
-                            result_map[method]["method_type"] = "trace"
                             if accelerator in ("jit", None):
                                 acce_model = \
                                     InferenceOptimizer.trace(model=model,
@@ -215,12 +207,11 @@ class InferenceOptimizer:
                     except Exception as e:
                         print(e)
                         result_map[method]["status"] = "fail to convert"
-                        print(f"**********Failed to convert to {method}**********")
+                        print(f"----------Failed to convert to {method}----------")
                         continue
 
                 # if precision is int8 or bf16, then we will use quantize method
                 elif precision in ("int8", "bf16"):
-                    result_map[method]["method_type"] = "quantize"
                     ort_method: str = option.method
                     try:
                         acce_model = \
@@ -230,13 +221,13 @@ class InferenceOptimizer:
                                                         use_ipex=use_ipex,
                                                         calib_dataloader=training_data,
                                                         method=ort_method,
-                                                        onnxruntime_session_options=sessoption,
+                                                        thread_num=thread_num,
                                                         # remove output of openvino
                                                         logging=logging)
                     except Exception as e:
                         print(e)
                         result_map[method]["status"] = "fail to convert"
-                        print(f"**********Failed to convert to {method}**********")
+                        print(f"----------Failed to convert to {method}----------")
                         continue
 
                 result_map[method]["status"] = "successful"
@@ -245,7 +236,7 @@ class InferenceOptimizer:
                     with torch.no_grad():
                         model(*input_sample)
 
-                torch.set_num_threads(cpu_num)
+                torch.set_num_threads(thread_num)
                 try:
                     result_map[method]["latency"] =\
                         _throughput_calculate_helper(latency_sample_num, func_test,
@@ -264,7 +255,7 @@ class InferenceOptimizer:
                     result_map[method]["accuracy"] = None
 
                 result_map[method]["model"] = acce_model
-                print(f"**********Finish test {method} model**********")
+                print(f"----------Finish test {method} model----------")
 
         self.optimized_model_dict: Dict = result_map
         print("\n\n==========================Optimization Results==========================")
@@ -464,8 +455,9 @@ class InferenceOptimizer:
                         if onnxruntime_session_options is None:
                             import onnxruntime
                             onnxruntime_session_options = onnxruntime.SessionOptions()
-                        onnxruntime_session_options.intra_op_num_threads = thread_num
-                        onnxruntime_session_options.inter_op_num_threads = thread_num
+                            if thread_num is not None:
+                                onnxruntime_session_options.intra_op_num_threads = thread_num
+                                onnxruntime_session_options.inter_op_num_threads = thread_num
                         model = InferenceOptimizer.trace(
                             model,
                             input_sample=input_sample,
@@ -578,8 +570,9 @@ class InferenceOptimizer:
             if onnxruntime_session_options is None:
                 import onnxruntime
                 onnxruntime_session_options = onnxruntime.SessionOptions()
-            onnxruntime_session_options.intra_op_num_threads = thread_num
-            onnxruntime_session_options.inter_op_num_threads = thread_num
+                if thread_num is not None:
+                    onnxruntime_session_options.intra_op_num_threads = thread_num
+                    onnxruntime_session_options.inter_op_num_threads = thread_num
             return PytorchONNXRuntimeModel(model, input_sample, onnxruntime_session_options,
                                            **export_kwargs)
         if accelerator == 'jit' or use_ipex:
@@ -710,39 +703,37 @@ def _format_optimize_result(optimize_result_dict: dict,
     Get a format string represation for optimization result
     '''
     if calculate_accuracy is True:
-        horizontal_line = " {0} {1} {2} {3} {4}\n" \
-            .format("-" * 32, "-" * 22, "-" * 12, "-" * 12, "-" * 12)
+        horizontal_line = " {0} {1} {2} {3}\n" \
+            .format("-" * 32, "-" * 22, "-" * 12, "-" * 12)
         repr_str = horizontal_line
-        repr_str += "| {0:^30} | {1:^20} | {2:^10} | {3:^10} | {4:^10} |\n" \
-            .format("method", "status", "type", "latency", "accuracy")
+        repr_str += "| {0:^30} | {1:^20} | {2:^10} | {3:^10} |\n" \
+            .format("method", "status", "latency", "accuracy")
         repr_str += horizontal_line
         for method, result in optimize_result_dict.items():
             status = result["status"]
-            method_type = result["method_type"]
             latency = result.get("latency", "None")
             if latency != "None":
                 latency = round(latency, 3)
             accuracy = result.get("accuracy", "None")
             if accuracy != "None":
                 accuracy = round(accuracy, 3)
-            method_str = f"| {method:^30} | {status:^20} | {method_type:^10} | " \
+            method_str = f"| {method:^30} | {status:^20} | " \
                          f"{latency:^10} | {accuracy:^10} |\n"
             repr_str += method_str
         repr_str += horizontal_line
     else:
-        horizontal_line = " {0} {1} {2} {3}\n" \
-            .format("-" * 32, "-" * 22, "-" * 12, "-" * 12)
+        horizontal_line = " {0} {1} {2}\n" \
+            .format("-" * 32, "-" * 22, "-" * 12)
         repr_str = horizontal_line
-        repr_str += "| {0:^30} | {1:^20} | {2:^10} | {3:^10} |\n" \
-            .format("method", "status", "type", "latency")
+        repr_str += "| {0:^30} | {1:^20} | {2:^10} |\n" \
+            .format("method", "status", "latency")
         repr_str += horizontal_line
         for method, result in optimize_result_dict.items():
             status = result["status"]
-            method_type = result["method_type"]
             latency = result.get("latency", "None")
             if latency != "None":
                 latency = round(latency, 3)
-            method_str = f"| {method:^30} | {status:^20} | {method_type:^10} | {latency:^10} |\n"
+            method_str = f"| {method:^30} | {status:^20} | {latency:^10} |\n"
             repr_str += method_str
         repr_str += horizontal_line
     return repr_str
