@@ -72,6 +72,14 @@ class LightGBMTrainSpec extends ZooSpecHelper {
 
     val df = Seq(
       (1.0, 2.0, 3.0, 4.0, 1),
+      (1.0, 3.0, 8.0, 2.0, 0),
+      (1.0, 2.0, 3.0, 4.0, 1),
+      (1.0, 3.0, 8.0, 2.0, 0),
+      (1.0, 2.0, 3.0, 4.0, 1),
+      (1.0, 3.0, 8.0, 2.0, 0),
+      (1.0, 2.0, 3.0, 4.0, 1),
+      (1.0, 3.0, 8.0, 2.0, 0),
+      (1.0, 2.0, 3.0, 4.0, 1),
       (1.0, 3.0, 8.0, 2.0, 0)
     ).toDF("f1", "f2", "f3", "f4", "label")
     val vectorAssembler = new VectorAssembler()
@@ -79,12 +87,30 @@ class LightGBMTrainSpec extends ZooSpecHelper {
       .setOutputCol("features")
     val assembledDf = vectorAssembler.transform(df).select("features", "label").cache()
     if (spark.version.substring(0, 3).toDouble >= 3.1) {
-      val params = Map("earlyStoppingRound" -> 10,
+      val params = Map(
+        "boostingType" -> "gbdt",
+        "numLeaves" -> 2,
+        "maxDepth" -> 2,
+        "learningRate" -> 0.3,
+        "numIterations" -> 10,
+        "binConstructSampleCnt" -> 5,
+        "objective" -> "binary",
+        "minSplitGain" -> 0.1,
+        "minSumHessianInLeaf" -> 0.01,
+        "minDataInLeaf" -> 1,
+        "baggingFraction" -> 0.4,
+        "baggingFreq" -> 1,
+        "featureFraction" -> 0.4,
+        "lambdaL1" -> 0.1,
+        "lambdaL2" -> 0.1,
+        "numThreads" -> 2,
+        "earlyStoppingRound" -> 10,
         "maxBin" -> 100)
       val lightGBMclassifier = new LightGBMClassifier(params)
+      lightGBMclassifier.setIsUnbalance(true)
       val model1 = lightGBMclassifier.fit(assembledDf)
       val res1 = model1.transform(assembledDf)
-      TestUtils.conditionFailTest(res1.count() == 2)
+      TestUtils.conditionFailTest(res1.count() == 10)
     }
   }
 
@@ -177,8 +203,8 @@ class LightGBMTrainSpec extends ZooSpecHelper {
       val model = LightGBMRegressorModel.loadNativeModel("/tmp/test")
       val y0_0 = model.transform(assembledDf)
       y0_0.show(10)
-//      TestUtils.conditionFailTest(y0.count() == 4)
-//      TestUtils.conditionFailTest(y0_0.count() == 4)
+      TestUtils.conditionFailTest(y0.count() == 4)
+      TestUtils.conditionFailTest(y0_0.count() == 4)
     }
   }
 
