@@ -261,12 +261,12 @@ object Util {
 //          ).getOrElse(super.resolveClass(desc))
 //        }
 //      }
-      import java.util.regex.Pattern
-      val compile = Pattern.compile("java.*")
-      val compile1 = Pattern.compile("org.apache.*")
-      val compile2 = Pattern.compile("scala.*")
-      val compile3 = Pattern.compile("com.intel.analytics.bigdl.*")
-      in.accept(compile.pattern, compile1.pattern, compile2.pattern, compile3.pattern)
+//      import java.util.regex.Pattern
+//      val compile = Pattern.compile("java.*")
+//      val compile1 = Pattern.compile("org.apache.*")
+//      val compile2 = Pattern.compile("scala.*")
+//      val compile3 = Pattern.compile("com.intel.analytics.bigdl.*")
+//      in.accept(compile.pattern, compile1.pattern, compile2.pattern, compile3.pattern)
       in.accept(classTag[T].runtimeClass)
       in.readObject().asInstanceOf[T]
     } catch {
