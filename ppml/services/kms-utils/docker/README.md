@@ -77,7 +77,7 @@ docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh generate
 
 # Encrypt a single data file
 # encrpted data is next to $container_input_file_path
-docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh $kms_type encrypt $appid $appkey $container_input_file_path"
+docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh encrypt $appid $appkey $container_input_file_path"
 
 # Decrypt a single data file
 docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh decrypt $appid $appkey $container_input_file_path"
