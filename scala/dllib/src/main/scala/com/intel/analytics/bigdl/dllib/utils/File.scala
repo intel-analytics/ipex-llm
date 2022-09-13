@@ -158,11 +158,6 @@ object File {
     try {
       objFile = new ValidatingObjectInputStream(new ByteArrayInputStream(byteArrayOut))
       objFile.accept(classTag[T].runtimeClass)
-//      val compile = Pattern.compile("java.*")
-//      val compile1 = Pattern.compile("org.apache.*")
-//      val compile2 = Pattern.compile("scala.*")
-//      val compile3 = Pattern.compile("com.intel.analytics.bigdl.*")
-//      objFile.accept(compile.pattern, compile1.pattern, compile2.pattern, compile3.pattern)
       val result = objFile.readObject()
       objFile.close()
       result.asInstanceOf[T]

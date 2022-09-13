@@ -44,15 +44,14 @@ public class EncodeUtils {
 
     public static Object bytesToObj(byte[] bytes) {
         ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-        ObjectInputStream in = null;
+        ValidatingObjectInputStream in = null;
         try {
-//            in = new ValidatingObjectInputStream(bis);
-//            Pattern compile = Pattern.compile("java.*");
-//            Pattern compile1 = Pattern.compile("org.apache.*");
-//            Pattern compile2 = Pattern.compile("scala.*");
-//            Pattern compile3 = Pattern.compile("com.intel.analytics.bigdl.*");
-//            in.accept(compile.pattern(), compile1.pattern(), compile2.pattern(), compile3.pattern());
-            in = new ObjectInputStream(bis);
+            in = new ValidatingObjectInputStream(bis);
+            Pattern compile = Pattern.compile("java.*");
+            Pattern compile1 = Pattern.compile("org.apache.*");
+            Pattern compile2 = Pattern.compile("scala.*");
+            Pattern compile3 = Pattern.compile("com.intel.analytics.bigdl.*");
+            in.accept(compile.pattern(), compile1.pattern(), compile2.pattern(), compile3.pattern());
             return in.readObject();
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
