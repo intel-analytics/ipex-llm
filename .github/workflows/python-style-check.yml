@@ -91,6 +91,7 @@ jobs:
         run: bash python/serving/dev/lint-python
 
   create-workflow-badge:
+    if: github.event.pull_request
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3

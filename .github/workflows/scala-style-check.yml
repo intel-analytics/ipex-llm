@@ -72,6 +72,7 @@ jobs:
 
 
   create-workflow-badge:
+    if: github.event.pull_request
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
