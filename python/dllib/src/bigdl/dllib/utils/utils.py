@@ -236,7 +236,7 @@ def convert_row_to_numpy(row, schema, feature_cols, label_cols, accept_str_col=F
                 elif isinstance(feature_type.elementType, df_types.DecimalType):
                     result.append(np.array(row[name]).astype(np.float64))
                 else:
-                    result.append(np.array(row[name]).astype(np.float32))
+                    result.append(np.array(row[name]))
             elif isinstance(row[name], DenseVector):
                 result.append(row[name].values.astype(np.float32))
             else:
