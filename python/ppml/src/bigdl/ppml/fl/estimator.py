@@ -36,6 +36,21 @@ class Estimator:
                    server_model=None,
                    client_model_path=None,
                    server_model_path=None):
+        ''' 
+        :param client_model: client nn model
+
+        :param loss_fn: loss function. A function that calculate the absolute difference between our prediction and the actual value.
+
+        :param optimizer_cls: optimizer class.
+
+        :param optimizer_args: `dict` of hypterparamters that will be passed into `optimizer_cls`
+
+        :param server_model: optional param to upload server_model
+
+        :param client_model_path: optional string filepath to autosave client_model. Default None and will not auto save client_model.
+
+        :param server_model_path: optional string filepath to autosave server_model. Default None and will not auto save server_model.
+        '''
         estimator = PytorchEstimator(model=client_model, 
                                      loss_fn=loss_fn,
                                      optimizer_cls=optimizer_cls,
@@ -51,6 +66,17 @@ class Estimator:
                    optimizer_cls,
                    optimizer_args={},
                    server_model=None):
+        ''' 
+        :param client_model: keras Model
+
+        :param loss_fn: loss function. A function that calculate the absolute difference between our prediction and the actual value.
+
+        :param optimizer_cls: optimizer class.
+
+        :param optimizer_args: `dict` of hypterparamters that will be passed into `optimizer_cls`
+
+        :param server_model: optional param to upload server_model
+        '''   
         estimator = TensorflowEstimator(model=client_model, 
                                         loss_fn=loss_fn, 
                                         optimizer_cls=optimizer_cls,
