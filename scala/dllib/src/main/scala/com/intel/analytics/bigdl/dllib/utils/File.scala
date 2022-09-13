@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.dllib.utils
 
-import com.intel.analytics.bigdl.dllib.utils.serialization.ValidatingObjectInputStream
+import org.apache.commons.io.serialization.ValidatingObjectInputStream
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataInputStream, FSDataOutputStream, FileSystem, Path}
 import org.apache.hadoop.io.IOUtils

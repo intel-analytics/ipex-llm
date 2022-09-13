@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.nn.tf.Const
 import com.intel.analytics.bigdl.dllib.optim.DistriOptimizer.Cache
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
 import com.intel.analytics.bigdl.dllib.tensor._
-import com.intel.analytics.bigdl.dllib.utils.serialization.ValidatingObjectInputStream
+import org.apache.commons.io.serialization.ValidatingObjectInputStream
 import org.apache.spark.rdd.RDD
 
 import java.io._
