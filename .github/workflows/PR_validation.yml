@@ -62,7 +62,6 @@ jobs:
       - name: Run test
         uses: ./.github/actions/dllib-scala-ut-action
 
-
   Dllib-Scala-UT:
     needs: changes
     if: ${{ needs.changes.outputs.dllib == 'true' }}
@@ -76,7 +75,6 @@ jobs:
         uses: ./.github/actions/maven-setup-action
       - name: Run test
         uses: ./.github/actions/dllib-scala-ut-action
-
 
   Orca-Ray-Ctx-Example:
     needs: changes
