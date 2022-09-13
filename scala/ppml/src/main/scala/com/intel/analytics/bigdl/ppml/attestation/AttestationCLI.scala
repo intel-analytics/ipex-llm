@@ -34,7 +34,9 @@ object AttestationCLI {
                              asType: String = ATTESTATION_CONVENTION.MODE_EHSM_KMS,
                              asURL: String = "127.0.0.1",
                              userReport: String = "ppml",
-                             policyId: String = "test")
+                             policyId: String = "test",
+                             jksFilePath = "test",
+                             jksStorePassword = "test")
 
         val cmdParser: OptionParser[CmdParams] = new OptionParser[CmdParams]("PPML Attestation Quote Generation Cmd tool") {
             opt[String]('i', "appID")
@@ -55,6 +57,12 @@ object AttestationCLI {
             opt[String]('d', "policyId")
               .text("policy id of customer registered mrenclave")
               .action((x, c) => c.copy(policyId = x))
+            opt[String]('j', "jksFilePath")
+              .text("path of jks file")
+              .action((x, c) => c.copy(jksFilePath = x))
+            opt[String]('s', "jksStorePassword")
+              .text("store password of jks")
+              .action((x, c) => c.copy(jksStorePassword = x))
         }
         val params = cmdParser.parse(args, CmdParams()).get
 
@@ -68,7 +76,7 @@ object AttestationCLI {
         val as = params.asType match {
             case ATTESTATION_CONVENTION.MODE_EHSM_KMS =>
                 new EHSMAttestationService(params.asURL.split(":")(0),
-                    params.asURL.split(":")(1), params.appID, params.appKey)
+                    params.asURL.split(":")(1), params.appID, params.appKey, params.jksFilePath, params.jksStorePassword)
             case ATTESTATION_CONVENTION.MODE_DUMMY =>
                 new DummyAttestationService()
             case _ => throw new AttestationRuntimeException("Wrong Attestation service type")

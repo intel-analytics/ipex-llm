@@ -19,9 +19,16 @@ package com.intel.analytics.bigdl.ppml.attestation
 
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.ppml.utils.EHSMParams
-import com.intel.analytics.bigdl.ppml.utils.HTTPUtil.postRequest
+import com.intel.analytics.bigdl.ppml.utils.HTTPSUtil.postRequest
 import org.apache.logging.log4j.LogManager
 import org.json.JSONObject
+import java.io.File
+import javax.net.ssl.SSLContext
+import org.apache.http.conn.ssl.NoopHostnameVerifier
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory
+import org.apache.http.ssl.SSLContextBuilder
+import org.apache.http.ssl.SSLContexts
+import org.apache.http.util.EntityUtils
 
 /**
  * Attestation Service provided by ehsm
@@ -31,10 +38,17 @@ import org.json.JSONObject
  * @param ehsmAPPKEY application Key
  */
 class EHSMAttestationService(kmsServerIP: String, kmsServerPort: String,
-                             ehsmAPPID: String, ehsmAPPKEY: String)
+                             ehsmAPPID: String, ehsmAPPKEY: String, jksFilePath: String, jksStorePassword: String)
   extends AttestationService {
 
   val logger = LogManager.getLogger(getClass)
+
+  val sslConSocFactory = {
+    val file: File = new File(jksFilePath)
+    val sslBuilder: SSLContextBuilder = SSLContexts.custom().loadTrustMaterial(file, jksStorePassword.toCharArray())
+    sslcontext: SSLContext = sslBuilder.build()
+    new SSLConnectionSocketFactory(sslcontext, new NoopHostnameVerifier())
+  }
 
   // Quote
   val PAYLOAD_QUOTE = "quote"
@@ -78,7 +92,7 @@ class EHSMAttestationService(kmsServerIP: String, kmsServerPort: String,
 
     val postResult: JSONObject = timing("EHSMKeyManagementService request for VerifyQuote") {
       val postString: String = ehsmParams.getPostJSONString()
-      postRequest(constructUrl(action), postString)
+      postRequest(constructUrl(action), sslConSocFactory, postString)
     }
     // Check sign with nonce
     val sign = postResult.getString(RES_SIGN)
@@ -87,6 +101,6 @@ class EHSMAttestationService(kmsServerIP: String, kmsServerPort: String,
   }
 
   private def constructUrl(action: String): String = {
-    s"http://$kmsServerIP:$kmsServerPort/ehsm?Action=$action"
+    s"https://$kmsServerIP:$kmsServerPort/ehsm?Action=$action"
   }
 }
