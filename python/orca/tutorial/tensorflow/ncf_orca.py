@@ -17,14 +17,17 @@
 import time
 import numpy as np
 import tensorflow as tf
-from sklearn.model_selection import train_test_split
 
 from bigdl.orca import OrcaContext, init_orca_context, stop_orca_context
-from bigdl.orca.data.pandas import read_csv
-from bigdl.orca.learn.tf.estimator import Estimator
+from bigdl.orca.learn.tf2 import Estimator
 
 
-def build_model(num_users, num_items, layers=[20, 10], include_mf=True, mf_embed=20):
+def model_creator(config):
+    num_users = max_user_id
+    num_items = max_item_id
+    layers=[20, 10]
+    include_mf=True
+    mf_embed=20
     num_layer = len(layers)
     user_input = tf.keras.layers.Input(shape=(1,), dtype="int32", name="user_input")
     item_input = tf.keras.layers.Input(shape=(1,), dtype="int32", name="item_input")
@@ -61,8 +64,12 @@ def build_model(num_users, num_items, layers=[20, 10], include_mf=True, mf_embed
         prediction = tf.keras.layers.Dense(1, activation="sigmoid", name="prediction")(mlp_latent)
 
     model = tf.keras.Model([user_input, item_input], prediction)
-    return model
+    model.summary()
+    optimizer = tf.keras.optimizers.Adam(1e-4)
+    model.compile(optimizer=optimizer, loss="binary_crossentropy", metrics=['accuracy'])
 
+
+    return model
 
 cluster_mode = "local"
 # cluster_mode = "k8s"
@@ -96,60 +103,68 @@ from pyspark.sql.types import StructField, StructType, StringType, IntegerType
 schema = StructType(
     [
         StructField('_c0', IntegerType(), True),
-        StructField('_c1', IntegerType(), True),
-        StructField('_c2', IntegerType(), True)
+        StructField('_c1', IntegerType(), True)
     ]
 )
-df = spark.read.csv("{}/{}/ratings.csv".format(data_path, data_type), sep="::",schema=schema,
+df0 = spark.read.csv("{}/{}/ratings.csv".format(data_path, data_type), sep="::",schema=schema,
                      header=False)
-df = df.withColumnRenamed('_c0','user').withColumnRenamed('_c1','item').withColumnRenamed('_c2','label')
+df0 = df0.withColumnRenamed('_c0','user').withColumnRenamed('_c1','item')
 #print(int(df.describe("item").filter("summary = 'max'").select("item").first().asDict()['item']))
-min_user_id = df.agg({"user": "min"}).collect()[0]["min(user)"]
-max_user_id = df.agg({"user": "max"}).collect()[0]["max(user)"]
-min_item_id = df.agg({"item": "min"}).collect()[0]["min(item)"]
-max_item_id = df.agg({"item": "max"}).collect()[0]["max(item)"]
+min_user_id = df0.agg({"user": "min"}).collect()[0]["min(user)"]
+max_user_id = df0.agg({"user": "max"}).collect()[0]["max(user)"]
+min_item_id = df0.agg({"item": "min"}).collect()[0]["min(item)"]
+max_item_id = df0.agg({"item": "max"}).collect()[0]["max(item)"]
 print(min_user_id, max_user_id, min_item_id, max_item_id)
 from pyspark.sql import functions
-df = df.withColumn('label', functions.lit(1))
+df = df0.withColumn('label', functions.lit(1))
 
 
 import random
-
-data_neg = []
-for neg_index in range(min_user_id, max_user_id):
-#for neg_index in range(1,2):
-    dfs = df.select("item").where("user == %d"%neg_index)
-    pdf = set(dfs.toPandas()['item'].values)
-    cont = len(dfs.collect()) * 5
-    neg_item = random.sample(set(range(min_item_id, max_item_id)) - pdf, cont)
-    
-    for k in neg_item:
-        data_neg.append([neg_index, k, 0])
-
-
 import pandas as pd
+def negative_sample(pandas_df):
+    df_list = pandas_df.values.tolist()
+    count_df = len(df_list) * 4
+    mat = [[0] * (max_item_id + 1) for _ in range(max_user_id + 1)]
+    for x in df_list:
+        mat[x[0]][x[1]] = 1
+    neg_list = []
+    while count_df:
+        neg_user = random.randint(min_user_id, max_user_id)
+        neg_item = random.randint(min_item_id, max_item_id)
+        neg_com = [neg_user, neg_item]
+        if mat[neg_user][neg_item] == 0:
+            neg_list.append(neg_com)
+            count_df -= 1
+            mat[neg_user][neg_item] = 1
+    return pd.DataFrame(neg_list)
+df_neg = df0.groupby().applyInPandas(negative_sample, schema=schema)
+df_neg = df_neg.withColumn('label', functions.lit(0))
 
-corr_matrix = pd.DataFrame(data_neg)
-df_neg = spark.createDataFrame(corr_matrix, schema=schema)
+
 df.unionAll(df_neg)
 
+train_df, test_df = df.randomSplit([0.8, 0.2],seed = 11)
 
-(train_df, test_df) = df.randomSplit([0.8, 0.2],seed = 11)
 
-model = build_model(max_user_id, max_item_id)
-model.summary()
-optimizer = tf.keras.optimizers.Adam(1e-4)
-model.compile(optimizer=optimizer, loss="binary_crossentropy", metrics=['accuracy'])
+batch_size=1280
+epochs=2
+model_dir='./'
 
-estimator = Estimator.from_keras(model)
-estimator.fit(train_df,
-              batch_size=800,
-              epochs=2,
-              feature_cols=["user", "item"],
-              label_cols=["label"],
-              validation_data=test_df)
-model = estimator.get_model()
-tf.saved_model.save(model, "./model")
+# create an Estimator
+est = Estimator.from_keras(model_creator=model_creator, workers_per_node=1)
+
+stats = est.fit(train_df,
+                epochs=epochs,
+                batch_size=batch_size,
+                feature_cols=['user', 'item'],
+                label_cols=['label'],
+                steps_per_epoch=800000 // batch_size,
+                validation_data=test_df,
+                validation_steps = 200000 // batch_size)
+
+import os
+checkpoint_path = os.path.join(model_dir, "NCF.ckpt")
+est.save_checkpoint(checkpoint_path)
 # print(model.get_weights())
 
 end = time.time()
