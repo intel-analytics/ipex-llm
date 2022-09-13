@@ -89,7 +89,7 @@ schema = StructType(
         StructField('item', IntegerType(), True)
     ]
 )
-df = spark.read.csv("{}/{}/ratings.csv".format(data_path, data_type), sep="::",schema=schema,
+df0 = spark.read.csv("{}/{}/ratings.csv".format(data_path, data_type), sep="::",schema=schema,
                      header=False)
 min_user_id = df.agg({"user": "min"}).collect()[0]["min(user)"]
 max_user_id = df.agg({"user": "max"}).collect()[0]["max(user)"]
@@ -97,7 +97,7 @@ min_item_id = df.agg({"item": "min"}).collect()[0]["min(item)"]
 max_item_id = df.agg({"item": "max"}).collect()[0]["max(item)"]
 print(min_user_id, max_user_id, min_item_id, max_item_id)
 from pyspark.sql import functions
-df = df.withColumn('label', functions.lit(1))
+df = df0.withColumn('label', functions.lit(1))
 
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
