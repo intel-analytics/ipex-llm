@@ -16,18 +16,16 @@
 
 package com.intel.analytics.bigdl.dllib.utils
 
-import java.io._
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.nn.Container
 import com.intel.analytics.bigdl.dllib.nn.tf.Const
-import com.intel.analytics.bigdl.dllib.optim.DistriOptimizer.{Cache, CacheV1}
+import com.intel.analytics.bigdl.dllib.optim.DistriOptimizer.Cache
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
 import com.intel.analytics.bigdl.dllib.tensor._
-import org.apache.commons.io.serialization.ValidatingObjectInputStream
-import org.apache.commons.lang.SerializationUtils
-import org.apache.commons.lang3.SerializationException
+import com.intel.analytics.bigdl.dllib.utils.serialization.ValidatingObjectInputStream
 import org.apache.spark.rdd.RDD
 
+import java.io._
 import scala.reflect.{ClassTag, classTag}
 import scala.util.Try
 

@@ -16,13 +16,13 @@
 
 package com.intel.analytics.bigdl.dllib.utils
 
-import org.apache.commons.io.serialization.ValidatingObjectInputStream
-
-import java.io._
-import java.net.URI
+import com.intel.analytics.bigdl.dllib.utils.serialization.ValidatingObjectInputStream
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataInputStream, FSDataOutputStream, FileSystem, Path}
 import org.apache.hadoop.io.IOUtils
+
+import java.io._
+import java.net.URI
 import scala.reflect.{ClassTag, classTag}
 
 object File {

@@ -16,10 +16,12 @@
 
 package com.intel.analytics.bigdl.friesian.serving.utils;
 
-import org.apache.commons.io.serialization.ValidatingObjectInputStream;
-import org.apache.spark.SparkConf;
+import com.intel.analytics.bigdl.dllib.utils.serialization.ValidatingObjectInputStream;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.regex.Pattern;
 
 public class EncodeUtils {
