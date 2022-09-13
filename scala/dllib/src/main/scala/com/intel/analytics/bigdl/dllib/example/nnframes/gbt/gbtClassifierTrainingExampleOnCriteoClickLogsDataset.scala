@@ -138,7 +138,7 @@ object gbtClassifierTrainingExampleOnCriteoClickLogsDataset {
     sc.stop()
   }
 
-  val parser: OptionParser[Params] = new OptionParser[Params]("input xgb config") {
+  val parser: OptionParser[Params] = new OptionParser[Params]("input gbt config") {
     opt[String]('i', "trainingDataPath")
       .text("trainingData Path")
       .action((v, p) => p.copy(trainingDataPath = v))
