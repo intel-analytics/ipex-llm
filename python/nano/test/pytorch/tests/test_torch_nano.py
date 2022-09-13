@@ -156,27 +156,30 @@ class MyNanoLoadStateDict(TorchNano):
             torch.tensor([[0.0],[0.0],[0.0],[0.0]]),
         )
         train_loader = DataLoader(dataset=dataset, batch_size=2, shuffle=False)
-        origin_model = LinearModel()
         loss_func = nn.MSELoss()
-        optimizer = torch.optim.SGD(origin_model.parameters(), lr=lr)
-        
-        model, optimizer, train_loader = self.setup(origin_model, optimizer, train_loader)
-        model.train()
-        
-        # save and load state dict
-        model_state_dict = model.state_dict()
-        optimizer_state_dict = optimizer.state_dict()
-        optimizer = model.load_state_dict(model_state_dict, optimizer_state_dict=optimizer_state_dict)
-        
-        num_epochs = 2
-        for _i in range(num_epochs):
-            for X, y in train_loader:
+        origin_model = LinearModel()
+        origin_optimizer = torch.optim.SGD(origin_model.parameters(), lr=lr)
+
+        def train_one_epoch(model, optimizer, loss_func, data_loader):
+            for X, y in data_loader:
                 optimizer.zero_grad()
                 loss = loss_func(model(X), y)
                 self.backward(loss)
                 optimizer.step()
 
-        assert model.model._module.fc1.weight.data == 0.25, \
+        model, optimizer, train_loader = self.setup(origin_model, origin_optimizer, train_loader)
+        model.train()
+        train_one_epoch(model, optimizer, loss_func, train_loader)
+        
+        # load state dict using original pytorch model
+        origin_model.load_state_dict(model.state_dict())
+        origin_optimizer.load_state_dict(optimizer.state_dict())
+
+        model, optimizer = self.setup(origin_model, origin_optimizer)
+        model.train()
+        train_one_epoch(model, optimizer, loss_func, train_loader)
+
+        assert model._module.fc1.weight.data == 0.25, \
             f"wrong weights: {model.model._module.fc1.weight.data}"
 
 

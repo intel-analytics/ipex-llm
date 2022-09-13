@@ -14,15 +14,13 @@
 # limitations under the License.
 #
 
-import copy
-from typing import Any, Union, List, Dict
+from typing import Any, Union, List
 from logging import warning
 from functools import partial
 from abc import abstractmethod
-from collections import OrderedDict
 
 import torch
-from torch import nn, Tensor
+from torch import nn
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 from pytorch_lightning.lite import LightningLite
@@ -36,64 +34,14 @@ from bigdl.nano.pytorch.strategies import create_IPEXStrategy, DDPSpawnStrategy,
     DDPSubprocessStrategy, create_RayStrategy
 
 
-class _TorchNanoModuleWrapper():
-    def __init__(self, model: "_TorchNanoModule", torch_nano: "TorchNano", backup_model: nn.Module,
-                 backup_optimizers: List[Optimizer], move_to_device: bool):
-        self.model = model
-        self.torch_nano = torch_nano
-        self.backup_model = backup_model
-        self.backup_optimizers = backup_optimizers
-        self.move_to_device = move_to_device
-
-    def state_dict(self, *args, **kwargs):
-        return self.model._module.state_dict(*args, **kwargs)
-
-    def load_state_dict(self, state_dict: 'OrderedDict[str, Tensor]', strict: bool = True,
-                        optimizer_state_dict: 'Union[Dict, List[Dict]]' = None):
-        """
-        Load the state dict of model and optimizer(s)(optional).
-
-        After calling this method, the original optimizer(s) will be invalid,
-        if you want new optimizer(s), you should pass the `optimizer_state_dict`
-        parameter, then new optimizer(s) will be returned.
-
-        :param state_dict: the model's state dict
-        :param strict: whether use strict mode, defaults to True
-        :param optimizer_state_dict: the optimizer(s)'s state dict, defaults to None
-        :return: return optimizers if passed `optimizer_state_dict`, otherwise return nothing
-        """
-        # load optimizer's state dict using backup optimizers
-        if optimizer_state_dict is not None:
-            optimizer_state_dict_list = optimizer_state_dict \
-                if isinstance(optimizer_state_dict, list) else [optimizer_state_dict]
-            for optimizer, state in zip(self.backup_optimizers, optimizer_state_dict_list):
-                optimizer.load_state_dict(state)
-
-        if self.torch_nano.use_ipex and not TORCH_VERSION_LESS_1_10:
-            # load model's state dict using backup model
-            self.backup_model.load_state_dict(state_dict, strict)
-            # re-setup loaded model and optimizer
-            model, optimizers = self.torch_nano._setup(self.backup_model, self.backup_optimizers,
-                                                       self.move_to_device)
-            self.model = model
-        else:
-            # load model's state dict directly
-            self.model._module.load_state_dict(state_dict, strict)
-            # no need to create new optimizers
-            optimizers = self.backup_optimizers
-
-        if optimizer_state_dict is not None:
-            optimizer = optimizers if isinstance(optimizer_state_dict, list) else optimizers[0]
-            return optimizer
-
-    def __call__(self, *args, **kwargs):
-        return self.model(*args, **kwargs)
-
-    def __getattr__(self, name: str):
-        return getattr(self.model, name)
-
-
 class _TorchNanoModule(_LiteModule):
+    def state_dict(self, *args, **kwargs):
+        return self._module.state_dict(*args, **kwargs)
+
+    def load_state_dict(self, *args, **kwargs):
+        invalidInputError(False, "TorchNano doesn't support loading state dict, "
+                          "please load it using original pytorch model")
+
     def __getattr__(self, name: str):
         # automatically unwrap attributes access of _LiteModule
         try:
@@ -207,10 +155,12 @@ class TorchNano(LightningLite):
             training = model.training
             if len(optimizers) == 0:
                 model.eval()
-                ipex_optimize(model, inplace=True, dtype=self.dtype)
+                model = ipex_optimize(model, inplace=False, dtype=self.dtype)
             elif len(optimizers) == 1:
                 model.train()
-                ipex_optimize(model, optimizer=optimizers[0], inplace=True, dtype=self.dtype)
+                model, optimizer = ipex_optimize(model, optimizer=optimizers[0],
+                                                 inplace=False, dtype=self.dtype)
+                optimizers = [optimizer]
             else:
                 invalidInputError(False, "Ipex does not support more than one optimizers.")
             model.train(training)
@@ -242,22 +192,16 @@ class TorchNano(LightningLite):
         """
         # convert single optimizer to a optimizer list
         optimizers = [optimizer] if isinstance(optimizer, Optimizer) else optimizer
-
-        if self.use_ipex and not TORCH_VERSION_LESS_1_10:
-            (backup_model, backup_optimizers) = copy.deepcopy((model, optimizers))
-            model, optimizers = self._setup(model, optimizers, move_to_device=move_to_device)
-            model_wrapper = _TorchNanoModuleWrapper(model, self, backup_model,  # type: ignore
-                                                    backup_optimizers, move_to_device)
-        else:
-            model, optimizers = self._setup(model, optimizers, move_to_device=move_to_device)
-            model_wrapper = _TorchNanoModuleWrapper(model, self, model,  # type: ignore
-                                                    optimizers, move_to_device)
+        model, optimizers = self._setup(model, optimizers, move_to_device=move_to_device)
 
         dataloaders = self.setup_dataloaders(*dataloaders,  # type: ignore
                                              move_to_device=move_to_device)
         # convert optimizer list to single optimizer
         optimizer = optimizers[0] if isinstance(optimizer, Optimizer) else optimizers
-        return model_wrapper, optimizer, dataloaders
+        if len(dataloaders) == 0:
+            return model, optimizer
+        else:
+            return model, optimizer, dataloaders
 
     @abstractmethod
     def train(self, *args: Any, **kwargs: Any) -> Any:
