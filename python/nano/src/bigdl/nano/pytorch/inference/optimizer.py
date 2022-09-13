@@ -705,10 +705,10 @@ def _format_optimize_result(optimize_result_dict: dict,
     '''
     if calculate_accuracy is True:
         horizontal_line = " {0} {1} {2} {3}\n" \
-            .format("-" * 32, "-" * 22, "-" * 12, "-" * 12)
+            .format("-" * 32, "-" * 22, "-" * 14, "-" * 12)
         repr_str = horizontal_line
-        repr_str += "| {0:^30} | {1:^20} | {2:^10} | {3:^10} |\n" \
-            .format("method", "status", "latency", "accuracy")
+        repr_str += "| {0:^30} | {1:^20} | {2:^12} | {3:^10} |\n" \
+            .format("method", "status", "latency(ms)", "accuracy")
         repr_str += horizontal_line
         for method, result in optimize_result_dict.items():
             status = result["status"]
@@ -719,22 +719,22 @@ def _format_optimize_result(optimize_result_dict: dict,
             if accuracy != "None":
                 accuracy = round(accuracy, 3)
             method_str = f"| {method:^30} | {status:^20} | " \
-                         f"{latency:^10} | {accuracy:^10} |\n"
+                         f"{latency:^12} | {accuracy:^10} |\n"
             repr_str += method_str
         repr_str += horizontal_line
     else:
         horizontal_line = " {0} {1} {2}\n" \
-            .format("-" * 32, "-" * 22, "-" * 12)
+            .format("-" * 32, "-" * 22, "-" * 14)
         repr_str = horizontal_line
-        repr_str += "| {0:^30} | {1:^20} | {2:^10} |\n" \
-            .format("method", "status", "latency")
+        repr_str += "| {0:^30} | {1:^20} | {2:^12} |\n" \
+            .format("method", "status", "latency(ms)")
         repr_str += horizontal_line
         for method, result in optimize_result_dict.items():
             status = result["status"]
             latency = result.get("latency", "None")
             if latency != "None":
                 latency = round(latency, 3)
-            method_str = f"| {method:^30} | {status:^20} | {latency:^10} |\n"
+            method_str = f"| {method:^30} | {status:^20} | {latency:^12} |\n"
             repr_str += method_str
         repr_str += horizontal_line
     return repr_str
