@@ -264,7 +264,7 @@ class InferenceOptimizer:
         self._optimize_result = _format_optimize_result(self.optimized_model_dict,
                                                         self._calculate_accuracy)
         print(self._optimize_result)
-        print("Optimization cost {:.3}ms at all.".format(time.perf_counter() - start_time))
+        print("Optimization cost {:.3}s at all.".format(time.perf_counter() - start_time))
         print("===========================Stop Optimization===========================")
 
     def summary(self):
