@@ -108,8 +108,10 @@ echo "ConfVMSize: $ConfVMSize"
 echo "region: $region"
 
 # Create Service Principle
-#APP_ID=$( az ad sp create-for-rbac --query appId -o tsv)
-APP_ID="da0c8583-deab-48ac-aef5-7870e770771e"
+appinfo=$(az ad sp create-for-rbac --query "[appId, password]" -o tsv)
+readarray -d $'\n' -t app <<< $appinfo
+APP_ID=${app[0]}
+PASSWORD=${app[1]}
 echo "APP_ID: $APP_ID"
 
 # Assign your service princile to the VNet
@@ -121,7 +123,7 @@ echo "SUBNET_ID: $SUBNET_ID"
 subscriptionId="$(az account list --query "[?isDefault].id" -o tsv)"
 echo "subscriptionId: $subscriptionId"
 
-az role assignment create --assignee $APP_ID --scope "/subscriptions/$subscriptionId/resourceGroups/$VnetResourceGroupName/providers/Microsoft.Network/virtualNetworks/$SubnetName" --role "Network Contributor"
+az role assignment create --assignee $APP_ID --scope "/subscriptions/$subscriptionId/resourceGroups/$VnetResourceGroupName/providers/Microsoft.Network/virtualNetworks/$VnetName" --role "Network Contributor"
 
 # Create aks cluster and enable confidential compute add-on
 #ConfVMSize="Standard_DC8ds_v3"
@@ -135,7 +137,9 @@ az aks create \
     --network-plugin azure \
     --generate-ssh-keys \
     --vnet-subnet-id $SUBNET_ID \
-    --service-principal $APP_ID \
     --enable-managed-identity \
-	--enable-addons confcom \
-	--location $region
+    --enable-addons confcom \
+    --location $region \
+    --service-principal $APP_ID \
+    --client-secret $PASSWORD
+
