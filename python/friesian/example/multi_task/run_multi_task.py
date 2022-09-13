@@ -25,6 +25,9 @@ from bigdl.friesian.feature import FeatureTable
 from deepctr.feature_column import SparseFeat, DenseFeat
 from deepctr.models import MMOE, PLE
 
+# from python.serving.src.bigdl.serving.log4Error import invalidInputError
+from python.dllib.src.bigdl.dllib.utils.log4Error import invalidInputError
+
 
 def build_model(model_type, sparse_features, dense_features, feature_max_idx):
     sparse_feature_columns = [SparseFeat(feat, feature_max_idx[feat],
@@ -40,8 +43,7 @@ def build_model(model_type, sparse_features, dense_features, feature_max_idx):
                     task_types=['regression', 'binary'],
                     num_levels=2, task_names=['duration', 'click'])
     else:
-        model = None
-        print("Model type should be one of 'mmoe' and 'ple'.")
+        raise invalidInputError
     return model
 
 
@@ -150,10 +152,7 @@ def test_multi_task(valid_tbl_data, save_path, model, cat_cols, continuous_cols,
 
 def _parse_args():
     parser = ArgumentParser(description="Set parameters for multi task demo")
-    parser.add_argument('--do_train', action='store_true',
-                        help='Do training.')
-    parser.add_argument('--do_test', action='store_true',
-                        help='Do training.')
+
     parser.add_argument('--model_type', type=str, default="mmoe",
                         help='The multi task model, mmoe or ple.')
     parser.add_argument('--train_data_path', type=str,
@@ -195,31 +194,17 @@ if __name__ == "__main__":
                                driver_cores=args.driver_cores,
                                driver_memory=args.driver_memory)
     elif args.cluster_mode == "yarn":  # For Hadoop/YARN cluster
-        conf = {"spark.executor.memoryOverhead": "130g",
-                "spark.network.timeout": "10000000",
-                "spark.sql.broadcastTimeout": "7200",
-                "spark.sql.shuffle.partitions": "2000",
-                "spark.locality.wait": "0s",
-                "spark.sql.crossJoin.enabled": "true",
-                "spark.task.cpus": "1",
-                "spark.executor.heartbeatInterval": "200s",
-                "spark.driver.maxResultSize": "40G",
-                "spark.eventLog.enabled": "true",
-                "spark.app.name": "recsys-demo-train"}
         sc = init_orca_context(cluster_mode="yarn", cores=args.executor_cores,
                                num_nodes=args.num_executors, memory=args.executor_memory,
                                driver_cores=args.driver_cores, driver_memory=args.driver_memory,
-                               conf=conf, object_store_memory="80g",
-                               env={"KMP_BLOCKTIME": "1",
-                                    "KMP_AFFINITY": "granularity=fine,compact,1,0",
-                                    "OMP_NUM_THREADS": "28"})
+                               object_store_memory="80g")
     elif args.cluster_mode == "spark-submit":
         sc = init_orca_context("spark-submit")
     else:
         ArgumentError(False,
                       "cluster_mode should be one of 'local', 'yarn', 'standalone' and"
                       " 'spark-submit', but got " + args.cluster_mode)
-    cat_cols_ = [
+    cat_cols = [
         'user_id',
         'article_id',
         'net_status',
@@ -230,21 +215,20 @@ if __name__ == "__main__":
         'gender',
         'cat_1',
     ]
-    continuous_cols_ = ['img_num']
-    feature_max_idx_ = {'user_id': 40000, 'article_id': 200000, 'net_status': 1004,
-                        'exop_position': 2000, 'device': 2000,
-                        'city': 1379, 'age': 1005, 'gender': 1003, 'cat_1': 1038}
+    continuous_cols = ['img_num']
+    feature_max_idx = {'user_id': 40000, 'article_id': 200000, 'net_status': 1004,
+                       'exop_position': 2000, 'device': 2000,
+                       'city': 1379, 'age': 1005, 'gender': 1003, 'cat_1': 1038}
 
-    if args.do_train:
-        train_tbl = FeatureTable.read_parquet(args.train_data_path)
-        valid_tbl = FeatureTable.read_parquet(args.test_data_path)
-        train_multi_task(train_tbl, valid_tbl, args.model_save_path,
-                         args.model_type, cat_cols_, continuous_cols_,
-                         feature_max_idx_)
-    elif args.do_test:
-        valid_tbl = FeatureTable.read_parquet(args.test_data_path)
-        test_multi_task(valid_tbl, args.model_save_path, args.model_type,
-                        cat_cols_, continuous_cols_, feature_max_idx_)
-    else:
-        print("Need to choose whether to do_train or do_test.")
+    # do train
+    train_tbl = FeatureTable.read_parquet(args.train_data_path)
+    valid_tbl = FeatureTable.read_parquet(args.test_data_path)
+    train_multi_task(train_tbl, valid_tbl, args.model_save_path,
+                     args.model_type, cat_cols, continuous_cols,
+                     feature_max_idx)
+    # do test
+    # valid_tbl = FeatureTable.read_parquet(args.test_data_path)
+    test_multi_task(valid_tbl, args.model_save_path, args.model_type,
+                    cat_cols, continuous_cols, feature_max_idx)
+
     stop_orca_context()

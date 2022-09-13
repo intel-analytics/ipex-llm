@@ -39,33 +39,33 @@ def read_and_split(data_input_path, sparse_int_features, sparse_string_features,
                     'exop_position', 'click', 'duration', 'device', 'os', 'province', 'city',
                     'age', 'gender', 'ctime', 'img_num', 'cat_1', 'cat_2'
                     ]
-    if data_input_path.split('.')[-1] == 'csv':
-        data_pd = FeatureTable.read_csv(data_input_path, header=False, names=header_names)
+    if data_input_path.endswith("csv"):
+        tbl = FeatureTable.read_csv(data_input_path, header=False, names=header_names)
     else:
-        data_pd = FeatureTable.read_parquet(data_input_path)
-    data_pd = data_pd.cast(sparse_int_features, 'string')
-    data_pd = data_pd.cast(dense_features, 'string')
+        tbl = FeatureTable.read_parquet(data_input_path)
+    tbl = tbl.cast(sparse_int_features, 'string')
+    tbl = tbl.cast(dense_features, 'string')
 
     # fill absence data
     for feature in (sparse_int_features + sparse_string_features):
-        data_pd = data_pd.fillna("", feature)
+        tbl = tbl.fillna("", feature)
     for dense_feature in dense_features:
-        data_pd = data_pd.fillna('0.0', dense_feature)
-    print(data_pd.df.dtypes)
+        tbl = tbl.fillna('0.0', dense_feature)
+    print(tbl.df.dtypes)
 
     process_img_num = lambda x: transform(x)
     process_cat_2 = lambda x: transform_cat_2(x)
-    data_pd = data_pd.apply("img_num", "img_num", process_img_num, "float")
-    data_pd = data_pd.apply("cat_2", "cat_2", process_cat_2, "string")
+    tbl = tbl.apply("img_num", "img_num", process_img_num, "float")
+    tbl = tbl.apply("cat_2", "cat_2", process_cat_2, "string")
 
-    train_tbl = FeatureTable(data_pd.df[data_pd.df['expo_time'] < '2021-07-06'])
-    valid_tbl = FeatureTable(data_pd.df[data_pd.df['expo_time'] >= '2021-07-06'])
+    train_tbl = FeatureTable(tbl.df[tbl.df['expo_time'] < '2021-07-06'])
+    valid_tbl = FeatureTable(tbl.df[tbl.df['expo_time'] >= '2021-07-06'])
     print('train_data.shape: ', train_tbl.size())
     print('test_data.shape: ', valid_tbl.size())
     return train_tbl, valid_tbl
 
 
-def feature_engineering(train_tbl, valid_tbl, model_path, model_path_json, sparse_int_features,
+def feature_engineering(train_tbl, valid_tbl, output_path, sparse_int_features,
                         sparse_string_features, dense_features):
     import json
     train_tbl, min_max_dict = train_tbl.min_max_scale(dense_features)
@@ -76,14 +76,11 @@ def feature_engineering(train_tbl, valid_tbl, model_path, model_path_json, spars
         valid_tbl = valid_tbl.encode_string(feature, feature_idx)
         valid_tbl = valid_tbl.fillna(0, feature)
         print("The class number of feature: {}/{}".format(feature, feature_idx.size()))
-        feature_idx.write_parquet(model_path)
-        fea_dict = feature_idx.to_dict()
-        with open(model_path_json + "/" + feature + '.json', 'w', encoding='utf-8') as ff:
-            ff.write(json.dumps(fea_dict, ensure_ascii=False, indent=2))
+        feature_idx.write_parquet(os.path.join(output_path, 'feature_maps'))
     return train_tbl, valid_tbl
 
 
-def _parse_args():
+def parse_args():
     parser = ArgumentParser(description="Transform dataset for multi task demo")
     parser.add_argument('--input_path', type=str,
                         default='/path/to/input/dataset',
@@ -109,7 +106,7 @@ def _parse_args():
 
 
 if __name__ == '__main__':
-    args = _parse_args()
+    args = parse_args()
     if args.cluster_mode == "local":
         sc = init_orca_context("local", cores=args.executor_cores,
                                memory=args.executor_memory)
@@ -130,30 +127,27 @@ if __name__ == '__main__':
                                "cluster_mode should be one of 'local', 'yarn', 'standalone' and"
                                " 'spark-submit', but got " + args.cluster_mode)
 
-    sparse_int_features_ = [
+    sparse_int_features = [
         'user_id', 'article_id',
         'net_status', 'flush_nums',
         'exop_position',
     ]
-    sparse_string_features_ = [
+    sparse_string_features = [
         'device', 'os', 'province',
         'city', 'age',
         'gender', 'cat_1', 'cat_2'
     ]
-    dense_features_ = ['img_num']
-    model_path_ = os.path.join(args.output_path, 'feature_maps')
-    model_path_json_ = os.path.join(args.output_path, 'feature_maps_json')
-    os.makedirs(model_path_, exist_ok=True)
-    os.makedirs(model_path_json_, exist_ok=True)
+    dense_features = ['img_num']
+
     # read, reformat and split data
-    df_train, df_test = read_and_split(args.input_path, sparse_int_features_,
-                                       sparse_string_features_, dense_features_)
-    train_tbl_, valid_tbl_ = feature_engineering(df_train, df_test,
-                                                 model_path_, model_path_json_,
-                                                 sparse_int_features_,
-                                                 sparse_string_features_, dense_features_)
-    print(train_tbl_.size())
-    print(valid_tbl_.size())
-    train_tbl_.write_parquet(os.path.join(args.output_path, 'train_processed'))
-    valid_tbl_.write_parquet(os.path.join(args.output_path, 'test_processed'))
+    df_train, df_test = read_and_split(args.input_path, sparse_int_features,
+                                       sparse_string_features, dense_features)
+    train_tbl, valid_tbl = feature_engineering(df_train, df_test,
+                                                 args.output_path,
+                                                 sparse_int_features,
+                                                 sparse_string_features, dense_features)
+    print(train_tbl.size())
+    print(valid_tbl.size())
+    train_tbl.write_parquet(os.path.join(args.output_path, 'train_processed'))
+    valid_tbl.write_parquet(os.path.join(args.output_path, 'test_processed'))
     stop_orca_context()

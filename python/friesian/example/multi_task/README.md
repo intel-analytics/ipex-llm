@@ -53,6 +53,14 @@ python data_processing.py \
     --cluster_mode local \
     --executor_cores 8 \
     --executor_memory 12g \
+```
+```bash
+python data_processing.py \
+    --input_path  /path/to/input/dataset \
+    --output_path /path/to/save/processed/dataset \
+    --cluster_mode yarn \
+    --executor_cores 8 \
+    --executor_memory 12g \
     --num_executors 4 \
     --driver_cores 2 \
     --driver_memory 8g
@@ -76,7 +84,6 @@ When the *cluster_mode* is yarn, *input_path* and *output_path* can be HDFS path
 After data preprocessing, the training command for MMoE or PLE model is as follows:
 ```bash
 python run_multi_task.py \
-    --do_train \
     --model_type mmoe\
     --train_data_path /path/to/training/dataset \
     --test_data_path /path/to/testing/dataset \
