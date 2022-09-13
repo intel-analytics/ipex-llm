@@ -21,8 +21,6 @@ import org.apache.logging.log4j.LogManager
 import scopt.OptionParser
 
 import java.util.Base64
-import java.io._
-import java.nio.charset.StandardCharsets
 
 /**
  * Simple Attestation Command Line tool for attestation service
