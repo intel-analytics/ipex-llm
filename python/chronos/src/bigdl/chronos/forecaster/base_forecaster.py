@@ -85,6 +85,7 @@ class BasePytorchForecaster(Forecaster):
             self.onnxruntime_fp32 = None  # onnxruntime session for fp32 precision
             self.openvino_fp32 = None  # placeholader openvino session for fp32 precision
             self.onnxruntime_int8 = None  # onnxruntime session for int8 precision
+            self.openvino_int8 = None  # placeholader openvino session for int8 precision
             self.pytorch_int8 = None  # pytorch model for int8 precision
 
     def _build_automodel(self, data, validation_data=None, batch_size=32, epochs=1):
@@ -554,7 +555,7 @@ class BasePytorchForecaster(Forecaster):
                                               input_data=data,
                                               batch_size=batch_size)
 
-    def predict_with_openvino(self, data, batch_size=32):
+    def predict_with_openvino(self, data, batch_size=32, quantize=False):
         """
         Predict using a trained forecaster with openvino. The method can only be
         used when forecaster is a non-distributed version.
@@ -571,6 +572,7 @@ class BasePytorchForecaster(Forecaster):
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time). Defaults
                to 32. None for all-data-single-time inference.
+        :param quantize: if use the quantized openvino model to predict.
 
         :return: A numpy array with shape (num_samples, horizon, target_dim).
         """
@@ -585,11 +587,16 @@ class BasePytorchForecaster(Forecaster):
         if not self.fitted:
             invalidInputError(False,
                               "You must call fit or restore first before calling predict!")
-        if self.openvino_fp32 is None:
-            self.build_openvino()
-        return _pytorch_fashion_inference(model=self.openvino_fp32,
-                                          input_data=data,
-                                          batch_size=batch_size)
+        if quantize:
+            return _pytorch_fashion_inference(model=self.openvino_int8,
+                                              input_data=data,
+                                              batch_size=batch_size)
+        else:
+            if self.openvino_fp32 is None:
+                self.build_openvino()
+            return _pytorch_fashion_inference(model=self.openvino_fp32,
+                                              input_data=data,
+                                              batch_size=batch_size)
 
     def evaluate(self, data, batch_size=32, multioutput="raw_values", quantize=False):
         """
@@ -881,6 +888,7 @@ class BasePytorchForecaster(Forecaster):
         self.onnxruntime_fp32 = None  # onnxruntime session for fp32 precision
         self.openvino_fp32 = None  # openvino session for fp32 precision
         self.onnxruntime_int8 = None  # onnxruntime session for int8 precision
+        self.openvino_int8 = None  # openvino session for int8 precision
         self.pytorch_int8 = None  # pytorch model for int8 precision
         return self
 
@@ -1007,10 +1015,13 @@ class BasePytorchForecaster(Forecaster):
                quantization. You may choose from "mse", "mae", "rmse", "r2", "mape", "smape".
         :param conf: A path to conf yaml file for quantization. Default to None,
                using default config.
-        :param framework: string or list, [{'pytorch'|'pytorch_fx'|'pytorch_ipex'},
-               {'onnxrt_integerops'|'onnxrt_qlinearops'}]. Default: 'pytorch_fx'.
-               Consistent with Intel Neural Compressor.
+        :param framework: string or list.
+               [{'pytorch'|'pytorch_fx'|'pytorch_ipex'},
+                {'onnxrt_integerops'|'onnxrt_qlinearops'},
+                {'openvino'}] Default: 'pytorch_fx'. Consistent with Intel Neural Compressor.
         :param approach: str, 'static' or 'dynamic'. Default to 'static'.
+               OpenVINO supports static mode only, if set to 'dynamic',
+               it will be replaced with 'static'.
         :param tuning_strategy: str, 'bayesian', 'basic', 'mse' or 'sigopt'. Default to 'bayesian'.
         :param relative_drop: Float, tolerable ralative accuracy drop. Default to None,
                e.g. set to 0.1 means that we accept a 10% increase in the metrics error.
@@ -1067,9 +1078,15 @@ class BasePytorchForecaster(Forecaster):
         framework = [framework] if isinstance(framework, str) else framework
         temp_quantized_model = None
         for framework_item in framework:
-            accelerator, method = framework_item.split('_')
+            if '_' in framework_item:
+                accelerator, method = framework_item.split('_')
+            else:
+                accelerator = framework_item
             if accelerator == 'pytorch':
                 accelerator = None
+            elif accelerator == 'openvino':
+                method = None
+                approach = "static"
             else:
                 accelerator = 'onnxruntime'
                 method = method[:-3]
@@ -1088,6 +1105,8 @@ class BasePytorchForecaster(Forecaster):
                                             onnxruntime_session_options=sess_options)
             if accelerator == 'onnxruntime':
                 self.onnxruntime_int8 = q_model
+            if accelerator == 'openvino':
+                self.openvino_int8 = q_model
             if accelerator is None:
                 self.pytorch_int8 = q_model
 
