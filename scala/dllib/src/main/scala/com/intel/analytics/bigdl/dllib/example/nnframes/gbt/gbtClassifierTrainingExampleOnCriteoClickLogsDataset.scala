@@ -2,15 +2,12 @@
 package com.intel.analytics.bigdl.dllib.example.nnframes.gbt
 
 import com.intel.analytics.bigdl.dllib.NNContext
-import com.intel.analytics.bigdl.dllib.example.nnframes.xgboost.xgbClassifierTrainingExampleOnCriteoClickLogsDataset.feature_nums
-import ml.dmlc.xgboost4j.scala.spark.TrackerConf
-import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.classification.GBTClassifier
-import org.apache.spark.ml.feature.{StringIndexer, VectorAssembler, VectorIndexer}
+import org.apache.spark.ml.feature.{StringIndexer, VectorAssembler}
 import org.apache.spark.sql.types.{LongType, StructField, StructType}
 import org.apache.spark.sql.{Row, SQLContext}
-import scopt.OptionParser
 import org.slf4j.{Logger, LoggerFactory}
+import scopt.OptionParser
 
 
 class Task extends Serializable {
@@ -30,10 +27,8 @@ class Task extends Serializable {
 case class Params(
                    trainingDataPath: String = "/host/data",
                    modelSavePath: String = "/host/data/model",
-                   numThreads: Int = 2,
                    maxIter: Int = 100,
-                   maxDepth: Int = 2,
-                   numWorkers: Int = 1
+                   maxDepth: Int = 2
                  )
 
 object gbtClassifierTrainingExampleOnCriteoClickLogsDataset {
@@ -103,9 +98,9 @@ object gbtClassifierTrainingExampleOnCriteoClickLogsDataset {
       setInputCols(inputCols).
       setOutputCol("features")
 
-    val xgbInput = vectorAssembler.transform(labelTransformed).select("features", "classIndex")
+    val gbtInput = vectorAssembler.transform(labelTransformed).select("features", "classIndex")
     // randomly split dataset to (train, eval1, eval2, test) in proportion 6:2:1:1
-    val Array(train, eval1, eval2, test) = xgbInput.randomSplit(Array(0.6, 0.2, 0.1, 0.1))
+    val Array(train, eval1, eval2, test) = gbtInput.randomSplit(Array(0.6, 0.2, 0.1, 0.1))
 
     train.cache().count()
     eval1.cache().count()
@@ -143,7 +138,7 @@ object gbtClassifierTrainingExampleOnCriteoClickLogsDataset {
     sc.stop()
   }
 
-  val parser: OptionParser[Params] = new OptionParser[Params]("input xgboost config") {
+  val parser: OptionParser[Params] = new OptionParser[Params]("input xgb config") {
     opt[String]('i', "trainingDataPath")
       .text("trainingData Path")
       .action((v, p) => p.copy(trainingDataPath = v))
