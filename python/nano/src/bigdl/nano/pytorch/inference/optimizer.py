@@ -26,7 +26,16 @@ from typing import Dict, Callable, Tuple
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
-from bigdl.nano.pytorch import Trainer
+from bigdl.nano.pytorch.amp import BF16Model
+from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel, load_openvino_model
+from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, create_IPEXAccelerator_1_9, \
+    PytorchIPEXJITModel, PytorchIPEXJITBF16Model, load_ipexjit_model
+from bigdl.nano.deps.onnxruntime.onnxruntime_api import PytorchONNXRuntimeModel, \
+    load_onnxruntime_model
+from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model, quantize as inc_quantize
+from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
+
 import os
 os.environ['LOGLEVEL'] = 'ERROR'  # remove parital output of inc
 
@@ -327,22 +336,6 @@ class InferenceOptimizer:
         return best_model, _format_acceleration_info(best_metric.method_name)
 
     @staticmethod
-    def trace(model: nn.Module,
-              input_sample=None,
-              accelerator: str = None,
-              use_ipex: bool = False,
-              onnxruntime_session_options=None,
-              logging: bool = True,
-              **export_kwargs) -> nn.Module:
-        return Trainer.trace(model=model,
-                             input_sample=input_sample,
-                             accelerator=accelerator,
-                             use_ipex=use_ipex,
-                             onnxruntime_session_options=onnxruntime_session_options,
-                             logging=logging,
-                             **export_kwargs)
-
-    @staticmethod
     def quantize(model: nn.Module,
                  precision: str = 'int8',
                  accelerator: str = None,
@@ -359,24 +352,208 @@ class InferenceOptimizer:
                  input_sample=None,
                  onnxruntime_session_options=None,
                  logging: bool = True,
-                 **export_kwargs) -> nn.Module:
-        return Trainer.quantize(model=model,
-                                precision=precision,
-                                accelerator=accelerator,
-                                use_ipex=use_ipex,
-                                calib_dataloader=calib_dataloader,
-                                metric=metric,
-                                accuracy_criterion=accuracy_criterion,
-                                approach=approach,
-                                method=method,
-                                conf=conf,
-                                tuning_strategy=tuning_strategy,
-                                timeout=timeout,
-                                max_trials=max_trials,
-                                input_sample=input_sample,
-                                onnxruntime_session_options=onnxruntime_session_options,
-                                logging=logging,
-                                **export_kwargs)
+                 **export_kwargs):
+        """
+        Calibrate a Pytorch-Lightning model for post-training quantization.
+
+        :param model:           A model to be quantized. Model type should be an instance of
+                                nn.Module.
+        :param precision:       Global precision of quantized model,
+                                supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
+        :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
+                                None means staying in pytorch.
+        :param calib_dataloader:    A torch.utils.data.dataloader.DataLoader object for calibration.
+                                    Required for static quantization.
+                                    It's also used as validation dataloader.
+        :param metric:              A torchmetrics.metric.Metric object for evaluation.
+        :param accuracy_criterion:  Tolerable accuracy drop, defaults to None meaning no
+                                    accuracy control.
+                                    accuracy_criterion = {'relative': 0.1, 'higher_is_better': True}
+                                    allows relative accuracy loss: 1%. accuracy_criterion =
+                                    {'absolute': 0.99, 'higher_is_better':False} means accuracy
+                                    must be smaller than 0.99.
+        :param approach:    'static' or 'dynamic'.
+                            'static': post_training_static_quant,
+                            'dynamic': post_training_dynamic_quant.
+                            Default: 'static'. OpenVINO supports static mode only.
+        :param method:          Method to do quantization. When accelerator=None, supported
+            methods: 'fx', 'eager', 'ipex', defaults to 'fx'. If you don't use ipex, suggest using
+            'fx' which executes automatic optimizations like fusion. For more information, please
+            refer to https://pytorch.org/docs/stable/quantization.html#eager-mode-quantization.
+            When accelerator='onnxruntime', supported methods: 'qlinear', 'integer', defaults
+            to 'qlinear'. Suggest 'qlinear' for lower accuracy drop if using static quantization.
+            More details in https://onnxruntime.ai/docs/performance/quantization.html.
+            This argument doesn't take effect for OpenVINO, don't change it for OpenVINO.
+        :param conf:        A path to conf yaml file for quantization.
+                            Default: None, using default config.
+        :param tuning_strategy:    'bayesian', 'basic', 'mse', 'sigopt'. Default: 'bayesian'.
+        :param timeout:     Tuning timeout (seconds). Default: None,  which means early stop.
+                            Combine with max_trials field to decide when to exit.
+        :param max_trials:  Max tune times. Default: None, which means no tuning.
+                            Combine with timeout field to decide when to exit.
+                            "timeout=0, max_trials=1" means it will try quantization only once and
+                            return satisfying best model.
+        :param input_sample:      An input example to convert pytorch model into ONNX/OpenVINO.
+        :param onnxruntime_session_options: The session option for onnxruntime, only valid when
+                                            accelerator='onnxruntime', otherwise will be ignored.
+        :param logging: whether to log detailed information of model conversion, only valid when
+                        accelerator='openvino', otherwise will be ignored. default: True.
+        :param **export_kwargs: will be passed to torch.onnx.export function.
+        :return:            A accelerated Pytorch-Lightning Model if quantization is sucessful.
+        """
+        if precision == 'bf16':
+            if accelerator is None:
+                if use_ipex:
+                    invalidInputError(not TORCH_VERSION_LESS_1_10,
+                                      "torch version should >=1.10 to use ipex")
+                    use_jit = (accelerator == "jit")
+                    channels_last = export_kwargs["channels_last"] \
+                        if "channels_last" in export_kwargs else None
+                    return PytorchIPEXJITBF16Model(model, input_sample=input_sample,
+                                                   use_ipex=use_ipex, use_jit=use_jit,
+                                                   channels_last=channels_last)
+                bf16_model = BF16Model(model)
+                return bf16_model
+            else:
+                invalidInputError(False,
+                                  "Accelerator {} is invalid for BF16.".format(accelerator))
+        if precision == 'int8':
+            if not accelerator or accelerator == 'onnxruntime':
+                method_map = {
+                    None: {
+                        'fx': 'pytorch_fx',
+                        'eager': 'pytorch',
+                        'ipex': 'pytorch_ipex',
+                        None: 'pytorch_fx'  # default
+                    },
+                    'onnxruntime': {
+                        'qlinear': 'onnxrt_qlinearops',
+                        'integer': 'onnxrt_integerops',
+                        None: 'onnxrt_qlinearops'  # default
+                    }
+                }
+                framework = method_map[accelerator].get(method, None)
+                if accelerator == "onnxruntime":
+                    if not type(model).__name__ == 'PytorchONNXRuntimeModel':
+                        # try to establish onnx model
+                        if input_sample is None:
+                            # input_sample can be a dataloader
+                            input_sample = calib_dataloader
+                        model = InferenceOptimizer.trace(
+                            model,
+                            input_sample=input_sample,
+                            accelerator='onnxruntime',
+                            **export_kwargs)
+                """
+                If accelerator==None, quantized model returned should be an object of PytorchModel
+                which is defined by neural-compressor containing a `GraphModule` for inference.
+                Otherwise accelerator=='onnxruntime', it returns an ONNXModel object. A supported
+                model which is able to run on Pytorch or ONNXRuntime can be fetched by
+                `quantized_model.model`.
+                """
+                return inc_quantize(model, calib_dataloader, metric,
+                                    framework=framework,
+                                    conf=conf,
+                                    approach=approach,
+                                    tuning_strategy=tuning_strategy,
+                                    accuracy_criterion=accuracy_criterion,
+                                    timeout=timeout,
+                                    max_trials=max_trials,
+                                    onnxruntime_session_options=onnxruntime_session_options)
+
+            elif accelerator == 'openvino':
+                model_type = type(model).__name__
+                if not model_type == 'PytorchOpenVINOModel':
+                    if input_sample is None:
+                        # input_sample can be a dataloader
+                        input_sample = calib_dataloader
+                    model = InferenceOptimizer.trace(model,
+                                                     input_sample=input_sample,
+                                                     accelerator='openvino',
+                                                     logging=logging,
+                                                     **export_kwargs)
+                invalidInputError(type(model).__name__ == 'PytorchOpenVINOModel',
+                                  "Invalid model to quantize. Please use a nn.Module or a model "
+                                  "from trainer.trance(accelerator=='openvino')")
+                drop_type = None
+                higher_is_better = None
+                maximal_drop = None
+                if metric:
+                    if not isinstance(accuracy_criterion, dict):
+                        accuracy_criterion = {'relative': 0.99, 'higher_is_better': True}
+
+                    drop_type = 'relative' if 'relative' in accuracy_criterion else 'absolute'
+                    higher_is_better = accuracy_criterion.get('higher_is_better', None)
+                    maximal_drop = accuracy_criterion.get(drop_type, None)
+
+                kwargs = {
+                    "metric": metric,
+                    "higher_better": higher_is_better,
+                    "drop_type": drop_type,
+                    "maximal_drop": maximal_drop,
+                    "max_iter_num": max_trials,
+                    # TODO following two keys are optional, if there is need, we can add them
+                    # "n_requests": None,
+                    # "sample_size": 300
+                }
+                return model.pot(calib_dataloader, **kwargs)
+            else:
+                invalidInputError(False,
+                                  "Accelerator {} is invalid.".format(accelerator))
+        invalidInputError(False,
+                          "Precision {} is invalid.".format(precision))
+
+    @staticmethod
+    def trace(model: nn.Module,
+              input_sample=None,
+              accelerator: str = None,
+              use_ipex: bool = False,
+              onnxruntime_session_options=None,
+              logging: bool = True,
+              **export_kwargs):
+        """
+        Trace a pytorch model and convert it into an accelerated module for inference.
+
+        For example, this function returns a PytorchOpenVINOModel when accelerator=='openvino'.
+
+        :param model: An torch.nn.Module model, including pl.LightningModule.
+        :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
+                             model is a LightningModule with any dataloader attached.
+        :param accelerator: The accelerator to use, defaults to None meaning staying in Pytorch
+                            backend. 'openvino', 'onnxruntime' and 'jit' are supported for now.
+        :param use_ipex: whether we use ipex as accelerator for inferencing. default: False.
+        :param onnxruntime_session_options: The session option for onnxruntime, only valid when
+                                            accelerator='onnxruntime', otherwise will be ignored.
+        :param logging: whether to log detailed information of model conversion, only valid when
+                        accelerator='openvino', otherwise will be ignored. default: True.
+        :param **kwargs: other extra advanced settings include
+                         1. those be passed to torch.onnx.export function, only valid when
+                         accelerator='onnxruntime'/'openvino', otherwise will be ignored.
+                         2. if channels_last is set and use_ipex=True, we will transform the
+                         data to be channels last according to the setting. Defaultly, channels_last
+                         will be set to True if use_ipex=True.
+        :return: Model with different acceleration.
+        """
+        invalidInputError(
+            isinstance(model, nn.Module) and not isinstance(model, AcceleratedLightningModule),
+            "Expect a nn.Module instance that is not traced or quantized"
+            "but got type {}".format(type(model))
+        )
+        if accelerator == 'openvino':  # openvino backend will not care about ipex usage
+            return PytorchOpenVINOModel(model, input_sample, logging, **export_kwargs)
+        if accelerator == 'onnxruntime':  # onnxruntime backend will not care about ipex usage
+            return PytorchONNXRuntimeModel(model, input_sample, onnxruntime_session_options,
+                                           **export_kwargs)
+        if accelerator == 'jit' or use_ipex:
+            if use_ipex:
+                invalidInputError(not TORCH_VERSION_LESS_1_10,
+                                  "torch version should >=1.10 to use ipex")
+            use_jit = (accelerator == "jit")
+            channels_last = export_kwargs["channels_last"]\
+                if "channels_last" in export_kwargs else None
+            return PytorchIPEXJITModel(model, input_sample=input_sample, use_ipex=use_ipex,
+                                       use_jit=use_jit, channels_last=channels_last)
+        invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
 
 def _inc_checker():

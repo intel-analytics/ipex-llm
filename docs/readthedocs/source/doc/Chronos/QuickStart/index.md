@@ -1,4 +1,4 @@
-# Chronos Tutorial
+# Chronos Examples
 
 </br>
 
@@ -9,7 +9,7 @@
 
     <div id="tutorial">
         <h3 style="text-align:left">Filter:</h3>
-        <p>Please <span style="font-weight:bold;">check</span> the checkboxes or <span style="font-weight:bold;">click</span> tag buttons to show the related tutorials. Reclick or uncheck will hide corresponding tutorials. If nothing is checked or clicked, all the tutorials will be displayed. </p>
+        <p>Please <span style="font-weight:bold;">check</span> the checkboxes or <span style="font-weight:bold;">click</span> tag buttons to show the related examples. Reclick or uncheck will hide corresponding examples. If nothing is checked or clicked, all the examples will be displayed. </p>
         <div class="border">
             <div class="choiceline">
                 <div class="choicebox"><input type="checkbox" class="checkboxes" name="choice" value="forecast" id="forecast">forecast </div>
@@ -241,6 +241,16 @@
             </summary>
             <img src="../../../_images/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/tree/main/python/chronos/example/loss/penalize_underestimation.ipynb">View source on GitHub</a>
             <p>This example demonstrates how to use TCNForecaster to penalize underestimation based on a built-in loss function LinexLoss.</p>
+        </details>
+        <hr>
+
+        <details id="GPUtrainingCPUacceleration">
+            <summary>
+                <a href="https://github.com/intel-analytics/BigDL/tree/main/python/chronos/example/inference-acceleration">Accelerate the inference speed of model trained on other platform</a>
+                <p>Tag: <button value="forecast">forecast</button>&nbsp;<button value="customized_model">customized model</button></p>
+            </summary>
+            <img src="../../../_images/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/tree/main/python/chronos/example/inference-acceleration">View source on GitHub</a>
+            <p>In this example, we show an example to train the model on GPU and accelerate the model by using onnxruntime on CPU.</p>
         </details>
         <hr>
 
