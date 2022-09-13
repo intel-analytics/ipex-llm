@@ -141,8 +141,9 @@
                         </goals>
                         <configuration>
                             <artifacts>
-                                <artifact>
-                                    <file>target/${pom.artifactId}-${pom.version}-dist-all.zip</file>
+				 <artifact>
+				     <file>target/${pom.artifactId}-${pom.version}-dist-all.zip</file>
+                                    <file>target/${pom.artifactId}-${pom.version}-fat-jars.zip</file>
                                     <type>zip</type>
                                 </artifact>
                             </artifacts>
