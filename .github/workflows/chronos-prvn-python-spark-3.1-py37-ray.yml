@@ -40,14 +40,15 @@ jobs:
           pip install pytest==5.4.1
           pip install prophet==1.1
           pip install pmdarima==1.8.4
-          pip install neural_compressor==1.11
+          pip install neural-compressor==1.11
           pip install tsfresh==0.17.0
           pip install ray==1.9.2 ray[tune]==1.9.2 ray[default]==1.9.2
           pip install pyarrow==6.0.1
           pip install ConfigSpace==0.5.0
           pip install optuna==2.10.1
-          pip install onnxruntime==1.11.1
           pip install onnx==1.11.0
+          pip install onnxruntime==1.11.1
+          pip install openvino-dev==2022.1.0
           pip uninstall -y numpy
           pip install numpy==1.19.5
           pip install scipy==1.5.4
