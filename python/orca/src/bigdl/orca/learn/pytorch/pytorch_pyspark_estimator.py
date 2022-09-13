@@ -113,9 +113,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             invalidInputError(False,
                               "If a loss_creator is not provided, you must "
                               "provide a custom training operator.")
-        if not model_dir:
-            invalidInputError(False,
-                              "Please specify model directory when using spark backend")
+
         self.model_dir = model_dir
 
         self.model_creator = model_creator
