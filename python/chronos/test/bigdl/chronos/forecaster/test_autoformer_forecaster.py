@@ -297,3 +297,13 @@ class TestChronosModelAutoformerForecaster(TestCase):
                                                   repetition_times=5)
         assert y_pred.shape == std.shape
         y_pred, std = forecaster.predict_interval(data=test_data)
+
+    def test_autoformer_forecaster_from_tsdataset(self):
+        df = get_ts_df()
+        target = ["value", "extra feature"]
+        tsdata_train, tsdata_val, tsdata_test =\
+            TSDataset.from_pandas(df, dt_col="datetime", target_col=target,
+                                with_split=True, test_ratio=0.1, val_ratio=0.1)
+        train_loader = tsdata_train.to_torch_data_loader(lookback=24, horizon=5, time_enc=True)
+        forecaster = AutoformerForecaster.from_tsdataset(tsdata_train)
+        forecaster.fit(train_loader, epochs=3, batch_size=32)

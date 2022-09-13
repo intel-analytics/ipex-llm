@@ -16,6 +16,7 @@
 
 import torch
 import numpy as np
+from pandas import Timedelta
 from bigdl.chronos.forecaster.abstract import Forecaster
 from bigdl.chronos.metric.forecast_metrics import Evaluator
 from bigdl.chronos.model.autoformer import model_creator, loss_creator
@@ -537,8 +538,9 @@ class AutoformerForecaster(Forecaster):
     @classmethod
     def from_tsdataset(cls,
                        tsdataset,
-                       past_seq_len,
-                       future_seq_len,
+                       past_seq_len=None,
+                       future_seq_len=None,
+                       label_len=None,
                        freq=None,
                        **kwargs):
         """
@@ -589,6 +591,9 @@ class AutoformerForecaster(Forecaster):
             invalidInputError(False,
                               "Forecaster requires 'past_seq_len' and 'future_seq_len' to specify "
                               "the history time step and output time step.")
+        
+        if label_len is None:
+            label_len = past_seq_len//2
 
         invalidInputError(check_time_steps(tsdataset, past_seq_len, future_seq_len),
                           "tsdataset already has history time steps and "
@@ -608,6 +613,7 @@ class AutoformerForecaster(Forecaster):
                    input_feature_num=input_feature_num,
                    output_feature_num=output_feature_num,
                    freq=freq,
+                   label_len=label_len,
                    **kwargs)
 
 
