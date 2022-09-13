@@ -268,6 +268,7 @@ class Trainer(pl.Trainer):
               input_sample=None,
               accelerator: str = None,
               use_ipex: bool = False,
+              thread_num: int = None,
               onnxruntime_session_options=None,
               logging: bool = True,
               **export_kwargs):
@@ -282,6 +283,9 @@ class Trainer(pl.Trainer):
         :param accelerator: The accelerator to use, defaults to None meaning staying in Pytorch
                             backend. 'openvino', 'onnxruntime' and 'jit' are supported for now.
         :param use_ipex: whether we use ipex as accelerator for inferencing. default: False.
+        :param thread_num: (optional) a int represents how many threads(cores) is needed for
+                           inference, only valid for accelerator='onnxruntime'
+                           or accelerator='openvino'.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
         :param logging: whether to log detailed information of model conversion, only valid when
@@ -298,6 +302,7 @@ class Trainer(pl.Trainer):
                                         input_sample=input_sample,
                                         accelerator=accelerator,
                                         use_ipex=use_ipex,
+                                        thread_num=thread_num,
                                         onnxruntime_session_options=onnxruntime_session_options,
                                         logging=logging,
                                         **export_kwargs)
@@ -317,6 +322,7 @@ class Trainer(pl.Trainer):
                  timeout: int = None,
                  max_trials: int = None,
                  input_sample=None,
+                 thread_num: int = None,
                  onnxruntime_session_options=None,
                  logging: bool = True,
                  **export_kwargs):
@@ -361,6 +367,9 @@ class Trainer(pl.Trainer):
                             "timeout=0, max_trials=1" means it will try quantization only once and
                             return satisfying best model.
         :param input_sample:      An input example to convert pytorch model into ONNX/OpenVINO.
+        :param thread_num: (optional) a int represents how many threads(cores) is needed for
+                           inference, only valid for accelerator='onnxruntime'
+                           or accelerator='openvino'.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
         :param logging: whether to log detailed information of model conversion, only valid when
@@ -382,6 +391,7 @@ class Trainer(pl.Trainer):
                                            timeout=timeout,
                                            max_trials=max_trials,
                                            input_sample=input_sample,
+                                           thread_num=thread_num,
                                            onnxruntime_session_options=onnxruntime_session_options,
                                            logging=logging,
                                            **export_kwargs)
