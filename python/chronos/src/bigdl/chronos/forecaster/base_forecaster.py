@@ -85,8 +85,8 @@ class BasePytorchForecaster(Forecaster):
             self.onnxruntime_fp32 = None  # onnxruntime session for fp32 precision
             self.openvino_fp32 = None  # placeholader openvino session for fp32 precision
             self.onnxruntime_int8 = None  # onnxruntime session for int8 precision
+            self.openvino_int8 = None # placeholader openvino session for int8 precision
             self.pytorch_int8 = None  # pytorch model for int8 precision
-            self.openvino_int8 = None
 
     def _build_automodel(self, data, validation_data=None, batch_size=32, epochs=1):
         """Build a Generic Model using config parameters."""
@@ -888,6 +888,7 @@ class BasePytorchForecaster(Forecaster):
         self.onnxruntime_fp32 = None  # onnxruntime session for fp32 precision
         self.openvino_fp32 = None  # openvino session for fp32 precision
         self.onnxruntime_int8 = None  # onnxruntime session for int8 precision
+        self.openvino_int8 = None # openvino session for int8 precision
         self.pytorch_int8 = None  # pytorch model for int8 precision
         return self
 
