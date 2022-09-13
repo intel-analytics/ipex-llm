@@ -42,7 +42,7 @@ object FLContext {
       flClient.psiSalt
   }
 
-  def initFLContext(id: String, target: String = null): Unit = {
+  def initFLContext(id: Int, target: String = null): Unit = {
     createSparkSession()
     Engine.init
 

@@ -42,7 +42,7 @@ class NNServiceImpl(NNServiceServicer):
             'pt': pt_agg.Aggregator(conf, **kargs)}
         self.model_dir = tempfile.mkdtemp() # store tmp file dir
         self.model_path = os.path.join(self.model_dir, "vfl_server_model")
-
+        self.client_num = int(self.client_num)
         self.condition = Condition()
         self._lock = threading.Lock()
 

@@ -42,7 +42,7 @@ class LocalModel(nn.Module):
 @click.option('--load_model', default=False)
 @click.option('--data_path', default="./data/diabetes-vfl-2.csv")
 def run_client(load_model, data_path):
-    init_fl_context('2')
+    init_fl_context(2)
     df_train = pd.read_csv(data_path)
     df_train['ID'] = df_train['ID'].astype(str)
     psi = PSI()

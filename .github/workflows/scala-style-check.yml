@@ -70,3 +70,17 @@ jobs:
           cd scala
           mvn clean verify -DskipTests -U
 
+
+  create-workflow-badge:
+    if: github.event.pull_request == ''
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: create workflow badge
+      if: ${{ always() }}
+      uses: ./.github/actions/create-job-status-badge
+      with:
+        secret: ${{ secrets.GIST_SECRET }}
+        gist-id: 689bf54fe32e4758ed528e4168c724bc
+        file-name: scala-style-check.json
+        type: workflow

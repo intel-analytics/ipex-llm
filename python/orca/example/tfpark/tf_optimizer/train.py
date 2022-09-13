@@ -22,6 +22,7 @@ import numpy as np
 
 from bigdl.dllib.feature.dataset import mnist
 from bigdl.dllib.feature.dataset.transformer import *
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 import os
 import sys
@@ -37,9 +38,10 @@ parser = argparse.ArgumentParser(description="Run the tfpark keras "
 parser.add_argument('--max_epoch', type=int, default=5,
                     help='Set max_epoch for training, it should be integer.')
 parser.add_argument('--data_num', type=int, default=60000,
-                    help='Set data_num for training, it should be integer.')                    
+                    help='Set data_num for training, it should be integer.')
 parser.add_argument('--cluster_mode', type=str, default="local",
                     help='The mode for the Spark cluster. local, yarn or spark-submit.')
+
 
 def accuracy(logits, labels):
     predictions = tf.argmax(logits, axis=1, output_type=labels.dtype)
@@ -52,8 +54,10 @@ def main(max_epoch, data_num):
     cluster_mode = args.cluster_mode
     if cluster_mode.startswith("yarn"):
         hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
-        assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
-                "set the environment variable HADOOP_CONF_DIR"
+        invalidInputError(
+            hadoop_conf is not None,
+            "Directory path to hadoop conf not found for yarn-client mode. Please "
+            "set the environment variable HADOOP_CONF_DIR")
         spark_conf = create_spark_conf().set("spark.executor.memory", "5g") \
             .set("spark.executor.cores", 2) \
             .set("spark.executor.instances", 2) \

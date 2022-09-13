@@ -18,7 +18,7 @@ import os
 from torch import nn
 import torch
 from unittest import TestCase
-
+import pytest
 import torchvision.transforms as transforms
 from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch import InferenceOptimizer
@@ -69,25 +69,45 @@ class TestInferencePipeline(TestCase):
     trainer = Trainer(max_epochs=max_epochs)
     model = Trainer.compile(model, loss, optimizer)
     trainer.fit(model, train_loader)
-
-    def test_pipeline(self):
+    
+    def test_get_model_without_optimize(self):
         inference_opt = InferenceOptimizer()
-        inference_opt.optimize(model=self.model, 
+        with pytest.raises(RuntimeError) as e:
+            acc_model, option = inference_opt.get_best_model()
+        error_msg = e.value.args[0]
+        assert error_msg == "There is no optimized model. You should call .optimize() " \
+                            "before get_best_model()"
+
+    def test_pipeline_with_metric(self):
+        inference_opt = InferenceOptimizer()
+        inference_opt.optimize(model=self.model,
                                training_data=self.train_loader,
-                               validation_data=self.test_loader, 
+                               validation_data=self.test_loader,
                                metric=self.metric,
                                direction="max",
                                cpu_num=1)
-        for key, value in inference_opt.optimized_model_dict.items():
-            print(key, value["latency"], value["accuracy"])
+
         acc_model, option = inference_opt.get_best_model()
-        print(option)
         acc_model, option = inference_opt.get_best_model(accelerator="onnxruntime")
         assert option == "" or "onnxruntime" in option
         acc_model, option = inference_opt.get_best_model(precision="int8")
-        assert option == "" or "inc" in option
+        assert option == "" or "inc" in option or "pot" in option
         acc_model, option = inference_opt.get_best_model(accuracy_criterion=0.1)
+        acc_model(next(iter(self.train_loader))[0])
 
-if __name__ == "__main__":
-    test = TestInferencePipeline()
-    test.test_pipeline()
+    def test_pipeline_without_metric(self):
+        inference_opt = InferenceOptimizer()
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader,
+                               cpu_num=1)
+
+        acc_model, option = inference_opt.get_best_model()
+        acc_model, option = inference_opt.get_best_model(accelerator="onnxruntime")
+        assert option == "" or "onnxruntime" in option
+        acc_model, option = inference_opt.get_best_model(precision="int8")
+        assert option == "" or "inc" in option or "pot" in option
+        with pytest.raises(RuntimeError) as e:
+            acc_model, option = inference_opt.get_best_model(accuracy_criterion=0.1)
+        error_msg = e.value.args[0]
+        assert error_msg == "If you want to specify accuracy_criterion, you need "\
+                            "to set metric and validation_data when call 'optimize'."

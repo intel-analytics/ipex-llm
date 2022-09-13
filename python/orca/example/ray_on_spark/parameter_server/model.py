@@ -30,6 +30,7 @@ from tensorflow.examples.tutorials.mnist import input_data
 
 import ray
 import ray.experimental.tf_utils
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 
 def download_mnist_retry(seed=0, max_num_retries=20):
@@ -39,7 +40,7 @@ def download_mnist_retry(seed=0, max_num_retries=20):
                 "MNIST_data", one_hot=True, seed=seed)
         except tf.errors.AlreadyExistsError:
             time.sleep(1)
-    raise Exception("Failed to download MNIST.")
+    invalidInputError(False, "Failed to download MNIST.")
 
 
 class SimpleCNN(object):

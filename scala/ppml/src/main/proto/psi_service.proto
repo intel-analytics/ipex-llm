@@ -39,7 +39,7 @@ message SaltReply {
 
 message UploadSetRequest {
     string task_id = 1;
-    string client_id = 2;
+    int32 client_id = 2;
     int32 split = 3;
     int32 num_split = 4;
     int32 split_length = 5;

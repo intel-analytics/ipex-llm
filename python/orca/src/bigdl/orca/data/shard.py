@@ -570,7 +570,6 @@ class SparkXShards(XShards):
                     os.mkdir(tmpFile)
 
                     arrow_types = [to_arrow_type(f.dataType) for f in sdf_schema.fields]
-
                     arrow_data = [[(c, t) for (_, c), t in zip(pdf.iteritems(), arrow_types)]]
                     col_by_name = True
                     safecheck = False
@@ -645,6 +644,7 @@ class SparkXShards(XShards):
             self.type['schema'] = pdf_schema
             self.type['spark_df_schema'] = sdf_schema
             return self.type['schema']
+        return None
 
     def _get_spark_df_schema(self):
         if 'spark_df_schema' in self.type:
@@ -657,6 +657,7 @@ class SparkXShards(XShards):
             self.type['schema'] = pdf_schema
             self.type['spark_df_schema'] = sdf_schema
             return self.type['spark_df_schema']
+        return None
 
     def _get_class_name(self):
         if 'class_name' in self.type:

@@ -60,7 +60,7 @@ object FGBoostRegression extends DebugLogger {
     /**
      * Usage of BigDL PPML starts from here
      */
-    FLContext.initFLContext("1")
+    FLContext.initFLContext(1)
     val (trainData, testData) = getData(dataPath, rowKeyName)
 
     // create LogisticRegression object to train the model

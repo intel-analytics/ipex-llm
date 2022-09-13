@@ -40,7 +40,7 @@ object PythonPPML {
 }
 class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T])
   extends PythonBigDL with TimingSupportive {
-  def initFLContext(id: String, target: String): Unit = {
+  def initFLContext(id: Int, target: String): Unit = {
     FLContext.initFLContext(id, target)
   }
   def setPsiSalt(psiSalt: String): Unit = {

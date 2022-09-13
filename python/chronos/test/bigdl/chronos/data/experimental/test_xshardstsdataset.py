@@ -217,8 +217,8 @@ class TestXShardsTSDataset(TestCase):
         scalers = [{0: StandardScaler(), 1: StandardScaler()}]
         df = pd.read_csv(os.path.join(self.resource_path, "multiple.csv"))
         for scaler in scalers:
-            shards_multiple = read_csv(os.path.join(self.resource_path, "multiple.csv"))
-            shards_multiple_test = read_csv(os.path.join(self.resource_path, "multiple.csv"))
+            shards_multiple = read_csv(os.path.join(self.resource_path, "multiple.csv"), dtype={"id": np.int64})
+            shards_multiple_test = read_csv(os.path.join(self.resource_path, "multiple.csv"), dtype={"id": np.int64})
 
             tsdata = XShardsTSDataset.from_xshards(shards_multiple, dt_col="datetime",
                                                    target_col="value",

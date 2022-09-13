@@ -121,11 +121,11 @@ class TestLogisticRegression(FLTest):
                 pytorch_loss_list.append(np.array(loss))
         
         mock_party2 = Process(target=mock_process, 
-            args=('diabetes-vfl-2.csv', self.target, '2', False))
+            args=('diabetes-vfl-2.csv', self.target, 2, False))
         mock_party2.start()
         ppl = mock_process(data_train='diabetes-vfl-1.csv',
                            target=self.target,
-                           client_id='1',
+                           client_id=1,
                            upload_server_model=True)
         mock_party2.join()
         assert np.allclose(pytorch_loss_list, ppl.loss_history), \
