@@ -83,7 +83,6 @@ object AttestationCLI {
                 as.getQuoteFromServer(challengeString).getBytes()
               case _ => throw new AttestationRuntimeException("Wrong Attestation service type")
             }
-            
             val quoteVerifier = new SGXDCAPQuoteVerifierImpl()
             val verifyQuoteResult = quoteVerifier.verifyQuote(asQuote)
             if (verifyQuoteResult == 0) {
