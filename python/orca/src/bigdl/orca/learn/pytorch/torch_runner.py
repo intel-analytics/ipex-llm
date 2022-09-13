@@ -36,6 +36,7 @@ import logging
 import io
 import itertools
 import os
+from copy import copy
 import tempfile
 import torch
 import torch.nn as nn
@@ -255,7 +256,7 @@ class TorchRunner:
     def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
                      info=None, wrap_dataloader=None, callbacks=None,
                      validation_data_creator=None):
-        config = self.config.copy()
+        config = copy(self.config)
         if OrcaContext.serialize_data_creator:
             with FileLock(
                     os.path.join(tempfile.gettempdir(), ".orcadata.lock")):
@@ -382,7 +383,7 @@ class TorchRunner:
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
                  info=None, wrap_dataloader=None):
         """Evaluates the model on the validation data set."""
-        config = self.config.copy()
+        config = copy(self.config)
         info = info or {}
         self._toggle_profiling(profile=profile)
 
@@ -411,7 +412,7 @@ class TorchRunner:
 
     def predict(self, partition, batch_size=32, profile=False):
         """Evaluates the model on the validation data set."""
-        config = self.config.copy()
+        config = copy(self.config)
         self._toggle_profiling(profile=profile)
 
         params = {"batch_size": batch_size, "shuffle": False}
