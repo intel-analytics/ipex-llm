@@ -422,6 +422,11 @@ object XGBRegressorModel {
 
 /**
  * [[lightGBMClassifier wrapper]]
+ * @param lgbmParams, a map of parameters, currently supported 18 params to be set from lgbmParams:
+        "boostingType", "numLeaves", "maxDepth", "learningRate", "numIterations",
+        "binConstructSampleCnt", "objective", "minSplitGain", "minSumHessianInLeaf",
+        "minDataInLeaf", "baggingFraction", "baggingFreq", "featureFraction",
+        "lambdaL1", "lambdaL2", "numThreads", "earlyStoppingRound", "maxBin".
  */
 class LightGBMClassifier (val lgbmParams: Map[String, Any] = Map()) {
 
@@ -604,6 +609,11 @@ object LightGBMClassifierModel {
 
 /**
  * [[LightGBMRegressor]] lightGBM wrapper of LightGBMRegressor.
+ * @param lgbmParams, a map of parameters, currently supported 18 params to be set from lgbmParams:
+        "boostingType", "numLeaves", "maxDepth", "learningRate", "numIterations",
+        "binConstructSampleCnt", "objective", "minSplitGain", "minSumHessianInLeaf",
+        "minDataInLeaf", "baggingFraction", "baggingFreq", "featureFraction",
+        "lambdaL1", "lambdaL2", "numThreads", "earlyStoppingRound", "maxBin".
  */
 class LightGBMRegressor (val lgbmParams: Map[String, Any] = Map()) {
 

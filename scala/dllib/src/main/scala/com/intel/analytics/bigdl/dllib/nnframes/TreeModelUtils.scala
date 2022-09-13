@@ -15,6 +15,7 @@
  */
 
 package com.intel.analytics.bigdl.dllib.nnframes
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMClassifier => MLightGBMClassifier}
 import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMRegressor => MLightGBMRegressor}
 
@@ -55,6 +56,10 @@ object TreeModelUtils {
       case "numThreads" => estimator.setNumThreads(kv._2.asInstanceOf[Int])
       case "earlyStoppingRound" => estimator.setEarlyStoppingRound(kv._2.asInstanceOf[Int])
       case "maxBin" => estimator.setMaxBin(kv._2.asInstanceOf[Int])
+      case _ =>
+        Log4Error.invalidInputError(false,
+          s"LightGBM setParams: key ${ kv._1} is not supported by lgbmParams map",
+          s"try to set this parameter by calling .set${kv._1}")
     })
 
   }
