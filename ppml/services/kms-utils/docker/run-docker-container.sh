@@ -33,29 +33,29 @@ sudo docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh enr
 
 # 3. generate primary key and data key, save them to local paths
 export APPID=your_appid_obtained_from_enroll
-export APPKEY=your_appkey_obtained_from_enroll
+export APIKEY=your_apikey_obtained_from_enroll
 
-sudo docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh generatekeys $APPID $APPKEY" # keys to save in $local_key_folder_path
+sudo docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh generatekeys $APPID $APIKEY" # keys to save in $local_key_folder_path
 
 # 4. encrypt and decrypt binary file
 export DATA_FILE_NAME_TO_HANDLE=your_local_data_file_name_in_local_data_folder_path
 export APPID=your_appid_obtained_from_enroll
-export APPKEY=your_appkey_obtained_from_enroll
+export APIKEY=your_apikey_obtained_from_enroll
 
-sudo docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh localcrypto $APPID $APPKEY /home/data/$DATA_FILE_NAME_TO_HANDLE" # at local host side, a .encrypted and a .decrypted file will be generated
+sudo docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh localcrypto $APPID $APIKEY /home/data/$DATA_FILE_NAME_TO_HANDLE" # at local host side, a .encrypted and a .decrypted file will be generated
 
 
 # 5. SplitAndEncrypt a CSV data file
 export DATA_FILE_NAME_TO_HANDLE=your_local_csv_data_file_name_in_local_data_folder_path
 export APPID=your_appid_obtained_from_enroll
-export APPKEY=your_appkey_obtained_from_enroll
+export APIKEY=your_apikey_obtained_from_enroll
 
-sudo docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh splitandencrypt $APPID $APPKEY /home/data/$DATA_FILE_NAME_TO_HANDLE" # at local host side, a folder filled with encrypted data splits will be generated
+sudo docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh splitandencrypt $APPID $APIKEY /home/data/$DATA_FILE_NAME_TO_HANDLE" # at local host side, a folder filled with encrypted data splits will be generated
 
 
 # 6. Decrypt a encrypted CSV data file with SimpleQuery
 export DATA_FILE_NAME_TO_HANDLE=your_local_encrypted_csv_data_file_name_in_local_data_folder_path
 export APPID=your_appid_obtained_from_enroll
-export APPKEY=your_appkey_obtained_from_enroll
+export APIKEY=your_apikey_obtained_from_enroll
 
-sudo docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh simplequery $APPID $APPKEY /home/data/$DATA_FILE_NAME_TO_HANDLE" # at local host side, decrypted files will be generated
+sudo docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh simplequery $APPID $APIKEY /home/data/$DATA_FILE_NAME_TO_HANDLE" # at local host side, decrypted files will be generated
