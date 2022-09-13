@@ -1,4 +1,4 @@
-# Chronos Windows User Guide
+# Install Chronos on Windows
 
 ## Step 1: Install WSL2
 
@@ -26,21 +26,5 @@ chmod +x Miniconda3-4.5.4-Linux-x86_64.sh
 ./Miniconda3-4.5.4-Linux-x86_64.sh
 ```
 
-## Step 3: Create a BigDL-Chronos env 
-
-Use conda to create a new environment. For example, use `bigdl-chronos` as the new environemnt name: 
-
-```bash
-conda create -n bigdl-chronos python=3.7 setuptools=58.0.4
-conda activate bigdl-chronos
-```
-
-
-## Step 4: Install BigDL Chronos from Pypi
-
-You can install BigDL chronos from Pypi with `pip`. Please run:
-
-```
-pip install bigdl-chronos
-```
-For more installation options, please refer to [Chronos User Guide.](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html#install)
+## Step 3: Install Chronos
+For more installation options, please refer to [Chronos User Guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html#install).
