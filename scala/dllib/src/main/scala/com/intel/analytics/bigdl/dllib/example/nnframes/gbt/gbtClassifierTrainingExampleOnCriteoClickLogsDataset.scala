@@ -128,7 +128,7 @@ object gbtClassifierTrainingExampleOnCriteoClickLogsDataset {
     elapsed = (tAfterTraining - tBeforeTraining) / 1000000000.0f // second
     log.info("--training time is " + elapsed + " s")
 
-    gbtClassificationModel.save(modelSavePath)
+    gbtClassificationModel.write.overwrite().save(modelSavePath)
 
     val tAfterSave = System.nanoTime()
     elapsed = (tAfterSave - tAfterTraining) / 1000000000.0f // second
