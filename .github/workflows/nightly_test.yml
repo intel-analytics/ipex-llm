@@ -1,7 +1,7 @@
 name: Nightly Test
 
 on:
-  pull_request:
+  #pull_request:
   schedule:
     - cron: '0 13 * * *' # GMT time, 13:00 GMT == 21:00 China
   workflow_dispatch:
@@ -30,11 +30,6 @@ permissions:
   packages: write
 
 jobs:
-  #env:
-    #name: conda env
-    #outputs:
-      #Orca-Python-Horovod-Tf2-Py37-Spark3: Orca-Python-Horovod-Tf2-Py37-Spark3
-
   Orca-Python-ExampleTest-Py37-Spark3:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-ExampleTest-Py37-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
@@ -102,7 +97,7 @@ jobs:
       uses: ./.github/actions/orca-python-py37-spark3-action
 
   Orca-Python-Horovod-Tf2-Py37-Spark3:
-    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Horovod-Tf2-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Horovod-Tf2-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
