@@ -104,8 +104,12 @@ class MyNanoCorrectness(TorchNano):
                 self.backward(loss)
                 optimizer.step()
 
-        assert model._module.fc1.weight.data == 0.25, \
-            f"wrong weights: {model._module.fc1.weight.data}"
+        try:
+            assert model._module.fc1.weight.data == 0.25, \
+                f"wrong weights: {model._module.fc1.weight.data}"
+        except:
+            assert model._module.module.fc1.weight.data == 0.25, \
+                f"wrong weights: {model._module.module.fc1.weight.data}"
 
 
 class MyNanoLoadStateDict(TorchNano):
