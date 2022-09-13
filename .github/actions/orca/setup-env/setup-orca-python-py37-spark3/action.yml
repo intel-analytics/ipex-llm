@@ -29,6 +29,7 @@ runs:
         
         pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-friesian bigdl-friesian-spark3
         pip uninstall -r python/orca/dev/example/requirements-ray.txt -y
+        pip install pytest
         pip install -i https://pypi.org/simple --pre --upgrade bigdl-orca-spark3
         pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r python/orca/dev/example/requirements-ray.txt 
         pip uninstall -y opencv-python-headless
