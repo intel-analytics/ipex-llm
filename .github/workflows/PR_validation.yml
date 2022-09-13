@@ -60,7 +60,7 @@ jobs:
       - name: Set up maven
         uses: ./.github/actions/maven-setup-action
       - name: Run test
-        uses: ./.github/actions/dllib-scala-ut-action
+        uses: ./.github/actions/friesian-scala-ut-action
 
   Dllib-Scala-UT:
     needs: changes
