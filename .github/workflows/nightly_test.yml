@@ -19,7 +19,6 @@ on:
         - Orca-Python-Ray-Py37-Spark3
         - Orca-Python-Py37-Spark3
         - Orca-Ray-Ctx-Example
-        - Orca-Python-horovod-pytorch-Py37-Spark3
         - Dllib-Scala-UT
         - Friesian-Scala-UT
         - PPML-Scala-UT
