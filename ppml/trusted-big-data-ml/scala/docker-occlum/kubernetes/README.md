@@ -100,7 +100,102 @@ bash build-docker-image.sh
 ./run_spark_sql.sh
 ```
 
-### Run Spark XGBoost example
+### Run Spark GBTClassifier example using CriteoClickLogsDataset
+
+#### Criteo 1TB Click Logs [dataset](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/)
+
+Split 1g dataset and put it into folder `/tmp/gbt_data`. 
+You can change the path to data via change mount path `data-exchange` in `executor.yaml`.
+
+Parameters:
+
+* -i means input_path : String.
+
+    For example, yout host path to Criteo dateset is `/tmp/gbt_data/criteo` then this parameter in `run_spark_xgboost.sh` is `/host/data/gbt_data`.
+* -s means save_path : String.
+
+    After training, you can find gbt result in folder `/tmp/path_to_save`.
+
+* -I means max_Iter : Int
+* -d means max_depth: Int.
+
+#### Source code
+You can find source code [here](https://github.com/intel-analytics/BigDL/tree/main/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/nnframes/gbt/gbtClassifierTrainingExampleOnCriteoClickLogsDataset).
+
+### Run Spark TPC-H example
+
+Generate 1g Data like [this](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/scala/docker-occlum#generate-data), and you can use hdfs to replace the mount way, and you can just excute one query by adding [query_number] from 1 to 22 behind output_dir.For example:
+"hdfs:///input/dbgen hdfs:///output/dbgen 13" means excute query 13.
+
+Modify the following configuration in 'driver.yaml' and 'executor.yaml' and 'run_spark_tpch.sh'.
+
+```yaml
+#driver.yaml
+env:
+- name: DRIVER_MEMORY
+  value: "1g"
+- name: SGX_MEMORY_SIZE
+  value: "10GB"
+- name: SGX_THREAD
+  value: "1024"
+- name: SGX_HEAP
+  value: "1GB"
+- name: SGX_KERNEL_HEAP
+  value: "2GB"
+- name: META_SPACE
+  value: "1024m"
+```
+
+```yaml
+#excutor.yaml
+env:
+- name: SGX_MEMORY_SIZE
+  value: "10GB"
+- name: SGX_THREAD
+  value: "1024"
+- name: SGX_HEAP
+  value: "1GB"
+- name: SGX_KERNEL_HEAP
+  value: "2GB"
+```
+
+```bash
+#run_spark_tpch.sh
+--num-executors 2 \
+--executor-cores 4 \
+--executor-memory 4g \
+```
+
+Or you can directly add the following configuration in [run_spark_tpch.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/kubernetes/run_spark_tpch.sh) and it will overwrite the changes in *.yaml.
+
+```bash
+#run_spark_tpch.sh
+    --conf spark.kubernetes.driverEnv.DRIVER_MEMORY=1g \
+    --conf spark.kubernetes.driverEnv.SGX_MEM_SIZE="10GB" \
+    --conf spark.kubernetes.driverEnv.META_SPACE=1024m \
+    --conf spark.kubernetes.driverEnv.SGX_HEAP="1GB" \
+    --conf spark.kubernetes.driverEnv.SGX_KERNEL_HEAP="2GB" \
+    --conf spark.kubernetes.driverEnv.SGX_THREAD="1024" \
+    --conf spark.executorEnv.SGX_MEM_SIZE="10GB" \
+    --conf spark.executorEnv.SGX_KERNEL_HEAP="1GB" \
+    --conf spark.executorEnv.SGX_HEAP="1GB" \
+    --conf spark.executorEnv.SGX_THREAD="1024" \
+    --num-executors 2 \
+    --executor-cores 4 \
+    --executor-memory 4g \
+```
+
+
+Then run the script.
+
+```bash
+./run_spark_tpch.sh
+```
+
+## deprecated
+
+### Spark XGBoost example
+We don't recommend XGBoost example Because it is not support end-to-end security.
 
 #### UCI dataset [iris.data](https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data)
 
@@ -177,79 +272,6 @@ Parameters:
 
 **Note: make sure num_threads is no larger than spark.task.cpus.**
 
-#### Source code
-You can find source code [here](https://github.com/intel-analytics/BigDL/tree/main/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/nnframes/xgboost).
-
-### Run Spark TPC-H example
-
-Generate 1g Data like [this](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/scala/docker-occlum#generate-data), and you can use hdfs to replace the mount way, and you can just excute one query by adding [query_number] from 1 to 22 behind output_dir.For example:
-"hdfs:///input/dbgen hdfs:///output/dbgen 13" means excute query 13.
-
-Modify the following configuration in 'driver.yaml' and 'executor.yaml' and 'run_spark_tpch.sh'.
-
-```yaml
-#driver.yaml
-env:
-- name: DRIVER_MEMORY
-  value: "1g"
-- name: SGX_MEMORY_SIZE
-  value: "10GB"
-- name: SGX_THREAD
-  value: "1024"
-- name: SGX_HEAP
-  value: "1GB"
-- name: SGX_KERNEL_HEAP
-  value: "2GB"
-- name: META_SPACE
-  value: "1024m"
-```
-
-```yaml
-#excutor.yaml
-env:
-- name: SGX_MEMORY_SIZE
-  value: "10GB"
-- name: SGX_THREAD
-  value: "1024"
-- name: SGX_HEAP
-  value: "1GB"
-- name: SGX_KERNEL_HEAP
-  value: "2GB"
-```
-
-```bash
-#run_spark_tpch.sh
---num-executors 2 \
---executor-cores 4 \
---executor-memory 4g \
-```
-
-Or you can directly add the following configuration in [run_spark_tpch.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/kubernetes/run_spark_tpch.sh) and it will overwrite the changes in *.yaml.
-
-```bash
-#run_spark_tpch.sh
-    --conf spark.kubernetes.driverEnv.DRIVER_MEMORY=1g \
-    --conf spark.kubernetes.driverEnv.SGX_MEM_SIZE="10GB" \
-    --conf spark.kubernetes.driverEnv.META_SPACE=1024m \
-    --conf spark.kubernetes.driverEnv.SGX_HEAP="1GB" \
-    --conf spark.kubernetes.driverEnv.SGX_KERNEL_HEAP="2GB" \
-    --conf spark.kubernetes.driverEnv.SGX_THREAD="1024" \
-    --conf spark.executorEnv.SGX_MEM_SIZE="10GB" \
-    --conf spark.executorEnv.SGX_KERNEL_HEAP="1GB" \
-    --conf spark.executorEnv.SGX_HEAP="1GB" \
-    --conf spark.executorEnv.SGX_THREAD="1024" \
-    --num-executors 2 \
-    --executor-cores 4 \
-    --executor-memory 4g \
-```
-
-
-Then run the script.
-
-```bash
-./run_spark_tpch.sh
-```
-
 ## How to debug
 
-Modify the `--conf spark.kubernetes.sgx.log.level=off \` to one of `off, error, warn, debug, info, and trace` in `run_spark_xx.sh`.
+Modify the `--conf spark.kubernetes.sgx.log.level=off \` to one of `debug or trace` in `run_spark_xx.sh`.
