@@ -782,7 +782,7 @@ class BasePytorchForecaster(Forecaster):
     def predict_interval(self, data, validation_data, batch_size=None, repetition_times=5):
         """
         Calculate confidence interval of data based on Monte Carlo dropout(MC dropout).
-        
+
         :param data: The data support following formats:
 
                | 1. a numpy ndarray x:
