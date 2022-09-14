@@ -40,12 +40,12 @@ jobs:
       - name: Run Chronos python test
         shell: bash
         run: |
-          if conda info --env | grep "chronos-prvn-env"; then
+          if conda info --env | grep "chronos-prvn-env-2"; then
             source deactivate
-            conda remove -n chronos-prvn-env -y --all
+            conda remove -n chronos-prvn-env-2 -y --all
           fi
-          conda create -n chronos-prvn-env -y python==3.7.10 setuptools==58.0.4
-          source activate chronos-prvn-env
+          conda create -n chronos-prvn-env-2 -y python==3.7.10 setuptools==58.0.4
+          source activate chronos-prvn-env-2
           pip install pytest==5.4.1
           pip install prophet==1.1
           pip install pmdarima==1.8.4
@@ -73,11 +73,9 @@ jobs:
           pip install python/chronos/src/dist/bigdl_chronos-*-py3-none-manylinux1_x86_64.whl
           export SPARK_LOCAL_HOSTNAME=localhost
           export KERAS_BACKEND=tensorflow
-          ray stop
           bash python/chronos/dev/test/run-pytests-onnxrt16.sh
-          ray stop
           source deactivate
-          conda remove -n chronos-prvn-env -y --all
+          conda remove -n chronos-prvn-env-2 -y --all
         env:
           BIGDL_ROOT: ${{ github.workspace }}
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
