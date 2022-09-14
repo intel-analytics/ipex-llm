@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dllib.examples.nnframes.xgboost
+package com.intel.analytics.bigdl.dllib.example.nnframes.xgboost
 
 import ml.dmlc.xgboost4j.scala.spark.TrackerConf
 

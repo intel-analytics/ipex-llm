@@ -24,5 +24,5 @@ class TestOpenVINO(TestCase):
     def test_openvino_model(self):
         openvino_model = OpenVINOModel("./intel/resnet18-xnor-binary-onnx-0001/FP16-INT1/resnet18-xnor-binary-onnx-0001.xml")
         x = np.random.randn(1, 3, 224, 224)
-        y_hat = openvino_model.forward_step(x)
+        y_hat = openvino_model(x)
         assert tuple(next(iter(y_hat)).shape) == (1, 1000)

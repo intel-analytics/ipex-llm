@@ -28,10 +28,10 @@ import org.json.JSONObject
  * @param kmsServerIP ehsm IP
  * @param kmsServerPort ehsm port
  * @param ehsmAPPID application ID
- * @param ehsmAPPKEY application Key
+ * @param ehsmAPIKEY application Key
  */
 class EHSMAttestationService(kmsServerIP: String, kmsServerPort: String,
-                             ehsmAPPID: String, ehsmAPPKEY: String)
+                             ehsmAPPID: String, ehsmAPIKEY: String)
   extends AttestationService {
 
   val logger = LogManager.getLogger(getClass)
@@ -59,7 +59,7 @@ class EHSMAttestationService(kmsServerIP: String, kmsServerPort: String,
     val action: String = ACTION_GENERATE_QUOTE
     val currentTime = System.currentTimeMillis()
     val timestamp = s"$currentTime"
-    val ehsmParams = new EHSMParams(ehsmAPPID, ehsmAPPKEY, timestamp)
+    val ehsmParams = new EHSMParams(ehsmAPPID, ehsmAPIKEY, timestamp)
     ehsmParams.addPayloadElement(PAYLOAD_CHALLENGE, challenge)
     val postResult: JSONObject = timing("EHSMKeyManagementService request for GenerateQuote") {
       val postString: String = ehsmParams.getPostJSONString()
@@ -81,7 +81,7 @@ class EHSMAttestationService(kmsServerIP: String, kmsServerPort: String,
     val action: String = ACTION_VERIFY_QUOTE
     val currentTime = System.currentTimeMillis() // ms
     val timestamp = s"$currentTime"
-    val ehsmParams = new EHSMParams(ehsmAPPID, ehsmAPPKEY, timestamp)
+    val ehsmParams = new EHSMParams(ehsmAPPID, ehsmAPIKEY, timestamp)
     ehsmParams.addPayloadElement(PAYLOAD_QUOTE, quote)
     ehsmParams.addPayloadElement(PAYLOAD_NONCE, nonce)
     val postResult: JSONObject = timing("EHSMKeyManagementService request for VerifyQuote") {

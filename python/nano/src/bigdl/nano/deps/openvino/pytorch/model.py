@@ -22,10 +22,12 @@ from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from .utils import export
 import torch
 from bigdl.nano.utils.log4Error import invalidInputError
+from ..core.utils import save
 
 
-class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
-    def __init__(self, model, input_sample=None, logging=True, **export_kwargs):
+class PytorchOpenVINOModel(AcceleratedLightningModule):
+    def __init__(self, model, input_sample=None, thread_num=None,
+                 logging=True, **export_kwargs):
         """
         Create a OpenVINO model from pytorch.
 
@@ -34,6 +36,8 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
         :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
                              model is a LightningModule with any dataloader attached,
                              defaults to None.
+        :param thread_num: a int represents how many threads(cores) is needed for
+                           inference. default: None.
         :param logging: whether to log detailed information of model conversion. default: True.
         :param **export_kwargs: will be passed to torch.onnx.export function.
         """
@@ -43,14 +47,11 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
             if isinstance(model, torch.nn.Module):
                 export(model, input_sample, str(dir / 'tmp.xml'), logging, **export_kwargs)
                 ov_model_path = dir / 'tmp.xml'
-            OpenVINOModel.__init__(self, ov_model_path)
-            AcceleratedLightningModule.__init__(self, None)
+            self.ov_model = OpenVINOModel(ov_model_path, thread_num=thread_num)
+            super().__init__(self.ov_model)
 
     def on_forward_start(self, inputs):
-        if self.ie_network is None:
-            invalidInputError(False,
-                              "Please create an instance by PytorchOpenVINOModel()"
-                              " or PytorchOpenVINOModel.load()")
+        self.ov_model._model_exists_or_err()
         inputs = self.tensors_to_numpy(inputs)
         return inputs
 
@@ -63,6 +64,10 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
         status = super().status
         status.update({"xml_path": 'ov_saved_model.xml', "weight_path": 'ov_saved_model.bin'})
         return status
+
+    @property
+    def forward_args(self):
+        return self.ov_model.forward_args
 
     @staticmethod
     def _load(path):
@@ -95,7 +100,19 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
         if metric:
             metric = PytorchOpenVINOMetric(metric=metric, higher_better=higher_better)
         dataloader = PytorchOpenVINODataLoader(dataloader, collate_fn=self.tensors_to_numpy)
-        model = super().pot(dataloader, metric=metric, drop_type=drop_type,
-                            maximal_drop=maximal_drop, max_iter_num=max_iter_num,
-                            n_requests=n_requests, sample_size=sample_size)
+        model = self.ov_model.pot(dataloader, metric=metric, drop_type=drop_type,
+                                  maximal_drop=maximal_drop, max_iter_num=max_iter_num,
+                                  n_requests=n_requests, sample_size=sample_size)
         return PytorchOpenVINOModel(model)
+
+    def _save_model(self, path):
+        """
+        Save PytorchOpenVINOModel to local as xml and bin file
+
+        :param path: Directory to save the model.
+        """
+        self.ov_model._model_exists_or_err()
+        path = Path(path)
+        path.mkdir(exist_ok=True)
+        xml_path = path / self.status['xml_path']
+        save(self.ov_model.ie_network, xml_path)

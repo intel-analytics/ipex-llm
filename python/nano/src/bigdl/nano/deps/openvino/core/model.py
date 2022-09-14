@@ -22,13 +22,17 @@ from .utils import save
 
 
 class OpenVINOModel:
-    def __init__(self, ie_network: str, device='CPU'):
+    def __init__(self, ie_network: str, device='CPU', thread_num=None):
         self._ie = Core()
         self._device = device
+        self.thread_num = thread_num
         self.ie_network = ie_network
 
     def forward_step(self, *inputs):
         return self._infer_request.infer(list(inputs))
+
+    def __call__(self, *inputs):
+        return self.forward_step(*inputs)
 
     @property
     def forward_args(self):
@@ -44,23 +48,27 @@ class OpenVINOModel:
             self._ie_network = self._ie.read_model(model=str(model))
         else:
             self._ie_network = model
+        if self.thread_num is not None:
+            config = {"CPU_THREADS_NUM": str(self.thread_num)}
+        else:
+            config = {}
         self._compiled_model = self._ie.compile_model(model=self.ie_network,
-                                                      device_name=self._device)
+                                                      device_name=self._device,
+                                                      config=config)
         self._infer_request = self._compiled_model.create_infer_request()
         input_names = [t.any_name for t in self._ie_network.inputs]
         self._forward_args = input_names
 
-    def _save_model(self, path):
+    def _save(self, path):
         """
-        Save PytorchOpenVINOModel to local as xml and bin file
+        Save OpenVINOModel to local as xml and bin file
 
         :param path: Directory to save the model.
         """
+        self._model_exists_or_err()
         path = Path(path)
         path.mkdir(exist_ok=True)
-        invalidInputError(self.ie_network,
-                          "self.ie_network shouldn't be None.")
-        xml_path = path / self.status['xml_path']
+        xml_path = path / 'ov_saved_model.xml'
         save(self.ie_network, xml_path)
 
     def pot(self,
@@ -148,3 +156,6 @@ class OpenVINOModel:
             model = Core().read_model(model_path)
             model.reshape(orig_shape)
         return model
+
+    def _model_exists_or_err(self):
+        invalidInputError(self.ie_network is not None, "self.ie_network shouldn't be None.")

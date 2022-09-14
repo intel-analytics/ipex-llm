@@ -34,7 +34,7 @@ public class PSIServiceImpl extends PSIServiceGrpc.PSIServiceImplBase {
     protected PsiIntersection psiTask;
     // This psiCollections is
     //            TaskId,   ClientId, UploadRequest
-    protected Map<String, String[]> psiCollections = new ConcurrentHashMap<>();
+    protected Map<Integer, String[]> psiCollections = new ConcurrentHashMap<>();
     int clientNum;
     String clientSalt;
     String clientSecret;
@@ -79,7 +79,7 @@ public class PSIServiceImpl extends PSIServiceGrpc.PSIServiceImplBase {
         SIGNAL signal;
 
         signal= SIGNAL.SUCCESS;
-        String clientId = request.getClientId();
+        int clientId = request.getClientId();
         int numSplit = request.getNumSplit();
         int splitLength = request.getSplitLength();
         int totalLength = request.getTotalLength();

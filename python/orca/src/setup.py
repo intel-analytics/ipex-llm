@@ -17,11 +17,18 @@
 #
 
 import os
-
 import sys
-from shutil import copyfile, copytree, rmtree
 import fnmatch
+from shutil import copyfile, copytree, rmtree
 from setuptools import setup
+
+long_description = '''
+BigDL Orca helps to seamlessly scale out TensorFlow and PyTorch pipelines 
+for distributed Big Data.
+
+See [here](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/orca.html) 
+for more information.
+'''
 
 TEMP_PATH = "bigdl/share/orca"
 bigdl_home = os.path.abspath(__file__ + "/../../../..")
@@ -90,10 +97,12 @@ def setup_package():
         name='bigdl-orca',
         version=VERSION,
         description='Seamlessly scale out TensorFlow and PyTorch for Big Data (using Spark & Ray)',
+        long_description=long_description,
+        long_description_content_type="text/markdown",
         author='BigDL Authors',
         author_email='bigdl-user-group@googlegroups.com',
         license='Apache License, Version 2.0',
-        url='https://github.com/intel-analytics/analytics-zoo',
+        url='https://github.com/intel-analytics/BigDL',
         packages=get_bigdl_packages(),
         install_requires=['packaging', 'filelock',
                           'bigdl-tf==0.14.0.dev1', 'bigdl-math==0.14.0.dev1',

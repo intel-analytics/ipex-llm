@@ -33,7 +33,7 @@ public class Storage<T> {
     public String name;
     public int version;
     public T serverData = null;
-    public Map<String, T> clientData;
+    public Map<Integer, T> clientData;
     public Storage (String name) {
         version = 0;
         this.name = name;

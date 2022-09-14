@@ -48,7 +48,7 @@ class FGBoostRegressionSepc extends FLSpec {
       XGBoostFormatValidator.addHeaders(flattenHeaders)
       flServer.build()
       flServer.start()
-      FLContext.initFLContext("1", target)
+      FLContext.initFLContext(1, target)
       val fGBoostRegression = new FGBoostRegression(
         learningRate = 0.1f, maxDepth = 7, minChildSize = 5)
       fGBoostRegression.fit(trainFeatures, trainLabels, 1)
@@ -83,7 +83,7 @@ class FGBoostRegressionSepc extends FLSpec {
       flServer.setClientNum(1)
       flServer.build()
       flServer.start()
-      FLContext.initFLContext("1", target)
+      FLContext.initFLContext(1, target)
       val fGBoostRegression = new FGBoostRegression(
         learningRate = 0.1f, maxDepth = 7, minChildSize = 5, "/tmp/fgboost-server-model")
       fGBoostRegression.fit(trainFeatures, trainLabels, 5)
@@ -97,7 +97,7 @@ class FGBoostRegressionSepc extends FLSpec {
       flServer2.setClientNum(1)
       flServer2.build()
       flServer2.start()
-      FLContext.initFLContext("1", target)
+      FLContext.initFLContext(1, target)
       val fGBoostRegression2 = FGBoostRegression.loadModel(tmpFileName)
       fGBoostRegression2.loadServerModel("/tmp/fgboost-server-model")
       fGBoostRegression2.fit(trainFeatures, trainLabels, 5)

@@ -21,6 +21,7 @@ import subprocess
 import ray._private.services
 import mxnet as mx
 from mxnet import gluon
+from copy import copy
 from bigdl.orca.ray.utils import to_list
 from bigdl.dllib.utils.log4Error import *
 
@@ -83,7 +84,7 @@ class MXNetRunner(object):
         """Train the model and update the model parameters."""
         stats = dict()
         if self.is_worker:
-            config = self.config.copy()
+            config = copy(self.config)
             if "batch_size" not in config:
                 config["batch_size"] = batch_size
 

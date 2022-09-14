@@ -19,16 +19,10 @@ public final class NNServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>string clientuuid = 1;</code>
+     * <code>int32 clientuuid = 1;</code>
      * @return The clientuuid.
      */
-    java.lang.String getClientuuid();
-    /**
-     * <code>string clientuuid = 1;</code>
-     * @return The bytes for clientuuid.
-     */
-    com.google.protobuf.ByteString
-        getClientuuidBytes();
+    int getClientuuid();
 
     /**
      * <code>.TensorMap data = 2;</code>
@@ -70,7 +64,6 @@ public final class NNServiceProto {
       super(builder);
     }
     private TrainRequest() {
-      clientuuid_ = "";
       algorithm_ = "";
     }
 
@@ -104,10 +97,9 @@ public final class NNServiceProto {
             case 0:
               done = true;
               break;
-            case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+            case 8: {
 
-              clientuuid_ = s;
+              clientuuid_ = input.readInt32();
               break;
             }
             case 18: {
@@ -162,41 +154,14 @@ public final class NNServiceProto {
     }
 
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
-    private volatile java.lang.Object clientuuid_;
+    private int clientuuid_;
     /**
-     * <code>string clientuuid = 1;</code>
+     * <code>int32 clientuuid = 1;</code>
      * @return The clientuuid.
      */
     @java.lang.Override
-    public java.lang.String getClientuuid() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        clientuuid_ = s;
-        return s;
-      }
-    }
-    /**
-     * <code>string clientuuid = 1;</code>
-     * @return The bytes for clientuuid.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString
-        getClientuuidBytes() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        clientuuid_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    public int getClientuuid() {
+      return clientuuid_;
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
@@ -277,8 +242,8 @@ public final class NNServiceProto {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getClientuuidBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, clientuuid_);
+      if (clientuuid_ != 0) {
+        output.writeInt32(1, clientuuid_);
       }
       if (data_ != null) {
         output.writeMessage(2, getData());
@@ -295,8 +260,9 @@ public final class NNServiceProto {
       if (size != -1) return size;
 
       size = 0;
-      if (!getClientuuidBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, clientuuid_);
+      if (clientuuid_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, clientuuid_);
       }
       if (data_ != null) {
         size += com.google.protobuf.CodedOutputStream
@@ -320,8 +286,8 @@ public final class NNServiceProto {
       }
       com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest other = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest) obj;
 
-      if (!getClientuuid()
-          .equals(other.getClientuuid())) return false;
+      if (getClientuuid()
+          != other.getClientuuid()) return false;
       if (hasData() != other.hasData()) return false;
       if (hasData()) {
         if (!getData()
@@ -341,7 +307,7 @@ public final class NNServiceProto {
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + CLIENTUUID_FIELD_NUMBER;
-      hash = (53 * hash) + getClientuuid().hashCode();
+      hash = (53 * hash) + getClientuuid();
       if (hasData()) {
         hash = (37 * hash) + DATA_FIELD_NUMBER;
         hash = (53 * hash) + getData().hashCode();
@@ -481,7 +447,7 @@ public final class NNServiceProto {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        clientuuid_ = "";
+        clientuuid_ = 0;
 
         if (dataBuilder_ == null) {
           data_ = null;
@@ -572,9 +538,8 @@ public final class NNServiceProto {
 
       public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest other) {
         if (other == com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest.getDefaultInstance()) return this;
-        if (!other.getClientuuid().isEmpty()) {
-          clientuuid_ = other.clientuuid_;
-          onChanged();
+        if (other.getClientuuid() != 0) {
+          setClientuuid(other.getClientuuid());
         }
         if (other.hasData()) {
           mergeData(other.getData());
@@ -612,78 +577,33 @@ public final class NNServiceProto {
         return this;
       }
 
-      private java.lang.Object clientuuid_ = "";
+      private int clientuuid_ ;
       /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @return The clientuuid.
        */
-      public java.lang.String getClientuuid() {
-        java.lang.Object ref = clientuuid_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          clientuuid_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
+      @java.lang.Override
+      public int getClientuuid() {
+        return clientuuid_;
       }
       /**
-       * <code>string clientuuid = 1;</code>
-       * @return The bytes for clientuuid.
-       */
-      public com.google.protobuf.ByteString
-          getClientuuidBytes() {
-        java.lang.Object ref = clientuuid_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          clientuuid_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @param value The clientuuid to set.
        * @return This builder for chaining.
        */
-      public Builder setClientuuid(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+      public Builder setClientuuid(int value) {
+        
         clientuuid_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @return This builder for chaining.
        */
       public Builder clearClientuuid() {
         
-        clientuuid_ = getDefaultInstance().getClientuuid();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string clientuuid = 1;</code>
-       * @param value The bytes for clientuuid to set.
-       * @return This builder for chaining.
-       */
-      public Builder setClientuuidBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        clientuuid_ = value;
+        clientuuid_ = 0;
         onChanged();
         return this;
       }
@@ -1781,16 +1701,10 @@ public final class NNServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>string clientuuid = 1;</code>
+     * <code>int32 clientuuid = 1;</code>
      * @return The clientuuid.
      */
-    java.lang.String getClientuuid();
-    /**
-     * <code>string clientuuid = 1;</code>
-     * @return The bytes for clientuuid.
-     */
-    com.google.protobuf.ByteString
-        getClientuuidBytes();
+    int getClientuuid();
 
     /**
      * <code>.TensorMap data = 2;</code>
@@ -1838,7 +1752,6 @@ public final class NNServiceProto {
       super(builder);
     }
     private EvaluateRequest() {
-      clientuuid_ = "";
       algorithm_ = "";
     }
 
@@ -1872,10 +1785,9 @@ public final class NNServiceProto {
             case 0:
               done = true;
               break;
-            case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+            case 8: {
 
-              clientuuid_ = s;
+              clientuuid_ = input.readInt32();
               break;
             }
             case 18: {
@@ -1935,41 +1847,14 @@ public final class NNServiceProto {
     }
 
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
-    private volatile java.lang.Object clientuuid_;
+    private int clientuuid_;
     /**
-     * <code>string clientuuid = 1;</code>
+     * <code>int32 clientuuid = 1;</code>
      * @return The clientuuid.
      */
     @java.lang.Override
-    public java.lang.String getClientuuid() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        clientuuid_ = s;
-        return s;
-      }
-    }
-    /**
-     * <code>string clientuuid = 1;</code>
-     * @return The bytes for clientuuid.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString
-        getClientuuidBytes() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        clientuuid_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    public int getClientuuid() {
+      return clientuuid_;
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
@@ -2061,8 +1946,8 @@ public final class NNServiceProto {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getClientuuidBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, clientuuid_);
+      if (clientuuid_ != 0) {
+        output.writeInt32(1, clientuuid_);
       }
       if (data_ != null) {
         output.writeMessage(2, getData());
@@ -2082,8 +1967,9 @@ public final class NNServiceProto {
       if (size != -1) return size;
 
       size = 0;
-      if (!getClientuuidBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, clientuuid_);
+      if (clientuuid_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, clientuuid_);
       }
       if (data_ != null) {
         size += com.google.protobuf.CodedOutputStream
@@ -2111,8 +1997,8 @@ public final class NNServiceProto {
       }
       com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest other = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest) obj;
 
-      if (!getClientuuid()
-          .equals(other.getClientuuid())) return false;
+      if (getClientuuid()
+          != other.getClientuuid()) return false;
       if (hasData() != other.hasData()) return false;
       if (hasData()) {
         if (!getData()
@@ -2134,7 +2020,7 @@ public final class NNServiceProto {
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + CLIENTUUID_FIELD_NUMBER;
-      hash = (53 * hash) + getClientuuid().hashCode();
+      hash = (53 * hash) + getClientuuid();
       if (hasData()) {
         hash = (37 * hash) + DATA_FIELD_NUMBER;
         hash = (53 * hash) + getData().hashCode();
@@ -2277,7 +2163,7 @@ public final class NNServiceProto {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        clientuuid_ = "";
+        clientuuid_ = 0;
 
         if (dataBuilder_ == null) {
           data_ = null;
@@ -2371,9 +2257,8 @@ public final class NNServiceProto {
 
       public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest other) {
         if (other == com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest.getDefaultInstance()) return this;
-        if (!other.getClientuuid().isEmpty()) {
-          clientuuid_ = other.clientuuid_;
-          onChanged();
+        if (other.getClientuuid() != 0) {
+          setClientuuid(other.getClientuuid());
         }
         if (other.hasData()) {
           mergeData(other.getData());
@@ -2414,78 +2299,33 @@ public final class NNServiceProto {
         return this;
       }
 
-      private java.lang.Object clientuuid_ = "";
+      private int clientuuid_ ;
       /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @return The clientuuid.
        */
-      public java.lang.String getClientuuid() {
-        java.lang.Object ref = clientuuid_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          clientuuid_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
+      @java.lang.Override
+      public int getClientuuid() {
+        return clientuuid_;
       }
       /**
-       * <code>string clientuuid = 1;</code>
-       * @return The bytes for clientuuid.
-       */
-      public com.google.protobuf.ByteString
-          getClientuuidBytes() {
-        java.lang.Object ref = clientuuid_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          clientuuid_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @param value The clientuuid to set.
        * @return This builder for chaining.
        */
-      public Builder setClientuuid(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+      public Builder setClientuuid(int value) {
+        
         clientuuid_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @return This builder for chaining.
        */
       public Builder clearClientuuid() {
         
-        clientuuid_ = getDefaultInstance().getClientuuid();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string clientuuid = 1;</code>
-       * @param value The bytes for clientuuid to set.
-       * @return This builder for chaining.
-       */
-      public Builder setClientuuidBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        clientuuid_ = value;
+        clientuuid_ = 0;
         onChanged();
         return this;
       }
@@ -3764,16 +3604,10 @@ public final class NNServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>string clientuuid = 1;</code>
+     * <code>int32 clientuuid = 1;</code>
      * @return The clientuuid.
      */
-    java.lang.String getClientuuid();
-    /**
-     * <code>string clientuuid = 1;</code>
-     * @return The bytes for clientuuid.
-     */
-    com.google.protobuf.ByteString
-        getClientuuidBytes();
+    int getClientuuid();
 
     /**
      * <code>.TensorMap data = 2;</code>
@@ -3815,7 +3649,6 @@ public final class NNServiceProto {
       super(builder);
     }
     private PredictRequest() {
-      clientuuid_ = "";
       algorithm_ = "";
     }
 
@@ -3849,10 +3682,9 @@ public final class NNServiceProto {
             case 0:
               done = true;
               break;
-            case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+            case 8: {
 
-              clientuuid_ = s;
+              clientuuid_ = input.readInt32();
               break;
             }
             case 18: {
@@ -3907,41 +3739,14 @@ public final class NNServiceProto {
     }
 
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
-    private volatile java.lang.Object clientuuid_;
+    private int clientuuid_;
     /**
-     * <code>string clientuuid = 1;</code>
+     * <code>int32 clientuuid = 1;</code>
      * @return The clientuuid.
      */
     @java.lang.Override
-    public java.lang.String getClientuuid() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        clientuuid_ = s;
-        return s;
-      }
-    }
-    /**
-     * <code>string clientuuid = 1;</code>
-     * @return The bytes for clientuuid.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString
-        getClientuuidBytes() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        clientuuid_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    public int getClientuuid() {
+      return clientuuid_;
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
@@ -4022,8 +3827,8 @@ public final class NNServiceProto {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getClientuuidBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, clientuuid_);
+      if (clientuuid_ != 0) {
+        output.writeInt32(1, clientuuid_);
       }
       if (data_ != null) {
         output.writeMessage(2, getData());
@@ -4040,8 +3845,9 @@ public final class NNServiceProto {
       if (size != -1) return size;
 
       size = 0;
-      if (!getClientuuidBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, clientuuid_);
+      if (clientuuid_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, clientuuid_);
       }
       if (data_ != null) {
         size += com.google.protobuf.CodedOutputStream
@@ -4065,8 +3871,8 @@ public final class NNServiceProto {
       }
       com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest other = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest) obj;
 
-      if (!getClientuuid()
-          .equals(other.getClientuuid())) return false;
+      if (getClientuuid()
+          != other.getClientuuid()) return false;
       if (hasData() != other.hasData()) return false;
       if (hasData()) {
         if (!getData()
@@ -4086,7 +3892,7 @@ public final class NNServiceProto {
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + CLIENTUUID_FIELD_NUMBER;
-      hash = (53 * hash) + getClientuuid().hashCode();
+      hash = (53 * hash) + getClientuuid();
       if (hasData()) {
         hash = (37 * hash) + DATA_FIELD_NUMBER;
         hash = (53 * hash) + getData().hashCode();
@@ -4226,7 +4032,7 @@ public final class NNServiceProto {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        clientuuid_ = "";
+        clientuuid_ = 0;
 
         if (dataBuilder_ == null) {
           data_ = null;
@@ -4317,9 +4123,8 @@ public final class NNServiceProto {
 
       public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest other) {
         if (other == com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest.getDefaultInstance()) return this;
-        if (!other.getClientuuid().isEmpty()) {
-          clientuuid_ = other.clientuuid_;
-          onChanged();
+        if (other.getClientuuid() != 0) {
+          setClientuuid(other.getClientuuid());
         }
         if (other.hasData()) {
           mergeData(other.getData());
@@ -4357,78 +4162,33 @@ public final class NNServiceProto {
         return this;
       }
 
-      private java.lang.Object clientuuid_ = "";
+      private int clientuuid_ ;
       /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @return The clientuuid.
        */
-      public java.lang.String getClientuuid() {
-        java.lang.Object ref = clientuuid_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          clientuuid_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
+      @java.lang.Override
+      public int getClientuuid() {
+        return clientuuid_;
       }
       /**
-       * <code>string clientuuid = 1;</code>
-       * @return The bytes for clientuuid.
-       */
-      public com.google.protobuf.ByteString
-          getClientuuidBytes() {
-        java.lang.Object ref = clientuuid_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          clientuuid_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @param value The clientuuid to set.
        * @return This builder for chaining.
        */
-      public Builder setClientuuid(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+      public Builder setClientuuid(int value) {
+        
         clientuuid_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>string clientuuid = 1;</code>
+       * <code>int32 clientuuid = 1;</code>
        * @return This builder for chaining.
        */
       public Builder clearClientuuid() {
         
-        clientuuid_ = getDefaultInstance().getClientuuid();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string clientuuid = 1;</code>
-       * @param value The bytes for clientuuid to set.
-       * @return This builder for chaining.
-       */
-      public Builder setClientuuidBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        clientuuid_ = value;
+        clientuuid_ = 0;
         onChanged();
         return this;
       }
@@ -5526,16 +5286,10 @@ public final class NNServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>string client_uuid = 1;</code>
+     * <code>int32 client_uuid = 1;</code>
      * @return The clientUuid.
      */
-    java.lang.String getClientUuid();
-    /**
-     * <code>string client_uuid = 1;</code>
-     * @return The bytes for clientUuid.
-     */
-    com.google.protobuf.ByteString
-        getClientUuidBytes();
+    int getClientUuid();
 
     /**
      * <code>bytes loss_fn = 2;</code>
@@ -5583,7 +5337,6 @@ public final class NNServiceProto {
       super(builder);
     }
     private UploadMetaRequest() {
-      clientUuid_ = "";
       lossFn_ = com.google.protobuf.ByteString.EMPTY;
       aggregator_ = "";
     }
@@ -5618,10 +5371,9 @@ public final class NNServiceProto {
             case 0:
               done = true;
               break;
-            case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+            case 8: {
 
-              clientUuid_ = s;
+              clientUuid_ = input.readInt32();
               break;
             }
             case 18: {
@@ -5681,41 +5433,14 @@ public final class NNServiceProto {
     }
 
     public static final int CLIENT_UUID_FIELD_NUMBER = 1;
-    private volatile java.lang.Object clientUuid_;
+    private int clientUuid_;
     /**
-     * <code>string client_uuid = 1;</code>
+     * <code>int32 client_uuid = 1;</code>
      * @return The clientUuid.
      */
     @java.lang.Override
-    public java.lang.String getClientUuid() {
-      java.lang.Object ref = clientUuid_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        clientUuid_ = s;
-        return s;
-      }
-    }
-    /**
-     * <code>string client_uuid = 1;</code>
-     * @return The bytes for clientUuid.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString
-        getClientUuidBytes() {
-      java.lang.Object ref = clientUuid_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        clientUuid_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    public int getClientUuid() {
+      return clientUuid_;
     }
 
     public static final int LOSS_FN_FIELD_NUMBER = 2;
@@ -5807,8 +5532,8 @@ public final class NNServiceProto {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getClientUuidBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, clientUuid_);
+      if (clientUuid_ != 0) {
+        output.writeInt32(1, clientUuid_);
       }
       if (!lossFn_.isEmpty()) {
         output.writeBytes(2, lossFn_);
@@ -5828,8 +5553,9 @@ public final class NNServiceProto {
       if (size != -1) return size;
 
       size = 0;
-      if (!getClientUuidBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, clientUuid_);
+      if (clientUuid_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, clientUuid_);
       }
       if (!lossFn_.isEmpty()) {
         size += com.google.protobuf.CodedOutputStream
@@ -5857,8 +5583,8 @@ public final class NNServiceProto {
       }
       com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest other = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest) obj;
 
-      if (!getClientUuid()
-          .equals(other.getClientUuid())) return false;
+      if (getClientUuid()
+          != other.getClientUuid()) return false;
       if (!getLossFn()
           .equals(other.getLossFn())) return false;
       if (hasOptimizer() != other.hasOptimizer()) return false;
@@ -5880,7 +5606,7 @@ public final class NNServiceProto {
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + CLIENT_UUID_FIELD_NUMBER;
-      hash = (53 * hash) + getClientUuid().hashCode();
+      hash = (53 * hash) + getClientUuid();
       hash = (37 * hash) + LOSS_FN_FIELD_NUMBER;
       hash = (53 * hash) + getLossFn().hashCode();
       if (hasOptimizer()) {
@@ -6022,7 +5748,7 @@ public final class NNServiceProto {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        clientUuid_ = "";
+        clientUuid_ = 0;
 
         lossFn_ = com.google.protobuf.ByteString.EMPTY;
 
@@ -6116,9 +5842,8 @@ public final class NNServiceProto {
 
       public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest other) {
         if (other == com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.UploadMetaRequest.getDefaultInstance()) return this;
-        if (!other.getClientUuid().isEmpty()) {
-          clientUuid_ = other.clientUuid_;
-          onChanged();
+        if (other.getClientUuid() != 0) {
+          setClientUuid(other.getClientUuid());
         }
         if (other.getLossFn() != com.google.protobuf.ByteString.EMPTY) {
           setLossFn(other.getLossFn());
@@ -6159,78 +5884,33 @@ public final class NNServiceProto {
         return this;
       }
 
-      private java.lang.Object clientUuid_ = "";
+      private int clientUuid_ ;
       /**
-       * <code>string client_uuid = 1;</code>
+       * <code>int32 client_uuid = 1;</code>
        * @return The clientUuid.
        */
-      public java.lang.String getClientUuid() {
-        java.lang.Object ref = clientUuid_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          clientUuid_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
+      @java.lang.Override
+      public int getClientUuid() {
+        return clientUuid_;
       }
       /**
-       * <code>string client_uuid = 1;</code>
-       * @return The bytes for clientUuid.
-       */
-      public com.google.protobuf.ByteString
-          getClientUuidBytes() {
-        java.lang.Object ref = clientUuid_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          clientUuid_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>string client_uuid = 1;</code>
+       * <code>int32 client_uuid = 1;</code>
        * @param value The clientUuid to set.
        * @return This builder for chaining.
        */
-      public Builder setClientUuid(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+      public Builder setClientUuid(int value) {
+        
         clientUuid_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>string client_uuid = 1;</code>
+       * <code>int32 client_uuid = 1;</code>
        * @return This builder for chaining.
        */
       public Builder clearClientUuid() {
         
-        clientUuid_ = getDefaultInstance().getClientUuid();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string client_uuid = 1;</code>
-       * @param value The bytes for clientUuid to set.
-       * @return This builder for chaining.
-       */
-      public Builder setClientUuidBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        clientUuid_ = value;
+        clientUuid_ = 0;
         onChanged();
         return this;
       }
@@ -8217,16 +7897,10 @@ public final class NNServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>string client_id = 1;</code>
+     * <code>int32 client_id = 1;</code>
      * @return The clientId.
      */
-    java.lang.String getClientId();
-    /**
-     * <code>string client_id = 1;</code>
-     * @return The bytes for clientId.
-     */
-    com.google.protobuf.ByteString
-        getClientIdBytes();
+    int getClientId();
 
     /**
      * <code>string backend = 2;</code>
@@ -8265,7 +7939,6 @@ public final class NNServiceProto {
       super(builder);
     }
     private LoadModelRequest() {
-      clientId_ = "";
       backend_ = "";
       modelPath_ = "";
     }
@@ -8300,10 +7973,9 @@ public final class NNServiceProto {
             case 0:
               done = true;
               break;
-            case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+            case 8: {
 
-              clientId_ = s;
+              clientId_ = input.readInt32();
               break;
             }
             case 18: {
@@ -8351,41 +8023,14 @@ public final class NNServiceProto {
     }
 
     public static final int CLIENT_ID_FIELD_NUMBER = 1;
-    private volatile java.lang.Object clientId_;
+    private int clientId_;
     /**
-     * <code>string client_id = 1;</code>
+     * <code>int32 client_id = 1;</code>
      * @return The clientId.
      */
     @java.lang.Override
-    public java.lang.String getClientId() {
-      java.lang.Object ref = clientId_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        clientId_ = s;
-        return s;
-      }
-    }
-    /**
-     * <code>string client_id = 1;</code>
-     * @return The bytes for clientId.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString
-        getClientIdBytes() {
-      java.lang.Object ref = clientId_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        clientId_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    public int getClientId() {
+      return clientId_;
     }
 
     public static final int BACKEND_FIELD_NUMBER = 2;
@@ -8478,8 +8123,8 @@ public final class NNServiceProto {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getClientIdBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, clientId_);
+      if (clientId_ != 0) {
+        output.writeInt32(1, clientId_);
       }
       if (!getBackendBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, backend_);
@@ -8496,8 +8141,9 @@ public final class NNServiceProto {
       if (size != -1) return size;
 
       size = 0;
-      if (!getClientIdBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, clientId_);
+      if (clientId_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, clientId_);
       }
       if (!getBackendBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, backend_);
@@ -8520,8 +8166,8 @@ public final class NNServiceProto {
       }
       com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest other = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest) obj;
 
-      if (!getClientId()
-          .equals(other.getClientId())) return false;
+      if (getClientId()
+          != other.getClientId()) return false;
       if (!getBackend()
           .equals(other.getBackend())) return false;
       if (!getModelPath()
@@ -8538,7 +8184,7 @@ public final class NNServiceProto {
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + CLIENT_ID_FIELD_NUMBER;
-      hash = (53 * hash) + getClientId().hashCode();
+      hash = (53 * hash) + getClientId();
       hash = (37 * hash) + BACKEND_FIELD_NUMBER;
       hash = (53 * hash) + getBackend().hashCode();
       hash = (37 * hash) + MODEL_PATH_FIELD_NUMBER;
@@ -8676,7 +8322,7 @@ public final class NNServiceProto {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        clientId_ = "";
+        clientId_ = 0;
 
         backend_ = "";
 
@@ -8759,9 +8405,8 @@ public final class NNServiceProto {
 
       public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest other) {
         if (other == com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.LoadModelRequest.getDefaultInstance()) return this;
-        if (!other.getClientId().isEmpty()) {
-          clientId_ = other.clientId_;
-          onChanged();
+        if (other.getClientId() != 0) {
+          setClientId(other.getClientId());
         }
         if (!other.getBackend().isEmpty()) {
           backend_ = other.backend_;
@@ -8800,78 +8445,33 @@ public final class NNServiceProto {
         return this;
       }
 
-      private java.lang.Object clientId_ = "";
+      private int clientId_ ;
       /**
-       * <code>string client_id = 1;</code>
+       * <code>int32 client_id = 1;</code>
        * @return The clientId.
        */
-      public java.lang.String getClientId() {
-        java.lang.Object ref = clientId_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          clientId_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
+      @java.lang.Override
+      public int getClientId() {
+        return clientId_;
       }
       /**
-       * <code>string client_id = 1;</code>
-       * @return The bytes for clientId.
-       */
-      public com.google.protobuf.ByteString
-          getClientIdBytes() {
-        java.lang.Object ref = clientId_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          clientId_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>string client_id = 1;</code>
+       * <code>int32 client_id = 1;</code>
        * @param value The clientId to set.
        * @return This builder for chaining.
        */
-      public Builder setClientId(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+      public Builder setClientId(int value) {
+        
         clientId_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>string client_id = 1;</code>
+       * <code>int32 client_id = 1;</code>
        * @return This builder for chaining.
        */
       public Builder clearClientId() {
         
-        clientId_ = getDefaultInstance().getClientId();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string client_id = 1;</code>
-       * @param value The bytes for clientId to set.
-       * @return This builder for chaining.
-       */
-      public Builder setClientIdBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        clientId_ = value;
+        clientId_ = 0;
         onChanged();
         return this;
       }
@@ -9723,16 +9323,10 @@ public final class NNServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>string client_id = 1;</code>
+     * <code>int32 client_id = 1;</code>
      * @return The clientId.
      */
-    java.lang.String getClientId();
-    /**
-     * <code>string client_id = 1;</code>
-     * @return The bytes for clientId.
-     */
-    com.google.protobuf.ByteString
-        getClientIdBytes();
+    int getClientId();
 
     /**
      * <code>string backend = 2;</code>
@@ -9771,7 +9365,6 @@ public final class NNServiceProto {
       super(builder);
     }
     private SaveModelRequest() {
-      clientId_ = "";
       backend_ = "";
       modelPath_ = "";
     }
@@ -9806,10 +9399,9 @@ public final class NNServiceProto {
             case 0:
               done = true;
               break;
-            case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+            case 8: {
 
-              clientId_ = s;
+              clientId_ = input.readInt32();
               break;
             }
             case 18: {
@@ -9857,41 +9449,14 @@ public final class NNServiceProto {
     }
 
     public static final int CLIENT_ID_FIELD_NUMBER = 1;
-    private volatile java.lang.Object clientId_;
+    private int clientId_;
     /**
-     * <code>string client_id = 1;</code>
+     * <code>int32 client_id = 1;</code>
      * @return The clientId.
      */
     @java.lang.Override
-    public java.lang.String getClientId() {
-      java.lang.Object ref = clientId_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        clientId_ = s;
-        return s;
-      }
-    }
-    /**
-     * <code>string client_id = 1;</code>
-     * @return The bytes for clientId.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString
-        getClientIdBytes() {
-      java.lang.Object ref = clientId_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        clientId_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    public int getClientId() {
+      return clientId_;
     }
 
     public static final int BACKEND_FIELD_NUMBER = 2;
@@ -9984,8 +9549,8 @@ public final class NNServiceProto {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getClientIdBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, clientId_);
+      if (clientId_ != 0) {
+        output.writeInt32(1, clientId_);
       }
       if (!getBackendBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, backend_);
@@ -10002,8 +9567,9 @@ public final class NNServiceProto {
       if (size != -1) return size;
 
       size = 0;
-      if (!getClientIdBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, clientId_);
+      if (clientId_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, clientId_);
       }
       if (!getBackendBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, backend_);
@@ -10026,8 +9592,8 @@ public final class NNServiceProto {
       }
       com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest other = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest) obj;
 
-      if (!getClientId()
-          .equals(other.getClientId())) return false;
+      if (getClientId()
+          != other.getClientId()) return false;
       if (!getBackend()
           .equals(other.getBackend())) return false;
       if (!getModelPath()
@@ -10044,7 +9610,7 @@ public final class NNServiceProto {
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + CLIENT_ID_FIELD_NUMBER;
-      hash = (53 * hash) + getClientId().hashCode();
+      hash = (53 * hash) + getClientId();
       hash = (37 * hash) + BACKEND_FIELD_NUMBER;
       hash = (53 * hash) + getBackend().hashCode();
       hash = (37 * hash) + MODEL_PATH_FIELD_NUMBER;
@@ -10182,7 +9748,7 @@ public final class NNServiceProto {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        clientId_ = "";
+        clientId_ = 0;
 
         backend_ = "";
 
@@ -10265,9 +9831,8 @@ public final class NNServiceProto {
 
       public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest other) {
         if (other == com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.SaveModelRequest.getDefaultInstance()) return this;
-        if (!other.getClientId().isEmpty()) {
-          clientId_ = other.clientId_;
-          onChanged();
+        if (other.getClientId() != 0) {
+          setClientId(other.getClientId());
         }
         if (!other.getBackend().isEmpty()) {
           backend_ = other.backend_;
@@ -10306,78 +9871,33 @@ public final class NNServiceProto {
         return this;
       }
 
-      private java.lang.Object clientId_ = "";
+      private int clientId_ ;
       /**
-       * <code>string client_id = 1;</code>
+       * <code>int32 client_id = 1;</code>
        * @return The clientId.
        */
-      public java.lang.String getClientId() {
-        java.lang.Object ref = clientId_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          clientId_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
+      @java.lang.Override
+      public int getClientId() {
+        return clientId_;
       }
       /**
-       * <code>string client_id = 1;</code>
-       * @return The bytes for clientId.
-       */
-      public com.google.protobuf.ByteString
-          getClientIdBytes() {
-        java.lang.Object ref = clientId_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          clientId_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>string client_id = 1;</code>
+       * <code>int32 client_id = 1;</code>
        * @param value The clientId to set.
        * @return This builder for chaining.
        */
-      public Builder setClientId(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+      public Builder setClientId(int value) {
+        
         clientId_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>string client_id = 1;</code>
+       * <code>int32 client_id = 1;</code>
        * @return This builder for chaining.
        */
       public Builder clearClientId() {
         
-        clientId_ = getDefaultInstance().getClientId();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string client_id = 1;</code>
-       * @param value The bytes for clientId to set.
-       * @return This builder for chaining.
-       */
-      public Builder setClientIdBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        clientId_ = value;
+        clientId_ = 0;
         onChanged();
         return this;
       }
@@ -11234,29 +10754,29 @@ public final class NNServiceProto {
   static {
     java.lang.String[] descriptorData = {
       "\n\020nn_service.proto\022\002nn\032\rfl_base.proto\"O\n" +
-      "\014TrainRequest\022\022\n\nclientuuid\030\001 \001(\t\022\030\n\004dat" +
+      "\014TrainRequest\022\022\n\nclientuuid\030\001 \001(\005\022\030\n\004dat" +
       "a\030\002 \001(\0132\n.TensorMap\022\021\n\talgorithm\030\003 \001(\t\"I" +
       "\n\rTrainResponse\022\020\n\010response\030\001 \001(\t\022\030\n\004dat" +
       "a\030\002 \001(\0132\n.TensorMap\022\014\n\004code\030\003 \001(\005\"b\n\017Eva" +
-      "luateRequest\022\022\n\nclientuuid\030\001 \001(\t\022\030\n\004data" +
+      "luateRequest\022\022\n\nclientuuid\030\001 \001(\005\022\030\n\004data" +
       "\030\002 \001(\0132\n.TensorMap\022\021\n\talgorithm\030\003 \001(\t\022\016\n" +
       "\006return\030\004 \001(\010\"]\n\020EvaluateResponse\022\020\n\010res" +
       "ponse\030\001 \001(\t\022\030\n\004data\030\002 \001(\0132\n.TensorMap\022\014\n" +
       "\004code\030\003 \001(\005\022\017\n\007message\030\004 \001(\t\"Q\n\016PredictR" +
-      "equest\022\022\n\nclientuuid\030\001 \001(\t\022\030\n\004data\030\002 \001(\013" +
+      "equest\022\022\n\nclientuuid\030\001 \001(\005\022\030\n\004data\030\002 \001(\013" +
       "2\n.TensorMap\022\021\n\talgorithm\030\003 \001(\t\"K\n\017Predi" +
       "ctResponse\022\020\n\010response\030\001 \001(\t\022\030\n\004data\030\002 \001" +
       "(\0132\n.TensorMap\022\014\n\004code\030\003 \001(\005\"r\n\021UploadMe" +
-      "taRequest\022\023\n\013client_uuid\030\001 \001(\t\022\017\n\007loss_f" +
+      "taRequest\022\023\n\013client_uuid\030\001 \001(\005\022\017\n\007loss_f" +
       "n\030\002 \001(\014\022#\n\toptimizer\030\003 \001(\0132\020.nn.ClassAnd" +
       "Args\022\022\n\naggregator\030\004 \001(\t\"\033\n\tByteChunk\022\016\n" +
       "\006buffer\030\001 \001(\014\")\n\014ClassAndArgs\022\013\n\003cls\030\001 \001" +
       "(\014\022\014\n\004args\030\002 \001(\014\"3\n\022UploadMetaResponse\022\017" +
       "\n\007message\030\001 \001(\t\022\014\n\004code\030\002 \001(\005\"J\n\020LoadMod" +
-      "elRequest\022\021\n\tclient_id\030\001 \001(\t\022\017\n\007backend\030" +
+      "elRequest\022\021\n\tclient_id\030\001 \001(\005\022\017\n\007backend\030" +
       "\002 \001(\t\022\022\n\nmodel_path\030\003 \001(\t\"2\n\021LoadModelRe" +
       "sponse\022\017\n\007message\030\001 \001(\t\022\014\n\004code\030\002 \001(\005\"J\n" +
-      "\020SaveModelRequest\022\021\n\tclient_id\030\001 \001(\t\022\017\n\007" +
+      "\020SaveModelRequest\022\021\n\tclient_id\030\001 \001(\005\022\017\n\007" +
       "backend\030\002 \001(\t\022\022\n\nmodel_path\030\003 \001(\t\"$\n\021Sav" +
       "eModelResponse\022\017\n\007message\030\001 \001(\t2\254\003\n\tNNSe" +
       "rvice\022.\n\005train\022\020.nn.TrainRequest\032\021.nn.Tr" +

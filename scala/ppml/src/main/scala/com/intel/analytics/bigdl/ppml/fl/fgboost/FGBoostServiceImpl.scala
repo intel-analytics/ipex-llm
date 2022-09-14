@@ -39,8 +39,8 @@ class FGBoostServiceImpl(clientNum: Int, config: FLConfig)
   aggregator.setClientNum(clientNum)
 
   // store client id as key and client data as value
-  val evalBufferMap = new ConcurrentHashMap[String, util.ArrayList[BoostEval]]()
-  var predBufferMap = new ConcurrentHashMap[String, util.ArrayList[BoostEval]]()
+  val evalBufferMap = new ConcurrentHashMap[Int, util.ArrayList[BoostEval]]()
+  var predBufferMap = new ConcurrentHashMap[Int, util.ArrayList[BoostEval]]()
 
   override def downloadLabel(request: DownloadLabelRequest,
                              responseObserver: StreamObserver[DownloadResponse]): Unit = {

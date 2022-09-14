@@ -15,6 +15,7 @@ do
     esac
 done
 cd /ppml/trusted-big-data-ml
+bash clean.sh
 /graphene/Tools/argv_serializer bash -c " /opt/jdk8/bin/java\
         -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*'\
         -Xmx10g org.apache.spark.deploy.SparkSubmit\

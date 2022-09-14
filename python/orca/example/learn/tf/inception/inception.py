@@ -21,6 +21,7 @@ from bigdl.dllib.nncontext import *
 from bigdl.dllib.feature.image import *
 from bigdl.dllib.keras.metrics import *
 from bigdl.dllib.nnframes import *
+from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf.estimator import Estimator
 from bigdl.orca.learn.trigger import EveryEpoch, SeveralIteration
@@ -194,9 +195,10 @@ def config_option_parser():
 if __name__ == "__main__":
     parser = config_option_parser()
     (options, args) = parser.parse_args(sys.argv)
-    
+
     if options.folder:
-        write_tfrecord(format="imagenet", imagenet_path=options.folder, output_path=options.imagenet)
+        write_tfrecord(format="imagenet",
+                       imagenet_path=options.folder, output_path=options.imagenet)
 
     train_data = train_data_creator(
         config={"data_dir": os.path.join(options.imagenet, "train")})
@@ -272,8 +274,9 @@ if __name__ == "__main__":
                                metrics={"acc": acc})
 
     if options.resumeTrainingCheckpoint is not None:
-        assert options.resumeTrainingVersion is not None, \
-            "--resumeTrainingVersion must be specified when --resumeTrainingCheckpoint is."
+        invalidInputError(
+            options.resumeTrainingVersion is not None,
+            "--resumeTrainingVersion must be specified given --resumeTrainingCheckpoint")
         est.load_orca_checkpoint(options.resumeTrainingCheckpoint,
                                  options.resumeTrainingVersion)
 
