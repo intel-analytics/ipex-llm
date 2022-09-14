@@ -1,4 +1,4 @@
-name: Chronos PRVN Python Spark3.1 py37 ray
+name: Chronos PRVN Python Spark3.1 py37 onnxrt
 
 # Controls when the action will run. 
 on:
@@ -7,7 +7,7 @@ on:
     branches: [ main ]
     paths:
       - 'python/chronos/**'
-      - '.github/workflows/chronos-prvn-python-spark-3.1-py37-ray.yml'
+      - '.github/workflows/chronos-prvn-python-spark-3.1-py37-onnxrt.yml'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -40,17 +40,15 @@ jobs:
           pip install pytest==5.4.1
           pip install prophet==1.1
           pip install pmdarima==1.8.4
-          pip install neural-compressor==1.11
           pip install tsfresh==0.17.0
           pip install ray==1.9.2 ray[tune]==1.9.2 ray[default]==1.9.2
           pip install pyarrow==6.0.1
           pip install ConfigSpace==0.5.0
           pip install optuna==2.10.1
-          pip install onnx==1.11.0
+          pip install neural-compressor==1.11
           pip install onnxruntime==1.11.1
-          pip install openvino-dev==2022.1.0
-          pip uninstall -y numpy
-          pip install numpy==1.19.5
+          pip install onnx==1.11.0
+          pip install onnxruntime-extensions==0.4.2
           pip install scipy==1.5.4
           apt-get update
           apt-get install patchelf
@@ -70,7 +68,7 @@ jobs:
           pip install  python/chronos/src/dist/bigdl_chronos_*-py3-none-manylinux1_x86_64.whl
           export SPARK_LOCAL_HOSTNAME=localhost
           export KERAS_BACKEND=tensorflow
-          bash python/chronos/dev/test/run-pytests.sh
+          bash python/chronos/dev/test/run-pytests-onnxrt16.sh
         env:
           BIGDL_ROOT: ${{ github.workspace }}
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
