@@ -54,7 +54,7 @@ class DummyAttestationService extends AttestationService {
      *         If the quote contains the substring "true" then return true,
      *         else return false
      */
-    override def attestWithServer(quote: String, policyId: String = ""): (Boolean, String) = {
+    override def attestWithServer(quote: String): (Boolean, String) = {
         timing("DummyAttestationService retrieveVerifyQuoteResult") {
             if (quote == null) {
                 Log4Error.invalidInputError(false,

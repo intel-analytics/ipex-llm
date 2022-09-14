@@ -33,10 +33,7 @@ object AttestationCLI {
                              appKey: String = "test",
                              asType: String = ATTESTATION_CONVENTION.MODE_EHSM_KMS,
                              asURL: String = "127.0.0.1",
-                             userReport: String = "ppml",
-                             policyId: String = "test",
-                             jksFilePath = "test",
-                             jksStorePassword = "test")
+                             userReport: String = "ppml")
 
         val cmdParser: OptionParser[CmdParams] = new OptionParser[CmdParams]("PPML Attestation Quote Generation Cmd tool") {
             opt[String]('i', "appID")
@@ -54,15 +51,6 @@ object AttestationCLI {
             opt[String]('p', "userReport")
               .text("userReportDataPath, default is test")
               .action((x, c) => c.copy(userReport = x))
-            opt[String]('d', "policyId")
-              .text("policy id of customer registered mrenclave")
-              .action((x, c) => c.copy(policyId = x))
-            opt[String]('j', "jksFilePath")
-              .text("path of jks file")
-              .action((x, c) => c.copy(jksFilePath = x))
-            opt[String]('s', "jksStorePassword")
-              .text("store password of jks")
-              .action((x, c) => c.copy(jksStorePassword = x))
         }
         val params = cmdParser.parse(args, CmdParams()).get
 
@@ -70,19 +58,18 @@ object AttestationCLI {
         val userReportData = params.userReport
         val quoteGenerator = new GramineQuoteGeneratorImpl()
         val quote = quoteGenerator.getQuote(userReportData.getBytes)
-        val policyId = params.policyId
 
         // Attestation Client
         val as = params.asType match {
             case ATTESTATION_CONVENTION.MODE_EHSM_KMS =>
                 new EHSMAttestationService(params.asURL.split(":")(0),
-                    params.asURL.split(":")(1), params.appID, params.appKey, params.jksFilePath, params.jksStorePassword)
+                    params.asURL.split(":")(1), params.appID, params.appKey)
             case ATTESTATION_CONVENTION.MODE_DUMMY =>
                 new DummyAttestationService()
             case _ => throw new AttestationRuntimeException("Wrong Attestation service type")
         }
-        val attResult = as.attestWithServer(Base64.getEncoder.encodeToString(quote), policyId)
-        // System.out.print(as.attestWithServer(quote))
+        val attResult = as.attestWithServer(Base64.getEncoder.encodeToString(quote))
+
         if (attResult._1) {
             System.out.println("Attestation Success!")
             // Bash success

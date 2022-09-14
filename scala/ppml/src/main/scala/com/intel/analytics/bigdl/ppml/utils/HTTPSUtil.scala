@@ -45,13 +45,13 @@ object HTTPSUtil {
 
   def retrieveResponse(url: String, sslConSocFactory: SSLConnectionSocketFactory, params: String = null): String = {
     val clientbuilder: HttpClientBuilder = HttpClients.custom().setSSLSocketFactory(sslConSocFactory)
-    val httpclient: CloseableHttpClient = clientbuilder.build()
+    val httpsClient: CloseableHttpClient = clientbuilder.build()
     val post = new HttpPost(url)
     post.setHeader(new BasicHeader("Content-Type", "application/json"));
     if (params != null) {
       post.setEntity(new StringEntity(params, "UTF-8"))
     }
-    val response = httpClient.execute(post)
+    val response = httpsClient.execute(post)
     EntityUtils.toString(response.getEntity, "UTF-8")
   }
 

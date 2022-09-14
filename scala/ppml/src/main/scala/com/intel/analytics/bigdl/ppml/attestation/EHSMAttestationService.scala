@@ -22,13 +22,16 @@ import com.intel.analytics.bigdl.ppml.utils.EHSMParams
 import com.intel.analytics.bigdl.ppml.utils.HTTPSUtil.postRequest
 import org.apache.logging.log4j.LogManager
 import org.json.JSONObject
-import java.io.File
 import javax.net.ssl.SSLContext
-import org.apache.http.conn.ssl.NoopHostnameVerifier
+import org.apache.http.conn.ssl.AllowAllHostnameVerifier
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory
 import org.apache.http.ssl.SSLContextBuilder
 import org.apache.http.ssl.SSLContexts
+import javax.net.ssl.X509TrustManager
+import java.security.cert.X509Certificate
+import javax.net.ssl.TrustManager
 import org.apache.http.util.EntityUtils
+import java.security.SecureRandom
 
 /**
  * Attestation Service provided by ehsm
@@ -38,22 +41,25 @@ import org.apache.http.util.EntityUtils
  * @param ehsmAPPKEY application Key
  */
 class EHSMAttestationService(kmsServerIP: String, kmsServerPort: String,
-                             ehsmAPPID: String, ehsmAPPKEY: String, jksFilePath: String, jksStorePassword: String)
+                             ehsmAPPID: String, ehsmAPPKEY: String)
   extends AttestationService {
 
   val logger = LogManager.getLogger(getClass)
 
   val sslConSocFactory = {
-    val file: File = new File(jksFilePath)
-    val sslBuilder: SSLContextBuilder = SSLContexts.custom().loadTrustMaterial(file, jksStorePassword.toCharArray())
-    sslcontext: SSLContext = sslBuilder.build()
-    new SSLConnectionSocketFactory(sslcontext, new NoopHostnameVerifier())
+    val sslContext: SSLContext = SSLContext.getInstance("SSL")
+    val trustManager: TrustManager = new X509TrustManager() {
+            override def checkClientTrusted(chain: Array[X509Certificate], authType: String): Unit = {}
+            override def checkServerTrusted(chain: Array[X509Certificate], authType: String): Unit = {}
+            override def getAcceptedIssuers(): Array[X509Certificate] = Array.empty
+    }
+    sslContext.init(null, Array(trustManager), new SecureRandom())
+    new SSLConnectionSocketFactory(sslContext, new AllowAllHostnameVerifier())
   }
 
   // Quote
   val PAYLOAD_QUOTE = "quote"
   val PAYLOAD_NONCE = "nonce"
-  val PAYLOAD_POLICYID = "policyId"
 
   val ACTION_VERIFY_QUOTE = "VerifyQuote"
   // Respone keys
@@ -71,16 +77,12 @@ class EHSMAttestationService(kmsServerIP: String, kmsServerPort: String,
     "test"
   }
 
-  override def attestWithServer(quote: String, policyId: String): (Boolean, String) = {
+  override def attestWithServer(quote: String): (Boolean, String) = {
     // TODO nonce
     val nonce: String = "test"
     if (quote == null) {
       Log4Error.invalidInputError(false,
         "Quote should be specified")
-    }
-    if (policyId == null) {
-      Log4Error.invalidInputError(false,
-        "PolicyId should be specified")
     }
     val action: String = ACTION_VERIFY_QUOTE
     val currentTime = System.currentTimeMillis() // ms
@@ -88,9 +90,8 @@ class EHSMAttestationService(kmsServerIP: String, kmsServerPort: String,
     val ehsmParams = new EHSMParams(ehsmAPPID, ehsmAPPKEY, timestamp)
     ehsmParams.addPayloadElement(PAYLOAD_QUOTE, quote)
     ehsmParams.addPayloadElement(PAYLOAD_NONCE, nonce)
-    ehsmParams.addPayloadElement(PAYLOAD_POLICYID, policyId)
 
-    val postResult: JSONObject = timing("EHSMKeyManagementService request for VerifyQuote") {
+    val postResult: JSONObject = timing("EHSMAttestationService request for VerifyQuote") {
       val postString: String = ehsmParams.getPostJSONString()
       postRequest(constructUrl(action), sslConSocFactory, postString)
     }
