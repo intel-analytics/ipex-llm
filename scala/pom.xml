@@ -875,7 +875,6 @@
             <id>all-in-one</id>
             <properties>
                 <spark-scope>compile</spark-scope>
-                <lightgbm.scope>provided</lightgbm.scope>
             </properties>
         </profile>
         <profile>
