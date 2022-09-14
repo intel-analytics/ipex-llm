@@ -22,6 +22,7 @@ if sys.version >= '3':
     long = int
     unicode = str
 
+
 class XGBClassifier():
     def __init__(self, params=None):
         super(XGBClassifier, self).__init__()
@@ -153,6 +154,7 @@ class XGBRegressorModel:
         jvalue = callZooFunc("float", "loadXGBRegressorModel", path)
         return XGBRegressorModel(jvalue=jvalue)
 
+
 class LightGBMClassifier():
     def __init__(self,  params=None):
         super(LightGBMClassifier, self).__init__()
@@ -184,6 +186,7 @@ class LightGBMClassifier():
 
     def setNumIterations(self, value: int):
         return callZooFunc("float", "setLGBMNumIterations", self.value, value)
+
 
 class LightGBMClassifierModel:
     """
@@ -218,6 +221,7 @@ class LightGBMClassifierModel:
         jvalue = callZooFunc("float", "loadLGBMClassifierModel", path)
         return LightGBMClassifierModel(jvalue=jvalue)
 
+
 class LightGBMRegressor():
     def __init__(self):
         super(LightGBMRegressor, self).__init__()
@@ -249,6 +253,7 @@ class LightGBMRegressor():
 
     def setNumIterations(self, value: int):
         return callZooFunc("float", "setLGBMNumIterations", self.value, value)
+
 
 class LightGBMRegressorModel:
     """
@@ -282,3 +287,4 @@ class LightGBMRegressorModel:
         """
         jvalue = callZooFunc("float", "loadLGBMRegressorModel", path)
         return LightGBMRegressorModel(jvalue=jvalue)
+    
