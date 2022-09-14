@@ -19,6 +19,10 @@ inputs:
     description: 'If use self-hosted runner it will be true'
     required: true
     default: false
+  runner-hosted-on:
+    description: 'Select the region of the runner host to set the proxy'
+    required: true
+    default: ''
 runs:
   using: "composite"
   steps:
@@ -47,6 +51,7 @@ runs:
         label: ${{ inputs.job-name }}
         message: ${{ env.JOB-STATUS }}
         color: ${{ env.COLOR }}
+        runnerHostedOn: ${{ inputs.runner-hosted-on }}
         
     - name: Create time badge
       if: ${{ inputs.type == 'workflow' && inputs.secret != '' }}
@@ -58,6 +63,7 @@ runs:
         filename: ${{ inputs.file-name }}
         label: Time is
         message: ${{ env.TIME }}
+        runnerHostedOn: ${{ inputs.runner-hosted-on }}
 
     - name: print error message
       if: ${{ inputs.secret == '' }}
