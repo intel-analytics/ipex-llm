@@ -32,8 +32,7 @@ class OpenVINOModel:
         self.ie_network = ie_network
 
     def on_forward_start(self, inputs):
-        invalidInputError(self.ie_network,
-                          "self.ie_network shouldn't be None.")
+        self._model_exists_or_err()
         return inputs
 
     def forward_step(self, *inputs):
