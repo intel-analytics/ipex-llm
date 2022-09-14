@@ -98,12 +98,66 @@ sudo docker run -itd \
 Run `docker exec -it spark-local-client bash` to entry the container.
 ### 2. Run application in spark K8S mode
 #### 2.1 Run application in K8S client mode
-The example for run Spark Pi:
+
 ```bash
-spark-submit-with-ppml-tdx-k8s.sh 
+export secure_password=.. && \
+bash spark-submit-with-ppml-tdx-k8s.sh　--master k8s://https://x.x.x.x:6443 \
+--deploy-mode client \
+--name spark-tdx \
+--conf spark.driver.host=x.x.x.x \
+--conf spark.driver.port=54321 \
+--conf spark.driver.memory=8g \
+--conf spark.executor.cores=8 \
+--conf spark.executor.memory=8g \
+--conf spark.executor.instances=1 \
+--conf spark.cores.max=8 \
+--conf spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName=nfsvolumeclaim \
+--conf spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path=/bigdl2.0/data \
+--conf spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName=nfsvolumeclaim \
+--conf spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path=/bigdl2.0/data \
+--class com.intel.analytics.bigdl.ppml.examples.SimpleQuerySparkExample \
+--jars /bigdl2.0/data/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar \
+/bigdl2.0/data/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar \
+--inputPath /bigdl2.0/data/people/encrypted \
+--outputPath /bigdl2.0/data/people/people_encrypted_output \
+--inputPartitionNum 8 \
+--outputPartitionNum 8 \
+--inputEncryptModeValue AES/CBC/PKCS5Padding \
+--outputEncryptModeValue AES/CBC/PKCS5Padding \
+--primaryKeyPath /bigdl2.0/data/20line_data_keys/primaryKey \
+--dataKeyPath /bigdl2.0/data/20line_data_keys/dataKey \
+--kmsType SimpleKeyManagementService \
+--simpleAPPID xx \
+--simpleAPPKEY xx
 ```
 #### 2.2 Run application in K8s cluster mode
-The example for run Spark Pi:
+
 ```bash
-spark-submit-with-ppml-tdx-k8.sh
+export secure_password=.. && \
+bash spark-submit-with-ppml-tdx-k8s.sh　--master k8s://https://x.x.x.x:6443 \
+--deploy-mode cluster \
+--name spark-tdx \
+--conf spark.driver.memory=8g \
+--conf spark.executor.cores=8 \
+--conf spark.executor.memory=8g \
+--conf spark.executor.instances=1 \
+--conf spark.cores.max=8 \
+--conf spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName=nfsvolumeclaim \
+--conf spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path=/bigdl2.0/data \
+--conf spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName=nfsvolumeclaim \
+--conf spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path=/bigdl2.0/data \
+--class com.intel.analytics.bigdl.ppml.examples.SimpleQuerySparkExample \
+--jars /bigdl2.0/data/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar \
+/bigdl2.0/data/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar \
+--inputPath /bigdl2.0/data/people/encrypted \
+--outputPath /bigdl2.0/data/people/people_encrypted_output \
+--inputPartitionNum 8 \
+--outputPartitionNum 8 \
+--inputEncryptModeValue AES/CBC/PKCS5Padding \
+--outputEncryptModeValue AES/CBC/PKCS5Padding \
+--primaryKeyPath /bigdl2.0/data/20line_data_keys/primaryKey \
+--dataKeyPath /bigdl2.0/data/20line_data_keys/dataKey \
+--kmsType SimpleKeyManagementService \
+--simpleAPPID xx \
+--simpleAPPKEY xx
 ```
