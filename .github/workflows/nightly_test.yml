@@ -68,7 +68,7 @@ jobs:
       uses: ./.github/actions/remove-env
   
   Orca-Python-Jep-Exampletests-Py37:
-    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Jep-Exampletests-Py37' || github.event.inputs.artifact == 'all' }}
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Jep-Exampletests-Py37' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -98,13 +98,13 @@ jobs:
     - name: Setup env
       uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-spark3
     - name: Run Test
-      uses: ./.github/actions/orca/oorca-python-exampletest-action/nightly-test
+      uses: ./.github/actions/orca/orca-python-exampletest-action/nightly-test
     - name: Remove Env
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
 
   Orca-Python-Exampletests-Ray-Py37:
-    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Exampletests-Ray-Py37' || github.event.inputs.artifact == 'all' }}
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Exampletests-Ray-Py37' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -122,7 +122,7 @@ jobs:
       uses: ./.github/actions/remove-env
 
   Orca-Python-Py37-Spark3:
-    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
