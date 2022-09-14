@@ -19,6 +19,14 @@
 import os
 from setuptools import setup
 
+long_description = '''
+[**BigDL**](https://github.com/intel-analytics/BigDL/)
+makes it easy for data scientists and data engineers to build end-to-end, 
+distributed AI applications.
+
+For more information, you may [read the docs](https://bigdl.readthedocs.io/).
+'''
+
 bigdl_home = os.path.abspath(__file__ + "/../../")
 exclude_patterns = ["*__pycache__*", "*ipynb_checkpoints*"]
 
@@ -30,6 +38,8 @@ def setup_package():
         name='bigdl',
         version=VERSION,
         description='Building Large-Scale AI Applications for Distributed Big Data',
+        long_description=long_description,
+        long_description_content_type="text/markdown",
         author='BigDL Authors',
         author_email='bigdl-user-group@googlegroups.com',
         license='Apache License, Version 2.0',
