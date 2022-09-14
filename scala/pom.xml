@@ -185,6 +185,7 @@
         <bigdl.basedir>${project.basedir}</bigdl.basedir>
 	    <bigdl-core-all-scope>compile</bigdl-core-all-scope>
         <data-store-url>http://download.tensorflow.org</data-store-url>
+        <lightgbm.scope>provided</lightgbm.scope>
 
     </properties>
 
@@ -692,11 +693,19 @@
                 <scala.major.version>2.11</scala.major.version>
                 <scala.version>2.11.8</scala.version>
                 <scala.macros.version>2.1.0</scala.macros.version>
-                <lightgbm.scope>provided</lightgbm.scope>
             </properties>
             <build>
                 <plugins>
                     <!-- Redefine the plugin to enable fatal warninings -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <excludes>
+                                <exclude>dllib/src/main/scala/com/intel/analytics/bigdl/dllib/nnframes/LightGB*.scala</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
                     <plugin>
                         <groupId>net.alchim31.maven</groupId>
                         <artifactId>scala-maven-plugin</artifactId>
@@ -875,6 +884,7 @@
             <id>all-in-one</id>
             <properties>
                 <spark-scope>compile</spark-scope>
+                <lightgbm.scope>provided</lightgbm.scope>
             </properties>
         </profile>
         <profile>
