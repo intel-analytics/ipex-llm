@@ -40,9 +40,9 @@ class TestTreeModel():
         self.sc.stop()
 
     def test_XGBClassifierModel_predict(self):
-        # from sys import platform
-        # if platform in ("darwin", "win32"):
-        #     return
+        from sys import platform
+        if platform in ("darwin", "win32"):
+            return
 
         resource_path = os.path.join(os.path.split(__file__)[0], "../resources")
         path = os.path.join(resource_path, "xgbclassifier/")
@@ -58,9 +58,9 @@ class TestTreeModel():
         assert predict.count() == 14
 
     def test_XGBClassifier_train(self):
-        # from sys import platform
-        # if platform in ("darwin", "win32"):
-        #     return
+        from sys import platform
+        if platform in ("darwin", "win32"):
+            return
         path = os.path.join(self.resource_path, "xgbclassifier/")
         modelPath = path + "XGBClassifer.bin"
         filePath = path + "test.csv"
@@ -77,9 +77,9 @@ class TestTreeModel():
         assert predicts.count() == 14
 
     def test_XGBRegressor(self):
-        # from sys import platform
-        # if platform in ("darwin", "win32"):
-        #     return
+        from sys import platform
+        if platform in ("darwin", "win32"):
+            return
 
         if self.sc.version.startswith("3.1") or self.sc.version.startswith("2.4"):
             data = self.sc.parallelize([
@@ -108,12 +108,13 @@ class TestTreeModel():
             assert (y0.subtract(yxgb).count() == 0)
 
     def test_LGBMClassifier_fit_transform(self):
+        if float(self.sc.version[:3]) < 3.1:
+            return
         path = os.path.join(self.resource_path, "xgbclassifier/")
         filePath = path + "test.csv"
         df = self.sqlContext.read.csv(filePath, sep=",", inferSchema=True, header=True)
         df = df.select(array("age", "gender", "jointime", "star").alias("features"), "label")\
             .withColumn("features", udf(lambda x: DenseVector(x), VectorUDT())("features"))
-
         # input_path = "/Users/guoqiong/intelWork/data/tweet/xgb_processed"
         # df = self.sqlContext.read.parquet(input_path + "/train")
         classifier = LightGBMClassifier()
@@ -126,6 +127,8 @@ class TestTreeModel():
         assert predicts.count() == 14
 
     def test_LGBMClassifier_param_map(self):
+        if float(self.sc.version[:3]) < 3.1:
+            return
         path = os.path.join(self.resource_path, "xgbclassifier/")
         filePath = path + "test.csv"
         df = self.sqlContext.read.csv(filePath, sep=",", inferSchema=True, header=True)
@@ -147,6 +150,8 @@ class TestTreeModel():
         assert predicts.count() == 14
 
     def test_LGBMClassifierModel_save_load(self):
+        if float(self.sc.version[:3]) < 3.1:
+            return
         path = os.path.join(self.resource_path, "xgbclassifier/")
         filePath = path + "test.csv"
         df = self.sqlContext.read.csv(filePath, sep=",", inferSchema=True, header=True)
@@ -162,6 +167,8 @@ class TestTreeModel():
         assert predicts1.count() == 14
 
     def test_LGBMRegressor_param_map(self):
+        if float(self.sc.version[:3]) < 3.1:
+            return
         data = self.sc.parallelize([
             (1.0, 2.0, 3.0, 4.0, 5.0, 1.0, 2.0, 4.0, 8.0, 3.0, 116.3668),
             (1.0, 3.0, 8.0, 6.0, 5.0, 9.0, 5.0, 6.0, 7.0, 4.0, 116.367),
@@ -192,6 +199,8 @@ class TestTreeModel():
         assert (predicts.count() == 8)
 
     def test_LGBMRegressor_train_transform(self):
+        if float(self.sc.version[:3]) < 3.1:
+            return
         data = self.sc.parallelize([
             (1.0, 2.0, 3.0, 4.0, 5.0, 1.0, 2.0, 4.0, 8.0, 3.0, 116.3668),
             (1.0, 3.0, 8.0, 6.0, 5.0, 9.0, 5.0, 6.0, 7.0, 4.0, 116.367),
@@ -212,6 +221,8 @@ class TestTreeModel():
         assert (predicts.count() == 4)
 
     def test_LGBMRegressorModel_save_load(self):
+        if float(self.sc.version[:3]) < 3.1:
+            return
         data = self.sc.parallelize([
             (1.0, 2.0, 3.0, 4.0, 5.0, 1.0, 2.0, 4.0, 8.0, 3.0, 116.3668),
             (1.0, 3.0, 8.0, 6.0, 5.0, 9.0, 5.0, 6.0, 7.0, 4.0, 116.367),
