@@ -38,10 +38,9 @@ jobs:
           if conda info --env | grep "chronos-prvn-env"; then
             source deactivate
             conda remove -n chronos-prvn-env -y --all
-          else
-            conda create -n chronos-prvn-env -y python==3.7.10 setuptools==58.0.4
-            source activate chronos-prvn-env
           fi
+          conda create -n chronos-prvn-env -y python==3.7.10 setuptools==58.0.4
+          source activate chronos-prvn-env
 
       - name: Install dependencies
         run: |
