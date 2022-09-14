@@ -4,7 +4,7 @@ cd /ppml/trusted-big-data-ml
 
 status_2_scala_sql_example=1
 status_3_scala_sql_RDDRelation=1
-status_4_scala_sql_SimpleTypedAggregtor=1
+status_4_scala_sql_SimpleTypedAggregator=1
 status_5_scala_sql_UserDefinedScalar=1
 status_6_scala_sql_UserDefinedTypedAggregation=1
 status_7_scala_sql_UserDefinedUntypedAggregation=1
