@@ -143,7 +143,7 @@ class PytorchPysparkWorker(TorchRunner):
         if self.rank == 0:
             if self.model_dir is not None:
                 save_pkl(state_dict, os.path.join(self.model_dir, "state.pkl"))
-        
+
         if self.model_dir is not None:
             return [stats_list]
         else:
