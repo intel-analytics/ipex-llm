@@ -692,6 +692,7 @@
                 <scala.major.version>2.11</scala.major.version>
                 <scala.version>2.11.8</scala.version>
                 <scala.macros.version>2.1.0</scala.macros.version>
+                <lightgbm.scope>provided</lightgbm.scope>
             </properties>
             <build>
                 <plugins>
@@ -772,6 +773,7 @@
                 <scala.major.version>2.12</scala.major.version>
                 <scala.version>2.12.10</scala.version>
                 <scala.macros.version>2.1.0</scala.macros.version>
+                <lightgbm.scope>compile</lightgbm.scope>
                 <maven.compiler.source>${java.version}</maven.compiler.source>
                 <maven.compiler.target>${java.version}</maven.compiler.target>
             </properties>
