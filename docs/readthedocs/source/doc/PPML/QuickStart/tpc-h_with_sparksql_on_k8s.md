@@ -52,6 +52,7 @@ sudo docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2
 3. Start a bigdl-ppml enabled Spark K8S client container with configured local IP, key, tpch and kuberconfig path
 ```
 export ENCLAVE_KEY=/path/to/enclave-key.pem
+export SECURE_PASSWORD_PATH=/path/to/password
 export DATA_PATH=/path/to/tpch
 export KEYS_PATH=/root/keys
 export KUBERCONFIG_PATH=/root/kuberconfig
@@ -65,6 +66,7 @@ sudo docker run -itd \
         --device=/dev/sgx/enclave \
         --device=/dev/sgx/provision \
         -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
+        -v $SECURE_PASSWORD_PATH:/ppml/trusted-big-data-ml/work/password \
         -v $ENCLAVE_KEY:/graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
         -v $DATA_PATH:/ppml/trusted-big-data-ml/work/tpch-spark \
         -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
