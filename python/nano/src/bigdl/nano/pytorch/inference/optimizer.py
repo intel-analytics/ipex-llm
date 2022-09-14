@@ -251,8 +251,7 @@ class InferenceOptimizer:
                 try:
                     result_map[method]["latency"], status =\
                         _throughput_calculate_helper(latency_sample_num, baseline_time,
-	                                                 func_test,
-	                                                 acce_model, input_sample)
+                                                     func_test, acce_model, input_sample)
                     if status is False:
                         result_map[method]["status"] = "pruned"
                         torch.set_num_threads(default_threads)
