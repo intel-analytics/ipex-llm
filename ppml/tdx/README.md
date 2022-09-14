@@ -64,7 +64,8 @@ Run `kubectl exec spark-local-client -- /bin/bash` to entry the client pod.
 
 ```bash
 export secure_password=.. && \
-bash spark-submit-with-ppml-tdx-k8s.sh　--master k8s://https://x.x.x.x:6443 \
+bash spark-submit-with-ppml-tdx-k8s.sh \
+--master k8s://https://x.x.x.x:6443 \
 --deploy-mode client \
 --name spark-tdx \
 --conf spark.driver.host=x.x.x.x \
@@ -93,7 +94,8 @@ bash spark-submit-with-ppml-tdx-k8s.sh　--master k8s://https://x.x.x.x:6443 \
 
 ```bash
 export secure_password=.. && \
-bash spark-submit-with-ppml-tdx-k8s.sh　--master k8s://https://x.x.x.x:6443 \
+bash spark-submit-with-ppml-tdx-k8s.sh \
+--master k8s://https://x.x.x.x:6443 \
 --deploy-mode cluster \
 --name spark-tdx \
 --conf spark.driver.memory=8g \
