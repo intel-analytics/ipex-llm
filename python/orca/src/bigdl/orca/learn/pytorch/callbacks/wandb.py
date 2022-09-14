@@ -15,7 +15,7 @@
 #
 from bigdl.orca.learn.pytorch.callbacks import Callback
 from bigdl.dllib.utils.log4Error import invalidInputError
-
+from copy import copy
 
 try:
     import wandb
@@ -86,7 +86,7 @@ class WandbLoggerCallback(Callback):
         else:
             config = {}
         if self.log_config:
-            trainer_config = self.trainer.config.copy()
+            trainer_config = copy(self.trainer.config)
             config.update(trainer_config)
 
         if is_rank_zero:

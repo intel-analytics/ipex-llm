@@ -19,6 +19,7 @@ import logging
 import numbers
 import torch
 import numpy as np
+from copy import copy
 
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch.pytorch_pyspark_worker import PytorchPysparkWorker
@@ -144,7 +145,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             training_operator_cls=training_operator_cls,
             scheduler_step_freq=scheduler_step_freq,
             use_tqdm=use_tqdm,
-            config=self.config.copy(),
+            config=copy(self.config),
             metrics=metrics,
             size=self.num_workers,
             cores_per_worker=self.cores_per_worker,

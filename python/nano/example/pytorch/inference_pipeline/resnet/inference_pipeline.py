@@ -45,7 +45,7 @@ if __name__ == "__main__":
                        validation_data=datamodule.val_dataloader(limit_num_samples=160),
                        metric=accuracy,
                        direction="max",
-                       cpu_num=1,
+                       thread_num=1,
                        latency_sample_num=30)
 
     # 4. Get the best model under specific restrictions or without restrictions
