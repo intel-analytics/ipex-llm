@@ -779,7 +779,7 @@ class BasePytorchForecaster(Forecaster):
         aggregate = 'mean' if multioutput == 'uniform_average' else None
         return Evaluator.evaluate(self.metrics, target, yhat, aggregate=aggregate)
 
-    def predict_interval(self, data, validation_data, batch_size=None, repetition_times=5):
+    def predict_interval(self, data, validation_data=None, batch_size=None, repetition_times=5):
         """
         Calculate confidence interval of data based on Monte Carlo dropout(MC dropout).
 

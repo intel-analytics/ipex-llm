@@ -691,8 +691,42 @@ class TestChronosModelTCNForecaster(TestCase):
                                    metrics=["mse"],
                                    lr=0.01)
         forecaster.fit(train_data, epochs=2)
+        # only the first time needs validation_data
         y_pred, std = forecaster.predict_interval(data=test_data[0],
-                                                validation_data=val_data,
-                                                repetition_times=5)
+                                                  validation_data=val_data,
+                                                  repetition_times=5)
         assert y_pred.shape == test_data[1].shape
         assert y_pred.shape == std.shape
+        y_pred, std = forecaster.predict_interval(data=test_data[0])
+
+    def test_predict_interval_without_validation_data(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=4,
+                                   num_channels=[16, 16, 16],
+                                   loss="mse",
+                                   metrics=["mse"],
+                                   lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        with pytest.raises(RuntimeError):
+            y_pred, std = forecaster.predict_interval(data=test_data[0],
+                                                    repetition_times=5)
+
+    def test_predict_interval_without_mse(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=4,
+                                   num_channels=[16, 16, 16],
+                                   loss="mse",
+                                   metrics=["mae"],
+                                   lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        with pytest.raises(RuntimeError):
+            y_pred, std = forecaster.predict_interval(data=test_data[0],
+                                                    repetition_times=5)
