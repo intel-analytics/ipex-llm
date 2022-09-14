@@ -276,7 +276,7 @@ class TrainingOperator:
 
         # Compute output.
         with self.timers.record("fwd"):
-            output = self.model(*features)
+            output = self.model(*features) if not already_list else self.model(features)
             if isinstance(output, tuple) or isinstance(output, list):
                 # Then target is also assumed to be a tuple or list.
                 loss = self.criterion(*output, *target)
@@ -402,7 +402,7 @@ class TrainingOperator:
 
         # compute output
         with self.timers.record("eval_fwd"):
-            output = self.model(*features)
+            output = self.model(*features) if not already_list else self.model(features)
             loss = self.criterion(output, target)
 
         return output, target, loss
