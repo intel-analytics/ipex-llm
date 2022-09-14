@@ -691,8 +691,8 @@ class TestChronosModelTCNForecaster(TestCase):
                                    metrics=["mse"],
                                    lr=0.01)
         forecaster.fit(train_data, epochs=2)
-        y_pred, sigma = forecaster.predict_interval(data=test_data[0],
+        y_pred, std = forecaster.predict_interval(data=test_data[0],
                                                 validation_data=val_data,
                                                 repetition_times=5)
         assert y_pred.shape == test_data[1].shape
-        assert y_pred.shape == sigma.shape
+        assert y_pred.shape == std.shape

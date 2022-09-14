@@ -781,7 +781,8 @@ class BasePytorchForecaster(Forecaster):
 
     def predict_interval(self, data, validation_data, batch_size=None, repetition_times=5):
         """
-
+        Calculate confidence interval of data based on Monte Carlo dropout(MC dropout).
+        
         :param data: The data support following formats:
 
                | 1. a numpy ndarray x:
@@ -831,8 +832,8 @@ class BasePytorchForecaster(Forecaster):
         :param repetition_times : Defines repeate how many times to calculate model
                                   uncertainty based on MC Dropout.
 
-        :return: A numpy array with shape (num_samples, horizon, target_dim)
-                 if data is a numpy ndarray or a dataloader and a variance value.
+        :return: prediction and standard deviation which are both numpy array
+                 with shape (num_samples, horizon, target_dim)
 
         """
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
@@ -843,9 +844,11 @@ class BasePytorchForecaster(Forecaster):
             invalidInputError(validation_data is not None,
                               "When call predict_interval for the first time, you must pass in "
                               "validation data to calculate data noise.")
+            invalidOperationError("mse" in self.metrics,
+                                  "You must add 'mse' in metrics when initialize Forecaster.")
             output = self.evaluate(data=validation_data, multioutput='uniform_average')
-            # TODO: index for mse
-            self.data_noise = output[0]
+            index = self.metrics.index("mse")
+            self.data_noise = output[index]
 
         # step2: data preprocess
         if isinstance(data, TSDataset):
@@ -912,9 +915,9 @@ class BasePytorchForecaster(Forecaster):
         for i in range(repetition_times):
             model_bias += (y_hat_list[i] - y_hat_mean)**2
         model_bias /= repetition_times
-        sig = np.sqrt(self.data_noise + model_bias)
+        std_deviation = np.sqrt(self.data_noise + model_bias)
 
-        return y_hat, sig
+        return y_hat, std_deviation
 
     def save(self, checkpoint_file, quantize_checkpoint_file=None):
         """
