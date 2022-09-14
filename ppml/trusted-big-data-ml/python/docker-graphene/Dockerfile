@@ -24,7 +24,7 @@ RUN cd /graphene && \
 RUN cd /graphene/Pal/src/host/Linux-SGX && \
     git clone https://github.com/intel/SGXDataCenterAttestationPrimitives.git linux-sgx-driver && \
     cd linux-sgx-driver && \
-    git checkout DCAP_1.7 && \
+    git checkout DCAP_1.13 && \
     cp -r driver/linux/* .
 RUN cd /graphene && \
     ISGX_DRIVER_PATH=/graphene/Pal/src/host/Linux-SGX/linux-sgx-driver make -s -j4 SGX=1 WERROR=1 && true
