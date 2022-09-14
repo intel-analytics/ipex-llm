@@ -171,7 +171,7 @@ def get_optimizer(model, config):
 
 
 def get_estimator(workers_per_node=1, model_fn=get_model, sync_stats=False,
-                  log_level=logging.INFO, model_dir=None):
+                  log_level=logging.INFO):
     estimator = Estimator.from_torch(model=model_fn,
                                      optimizer=get_optimizer,
                                      loss=nn.BCELoss(),
@@ -180,8 +180,7 @@ def get_estimator(workers_per_node=1, model_fn=get_model, sync_stats=False,
                                      workers_per_node=workers_per_node,
                                      backend="spark",
                                      sync_stats=sync_stats,
-                                     log_level=log_level,
-                                     model_dir=model_dir)
+                                     log_level=log_level)
     return estimator
 
 
@@ -193,7 +192,7 @@ class TestPyTorchEstimator(TestCase):
         shutil.rmtree(self.model_dir)
 
     def test_data_creator_convergence(self):
-        estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir)
+        estimator = get_estimator(workers_per_node=2)
         start_val_stats = estimator.evaluate(val_data_loader, batch_size=64)
         print(start_val_stats)
         train_stats = estimator.fit(train_data_loader, epochs=4, batch_size=128,
@@ -215,7 +214,7 @@ class TestPyTorchEstimator(TestCase):
     def test_spark_xshards(self):
         from bigdl.dllib.nncontext import init_nncontext
         from bigdl.orca.data import SparkXShards
-        estimator = get_estimator(workers_per_node=1, model_dir=self.model_dir)
+        estimator = get_estimator(workers_per_node=1)
         sc = init_nncontext()
         x_rdd = sc.parallelize(np.random.rand(4000, 1, 50).astype(np.float32))
         # torch 1.7.1+ requires target size same as output size, which is (batch, 1)
@@ -238,7 +237,7 @@ class TestPyTorchEstimator(TestCase):
                                 [int(np.random.randint(0, 2, size=()))])
                      ).toDF(["feature", "label"])
 
-        estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir)
+        estimator = get_estimator(workers_per_node=2)
         estimator.fit(df, batch_size=4, epochs=2,
                       validation_data=df,
                       feature_cols=["feature"],
@@ -257,7 +256,7 @@ class TestPyTorchEstimator(TestCase):
                                 [int(np.random.randint(0, 2, size=()))])
                      ).toDF(["feature", "label"])
 
-        estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir)
+        estimator = get_estimator(workers_per_node=2)
         estimator.fit(df, batch_size=4, epochs=2,
                       feature_cols=["feature"],
                       label_cols=["label"])
@@ -272,7 +271,7 @@ class TestPyTorchEstimator(TestCase):
                                 [int(np.random.randint(0, 2, size=()))])
                      ).toDF(["feature", "label"])
 
-        estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir)
+        estimator = get_estimator(workers_per_node=2)
         assert df.rdd.getNumPartitions() < estimator.num_workers
 
         estimator.fit(df, batch_size=4, epochs=2,
@@ -293,8 +292,7 @@ class TestPyTorchEstimator(TestCase):
                      ).toDF(["feature", "label"])
 
         estimator = get_estimator(workers_per_node=2,
-                                  model_fn=lambda config: IdentityNet(),
-                                  model_dir=self.model_dir)
+                                  model_fn=lambda config: IdentityNet())
         result = estimator.predict(df, batch_size=4,
                                    feature_cols=["feature"])
         expr = "sum(cast(feature <> to_array(prediction) as int)) as error"
@@ -308,8 +306,7 @@ class TestPyTorchEstimator(TestCase):
         shards = SparkXShards(shards)
 
         estimator = get_estimator(workers_per_node=2,
-                                  model_fn=lambda config: IdentityNet(),
-                                  model_dir=self.model_dir)
+                                  model_fn=lambda config: IdentityNet())
         result_shards = estimator.predict(shards, batch_size=4)
         result_before = np.concatenate([shard["prediction"] for shard in result_shards.collect()])
         expected_result = np.concatenate([shard["x"] for shard in result_shards.collect()])
@@ -358,8 +355,7 @@ class TestPyTorchEstimator(TestCase):
                      ).toDF(["f1", "f2", "label"])
 
         estimator = get_estimator(workers_per_node=2,
-                                  model_fn=lambda config: MultiInputNet(),
-                                  model_dir=self.model_dir)
+                                  model_fn=lambda config: MultiInputNet())
         estimator.fit(df, batch_size=4, epochs=2,
                       validation_data=df,
                       feature_cols=["f1", "f2"],
@@ -403,8 +399,7 @@ class TestPyTorchEstimator(TestCase):
                                          config={},
                                          workers_per_node=2,
                                          backend="spark",
-                                         sync_stats=False,
-                                         model_dir=self.model_dir)
+                                         sync_stats=False)
 
         stats = estimator.fit(df, batch_size=4, epochs=2,
                               validation_data=df,
@@ -425,8 +420,7 @@ class TestPyTorchEstimator(TestCase):
                      ).toDF(["feature", "label"])
         df = df.cache()
 
-        estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir,
-                                  log_level=logging.DEBUG)
+        estimator = get_estimator(workers_per_node=2, log_level=logging.DEBUG)
 
         callbacks = [
             ModelCheckpoint(filepath=os.path.join(self.model_dir, "test-{epoch}"),
@@ -446,8 +440,7 @@ class TestPyTorchEstimator(TestCase):
         latest_checkpoint_path = Estimator.latest_checkpoint(self.model_dir)
         assert os.path.isfile(latest_checkpoint_path)
         estimator.shutdown()
-        new_estimator = get_estimator(workers_per_node=2,  model_dir=self.model_dir,
-                                      log_level=logging.DEBUG)
+        new_estimator = get_estimator(workers_per_node=2, log_level=logging.DEBUG)
         new_estimator.load_checkpoint(latest_checkpoint_path)
         eval_after = new_estimator.evaluate(df, batch_size=4,
                                             feature_cols=["feature"],
@@ -466,8 +459,7 @@ class TestPyTorchEstimator(TestCase):
                      ).toDF(["feature", "label"])
         df = df.cache()
 
-        estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir,
-                                  log_level=logging.DEBUG)
+        estimator = get_estimator(workers_per_node=2, log_level=logging.DEBUG)
         estimator.fit(df, batch_size=4, epochs=epochs,
                       feature_cols=["feature"],
                       label_cols=["label"])
@@ -480,8 +472,7 @@ class TestPyTorchEstimator(TestCase):
             ckpt_file = os.path.join(temp_dir, "manual.ckpt")
             estimator.save_checkpoint(ckpt_file)
             estimator.shutdown()
-            new_estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir,
-                                          log_level=logging.DEBUG)
+            new_estimator = get_estimator(workers_per_node=2, log_level=logging.DEBUG)
             new_estimator.load_checkpoint(ckpt_file)
             eval_after = new_estimator.evaluate(df, batch_size=4,
                                                 feature_cols=["feature"],
@@ -492,7 +483,7 @@ class TestPyTorchEstimator(TestCase):
             shutil.rmtree(temp_dir)
 
     def test_custom_callback(self):
-        estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir)
+        estimator = get_estimator(workers_per_node=2)
         callbacks = [CustomCallback()]
         estimator.fit(train_data_loader, epochs=4, batch_size=128, 
                       validation_data=val_data_loader, callbacks=callbacks)
