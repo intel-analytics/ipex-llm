@@ -116,3 +116,18 @@ Add the environment variables when calling `init_orca_context` would resolve the
 ```python
 sc = init_orca_context(cluster_mode, init_ray_on_spark=True, env={"LANG": "C.UTF-8", "LC_ALL": "C.UTF-8"})
 ```
+
+---
+### **5. FAQ**
+- ValueError: Ray component worker_ports is trying to use a port number ... that is used by other components.
+This error is because that some port in worker port list is occupied by other processes. To handle this issue, we can set range of the worker port list by using parameters `min-worker-port` and `max-worker-port` in `init_orca_context()` as follows:
+
+```python
+init_orca_context(extra_params={"min-worker-port": "30000", "max-worker-port": "30033"})
+```
+
+Or you also can directly set the worker port list with parameter `worker-port-list` in `init_orca_context()` as follows:
+
+```python
+init_orca_context(extra_params={"worker-port-list": "30001,30003,30005"})
+```
