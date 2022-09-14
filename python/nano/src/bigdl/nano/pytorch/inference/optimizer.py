@@ -248,9 +248,14 @@ class InferenceOptimizer:
 
                 torch.set_num_threads(default_threads)
                 if self._calculate_accuracy:
-                    result_map[method]["accuracy"] =\
-                        _accuracy_calculate_helper(acce_model,
-                                                   metric, validation_data)
+                    # TODO: here we suppose trace don't change accuracy, 
+                    # so we jump it to reduce time cost of optimize
+                    if precision == "fp32" and method != "original":
+                        result_map[method]["accuracy"] = result_map["original"]["accuracy"]
+                    else:
+                        result_map[method]["accuracy"] =\
+                            _accuracy_calculate_helper(acce_model,
+                                                    metric, validation_data)
                 else:
                     result_map[method]["accuracy"] = None
 
@@ -676,9 +681,11 @@ def _accuracy_calculate_helper(model, metric, data):
     '''
     metric_list = []
     sample_num = 0
-    for i, (data_input, target) in enumerate(data):
-        metric_list.append(metric(model(data_input), target).numpy() * data_input.shape[0])
-        sample_num += data_input.shape[0]
+    with torch.no_grad():
+        for i, (data_input, target) in enumerate(data):
+            metric_list.append(metric(model(data_input), target).numpy() *
+                               data_input.shape[0])
+            sample_num += data_input.shape[0]
     return np.sum(metric_list) / sample_num
 
 
