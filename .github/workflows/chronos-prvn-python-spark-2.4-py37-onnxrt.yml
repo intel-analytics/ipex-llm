@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.7.6"]
+        python-version: ["3.7"]
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 8
@@ -31,11 +31,16 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      
+      - name: Set up env
+        shell: bash
+        run: |
+          conda create -n chronos-prvn-env -y python==3.7 setuptools==58.0.4
+          source activate chronos-prvn-env
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install --upgrade setuptools==58.0.4
           python -m pip install --upgrade wheel
           pip install pytest==5.4.1
           pip install prophet==1.1
@@ -52,6 +57,7 @@ jobs:
           pip install scipy==1.5.4
           apt-get update
           apt-get install patchelf
+
       - name: Run Chronos python test
         shell: bash
         run: |
@@ -70,3 +76,8 @@ jobs:
         env:
           BIGDL_ROOT: ${{ github.workspace }}
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+      
+      - name: Remove env
+        run: |
+          source deactivate
+          conda remove -n chronos-prvn-env -y all
