@@ -18,8 +18,10 @@ package com.intel.analytics.bigdl.dllib.nnframes.python
 
 import com.intel.analytics.bigdl.dllib.common.PythonZoo
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+
 import java.util.{ArrayList => JArrayList, Map => JMap}
 import com.intel.analytics.bigdl.dllib.nnframes._
+import com.microsoft.azure.synapse.ml.lightgbm.LightGBMUtils
 import org.apache.spark.sql.DataFrame
 
 import scala.collection.JavaConverters._
@@ -164,11 +166,13 @@ class PythonTreeModel[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
   // lightGBM support
   def getLightGBMClassifier(lgbmParamsin: JMap[String, Any]): LightGBMClassifier = {
     val lgbmParams = if (lgbmParamsin == null) Map[String, Any]() else lgbmParamsin.asScala.toMap
+      .map(x => (TreeModelUtils.convert2CamelCase(x._1), x._2))
     new LightGBMClassifier(lgbmParams)
   }
 
   def getLightGBMRegressor(lgbmParamsin: JMap[String, Any]): LightGBMRegressor = {
     val lgbmParams = if (lgbmParamsin == null) Map[String, Any]() else lgbmParamsin.asScala.toMap
+      .map(x => (TreeModelUtils.convert2CamelCase(x._1), x._2))
     new LightGBMRegressor(lgbmParams)
   }
 

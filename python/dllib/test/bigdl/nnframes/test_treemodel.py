@@ -137,7 +137,7 @@ class TestTreeModel():
         parammap = {"boosting_type": "dart",  "num_leaves": 1, "max_depth": 2, "learning_rate": 0.3,
                     "num_iterations": 10, "bin_construct_sample_cnt": 5, "objective": "huber",
                     "min_split_gain": 0.1, "min_sum_hessian_in_leaf": 0.01, "min_data_in_lLeaf": 1,
-                    "baggingF_faction": 0.2, "bagging_fraq": 1, "feature_fraction": 0.2,
+                    "baggingF_faction": 0.2, "bagging_freq": 1, "feature_fraction": 0.2,
                     "lambda_l1": 0.1, "lambda_l2": 0.1, "num_threads": 2,
                     "early_stopping_round": 10, "max_bin": 100}
         classifier = LightGBMClassifier(parammap)
@@ -179,7 +179,7 @@ class TestTreeModel():
         parammap = {"boosting_type": "dart",  "num_leaves": 1, "max_depth": 2, "learning_rate": 0.3,
                     "num_iterations": 10, "bin_construct_sample_cnt": 5, "objective": "huber",
                     "min_split_gain": 0.1, "min_sum_hessian_in_leaf": 0.01, "min_data_in_lLeaf": 1,
-                    "baggingF_faction": 0.2, "bagging_fraq": 1, "feature_fraction": 0.2,
+                    "baggingF_faction": 0.2, "bagging_freq": 1, "feature_fraction": 0.2,
                     "lambda_l1": 0.1, "lambda_l2": 0.1, "num_threads": 2,
                     "early_stopping_round": 10, "max_bin": 100}
         regressor = LightGBMRegressor(parammap)
