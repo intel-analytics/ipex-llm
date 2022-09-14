@@ -118,29 +118,22 @@ print(min_user_id, max_user_id, min_item_id, max_item_id)
 from pyspark.sql import functions
 df = df0.withColumn('label', functions.lit(1))
 
-
+from pyspark.sql import functions as F
+from pyspark.sql import types as T
 import random
-import pandas as pd
-def negative_sample(pandas_df):
-    df_list = pandas_df.values.tolist()
-    count_df = len(df_list) * 4
-    mat = [[0] * (max_item_id + 1) for _ in range(max_user_id + 1)]
-    for x in df_list:
-        mat[x[0]][x[1]] = 1
-    neg_list = []
-    while count_df:
-        neg_user = random.randint(min_user_id, max_user_id)
-        neg_item = random.randint(min_item_id, max_item_id)
-        neg_com = [neg_user, neg_item]
-        if mat[neg_user][neg_item] == 0:
-            neg_list.append(neg_com)
-            count_df -= 1
-            mat[neg_user][neg_item] = 1
-    return pd.DataFrame(neg_list)
-df_neg = df0.groupby().applyInPandas(negative_sample, schema=schema)
+
+def neg_sample(x):
+    item_count = len(x) * 4
+    max_count = max_item_id - len(set(x))
+    neg_item = random.sample(set(range(min_item_id, max_item_id+1)) - set(x), min(item_count,max_count))
+    return neg_item
+
+neg_sample_udf = F.udf(neg_sample, T.ArrayType(IntegerType(), False))
+
+df_neg= df.groupBy('user').agg(neg_sample_udf(F.collect_list('item')).alias('item_list'))
+from pyspark.sql.functions import *
+df_neg = df_neg.select(df_neg.user, explode(df_neg.item_list))
 df_neg = df_neg.withColumn('label', functions.lit(0))
-
-
 df.unionAll(df_neg)
 
 train_df, test_df = df.randomSplit([0.8, 0.2],seed = 11)
