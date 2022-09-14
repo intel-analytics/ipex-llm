@@ -175,8 +175,13 @@ class InferenceOptimizer:
 
         input_sample = tuple(next(iter(training_data))[:-1])
         st = time.perf_counter()
-        with torch.no_grad():
-            model(*input_sample)
+        try:
+            with torch.no_grad():
+                model(*input_sample)
+        except:
+            invalidInputError(False,
+                              "training_data is incompatible with your model input.")
+            exit(1)
         baseline_time = time.perf_counter() - st
 
         print("==========================Start Optimization==========================")
