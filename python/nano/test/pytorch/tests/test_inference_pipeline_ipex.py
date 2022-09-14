@@ -63,6 +63,8 @@ class TestInferencePipeline(TestCase):
     model = Net()
     test_loader = create_data_loader(data_dir, 1, num_workers, data_transform, subset=10, shuffle=False)
     train_loader = create_data_loader(data_dir, 32, num_workers, data_transform, subset=10, shuffle=True)
+    input_sample = next(iter(test_loader))[0]
+    print(input_sample.shape)
     loss = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
@@ -111,3 +113,31 @@ class TestInferencePipeline(TestCase):
         error_msg = e.value.args[0]
         assert error_msg == "If you want to specify accuracy_criterion, you need "\
                             "to set metric and validation_data when call 'optimize'."
+
+    def test_summary(self):
+        inference_opt = InferenceOptimizer()
+        with pytest.raises(RuntimeError) as e:
+            inference_opt.summary()
+        error_msg = e.value.args[0]
+        assert error_msg == "There is no optimization result. You should call .optimize() "\
+                            "before summary()"
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader,
+                               thread_num=1)
+        inference_opt.summary()
+
+    def test_wrong_data_loader(self):
+        fake_transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            transforms.Resize(64),
+        ])
+        fake_train_loader = create_data_loader(self.data_dir, 32, self.num_workers, 
+                                               fake_transform, subset=10, shuffle=True)
+        inference_opt = InferenceOptimizer()
+        with pytest.raises(RuntimeError) as e:
+            inference_opt.optimize(model=self.model,
+                                    training_data=fake_train_loader,
+                                    thread_num=1)
+        error_msg = e.value.args[0]
+        assert error_msg == "training_data is incompatible with your model input."
