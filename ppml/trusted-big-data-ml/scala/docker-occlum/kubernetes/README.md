@@ -106,12 +106,16 @@ bash build-docker-image.sh
 
 Split 1g dataset and put it into folder `/tmp/gbt_data`. 
 You can change the path to data via change mount path `data-exchange` in `executor.yaml`.
+Then:
+```bash
+./run_spark_gbt_criteo.sh
+```
 
 Parameters:
 
 * -i means input_path : String.
 
-    For example, yout host path to Criteo dateset is `/tmp/gbt_data/criteo` then this parameter in `run_spark_xgboost.sh` is `/host/data/gbt_data`.
+    For example, yout host path to Criteo dateset is `/tmp/gbt_data/criteo` then this parameter in `run_spark_gbt_criteo.sh` is `/host/data/gbt_data`.
 * -s means save_path : String.
 
     After training, you can find gbt result in folder `/tmp/path_to_save`.
