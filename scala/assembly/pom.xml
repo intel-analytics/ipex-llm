@@ -102,7 +102,7 @@
                 <version>${maven-assembly-plugin.version}</version>
                 <configuration>
                     <descriptors>
-		        <descriptor>src/main/assembly/assembly.xml</descriptor>
+                        <descriptor>src/main/assembly/assembly.xml</descriptor>
                         <descriptor>src/main/assembly/fat-assembly.xml</descriptor>
                     </descriptors>
                 </configuration>
@@ -143,6 +143,7 @@
                             <artifacts>
                                 <artifact>
                                     <file>target/${pom.artifactId}-${pom.version}-dist-all.zip</file>
+                                    <file>target/${pom.artifactId}-${pom.version}-fat-jars.zip</file>
                                     <type>zip</type>
                                 </artifact>
                             </artifacts>
@@ -167,6 +168,18 @@
                         </configuration>
                     </execution>
                 </executions>
+                <configuration>
+                    <filters>
+                        <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
+                </configuration>
             </plugin>
         </plugins>
     </build>

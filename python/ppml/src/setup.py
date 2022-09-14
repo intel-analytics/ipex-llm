@@ -17,10 +17,18 @@
 #
 
 import os
-from shutil import copyfile, copytree, rmtree
+from shutil import copytree, rmtree
 from setuptools import setup
 import fnmatch
 import sys
+
+long_description = '''
+BigDL PPML is developed for privacy preserving big data analysis and 
+machine learning.
+
+See [here](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html) 
+for more information.
+'''
 
 bigdl_home = os.path.abspath(__file__ + "/../../../..")
 exclude_patterns = ["*__pycache__*", "*ipynb_checkpoints*"]
@@ -81,6 +89,8 @@ def setup_package():
         name='bigdl-ppml',
         version=VERSION,
         description='Privacy Preserving Big Data Analysis and Machine Learning',
+        long_description=long_description,
+        long_description_content_type="text/markdown",
         author='BigDL Authors',
         author_email='bigdl-user-group@googlegroups.com',
         license='Apache License, Version 2.0',
