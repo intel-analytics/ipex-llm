@@ -1016,7 +1016,7 @@ class BasePytorchForecaster(Forecaster):
         :param conf: A path to conf yaml file for quantization. Default to None,
                using default config.
         :param framework: string or list.
-               [{'pytorch'|'pytorch_fx'|'pytorch_ipex'},
+               [{'pytorch_fx'|'pytorch_ipex'},
                 {'onnxrt_integerops'|'onnxrt_qlinearops'},
                 {'openvino'}] Default: 'pytorch_fx'. Consistent with Intel Neural Compressor.
         :param approach: str, 'static' or 'dynamic'. Default to 'static'.
