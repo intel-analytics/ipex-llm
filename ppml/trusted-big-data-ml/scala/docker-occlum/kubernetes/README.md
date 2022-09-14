@@ -122,6 +122,7 @@ Parameters:
 
 * -I means max_Iter : Int
 * -d means max_depth: Int.
+We recommend to use hdfs to read input-data and write output-result instead of mouting data.
 
 #### Source code
 You can find source code [here](https://github.com/intel-analytics/BigDL/tree/main/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/nnframes/gbt/gbtClassifierTrainingExampleOnCriteoClickLogsDataset).
