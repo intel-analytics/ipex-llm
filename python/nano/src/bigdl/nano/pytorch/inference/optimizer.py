@@ -35,6 +35,12 @@ from bigdl.nano.deps.onnxruntime.onnxruntime_api import PytorchONNXRuntimeModel,
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model, quantize as inc_quantize
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
+import warnings
+# Filter out useless Userwarnings
+warnings.filterwarnings('ignore', category=UserWarning, module='pytorch_lightning')
+warnings.filterwarnings('ignore', category=DeprecationWarning, module='pytorch_lightning')
+warnings.filterwarnings('ignore', category=UserWarning, module='torch')
+warnings.filterwarnings('ignore', category=DeprecationWarning, module='torch')
 
 import os
 os.environ['LOGLEVEL'] = 'ERROR'  # remove parital output of inc
@@ -244,9 +250,9 @@ class InferenceOptimizer:
                 torch.set_num_threads(thread_num)
                 try:
                     result_map[method]["latency"], status =\
-	                        _throughput_calculate_helper(latency_sample_num, baseline_time, 
-	                                                     func_test,
-	                                                     acce_model, input_sample)
+                        _throughput_calculate_helper(latency_sample_num, baseline_time,
+	                                                 func_test,
+	                                                 acce_model, input_sample)
                     if status is False:
                         result_map[method]["status"] = "pruned"
                         torch.set_num_threads(default_threads)
@@ -258,14 +264,14 @@ class InferenceOptimizer:
 
                 torch.set_num_threads(default_threads)
                 if self._calculate_accuracy:
-                    # TODO: here we suppose trace don't change accuracy, 
+                    # TODO: here we suppose trace don't change accuracy,
                     # so we jump it to reduce time cost of optimize
                     if precision == "fp32" and method != "original":
                         result_map[method]["accuracy"] = result_map["original"]["accuracy"]
                     else:
                         result_map[method]["accuracy"] =\
                             _accuracy_calculate_helper(acce_model,
-                                                    metric, validation_data)
+                                                       metric, validation_data)
                 else:
                     result_map[method]["accuracy"] = None
 
@@ -630,7 +636,7 @@ def _openvino_checker():
     '''
     check if openvino-dev is installed
     '''
-    return not find_spec("openvino-dev") is None
+    return not find_spec("openvino") is None
 
 
 def _bf16_checker():
@@ -674,7 +680,7 @@ def _throughput_calculate_helper(iterrun, baseline_time, func, *args):
             func(*args)
         end = time.perf_counter()
         time_list.append(end - st)
-        # if inference is too slow, prune it
+        # if three samples cost more than 4x time than baseline model, prune it
         if i == 2 and end - start_time > 12 * baseline_time:
             return np.mean(time_list) * 1000, False
         # at least need 10 iters and try to control calculation
@@ -696,8 +702,7 @@ def _accuracy_calculate_helper(model, metric, data):
     sample_num = 0
     with torch.no_grad():
         for i, (data_input, target) in enumerate(data):
-            metric_list.append(metric(model(data_input), target).numpy() *
-                               data_input.shape[0])
+            metric_list.append(metric(model(data_input), target).numpy() * data_input.shape[0])
             sample_num += data_input.shape[0]
     return np.sum(metric_list) / sample_num
 
