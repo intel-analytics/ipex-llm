@@ -532,12 +532,12 @@ class TestChronosModelLSTMForecaster(TestCase):
     def test_predict_interval(self):
         train_data, val_data, test_data = create_data()
         forecaster = LSTMForecaster(past_seq_len=24,
-                                    future_seq_len=5,
-                                    input_feature_num=1,
-                                    output_feature_num=1,
-                                    kernel_size=4,
-                                    num_channels=[16, 16, 16],
-                                    loss="mse",
+                                    input_feature_num=2,
+                                    output_feature_num=2,
+                                    hidden_dim=16,
+                                    layer_num=1,
+                                    dropout=0.1,
+                                    loss="mae",
                                     metrics=["mse"],
                                     lr=0.01)
         forecaster.fit(train_data, epochs=2)

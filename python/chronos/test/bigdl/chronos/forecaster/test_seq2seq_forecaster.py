@@ -462,8 +462,6 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        future_seq_len=5,
                                        input_feature_num=1,
                                        output_feature_num=1,
-                                       kernel_size=4,
-                                       num_channels=[16, 16, 16],
                                        loss="mse",
                                        metrics=["mse"],
                                        lr=0.01)
