@@ -404,12 +404,12 @@ class PythonTreeModel[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
     LightGBMClassifierModel.loadNativeModel(path)
   }
 
-  def saveLGBMClassifierModel(model: LightGBMClassifierModel, path: String): Unit = {
-    model.saveNativeModel(path)
-  }
-
   def loadLGBMRegressorModel(path: String): LightGBMRegressorModel = {
     LightGBMRegressorModel.loadNativeModel(path)
+  }
+
+  def saveLGBMModel(model: LightGBMClassifierModel, path: String): Unit = {
+    model.saveNativeModel(path)
   }
 
   def saveLGBMModel(model: LightGBMRegressorModel, path: String): Unit = {

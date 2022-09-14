@@ -223,10 +223,10 @@ class LightGBMClassifierModel:
 
 
 class LightGBMRegressor():
-    def __init__(self):
+    def __init__(self, params=None):
         super(LightGBMRegressor, self).__init__()
         bigdl_type = "float"
-        self.value = callZooFunc("float", "getLightGBMRegressor")
+        self.value = callZooFunc("float", "getLightGBMRegressor", params)
 
     def setFeaturesCol(self, value: str):
         return callZooFunc("float", "setLGBMFeaturesCol", self.value, value)
@@ -287,4 +287,3 @@ class LightGBMRegressorModel:
         """
         jvalue = callZooFunc("float", "loadLGBMRegressorModel", path)
         return LightGBMRegressorModel(jvalue=jvalue)
-    
