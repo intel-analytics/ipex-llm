@@ -167,6 +167,12 @@ class InferenceOptimizer:
 
         model.eval()  # change model to eval mode
 
+        input_sample = tuple(next(iter(training_data))[:-1])
+        st = time.perf_counter()
+        with torch.no_grad():
+            model(*input_sample)
+        baseline_time = time.perf_counter() - st
+
         print("==========================Start Optimization==========================")
         start_time = time.perf_counter()
         for idx, (method, available) in enumerate(available_dict.items()):
@@ -183,7 +189,6 @@ class InferenceOptimizer:
                 precision: str = option.get_precision()
                 # if precision is fp32, then we will use trace method
                 if precision == "fp32":
-                    input_sample = tuple(next(iter(training_data))[:-1])
                     try:
                         if accelerator is None and use_ipex is False:
                             acce_model = model
@@ -238,9 +243,14 @@ class InferenceOptimizer:
 
                 torch.set_num_threads(thread_num)
                 try:
-                    result_map[method]["latency"] =\
-                        _throughput_calculate_helper(latency_sample_num, func_test,
-                                                     acce_model, input_sample)
+                    result_map[method]["latency"], status =\
+	                        _throughput_calculate_helper(latency_sample_num, baseline_time, 
+	                                                     func_test,
+	                                                     acce_model, input_sample)
+                    if status is False:
+                        result_map[method]["status"] = "pruned"
+                        torch.set_num_threads(default_threads)
+                        continue
                 except Exception as e:
                     result_map[method]["status"] = "fail to forward"
                     torch.set_num_threads(default_threads)
@@ -652,7 +662,7 @@ def _available_acceleration_combination():
     return available_dict
 
 
-def _throughput_calculate_helper(iterrun, func, *args):
+def _throughput_calculate_helper(iterrun, baseline_time, func, *args):
     '''
     A simple helper to calculate average latency
     '''
@@ -664,6 +674,9 @@ def _throughput_calculate_helper(iterrun, func, *args):
             func(*args)
         end = time.perf_counter()
         time_list.append(end - st)
+        # if inference is too slow, prune it
+        if i == 2 and end - start_time > 12 * baseline_time:
+            return np.mean(time_list) * 1000, False
         # at least need 10 iters and try to control calculation
         # time less than 2 min
         if i + 1 >= min(iterrun, 10) and (end - start_time) > 2:
@@ -672,7 +685,7 @@ def _throughput_calculate_helper(iterrun, func, *args):
     time_list.sort()
     # remove top and least 10% data
     time_list = time_list[int(0.1 * iterrun): int(0.9 * iterrun)]
-    return np.mean(time_list) * 1000
+    return np.mean(time_list) * 1000, True
 
 
 def _accuracy_calculate_helper(model, metric, data):
