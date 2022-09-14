@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.7"]
+        python-version: ["3.7.10"]
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 8
@@ -35,7 +35,7 @@ jobs:
       - name: Set up env
         shell: bash
         run: |
-          conda create -n chronos-prvn-env -y python==3.7 setuptools==58.0.4
+          conda create -n chronos-prvn-env -y python==3.7.10 setuptools==58.0.4
           source activate chronos-prvn-env
 
       - name: Install dependencies
