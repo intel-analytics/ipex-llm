@@ -178,7 +178,7 @@ class InferenceOptimizer:
         try:
             with torch.no_grad():
                 model(*input_sample)
-        except:
+        except Exception:
             invalidInputError(False,
                               "training_data is incompatible with your model input.")
             exit(1)
