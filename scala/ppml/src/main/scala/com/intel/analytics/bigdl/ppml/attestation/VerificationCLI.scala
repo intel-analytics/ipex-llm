@@ -30,24 +30,24 @@ object VerificationCLI {
 
         val logger = LogManager.getLogger(getClass)
         case class CmdParams(appID: String = "test",
-                             appKey: String = "test",
-                             asType: String = ATTESTATION_CONVENTION.MODE_EHSM_KMS,
-                             asURL: String = "127.0.0.1:9000",
-                             challenge: String = "")
+                             apiKey: String = "test",
+                             attestationType: String = ATTESTATION_CONVENTION.MODE_EHSM_KMS,
+                             attestationURL: String = "127.0.0.1:9000",
+                             challenge: String = "test")
 
         val cmdParser = new OptionParser[CmdParams]("PPML Quote Verification Cmd tool") {
             opt[String]('i', "appID")
               .text("app id for this app")
               .action((x, c) => c.copy(appID = x))
-            opt[String]('k', "appKey")
+            opt[String]('k', "apiKey")
               .text("app key for this app")
-              .action((x, c) => c.copy(appKey = x))
-            opt[String]('u', "asURL")
+              .action((x, c) => c.copy(apiKey = x))
+            opt[String]('u', "attestationURL")
               .text("attestation service url, default is 127.0.0.1:9000")
-              .action((x, c) => c.copy(asURL = x))
-            opt[String]('t', "asType")
+              .action((x, c) => c.copy(attestationURL = x))
+            opt[String]('t', "attestationType")
               .text("attestation service type, default is EHSMKeyManagementService")
-              .action((x, c) => c.copy(asType = x))
+              .action((x, c) => c.copy(attestationType = x))
             opt[String]('c', "challenge")
               .text("challenge to attestation service, default is '' which skip bi-attestation")
               .action((x, c) => c.copy(challenge = x))
@@ -55,18 +55,18 @@ object VerificationCLI {
         val params = cmdParser.parse(args, CmdParams()).get
 
         // Attestation Client
-        val as = params.asType match {
+        val as = params.attestationType match {
             case ATTESTATION_CONVENTION.MODE_EHSM_KMS =>
-                new EHSMAttestationService(params.asURL.split(":")(0),
-                    params.asURL.split(":")(1), params.appID, params.appKey)
+                new EHSMAttestationService(params.attestationURL.split(":")(0),
+                    params.attestationURL.split(":")(1), params.appID, params.apiKey)
             case ATTESTATION_CONVENTION.MODE_DUMMY =>
                 new DummyAttestationService()
             case _ => throw new AttestationRuntimeException("Wrong Attestation service type")
         }
 
         val challengeString = params.challenge
-        if (params.asType != ATTESTATION_CONVENTION.MODE_DUMMY) {
-            val asQuote = params.asType match {
+        if (params.attestationType != ATTESTATION_CONVENTION.MODE_DUMMY) {
+            val asQuote = params.attestationType match {
               case ATTESTATION_CONVENTION.MODE_EHSM_KMS =>
                 Base64.getDecoder().decode(as.getQuoteFromServer(challengeString))
               case _ => throw new AttestationRuntimeException("Wrong Attestation service type")
