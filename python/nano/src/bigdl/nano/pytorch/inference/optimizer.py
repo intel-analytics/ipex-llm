@@ -258,7 +258,7 @@ class InferenceOptimizer:
                         _throughput_calculate_helper(latency_sample_num, baseline_time,
                                                      func_test, acce_model, input_sample)
                     if status is False:
-                        result_map[method]["status"] = "pruned"
+                        result_map[method]["status"] = "early stopped"
                         torch.set_num_threads(default_threads)
                         continue
                 except Exception as e:
@@ -268,10 +268,10 @@ class InferenceOptimizer:
 
                 torch.set_num_threads(default_threads)
                 if self._calculate_accuracy:
-                    # TODO: here we suppose trace don't change accuracy,
+                    # here we suppose trace don't change accuracy,
                     # so we jump it to reduce time cost of optimize
                     if precision == "fp32" and method != "original":
-                        result_map[method]["accuracy"] = result_map["original"]["accuracy"]
+                        result_map[method]["accuracy"] = "not recomputed"
                     else:
                         result_map[method]["accuracy"] =\
                             _accuracy_calculate_helper(acce_model,
@@ -354,9 +354,11 @@ class InferenceOptimizer:
                     continue
 
             if accuracy_criterion is not None:
-                accuracy: float = result["accuracy"]
+                accuracy = result["accuracy"]
                 compare_acc: float = best_metric.accuracy
-                if self._direction == "min":
+                if accuracy == "not recomputed":
+                    pass
+                elif self._direction == "min":
                     if (accuracy - compare_acc) / compare_acc > accuracy_criterion:
                         continue
                 else:
@@ -366,7 +368,11 @@ class InferenceOptimizer:
             # After the above conditions are met, the latency comparison is performed
             if result["latency"] < best_metric.latency:
                 best_model = result["model"]
-                best_metric = CompareMetric(method, result["latency"], result["accuracy"])
+                if result["accuracy"] != "not recomputed":
+                    accuracy = result["accuracy"]
+                else:
+                    accuracy = self.optimized_model_dict["original"]["accuracy"]
+                best_metric = CompareMetric(method, result["latency"], accuracy)
 
         return best_model, _format_acceleration_option(best_metric.method_name)
 
@@ -640,7 +646,7 @@ def _openvino_checker():
     '''
     check if openvino-dev is installed
     '''
-    return not find_spec("openvino") is None
+    return not find_spec("openvino-dev") is None
 
 
 def _bf16_checker():
@@ -719,7 +725,10 @@ def _format_acceleration_option(method_name: str) -> str:
     repr_str = ""
     for key, value in option.__dict__.items():
         if value is True:
-            repr_str = repr_str + key + " + "
+            if key == "pot":
+                repr_str = repr_str + "int8" + " + "
+            else:
+                repr_str = repr_str + key + " + "
         elif isinstance(value, str):
             repr_str = repr_str + value + " + "
     if len(repr_str) > 0:
@@ -734,9 +743,9 @@ def _format_optimize_result(optimize_result_dict: dict,
     '''
     if calculate_accuracy is True:
         horizontal_line = " {0} {1} {2} {3}\n" \
-            .format("-" * 32, "-" * 22, "-" * 14, "-" * 12)
+            .format("-" * 32, "-" * 22, "-" * 14, "-" * 22)
         repr_str = horizontal_line
-        repr_str += "| {0:^30} | {1:^20} | {2:^12} | {3:^10} |\n" \
+        repr_str += "| {0:^30} | {1:^20} | {2:^12} | {3:^20} |\n" \
             .format("method", "status", "latency(ms)", "accuracy")
         repr_str += horizontal_line
         for method, result in optimize_result_dict.items():
@@ -745,10 +754,10 @@ def _format_optimize_result(optimize_result_dict: dict,
             if latency != "None":
                 latency = round(latency, 3)
             accuracy = result.get("accuracy", "None")
-            if accuracy != "None":
+            if accuracy != "None" and isinstance(accuracy, float):
                 accuracy = round(accuracy, 3)
             method_str = f"| {method:^30} | {status:^20} | " \
-                         f"{latency:^12} | {accuracy:^10} |\n"
+                         f"{latency:^12} | {accuracy:^20} |\n"
             repr_str += method_str
         repr_str += horizontal_line
     else:

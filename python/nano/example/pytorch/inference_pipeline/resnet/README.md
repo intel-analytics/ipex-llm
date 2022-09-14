@@ -29,18 +29,23 @@ unset KMP_AFFINITY
 ``` 
 You may find environment variables set like follows:
 ```
+OpenMP library found...
 Setting OMP_NUM_THREADS...
 Setting OMP_NUM_THREADS specified for pytorch...
 Setting KMP_AFFINITY...
 Setting KMP_BLOCKTIME...
 Setting MALLOC_CONF...
+Setting LD_PRELOAD...
+nano_vars.sh already exists
 +++++ Env Variables +++++
-LD_PRELOAD=./../lib/libjemalloc.so
-MALLOC_CONF=oversize_threshold:1,background_thread:true,metadata_thp:auto,dirty_decay_ms:-1,muzzy_decay_ms:-1
+LD_PRELOAD=/opt/anaconda3/envs/nano/bin/../lib/libiomp5.so /opt/anaconda3/envs/nano/lib/python3.7/site-packages/bigdl/nano//libs/libtcmalloc.so
+MALLOC_CONF=
 OMP_NUM_THREADS=112
 KMP_AFFINITY=granularity=fine,compact,1,0
 KMP_BLOCKTIME=1
-TF_ENABLE_ONEDNN_OPTS=
+TF_ENABLE_ONEDNN_OPTS=1
+ENABLE_TF_OPTS=1
+NANO_TF_INTER_OP=1
 +++++++++++++++++++++++++
 Complete.
 ```
@@ -60,27 +65,25 @@ python inference_pipeline.py
 It will take about 1 minute to run inference optimization. Then you may find the result for inference as follows:
 ```
 ==========================Optimization Results==========================
- -------------------------------- ---------------------- -------------- ------------
-|             method             |        status        | latency(ms)  |  accuracy  |
- -------------------------------- ---------------------- -------------- ------------
-|            original            |      successful      |    43.447    |   0.994    |
-|           fp32_ipex            |      successful      |    32.827    |   0.994    |
-|              bf16              |   fail to forward    |     None     |    None    |
-|           bf16_ipex            |        pruned        |   201.702    |    None    |
-|              int8              |      successful      |    10.992    |   0.994    |
-|            jit_fp32            |      successful      |    36.741    |   0.994    |
-|         jit_fp32_ipex          |      successful      |    33.293    |   0.994    |
-|  jit_fp32_ipex_channels_last   |      successful      |    19.523    |   0.994    |
-|         openvino_fp32          |      successful      |    10.51     |   0.994    |
-|         openvino_int8          |      successful      |    6.637     |   0.994    |
-|        onnxruntime_fp32        |      successful      |    20.55     |   0.994    |
-|    onnxruntime_int8_qlinear    |      successful      |     8.15     |   0.994    |
-|    onnxruntime_int8_integer    |   fail to convert    |     None     |    None    |
- -------------------------------- ---------------------- -------------- ------------
+ -------------------------------- ---------------------- -------------- ----------------------
+|             method             |        status        | latency(ms)  |       accuracy       |
+ -------------------------------- ---------------------- -------------- ----------------------
+|            original            |      successful      |    43.688    |        0.969         |
+|           fp32_ipex            |      successful      |    33.383    |    not recomputed    |
+|              bf16              |   fail to forward    |     None     |         None         |
+|           bf16_ipex            |    early stopped     |   203.897    |         None         |
+|              int8              |      successful      |    10.74     |        0.969         |
+|            jit_fp32            |      successful      |    38.732    |    not recomputed    |
+|         jit_fp32_ipex          |      successful      |    35.205    |    not recomputed    |
+|  jit_fp32_ipex_channels_last   |      successful      |    19.327    |    not recomputed    |
+|         openvino_fp32          |      successful      |    10.215    |    not recomputed    |
+|         openvino_int8          |      successful      |    8.192     |        0.969         |
+|        onnxruntime_fp32        |      successful      |    20.931    |    not recomputed    |
+|    onnxruntime_int8_qlinear    |      successful      |    8.274     |        0.969         |
+|    onnxruntime_int8_integer    |   fail to convert    |     None     |         None         |
+ -------------------------------- ---------------------- -------------- ----------------------
 
 Optimization cost 64.3s at all.
 ===========================Stop Optimization===========================
-When accelerator is onnxruntime, the model with minimal latency is:  inc + onnxruntime + qlinear 
-When accuracy drop less than 5%, the model with minimal latency is:  openvino + pot 
-The model with minimal latency is:  openvino + pot 
+When accuracy drop less than 5%, the model with minimal latency is:  openvino + int8 
 ```
