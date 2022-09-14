@@ -35,6 +35,7 @@ runs:
         pip uninstall -r .github/actions/python-requirements/requirements-orca-horovod-pytorch.txt -y
         pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r .github/actions/python-requirements/requirements-orca-horovod-pytorch.txt 
         pip install -i https://pypi.org/simple --pre --upgrade bigdl-orca-spark3
+        pip install protobuf==3.12.0
         pip uninstall -y opencv-python-headless
         pip install opencv-python-headless
         

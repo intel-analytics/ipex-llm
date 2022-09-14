@@ -12,4 +12,3 @@ prophet==1.0.1
 tsfresh==0.18.0
 aioredis==1.1.0
 pytest==5.4.1
- protobuf==3.12.0
