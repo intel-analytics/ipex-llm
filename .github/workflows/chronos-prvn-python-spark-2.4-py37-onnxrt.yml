@@ -72,6 +72,7 @@ jobs:
           pip install python/chronos/src/dist/bigdl_chronos-*-py3-none-manylinux1_x86_64.whl
           export SPARK_LOCAL_HOSTNAME=localhost
           export KERAS_BACKEND=tensorflow
+          ray stop
           bash python/chronos/dev/test/run-pytests-onnxrt16.sh
           ray stop
           source deactivate
