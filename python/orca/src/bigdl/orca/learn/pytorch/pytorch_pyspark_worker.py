@@ -83,7 +83,6 @@ class PytorchPysparkWorker(TorchRunner):
         self.mode = mode
         self.backend = backend
         self.cluster_info = cluster_info
-        invalidInputError(model_dir, "model_dir cannot be null")
         self.model_dir = model_dir
         self.log_to_driver = log_to_driver
 
