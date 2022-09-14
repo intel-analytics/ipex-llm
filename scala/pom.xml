@@ -698,15 +698,6 @@
                 <plugins>
                     <!-- Redefine the plugin to enable fatal warninings -->
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-compiler-plugin</artifactId>
-                        <configuration>
-                            <excludes>
-                                <exclude>dllib/src/main/scala/com/intel/analytics/bigdl/dllib/nnframes/LightGB*.scala</exclude>
-                            </excludes>
-                        </configuration>
-                    </plugin>
-                    <plugin>
                         <groupId>net.alchim31.maven</groupId>
                         <artifactId>scala-maven-plugin</artifactId>
                         <version>3.4.2</version>
