@@ -35,6 +35,7 @@ import socket
 import shutil
 import tempfile
 import subprocess
+from copy import copy
 
 import ray
 import numpy as np
@@ -333,7 +334,7 @@ class TFRunner:
              steps_per_epoch=None, validation_steps=None, validation_freq=1,
              data_config=None):
         """Runs a training epoch and updates the model parameters."""
-        config = self.config.copy()
+        config = copy(self.config)
         if data_config is not None:
             config.update(data_config)
         config["batch_size"] = batch_size
@@ -383,7 +384,7 @@ class TFRunner:
     def validate(self, data_creator, batch_size=32, verbose=1, sample_weight=None,
                  steps=None, callbacks=None, data_config=None):
         """Evaluates the model on the validation data set."""
-        config = self.config.copy()
+        config = copy(self.config)
         if data_config is not None:
             config.update(data_config)
         config["batch_size"] = batch_size
@@ -431,7 +432,7 @@ class TFRunner:
         return [stats]
 
     def predict(self, data_creator, batch_size, verbose, steps, callbacks, data_config):
-        config = self.config.copy()
+        config = copy(self.config)
         if data_config is not None:
             config.update(data_config)
 

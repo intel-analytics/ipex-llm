@@ -20,7 +20,6 @@ package com.intel.analytics.bigdl.ppml.attestation
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.ppml.utils.EHSMParams
 import com.intel.analytics.bigdl.ppml.utils.HTTPUtil.postRequest
-import java.util.Base64
 import org.apache.logging.log4j.LogManager
 import org.json.JSONObject
 
@@ -69,8 +68,7 @@ class EHSMAttestationService(kmsServerIP: String, kmsServerPort: String,
     if (challenge != postResult.getString(RES_CHALLENGE)) {
       Log4Error.invalidOperationError(false, "Challenge not matched")
     }
-    val quote = Base64.getDecoder().decode(postResult.getString(RES_QUOTE))
-    new String(quote)
+    postResult.getString(RES_QUOTE)
   }
 
   override def attestWithServer(quote: String): (Boolean, String) = {

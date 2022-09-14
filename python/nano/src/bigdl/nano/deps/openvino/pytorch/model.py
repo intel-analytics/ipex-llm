@@ -26,7 +26,8 @@ from ..core.utils import save
 
 
 class PytorchOpenVINOModel(AcceleratedLightningModule):
-    def __init__(self, model, input_sample=None, logging=True, **export_kwargs):
+    def __init__(self, model, input_sample=None, thread_num=None,
+                 logging=True, **export_kwargs):
         """
         Create a OpenVINO model from pytorch.
 
@@ -35,6 +36,8 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
                              model is a LightningModule with any dataloader attached,
                              defaults to None.
+        :param thread_num: a int represents how many threads(cores) is needed for
+                           inference. default: None.
         :param logging: whether to log detailed information of model conversion. default: True.
         :param **export_kwargs: will be passed to torch.onnx.export function.
         """
@@ -44,7 +47,7 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
             if isinstance(model, torch.nn.Module):
                 export(model, input_sample, str(dir / 'tmp.xml'), logging, **export_kwargs)
                 ov_model_path = dir / 'tmp.xml'
-            self.ov_model = OpenVINOModel(ov_model_path)
+            self.ov_model = OpenVINOModel(ov_model_path, thread_num=thread_num)
             super().__init__(self.ov_model)
 
     def on_forward_start(self, inputs):

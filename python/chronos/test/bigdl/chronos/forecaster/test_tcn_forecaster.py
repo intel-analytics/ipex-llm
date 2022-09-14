@@ -274,6 +274,12 @@ class TestChronosModelTCNForecaster(TestCase):
         except ImportError:
             pass
 
+        forecaster.quantize(calib_data=train_data,
+                            framework="openvino")
+        openvino_yhat = forecaster.predict_with_openvino(test_data[0])
+        q_openvino_yhat = forecaster.predict_with_openvino(test_data[0], quantize=True)
+        assert openvino_yhat.shape == q_openvino_yhat.shape == test_data[1].shape
+
     def test_tcn_forecaster_quantization_dynamic(self):
         train_data, val_data, test_data = create_data()
         forecaster = TCNForecaster(past_seq_len=24,

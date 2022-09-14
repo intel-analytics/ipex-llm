@@ -37,6 +37,7 @@ import logging
 from bigdl.orca.learn.utils import save_pkl
 import os
 import tempfile
+from copy import copy
 
 from pyspark import BarrierTaskContext, TaskContext
 from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file, get_rank
@@ -157,7 +158,7 @@ class PytorchPysparkWorker(TorchRunner):
 
     def predict(self, data_creator, batch_size=32, profile=False):
         """Evaluates the model on the validation data set."""
-        config = self.config.copy()
+        config = copy(self.config)
         self._toggle_profiling(profile=profile)
 
         partition = data_creator(config, batch_size)
