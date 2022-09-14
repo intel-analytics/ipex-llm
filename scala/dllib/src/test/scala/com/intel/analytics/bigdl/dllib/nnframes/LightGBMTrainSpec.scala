@@ -58,27 +58,10 @@ class LightGBMTrainSpec extends ZooSpecHelper {
     if (spark.version.substring(0, 3).toDouble >= 3.1) {
       val lightGBMclassifier = new LightGBMClassifier()
       val classifier = new MLightGBMClassifier()
-//      val model1 = lightGBMclassifier.fit(assembledDf)
-//      val model = classifier.fit(assembledDf)
-//      val res1 = model1.transform(assembledDf)
-//      TestUtils.conditionFailTest(res1.count() == 2)
-      val input_path = "/Users/guoqiong/intelWork/data/tweet/xgb_processed" // path to iris.data
-      val modelsave_path = input_path + "model" // save model to this path
-      val train_df = spark.read.parquet(input_path + "/train")
-      val test_df = spark.read.parquet(input_path + "/train")
-      val model1 = lightGBMclassifier.fit(train_df)
-      val model = classifier.fit(train_df)
-      val res = model.transform(train_df)
-      val res1 = model1.transform(train_df)
-      res.show(20)
-      res1.show(20)
-      println("***************")
-      println(res.filter(res("prediction")===1.0).count())
-      println("***************")
-      println(res1.filter(res1("prediction")===1.0).count())
-      println(res.count())
-      println(res1.count())
-
+      val model1 = lightGBMclassifier.fit(assembledDf)
+      val model = classifier.fit(assembledDf)
+      val res1 = model1.transform(assembledDf)
+      TestUtils.conditionFailTest(res1.count() == 2)
     }
   }
 
@@ -89,6 +72,14 @@ class LightGBMTrainSpec extends ZooSpecHelper {
 
     val df = Seq(
       (1.0, 2.0, 3.0, 4.0, 1),
+      (1.0, 3.0, 8.0, 2.0, 0),
+      (1.0, 2.0, 3.0, 4.0, 1),
+      (1.0, 3.0, 8.0, 2.0, 0),
+      (1.0, 2.0, 3.0, 4.0, 1),
+      (1.0, 3.0, 8.0, 2.0, 0),
+      (1.0, 2.0, 3.0, 4.0, 1),
+      (1.0, 3.0, 8.0, 2.0, 0),
+      (1.0, 2.0, 3.0, 4.0, 1),
       (1.0, 3.0, 8.0, 2.0, 0)
     ).toDF("f1", "f2", "f3", "f4", "label")
     val vectorAssembler = new VectorAssembler()
@@ -96,12 +87,30 @@ class LightGBMTrainSpec extends ZooSpecHelper {
       .setOutputCol("features")
     val assembledDf = vectorAssembler.transform(df).select("features", "label").cache()
     if (spark.version.substring(0, 3).toDouble >= 3.1) {
-      val params = Map("earlyStoppingRound" -> 10,
+      val params = Map(
+        "boostingType" -> "gbdt",
+        "numLeaves" -> 2,
+        "maxDepth" -> 2,
+        "learningRate" -> 0.3,
+        "numIterations" -> 10,
+        "binConstructSampleCnt" -> 5,
+        "objective" -> "binary",
+        "minSplitGain" -> 0.1,
+        "minSumHessianInLeaf" -> 0.01,
+        "minDataInLeaf" -> 1,
+        "baggingFraction" -> 0.4,
+        "baggingFreq" -> 1,
+        "featureFraction" -> 0.4,
+        "lambdaL1" -> 0.1,
+        "lambdaL2" -> 0.1,
+        "numThreads" -> 2,
+        "earlyStoppingRound" -> 10,
         "maxBin" -> 100)
       val lightGBMclassifier = new LightGBMClassifier(params)
+      lightGBMclassifier.setIsUnbalance(true)
       val model1 = lightGBMclassifier.fit(assembledDf)
       val res1 = model1.transform(assembledDf)
-      TestUtils.conditionFailTest(res1.count() == 2)
+      TestUtils.conditionFailTest(res1.count() == 10)
     }
   }
 
@@ -117,7 +126,6 @@ class LightGBMTrainSpec extends ZooSpecHelper {
       .setInputCols(Array("f1", "f2", "f3", "f4"))
       .setOutputCol("features")
     val assembledDf = vectorAssembler.transform(df).select("features", "label").cache()
-
     if (spark.version.substring(0, 3).toDouble >= 3.1) {
       val lightGBMclassifier = new LightGBMClassifier()
       val model = lightGBMclassifier.fit(assembledDf)
@@ -142,7 +150,6 @@ class LightGBMTrainSpec extends ZooSpecHelper {
       .setInputCols(Array("f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10"))
       .setOutputCol("features")
     val assembledDf = vectorAssembler.transform(df).select("features", "label").cache()
-
     if (spark.version.substring(0, 3).toDouble >= 3.1) {
       val lightGBMRegressor = new LightGBMRegressor()
       val regressorModel0 = lightGBMRegressor.fit(assembledDf)
@@ -172,7 +179,7 @@ class LightGBMTrainSpec extends ZooSpecHelper {
     if (spark.version.substring(0, 3).toDouble >= 3.1) {
       val params = Map(
         "boostingType" -> "dart",
-        "numLeaves" -> 1,
+        "numLeaves" -> 2,
         "maxDepth" -> 2,
         "learningRate" -> 0.3,
         "numIterations" -> 10,
@@ -181,9 +188,9 @@ class LightGBMTrainSpec extends ZooSpecHelper {
         "minSplitGain" -> 0.1,
         "minSumHessianInLeaf" -> 0.01,
         "minDataInLeaf" -> 1,
-        "baggingFraction" -> 0.2,
-        "baggingFraq" -> 1,
-        "featureFraction" -> 0.2,
+        "baggingFraction" -> 0.4,
+        "baggingFreq" -> 1,
+        "featureFraction" -> 0.4,
         "lambdaL1" -> 0.1,
         "lambdaL2" -> 0.1,
         "numThreads" -> 2,
@@ -195,6 +202,7 @@ class LightGBMTrainSpec extends ZooSpecHelper {
       regressorModel0.saveNativeModel("/tmp/test")
       val model = LightGBMRegressorModel.loadNativeModel("/tmp/test")
       val y0_0 = model.transform(assembledDf)
+      y0_0.show(10)
       TestUtils.conditionFailTest(y0.count() == 4)
       TestUtils.conditionFailTest(y0_0.count() == 4)
     }
@@ -204,7 +212,24 @@ class LightGBMTrainSpec extends ZooSpecHelper {
     Engine.init
     val spark = SparkSession.builder().getOrCreate()
     if (spark.version.substring(0, 3).toDouble >= 3.1) {
-      val params = Map("earlyStoppingRound" -> 10,
+      val params = Map(
+        "boostingType" -> "dart",
+        "numLeaves" -> 2,
+        "maxDepth" -> 2,
+        "learningRate" -> 0.3,
+        "numIterations" -> 10,
+        "binConstructSampleCnt" -> 5,
+        "objective" -> "huber",
+        "minSplitGain" -> 0.1,
+        "minSumHessianInLeaf" -> 0.01,
+        "minDataInLeaf" -> 1,
+        "baggingFraction" -> 0.4,
+        "baggingFreq" -> 1,
+        "featureFraction" -> 0.4,
+        "lambdaL1" -> 0.1,
+        "lambdaL2" -> 0.1,
+        "numThreads" -> 2,
+        "earlyStoppingRound" -> 10,
         "maxBin" -> 100)
       val mclassifier = new MLightGBMClassifier()
       TreeModelUtils.setParams(mclassifier, params)
@@ -219,7 +244,7 @@ class LightGBMTrainSpec extends ZooSpecHelper {
     if (spark.version.substring(0, 3).toDouble >= 3.1) {
       val params = Map(
         "boostingType" -> "dart",
-        "numLeaves" -> 1,
+        "numLeaves" -> 2,
         "maxDepth" -> 2,
         "learningRate" -> 0.3,
         "numIterations" -> 10,
@@ -228,9 +253,9 @@ class LightGBMTrainSpec extends ZooSpecHelper {
         "minSplitGain" -> 0.1,
         "minSumHessianInLeaf" -> 0.01,
         "minDataInLeaf" -> 1,
-        "baggingFraction" -> 0.2,
+        "baggingFraction" -> 0.4,
         "baggingFreq" -> 1,
-        "featureFraction" -> 0.2,
+        "featureFraction" -> 0.4,
         "lambdaL1" -> 0.1,
         "lambdaL2" -> 0.1,
         "numThreads" -> 2,

@@ -22,7 +22,14 @@ from setuptools import setup
 import urllib.request
 import os
 import stat
-import sys
+
+long_description = '''
+BigDL Nano automatically accelerates TensorFlow and PyTorch pipelines 
+by applying modern CPU optimizations.
+
+See [here](https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html) 
+for more information.
+'''
 
 exclude_patterns = ["*__pycache__*", "lightning_logs", "recipe", "setup.py"]
 nano_home = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
@@ -98,6 +105,8 @@ def setup_package():
         name='bigdl-nano',
         version=VERSION,
         description='High-performance scalable acceleration components for intel.',
+        long_description=long_description,
+        long_description_content_type="text/markdown",
         author='BigDL Authors',
         author_email='bigdl-user-group@googlegroups.com',
         url='https://github.com/intel-analytics/BigDL',

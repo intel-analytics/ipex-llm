@@ -422,6 +422,11 @@ object XGBRegressorModel {
 
 /**
  * [[lightGBMClassifier wrapper]]
+ * @param lgbmParams, a map of parameters, currently supported 18 params to be set from lgbmParams:
+        "boostingType", "numLeaves", "maxDepth", "learningRate", "numIterations",
+        "binConstructSampleCnt", "objective", "minSplitGain", "minSumHessianInLeaf",
+        "minDataInLeaf", "baggingFraction", "baggingFreq", "featureFraction",
+        "lambdaL1", "lambdaL2", "numThreads", "earlyStoppingRound", "maxBin".
  */
 class LightGBMClassifier (val lgbmParams: Map[String, Any] = Map()) {
 
@@ -568,11 +573,11 @@ class LightGBMClassifier (val lgbmParams: Map[String, Any] = Map()) {
  * @param model trained MLightGBMClassificationModel to use in prediction.
  */
 class LightGBMClassifierModel private[bigdl](val model: MLightGBMClassificationModel) {
-  private var featuresCols: String = "features"
+  private var featuresCol: String = "features"
   private var predictionCol: String = "prediction"
 
   def setFeaturesCol(featuresColName: String): this.type = {
-    featuresCols = featuresColName
+    featuresCol = featuresColName
     this
   }
 
@@ -582,8 +587,8 @@ class LightGBMClassifierModel private[bigdl](val model: MLightGBMClassificationM
   }
 
   def transform(dataset: DataFrame): DataFrame = {
-    Log4Error.invalidInputError(featuresCols!=None, "Please set feature columns before transform")
-    model.setFeaturesCol(featuresCols)
+    Log4Error.invalidInputError(featuresCol!=None, "Please set feature columns before transform")
+    model.setFeaturesCol(featuresCol)
     var output = model.transform(dataset)
     if(predictionCol != null) {
       output = output.withColumnRenamed("prediction", predictionCol)
@@ -604,6 +609,11 @@ object LightGBMClassifierModel {
 
 /**
  * [[LightGBMRegressor]] lightGBM wrapper of LightGBMRegressor.
+ * @param lgbmParams, a map of parameters, currently supported 18 params to be set from lgbmParams:
+        "boostingType", "numLeaves", "maxDepth", "learningRate", "numIterations",
+        "binConstructSampleCnt", "objective", "minSplitGain", "minSumHessianInLeaf",
+        "minDataInLeaf", "baggingFraction", "baggingFreq", "featureFraction",
+        "lambdaL1", "lambdaL2", "numThreads", "earlyStoppingRound", "maxBin".
  */
 class LightGBMRegressor (val lgbmParams: Map[String, Any] = Map()) {
 
@@ -748,7 +758,6 @@ class LightGBMRegressor (val lgbmParams: Map[String, Any] = Map()) {
 class LightGBMRegressorModel private[bigdl](val model: MLightGBMRegressionModel) {
   var predictionCol: String = null
   var featuresCol: String = "features"
-  var featurearray: Array[String] = Array("features")
   def setPredictionCol(value: String): this.type = {
     predictionCol = value
     this
@@ -761,16 +770,9 @@ class LightGBMRegressorModel private[bigdl](val model: MLightGBMRegressionModel)
   }
 
   def transform(dataset: DataFrame): DataFrame = {
-    val featureVectorAssembler = new VectorAssembler()
-      .setInputCols(featurearray)
-      .setOutputCol("featureAssembledVector")
-    val assembledDF = featureVectorAssembler.transform(dataset)
-    import org.apache.spark.ml.linalg.Vector
-    import org.apache.spark.sql.functions.{col, udf}
-    val asDense = udf((v: Vector) => v.toDense)
-    val xgbInput = assembledDF.withColumn("DenseFeatures", asDense(col("featureAssembledVector")))
-    model.setFeaturesCol("DenseFeatures")
-    var output = model.transform(xgbInput).drop("DenseFeatures", "featureAssembledVector")
+    Log4Error.invalidInputError(featuresCol!=None, "Please set feature columns before transform")
+    model.setFeaturesCol(featuresCol)
+    var output = model.transform(dataset)
     if(predictionCol != null) {
       output = output.withColumnRenamed("prediction", predictionCol)
     }
