@@ -181,7 +181,7 @@ export OUTPUT_DIR=xxx/output \
     --conf spark.ssl.trustStoreType=JKS \
     --conf spark.bigdl.kms.type=SimpleKeyManagementService \
     --conf spark.bigdl.kms.simple.id=simpleAPPID \
-    --conf spark.bigdl.kms.simple.key=simpleAPPKEY \
+    --conf spark.bigdl.kms.simple.key=simpleAPIKEY \
     --conf spark.bigdl.kms.key.primary=xxxx/primaryKey \
     --conf spark.bigdl.kms.key.data=xxxx/dataKey \
     --class com.intel.analytics.bigdl.ppml.examples.tpch.TpchQuery \

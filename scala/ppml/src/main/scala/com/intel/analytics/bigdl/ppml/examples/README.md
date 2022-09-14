@@ -38,7 +38,7 @@ Run this example in spark local mode:
       --dataKeyPath /your/data/key/path/dataKey \
       --kmsType SimpleKeyManagementService \
       --simpleAPPID your_app_id \
-      --simpleAPPKEY your_app_key \
+      --simpleAPIKEY your_api_key \
       --numThreads 1
   ```
 
@@ -66,7 +66,7 @@ Run this example in spark local mode:
       --kmsServerIP you_kms_server_ip \
       --kmsServerPort you_kms_server_port \
       --ehsmAPPID your_app_id \
-      --ehsmAPPKEY your_app_key \
+      --ehsmAPIKEY your_api_key \
       --numThreads 1
   ```
 
