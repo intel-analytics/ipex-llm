@@ -41,6 +41,9 @@ jobs:
           fi
           conda create -n chronos-prvn-env -y python==3.7.6 setuptools==58.0.4
           source activate chronos-prvn-env
+        env:
+          BIGDL_ROOT: ${{ github.workspace }}
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Install dependencies
         run: |
@@ -85,3 +88,6 @@ jobs:
         run: |
           source deactivate
           conda remove -n chronos-prvn-env -y --all
+        env:
+          BIGDL_ROOT: ${{ github.workspace }}
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
