@@ -1,0 +1,34 @@
+# example pod template for driver/executor
+apiVersion: v1
+kind: Pod
+spec:
+  # runtimeClassName: default is kata-cc
+  runtimeClassName: kata-cc
+  containers:
+  - name: spark-executor
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - name: data
+      mountPath: /ppml/trusted-big-data-ml/work/data
+    - name: kubeconf
+      mountPath: /root/.kube/config
+    - name: tpch-1g
+      mountPath: /TPCH-1G
+    volumeDevices:
+    - devicePath: "/dev/sdd"
+      name: datapath
+    command: ["/opt/entrypoint.sh"]
+  volumes:
+  - name: data
+    hostPath:
+      path: /home/data
+  - name: tpch-1g
+    hostPath:
+      path: /home/1G
+  - name: kubeconf
+    hostPath:
+      path: /root/.kube/config
+  - name: datapath
+    persistentVolumeClaim:
+      claimName: busybox-lvm-block-pvc-pre-2

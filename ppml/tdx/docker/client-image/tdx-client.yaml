@@ -1,0 +1,96 @@
+apiVersion: v1
+kind: Pod
+
+metadata:
+  # name: default is bigdl-tdx-client
+  name: bigdl-tdx-client
+
+spec:
+  # hostNetwork: true
+  # runtimeClassName: default is kata-cc
+  runtimeClassName: kata-cc
+
+  # default config to create container
+  containers:
+  - name: spark-local-k8s-client-kata-cc
+    image: intelanalytics/bigdl-tdx-client-spark-3.1.2:latest
+    imagePullPolicy: Always
+    securityContext:
+       privileged: true
+    resources:
+      limits:
+        cpu: "2"
+        memory: "2G"
+      requests:
+        cpu: "2"
+        memory: "2G"
+    command:
+    - sh
+    - "-c"
+    - |
+        mkdir -p /run/data &&
+        mount /dev/sdd /run/data
+        sleep 10000
+
+    volumeMounts:
+    - name: kubeconfig
+      mountPath: /root/.kube/config
+    - name: sda-data
+      mountPath: /ppml/trusted-big-data-ml/work/data
+    - name: sda-tpch-1g
+      mountPath: /TPCH-1G
+    volumeDevices:
+    - devicePath: "/dev/sdd"
+      name: data
+    env:
+    - name: RUNTIME_SPARK_MASTER
+      value: "k8s://https://x.x.x.x:6443"
+    - name: RUNTIME_K8S_SERVICE_ACCOUNT
+      value: "spark"
+    - name: RUNTIME_K8S_SPARK_IMAGE
+      value: "intelanalytics/bigdl-tdx-client-spark-3.1.2:latest"
+    - name: RUNTIME_DRIVER_HOST
+      value: "x.x.x.x"
+    - name: RUNTIME_DRIVER_PORT
+      value: "54321"
+    - name: RUNTIME_EXECUTOR_INSTANCES
+      value: "1"
+    - name: RUNTIME_EXECUTOR_CORES
+      value: "16"
+    - name: RUNTIME_EXECUTOR_MEMORY
+      value: "32g"
+    - name: RUNTIME_TOTAL_EXECUTOR_CORES
+      value: "16"
+    - name: RUNTIME_DRIVER_CORES
+      value: "16"
+    - name: RUNTIME_DRIVER_MEMORY
+      value: "32g"
+    - name: LOCAL_IP
+      value: "x.x.x.x"
+    - name: http_proxy
+      value: http://..
+    - name: https_proxy
+      value: http://..
+    - name: JAVA_HOME
+      value: /opt/jdk
+    - name: SPARK_HOME
+      value: /opt/spark
+  volumes:
+  - name: kubeconfig
+    hostPath:
+      path: /root/.kube/config
+  - name: nvme-data
+    hostPath:
+      path: /mnt/nvme0n1/data
+  - name: nvme-tpch-1g
+    hostPath:
+      path: /mnt/nvme0n1/TPCH-1G
+  - name: sda-tpch-1g
+    hostPath:
+      path: /home/1G
+  - name: sda-data
+    hostPath:
+      path: /home/data
+  - name: data
+    persistentVolumeClaim:
+      claimName: busybox-lvm-block-pvc-pre-1
