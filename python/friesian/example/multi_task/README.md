@@ -46,7 +46,7 @@ The details of preprocessing can be found [here](https://github.com/intel-analyt
 +-------------------+-----+--------+-------------------+-----------+-----+-------+----------+----------+----------+-------------+------+---+--------+----+---+------+-----+
 ```
 Data preprocessing command:
-- For Spark local
+- For Spark local mode
 ```bash
 python data_processing.py \
     --input_path  /path/to/input/dataset \
@@ -84,7 +84,7 @@ When the *cluster_mode* is yarn, *input_path* and *output_path* should be HDFS p
 
 ## Train and test Multi-task models
 After data preprocessing, the training command for MMoE or PLE model is as follows:
-- For Spark local
+- For Spark local mode
 ```bash
 python run_multi_task.py \
     --model_type mmoe\
