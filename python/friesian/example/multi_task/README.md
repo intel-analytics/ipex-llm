@@ -119,15 +119,23 @@ python run_multi_task.py \
     --driver_memory 8g
 ```
 Results:
-```angular2html
-1. For mmoe: (Epoch 7: early stopping)
+```angular2html 
+1. For MMoE:
+50/50 [==============================] - 85s 2s/step - loss: 5505.2607 - duration_loss: 5504.8799 - click_loss: 0.3727 - duration_mae: 30.[1520/1979] k_auc: 0.6574 - click_precision: 0.0000e+00 - click_recall: 0.0000e+00 - val_loss: 6546.5293 - val_duration_loss: 6546.0991 - val_click_loss: 0.4202 - val_duration_mae: 39.1881 - val_click_auc: 0.6486 - val_click_precision: 0.4036 - val_click_recall: 0.0012
+(Worker pid=22945) Epoch 7: early stopping
+Save model to path:  ./save_model/mmoe_model.bin
+3759/3759 [==============================] - 78s 20ms/step - loss: 6546.6997 - duration_loss: 6546.2734 - click_loss: 0.4202 - duration_mae: 39.1884 - click_auc: 0.6486 - click_precision: 0.4036 - click_recall: 0.0012
 validation_loss 6546.69970703125
 validation_duration_loss 6546.2734375
 validation_click_loss 0.42016342282295227
 validation_duration_mae 39.18841552734375
 validation_click_auc 0.648556113243103
 
-2. For ple: (Epoch 4: early stopping)
+2. For PLE: 
+50/50 [==============================] - 87s 2s/step - loss: 6788.6426 - duration_loss: 6788.2168 - click_loss: 0.4217 - duration_mae: 38.3158 - click_auc: 0.6523 - click_precision: 0.3333 - click_recall: 9.7752e-04 - val_loss: 6610.4990 - val_duration_loss: 6610.0732 - val_click_loss: 0.4236 - val_duration_mae: 42.6656 - val_click_auc: 0.6482 - val_click_precision: 0.6667 - val_click_recall: 9.7058e-05
+(Worker pid=13791) Epoch 4: early stopping
+Save model to path: ./save_model/ple_model.bin
+3753/3759 [============================>.] - ETA: 0s - loss: 6612.4531 - duration_loss: 6612.0410 - click_loss: 0.4236 - duration_mae: 42.6693 - click_auc: 0.6482 - click_precision: 0.6667 - click_recall: 9.7249e-05
 validation_loss 6610.6552734375
 validation_duration_loss 6610.244140625
 validation_click_loss 0.4236340820789337
