@@ -19,9 +19,11 @@ from argparse import ArgumentParser
 
 from bigdl.friesian.feature import FeatureTable
 from bigdl.orca import init_orca_context, stop_orca_context
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 
 def transform(x):
+    # dealing with some abnormal data
     if x == '上海':
         return 0.0
     elif isinstance(x, float):
@@ -60,8 +62,8 @@ def read_and_split(data_input_path, sparse_int_features, sparse_string_features,
 
     train_tbl = FeatureTable(tbl.df[tbl.df['expo_time'] < '2021-07-06'])
     valid_tbl = FeatureTable(tbl.df[tbl.df['expo_time'] >= '2021-07-06'])
-    print('train_data.shape: ', train_tbl.size())
-    print('test_data.shape: ', valid_tbl.size())
+    print('The number of train data: ', train_tbl.size())
+    print('The number of test data: ', valid_tbl.size())
     return train_tbl, valid_tbl
 
 
@@ -70,7 +72,7 @@ def feature_engineering(train_tbl, valid_tbl, output_path, sparse_int_features,
     import json
     train_tbl, min_max_dict = train_tbl.min_max_scale(dense_features)
     valid_tbl = valid_tbl.transform_min_max_scale(dense_features, min_max_dict)
-    cat_cols = sparse_string_features[-1:] + sparse_int_features + sparse_string_features[:-1]
+    cat_cols = sparse_int_features + sparse_string_features
     for feature in cat_cols:
         train_tbl, feature_idx = train_tbl.category_encode(feature)
         valid_tbl = valid_tbl.encode_string(feature, feature_idx)
@@ -123,9 +125,9 @@ if __name__ == '__main__':
     elif args.cluster_mode == "spark-submit":
         sc = init_orca_context("spark-submit")
     else:
-        argparse.ArgumentError(False,
-                               "cluster_mode should be one of 'local', 'yarn', 'standalone' and"
-                               " 'spark-submit', but got " + args.cluster_mode)
+        invalidInputError(False,
+                          "cluster_mode should be one of 'local', 'yarn', 'standalone' and"
+                          " 'spark-submit', but got " + args.cluster_mode)
 
     sparse_int_features = [
         'user_id', 'article_id',
@@ -133,9 +135,9 @@ if __name__ == '__main__':
         'exop_position',
     ]
     sparse_string_features = [
-        'device', 'os', 'province',
+        'cat_2', 'device', 'os', 'province',
         'city', 'age',
-        'gender', 'cat_1', 'cat_2'
+        'gender', 'cat_1'
     ]
     dense_features = ['img_num']
 
@@ -143,11 +145,9 @@ if __name__ == '__main__':
     df_train, df_test = read_and_split(args.input_path, sparse_int_features,
                                        sparse_string_features, dense_features)
     train_tbl, valid_tbl = feature_engineering(df_train, df_test,
-                                                 args.output_path,
-                                                 sparse_int_features,
-                                                 sparse_string_features, dense_features)
-    print(train_tbl.size())
-    print(valid_tbl.size())
+                                               args.output_path,
+                                               sparse_int_features,
+                                               sparse_string_features, dense_features)
     train_tbl.write_parquet(os.path.join(args.output_path, 'train_processed'))
     valid_tbl.write_parquet(os.path.join(args.output_path, 'test_processed'))
     stop_orca_context()

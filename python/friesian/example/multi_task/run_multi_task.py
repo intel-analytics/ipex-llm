@@ -25,8 +25,7 @@ from bigdl.friesian.feature import FeatureTable
 from deepctr.feature_column import SparseFeat, DenseFeat
 from deepctr.models import MMOE, PLE
 
-# from python.serving.src.bigdl.serving.log4Error import invalidInputError
-from python.dllib.src.bigdl.dllib.utils.log4Error import invalidInputError
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 
 def build_model(model_type, sparse_features, dense_features, feature_max_idx):
@@ -43,7 +42,7 @@ def build_model(model_type, sparse_features, dense_features, feature_max_idx):
                     task_types=['regression', 'binary'],
                     num_levels=2, task_names=['duration', 'click'])
     else:
-        raise invalidInputError
+        invalidInputError(False, 'model_type should be one of "mmoe" and "ple", but got ' + model_type)
     return model
 
 
@@ -201,9 +200,9 @@ if __name__ == "__main__":
     elif args.cluster_mode == "spark-submit":
         sc = init_orca_context("spark-submit")
     else:
-        ArgumentError(False,
-                      "cluster_mode should be one of 'local', 'yarn', 'standalone' and"
-                      " 'spark-submit', but got " + args.cluster_mode)
+        invalidInputError(False,
+                          "cluster_mode should be one of 'local', 'yarn', 'standalone' and"
+                          " 'spark-submit', but got " + args.cluster_mode)
     cat_cols = [
         'user_id',
         'article_id',
@@ -227,7 +226,6 @@ if __name__ == "__main__":
                      args.model_type, cat_cols, continuous_cols,
                      feature_max_idx)
     # do test
-    # valid_tbl = FeatureTable.read_parquet(args.test_data_path)
     test_multi_task(valid_tbl, args.model_save_path, args.model_type,
                     cat_cols, continuous_cols, feature_max_idx)
 

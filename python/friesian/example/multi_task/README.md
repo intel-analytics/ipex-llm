@@ -78,7 +78,7 @@ __Options for data_processing:__
 * `driver_memory`: The driver memory. Default to be 8g.
 
 __NOTE:__ 
-When the *cluster_mode* is yarn, *input_path* and *output_path* can be HDFS paths. 
+When the *cluster_mode* is yarn, *input_path* and *output_path* should be HDFS paths. 
 
 ## Train and test Multi-task models
 After data preprocessing, the training command for MMoE or PLE model is as follows:
@@ -91,15 +91,23 @@ python run_multi_task.py \
     --cluster_mode local \
     --executor_cores 8 \
     --executor_memory 12g \
+```
+```bash
+python run_multi_task.py \
+    --model_type mmoe\
+    --train_data_path /path/to/training/dataset \
+    --test_data_path /path/to/testing/dataset \
+    --model_save_path /path/to/save/the/trained/model \
+    --cluster_mode yarn \
+    --executor_cores 8 \
+    --executor_memory 12g \
     --num_executors 4 \
     --driver_cores 2 \
     --driver_memory 8g
 ```
-
 Evaluate Results as follows:
 ```bash
 python run_multi_task.py \
-    --do_test \
     --model_type mmoe\
     --test_data_path /path/to/testing/dataset \
     --model_save_path /path/to/save/the/trained/model \
@@ -110,10 +118,13 @@ python run_multi_task.py \
     --driver_cores 2 \
     --driver_memory 8g
 ```
+Results:
+```angular2html
+
+
+```
 
 __Options for training and test:__
-* `do_train`: To start training model.
-* `do_test`: To start test model.
 * `model_type`: The multi task model, mmoe or ple. Default to be mmoe.
 * `train_data_path`: The path to training dataset.
 * `test_data_path`: The path to testing dataset.
@@ -127,4 +138,4 @@ __Options for training and test:__
 * `driver_memory`: The driver memory. Default to be 8g.
 
 __NOTE:__ 
-When the *cluster_mode* is yarn, *train_data_path*, *test_data_path* ans *model_save_path* can be HDFS paths. 
+When the *cluster_mode* is yarn, *train_data_path*, *test_data_path* ans *model_save_path* should be HDFS paths. 
