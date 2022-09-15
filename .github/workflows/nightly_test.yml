@@ -184,8 +184,6 @@ jobs:
       uses: ./.github/actions/maven-setup-action 
     - name: Setup env
       uses: ./.github/actions/orca/setup-env/setup-horovod-tf2-py37
-    - name: Setup env
-      uses: ./.github/actions/orca/setup-env/setup-horovod-tf2-py37
     - name: Run Test
       uses: ./.github/actions/orca/orca-python-horovod-tf2-py37-spark3-action/nightly-test
     - name: Remove Env
