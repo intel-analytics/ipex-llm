@@ -624,15 +624,14 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             temp_dir = tempfile.mkdtemp()
             temp_path = os.path.join(temp_dir, file_name)
             try:
-                model.save_weights(filepath, overwrite, save_format, options)
+                model.save_weights(temp_path, overwrite, save_format, options)
                 if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
                 # hdf5 format
-                    put_local_file_to_remote(temp_path, filepath, over_write=overwrite)
+                    put_local_file_to_remote(temp_path, filepath)
                 else:
                     # tf format
                     remote_dir = os.path.dirname(filepath)
-                    put_local_files_with_prefix_to_remote(temp_path, remote_dir,
-                                                          over_write=overwrite)
+                    put_local_files_with_prefix_to_remote(temp_path, remote_dir)
             finally:
                 shutil.rmtree(temp_dir)
     

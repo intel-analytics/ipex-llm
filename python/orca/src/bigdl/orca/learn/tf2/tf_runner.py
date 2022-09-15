@@ -42,7 +42,8 @@ from contextlib import closing
 
 from bigdl.dllib.utils import log4Error
 from bigdl.orca.data.utils import ray_partitions_get_data_label, ray_partitions_get_tf_dataset
-from bigdl.orca.data.file import is_file, get_remote_file_to_local, get_remote_dir_to_local
+from bigdl.orca.data.file import is_file, get_remote_file_to_local, get_remote_dir_to_local, \
+    get_remote_files_with_prefix_to_local
 from bigdl.dllib.utils.log4Error import *
 
 logger = logging.getLogger(__name__)
@@ -543,10 +544,7 @@ class TFRunner:
         try:
             self.model.load_weights(temp_path, by_name, skip_mismatch, options)
         finally:
-            if os.path.isdir(temp_path):
-                shutil.rmtree(temp_path)
-            else:
-                os.remove(temp_path)
+            shutil.rmtree(temp_dir)
 
     def shutdown(self):
         """Attempts to shut down the worker."""
