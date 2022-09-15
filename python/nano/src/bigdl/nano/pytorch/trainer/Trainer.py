@@ -264,7 +264,7 @@ class Trainer(pl.Trainer):
             return None
         return self.hposearcher.search_summary()
 
-    @deprecated('Please use `bigdl.nano.pytorch.InferenceOptimizer.trace` instead.')
+    # @deprecated('Please use `bigdl.nano.pytorch.InferenceOptimizer.trace` instead.')
     @staticmethod
     def trace(model: nn.Module,
               input_sample=None,
@@ -309,7 +309,7 @@ class Trainer(pl.Trainer):
                                         logging=logging,
                                         **export_kwargs)
 
-    @deprecated('Please use `bigdl.nano.pytorch.InferenceOptimizer.quantize` instead.')
+    # @deprecated('Please use `bigdl.nano.pytorch.InferenceOptimizer.quantize` instead.')
     @staticmethod
     def quantize(model: nn.Module,
                  precision: str = 'int8',
