@@ -21,6 +21,16 @@ import org.apache.hadoop.conf.Configuration
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.ppml.utils.HTTPSUtil.postRequest
 import com.intel.analytics.bigdl.ppml.utils.{EHSMParams, KeyReaderWriter}
+import javax.net.ssl.SSLContext
+import org.apache.http.conn.ssl.AllowAllHostnameVerifier
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory
+import org.apache.http.ssl.SSLContextBuilder
+import org.apache.http.ssl.SSLContexts
+import javax.net.ssl.X509TrustManager
+import java.security.cert.X509Certificate
+import javax.net.ssl.TrustManager
+import org.apache.http.util.EntityUtils
+import java.security.SecureRandom
 
 object EHSM_CONVENTION {
 
