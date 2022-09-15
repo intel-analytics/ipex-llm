@@ -4,6 +4,10 @@ ARG BIGDL_IMAGE_VERSION
 # stage 1. generate SGX secrets and prepare KMS env
 FROM $BIGDL_IMAGE_NAME:$BIGDL_IMAGE_VERSION as temp
 
+ARG LOCAL_IP
+ARG SGX_MEM_SIZE
+ARG SGX_LOG_LEVEL
+
 ADD ./enclave-key.pem /root/.config/gramine/enclave-key.pem
 
 # 1.1 make SGX and sign in a temp image

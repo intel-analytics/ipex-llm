@@ -9,7 +9,8 @@ export BIGDL_IMAGE_NAME=your_bigdl_base_image_name_used_to_build_customer_image
 export BIGDL_IMAGE_VERSION=your_bigdl_base_image_version_used_to_build_customer_image
 export CUSTOMER_IMAGE_TAG=your_customer_image_tag
 export LOCAL_IP=your_local_IP
-
+export SGX_MEM_SIZE=memory_size_of_sgx_in_customer_image
+export SGX_LOG_LEVEL=log_level_of_sgx_in_customer_image
 
 if [ "$IMAGE_MODE" == "bigdl_base_image_or_customer_image" ]
 then
@@ -63,6 +64,8 @@ then
                     --build-arg LOCAL_IP=${LOCAL_IP} \
 		    --build-arg http_proxy=http://${HTTP_PROXY_HOST}:${HTTP_PROXY_PORT} \
                     --build-arg https_proxy=http://${HTTPS_PROXY_HOST}:${HTTPS_PROXY_PORT} \
+		    --build-arg SGX_MEM_SIZE=${SGX_MEM_SIZE} \
+		    --build-arg SGX_LOG_LEVEL=${SGX_LOG_LEVEL} \
                     -t $CUSTOMER_IMAGE_TAG -f ./CustomerImageDockerfile .
         fi
      fi
