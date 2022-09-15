@@ -420,11 +420,13 @@ The result should be similar to
 >
 >2021-06-18 01:46:20 INFO DistriOptimizer$:180 - [Epoch 2 60032/60000][Iteration 938][Wall Clock 845.747782s] Top1Accuracy is Accuracy(correct: 9696, count: 10000, accuracy: 0.9696)
 
-##### Example 5: XGBoost Regressor
+##### (Deprecated) Example 5: XGBoost Regressor
+
+Please be noted that the xgboost example listed here is **deprecated** due to the fact that Rabit's network (contains gradient, split and env) is not protected.
 
 The data source `Boston_Housing.csv` can be found at [here](https://github.com/selva86/datasets/blob/master/BostonHousing.csv).
 
-Before running the example, make sure that `Boston_Housing.csv` is under `work/data` directory or the same path in the command. Run the example with SGX spark local mode with the following command in the terminal. Replace `your_IP_address` with your IP address and `path_of_boston_housing_csv` with your path of `Boston_Housing.csv`.
+Before running the example, make sure that `Boston_Housing.csv` is under `work/data` directory or the same path in the command. Run the example with SGX spark local mode with the following command in the terminal. Replace `path_of_boston_housing_csv` with your path of `Boston_Housing.csv`.
 
 
 Note that data in `Boston_Housing.csv` needs to be pre-processed, before training with `xgboost_example.py`.
@@ -438,7 +440,7 @@ After changing:
 > 0.00632,18,2.31,**0**,0.538,6.575,65.2,4.09,1,296,15.3,396.9,4.98,24
 
 ```bash
-/graphene/Tools/argv_serializer bash -c "export RABIT_TRACKER_IP=your_IP_address && /opt/jdk8/bin/java -cp \
+/graphene/Tools/argv_serializer bash -c "/opt/jdk8/bin/java -cp \
     '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx2g \
   org.apache.spark.deploy.SparkSubmit \
@@ -503,7 +505,9 @@ The result should be similar to
 >
 >|[7.02259,0.0,18.1...| 14.2| 13.38729190826416|
 
-##### Example 6: XGBoost Classifier
+##### (Deprecated) Example 6: XGBoost Classifier
+
+Please be noted that the xgboost example listed here is **deprecated** due to the fact that Rabit's network (contains gradient, split and env) is not protected.
 
 Before running the example, download the sample dataset from [pima-indians-diabetes](https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv) dataset manually or with following command.
 
@@ -511,10 +515,10 @@ Before running the example, download the sample dataset from [pima-indians-diabe
 wget https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv
 ```
 
-After downloading the dataset, make sure that `pima-indians-diabetes.data.csv` is under `work/data` directory or the same path in the command. Run the example with SGX spark local mode with the following command in the terminal. Replace `your_IP_address` with your IP address and `path_of_pima_indians_diabetes_csv` with your path of `pima-indians-diabetes.data.csv`.
+After downloading the dataset, make sure that `pima-indians-diabetes.data.csv` is under `work/data` directory or the same path in the command. Run the example with SGX spark local mode with the following command in the terminal. Replace `path_of_pima_indians_diabetes_csv` with your path of `pima-indians-diabetes.data.csv`.
 
 ```bash
-/graphene/Tools/argv_serializer bash -c "export RABIT_TRACKER_IP=your_IP_address && /opt/jdk8/bin/java -cp \
+/graphene/Tools/argv_serializer bash -c "/opt/jdk8/bin/java -cp \
   '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx2g \
   org.apache.spark.deploy.SparkSubmit \
