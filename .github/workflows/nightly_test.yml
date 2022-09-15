@@ -18,9 +18,9 @@ on:
         - Orca-Ray-Ctx-Example
         - Orca-Python-Horovod-Tf2-Py37-Spark3
         - Orca-Python-Horovod-Pytorch-Py37-Spark3
-        - Orca-Python-Jep-Exampletests-Py37
+        - Orca-Jep-ExampleTest-Py37-Spark2
         - Orca-Python-ExampleTest-Py37-Spark3
-        - Orca-Python-Exampletests-Ray-Py37
+        - Orca-Python-ExampleTest-Ray-Py37-Spark3
         - Dllib-Scala-UT
         - Friesian-Scala-UT
         - PPML-Scala-UT
@@ -61,7 +61,7 @@ jobs:
 
 
   Orca-Python-ExampleTest-Ray-Py37-Spark3:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-ExampleTest-Ray-Py37-Spark3' || github.event.inputs.artifact == 'all' }} 
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-ExampleTest-Ray-Py37-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -70,8 +70,13 @@ jobs:
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
-    - name: Run test
-      uses: ./.github/actions/orca-python-exampletest-ray-action
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-spark3
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-python-exampletest-ray-action/nightly-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
     - name: Create Job Badge
       uses: ./.github/actions/create-job-status-badge
       if: ${{ always() }}
@@ -84,7 +89,7 @@ jobs:
         job-name: Orca-Python-ExampleTest-Ray-Py37-Spark3
 
   Orca-Jep-ExampleTest-Py37-Spark2:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Jep-ExampleTest-Py37-Spark2' || github.event.inputs.artifact == 'all' }} 
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Jep-ExampleTest-Py37-Spark2' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -93,8 +98,13 @@ jobs:
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
-    - name: Run test
-      uses: ./.github/actions/orca-jep-exampletest-action
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-jep-exampletest-py37
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-jep-exampletest-action/nightly-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
     - name: Create Job Badge
       uses: ./.github/actions/create-job-status-badge
       if: ${{ always() }}
@@ -107,7 +117,7 @@ jobs:
         job-name: Orca-Jep-ExampleTest-Py37-Spark2
 
   Orca-Python-Ray-Py37-Spark3:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Ray-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Ray-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -116,8 +126,13 @@ jobs:
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
-    - name: Run test
-      uses: ./.github/actions/orca-python-ray-py37-spark3-action
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-spark3
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-python-ray-py37-spark3-action/nightly-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
     - name: Create Job Badge
       uses: ./.github/actions/create-job-status-badge
       if: ${{ always() }}
@@ -130,7 +145,7 @@ jobs:
         job-name: Orca-Python-Ray-Py37-Spark3
 
   Orca-Python-Py37-Spark3:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -139,8 +154,13 @@ jobs:
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
-    - name: Run test
-      uses: ./.github/actions/orca-python-py37-spark3-action
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-spark3
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-python-py37-spark3-action/nightly-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
     - name: Create Job Badge
       uses: ./.github/actions/create-job-status-badge
       if: ${{ always() }}
@@ -153,7 +173,7 @@ jobs:
         job-name: Orca-Python-Py37-Spark3
 
   Orca-Python-Horovod-Tf2-Py37-Spark3:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Horovod-Tf2-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Horovod-Tf2-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -164,8 +184,13 @@ jobs:
       uses: ./.github/actions/maven-setup-action 
     - name: Setup env
       uses: ./.github/actions/orca/setup-env/setup-horovod-tf2-py37
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-horovod-tf2-py37
     - name: Run Test
       uses: ./.github/actions/orca/orca-python-horovod-tf2-py37-spark3-action/nightly-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
     - name: Remove Env
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
