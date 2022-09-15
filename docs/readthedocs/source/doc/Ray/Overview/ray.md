@@ -135,8 +135,8 @@ sc = init_orca_context(cluster_mode, init_ray_on_spark=True, env={"LANG": "C.UTF
   init_orca_context(extra_params={"dashboard-port": "50005"})
   ```
 
-  Note that, the similar error can happen to ray redis port as well, you can also set the ray redis port by using parameters `port` in `init_orca_context()` as follows:
+  Note that, the similar error can happen to ray redis port as well, you can also set the ray redis port by using parameters `redis_port` in `init_orca_context()` as follows:
 
   ```python
-  init_orca_context(extra_params={"port": "50006"})
+  init_orca_context(redis_port=50005)
   ```
