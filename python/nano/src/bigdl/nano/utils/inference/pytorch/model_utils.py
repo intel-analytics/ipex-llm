@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import Any
+from typing import Any, Sequence
 from bigdl.nano.pytorch.lightning import LightningModule
 import inspect
 from torch.utils.data import DataLoader
@@ -31,10 +31,9 @@ def get_forward_args(model):
 
 def get_input_example(model, input_sample, forward_args):
     if isinstance(input_sample, DataLoader):
-        # TODO: This assumpe the last output is y
         input_sample = next(iter(input_sample))
-        if isinstance(input_sample, list):
-            input_sample = input_sample[:len(forward_args)]
+        if isinstance(input_sample, Sequence):
+            input_sample = tuple(list(input_sample)[:len(forward_args)])
     elif input_sample is None:
         if getattr(model, "example_input_array", None) is not None:
             input_sample = model.example_input_array
@@ -45,10 +44,9 @@ def get_input_example(model, input_sample, forward_args):
                                   model.val_dataloader]:
                 try:
                     dataloader = dataloader_fn()
-                    # TODO: This assumpe the last output is y
                     input_sample = next(iter(input_sample))
-                    if isinstance(input_sample, list):
-                        input_sample = input_sample[:len(forward_args)]
+                    if isinstance(input_sample, Sequence):
+                        input_sample = tuple(list(input_sample)[:len(forward_args)])
                     break
                 except Exception as _e:
                     pass
