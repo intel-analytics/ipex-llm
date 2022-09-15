@@ -57,6 +57,7 @@ jobs:
         file-name: Orca-Python-ExampleTest-Py37-Spark3.json
         type: job
         job-name: Orca-Python-ExampleTest-Py37-Spark3
+        runnerHostedOn: 'Shanghai'
 
 
   Orca-Python-ExampleTest-Ray-Py37-Spark3:
@@ -86,6 +87,7 @@ jobs:
         file-name: Orca-Python-ExampleTest-Ray-Py37-Spark3.json
         type: job
         job-name: Orca-Python-ExampleTest-Ray-Py37-Spark3
+        runnerHostedOn: 'Shanghai'
 
   Orca-Jep-ExampleTest-Py37-Spark2:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Jep-ExampleTest-Py37-Spark2' || github.event.inputs.artifact == 'all' }} 
@@ -114,6 +116,7 @@ jobs:
         file-name: Orca-Jep-ExampleTest-Py37-Spark2.json
         type: job
         job-name: Orca-Jep-ExampleTest-Py37-Spark2
+        runnerHostedOn: 'Shanghai'
 
   Orca-Python-Ray-Py37-Spark3:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Ray-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
@@ -142,6 +145,7 @@ jobs:
         file-name: Orca-Python-Ray-Py37-Spark3.json
         type: job
         job-name: Orca-Python-Ray-Py37-Spark3
+        runnerHostedOn: 'Shanghai'
 
   Orca-Python-Py37-Spark3:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
@@ -170,6 +174,7 @@ jobs:
         file-name: Orca-Python-Py37-Spark3.json
         type: job
         job-name: Orca-Python-Py37-Spark3
+        runnerHostedOn: 'Shanghai'
 
   Orca-Python-Horovod-Tf2-Py37-Spark3:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Horovod-Tf2-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
@@ -198,6 +203,7 @@ jobs:
         file-name: Orca-Python-Horovod-Tf2-Py37-Spark3.json
         type: job
         job-name: Orca-Python-Horovod-Tf2-Py37-Spark3
+        runnerHostedOn: 'Shanghai'
 
       
   Dllib-Scala-UT:
@@ -222,6 +228,7 @@ jobs:
         file-name: Dllib-Scala-UT.json
         type: job
         job-name: Dllib-Scala-UT
+        runnerHostedOn: 'Shanghai'
       
   Friesian-Scala-UT:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Friesian-Scala-UT' || github.event.inputs.artifact == 'all' }} 
@@ -245,6 +252,7 @@ jobs:
         file-name: Friesian-Scala-UT.json
         type: job
         job-name: Friesian-Scala-UT
+        runnerHostedOn: 'Shanghai'
       
   PPML-Scala-UT:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Scala-UT' || github.event.inputs.artifact == 'all' }} 
@@ -268,6 +276,7 @@ jobs:
         file-name: PPML-Scala-UT.json
         type: job
         job-name: PPML-Scala-UT
+        runnerHostedOn: 'Shanghai'
 
   Orca-Ray-Ctx-Example:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Ray-Ctx-Example' || github.event.inputs.artifact == 'all' }} 
@@ -291,6 +300,7 @@ jobs:
         file-name: Orca-Ray-Ctx-Example.json
         type: job
         job-name: Orca-Ray-Ctx-Example
+        runnerHostedOn: 'Shanghai'
     
 
   create-workflow-badge:
