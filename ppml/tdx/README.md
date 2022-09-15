@@ -7,6 +7,9 @@ TDX-based Trusted Big Data ML allows the user to run end-to-end big data analyti
 ### BigDL PPML on TDX CC
 ![image](https://user-images.githubusercontent.com/30695225/190289025-dfcb3d01-9eed-4676-9df5-8412bd845894.png)
 
+## Prepare TDX CC Environment
+Need to install TDX environment.
+
 ## Before running the code
 #### 1. Prepare the key
 BigDL PPML needs secured keys to enable spark security such as Authentication, RPC Encryption, Local Storage Encryption and TLS, you need to prepare the secure keys and keystores. In this tutorial, you can generate keys and keystores with root permission (test only, need input security password for keys).
@@ -57,9 +60,10 @@ export KUBECONFIG_PATH=KUBECONFIG_PATH
 export LOCAL_IP=YOUR_LOCAL_IP
 export DOCKER_IMAGE=intelanalytics/bigdl-tdx-client:latest
 
+# modift tdx-client.yaml
 kubectl apply -f tdx-client.yaml
 ```
-Run `kubectl exec -it spark-local-client -- /bin/bash` to entry the client pod.
+Run `kubectl exec -it YOUR_CLIENT_POD -- /bin/bash` to entry the client pod.
 
 ## 2. Run as Spsrk Local Mode
 The example for run Spark Pi:
@@ -89,8 +93,8 @@ bash spark-submit-with-ppml-tdx-k8s.sh \
 --conf spark.executor.instances=1 \
 --conf spark.cores.max=8 \
 --class com.intel.analytics.bigdl.ppml.examples.SimpleQuerySparkExample \
---jars /bigdl2.0/data/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar \
-/bigdl2.0/data/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar \
+--jars /ppml/trusted-big-data-ml/work/data/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar \
+/ppml/trusted-big-data-ml/work/data/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar \
 --inputPath /people/encrypted \
 --outputPath /people/people_encrypted_output \
 --inputPartitionNum 8 \
@@ -117,8 +121,8 @@ bash spark-submit-with-ppml-tdx-k8s.sh \
 --conf spark.executor.instances=1 \
 --conf spark.cores.max=8 \
 --class com.intel.analytics.bigdl.ppml.examples.SimpleQuerySparkExample \
---jars /bigdl2.0/data/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar \
-/bigdl2.0/data/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar \
+--jars /ppml/trusted-big-data-ml/work/data/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar \
+/ppml/trusted-big-data-ml/work/data/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar \
 --inputPath /people/encrypted \
 --outputPath /people/people_encrypted_output \
 --inputPartitionNum 8 \
