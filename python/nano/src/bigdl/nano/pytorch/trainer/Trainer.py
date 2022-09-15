@@ -299,8 +299,11 @@ class Trainer(pl.Trainer):
                          data to be channels last according to the setting. Defaultly, channels_last
                          will be set to True if use_ipex=True.
         :return: Model with different acceleration.
-        .. deprecated:: 2.2.0
-            Use :func:`bigdl.nano.pytorch.InferenceOptimizer.trace` instead.
+
+        .. warning::
+             bigdl.nano.pytorch.Trainer.trace will be deprecated in future release.
+
+             Please use `bigdl.nano.pytorch.InferenceOptimizer.trace` instead.
         """
         return InferenceOptimizer.trace(model=model,
                                         input_sample=input_sample,
@@ -381,8 +384,11 @@ class Trainer(pl.Trainer):
                         accelerator='openvino', otherwise will be ignored. default: True.
         :param **export_kwargs: will be passed to torch.onnx.export function.
         :return:            A accelerated Pytorch-Lightning Model if quantization is sucessful.
-        .. deprecated:: 2.2.0
-            Use :func:`bigdl.nano.pytorch.InferenceOptimizer.quantize` instead.
+
+        .. warning::
+             bigdl.nano.pytorch.Trainer.quantize will be deprecated in future release.
+
+             Please use `bigdl.nano.pytorch.InferenceOptimizer.quantize` instead.
         """
         return InferenceOptimizer.quantize(model=model,
                                            precision=precision,
