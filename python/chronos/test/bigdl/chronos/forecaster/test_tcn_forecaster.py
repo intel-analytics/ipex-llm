@@ -721,7 +721,6 @@ class TestChronosModelTCNForecaster(TestCase):
     def test_predict_interval_with_xshard_input(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_data, val_data, test_data = create_data()
-        print("original", train_data[0].dtype)
         init_orca_context(cores=4, memory="2g")
         from bigdl.orca.data import XShards
 

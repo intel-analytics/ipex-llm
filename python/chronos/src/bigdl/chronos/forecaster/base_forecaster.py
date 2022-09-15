@@ -838,14 +838,13 @@ class BasePytorchForecaster(Forecaster):
 
         """
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
+        from bigdl.orca.data.shard import SparkXShards
 
         if not self.fitted:
-                from bigdl.nano.utils.log4Error import invalidInputError
-                invalidInputError(False,
-                                  "You must call fit or restore first before calling predict_interval!")
+            invalidInputError(False,
+                                "You must call fit or restore first before calling predict_interval!")
 
         def calculate(data, model):
-            is_local_data = isinstance(data, (tuple, DataLoader))
             if self.distributed:
                 yhat = model.predict(data, batch_size=batch_size)
                 expand_dim = []
@@ -853,18 +852,13 @@ class BasePytorchForecaster(Forecaster):
                     expand_dim.append(1)
                 if self.data_config["output_feature_num"] == 1:
                     expand_dim.append(2)
-                if is_local_data:
-                    yhat = xshard_to_np(yhat, mode="yhat", expand_dim=expand_dim)
-                else:
-                    yhat = yhat.transform_shard(xshard_expand_dim, expand_dim)
+                yhat = xshard_to_np(yhat, mode="yhat", expand_dim=expand_dim)
                 return yhat
             else:
                 self.internal.eval()
                 yhat = _pytorch_fashion_inference(model=model,
                                                   input_data=data,
                                                   batch_size=batch_size)
-                if not is_local_data:
-                    yhat = np_to_xshard(yhat, prefix="prediction")
                 return yhat
 
         # step1, according to validation dataset, calculate inherent noise
@@ -886,9 +880,19 @@ class BasePytorchForecaster(Forecaster):
             is_local_data = isinstance(validation_data, (tuple, DataLoader))
             if not is_local_data and not self.distributed:
                 validation_data = xshard_to_np(validation_data, mode="fit")
-            val_yhat = calculate(validation_data, self.internal)
+            if isinstance(validation_data, DataLoader):
+                input_data = data
+                target = np.concatenate(tuple(val[1] for val in validation_data), axis=0)
+            elif isinstance(validation_data, SparkXShards):
+                input_data = validation_data
+                target = np.concatenate([validation_data[i]['y'] for i
+                         in range(len(validation_data['y']))], axis=0)
+            else:
+                input_data, target = data
+
+            val_yhat = calculate(input_data, self.internal)
             self.data_noise = Evaluator.evaluate(["mse"], target,
-                                                val_yhat, aggregate=None)[0]  # 3d-array
+                                                 val_yhat, aggregate=None)[0]  # 3d-array
 
         # step2: data preprocess
         if isinstance(data, TSDataset):
@@ -914,6 +918,7 @@ class BasePytorchForecaster(Forecaster):
         def apply_dropout(m):
             if type(m) == torch.nn.Dropout:
                 m.train()
+
         # turn on dropout
         self.internal.apply(apply_dropout)
         y_hat_list = []
