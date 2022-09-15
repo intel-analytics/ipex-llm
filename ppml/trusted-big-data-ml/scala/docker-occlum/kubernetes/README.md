@@ -197,10 +197,8 @@ Then run the script.
 ./run_spark_tpch.sh
 ```
 
-## deprecated
-
-### Spark XGBoost example
-We don't recommend XGBoost example Because it is not support end-to-end security.
+### [Deprecated] Spark XGBoost example
+Distributed XGBoost it doesn't support....due to lack of network proteciton.
 
 #### UCI dataset [iris.data](https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data)
 
