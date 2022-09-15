@@ -127,8 +127,16 @@ sc = init_orca_context(cluster_mode, init_ray_on_spark=True, env={"LANG": "C.UTF
   init_orca_context(extra_params={"min-worker-port": "30000", "max-worker-port": "30033"})
   ```
 
-  Or you also can directly set the worker port list with parameter `worker-port-list` in `init_orca_context()` as follows:
+- **ValueError: Failed to bind to 0.0.0.0:8265 because it's already occupied. You can use `ray start --dashboard-port ...` or `ray.init(dashboard_port=...)` to select a different port.**
+
+  This error is because that ray dashboard port is occupied by other processes. To handle this issues, you can end the process occupyied the port or you can set the ray dashboard port by using parameters `dashboard-port` in `init_orca_context()` as follows:
 
   ```python
-  init_orca_context(extra_params={"worker-port-list": "30001,30003,30005"})
+  init_orca_context(extra_params={"dashboard-port": "50005"})
+  ```
+
+  Note that, the similar error can happen to ray redis port as well, you can also set the ray redis port by using parameters `port` in `init_orca_context()` as follows:
+
+  ```python
+  init_orca_context(extra_params={"port": "50006"})
   ```
