@@ -31,8 +31,8 @@ Config={
     "num_ng": 4,# sample negative items for training
     "test_num_ng": 0,# sample part of negative items for testing
     "backend": "spark", # backend used in estimator, "ray" or "spark" are supported
-    "user_num": 6041,
-    "item_num": 3953,
+    "user_num": 6040,
+    "item_num": 3952,
 }
 
 Config["train_rating"]=Config["main_path"]+ Config["dataset"]+".train.rating"
@@ -67,6 +67,7 @@ data_X = preprocess_data()
 
 # construct the train and test xshards
 def transform_to_dict(data):
+    data["user"],data["item"]=data["user"]-1,data["item"]-1
     data_X=data.values.tolist()
     
     #calculate a dok matrix
@@ -94,7 +95,7 @@ def transform_to_dict(data):
     data_XY["y"]=labels_fill
 
     #split training set and testing set
-    train_data, test_data=train_test_split(data_XY, test_size=0.1, random_state=100)
+    train_data, test_data=train_test_split(data_XY, test_size=0.2, random_state=100)
 
     #transform dataset into dict
     train_data, test_data=train_data.to_numpy(), test_data.to_numpy()
@@ -121,10 +122,10 @@ loss_function = nn.BCEWithLogitsLoss()
 #Step 4: Fit with Orca Estimator
 
 from bigdl.orca.learn.pytorch import Estimator 
-from bigdl.orca.learn.metrics import Accuracy
+from bigdl.orca.learn.metrics import Accuracy,AUC
 
 # create the estimator
-est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,loss=loss_function, metrics=[Accuracy()],backend=Config["backend"])# backend="ray" or "spark"
+est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,loss=loss_function, metrics=[Accuracy(),AUC()],backend=Config["backend"])# backend="ray" or "spark"
 
 # fit the estimator
 est.fit(data=train_shards, epochs=5,batch_size=Config["batch_size"],feature_cols=["x"],label_cols =["y"])
