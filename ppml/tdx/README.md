@@ -2,8 +2,10 @@
 
 TDX-based Trusted Big Data ML allows the user to run end-to-end big data analytics application and BigDL model training with distributed cluster on Intel Trust Domain Extensions (Intel TDX).
 
-- [Before running the code](#before-running-the-code)
-- [Run as Spark on Kubernetes Mode](#run-as-spark-on-kubernetes-mode)
+### Overview Architecture
+![image](https://user-images.githubusercontent.com/30695225/190288851-fd852a51-f193-444c-bdea-1edad8375dd1.png)
+### BigDL PPML on TDX CC
+![image](https://user-images.githubusercontent.com/30695225/190289025-dfcb3d01-9eed-4676-9df5-8412bd845894.png)
 
 ## Before running the code
 #### 1. Prepare the key
@@ -51,10 +53,9 @@ The secret created (YOUR_PASSWORD) should be the same as the password you specif
 ```bash
 export K8S_MASTER=k8s://$(sudo kubectl cluster-info | grep 'https.*6443' -o -m 1)
 export KEYS_PATH=YOUR_LOCAL_KEYS_PATH
-export SECURE_PASSWORD_PATH=YOUR_LOCAL_PASSWORD_PATH
 export KUBECONFIG_PATH=KUBECONFIG_PATH
 export LOCAL_IP=YOUR_LOCAL_IP
-export DOCKER_IMAGE=intelanalytics/bigdl-k8s:latest
+export DOCKER_IMAGE=intelanalytics/bigdl-tdx-client:latest
 
 kubectl apply -f tdx-client.yaml
 ```
@@ -87,8 +88,8 @@ bash spark-submit-with-ppml-tdx-k8s.sh \
 --primaryKeyPath /keys/primaryKey \
 --dataKeyPath /keys/dataKey \
 --kmsType SimpleKeyManagementService \
---simpleAPPID xx \
---simpleAPPKEY xx
+--simpleAPPID $simpleAPPID \
+--simpleAPPKEY $simpleAPPKEY
 ```
 #### 2.2 Run application in K8s cluster mode
 
