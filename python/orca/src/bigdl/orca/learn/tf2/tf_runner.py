@@ -523,7 +523,7 @@ class TFRunner:
                 shutil.rmtree(temp_path)
             else:
                 os.remove(temp_path)
-    
+
     def load_weights(self, filepath, by_name, skip_mismatch, options):
         """Loads all layer weights from a TensorFlow or an HDF5 weight file."""
         self.model.load_weights(filepath, by_name, skip_mismatch, options)

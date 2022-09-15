@@ -598,7 +598,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         else:
             ray.get([worker.load_remote_model.remote(**params)
                      for worker in self.remote_workers])
-    
+
     def save_weights(self, filepath, overwrite=True, save_format=None, options=None):
         """
         Save the model weights at the provided filepath.
@@ -626,7 +626,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             try:
                 model.save_weights(temp_path, overwrite, save_format, options)
                 if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
-                # hdf5 format
+                    # hdf5 format
                     put_local_file_to_remote(temp_path, filepath)
                 else:
                     # tf format
@@ -634,7 +634,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                     put_local_files_with_prefix_to_remote(temp_path, remote_dir)
             finally:
                 shutil.rmtree(temp_dir)
-    
+
     def load_weights(self, filepath, by_name=False, skip_mismatch=False, options=None):
         """
         Load tensorflow keras model weights from the provided path.
