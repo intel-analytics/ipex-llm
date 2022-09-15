@@ -120,8 +120,19 @@ python run_multi_task.py \
 ```
 Results:
 ```angular2html
+1. For mmoe: (Epoch 7: early stopping)
+validation_loss 6546.69970703125
+validation_duration_loss 6546.2734375
+validation_click_loss 0.42016342282295227
+validation_duration_mae 39.18841552734375
+validation_click_auc 0.648556113243103
 
-
+2. For ple: (Epoch 4: early stopping)
+validation_loss 6610.6552734375
+validation_duration_loss 6610.244140625
+validation_click_loss 0.4236340820789337
+validation_duration_mae 42.66642379760742
+validation_click_auc 0.6481693387031555
 ```
 
 __Options for training and test:__

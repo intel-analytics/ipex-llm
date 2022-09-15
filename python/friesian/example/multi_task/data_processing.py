@@ -42,18 +42,22 @@ def read_and_split(data_input_path, sparse_int_features, sparse_string_features,
                     'age', 'gender', 'ctime', 'img_num', 'cat_1', 'cat_2'
                     ]
     if data_input_path.endswith("csv"):
+        # data_pd = pd.read_csv(os.path.join(data_input_path, 'train_data.csv'), index_col=0,
+        #                       parse_dates=['expo_time'], low_memory=False)
+        # data_pd.to_csv('../train_data_new.csv', index=False, header=None)
         tbl = FeatureTable.read_csv(data_input_path, header=False, names=header_names)
     else:
         tbl = FeatureTable.read_parquet(data_input_path)
+
+    print('The number of total data: ', tbl.size())
+
     tbl = tbl.cast(sparse_int_features, 'string')
     tbl = tbl.cast(dense_features, 'string')
 
     # fill absence data
     for feature in (sparse_int_features + sparse_string_features):
         tbl = tbl.fillna("", feature)
-    for dense_feature in dense_features:
-        tbl = tbl.fillna('0.0', dense_feature)
-    print(tbl.df.dtypes)
+    tbl = tbl.fillna('0.0', 'img_num')
 
     process_img_num = lambda x: transform(x)
     process_cat_2 = lambda x: transform_cat_2(x)
@@ -72,7 +76,7 @@ def feature_engineering(train_tbl, valid_tbl, output_path, sparse_int_features,
     import json
     train_tbl, min_max_dict = train_tbl.min_max_scale(dense_features)
     valid_tbl = valid_tbl.transform_min_max_scale(dense_features, min_max_dict)
-    cat_cols = sparse_int_features + sparse_string_features
+    cat_cols = sparse_string_features[-1:] + sparse_int_features + sparse_string_features[:-1]
     for feature in cat_cols:
         train_tbl, feature_idx = train_tbl.category_encode(feature)
         valid_tbl = valid_tbl.encode_string(feature, feature_idx)
@@ -134,10 +138,12 @@ if __name__ == '__main__':
         'net_status', 'flush_nums',
         'exop_position',
     ]
+    # put cat_2 at first bug
+    # put cat_1,cat_2 at first bug
     sparse_string_features = [
-        'cat_2', 'device', 'os', 'province',
+        'device', 'os', 'province',
         'city', 'age',
-        'gender', 'cat_1'
+        'gender', 'cat_1', 'cat_2'
     ]
     dense_features = ['img_num']
 
