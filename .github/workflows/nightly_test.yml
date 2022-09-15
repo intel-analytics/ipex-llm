@@ -1,7 +1,7 @@
 name: Nightly Test
 
 on:
-  pull_request:
+  #pull_request:
   schedule:
     - cron: '0 13 * * *' # GMT time, 13:00 GMT == 21:00 China
   workflow_dispatch:
@@ -32,7 +32,7 @@ permissions:
 
 jobs:
   Orca-Python-ExampleTest-Py37-Spark3:
-    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-ExampleTest-Py37-Spark3' || github.event.inputs.artifact == 'all' }} 
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-ExampleTest-Py37-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -61,7 +61,7 @@ jobs:
 
 
   Orca-Python-ExampleTest-Ray-Py37-Spark3:
-    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-ExampleTest-Ray-Py37-Spark3' || github.event.inputs.artifact == 'all' }} 
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-ExampleTest-Ray-Py37-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -89,7 +89,7 @@ jobs:
         job-name: Orca-Python-ExampleTest-Ray-Py37-Spark3
 
   Orca-Jep-ExampleTest-Py37-Spark2:
-    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Jep-ExampleTest-Py37-Spark2' || github.event.inputs.artifact == 'all' }} 
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Jep-ExampleTest-Py37-Spark2' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -117,7 +117,7 @@ jobs:
         job-name: Orca-Jep-ExampleTest-Py37-Spark2
 
   Orca-Python-Ray-Py37-Spark3:
-    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Ray-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Ray-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -145,7 +145,7 @@ jobs:
         job-name: Orca-Python-Ray-Py37-Spark3
 
   Orca-Python-Py37-Spark3:
-    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -173,7 +173,7 @@ jobs:
         job-name: Orca-Python-Py37-Spark3
 
   Orca-Python-Horovod-Tf2-Py37-Spark3:
-    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Horovod-Tf2-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Horovod-Tf2-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -188,9 +188,6 @@ jobs:
       uses: ./.github/actions/orca/setup-env/setup-horovod-tf2-py37
     - name: Run Test
       uses: ./.github/actions/orca/orca-python-horovod-tf2-py37-spark3-action/nightly-test
-    - name: Remove Env
-      if: ${{ always() }}
-      uses: ./.github/actions/remove-env
     - name: Remove Env
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
