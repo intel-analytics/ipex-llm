@@ -46,6 +46,7 @@ The details of preprocessing can be found [here](https://github.com/intel-analyt
 +-------------------+-----+--------+-------------------+-----------+-----+-------+----------+----------+----------+-------------+------+---+--------+----+---+------+-----+
 ```
 Data preprocessing command:
+- For Spark local
 ```bash
 python data_processing.py \
     --input_path  /path/to/input/dataset \
@@ -54,6 +55,7 @@ python data_processing.py \
     --executor_cores 8 \
     --executor_memory 12g \
 ```
+- For Spark yarn client mode
 ```bash
 python data_processing.py \
     --input_path  /path/to/input/dataset \
@@ -82,6 +84,7 @@ When the *cluster_mode* is yarn, *input_path* and *output_path* should be HDFS p
 
 ## Train and test Multi-task models
 After data preprocessing, the training command for MMoE or PLE model is as follows:
+- For Spark local
 ```bash
 python run_multi_task.py \
     --model_type mmoe\
@@ -92,6 +95,7 @@ python run_multi_task.py \
     --executor_cores 8 \
     --executor_memory 12g \
 ```
+- For Spark yarn client mode
 ```bash
 python run_multi_task.py \
     --model_type mmoe\
@@ -105,19 +109,7 @@ python run_multi_task.py \
     --driver_cores 2 \
     --driver_memory 8g
 ```
-Evaluate Results as follows:
-```bash
-python run_multi_task.py \
-    --model_type mmoe\
-    --test_data_path /path/to/testing/dataset \
-    --model_save_path /path/to/save/the/trained/model \
-    --cluster_mode local \
-    --executor_cores 8 \
-    --executor_memory 12g \
-    --num_executors 4 \
-    --driver_cores 2 \
-    --driver_memory 8g
-```
+
 Results:
 ```angular2html 
 1. For MMoE:
@@ -143,7 +135,7 @@ validation_duration_mae 42.66642379760742
 validation_click_auc 0.6481693387031555
 ```
 
-__Options for training and test:__
+__Options for train and test:__
 * `model_type`: The multi task model, mmoe or ple. Default to be mmoe.
 * `train_data_path`: The path to training dataset.
 * `test_data_path`: The path to testing dataset.
