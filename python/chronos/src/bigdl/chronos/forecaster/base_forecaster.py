@@ -916,7 +916,8 @@ class BasePytorchForecaster(Forecaster):
         for i in range(repetition_times):
             model_bias += (y_hat_list[i] - y_hat_mean)**2
         model_bias /= repetition_times
-        assert self.data_noise.shape == model_bias.shape
+        invalidInputError(self.data_noise.shape == model_bias.shape,
+                          "dismatch shape between validation_data and data")
         std_deviation = np.sqrt(self.data_noise + model_bias)
 
         return y_hat_mean, std_deviation
