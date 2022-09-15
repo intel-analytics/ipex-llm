@@ -11,6 +11,7 @@ spec:
     volumeMounts:
     - name: kubeconf
       mountPath: /root/.kube/config
+    command: ["/opt/entrypoint.sh"]
   volumes:
   - name: kubeconf
     hostPath:
