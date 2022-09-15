@@ -54,6 +54,7 @@ public class EncodeUtils {
             Pattern compile2 = Pattern.compile("scala.*");
             Pattern compile3 = Pattern.compile("com.intel.analytics.bigdl.*");
             in.accept(compile.pattern(), compile1.pattern(), compile2.pattern(), compile3.pattern());
+            in.accept("[*");
             return in.readObject();
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
