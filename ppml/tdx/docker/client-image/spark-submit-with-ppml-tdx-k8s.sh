@@ -19,12 +19,15 @@ fi
 default_config="--conf spark.kubernetes.authenticate.driver.serviceAccountName=$RUNTIME_K8S_SERVICE_ACCOUNT \
         --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
         --conf spark.kubernetes.executor.deleteOnTermination=false \
-        --conf spark.network.timeout=10000000 \
         --conf spark.executor.heartbeatInterval=10000000 \
         --conf spark.python.use.daemon=false \
         --conf spark.python.worker.reuse=false"
 
 if [ $secure_password ]; then
+   if [ -z $KEYS_PATH ]; then
+       echo "Please set BIGDL_HOME environment variable"
+       exit 1
+   fi
    SSL="--conf spark.authenticate=true \
         --conf spark.authenticate.secret=$secure_password \
         --conf spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" \
@@ -39,10 +42,10 @@ if [ $secure_password ]; then
         --conf spark.ssl.enabled=true \
         --conf spark.ssl.port=8043 \
         --conf spark.ssl.keyPassword=$secure_password \
-        --conf spark.ssl.keyStore=/opt/spark/work-dir/keys/keystore.jks \
+        --conf spark.ssl.keyStore=$KEYS_PATH/keystore.jks \
         --conf spark.ssl.keyStorePassword=$secure_password \
         --conf spark.ssl.keyStoreType=JKS \
-        --conf spark.ssl.trustStore=/opt/spark/work-dir/keys/keystore.jks \
+        --conf spark.ssl.trustStore=$KEYS_PATH/keystore.jks \
         --conf spark.ssl.trustStorePassword=$secure_password \
         --conf spark.ssl.trustStoreType=JKS"
 else
