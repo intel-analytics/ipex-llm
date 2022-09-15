@@ -17,7 +17,6 @@ on:
         - Orca-Python-Py37-Spark3
         - Orca-Ray-Ctx-Example
         - Orca-Python-Horovod-Tf2-Py37-Spark3
-        - Orca-Python-Horovod-Pytorch-Py37-Spark3
         - Orca-Jep-ExampleTest-Py37-Spark2
         - Orca-Python-ExampleTest-Py37-Spark3
         - Orca-Python-ExampleTest-Ray-Py37-Spark3
