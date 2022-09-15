@@ -18,25 +18,34 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.7.6"]
+        python-version: ["3.7.10"]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
       - name: Set up JDK 8
         uses: ./.github/actions/jdk-setup-action
       - name: Set up Maven
         uses: ./.github/actions/maven-setup-action
 
-      - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-
+      
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install --upgrade setuptools==58.0.4
           python -m pip install --upgrade wheel
+
+      - name: Run Chronos python test
+        shell: bash
+        run: |
+          if conda info --env | grep "chronos-prvn-env-2"; then
+            source deactivate
+            conda remove -n chronos-prvn-env-2 -y --all
+          fi
+          conda create -n chronos-prvn-env-2 -y python==3.7.10 setuptools==58.0.4
+          source activate chronos-prvn-env-2
           pip install pytest==5.4.1
           pip install prophet==1.1
           pip install pmdarima==1.8.4
@@ -50,11 +59,9 @@ jobs:
           pip install onnx==1.11.0
           pip install onnxruntime-extensions==0.4.2
           pip install scipy==1.5.4
+          pip install cloudpickle
           apt-get update
           apt-get install patchelf
-      - name: Run Chronos python test
-        shell: bash
-        run: |
           pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-nano bigdl-friesian bigdl-friesian-spark3
           sed -i "s/'bigdl-core=='+VERSION/'bigdl-core==2.1.0b20220811'/g" python/dllib/src/setup.py
           bash python/dev/release_default_linux_spark246.sh default false false
@@ -67,6 +74,8 @@ jobs:
           export SPARK_LOCAL_HOSTNAME=localhost
           export KERAS_BACKEND=tensorflow
           bash python/chronos/dev/test/run-pytests-onnxrt16.sh
+          source deactivate
+          conda remove -n chronos-prvn-env-2 -y --all
         env:
           BIGDL_ROOT: ${{ github.workspace }}
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
