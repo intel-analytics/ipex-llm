@@ -264,8 +264,8 @@ class Trainer(pl.Trainer):
             return None
         return self.hposearcher.search_summary()
 
-    @deprecated('Please use `bigdl.nano.pytorch.InferenceOptimizer.trace` instead.')
     @staticmethod
+    @deprecated('Please use `bigdl.nano.pytorch.InferenceOptimizer.trace` instead.')
     def trace(model: nn.Module,
               input_sample=None,
               accelerator: str = None,
@@ -299,6 +299,9 @@ class Trainer(pl.Trainer):
                          data to be channels last according to the setting. Defaultly, channels_last
                          will be set to True if use_ipex=True.
         :return: Model with different acceleration.
+        
+        .. deprecated:: 2.2.0
+            Use :func:`bigdl.nano.pytorch.InferenceOptimizer.trace` instead.
         """
         return InferenceOptimizer.trace(model=model,
                                         input_sample=input_sample,
@@ -309,8 +312,8 @@ class Trainer(pl.Trainer):
                                         logging=logging,
                                         **export_kwargs)
 
-    @deprecated('Please use `bigdl.nano.pytorch.InferenceOptimizer.quantize` instead.')
     @staticmethod
+    @deprecated('Please use `bigdl.nano.pytorch.InferenceOptimizer.quantize` instead.')
     def quantize(model: nn.Module,
                  precision: str = 'int8',
                  accelerator: str = None,
@@ -379,6 +382,8 @@ class Trainer(pl.Trainer):
                         accelerator='openvino', otherwise will be ignored. default: True.
         :param **export_kwargs: will be passed to torch.onnx.export function.
         :return:            A accelerated Pytorch-Lightning Model if quantization is sucessful.
+        .. deprecated:: 2.2.0
+            Use :func:`bigdl.nano.pytorch.InferenceOptimizer.quantize` instead.
         """
         return InferenceOptimizer.quantize(model=model,
                                            precision=precision,
