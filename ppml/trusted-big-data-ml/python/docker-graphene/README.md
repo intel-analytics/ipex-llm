@@ -438,7 +438,7 @@ After changing:
 > 0.00632,18,2.31,**0**,0.538,6.575,65.2,4.09,1,296,15.3,396.9,4.98,24
 
 ```bash
-/graphene/Tools/argv_serializer bash -c "export RABIT_TRACKER_IP=your_IP_address && /opt/jdk8/bin/java -cp \
+/graphene/Tools/argv_serializer bash -c "/opt/jdk8/bin/java -cp \
     '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx2g \
   org.apache.spark.deploy.SparkSubmit \
@@ -514,7 +514,7 @@ wget https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-di
 After downloading the dataset, make sure that `pima-indians-diabetes.data.csv` is under `work/data` directory or the same path in the command. Run the example with SGX spark local mode with the following command in the terminal. Replace `your_IP_address` with your IP address and `path_of_pima_indians_diabetes_csv` with your path of `pima-indians-diabetes.data.csv`.
 
 ```bash
-/graphene/Tools/argv_serializer bash -c "export RABIT_TRACKER_IP=your_IP_address && /opt/jdk8/bin/java -cp \
+/graphene/Tools/argv_serializer bash -c "/opt/jdk8/bin/java -cp \
   '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx2g \
   org.apache.spark.deploy.SparkSubmit \
