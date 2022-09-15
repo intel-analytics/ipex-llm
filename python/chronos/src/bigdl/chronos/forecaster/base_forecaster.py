@@ -1015,10 +1015,9 @@ class BasePytorchForecaster(Forecaster):
                quantization. You may choose from "mse", "mae", "rmse", "r2", "mape", "smape".
         :param conf: A path to conf yaml file for quantization. Default to None,
                using default config.
-        :param framework: string or list.
-               [{'pytorch'|'pytorch_fx'|'pytorch_ipex'},
-                {'onnxrt_integerops'|'onnxrt_qlinearops'},
-                {'openvino'}] Default: 'pytorch_fx'. Consistent with Intel Neural Compressor.
+        :param framework: string or list. [{'pytorch_fx'|'pytorch_ipex'},
+               {'onnxrt_integerops'|'onnxrt_qlinearops'}, {'openvino'}]
+               Default: 'pytorch_fx'. Consistent with Intel Neural Compressor.
         :param approach: str, 'static' or 'dynamic'. Default to 'static'.
                OpenVINO supports static mode only, if set to 'dynamic',
                it will be replaced with 'static'.

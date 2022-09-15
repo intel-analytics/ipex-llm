@@ -143,12 +143,7 @@ if [ -f "${LIB_DIR}/libiomp5.so" ]; then
 	fi
 
 	echo "Setting KMP_AFFINITY..."
-	if [[ $threads_per_core -gt 1 ]]; then
-		export KMP_AFFINITY=granularity=fine,compact,1,0
-	else
-		export KMP_AFFINITY=granularity=fine,compact
-	fi
-
+	export KMP_AFFINITY=granularity=fine
 
 	echo "Setting KMP_BLOCKTIME..."
 	export KMP_BLOCKTIME=1

@@ -1,0 +1,40 @@
+name: 'Run Orca Python Horovod Pytorch Py37 Spark3'
+description: 'Run Orca Python Horovod Pytorch Py37 Spark3'
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python 
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7.10'
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        apt-get update
+        apt-get install wget
+        python -m pip install --upgrade pip
+        python -m pip install --upgrade setuptools==58.0.4
+
+    - name: Setup env
+      shell: bash
+      run: |
+        conda create -n py37 -y python==3.7.10 setuptools==58.0.4
+        conda info --env
+        source activate py37
+        pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-friesian bigdl-friesian-spark3
+        conda install -y pytorch==1.4.0 torchvision==0.5.0 cpuonly -c pytorch
+        pip install cmake
+        #pip install tensorflow==2.1
+        HOROVOD_WITH_PYTORCH=1; HOROVOD_WITH_GLOO=1; pip install --no-cache-dir horovod==0.19.2
+        pip uninstall -r .github/actions/python-requirements/requirements-orca-horovod-pytorch.txt -y
+        pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r .github/actions/python-requirements/requirements-orca-horovod-pytorch.txt 
+        pip install -i https://pypi.org/simple --pre --upgrade bigdl-orca-spark3
+        pip install ray[default]==1.9.1
+        pip install protobuf==3.12.0
+        pip uninstall -y opencv-python-headless
+        pip install opencv-python-headless
+        
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

@@ -1,5 +1,6 @@
 #!/bin/bash
 SGX_ENABLED=false
+LOG_FILE="bigdl-ppml-submit.log"
 application_args=""
 input_args=""
 
@@ -50,6 +51,11 @@ while [[ $# -gt 0 ]]; do
     --verbose)
       input_args="$input_args $1"
       shift # past argument
+      ;;
+    --log-file)
+      LOG_FILE="$2"
+      shift
+      shift
       ;;
     -*|--*)
       input_args="$input_args $1 $2"
@@ -141,7 +147,7 @@ if [ "$SGX_ENABLED" == "true" ] && [ "$DEPLOY_MODE" != "cluster" ]; then
     gramine-argv-serializer bash -c "$spark_submit_command" > /ppml/trusted-big-data-ml/secured_argvs
 
     ./init.sh
-    gramine-sgx bash 2>&1 | tee bigdl-ppml-submit.log
+    gramine-sgx bash 2>&1 | tee $LOG_FILE
 else
-    $spark_submit_command 2>&1 | tee bigdl-ppml-submit.log
+    $spark_submit_command 2>&1 | tee $LOG_FILE
 fi

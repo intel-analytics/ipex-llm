@@ -34,7 +34,14 @@ from bigdl.nano.deps.onnxruntime.onnxruntime_api import PytorchONNXRuntimeModel,
     load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model, quantize as inc_quantize
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
+from bigdl.nano.utils.inference.pytorch.model_utils import get_forward_args, get_input_example
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
+import warnings
+# Filter out useless Userwarnings
+warnings.filterwarnings('ignore', category=UserWarning, module='pytorch_lightning')
+warnings.filterwarnings('ignore', category=DeprecationWarning, module='pytorch_lightning')
+warnings.filterwarnings('ignore', category=UserWarning, module='torch')
+warnings.filterwarnings('ignore', category=DeprecationWarning, module='torch')
 
 import os
 os.environ['LOGLEVEL'] = 'ERROR'  # remove parital output of inc
@@ -167,6 +174,17 @@ class InferenceOptimizer:
 
         model.eval()  # change model to eval mode
 
+        forward_args = get_forward_args(model)
+        input_sample = get_input_example(model, training_data, forward_args)
+        st = time.perf_counter()
+        try:
+            with torch.no_grad():
+                model(*input_sample)
+        except Exception:
+            invalidInputError(False,
+                              "training_data is incompatible with your model input.")
+        baseline_time = time.perf_counter() - st
+
         print("==========================Start Optimization==========================")
         start_time = time.perf_counter()
         for idx, (method, available) in enumerate(available_dict.items()):
@@ -183,7 +201,6 @@ class InferenceOptimizer:
                 precision: str = option.get_precision()
                 # if precision is fp32, then we will use trace method
                 if precision == "fp32":
-                    input_sample = tuple(next(iter(training_data))[:-1])
                     try:
                         if accelerator is None and use_ipex is False:
                             acce_model = model
@@ -238,9 +255,13 @@ class InferenceOptimizer:
 
                 torch.set_num_threads(thread_num)
                 try:
-                    result_map[method]["latency"] =\
-                        _throughput_calculate_helper(latency_sample_num, func_test,
-                                                     acce_model, input_sample)
+                    result_map[method]["latency"], status =\
+                        _throughput_calculate_helper(latency_sample_num, baseline_time,
+                                                     func_test, acce_model, input_sample)
+                    if status is False:
+                        result_map[method]["status"] = "early stopped"
+                        torch.set_num_threads(default_threads)
+                        continue
                 except Exception as e:
                     result_map[method]["status"] = "fail to forward"
                     torch.set_num_threads(default_threads)
@@ -248,9 +269,14 @@ class InferenceOptimizer:
 
                 torch.set_num_threads(default_threads)
                 if self._calculate_accuracy:
-                    result_map[method]["accuracy"] =\
-                        _accuracy_calculate_helper(acce_model,
-                                                   metric, validation_data)
+                    # here we suppose trace don't change accuracy,
+                    # so we jump it to reduce time cost of optimize
+                    if precision == "fp32" and method != "original":
+                        result_map[method]["accuracy"] = "not recomputed"
+                    else:
+                        result_map[method]["accuracy"] =\
+                            _accuracy_calculate_helper(acce_model,
+                                                       metric, validation_data)
                 else:
                     result_map[method]["accuracy"] = None
 
@@ -329,9 +355,11 @@ class InferenceOptimizer:
                     continue
 
             if accuracy_criterion is not None:
-                accuracy: float = result["accuracy"]
+                accuracy = result["accuracy"]
                 compare_acc: float = best_metric.accuracy
-                if self._direction == "min":
+                if accuracy == "not recomputed":
+                    pass
+                elif self._direction == "min":
                     if (accuracy - compare_acc) / compare_acc > accuracy_criterion:
                         continue
                 else:
@@ -341,7 +369,11 @@ class InferenceOptimizer:
             # After the above conditions are met, the latency comparison is performed
             if result["latency"] < best_metric.latency:
                 best_model = result["model"]
-                best_metric = CompareMetric(method, result["latency"], result["accuracy"])
+                if result["accuracy"] != "not recomputed":
+                    accuracy = result["accuracy"]
+                else:
+                    accuracy = self.optimized_model_dict["original"]["accuracy"]
+                best_metric = CompareMetric(method, result["latency"], accuracy)
 
         return best_model, _format_acceleration_option(best_metric.method_name)
 
@@ -647,7 +679,7 @@ def _available_acceleration_combination():
     return available_dict
 
 
-def _throughput_calculate_helper(iterrun, func, *args):
+def _throughput_calculate_helper(iterrun, baseline_time, func, *args):
     '''
     A simple helper to calculate average latency
     '''
@@ -659,6 +691,9 @@ def _throughput_calculate_helper(iterrun, func, *args):
             func(*args)
         end = time.perf_counter()
         time_list.append(end - st)
+        # if three samples cost more than 4x time than baseline model, prune it
+        if i == 2 and end - start_time > 12 * baseline_time:
+            return np.mean(time_list) * 1000, False
         # at least need 10 iters and try to control calculation
         # time less than 2 min
         if i + 1 >= min(iterrun, 10) and (end - start_time) > 2:
@@ -667,7 +702,7 @@ def _throughput_calculate_helper(iterrun, func, *args):
     time_list.sort()
     # remove top and least 10% data
     time_list = time_list[int(0.1 * iterrun): int(0.9 * iterrun)]
-    return np.mean(time_list) * 1000
+    return np.mean(time_list) * 1000, True
 
 
 def _accuracy_calculate_helper(model, metric, data):
@@ -676,9 +711,10 @@ def _accuracy_calculate_helper(model, metric, data):
     '''
     metric_list = []
     sample_num = 0
-    for i, (data_input, target) in enumerate(data):
-        metric_list.append(metric(model(data_input), target).numpy() * data_input.shape[0])
-        sample_num += data_input.shape[0]
+    with torch.no_grad():
+        for i, (data_input, target) in enumerate(data):
+            metric_list.append(metric(model(data_input), target).numpy() * data_input.shape[0])
+            sample_num += data_input.shape[0]
     return np.sum(metric_list) / sample_num
 
 
@@ -690,7 +726,10 @@ def _format_acceleration_option(method_name: str) -> str:
     repr_str = ""
     for key, value in option.__dict__.items():
         if value is True:
-            repr_str = repr_str + key + " + "
+            if key == "pot":
+                repr_str = repr_str + "int8" + " + "
+            else:
+                repr_str = repr_str + key + " + "
         elif isinstance(value, str):
             repr_str = repr_str + value + " + "
     if len(repr_str) > 0:
@@ -705,9 +744,9 @@ def _format_optimize_result(optimize_result_dict: dict,
     '''
     if calculate_accuracy is True:
         horizontal_line = " {0} {1} {2} {3}\n" \
-            .format("-" * 32, "-" * 22, "-" * 14, "-" * 12)
+            .format("-" * 32, "-" * 22, "-" * 14, "-" * 22)
         repr_str = horizontal_line
-        repr_str += "| {0:^30} | {1:^20} | {2:^12} | {3:^10} |\n" \
+        repr_str += "| {0:^30} | {1:^20} | {2:^12} | {3:^20} |\n" \
             .format("method", "status", "latency(ms)", "accuracy")
         repr_str += horizontal_line
         for method, result in optimize_result_dict.items():
@@ -716,10 +755,10 @@ def _format_optimize_result(optimize_result_dict: dict,
             if latency != "None":
                 latency = round(latency, 3)
             accuracy = result.get("accuracy", "None")
-            if accuracy != "None":
+            if accuracy != "None" and isinstance(accuracy, float):
                 accuracy = round(accuracy, 3)
             method_str = f"| {method:^30} | {status:^20} | " \
-                         f"{latency:^12} | {accuracy:^10} |\n"
+                         f"{latency:^12} | {accuracy:^20} |\n"
             repr_str += method_str
         repr_str += horizontal_line
     else:
