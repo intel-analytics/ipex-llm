@@ -851,8 +851,8 @@ class BasePytorchForecaster(Forecaster):
             else:
                 input_data, target = validation_data
             val_yhat = self.predict(input_data)
-            self.data_noise = Evaluator.evaluate(["mse"], target, # a scalar
-                                                 val_yhat, aggregate='uniform_average')[0]
+            self.data_noise = Evaluator.evaluate(["mse"], target,
+                                                 val_yhat, aggregate=None)[0]  # 3d-array
 
         # step2: data preprocess
         if isinstance(data, TSDataset):
@@ -915,10 +915,11 @@ class BasePytorchForecaster(Forecaster):
         invalidInputError(y_hat_mean.shape == y_hat.shape,
                           "dismatch shape between y_hat_mean and y_hat")
 
-        model_bias = np.zeros_like(y_hat_mean) # 3d array
+        model_bias = np.zeros_like(y_hat_mean)  # 3d array
         for i in range(repetition_times):
             model_bias += (y_hat_list[i] - y_hat_mean)**2
         model_bias /= repetition_times
+        assert self.data_noise.shape == model_bias.shape
         std_deviation = np.sqrt(self.data_noise + model_bias)
 
         return y_hat, std_deviation
