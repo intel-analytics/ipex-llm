@@ -349,7 +349,7 @@ run_spark_xgboost() {
                 -Xmx10g -Xms10g org.apache.spark.deploy.SparkSubmit \
                 --master local[4] \
                 --conf spark.task.cpus=2 \
-                --class com.intel.analytics.bigdl.dllib.examples.nnframes.xgboost.xgbClassifierTrainingExampleOnCriteoClickLogsDataset \
+                --class com.intel.analytics.bigdl.dllib.example.nnframes.xgboost.xgbClassifierTrainingExampleOnCriteoClickLogsDataset \
                 --num-executors 2 \
                 --executor-cores 2 \
                 --executor-memory 9G \
