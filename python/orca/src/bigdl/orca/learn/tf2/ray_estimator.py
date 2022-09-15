@@ -599,7 +599,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             ray.get([worker.load_remote_model.remote(**params)
                      for worker in self.remote_workers])
     
-     def save_weights(self, filepath, overwrite=True, save_format=None, options=None):
+    def save_weights(self, filepath, overwrite=True, save_format=None, options=None):
         """
         Save the model weights at the provided filepath.
         param filepath: String or PathLike, path to the file to save the weights to.
