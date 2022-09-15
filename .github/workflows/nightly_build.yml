@@ -161,6 +161,7 @@ jobs:
         file-name: nb-scala-build.json
         type: job
         job-name: scala-build
+        runnerHostedOn: 'America'
 
   docker-build-bigdl:
     needs: scala-build
@@ -226,6 +227,7 @@ jobs:
         file-name: nb-docker-build-bigdl.json
         type: job
         job-name: docker-build-bigdl
+        runnerHostedOn: 'America'
   
     
   python-build:
@@ -277,6 +279,7 @@ jobs:
         file-name: nb-python-build.json
         type: job
         job-name: python-build
+        runnerHostedOn: 'America'
 
   python-sourceforge-build:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'python-sourceforge-build' || github.event.inputs.artifact == 'all' }} 
@@ -402,6 +405,7 @@ jobs:
         file-name: nb-python-sourceforge-build.json
         type: job
         job-name: python-build-sourceforge
+        runnerHostedOn: 'America'
 
   create-workflow-badge:
     runs-on: ubuntu-latest
