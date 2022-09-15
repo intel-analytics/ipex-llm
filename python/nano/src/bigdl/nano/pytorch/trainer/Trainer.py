@@ -264,8 +264,6 @@ class Trainer(pl.Trainer):
             return None
         return self.hposearcher.search_summary()
 
-    @deprecated('bigdl.nano.pytorch.Trainer.trace is now deprecated. '
-                'Please use `bigdl.nano.pytorch.InferenceOptimizer.trace` instead.')
     @staticmethod
     def trace(model: nn.Module,
               input_sample=None,
@@ -301,6 +299,10 @@ class Trainer(pl.Trainer):
                          will be set to True if use_ipex=True.
         :return: Model with different acceleration.
         """
+        import warnings
+        warnings.warn('bigdl.nano.pytorch.Trainer.trace is now deprecated. '
+                      'Please use `bigdl.nano.pytorch.InferenceOptimizer.trace` instead.',
+                      category=DeprecationWarning)
         return InferenceOptimizer.trace(model=model,
                                         input_sample=input_sample,
                                         accelerator=accelerator,
@@ -310,8 +312,6 @@ class Trainer(pl.Trainer):
                                         logging=logging,
                                         **export_kwargs)
 
-    @deprecated('bigdl.nano.pytorch.Trainer.quantize is now deprecated. '
-                'Please use `bigdl.nano.pytorch.InferenceOptimizer.quantize` instead.')
     @staticmethod
     def quantize(model: nn.Module,
                  precision: str = 'int8',
@@ -382,6 +382,10 @@ class Trainer(pl.Trainer):
         :param **export_kwargs: will be passed to torch.onnx.export function.
         :return:            A accelerated Pytorch-Lightning Model if quantization is sucessful.
         """
+        import warnings
+        warnings.warn('bigdl.nano.pytorch.Trainer.quantize is now deprecated. '
+                      'Please use `bigdl.nano.pytorch.InferenceOptimizer.quantize` instead.',
+                      category=DeprecationWarning)
         return InferenceOptimizer.quantize(model=model,
                                            precision=precision,
                                            accelerator=accelerator,
