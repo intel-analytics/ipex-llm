@@ -40,6 +40,7 @@ from bigdl.nano.deps.ipex.ipex_api import load_ipexjit_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model
 from bigdl.nano.common import check_avx512
+from bigdl.nano.utils import deprecated
 
 distributed_backends = ["spawn", "ray", "subprocess"]
 
@@ -264,6 +265,8 @@ class Trainer(pl.Trainer):
         return self.hposearcher.search_summary()
 
     @staticmethod
+    @deprecated('bigdl.nano.pytorch.Trainer.trace is now deprecated. '
+                'Please use `bigdl.nano.pytorch.InferenceOptimizer.trace` instead.')
     def trace(model: nn.Module,
               input_sample=None,
               accelerator: str = None,
@@ -308,6 +311,8 @@ class Trainer(pl.Trainer):
                                         **export_kwargs)
 
     @staticmethod
+    @deprecated('bigdl.nano.pytorch.Trainer.quantize is now deprecated. '
+                'Please use `bigdl.nano.pytorch.InferenceOptimizer.quantize` instead.')
     def quantize(model: nn.Module,
                  precision: str = 'int8',
                  accelerator: str = None,
