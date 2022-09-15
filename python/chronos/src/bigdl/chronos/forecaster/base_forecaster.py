@@ -885,10 +885,9 @@ class BasePytorchForecaster(Forecaster):
                 target = np.concatenate(tuple(val[1] for val in val_data), axis=0)
             elif isinstance(val_data, SparkXShards):
                 input_data = val_data
-                target = np.concatenate([val_data[i]['y'] for i
-                         in range(len(val_data['y']))], axis=0)
+                target = np.concatenate([val_data[i]['y'] for i in range(len(val_data['y']))], axis=0)
             else:
-                input_data, target = data
+                input_data, target = val_data
 
             val_yhat = calculate(input_data, self.internal)
             self.data_noise = Evaluator.evaluate(["mse"], target,
@@ -933,7 +932,8 @@ class BasePytorchForecaster(Forecaster):
             model_bias += (y_hat_list[i] - y_hat_mean)**2
         model_bias /= repetition_times
         invalidInputError(self.data_noise.shape == model_bias.shape,
-                          "dismatch shape between validation_data and data")
+                          "dismatch shape between val_data and data, the front is {}, "
+                          "the later is {}".format(self.data_noise.shape, model_bias.shape))
         std_deviation = np.sqrt(self.data_noise + model_bias)
 
         return y_hat_mean, std_deviation
