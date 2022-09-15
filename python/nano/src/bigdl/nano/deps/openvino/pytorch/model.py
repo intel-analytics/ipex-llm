@@ -65,7 +65,7 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         status.update({"xml_path": 'ov_saved_model.xml', "weight_path": 'ov_saved_model.bin'})
         return status
 
-    @property
+    @property  # type: ignore
     def forward_args(self):
         return self.ov_model.forward_args
 

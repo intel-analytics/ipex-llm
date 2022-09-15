@@ -108,7 +108,9 @@ class InferenceOptimizer:
 
     def __init__(self):
         '''
-        initialize an optimizer
+        InferenceOptimizer for Pytorch Model.
+
+        It can be used to accelerate inference pipeline with very few code changes.
         '''
         # optimized_model_dict handles the optimized model and some metadata
         # in {"method_name": {"latency": ..., "accuracy": ..., "model": ...}}
