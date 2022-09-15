@@ -134,13 +134,13 @@ df_neg= df.groupBy('user').agg(neg_sample_udf(F.collect_list('item')).alias('ite
 from pyspark.sql.functions import *
 df_neg = df_neg.select(df_neg.user, explode(df_neg.item_list))
 df_neg = df_neg.withColumn('label', functions.lit(0))
-df.unionAll(df_neg)
-
+df = df.unionAll(df_neg)
+num_sample = df.count()
 train_df, test_df = df.randomSplit([0.8, 0.2],seed = 11)
 
 
-batch_size=1280
-epochs=2
+batch_size=256
+epochs=5
 model_dir='./'
 
 # create an Estimator
@@ -151,9 +151,9 @@ stats = est.fit(train_df,
                 batch_size=batch_size,
                 feature_cols=['user', 'item'],
                 label_cols=['label'],
-                steps_per_epoch=800000 // batch_size,
+                steps_per_epoch=int(0.8*num_sample // batch_size),
                 validation_data=test_df,
-                validation_steps = 200000 // batch_size)
+                validation_steps = int(0.2*num_sample // batch_size))
 
 import os
 checkpoint_path = os.path.join(model_dir, "NCF.ckpt")
