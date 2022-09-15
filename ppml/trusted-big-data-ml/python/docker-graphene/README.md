@@ -420,7 +420,7 @@ The result should be similar to
 >
 >2021-06-18 01:46:20 INFO DistriOptimizer$:180 - [Epoch 2 60032/60000][Iteration 938][Wall Clock 845.747782s] Top1Accuracy is Accuracy(correct: 9696, count: 10000, accuracy: 0.9696)
 
-##### Example 5: XGBoost Regressor
+##### (Deprecated) Example 5: XGBoost Regressor
 
 Please be noted that the xgboost example listed here is **deprecated** due to the fact that Rabit's network (contains gradient, split and env) is not protected.
 
@@ -505,7 +505,7 @@ The result should be similar to
 >
 >|[7.02259,0.0,18.1...| 14.2| 13.38729190826416|
 
-##### Example 6: XGBoost Classifier
+##### (Deprecated) Example 6: XGBoost Classifier
 
 Please be noted that the xgboost example listed here is **deprecated** due to the fact that Rabit's network (contains gradient, split and env) is not protected.
 

@@ -306,7 +306,7 @@ bash bigdl-ppml-submit.sh \
 
 Please be noted that the xgboost examples listed here are **deprecated** due to the fact that Rabit's network (contains gradient, split and env) is not protected.
 
-### Run Trusted Spark XGBoost Regressor
+### (Deprecated) Run Trusted Spark XGBoost Regressor
 <details><summary>This example shows how to run trusted Spark XGBoost Regressor.</summary>
 
 
@@ -367,7 +367,7 @@ The result should look something like this:
 > |[7.02259,0.0,18.1...| 14.2| 13.38729190826416|
 </details>
   
-### Run Trusted Spark XGBoost Classifier
+### (Deprecated) Run Trusted Spark XGBoost Classifier
 <details><summary>This example shows how to run trusted Spark XGBoost Classifier.</summary>
 
 
