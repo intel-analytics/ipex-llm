@@ -34,6 +34,14 @@ while [ "$#" -gt 0 ]; do
                         fi
                         OutputImage=$1
                         ;;
+		--encrypt-key)
+                        shift
+                        if (( ! $# )); then
+                            echo >&2 "$0: option $opt requires an argument."
+                            exit 1
+                        fi
+                        EncryptKey=$1
+                        ;;
                 --help|-h)
                         usage
                         exit 0
@@ -51,4 +59,4 @@ done
 echo $InputImage
 echo $OutputImage
 
-${SKOPEO_HOME}/bin/skopeo copy --insecure-policy --encryption-key provider:attestation-agent:84688df7-2c0c-40fa-956b-29d8e74d16c0 $InputImage $OutputImage 
+${SKOPEO_HOME}/bin/skopeo copy --insecure-policy --encryption-key provider:attestation-agent:$EncryptKey $InputImage $OutputImage 

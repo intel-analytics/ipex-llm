@@ -46,8 +46,8 @@ EOF
 
 #### Generate a encryption key
 ```bash
-cat <<- EOF >/opt/verdictd/keys/84688df7-2c0c-40fa-956b-29d8e74d16c0
-1234567890123456789012345678901
+cat <<- EOF >/opt/verdictd/keys/YOUR-KEY-NAME
+$YOUR-KEYS
 EOF
 ```
 #### Launch Verdictd
@@ -58,7 +58,7 @@ verdictd --client-api 127.0.0.1:50001
 ```bash
 export OCICRYPT_KEYPROVIDER_CONFIG=/etc/containerd/ocicrypt/ocicrypt_keyprovider.conf
 
-bash encrypt-image-publish.sh --input-image oci:bigdl-tdx --output-image oci:bigdl-tdx-encrypted
+bash encrypt-image-publish.sh --input-image oci:bigdl-tdx --output-image oci:bigdl-tdx-encrypted --encrypt-key YOUR-KEY-NAME
 ```
 
 ## 3. Create docker registry
