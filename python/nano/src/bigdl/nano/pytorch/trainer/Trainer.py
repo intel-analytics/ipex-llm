@@ -299,7 +299,6 @@ class Trainer(pl.Trainer):
                          data to be channels last according to the setting. Defaultly, channels_last
                          will be set to True if use_ipex=True.
         :return: Model with different acceleration.
-        
         .. deprecated:: 2.2.0
             Use :func:`bigdl.nano.pytorch.InferenceOptimizer.trace` instead.
         """
