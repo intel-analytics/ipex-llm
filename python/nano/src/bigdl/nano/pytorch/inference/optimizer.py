@@ -34,7 +34,7 @@ from bigdl.nano.deps.onnxruntime.onnxruntime_api import PytorchONNXRuntimeModel,
     load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model, quantize as inc_quantize
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
-from bigdl.nano.utils.inference.pytorch.model_utils import get_input_example
+from bigdl.nano.utils.inference.pytorch.model_utils import get_forward_args, get_input_example
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 import warnings
 # Filter out useless Userwarnings
@@ -173,8 +173,9 @@ class InferenceOptimizer:
         result_map: Dict[str, Dict] = {}
 
         model.eval()  # change model to eval mode
-        # TODO: inspect to get model args
-        input_sample = get_input_example(model, training_data)
+
+        forward_args = get_forward_args(model)
+        input_sample = get_input_example(model, training_data, forward_args)
         st = time.perf_counter()
         try:
             with torch.no_grad():
