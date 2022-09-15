@@ -5,8 +5,8 @@ Support Grapmine, Occlum and SGX SDK.
 ## Environment
 You should have an available attestation service to attest with. You can use `EHSMAttestationService` and configure eHSM-KMS according to [this link](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/pccs-ehsm/kubernetes), or you can just use `DummyAttestationService` for debug. 
 
-### bi-attestation
-To enable bi-attestation, you also need SGX SDK to fulfill quote verification. Here is the guide to install SGX SDK with related libs. 
+### Bidirectional Attestation
+To enable bidirectional attestation, you also need SGX SDK to fulfill quote verification. Here is the guide to install SGX SDK with related libs. 
 
 ```bash
 wget https://download.01.org/intel-sgx/sgx-linux/2.16/as.ld.objdump.r4.tar.gz 
