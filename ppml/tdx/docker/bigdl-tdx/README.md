@@ -4,5 +4,5 @@ docker build \
   --build-arg http_proxy=.. \
   --build-arg https_proxy=.. \
 　--build-arg no_proxy=.. \
-  --rm --no-cache -t bigdl-tdx-spark-3.1.2:2.1.0-SNAPSHOT .
+  --rm --no-cache -t intelanalytics/bigdl-tdx-spark-3.1.2:2.1.0-SNAPSHOT .
 ```
