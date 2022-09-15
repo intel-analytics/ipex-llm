@@ -144,9 +144,9 @@ if [ -f "${LIB_DIR}/libiomp5.so" ]; then
 
 	echo "Setting KMP_AFFINITY..."
 	if [[ $threads_per_core -gt 1 ]]; then
-		export KMP_AFFINITY=granularity=fine,compact,1,0
+		export KMP_AFFINITY=granularity=fine,1,0
 	else
-		export KMP_AFFINITY=granularity=fine,compact
+		export KMP_AFFINITY=granularity=fine
 	fi
 
 
