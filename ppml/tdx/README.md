@@ -59,9 +59,21 @@ export DOCKER_IMAGE=intelanalytics/bigdl-tdx-client:latest
 
 kubectl apply -f tdx-client.yaml
 ```
-Run `kubectl exec spark-local-client -- /bin/bash` to entry the client pod.
-### 2. Run application in spark K8S mode
-#### 2.1 Run application in K8S client mode
+Run `kubectl exec -it spark-local-client -- /bin/bash` to entry the client pod.
+
+## 2. Run as Spsrk Local Mode
+The example for run Spark Pi:
+```bash
+bash spark-submit-with-ppml-tdx-local.sh \
+    --master local[4] \
+    --name spark-pi \
+    --class org.apache.spark.examples.SparkPi \
+    --conf spark.executor.instances=1 \
+    local:///opt/spark/examples/jars/spark-examples_2.12-3.1.2.jar
+```
+
+### 3. Run application in spark K8S mode
+#### 3.1 Run application in K8S client mode
 
 ```bash
 export secure_password=.. && \
@@ -91,7 +103,7 @@ bash spark-submit-with-ppml-tdx-k8s.sh \
 --simpleAPPID $simpleAPPID \
 --simpleAPPKEY $simpleAPPKEY
 ```
-#### 2.2 Run application in K8s cluster mode
+#### 3.2 Run application in K8s cluster mode
 
 ```bash
 export secure_password=.. && \
