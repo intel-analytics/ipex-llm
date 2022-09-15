@@ -1,0 +1,17 @@
+# example pod template for driver/executor
+apiVersion: v1
+kind: Pod
+spec:
+  # runtimeClassName: default is kata-cc
+  runtimeClassName: kata-cc
+  containers:
+  - name: spark-executor
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - name: kubeconf
+      mountPath: /root/.kube/config
+  volumes:
+  - name: kubeconf
+    hostPath:
+      path: /root/.kube/config
