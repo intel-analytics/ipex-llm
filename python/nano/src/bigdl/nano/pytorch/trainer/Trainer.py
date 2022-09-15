@@ -265,7 +265,8 @@ class Trainer(pl.Trainer):
         return self.hposearcher.search_summary()
 
     @staticmethod
-    @deprecated('Please use `bigdl.nano.pytorch.InferenceOptimizer.trace` instead.')
+    @deprecated(func_name="bigdl.nano.pytorch.Trainer.trace",
+                message="Please use `bigdl.nano.pytorch.InferenceOptimizer.trace` instead.")
     def trace(model: nn.Module,
               input_sample=None,
               accelerator: str = None,
@@ -301,9 +302,9 @@ class Trainer(pl.Trainer):
         :return: Model with different acceleration.
 
         .. warning::
-             bigdl.nano.pytorch.Trainer.trace will be deprecated in future release.
+             ``bigdl.nano.pytorch.Trainer.trace`` will be deprecated in future release.
 
-             Please use `bigdl.nano.pytorch.InferenceOptimizer.trace` instead.
+             Please use ``bigdl.nano.pytorch.InferenceOptimizer.trace`` instead.
         """
         return InferenceOptimizer.trace(model=model,
                                         input_sample=input_sample,
@@ -315,7 +316,8 @@ class Trainer(pl.Trainer):
                                         **export_kwargs)
 
     @staticmethod
-    @deprecated('Please use `bigdl.nano.pytorch.InferenceOptimizer.quantize` instead.')
+    @deprecated(func_name="bigdl.nano.pytorch.Trainer.quantize",
+                message="Please use `bigdl.nano.pytorch.InferenceOptimizer.quantize` instead.")
     def quantize(model: nn.Module,
                  precision: str = 'int8',
                  accelerator: str = None,
@@ -386,9 +388,9 @@ class Trainer(pl.Trainer):
         :return:            A accelerated Pytorch-Lightning Model if quantization is sucessful.
 
         .. warning::
-             bigdl.nano.pytorch.Trainer.quantize will be deprecated in future release.
+             ``bigdl.nano.pytorch.Trainer.quantize`` will be deprecated in future release.
 
-             Please use `bigdl.nano.pytorch.InferenceOptimizer.quantize` instead.
+             Please use ``bigdl.nano.pytorch.InferenceOptimizer.quantize`` instead.
         """
         return InferenceOptimizer.quantize(model=model,
                                            precision=precision,

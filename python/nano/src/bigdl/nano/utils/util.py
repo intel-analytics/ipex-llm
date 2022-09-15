@@ -18,13 +18,14 @@ import warnings
 from functools import wraps
 
 
-def deprecated(message=""):
+def deprecated(func_name=None, message=""):
     def deprecated_decorator(function):
         @wraps(function)
         def wrapped(*args, **kwargs):
             warnings.simplefilter('always', DeprecationWarning)
-            warnings.warn("{} will be deprecated in future release. {}"
-                          .format(function.__name__, message),
+            funcname = function.__name__ if func_name is None else func_name
+            warnings.warn("`{}` will be deprecated in future release. {}"
+                          .format(funcname, message),
                           category=DeprecationWarning)
             warnings.simplefilter('default', DeprecationWarning)
             return function(*args, **kwargs)
