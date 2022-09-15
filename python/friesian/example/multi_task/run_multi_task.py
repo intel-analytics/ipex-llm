@@ -42,7 +42,8 @@ def build_model(model_type, sparse_features, dense_features, feature_max_idx):
                     task_types=['regression', 'binary'],
                     num_levels=2, task_names=['duration', 'click'])
     else:
-        invalidInputError(False, 'model_type should be one of "mmoe" and "ple", but got ' + model_type)
+        invalidInputError(False, 'model_type should be one of "mmoe" and "ple", '
+                                 'but got ' + model_type)
     return model
 
 
