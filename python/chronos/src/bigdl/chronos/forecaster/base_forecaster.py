@@ -915,7 +915,7 @@ class BasePytorchForecaster(Forecaster):
         invalidInputError(y_hat_mean.shape == y_hat.shape,
                           "dismatch shape between y_hat_mean and y_hat")
 
-        model_bias = np.zeros_like(y_hat_mean) # 2d array
+        model_bias = np.zeros_like(y_hat_mean) # 3d array
         for i in range(repetition_times):
             model_bias += (y_hat_list[i] - y_hat_mean)**2
         model_bias /= repetition_times
