@@ -63,8 +63,6 @@ class TestInferencePipeline(TestCase):
     model = Net()
     test_loader = create_data_loader(data_dir, 1, num_workers, data_transform, subset=10, shuffle=False)
     train_loader = create_data_loader(data_dir, 32, num_workers, data_transform, subset=10, shuffle=True)
-    input_sample = next(iter(test_loader))[0]
-    print(input_sample.shape)
     loss = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
