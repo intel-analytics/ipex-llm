@@ -17,60 +17,35 @@
 # https://www.kaggle.com/code/pmarcelino/comprehensive-data-exploration-with-python/notebook
 
 import bigdl.orca.data.pandas
-from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.data.transformer import *
 
 import numpy as np
 
-import pandas as pd
-df_train = pd.read_csv('/home/ding/data/house_price/train.csv')
-
-init_orca_context(memory="4g")
-
 path = '/home/ding/data/house_price/train.csv'
 data_shard = bigdl.orca.data.pandas.read_csv(path, nullValue="NA")
 
-def get_na_sum(df):
-    series = df.isnull().sum()
-    df2 = pd.DataFrame({'col':series.index, 'total':series.values})
-    return df2
-data_shard2 = data_shard.transform_shard(get_na_sum)
+null_cnt_shard = data_shard.get_null_sum()
+print(null_cnt_shard.collect())
 
-from functools import reduce
-sum_rdd = data_shard2.rdd.mapPartitions(
-    lambda iter: [reduce(lambda l1, l2: l1.add(l2), iter)])
-sum_shards = SparkXShards(sum_rdd)
-
-missing_data_shards = sum_shards.sort_values(col_names="total", ascending=False)
-
-zip_shards = data_shard.zip(missing_data_shards)
-
-def drop_missing_data(tuple):
-    df_train = tuple[0]
-    missing_data = tuple[1]
-    df2 = df_train.drop((missing_data[missing_data['total'] > 1]['col']), 1)
-    return df2
+missing_data_shards = null_cnt_shard.sort_values(col_names="total", ascending=False)
+print(missing_data_shards.collect())
 
 #dealing with missing data
-new_shards = zip_shards.transform_shard(drop_missing_data)
-def drop_missing_data2(df):
-    df2 = df.drop(df.loc[df['Electrical'].isnull()].index)
-    return df2
+new_shards = data_shard.drop_missing_value()
 
-new_shards2 = new_shards.transform_shard(drop_missing_data2)
-
-new_shards3 = new_shards2.transform_shard(get_na_sum)
+# verify missing value has been removed
+new_shards3 = new_shards.get_null_sum()
 max_value = new_shards3.max_values('total')
 
 def drop_data(df):
-    df = df.drop(df[df_train['Id'] == 1299].index)
-    df = df.drop(df[df_train['Id'] == 524].index)
+    df = df.drop(df[df['Id'] == 0].index)
+    df = df.drop(df[df['Id'] == 1].index)
     return df
-new_shards3 = new_shards2.transform_shard(drop_data)
+new_shards3 = new_shards.transform_shard(drop_data)
 
 #applying log transformation
 def generate_new_sale_price(df):
-    df['SalePrice'] = np.log(df_train['SalePrice'])
+    df['SalePrice'] = np.log(df['SalePrice'])
     return df
 new_shards4 = new_shards3.transform_shard(generate_new_sale_price)
 

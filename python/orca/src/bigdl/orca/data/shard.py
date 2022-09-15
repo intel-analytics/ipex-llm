@@ -449,6 +449,52 @@ class SparkXShards(XShards):
             invalidInputError(False,
                               "Currently only support max() on XShards of Pandas DataFrame")
 
+    def get_null_sum(self):
+        """
+        With SparkXShards of pandas data frame, the api will get null numbers for
+        each column. For other type of SparkXShards, it will throw exception
+
+       :return: SparkXShards of pandas data frame with 2 columns, `col` represents column name,
+        `total` represents null numbers
+        """
+        if self._get_class_name() != 'pandas.core.frame.DataFrame':
+            invalidInputError(False,
+                              "Currently only support assembleFeatureLabelCols() on"
+                              " XShards of Pandas DataFrame")
+
+        def get_na_sum(df):
+            import pandas as pd
+            series = df.isnull().sum()
+            df = pd.DataFrame({'col': series.index, 'total': series.values})
+            return df
+
+        na_cnt_shard = self.transform_shard(get_na_sum)
+
+        from functools import reduce
+        sum_rdd = na_cnt_shard.rdd.mapPartitions(
+            lambda iter: [reduce(lambda l1, l2: l1.add(l2), iter)])
+        sum_shards = SparkXShards(sum_rdd)
+        return sum_shards
+
+    def drop_missing_value(self):
+        if self._get_class_name() != 'pandas.core.frame.DataFrame':
+            invalidInputError(False,
+                              "Currently only support assembleFeatureLabelCols() on"
+                              " XShards of Pandas DataFrame")
+
+        null_cnt_shard = self.get_null_sum()
+        missing_data_shards = null_cnt_shard.sort_values(col_names="total", ascending=False)
+        zip_shards = self.zip(missing_data_shards)
+
+        def drop_missing_data(tuple):
+            df_train = tuple[0]
+            missing_data = tuple[1]
+            df2 = df_train.drop((missing_data[missing_data['total'] > 1]['col']), 1)
+            return df2
+
+        # dealing with missing data
+        return zip_shards.transform_shard(drop_missing_data)
+
     def assembleFeatureLabelCols(self, featureCols, labelCols):
         """
         The api is used to merge/convert one or multiple feature columns into a numpy array,
