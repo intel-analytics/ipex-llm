@@ -22,7 +22,7 @@ from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.friesian.feature import FeatureTable
 
 
-def transform(x):
+def transform_img_num(x):
     # dealing with some abnormal data
     if x == '上海':
         return 0.0
@@ -55,10 +55,8 @@ def read_and_split(data_input_path, sparse_int_features, sparse_string_features,
         tbl = tbl.fillna("", feature)
     tbl = tbl.fillna('0.0', 'img_num')
 
-    process_img_num = lambda x: transform(x)
-    process_cat_2 = lambda x: transform_cat_2(x)
-    tbl = tbl.apply("img_num", "img_num", process_img_num, "float")
-    tbl = tbl.apply("cat_2", "cat_2", process_cat_2, "string")
+    tbl = tbl.apply("img_num", "img_num", transform_img_num, "float")
+    tbl = tbl.apply("cat_2", "cat_2", transform_cat_2, "string")
 
     train_tbl = FeatureTable(tbl.df[tbl.df['expo_time'] < '2021-07-06'])
     valid_tbl = FeatureTable(tbl.df[tbl.df['expo_time'] >= '2021-07-06'])
