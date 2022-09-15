@@ -34,6 +34,7 @@ from bigdl.nano.deps.onnxruntime.onnxruntime_api import PytorchONNXRuntimeModel,
     load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model, quantize as inc_quantize
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
+from bigdl.nano.utils.inference.pytorch.model_utils import get_input_example
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 import warnings
 # Filter out useless Userwarnings
@@ -172,8 +173,8 @@ class InferenceOptimizer:
         result_map: Dict[str, Dict] = {}
 
         model.eval()  # change model to eval mode
-
-        input_sample = tuple(next(iter(training_data))[:-1])
+        # TODO: inspect to get model args
+        input_sample = get_input_example(model, training_data)
         st = time.perf_counter()
         try:
             with torch.no_grad():
@@ -181,7 +182,6 @@ class InferenceOptimizer:
         except Exception:
             invalidInputError(False,
                               "training_data is incompatible with your model input.")
-            exit(1)
         baseline_time = time.perf_counter() - st
 
         print("==========================Start Optimization==========================")
