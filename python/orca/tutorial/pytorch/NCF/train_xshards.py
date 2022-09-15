@@ -130,18 +130,15 @@ est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,loss
 # fit the estimator
 est.fit(data=train_shards, epochs=5,batch_size=Config["batch_size"],feature_cols=["x"],label_cols =["y"])
 
-#Step 5: Save and Load the Model
-
-# save the model
-est.save("NCF_model")
-
-# load the model
-est.load("NCF_model")
+#Step 5: Evaluate and save the Model
 
 # evaluate the model
 result = est.evaluate(data=test_shards)
 for r in result:
     print(r, ":", result[r])
+
+# save the model
+est.save("NCF_model") 
 
 # stop orca context when program finishes
 stop_orca_context()
