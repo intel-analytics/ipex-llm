@@ -14,9 +14,9 @@
 # limitations under the License.
 #
 
-
 import warnings
 from functools import wraps
+
 
 def deprecated(message=""):
     def deprecated_decorator(function):
