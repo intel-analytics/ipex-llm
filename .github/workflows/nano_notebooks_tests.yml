@@ -8,8 +8,9 @@ on:
   pull_request:
     branches: [ main ]
     paths:
-      - 'python/nano/**'
-      - '.github/workflows/nano_notebooks_tests.yml'
+      #- 'python/nano/**'
+      #- '.github/workflows/nano_notebooks_tests.yml'
+      - 'apps/**'
 
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
