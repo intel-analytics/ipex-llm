@@ -45,7 +45,7 @@ java -cp "$BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME
    --simpleAPPID xxxxxxxxxxxx \
    --simpleAPPKEY xxxxxxxxxxxx \
    --primaryKeyPath /path/to/simple_encrypted_primary_key \
-   --dataKeyPath /path/to/simple_encrypted_data_key \
+   --dataKeyPath /path/to/simple_encrypted_data_key
 ```
 
 ### Deploy PPML TPC-H on Kubernetes ###
