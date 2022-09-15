@@ -691,9 +691,9 @@ class TestChronosModelTCNForecaster(TestCase):
                                    metrics=["mse"],
                                    lr=0.01)
         forecaster.fit(train_data, epochs=2)
-        # only the first time needs validation_data
+        # only the first time needs val_data
         y_pred, std = forecaster.predict_interval(data=test_data[0],
-                                                  validation_data=val_data,
+                                                  val_data=val_data,
                                                   repetition_times=5)
         assert y_pred.shape == test_data[1].shape
         assert y_pred.shape == std.shape
@@ -711,9 +711,9 @@ class TestChronosModelTCNForecaster(TestCase):
                                    metrics=["mse"],
                                    lr=0.01)
         forecaster.fit(train_loader, epochs=2)
-        # only the first time needs validation_data
+        # only the first time needs val_data
         y_pred, std = forecaster.predict_interval(data=test_loader,
-                                                  validation_data=val_loader,
+                                                  val_data=val_loader,
                                                   repetition_times=5)
         assert y_pred.shape == std.shape
         y_pred, std = forecaster.predict_interval(data=test_loader)
@@ -744,10 +744,10 @@ class TestChronosModelTCNForecaster(TestCase):
                                        lr=0.01,
                                        distributed=distributed)
             forecaster.fit(train_data, epochs=2)
-            # only the first time needs validation_data
+            # only the first time needs val_data
             y_pred, std = forecaster.predict_interval(data=test_data,
-                                                    validation_data=val_data,
-                                                    repetition_times=5)
+                                                      val_data=val_data,
+                                                      repetition_times=5)
             assert y_pred.shape == std.shape
             y_pred, std = forecaster.predict_interval(data=test_data)
         stop_orca_context()

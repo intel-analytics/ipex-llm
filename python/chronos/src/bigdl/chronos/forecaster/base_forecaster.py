@@ -779,7 +779,7 @@ class BasePytorchForecaster(Forecaster):
         aggregate = 'mean' if multioutput == 'uniform_average' else None
         return Evaluator.evaluate(self.metrics, target, yhat, aggregate=aggregate)
 
-    def predict_interval(self, data, validation_data=None, batch_size=None, repetition_times=5):
+    def predict_interval(self, data, val_data=None, batch_size=None, repetition_times=5):
         """
         Calculate confidence interval of data based on Monte Carlo dropout(MC dropout).
         Related paper : https://arxiv.org/abs/1709.01907
@@ -805,7 +805,7 @@ class BasePytorchForecaster(Forecaster):
                | Users may call `roll` on the TSDataset before calling `fit`
                | Then the training speed will be faster but will consume more memory.
 
-        :param validation_data: The validation_data support following formats:
+        :param val_data: The val_data support following formats:
 
                | 1. a numpy ndarray tuple (x, y):
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
@@ -842,7 +842,7 @@ class BasePytorchForecaster(Forecaster):
 
         if not self.fitted:
             invalidInputError(False,
-                                "You must call fit or restore first before calling predict_interval!")
+                              "You must call fit or restore first before calling predict_interval!")
 
         def calculate(data, model):
             if self.distributed:
@@ -864,29 +864,29 @@ class BasePytorchForecaster(Forecaster):
         # step1, according to validation dataset, calculate inherent noise
         # which should be done during fit
         if not hasattr(self, "data_noise"):
-            invalidInputError(validation_data is not None,
+            invalidInputError(val_data is not None,
                               "When call predict_interval for the first time, you must pass in "
                               "validation data to calculate data noise.")
             # data transform
-            if isinstance(validation_data, TSDataset):
-                _rolled = validation_data.numpy_x is None
-                validation_data = validation_data.to_torch_data_loader(batch_size=batch_size,
-                                                roll=_rolled,
-                                                lookback=self.data_config['past_seq_len'],
-                                                horizon=self.data_config['future_seq_len'],
-                                                feature_col=data.roll_feature,
-                                                target_col=data.roll_target,
-                                                shuffle=False)
-            is_local_data = isinstance(validation_data, (tuple, DataLoader))
+            if isinstance(val_data, TSDataset):
+                _rolled = val_data.numpy_x is None
+                val_data = val_data.to_torch_data_loader(batch_size=batch_size,
+                                                         roll=_rolled,
+                                                         lookback=self.data_config['past_seq_len'],
+                                                         horizon=self.data_config['future_seq_len'],
+                                                         feature_col=data.roll_feature,
+                                                         target_col=data.roll_target,
+                                                         shuffle=False)
+            is_local_data = isinstance(val_data, (tuple, DataLoader))
             if not is_local_data and not self.distributed:
-                validation_data = xshard_to_np(validation_data, mode="fit")
-            if isinstance(validation_data, DataLoader):
+                val_data = xshard_to_np(val_data, mode="fit")
+            if isinstance(val_data, DataLoader):
                 input_data = data
-                target = np.concatenate(tuple(val[1] for val in validation_data), axis=0)
-            elif isinstance(validation_data, SparkXShards):
-                input_data = validation_data
-                target = np.concatenate([validation_data[i]['y'] for i
-                         in range(len(validation_data['y']))], axis=0)
+                target = np.concatenate(tuple(val[1] for val in val_data), axis=0)
+            elif isinstance(val_data, SparkXShards):
+                input_data = val_data
+                target = np.concatenate([val_data[i]['y'] for i
+                         in range(len(val_data['y']))], axis=0)
             else:
                 input_data, target = data
 
