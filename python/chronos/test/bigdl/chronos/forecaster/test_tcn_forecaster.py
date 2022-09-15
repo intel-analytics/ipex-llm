@@ -718,6 +718,41 @@ class TestChronosModelTCNForecaster(TestCase):
         assert y_pred.shape == std.shape
         y_pred, std = forecaster.predict_interval(data=test_loader)
 
+    def test_predict_interval_with_xshard_input(self):
+        from bigdl.orca import init_orca_context, stop_orca_context
+        train_data, val_data, test_data = create_data()
+        print("original", train_data[0].dtype)
+        init_orca_context(cores=4, memory="2g")
+        from bigdl.orca.data import XShards
+
+        def transform_to_dict(data):
+            return {'x': data[0], 'y': data[1]}
+
+        def transform_to_dict_x(data):
+            return {'x': data[0]}
+
+        train_data = XShards.partition(train_data).transform_shard(transform_to_dict)
+        val_data = XShards.partition(val_data).transform_shard(transform_to_dict)
+        test_data = XShards.partition(test_data).transform_shard(transform_to_dict_x)
+
+        for distributed in [True, False]:
+            forecaster = TCNForecaster(past_seq_len=24,
+                                       future_seq_len=5,
+                                       input_feature_num=1,
+                                       output_feature_num=1,
+                                       kernel_size=4,
+                                       num_channels=[16, 16, 16],
+                                       lr=0.01,
+                                       distributed=distributed)
+            forecaster.fit(train_data, epochs=2)
+            # only the first time needs validation_data
+            y_pred, std = forecaster.predict_interval(data=test_data,
+                                                    validation_data=val_data,
+                                                    repetition_times=5)
+            assert y_pred.shape == std.shape
+            y_pred, std = forecaster.predict_interval(data=test_data)
+        stop_orca_context()
+
     def test_predict_interval_without_validation_data(self):
         train_data, val_data, test_data = create_data()
         forecaster = TCNForecaster(past_seq_len=24,
