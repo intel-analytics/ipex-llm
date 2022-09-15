@@ -72,7 +72,7 @@ jobs:
         file-name: fossa-scan.json
         type: job
         job-name: fossa-scan
-        runnerHostedOn: 'America'
+        runner-hosted-on: 'America'
          
 
   create-workflow-badge:
