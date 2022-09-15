@@ -19,6 +19,7 @@ import logging
 import numbers
 import torch
 import numpy as np
+from copy import copy
 
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch.pytorch_pyspark_worker import PytorchPysparkWorker
@@ -113,9 +114,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             invalidInputError(False,
                               "If a loss_creator is not provided, you must "
                               "provide a custom training operator.")
-        if not model_dir:
-            invalidInputError(False,
-                              "Please specify model directory when using spark backend")
+
         self.model_dir = model_dir
 
         self.model_creator = model_creator
@@ -146,7 +145,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             training_operator_cls=training_operator_cls,
             scheduler_step_freq=scheduler_step_freq,
             use_tqdm=use_tqdm,
-            config=self.config.copy(),
+            config=copy(self.config),
             metrics=metrics,
             size=self.num_workers,
             cores_per_worker=self.cores_per_worker,
@@ -297,8 +296,12 @@ class PyTorchPySparkEstimator(BaseEstimator):
             res = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
 
-        self.state_dict = PyTorchPySparkEstimator._get_state_dict_from_remote(self.model_dir)
-        worker_stats = res
+        if self.model_dir is not None:
+            self.state_dict = PyTorchPySparkEstimator._get_state_dict_from_remote(self.model_dir)
+            worker_stats = res
+        else:
+            self.state_dict = res[0]
+            worker_stats = res[1]
 
         epoch_stats = list(map(list, zip(*worker_stats)))
         if reduce_results:
