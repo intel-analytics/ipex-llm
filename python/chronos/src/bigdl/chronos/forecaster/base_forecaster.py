@@ -839,20 +839,56 @@ class BasePytorchForecaster(Forecaster):
         """
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
 
+        if not self.fitted:
+                from bigdl.nano.utils.log4Error import invalidInputError
+                invalidInputError(False,
+                                  "You must call fit or restore first before calling predict_interval!")
+
+        def calculate(data, model):
+            is_local_data = isinstance(data, (tuple, DataLoader))
+            if self.distributed:
+                yhat = model.predict(data, batch_size=batch_size)
+                expand_dim = []
+                if self.data_config["future_seq_len"] == 1:
+                    expand_dim.append(1)
+                if self.data_config["output_feature_num"] == 1:
+                    expand_dim.append(2)
+                if is_local_data:
+                    yhat = xshard_to_np(yhat, mode="yhat", expand_dim=expand_dim)
+                else:
+                    yhat = yhat.transform_shard(xshard_expand_dim, expand_dim)
+                return yhat
+            else:
+                self.internal.eval()
+                yhat = _pytorch_fashion_inference(model=model,
+                                                  input_data=data,
+                                                  batch_size=batch_size)
+                if not is_local_data:
+                    yhat = np_to_xshard(yhat, prefix="prediction")
+                return yhat
+
         # step1, according to validation dataset, calculate inherent noise
         # which should be done during fit
         if not hasattr(self, "data_noise"):
             invalidInputError(validation_data is not None,
                               "When call predict_interval for the first time, you must pass in "
                               "validation data to calculate data noise.")
-            if isinstance(validation_data, DataLoader):
-                input_data = validation_data
-                target = np.concatenate(tuple(val[1] for val in data), axis=0)
-            else:
-                input_data, target = validation_data
-            val_yhat = self.predict(input_data)
+            # data transform
+            if isinstance(validation_data, TSDataset):
+                _rolled = validation_data.numpy_x is None
+                validation_data = validation_data.to_torch_data_loader(batch_size=batch_size,
+                                                roll=_rolled,
+                                                lookback=self.data_config['past_seq_len'],
+                                                horizon=self.data_config['future_seq_len'],
+                                                feature_col=data.roll_feature,
+                                                target_col=data.roll_target,
+                                                shuffle=False)
+            is_local_data = isinstance(validation_data, (tuple, DataLoader))
+            if not is_local_data and not self.distributed:
+                validation_data = xshard_to_np(validation_data, mode="fit")
+            val_yhat = calculate(validation_data, self.internal)
             self.data_noise = Evaluator.evaluate(["mse"], target,
-                                                 val_yhat, aggregate=None)[0]  # 3d-array
+                                                val_yhat, aggregate=None)[0]  # 3d-array
 
         # step2: data preprocess
         if isinstance(data, TSDataset):
@@ -873,31 +909,6 @@ class BasePytorchForecaster(Forecaster):
             data = np_to_xshard(data)
         if not is_local_data and not self.distributed:
             data = xshard_to_np(data, mode="predict")
-
-        def calculate(data, model):
-            if self.distributed:
-                yhat = model.predict(data, batch_size=batch_size)
-                expand_dim = []
-                if self.data_config["future_seq_len"] == 1:
-                    expand_dim.append(1)
-                if self.data_config["output_feature_num"] == 1:
-                    expand_dim.append(2)
-                if is_local_data:
-                    yhat = xshard_to_np(yhat, mode="yhat", expand_dim=expand_dim)
-                else:
-                    yhat = yhat.transform_shard(xshard_expand_dim, expand_dim)
-                return yhat
-            else:
-                if not self.fitted:
-                    invalidInputError(False,
-                                      "You must call fit or restore first before calling predict!")
-                self.internal.eval()
-                yhat = _pytorch_fashion_inference(model=model,
-                                                  input_data=data,
-                                                  batch_size=batch_size)
-                if not is_local_data:
-                    yhat = np_to_xshard(yhat, prefix="prediction")
-                return yhat
 
         # step3: calculate model uncertainty based MC Dropout
         def apply_dropout(m):
