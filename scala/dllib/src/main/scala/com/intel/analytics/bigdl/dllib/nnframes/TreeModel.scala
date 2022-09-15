@@ -25,13 +25,7 @@ import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMClassificationModel => M
 import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMClassifier => MLightGBMClassifier}
 import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMRegressionModel => MLightGBMRegressionModel}
 import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMRegressor => MLightGBMRegressor}
-import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMRankerModel => MLightGBMRankerModel}
-import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMRanker => MLightGBMRanker}
-import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMBase => MLightGBMBase}
-import com.microsoft.azure.synapse.ml.lightgbm.params.{LightGBMParams => MLightGBMParams}
-import org.apache.spark.ml.Model
-import org.apache.spark.ml.param.{ParamMap, Params}
-import org.apache.spark.ml.util.Identifiable
+
 
 class XGBClassifier (val xgboostParams: Map[String, Any] = Map()) {
   val sc = SparkSession.active.sparkContext
@@ -428,14 +422,20 @@ object XGBRegressorModel {
 
 /**
  * [[lightGBMClassifier wrapper]]
+ * @param lgbmParams, a map of parameters, currently supported 18 params to be set from lgbmParams:
+        "boostingType", "numLeaves", "maxDepth", "learningRate", "numIterations",
+        "binConstructSampleCnt", "objective", "minSplitGain", "minSumHessianInLeaf",
+        "minDataInLeaf", "baggingFraction", "baggingFreq", "featureFraction",
+        "lambdaL1", "lambdaL2", "numThreads", "earlyStoppingRound", "maxBin".
  */
-class LightGBMClassifier {
+class LightGBMClassifier (val lgbmParams: Map[String, Any] = Map()) {
 
   val sc = SparkSession.active.sparkContext
   sc.getConf.set("spark.task.cpus", Engine.coreNumber().toString)
 
-  val estimator = new MLightGBMClassifier()
+  private val estimator = new MLightGBMClassifier()
   estimator.setNumThreads(Engine.coreNumber())
+  TreeModelUtils.setParams(estimator, lgbmParams)
 
   def setLabelCol(labelColName : String) : this.type = {
     estimator.setLabelCol(labelColName)
@@ -573,11 +573,11 @@ class LightGBMClassifier {
  * @param model trained MLightGBMClassificationModel to use in prediction.
  */
 class LightGBMClassifierModel private[bigdl](val model: MLightGBMClassificationModel) {
-  private var featuresCols: String = "features"
+  private var featuresCol: String = "features"
   private var predictionCol: String = "prediction"
 
   def setFeaturesCol(featuresColName: String): this.type = {
-    featuresCols = featuresColName
+    featuresCol = featuresColName
     this
   }
 
@@ -587,8 +587,8 @@ class LightGBMClassifierModel private[bigdl](val model: MLightGBMClassificationM
   }
 
   def transform(dataset: DataFrame): DataFrame = {
-    Log4Error.invalidInputError(featuresCols!=None, "Please set feature columns before transform")
-    model.setFeaturesCol(featuresCols)
+    Log4Error.invalidInputError(featuresCol!=None, "Please set feature columns before transform")
+    model.setFeaturesCol(featuresCol)
     var output = model.transform(dataset)
     if(predictionCol != null) {
       output = output.withColumnRenamed("prediction", predictionCol)
@@ -609,14 +609,20 @@ object LightGBMClassifierModel {
 
 /**
  * [[LightGBMRegressor]] lightGBM wrapper of LightGBMRegressor.
+ * @param lgbmParams, a map of parameters, currently supported 18 params to be set from lgbmParams:
+        "boostingType", "numLeaves", "maxDepth", "learningRate", "numIterations",
+        "binConstructSampleCnt", "objective", "minSplitGain", "minSumHessianInLeaf",
+        "minDataInLeaf", "baggingFraction", "baggingFreq", "featureFraction",
+        "lambdaL1", "lambdaL2", "numThreads", "earlyStoppingRound", "maxBin".
  */
-class LightGBMRegressor {
+class LightGBMRegressor (val lgbmParams: Map[String, Any] = Map()) {
 
   val sc = SparkSession.active.sparkContext
   sc.getConf.set("spark.task.cpus", Engine.coreNumber().toString)
 
   private val estimator = new MLightGBMRegressor()
   estimator.setNumThreads(Engine.coreNumber())
+  TreeModelUtils.setParams(estimator, lgbmParams)
 
   def setAlpha(value: Double): this.type = {
     estimator.setAlpha(value)
@@ -752,7 +758,6 @@ class LightGBMRegressor {
 class LightGBMRegressorModel private[bigdl](val model: MLightGBMRegressionModel) {
   var predictionCol: String = null
   var featuresCol: String = "features"
-  var featurearray: Array[String] = Array("features")
   def setPredictionCol(value: String): this.type = {
     predictionCol = value
     this
@@ -765,16 +770,9 @@ class LightGBMRegressorModel private[bigdl](val model: MLightGBMRegressionModel)
   }
 
   def transform(dataset: DataFrame): DataFrame = {
-    val featureVectorAssembler = new VectorAssembler()
-      .setInputCols(featurearray)
-      .setOutputCol("featureAssembledVector")
-    val assembledDF = featureVectorAssembler.transform(dataset)
-    import org.apache.spark.ml.linalg.Vector
-    import org.apache.spark.sql.functions.{col, udf}
-    val asDense = udf((v: Vector) => v.toDense)
-    val xgbInput = assembledDF.withColumn("DenseFeatures", asDense(col("featureAssembledVector")))
-    model.setFeaturesCol("DenseFeatures")
-    var output = model.transform(xgbInput).drop("DenseFeatures", "featureAssembledVector")
+    Log4Error.invalidInputError(featuresCol!=None, "Please set feature columns before transform")
+    model.setFeaturesCol(featuresCol)
+    var output = model.transform(dataset)
     if(predictionCol != null) {
       output = output.withColumnRenamed("prediction", predictionCol)
     }
