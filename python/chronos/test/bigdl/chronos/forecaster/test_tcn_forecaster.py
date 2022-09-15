@@ -679,7 +679,7 @@ class TestChronosModelTCNForecaster(TestCase):
             test_pred_load = forecaster.predict(test_data[0])
         np.testing.assert_almost_equal(test_pred_save, test_pred_load)
 
-    def test_predict_interval(self):
+    def test_predict_interval_with_numpy(self):
         train_data, val_data, test_data = create_data()
         forecaster = TCNForecaster(past_seq_len=24,
                                    future_seq_len=5,
@@ -698,6 +698,25 @@ class TestChronosModelTCNForecaster(TestCase):
         assert y_pred.shape == test_data[1].shape
         assert y_pred.shape == std.shape
         y_pred, std = forecaster.predict_interval(data=test_data[0])
+    
+    def test_predict_interval_with_loader(self):
+        train_loader, val_loader, test_loader = create_data(loader=True)
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=4,
+                                   num_channels=[16, 16, 16],
+                                   loss="mse",
+                                   metrics=["mse"],
+                                   lr=0.01)
+        forecaster.fit(train_loader, epochs=2)
+        # only the first time needs validation_data
+        y_pred, std = forecaster.predict_interval(data=test_loader,
+                                                  validation_data=val_loader,
+                                                  repetition_times=5)
+        assert y_pred.shape == std.shape
+        y_pred, std = forecaster.predict_interval(data=test_loader)
 
     def test_predict_interval_without_validation_data(self):
         train_data, val_data, test_data = create_data()

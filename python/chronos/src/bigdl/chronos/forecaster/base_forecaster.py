@@ -899,10 +899,7 @@ class BasePytorchForecaster(Forecaster):
                     yhat = np_to_xshard(yhat, prefix="prediction")
                 return yhat
 
-        # step3: calculate y_hat
-        y_hat = calculate(data, self.internal)
-
-        # step4: calculate model uncertainty based MC Dropout
+        # step3: calculate model uncertainty based MC Dropout
         def apply_dropout(m):
             if type(m) == torch.nn.Dropout:
                 m.train()
@@ -922,7 +919,7 @@ class BasePytorchForecaster(Forecaster):
         assert self.data_noise.shape == model_bias.shape
         std_deviation = np.sqrt(self.data_noise + model_bias)
 
-        return y_hat, std_deviation
+        return y_hat_mean, std_deviation
 
     def save(self, checkpoint_file, quantize_checkpoint_file=None):
         """
