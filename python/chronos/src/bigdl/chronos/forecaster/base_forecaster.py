@@ -782,6 +782,7 @@ class BasePytorchForecaster(Forecaster):
     def predict_interval(self, data, validation_data=None, batch_size=None, repetition_times=5):
         """
         Calculate confidence interval of data based on Monte Carlo dropout(MC dropout).
+        Related paper : https://arxiv.org/abs/1709.01907
 
         :param data: The data support following formats:
 
@@ -844,11 +845,14 @@ class BasePytorchForecaster(Forecaster):
             invalidInputError(validation_data is not None,
                               "When call predict_interval for the first time, you must pass in "
                               "validation data to calculate data noise.")
-            invalidOperationError("mse" in self.metrics,
-                                  "You must add 'mse' in metrics when initialize Forecaster.")
-            output = self.evaluate(data=validation_data, multioutput='uniform_average')
-            index = self.metrics.index("mse")
-            self.data_noise = output[index]
+            if isinstance(validation_data, DataLoader):
+                input_data = validation_data
+                target = np.concatenate(tuple(val[1] for val in data), axis=0)
+            else:
+                input_data, target = validation_data
+            val_yhat = self.predict(input_data)
+            self.data_noise = Evaluator.evaluate(["mse"], target, # a scalar
+                                                 val_yhat, aggregate='uniform_average')[0]
 
         # step2: data preprocess
         if isinstance(data, TSDataset):
@@ -911,7 +915,7 @@ class BasePytorchForecaster(Forecaster):
         invalidInputError(y_hat_mean.shape == y_hat.shape,
                           "dismatch shape between y_hat_mean and y_hat")
 
-        model_bias = np.zeros_like(y_hat_mean)
+        model_bias = np.zeros_like(y_hat_mean) # 2d array
         for i in range(repetition_times):
             model_bias += (y_hat_list[i] - y_hat_mean)**2
         model_bias /= repetition_times
