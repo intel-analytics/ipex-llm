@@ -108,7 +108,7 @@ class InferenceOptimizer:
 
     def __init__(self):
         '''
-        InferenceOptimizer for BigDL-Nano pytorch.
+        InferenceOptimizer for Pytorch Model.
 
         It can be used to accelerate inference pipeline with very few code changes.
         '''
