@@ -528,7 +528,7 @@ class TFRunner:
         """Loads all layer weights from a TensorFlow or an HDF5 weight file."""
         self.model.load_weights(filepath, by_name, skip_mismatch, options)
 
-    def load_remote_weights(self, filepath, by_name, skip_mismatch, options):\
+    def load_remote_weights(self, filepath, by_name, skip_mismatch, options):
         """Loads all layer weights from a remote weight file (Tensorflow or HDF5 format)."""
         file_name = os.path.basename(filepath)
         temp_dir = tempfile.mkdtemp()
