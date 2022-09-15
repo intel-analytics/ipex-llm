@@ -303,6 +303,9 @@ bash bigdl-ppml-submit.sh \
 </details>
 
 ## Trusted ML 
+
+Please be noted that the xgboost examples listed here are **deprecated** due to the fact that Rabit's network (contains gradient, split and env) is not protected.
+
 ### Run Trusted Spark XGBoost Regressor
 <details><summary>This example shows how to run trusted Spark XGBoost Regressor.</summary>
 
