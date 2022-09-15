@@ -7,25 +7,24 @@ if [ -z "$SPARK_HOME" ]; then
 fi
 
 if [ -z "$RUNTIME_K8S_SERVICE_ACCOUNT" ]; then
-    echo "Please set BIGDL_HOME environment variable"
+    echo "Please set RUNTIME_K8S_SERVICE_ACCOUNT environment variable"
     exit 1
 fi
 
 if [ -z $RUNTIME_K8S_SPARK_IMAGE ]; then
-    echo "Please set BIGDL_HOME environment variable"
+    echo "Please set RUNTIME_K8S_SPARK_IMAGE environment variable"
     exit 1
 fi
 
 default_config="--conf spark.kubernetes.authenticate.driver.serviceAccountName=$RUNTIME_K8S_SERVICE_ACCOUNT \
         --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
         --conf spark.kubernetes.executor.deleteOnTermination=false \
-        --conf spark.executor.heartbeatInterval=10000000 \
         --conf spark.python.use.daemon=false \
         --conf spark.python.worker.reuse=false"
 
 if [ $secure_password ]; then
    if [ -z $KEYS_PATH ]; then
-       echo "Please set BIGDL_HOME environment variable"
+       echo "Please set $KEYS_PATH environment variable"
        exit 1
    fi
    SSL="--conf spark.authenticate=true \
