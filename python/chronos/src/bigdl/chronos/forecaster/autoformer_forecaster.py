@@ -15,6 +15,7 @@
 #
 
 import torch
+import numpy as np
 from bigdl.chronos.forecaster.abstract import Forecaster
 from bigdl.chronos.model.autoformer import model_creator, loss_creator
 from torch.utils.data import TensorDataset, DataLoader
@@ -408,6 +409,81 @@ class AutoformerForecaster(Forecaster):
                               shuffle=False)
 
         return self.trainer.validate(self.internal, data)
+
+    def predict_interval(self, data, val_data=None, batch_size=None, repetition_times=5):
+        """
+        Calculate confidence interval of data based on Monte Carlo dropout(MC dropout).
+        Related paper : https://arxiv.org/abs/1709.01907
+
+        :param data: The data support following formats:
+
+               | 1. numpy ndarrays: generate from `TSDataset.roll`,
+                    be sure to set label_len > 0 and time_enc = True
+               | 2. pytorch dataloader: generate from `TSDataset.to_torch_data_loader`,
+                    be sure to set label_len > 0, time_enc = True and is_predict = True
+
+        :param val_data: The val_data support following formats:
+
+               | 1. numpy ndarrays: generate from `TSDataset.roll`,
+                    be sure to set label_len > 0 and time_enc = True
+               | 2. pytorch dataloader: generate from `TSDataset.to_torch_data_loader`,
+                    be sure to set label_len > 0, time_enc = True
+
+        :param batch_size: predict batch size. The value will not affect predict
+               result but will affect resources cost(e.g. memory and time).
+        :param repetition_times : Defines repeate how many times to calculate model
+                                  uncertainty based on MC Dropout.
+
+        :return: prediction and standard deviation which are both numpy array
+                 with shape (num_samples, horizon, target_dim)
+
+        """
+        from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
+
+        if not self.fitted:
+            invalidInputError(False,
+                              "You must call fit or restore first before calling predict_interval!")
+
+        # step1, according to validation dataset, calculate inherent noise
+        # which should be done during fit
+        if not hasattr(self, "data_noise"):
+            invalidInputError(val_data is not None,
+                              "When call predict_interval for the first time, you must pass in "
+                              "validation data to calculate data noise.")
+            # data transform
+            if isinstance(val_data, DataLoader):
+                target = np.concatenate(tuple(val[1] for val in val_data), axis=0)
+            else:
+                x, target, x_enc, y_enc = val_data
+
+            _yhat = self.predict(val_data)
+            val_yhat = np.concatenate(_yhat, axis=0)
+            self.data_noise = Evaluator.evaluate(["mse"], target,
+                                                 val_yhat, aggregate=None)[0]  # 2d array
+
+        # step3: calculate model uncertainty based MC Dropout
+        def apply_dropout(m):
+            if type(m) == torch.nn.Dropout:
+                m.train()
+
+        # turn on dropout
+        self.internal.apply(apply_dropout)
+        y_hat_list = []
+        for i in range(repetition_times):
+            _yhat = self.predict(val_data)
+            yhat = np.concatenate(_yhat, axis=0)
+            y_hat_list.append(yhat)
+        y_hat_mean = np.mean(np.stack(y_hat_list, axis=0), axis=0)
+        invalidInputError(y_hat_mean.shape == y_hat_list[0].shape,
+                          "dismatch shape between y_hat_mean and y_hat")
+
+        model_bias = np.zeros_like(y_hat_mean)  # 3d array
+        for i in range(repetition_times):
+            model_bias += (y_hat_list[i] - y_hat_mean)**2
+        model_bias /= repetition_times
+        std_deviation = np.sqrt(self.data_noise + model_bias)
+
+        return y_hat_mean, std_deviation
 
     def load(self, checkpoint_file):
         """
