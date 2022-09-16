@@ -885,7 +885,8 @@ class BasePytorchForecaster(Forecaster):
                 target = np.concatenate(tuple(val[1] for val in val_data), axis=0)
             elif isinstance(val_data, SparkXShards):
                 input_data = val_data
-                target = np.concatenate([val_data[i]['y'] for i in range(len(val_data['y']))], axis=0)
+                target = np.concatenate([val_data[i]['y'] for i in range(len(val_data['y']))],
+                                        axis=0)
             else:
                 input_data, target = val_data
 
