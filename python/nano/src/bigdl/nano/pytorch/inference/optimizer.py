@@ -643,7 +643,7 @@ class InferenceOptimizer:
         :return: Model with different acceleration(None/OpenVINO/ONNX Runtime/JIT) or
                  precision(FP32/FP16/BF16/INT8).
         """
-        load_model(path, model)
+        return load_model(path, model)
 
 
 def _inc_checker():

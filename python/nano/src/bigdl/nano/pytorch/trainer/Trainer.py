@@ -428,7 +428,7 @@ class Trainer(pl.Trainer):
         :return: Model with different acceleration(None/OpenVINO/ONNX Runtime/JIT) or
                  precision(FP32/FP16/BF16/INT8).
         """
-        load_model(path, model)
+        return load_model(path, model)
 
     def save_checkpoint(    # type: ignore[override]
         self, filepath, weights_only: bool = False, storage_options: Optional[Any] = None
