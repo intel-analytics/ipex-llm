@@ -46,13 +46,13 @@ runs:
     - name: Spark Examples Test
       shell: bash
       run: |
-        bash hadoop fs -rm -r -f hdfs://$LOCAL_IP:9000/spark-warehouse
+        /opt/hadoop-3.2.0/bin/hadoop fs -rm -r -f hdfs://$LOCAL_IP:9000/spark-warehouse
         docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/spark-examples.sh"
-        bash hadoop fs -rm -r -f hdfs://$LOCAL_IP:9000/spark-warehouse
+        /opt/hadoop-3.2.0/bn/hadoop fs -rm -r -f hdfs://$LOCAL_IP:9000/spark-warehouse
         docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/spark-sql-examples.sh"
-        bash hadoop fs -rm -r -f hdfs://$LOCAL_IP:9000/spark-warehouse
+        /opt/hadoop-3.2.0/bin/hadoop fs -rm -r -f hdfs://$LOCAL_IP:9000/spark-warehouse
         docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/pyspark-simple-examples.sh"
-        bash hadoop fs -rm -r -f hdfs://$LOCAL_IP:9000/spark-warehouse
+        /opt/hadoop-3.2.0/bin/hadoop fs -rm -r -f hdfs://$LOCAL_IP:9000/spark-warehouse
         docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/pyspark-sql-examples.sh"
-        bash hadoop fs -rm -r -f hdfs://$LOCAL_IP:9000/spark-warehouse
+        /opt/hadoop-3.2.0/bin/hadoop fs -rm -r -f hdfs://$LOCAL_IP:9000/spark-warehouse
         docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/pyspark-sql-api-examples.sh"
