@@ -35,7 +35,7 @@ After upload finishes, click **Install**.
 
 ### 4. Install BigDL Python libraries
 
-Install BigDL python environment using **bigdl-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip** from [step 2](#2-download-bigdl-libraries). However, Databricks can only upload **Jar**, **Python Egg** and **Python Whl**, but doesn't support **Zip**, so we can not simply upload the python api zip and install it like what we do in Step 3. You can upload and install the zip package in one of the following ways.
+Install BigDL python environment using **bigdl-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip** from [step 2](#2-download-bigdl-libraries). However, Databricks can only upload **Jar**, **Python Egg** and **Python Whl**, but doesn't support **Zip**, so we can not simply upload the python api zip and install it like what we do in [step 3](#3-install-bigdl-java-dependencies). You can upload and install the zip package in one of the following ways.
 
 #### 4.1 Upload and Install through DBFS
 
