@@ -19,7 +19,7 @@ import tensorflow as tf
 
 import pytest
 
-from bigdl.orca.test_zoo_utils import ZooTestCase
+from unittest import TestCase
 from bigdl.chronos.model.tf2.Seq2Seq_keras import LSTMSeq2Seq, model_creator
 import numpy as np
 
@@ -42,7 +42,7 @@ def create_data():
 
 
 @pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf>2.0.0.")
-class TestSeq2Seq(ZooTestCase):
+class TestSeq2Seq(TestCase):
 
     train_data, test_data = create_data()
     model = model_creator(config={
