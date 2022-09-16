@@ -16,16 +16,15 @@
 
 package com.intel.analytics.bigdl.ppml.examples
 
-import com.intel.analytics.bigdl.dllib.nnframes.XGBClassifier
 import com.intel.analytics.bigdl.ppml.PPMLContext
 import com.intel.analytics.bigdl.ppml.crypto.{CryptoMode, EncryptRuntimeException, PLAIN_TEXT}
 import com.intel.analytics.bigdl.ppml.kms.KMS_CONVENTION
-import ml.dmlc.xgboost4j.scala.spark.TrackerConf
+import org.apache.spark.ml.classification.GBTClassifier
 import org.apache.spark.ml.feature.{StringIndexer, VectorAssembler}
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{LongType, StructField, StructType}
-import org.apache.spark.sql.{Row, SQLContext}
-import scopt.OptionParser
 import org.slf4j.{Logger, LoggerFactory}
+import scopt.OptionParser
 
 import java.io.File
 
@@ -63,10 +62,8 @@ case class Params(
                    simpleAPPID: String = "simpleAPPID",
                    simpleAPIKEY: String = "simpleAPIKEY",
                    modelSavePath: String = "/host/data/model",
-                   numThreads: Int = 2,
-                   numRound: Int = 100,
-                   maxDepth: Int = 2,
-                   numWorkers: Int = 1
+                   maxIter: Int = 100,
+                   maxDepth: Int = 2
                  ) {
   def ppmlArgs(): Map[String, String] = {
     val kmsArgs = scala.collection.mutable.Map[String, String]()
@@ -93,7 +90,7 @@ case class Params(
   }
 }
 
-object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
+object gbtClassifierTrainingExampleOnCriteoClickLogsDataset {
 
   val feature_nums = 39
 
@@ -108,12 +105,10 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
     val inputEncryptMode = params.inputEncryptMode
     val trainingDataPath = params.trainingDataPath // path to data
     val modelSavePath = params.modelSavePath // save model to this path
-    val numThreads = params.numThreads // xgboost threads
-    val numRound = params.numRound //  train round
+    val maxIter = params.maxIter //  train round
     val maxDepth = params.maxDepth // tree max depth
-    val numWorkers = params.numWorkers //  Workers num
 
-    val sc = PPMLContext.initPPMLContext("xgbClassifierTrainingExample", ppmlArgs)
+    val sc = PPMLContext.initPPMLContext("gbtClassifierTrainingExample", ppmlArgs)
     val spark = sc.getSparkSession()
     val task = new Task()
 
@@ -164,9 +159,9 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
       setInputCols(inputCols).
       setOutputCol("features")
 
-    val xgbInput = vectorAssembler.transform(labelTransformed).select("features", "classIndex")
+    val gbtInput = vectorAssembler.transform(labelTransformed).select("features", "classIndex")
     // randomly split dataset to (train, eval1, eval2, test) in proportion 6:2:1:1
-    val Array(train, eval1, eval2, test) = xgbInput.randomSplit(Array(0.6, 0.2, 0.1, 0.1))
+    val Array(train, eval1, eval2, test) = gbtInput.randomSplit(Array(0.6, 0.2, 0.1, 0.1))
 
     train.cache().count()
     eval1.cache().count()
@@ -175,31 +170,23 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
     val tBeforeTraining = System.nanoTime()
     elapsed = (tBeforeTraining - tBeforePreprocess) / 1000000000.0f // second
     log.info("--preprocess time is " + elapsed + " s")
-    // use scala tracker
-    val xgbParam = Map("tracker_conf" -> TrackerConf(0L, "scala"),
-      "eval_sets" -> Map("eval1" -> eval1, "eval2" -> eval2)
-    )
 
-    val xgbClassifier = new XGBClassifier(xgbParam)
-    xgbClassifier.setFeaturesCol("features")
-    xgbClassifier.setLabelCol("classIndex")
-    xgbClassifier.setNumClass(2)
-    xgbClassifier.setNumWorkers(numWorkers)
-    xgbClassifier.setMaxDepth(maxDepth)
-    xgbClassifier.setNthread(numThreads)
-    xgbClassifier.setNumRound(numRound)
-    xgbClassifier.setTreeMethod("auto")
-    xgbClassifier.setObjective("multi:softprob")
-    xgbClassifier.setTimeoutRequestWorkers(180000L)
+    val gbtClassifier = new GBTClassifier()
+    gbtClassifier.setFeaturesCol("features")
+    gbtClassifier.setLabelCol("classIndex")
+    gbtClassifier.setMaxDepth(maxDepth)
+    gbtClassifier.setMaxIter(maxIter)
+    gbtClassifier.setFeatureSubsetStrategy("auto")
+
 
     // start training model
-    val xgbClassificationModel = xgbClassifier.fit(train)
+    val gbtClassificationModel = gbtClassifier.fit(train)
 
     val tAfterTraining = System.nanoTime()
     elapsed = (tAfterTraining - tBeforeTraining) / 1000000000.0f // second
     log.info("--training time is " + elapsed + " s")
 
-    xgbClassificationModel.save(modelSavePath)
+    gbtClassificationModel.write.overwrite().save(modelSavePath)
 
     val tAfterSave = System.nanoTime()
     elapsed = (tAfterSave - tAfterTraining) / 1000000000.0f // second
@@ -208,7 +195,7 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
     log.info("--end-to-end time is " + elapsed + " s")
   }
 
-  val parser: OptionParser[Params] = new OptionParser[Params]("input xgboost config") {
+  val parser: OptionParser[Params] = new OptionParser[Params]("input GBT config") {
     opt[String]('i', "trainingDataPath")
       .text("trainingData Path")
       .action((v, p) => p.copy(trainingDataPath = v))
@@ -260,21 +247,13 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
       .action((v, p) => p.copy(simpleAPIKEY = v))
       .text("simpleAPIKEY")
 
-    opt[Int]('t', "numThreads")
-      .text("threads num")
-      .action((v, p) => p.copy(numThreads = v))
-
-    opt[Int]('r', "numRound")
-      .text("Round num")
-      .action((v, p) => p.copy(numRound = v))
+    opt[Int]('I', "maxIter")
+      .text("maxIter")
+      .action((v, p) => p.copy(maxIter = v))
 
     opt[Int]('d', "maxDepth")
       .text("maxDepth")
       .action((v, p) => p.copy(maxDepth = v))
-
-    opt[Int]('w', "numWorkers")
-      .text("Workers num")
-      .action((v, p) => p.copy(numWorkers = v))
 
   }
 }
