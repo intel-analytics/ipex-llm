@@ -46,8 +46,13 @@ runs:
     - name: Spark Examples Test
       shell: bash
       run: |
+        hadoop fs -rm -r -f hdfs://$LOCAL_IP:9000/spark-warehouse
         docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/spark-examples.sh"
+        hadoop fs -rm -r -f hdfs://$LOCAL_IP:9000/spark-warehouse
         docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/spark-sql-examples.sh"
+        hadoop fs -rm -r -f hdfs://$LOCAL_IP:9000/spark-warehouse
         docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/pyspark-simple-examples.sh"
+        hadoop fs -rm -r -f hdfs://$LOCAL_IP:9000/spark-warehouse
         docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/pyspark-sql-examples.sh"
+        hadoop fs -rm -r -f hdfs://$LOCAL_IP:9000/spark-warehouse
         docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/pyspark-sql-api-examples.sh"
