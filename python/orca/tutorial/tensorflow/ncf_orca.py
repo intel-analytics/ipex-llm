@@ -133,6 +133,8 @@ epochs=2
 model_dir='./'
 
 # create an Estimator
+# backend = 'spark'
+# est = Estimator.from_keras(model_creator=model_creator, workers_per_node=1, backend=backend, model_dir=model_dir)
 est = Estimator.from_keras(model_creator=model_creator, workers_per_node=1)
 
 stats = est.fit(train_df,
