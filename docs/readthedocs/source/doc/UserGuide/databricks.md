@@ -5,12 +5,12 @@
 You can run BigDL program on the [Databricks](https://databricks.com/) cluster as follows.
 ### **1. Create a Databricks Cluster**
 
-- Create either [AWS Databricks](https://docs.databricks.com/getting-started/try-databricks.html) workspace or [Azure Databricks](https://docs.microsoft.com/en-us/azure/azure-databricks/) workspace. 
-- Create a Databricks [clusters](https://docs.databricks.com/clusters/create.html) using the UI. Choose Databricks runtime version. This guide is tested on Runtime 9.1 LTS (includes Apache Spark 3.1.2, Scala 2.12).
+- Create either an [AWS Databricks](https://docs.databricks.com/getting-started/try-databricks.html) workspace or an [Azure Databricks](https://docs.microsoft.com/en-us/azure/azure-databricks/) workspace. 
+- Create a Databricks [cluster](https://docs.databricks.com/clusters/create.html) using the UI. Choose Databricks runtime version. This guide is tested on Runtime 9.1 LTS (includes Apache Spark 3.1.2, Scala 2.12).
 
 ### 2. Download BigDL Libraries
 
-Download BigDL prebuilt release Python and Java libraries from [here](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.2/2.1.0-SNAPSHOT/), scroll down to the bottom, download the **latest** release **bigdl-assembly-spark_3.1.2-2.1.0-*-fat-jars.zip**.
+Download the BigDL package from [here](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.2/2.1.0-SNAPSHOT/), scroll down to the bottom, choose the **latest** release **bigdl-assembly-spark_3.1.2-2.1.0-*-fat-jars.zip**.
 
 ![](images/fat-jars.png)
 
@@ -19,31 +19,31 @@ Unzip the zip file, we only need two files:
 - jars/**bigdl-assembly-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar**
 - python/**bigdl-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip**
 
-### 3. Installing BigDL Java libraries
+### 3. Install BigDL Java dependencies
 
 In the Databricks left panel, click **Compute** and select your cluster.
 
 ![](images/compute.png)
 
-Install BigDL java packages using **bigdl-assembly-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar** from step 2. Click **Libraries > Install New > Library Source(Upload) > Library Type (Jar)**. Drop the jar on Databricks.
+Install BigDL java packages using **bigdl-assembly-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar** from [step 2](#2. Download BigDL Libraries). Click **Libraries > Install New > Library Source(Upload) > Library Type (Jar)**. Drop the jar on Databricks.
 
 ![](images/assembly-jar.png)
 
-After upload finish, click **Install**.
+After upload finishes, click **Install**.
 
-> Tips: if you find your upload process is really slow, try to use **Databricks CLI** to upload, see **Appendix B** for details.
+> Tips: if you find your upload process is really slow, try to use **Databricks CLI** to upload, see [Appendix B](#Appendix B) for details.
 
-### 4. Installing BigDL Python libraries
+### 4. Install BigDL Python libraries
 
-Install BigDL python environment using **bigdl-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip** from step 2. However, Databricks can only upload **Jar**, **Python Egg** and **Python Whl**, don't support **Zip**, so we can not simply upload the python api zip and install it like what we do in Step 3. You can upload and install the zip package in one of the following ways.
+Install BigDL python environment using **bigdl-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip** from [step 2](#2. Download BigDL Libraries). However, Databricks can only upload **Jar**, **Python Egg** and **Python Whl**, but doesn't support **Zip**, so we can not simply upload the python api zip and install it like what we do in Step 3. You can upload and install the zip package in one of the following ways.
 
 #### 4.1 Upload and Install through DBFS
 
-**First, upload the zip package to DBFS.** In the left panel, click **Data > DBFS**, if your panel don't have DBFS, see **Appendix A**. then choose or create a folder and right click in the folder, choose **Upload here**.
+**First, upload the zip package to [DBFS](https://docs.databricks.com/dbfs/index.html).** In the left panel, click **Data > DBFS**, if your panel don't have DBFS, see [Appendix A](#Appendix A). then choose or create a folder and right click in the folder, choose **Upload here**.
 
 ![](images/upload.png)
 
-upload your zip package.
+Upload your zip package.
 
 ![](images/upload-success.png)
 
@@ -61,7 +61,7 @@ You can simply change the **bigdl-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip** ex
 
 ![](images/egg.png)
 
-### **5. Setting Spark configuration**
+### **5. Set Spark configuration**
 
 On the cluster configuration page, click the **Advanced Options** toggle. Click the **Spark** tab. You can provide custom [Spark configuration properties](https://spark.apache.org/docs/latest/configuration.html) in a cluster configuration. Please set it according to your cluster resource and program needs.
 
@@ -74,7 +74,7 @@ spark.executor.cores 2
 spark.cores.max 4
 ```
 
-### **6. Running BigDL on Databricks**
+### **6. Run BigDL on Databricks**
 
 Open a new notebook, and call `init_orca_context` at the beginning of your code (with `cluster_mode` set to "spark-submit").
 
@@ -102,13 +102,13 @@ If there is no DBFS in your panel,  go to **User profile > Admin Console > Works
 
 Use **Databricks CLI** to upload file to DBFS.
 
-**Install and Config Azure Databricks CLI**
+**Install and config Azure Databricks CLI**
 
 1. Install Python, need Python version 2.7.9 and above if you’re using Python 2 or Python 3.6 and above if you’re using Python 3.
 
 2. Run `pip install databricks-cli`
 
-3. Set authentication, Click **user profile icon > User Settings > Access tokens > Generate new token > generate > copy the token**, make sure to **Copy** the token and store it in a secure location, **it won't show again**.
+3. Set authentication, Click **user profile icon > User Settings > Access tokens > Generate new token > generate > copy the token**, make sure to **copy** the token and store it in a secure location, **it won't show again**.
 
    ![](images/token.png)
 
@@ -133,10 +133,10 @@ Use **Databricks CLI** to upload file to DBFS.
 Now, we can use Databricks CLI to upload file to DBFS. run command:
 
 ```
-dbfs cp /your/local/filepath/bigdl-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip dbfs:/FileStore/jars/stable/bigdl-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip
+dbfs cp /your/local/filepath/bigdl-assembly-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar dbfs:/FileStore/jars/stable/bigdl-assembly-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar
 ```
 
-After command finished, check DBFS in Databricks, in left panel, click **Data > DBFS > your upload directory**, if you do not see DBFS in your panel, see **Appendix A**.
+After command finished, check DBFS in Databricks, in left panel, click **Data > DBFS > your upload directory**, if you do not see DBFS in your panel, see [Appendix A](#Appendix A).
 
 **Install package from DBFS**
 
