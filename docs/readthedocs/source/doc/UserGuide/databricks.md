@@ -47,7 +47,7 @@ Upload your zip package.
 
 ![](images/upload-success.png)
 
-right click the uploaded zip package and choose **Copy path**, copy the **Spark API Format** path.
+Right click the uploaded zip package and choose **Copy path**, copy the **Spark API Format** path.
 
 ![](images/copy-path.png)
 
@@ -57,7 +57,7 @@ right click the uploaded zip package and choose **Copy path**, copy the **Spark 
 
 #### 4.2 Change the File Extension Name
 
-You can simply change the **bigdl-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip** extension name(**.zip**) to **.egg**, Egg are essentially a zip format package. Then in the left panel, click **Compute > choose your cluster > Libraries > Install new > Library Source(Upload) > Library Type(Python Egg) > Install**
+You can simply change the **bigdl-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip** extension name(**.zip**) to **.egg**, since Egg is essentially a zip format package. Then in the left panel, click **Compute > choose your cluster > Libraries > Install new > Library Source(Upload) > Library Type(Python Egg) > Install**
 
 ![](images/egg.png)
 
