@@ -1,6 +1,6 @@
-# Run Examples
+## End to end Spark GBT Example On CriteoClickLogsDataset
 
-#### 1.End to end Spark GBT Example On CriteoClickLogsDataset
+### Usage
 
 Run this example in spark local mode:
 
