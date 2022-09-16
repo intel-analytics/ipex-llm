@@ -9,22 +9,28 @@ status_5_scala_sql_UserDefinedScalar=1
 status_6_scala_sql_UserDefinedTypedAggregation=1
 status_7_scala_sql_UserDefinedUntypedAggregation=1
 status_8_scala_sql_SparkHiveExample=1
-LOCAL_IP=192.168.0.112
+LOCAL_IP=172.168.0.207
 
 if [ $status_2_scala_sql_example -ne 0 ]; then
-SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
+cd /ppml/trusted-big-data-ml
+./clean.sh
+/graphene/Tools/argv_serializer bash -c "/opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx10g \
   -XX:ActiveProcessorCount=24 \
   org.apache.spark.deploy.SparkSubmit \
   --master 'local[4]' \
   --class org.apache.spark.examples.sql.SparkSQLExample \
-  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar" 2>&1 > test-scala-spark-sql-example-sgx.log
+  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar" > /ppml/trusted-big-data-ml/secured-argvs
+./init.sh
+SGX=1 ./pal_loader bash 2>&1 | tee test-scala-spark-sql-example-sgx.log
 fi
 status_2_scala_sql_example=$(echo $?)
 
 if [ $status_3_scala_sql_RDDRelation -ne 0 ]; then
-SGX=1 ./pal_loader bash -c "rm -rf pair.parquet && \
+cd /ppml/trusted-big-data-ml
+./clean.sh
+/graphene/Tools/argv_serializer bash -c "rm -rf pair.parquet && \
     /opt/jdk8/bin/java \
     -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
     -Xmx10g \
@@ -32,12 +38,16 @@ SGX=1 ./pal_loader bash -c "rm -rf pair.parquet && \
     org.apache.spark.deploy.SparkSubmit \
     --master 'local[4]' \
     --class org.apache.spark.examples.sql.RDDRelation \
-    /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar" 2>&1 > test-scala-spark-sql-RDDRelation-sgx.log
+    /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar" > /ppml/trusted-big-data-ml/secured-argvs
+./init.sh
+SGX=1 ./pal_loader bash 2>&1 | tee test-scala-spark-sql-RDDRelation-sgx.log
 fi
 status_3_scala_sql_RDDRelation=$(echo $?)
 
 if [ $status_4_scala_sql_SimpleTypedAggregator -ne 0 ]; then
-SGX=1 ./pal_loader bash -c "rm -rf pair.parquet && \
+cd /ppml/trusted-big-data-ml
+./clean.sh
+/graphene/Tools/argv_serializer bash -c "rm -rf pair.parquet && \
   /opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx10g \
@@ -45,12 +55,16 @@ SGX=1 ./pal_loader bash -c "rm -rf pair.parquet && \
   org.apache.spark.deploy.SparkSubmit \
   --master 'local[4]' \
   --class org.apache.spark.examples.sql.SimpleTypedAggregator \
-  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar" 2>&1 > test-scala-spark-sql-SimpleTypedAggregator-sgx.log
+  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar" > /ppml/trusted-big-data-ml/secured-argvs
+./init.sh
+SGX=1 ./pal_loader bash 2>&1 | tee test-scala-spark-sql-SimpleTypedAggregator-sgx.log
 fi
 status_4_scala_sql_SimpleTypedAggregator=$(echo $?)
 
 if [ $status_5_scala_sql_UserDefinedScalar -ne 0 ]; then
-SGX=1 ./pal_loader bash -c "rm -rf pair.parquet && \
+cd /ppml/trusted-big-data-ml
+./clean.sh
+/graphene/Tools/argv_serializer bash -c "rm -rf pair.parquet && \
   /opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx10g \
@@ -58,12 +72,16 @@ SGX=1 ./pal_loader bash -c "rm -rf pair.parquet && \
   org.apache.spark.deploy.SparkSubmit \
   --master 'local[4]' \
   --class org.apache.spark.examples.sql.UserDefinedScalar \
-  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar" 2>&1 > test-scala-spark-sql-UserDefinedScalar-sgx.log
+  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar" > /ppml/trusted-big-data-ml/secured-argvs
+./init.sh
+SGX=1 ./pal_loader bash 2>&1 | tee test-scala-spark-sql-UserDefinedScalar-sgx.log
 fi
 status_5_scala_sql_UserDefinedScalar=$(echo $?)
 
 if [ $status_6_scala_sql_UserDefinedTypedAggregation -ne 0 ]; then
-SGX=1 ./pal_loader bash -c "rm -rf pair.parquet && \
+cd /ppml/trusted-big-data-ml
+./clean.sh
+/graphene/Tools/argv_serializer bash -c "rm -rf pair.parquet && \
   /opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx10g \
@@ -71,12 +89,16 @@ SGX=1 ./pal_loader bash -c "rm -rf pair.parquet && \
   org.apache.spark.deploy.SparkSubmit \
   --master 'local[4]' \
   --class org.apache.spark.examples.sql.UserDefinedTypedAggregation \
-  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar" 2>&1 > test-scala-spark-sql-UserDefinedTypedAggregation-sgx.log
+  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar" > /ppml/trusted-big-data-ml/secured-argvs
+./init.sh
+SGX=1 ./pal_loader bash 2>&1 | tee test-scala-spark-sql-UserDefinedTypedAggregation-sgx.log
 fi
 status_6_scala_sql_UserDefinedTypedAggregation=$(echo $?)
 
 if [ $status_7_scala_sql_UserDefinedUntypedAggregation -ne 0 ]; then
-SGX=1 ./pal_loader bash -c "rm -rf pair.parquet && \
+cd /ppml/trusted-big-data-ml
+./clean.sh
+/graphene/Tools/argv_serializer bash -c "rm -rf pair.parquet && \
   /opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx10g \
@@ -84,14 +106,18 @@ SGX=1 ./pal_loader bash -c "rm -rf pair.parquet && \
   org.apache.spark.deploy.SparkSubmit \
   --master 'local[4]' \
   --class org.apache.spark.examples.sql.UserDefinedUntypedAggregation \
-  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar" 2>&1 > test-scala-spark-sql-UserDefinedUntypedAggregation-sgx.log
+  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar" > /ppml/trusted-big-data-ml/secured-argvs
+./init.sh
+SGX=1 ./pal_loader bash 2>&1 | tee test-scala-spark-sql-UserDefinedUntypedAggregation-sgx.log
 fi
 status_7_scala_sql_UserDefinedUntypedAggregation=$(echo $?)
 
 if [ $status_8_scala_sql_SparkHiveExample -ne 0 ]; then
 rm -rf metastore_db && \
 rm -rf /tmp/parquet_data && \
-SGX=1 ./pal_loader bash -c "
+cd /ppml/trusted-big-data-ml
+./clean.sh
+/graphene/Tools/argv_serializer bash -c "
     rm -rf pair.parquet && \
     /opt/jdk8/bin/java \
         -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
@@ -113,7 +139,9 @@ SGX=1 ./pal_loader bash -c "
         --executor-cores 4 \
         --total-executor-cores 4 \
         --executor-memory 10G \
-        /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar hdfs://$LOCAL_IP:9000/spark-warehouse" 2>&1 > test-scala-spark-sql-SparkHiveExample-sgx.log
+        /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar hdfs://$LOCAL_IP:9000/spark-warehouse" > /ppml/trusted-big-data-ml/secured-argvs
+./init.sh
+SGX=1 ./pal_loader bash 2>&1 | tee test-scala-spark-sql-SparkHiveExample-sgx.log
 fi
 status_8_scala_sql_SparkHiveExample=$(echo $?)
 

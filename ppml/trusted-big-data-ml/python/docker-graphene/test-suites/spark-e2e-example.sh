@@ -1,10 +1,12 @@
 status_8_scala_e2e=1
 
-LOCAL_IP=192.168.0.112
+LOCAL_IP=172.168.0.207
 DB_PATH=$1
 
 if [ $status_8_scala_e2e -ne 0 ]; then
-  SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
+  cd /ppml/trusted-big-data-ml
+./clean.sh
+/graphene/Tools/argv_serializer bash -c "/opt/jdk8/bin/java \
     -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-example-sql-e2e.jar' \
     -Xmx2g \
     org.apache.spark.deploy.SparkSubmit \
@@ -14,7 +16,9 @@ if [ $status_8_scala_e2e -ne 0 ]; then
     --executor-memory 8g \
     --class test.SqlExample \
     /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-example-sql-e2e.jar \
-    $DB_PATH" 2>&1 > spark-example-sql-e2e-sgx.log
+    $DB_PATH" > /ppml/trusted-big-data-ml/secured-argvs
+./init.sh
+SGX=1 ./pal_loader bash 2>&1 | tee spark-example-sql-e2e-sgx.log
 fi
 status_8_scala_e2e=$(echo $?)
 
