@@ -193,6 +193,11 @@
             <artifactId>${spark-version.project}</artifactId>
             <version>${project.version}</version>
     	</dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons-io.version}</version>
+        </dependency>
 	<dependency>
             <groupId>org.scalanlp</groupId>
             <artifactId>breeze_${scala.major.version}</artifactId>
