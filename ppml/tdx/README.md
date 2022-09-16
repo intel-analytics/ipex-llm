@@ -4,7 +4,7 @@ TDX-based Trusted Big Data ML allows the user to run end-to-end big data analyti
 
 ### Overview Architecture
 ![image](https://user-images.githubusercontent.com/30695225/190288851-fd852a51-f193-444c-bdea-1edad8375dd1.png)
-### BigDL PPML on TDX CC
+### BigDL PPML on TDX-CC
 ![image](https://user-images.githubusercontent.com/30695225/190289025-dfcb3d01-9eed-4676-9df5-8412bd845894.png)
 
 ## Prepare TDX CC Environment
