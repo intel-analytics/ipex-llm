@@ -13,19 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 import math
 from time import time
-from argparse import ArgumentParser, ArgumentError
+from argparse import ArgumentParser
 from keras.callbacks import EarlyStopping
-
-from bigdl.orca import init_orca_context, stop_orca_context
-from bigdl.orca.learn.tf2.estimator import Estimator
-from bigdl.friesian.feature import FeatureTable
 
 from deepctr.feature_column import SparseFeat, DenseFeat
 from deepctr.models import MMOE, PLE
 
 from bigdl.dllib.utils.log4Error import invalidInputError
+from bigdl.orca import init_orca_context, stop_orca_context
+from bigdl.orca.learn.tf2.estimator import Estimator
+from bigdl.friesian.feature import FeatureTable
 
 
 def build_model(model_type, sparse_features, dense_features, feature_max_idx):
@@ -213,7 +213,7 @@ if __name__ == "__main__":
         'city',
         'age',
         'gender',
-        'cat_1',
+        'cat_1'
     ]
     continuous_cols = ['img_num']
     feature_max_idx = {'user_id': 40000, 'article_id': 200000, 'net_status': 1004,
