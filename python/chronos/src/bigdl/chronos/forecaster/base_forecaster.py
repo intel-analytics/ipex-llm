@@ -789,16 +789,13 @@ class BasePytorchForecaster(Forecaster):
                | 1. a numpy ndarray x:
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
-               | 2. a xshard item:
-               | each partition can be a dictionary of {'x': x}, where x's shape
-               | should follow the shape stated before.
-               | 3. pytorch dataloader:
+               | 2. pytorch dataloader:
                | the dataloader needs to return at least x in each iteration
                | with the shape as following:
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | If returns x and y only get x.
-               | 4. A bigdl.chronos.data.tsdataset.TSDataset instance:
+               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
                | Forecaster will automatically process the TSDataset.
                | By default, TSDataset will be transformed to a pytorch dataloader,
                | which is memory-friendly while a little bit slower.
@@ -812,16 +809,13 @@ class BasePytorchForecaster(Forecaster):
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
-               | 2. a xshard item:
-               | each partition can be a dictionary of {'x': x, 'y': y}, where x and y's shape
-               | should follow the shape stated before.
-               | 3. pytorch dataloader:
+               | 2. pytorch dataloader:
                | the dataloader should return x, y in each iteration with the shape as following:
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
-               | 4. A bigdl.chronos.data.tsdataset.TSDataset instance:
+               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
                | Forecaster will automatically process the TSDataset.
                | By default, TSDataset will be transformed to a pytorch dataloader,
                | which is memory-friendly while a little bit slower.
@@ -838,28 +832,22 @@ class BasePytorchForecaster(Forecaster):
 
         """
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
-        from bigdl.orca.data.shard import SparkXShards
-        # TODO: fitted when distributed?
-        if not self.distributed and not self.fitted:
+
+        if self.distributed:
+            invalidInputError(False,
+                              "predict interval has not been supported for distributed "
+                              "forecaster. You can call .to_local() to transform the "
+                              "forecaster to a non-distributed version.")
+
+        if not self.fitted:
             invalidInputError(False,
                               "You must call fit or restore first before calling predict_interval!")
 
         def calculate(data, model):
-            if self.distributed:
-                yhat = model.predict(data, batch_size=batch_size)
-                expand_dim = []
-                if self.data_config["future_seq_len"] == 1:
-                    expand_dim.append(1)
-                if self.data_config["output_feature_num"] == 1:
-                    expand_dim.append(2)
-                yhat = xshard_to_np(yhat, mode="yhat", expand_dim=expand_dim)
-                return yhat
-            else:
-                model.eval()
-                yhat = _pytorch_fashion_inference(model=model,
-                                                  input_data=data,
-                                                  batch_size=batch_size)
-                return yhat
+            yhat = _pytorch_fashion_inference(model=model,
+                                              input_data=data,
+                                              batch_size=batch_size)
+            return yhat
 
         # step1, according to validation dataset, calculate inherent noise
         # which should be done during fit
@@ -878,21 +866,12 @@ class BasePytorchForecaster(Forecaster):
                                                          target_col=data.roll_target,
                                                          shuffle=False)
 
-            is_local_data = isinstance(val_data, (tuple, DataLoader))
-            if not is_local_data and not self.distributed:
-                val_data = xshard_to_np(val_data, mode="fit")
-
             if isinstance(val_data, DataLoader):
                 input_data = val_data
                 target = np.concatenate(tuple(val[1] for val in val_data), axis=0)
-            elif isinstance(val_data, SparkXShards):
-                input_data = val_data
-                local_data = val_data.collect()
-                target = np.concatenate([local_data[i]['y'] for i in range(len(local_data))],
-                                        axis=0)
             else:
                 input_data, target = val_data
-
+            self.internal.eval()
             val_yhat = calculate(input_data, self.internal)
             self.data_noise = Evaluator.evaluate(["mse"], target,
                                                  val_yhat, aggregate=None)[0]  # 2d array
@@ -907,15 +886,6 @@ class BasePytorchForecaster(Forecaster):
                                              feature_col=data.roll_feature,
                                              target_col=data.roll_target,
                                              shuffle=False)
-        # data transform
-        is_local_data = isinstance(data, (np.ndarray, DataLoader))
-        if is_local_data and self.distributed:
-            if isinstance(data, DataLoader):
-                invalidInputError(False,
-                                  "We will be support input dataloader later.")
-            data = np_to_xshard(data)
-        if not is_local_data and not self.distributed:
-            data = xshard_to_np(data, mode="predict")
 
         # step3: calculate model uncertainty based MC Dropout
         def apply_dropout(m):
@@ -924,6 +894,7 @@ class BasePytorchForecaster(Forecaster):
 
         # turn on dropout
         self.internal.apply(apply_dropout)
+
         y_hat_list = []
         for i in range(repetition_times):
             y_hat_list.append(calculate(data, self.internal))
