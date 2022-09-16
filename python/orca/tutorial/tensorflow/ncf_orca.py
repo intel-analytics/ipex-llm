@@ -17,59 +17,48 @@
 import time
 import numpy as np
 import tensorflow as tf
+import os
 
 from bigdl.orca import OrcaContext, init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf2 import Estimator
 
 
 def model_creator(config):
-    num_users = max_user_id
-    num_items = max_item_id
-    layers=[20, 10]
-    include_mf=True
-    mf_embed=20
-    num_layer = len(layers)
-    user_input = tf.keras.layers.Input(shape=(1,), dtype="int32", name="user_input")
-    item_input = tf.keras.layers.Input(shape=(1,), dtype="int32", name="item_input")
+    import tensorflow as tf
+    from tensorflow import keras
+    embedding_size=16
+    user = keras.layers.Input(dtype=tf.int32, shape=(None,))
+    item = keras.layers.Input(dtype=tf.int32, shape=(None,))
+    label = keras.layers.Input(dtype=tf.int32, shape=(None,))
 
-    mlp_embed_user = tf.keras.layers.Embedding(input_dim=num_users + 1,
-                                               output_dim=int(layers[0] / 2),
-                                               input_length=1)(user_input)
-    mlp_embed_item = tf.keras.layers.Embedding(input_dim=num_items + 1,
-                                               output_dim=int(layers[0] / 2),
-                                               input_length=1)(item_input)
-    user_latent = tf.keras.layers.Flatten()(mlp_embed_user)
-    item_latent = tf.keras.layers.Flatten()(mlp_embed_item)
+    with tf.name_scope("GMF"):
+        user_embed_GMF = keras.layers.Embedding(max_user_id + 1, embedding_size)(user)
+        item_embed_GMF = keras.layers.Embedding(max_item_id + 1, embedding_size)(item)
+        GMF = keras.layers.Multiply()([user_embed_GMF, item_embed_GMF])
 
-    mlp_latent = tf.keras.layers.concatenate([user_latent, item_latent], axis=1)
-    for idx in range(1, num_layer):
-        layer = tf.keras.layers.Dense(layers[idx], activation="relu",
-                      name="layer%d" % idx)
-        mlp_latent = layer(mlp_latent)
+    with tf.name_scope("MLP"):
+        user_embed_MLP = keras.layers.Embedding(max_user_id + 1, embedding_size)(user)
+        item_embed_MLP = keras.layers.Embedding(max_item_id + 1, embedding_size)(item)
+        interaction = tf.concat([user_embed_MLP, item_embed_MLP], axis=-1)
+        layer1_MLP = keras.layers.Dense(units=embedding_size * 2, activation='relu')(interaction)
+        layer1_MLP = keras.layers.Dropout(rate=0.2)(layer1_MLP)
+        layer2_MLP = keras.layers.Dense(units=embedding_size, activation='relu')(layer1_MLP)
+        layer2_MLP = keras.layers.Dropout(rate=0.2)(layer2_MLP)
+        layer3_MLP = keras.layers.Dense(units=embedding_size // 2, activation='relu')(layer2_MLP)
+        layer3_MLP = keras.layers.Dropout(rate=0.2)(layer3_MLP)
 
-    if include_mf:
-        mf_embed_user = tf.keras.layers.Embedding(input_dim=num_users + 1,
-                                                  output_dim=mf_embed,
-                                                  input_length=1)(user_input)
-        mf_embed_item = tf.keras.layers.Embedding(input_dim=num_items + 1,
-                                                  output_dim=mf_embed,
-                                                  input_length=1)(item_input)
-        mf_user_flatten = tf.keras.layers.Flatten()(mf_embed_user)
-        mf_item_flatten = tf.keras.layers.Flatten()(mf_embed_item)
-
-        mf_latent = tf.keras.layers.multiply([mf_user_flatten, mf_item_flatten])
-        concated_model = tf.keras.layers.concatenate([mlp_latent, mf_latent], axis=1)
-        prediction = tf.keras.layers.Dense(1, activation="sigmoid", name="prediction")(concated_model)
-    else:
-        prediction = tf.keras.layers.Dense(1, activation="sigmoid", name="prediction")(mlp_latent)
-
-    model = tf.keras.Model([user_input, item_input], prediction)
-    model.summary()
-    optimizer = tf.keras.optimizers.Adam(1e-4)
-    model.compile(optimizer=optimizer, loss="binary_crossentropy", metrics=['accuracy'])
-
-
+    # Concate the two parts together
+    with tf.name_scope("concatenation"):
+        concatenation = tf.concat([GMF, layer3_MLP], axis=-1)
+        outputs = keras.layers.Dense(1, activation='sigmoid')(concatenation)
+    
+    model = keras.Model(inputs=[user, item], outputs=outputs)
+    model.compile(optimizer= "adam",
+                  loss= "binary_crossentropy",
+                  metrics=['accuracy'])
     return model
+
+     
 
 cluster_mode = "local"
 # cluster_mode = "k8s"
@@ -136,11 +125,11 @@ df_neg = df_neg.select(df_neg.user, explode(df_neg.item_list))
 df_neg = df_neg.withColumn('label', functions.lit(0))
 df = df.unionAll(df_neg)
 num_sample = df.count()
-train_df, test_df = df.randomSplit([0.8, 0.2],seed = 11)
+train_df, test_df = df.randomSplit([0.8, 0.2],100)
 
 
-batch_size=256
-epochs=5
+batch_size=1280
+epochs=2
 model_dir='./'
 
 # create an Estimator
@@ -151,15 +140,27 @@ stats = est.fit(train_df,
                 batch_size=batch_size,
                 feature_cols=['user', 'item'],
                 label_cols=['label'],
-                steps_per_epoch=int(0.8*num_sample // batch_size),
+                steps_per_epoch=int(800000 // batch_size),
                 validation_data=test_df,
-                validation_steps = int(0.2*num_sample // batch_size))
+                validation_steps =int(200000 // batch_size))
 
-import os
 checkpoint_path = os.path.join(model_dir, "NCF.ckpt")
 est.save_checkpoint(checkpoint_path)
+
+
+# checkpoint_path = os.path.join(model_dir, "NCF.ckpt")
+# est.save_checkpoint(checkpoint_path)
 # print(model.get_weights())
 
+
+# evaluate with Estimator
+stats = est.evaluate(test_df, 
+                     feature_cols=['user', 'item'],
+                     label_cols=['label'],
+                     num_steps=int(0.2*num_sample // batch_size))
+
+print(stats)
+est.shutdown()
 end = time.time()
 print("Time used: ", end - start)
 
