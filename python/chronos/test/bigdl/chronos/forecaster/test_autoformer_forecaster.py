@@ -34,11 +34,16 @@ def get_ts_df():
     return train_df
 
 
-def create_data(loader=False):
+def create_data(loader=False, extra_feature=False):
     df = get_ts_df()
-    target = ["value", "extra feature"]
+    if extra_feature:
+        target = ["value"]
+        extra = ["extra feature"]
+    else:
+        target = ["value", "extra feature"]
+        extra = []
     tsdata_train, tsdata_val, tsdata_test =\
-        TSDataset.from_pandas(df, dt_col="datetime", target_col=target,
+        TSDataset.from_pandas(df, dt_col="datetime", target_col=target, extra_feature_col=extra,
                               with_split=True, test_ratio=0.1, val_ratio=0.1)
     if loader:
         train_loader = tsdata_train.to_torch_data_loader(lookback=24, horizon=5,
@@ -236,6 +241,22 @@ class TestChronosModelAutoformerForecaster(TestCase):
                                             freq='s',
                                             seed=0,
                                             moving_avg=20) # even
+        forecaster.fit(train_loader, epochs=3, batch_size=32)
+        evaluate = forecaster.evaluate(val_loader)
+        pred = forecaster.predict(test_loader)
+        evaluate_list.append(evaluate)
+
+    def test_autoformer_forecaster_diff_input_output_dim(self):
+        train_loader, val_loader, test_loader = create_data(loader=True, extra_feature=True)
+        evaluate_list = []
+        forecaster = AutoformerForecaster(past_seq_len=24,
+                                          future_seq_len=5,
+                                          input_feature_num=2,
+                                          output_feature_num=1,
+                                          label_len=12,
+                                          freq='s',
+                                          seed=0,
+                                          moving_avg=20) # even
         forecaster.fit(train_loader, epochs=3, batch_size=32)
         evaluate = forecaster.evaluate(val_loader)
         pred = forecaster.predict(test_loader)
