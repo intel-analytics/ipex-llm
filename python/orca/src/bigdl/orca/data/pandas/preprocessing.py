@@ -284,3 +284,26 @@ def read_parquet(file_path, columns=None, schema=None, **options):
         print("An error occurred when reading parquet files")
         invalidInputError(False, str(e))
     return data_shards
+
+
+def merge(left, right, how="inner", on=None,**kwargs):
+    """
+    Merge two SparkXShards based on pyspark.sql.DataFrame.join()
+    
+    :param left: One SparkXShards
+    :param right: The other SparkXShards
+    :param how: 'left','right','outer' or 'inner'. Type of merge. Default is 'inner'.
+    :param on: Column or index level names to merge on
+    :return: A new merged SparkXShards
+    """
+    from bigdl.dllib.utils.log4Error import invalidInputError
+    from bigdl.orca.data import SparkXShards
+    invalidInputError(isinstance(left, SparkXShards), "left should be a SparkXShards")
+    invalidInputError(isinstance(right, SparkXShards), "right should be a SparkXShards")
+    
+    from bigdl.orca.data.utils import spark_df_to_pd_sparkxshards   
+    left_df, right_df=left.to_spark_df(), right.to_spark_df()
+    merged=left_df.join(right_df,on=on,how=how)
+    merged=merged.limit(merged.count())
+    merged=spark_df_to_pd_sparkxshards(merged)
+    return merged
