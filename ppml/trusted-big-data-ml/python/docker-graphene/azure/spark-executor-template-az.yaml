@@ -30,7 +30,7 @@ spec:
         #sgx.intel.com/enclave: 10
         #sgx.intel.com/provision: 10
   volumes:
-    - name: secretes-store01
+    - name: secrets-store01
       csi:
         driver: secrets-store.csi.k8s.io
         readOnly: true

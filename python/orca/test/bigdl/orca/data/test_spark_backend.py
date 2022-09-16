@@ -223,6 +223,12 @@ class TestSparkBackend(TestCase):
         df = data_shard.to_spark_df()
         df.show()
 
+    def test_read_large_csv(self):
+        file_path = os.path.join(self.resource_path, "orca/data/10010.csv")
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
+        res = data_shard.collect()
+        assert len(res[0]) == 10009, "number of records should be 10009"
+
     def test_spark_df_to_shards(self):
         file_path = os.path.join(self.resource_path, "orca/data/csv")
         from pyspark.sql import SparkSession

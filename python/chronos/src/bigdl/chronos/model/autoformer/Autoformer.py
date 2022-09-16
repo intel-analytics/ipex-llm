@@ -70,6 +70,7 @@ class AutoFormer(pl.LightningModule):
         self.lr = configs.lr
         self.lr_scheduler_milestones = configs.lr_scheduler_milestones
         self.loss = loss_creator(configs.loss)
+        self.c_out = configs.c_out
 
         # Decomp
         # change kernei_size to odd
@@ -130,7 +131,7 @@ class AutoFormer(pl.LightningModule):
                 enc_self_mask=None, dec_self_mask=None, dec_enc_mask=None):
         # decomp init
         mean = torch.mean(x_enc, dim=1).unsqueeze(1).repeat(1, self.pred_len, 1)
-        zeros = torch.zeros([x_dec.shape[0], self.pred_len, x_dec.shape[2]], device=x_enc.device)
+        zeros = torch.zeros([x_enc.shape[0], self.pred_len, x_enc.shape[2]], device=x_enc.device)
         seasonal_init, trend_init = self.decomp(x_enc)
         # decoder input
         trend_init = torch.cat([trend_init[:, -self.label_len:, :], mean], dim=1)
@@ -154,23 +155,23 @@ class AutoFormer(pl.LightningModule):
         batch_x, batch_y, batch_x_mark, batch_y_mark = map(lambda x: x.float(), batch)
         outputs = self(batch_x, batch_x_mark, batch_y, batch_y_mark)
 
-        outputs = outputs[:, -self.pred_len:, :]
-        batch_y = batch_y[:, -self.pred_len:, :]
+        outputs = outputs[:, -self.pred_len:, -self.c_out:]
+        batch_y = batch_y[:, -self.pred_len:, -self.c_out:]
         return self.loss(outputs, batch_y)
 
     def validation_step(self, batch, batch_idx):
         batch_x, batch_y, batch_x_mark, batch_y_mark = map(lambda x: x.float(), batch)
         outputs = self(batch_x, batch_x_mark, batch_y, batch_y_mark)
 
-        outputs = outputs[:, -self.pred_len:, :]
-        batch_y = batch_y[:, -self.pred_len:, :]
+        outputs = outputs[:, -self.pred_len:, -self.c_out:]
+        batch_y = batch_y[:, -self.pred_len:, -self.c_out:]
         self.log("val_loss", self.loss(outputs, batch_y))
 
     def predict_step(self, batch, batch_idx):
         batch_x, batch_y, batch_x_mark, batch_y_mark = map(lambda x: x.float(), batch)
         outputs = self(batch_x, batch_x_mark, batch_y, batch_y_mark)
 
-        outputs = outputs[:, -self.pred_len:, :]
+        outputs = outputs[:, -self.pred_len:, -self.c_out:]
         return outputs
 
     def configure_optimizers(self):
