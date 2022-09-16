@@ -56,7 +56,7 @@ def create_data(loader=False):
         return train_data, val_data, test_data
 
 
-def create_tsdataset(roll=True, horizon=5):
+def create_tsdataset(roll=True, horizon=5, val_ratio=0):
     from bigdl.chronos.data import TSDataset
     import pandas as pd
     timeseries = pd.date_range(start='2020-01-01', freq='D', periods=1000)
@@ -66,14 +66,25 @@ def create_tsdataset(roll=True, horizon=5):
                       dtype=np.float32)
     df.reset_index(inplace=True)
     df.rename(columns={'index': 'timeseries'}, inplace=True)
-    train, val, test = TSDataset.from_pandas(df=df,
-                                           dt_col='timeseries',
-                                           target_col=['value1', 'value2'],
-                                           with_split=True)
-    if roll:
-        for tsdata in [train, val, test]:
-            tsdata.roll(lookback=24, horizon=horizon)
-    return train, val, test
+    if val_ratio == 0:
+        train, _, test = TSDataset.from_pandas(df=df,
+                                            dt_col='timeseries',
+                                            target_col=['value1', 'value2'],
+                                            with_split=True)
+        if roll:
+            for tsdata in [train, test]:
+                tsdata.roll(lookback=24, horizon=horizon)
+        return train, test
+    else:
+        train, val, test = TSDataset.from_pandas(df=df,
+                                            dt_col='timeseries',
+                                            target_col=['value1', 'value2'],
+                                            with_split=True,
+                                            val_ratio=val_ratio)
+        if roll:
+            for tsdata in [train, val, test]:
+                tsdata.roll(lookback=24, horizon=horizon)
+        return train, val, test
 
 
 class TestChronosModelTCNForecaster(TestCase):
@@ -566,7 +577,7 @@ class TestChronosModelTCNForecaster(TestCase):
         val_loss = forecaster.fit(train_loader, val_loader, epochs=10)
 
     def test_forecaster_from_tsdataset(self):
-        train, _, test = create_tsdataset()
+        train, test = create_tsdataset()
         tcn = TCNForecaster.from_tsdataset(train,
                                            num_channels=[16]*3)
         tcn.fit(train,
@@ -579,7 +590,7 @@ class TestChronosModelTCNForecaster(TestCase):
         assert yhat.shape == y_test.shape
 
         del tcn
-        train, _, test = create_tsdataset(roll=False, horizon=[1, 3, 5])
+        train, test = create_tsdataset(roll=False, horizon=[1, 3, 5])
         tcn = TCNForecaster.from_tsdataset(train,
                                            past_seq_len=24,
                                            future_seq_len=5,
@@ -596,7 +607,7 @@ class TestChronosModelTCNForecaster(TestCase):
     @op_all
     @op_onnxrt16
     def test_forecaster_from_tsdataset_data_loader_onnx(self):
-        train, _, test = create_tsdataset(roll=False)
+        train, test = create_tsdataset(roll=False)
         train.gen_dt_feature(one_hot_features=['WEEK'])
         test.gen_dt_feature(one_hot_features=['WEEK'])
 
@@ -719,7 +730,7 @@ class TestChronosModelTCNForecaster(TestCase):
         y_pred, std = forecaster.predict_interval(data=test_loader)
 
     def test_predict_interval_with_tsdataset(self):
-        train, val, test = create_tsdataset()
+        train, val, test = create_tsdataset(roll=True, horizon=5, val_ratio=0.1)
         forecaster = TCNForecaster.from_tsdataset(train,
                                            num_channels=[16]*3)
         forecaster.fit(train, epochs=2, batch_size=32)
@@ -765,7 +776,7 @@ class TestChronosModelTCNForecaster(TestCase):
         stop_orca_context()
 
     def test_predict_interval_without_validation_data(self):
-        train_data, val_data, test_data = create_data()
+        train_data, _, test_data = create_data()
         forecaster = TCNForecaster(past_seq_len=24,
                                    future_seq_len=5,
                                    input_feature_num=1,
