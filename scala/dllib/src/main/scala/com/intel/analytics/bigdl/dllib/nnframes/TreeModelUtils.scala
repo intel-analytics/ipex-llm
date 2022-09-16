@@ -32,8 +32,8 @@ object TreeModelUtils {
 
     val estimator = if (lgbmEstimator.isInstanceOf[MLightGBMClassifier]) {
       lgbmEstimator.asInstanceOf[MLightGBMClassifier]
-      }
-    else if (lgbmEstimator.isInstanceOf[MLightGBMRegressor]){
+    }
+    else if (lgbmEstimator.isInstanceOf[MLightGBMRegressor]) {
       lgbmEstimator.asInstanceOf[MLightGBMRegressor]
     }
     else {
@@ -61,10 +61,8 @@ object TreeModelUtils {
       case "maxBin" => estimator.setMaxBin(kv._2.asInstanceOf[Int])
       case _ =>
         Log4Error.invalidInputError(false,
-          s"LightGBM setParams: key ${ kv._1} is not supported by lgbmParams map",
+          s"LightGBM setParams: key ${kv._1} is not supported by lgbmParams map",
           s"try to set this parameter by calling .set${kv._1}")
     })
-    }
-
   }
 }
