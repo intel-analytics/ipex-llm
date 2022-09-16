@@ -7,7 +7,7 @@ SGX-based Trusted Big Data ML allows the user to run end-to-end big data analyti
 
 #### 1.1 Build BigDL Base Image
 
-The bigdl base image is a public one that does not contain any customer-specific secrets. You will use the base image to get your own customer image in the following. 
+The bigdl base image is a public one that does not contain any secrets. You will use the base image to get your own custom image in the following. 
 
 Before running the following command, please modify the paths in `build-docker-image.sh`. Especially, set `IMAGE_MODE` to `bigdl_base_image`. Then build the docker image with the following command.
 
@@ -24,7 +24,7 @@ It will generate a file `enclave-key.pem` in your present working directory, whi
   openssl genrsa -3 -out enclave-key.pem 3072
 ```
 
-Then, use the `enclave-key.pem` and the bigdl base image to build your own customer image. Change the `IMAGE_MODE` to `customer_image` and run `build-docker-image.sh` again. In the process, SGX MREnclave will be made and signed without saving the sensitive encalve key inside the final image, which is safer.
+Then, use the `enclave-key.pem` and the bigdl base image to build your own custom image. Change the `IMAGE_MODE` to `custom_image` and run `build-docker-image.sh` again. In the process, SGX MREnclave will be made and signed without saving the sensitive encalve key inside the final image, which is safer.
 
 The docker build console will also output `mr_enclave` and `mr_enclave` like below, which are hash values and used to  register your MREnclave in the following.
 

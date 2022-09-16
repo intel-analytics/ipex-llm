@@ -5,7 +5,7 @@
 # LOCAL_IP means your local IP address.
 export SSL_KEYS_PATH=YOUR_LOCAL_SSL_KEYS_FOLDER_PATH
 export LOCAL_IP=YOUR_LOCAL_IP
-export DOCKER_IMAGE=YOUR_DOCKER_IMAGE
+export CUSTOM_IMAGE=YOUR_SELF_BUILD_CUSTOM_IMAGE
 export APP_ID=your_appid
 export API_KEY=your_apikey
 
@@ -23,4 +23,4 @@ sudo docker run -itd \
     -e ATTESTATION_KEY=$API_KEY \
     --name=gramine-test \
     -e LOCAL_IP=$LOCAL_IP \
-    $DOCKER_IMAGE bash
+    $CUSTOM_IMAGE bash

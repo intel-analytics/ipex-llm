@@ -4,17 +4,17 @@ export HTTPS_PROXY_HOST=your_https_proxy_host
 export HTTPS_PROXY_PORT=your_https_proxy_port
 export JDK_URL=http://your-http-url-to-download-jdk
 export SPARK_JAR_REPO_URL=http://your_spark_jar_repo_url
-export IMAGE_MODE=bigdl_base_image_or_customer_image
-export BIGDL_IMAGE_NAME=your_bigdl_base_image_name_used_to_build_customer_image
+export IMAGE_MODE=bigdl_base_image_or_custom_image
+export BIGDL_IMAGE_NAME=your_bigdl_base_image_name_used_to_build_custom_image
 export BIGDL_IMAGE_VERSION=your_bigdl_base_image_version_used_to_build_customer_image
-export CUSTOMER_IMAGE_TAG=your_customer_image_tag
+export CUSTOM_IMAGE_TAG=your_custom_image_tag
 export LOCAL_IP=your_local_IP
-export SGX_MEM_SIZE=memory_size_of_sgx_in_customer_image
-export SGX_LOG_LEVEL=log_level_of_sgx_in_customer_image
+export SGX_MEM_SIZE=memory_size_of_sgx_in_custom_image
+export SGX_LOG_LEVEL=log_level_of_sgx_in_custom_image
 
-if [ "$IMAGE_MODE" == "bigdl_base_image_or_customer_image" ]
+if [ "$IMAGE_MODE" == "bigdl_base_image_or_custom_image" ]
 then
-    echo "Please modify the mode of image to build, you can choose bigdl_base_image or customer_image. The customer_image is built on top of bigdl_base_image, where the customer_image is a customer-specific one signed by your enclave-key.pem."
+    echo "Please modify the mode of image to build, you can choose bigdl_base_image or custom_image. The custom_image is built on top of bigdl_base_image, where the custom_image is a specific one signed by your enclave-key.pem."
 else
     if [ "$IMAGE_MODE" == "bigdl_base_image" ]
     then
@@ -52,9 +52,9 @@ then
             fi
         fi
     else
-    if [ "$IMAGE_MODE" == "customer_image" ]
+    if [ "$IMAGE_MODE" == "custom_image" ]
     then
-        if [[ "$BIGDL_IMAGE_NAME" == "your_bigdl_base_image_name_used_to_build_user_image" ]] || [[ "$BIGDL_IMAGE_VERSION" == "your_bigdl_base_image_version_used_to_build_user_image" ]] || [[ "$CUSTOMER_IMAGE_TAG" == "your_user_image_tag" ]]
+        if [[ "$BIGDL_IMAGE_NAME" == "your_bigdl_base_image_name_used_to_build_custom_image" ]] || [[ "$BIGDL_IMAGE_VERSION" == "your_bigdl_base_image_version_used_to_build_custom_image" ]] || [[ "$CUSTOM_IMAGE_TAG" == "your_custom_image_tag" ]]
         then
             echo "Please specific name and version of your bigdl base name, tag of your user image to use."
         else
@@ -66,7 +66,7 @@ then
                     --build-arg https_proxy=http://${HTTPS_PROXY_HOST}:${HTTPS_PROXY_PORT} \
 		    --build-arg SGX_MEM_SIZE=${SGX_MEM_SIZE} \
 		    --build-arg SGX_LOG_LEVEL=${SGX_LOG_LEVEL} \
-                    -t $CUSTOMER_IMAGE_TAG -f ./CustomerImageDockerfile .
+                    -t $CUSTOM_IMAGE_TAG -f ./CustomImageDockerfile .
         fi
      fi
   fi
