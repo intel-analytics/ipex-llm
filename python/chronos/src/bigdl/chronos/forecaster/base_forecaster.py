@@ -839,7 +839,7 @@ class BasePytorchForecaster(Forecaster):
         """
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
         from bigdl.orca.data.shard import SparkXShards
-        # TODO: how to judge fitted in distributed state?
+        # TODO: fitted when distributed?
         if not self.distributed and not self.fitted:
             invalidInputError(False,
                               "You must call fit or restore first before calling predict_interval!")

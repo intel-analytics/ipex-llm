@@ -66,14 +66,14 @@ def create_tsdataset(roll=True, horizon=5):
                       dtype=np.float32)
     df.reset_index(inplace=True)
     df.rename(columns={'index': 'timeseries'}, inplace=True)
-    train, _, test = TSDataset.from_pandas(df=df,
+    train, val, test = TSDataset.from_pandas(df=df,
                                            dt_col='timeseries',
                                            target_col=['value1', 'value2'],
                                            with_split=True)
     if roll:
-        for tsdata in [train, test]:
+        for tsdata in [train, val, test]:
             tsdata.roll(lookback=24, horizon=horizon)
-    return train, test
+    return train, val, test
 
 
 class TestChronosModelTCNForecaster(TestCase):
@@ -566,7 +566,7 @@ class TestChronosModelTCNForecaster(TestCase):
         val_loss = forecaster.fit(train_loader, val_loader, epochs=10)
 
     def test_forecaster_from_tsdataset(self):
-        train, test = create_tsdataset()
+        train, _, test = create_tsdataset()
         tcn = TCNForecaster.from_tsdataset(train,
                                            num_channels=[16]*3)
         tcn.fit(train,
@@ -579,7 +579,7 @@ class TestChronosModelTCNForecaster(TestCase):
         assert yhat.shape == y_test.shape
 
         del tcn
-        train, test = create_tsdataset(roll=False, horizon=[1, 3, 5])
+        train, _, test = create_tsdataset(roll=False, horizon=[1, 3, 5])
         tcn = TCNForecaster.from_tsdataset(train,
                                            past_seq_len=24,
                                            future_seq_len=5,
@@ -596,7 +596,7 @@ class TestChronosModelTCNForecaster(TestCase):
     @op_all
     @op_onnxrt16
     def test_forecaster_from_tsdataset_data_loader_onnx(self):
-        train, test = create_tsdataset(roll=False)
+        train, _, test = create_tsdataset(roll=False)
         train.gen_dt_feature(one_hot_features=['WEEK'])
         test.gen_dt_feature(one_hot_features=['WEEK'])
 
@@ -717,6 +717,18 @@ class TestChronosModelTCNForecaster(TestCase):
                                                   repetition_times=5)
         assert y_pred.shape == std.shape
         y_pred, std = forecaster.predict_interval(data=test_loader)
+
+    def test_predict_interval_with_tsdataset(self):
+        train, val, test = create_tsdataset()
+        forecaster = TCNForecaster.from_tsdataset(train,
+                                           num_channels=[16]*3)
+        forecaster.fit(train, epochs=2, batch_size=32)
+        # only the first time needs val_data
+        y_pred, std = forecaster.predict_interval(data=test,
+                                                  val_data=val,
+                                                  repetition_times=5)
+        assert y_pred.shape == std.shape
+        y_pred, std = forecaster.predict_interval(data=test)
 
     def test_predict_interval_with_xshard_input(self):
         from bigdl.orca import init_orca_context, stop_orca_context
