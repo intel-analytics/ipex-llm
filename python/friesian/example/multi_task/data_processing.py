@@ -23,12 +23,12 @@ from bigdl.friesian.feature import FeatureTable
 
 
 def transform_img_num(x):
-    # dealing with some abnormal data
+    # deal with abnormal data of img_num
     if x == '上海':
         return 0.0
     elif isinstance(x, float):
         return float(x)
-    else:
+    else:  # for string inputs
         return float(eval(x))
 
 
@@ -130,7 +130,8 @@ if __name__ == '__main__':
     sparse_int_features = [
         'user_id', 'article_id',
         'net_status', 'flush_nums',
-        'exop_position']
+        'exop_position'
+    ]
     sparse_string_features = [
         'device', 'os', 'province',
         'city', 'age',
