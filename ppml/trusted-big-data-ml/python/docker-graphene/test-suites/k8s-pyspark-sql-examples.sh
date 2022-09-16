@@ -2,7 +2,7 @@
 status_2_k8s_pyspark_sql_basic=1
 status_3_k8s_pyspark_sql_e2e=1
 
-SPARK_LOCAL_IP=172.168.0.207
+SPARK_LOCAL_IP=172.168.0.208
 DB_PATH=/ppml/trusted-big-data-ml/work/data/sqlite_example/100w.db
 
 if [ $status_2_k8s_pyspark_sql_basic -ne 0 ]; then

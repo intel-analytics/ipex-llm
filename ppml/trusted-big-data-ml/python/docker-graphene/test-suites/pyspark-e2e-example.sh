@@ -1,6 +1,6 @@
 #!/bin/bash
 status_8_local_spark_customer_profile=1
-SPARK_LOCAL_IP=172.168.0.207
+SPARK_LOCAL_IP=172.168.0.208
 DB_PATH=/ppml/trusted-big-data-ml/work/data/sqlite_example/100w.db
 
 # attention to SPARK_LOCAL_IP env change into targeted ip

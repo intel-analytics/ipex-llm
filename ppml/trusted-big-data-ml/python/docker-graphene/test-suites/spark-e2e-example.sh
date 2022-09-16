@@ -1,6 +1,6 @@
 status_8_scala_e2e=1
 
-LOCAL_IP=172.168.0.207
+LOCAL_IP=172.168.0.208
 DB_PATH=$1
 
 if [ $status_8_scala_e2e -ne 0 ]; then

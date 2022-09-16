@@ -1,6 +1,6 @@
 #!/bin/bash
 status_1_k8s_spark_pi=1
-SPARK_LOCAL_IP=172.168.0.207
+SPARK_LOCAL_IP=172.168.0.208
 
 if [ $status_1_k8s_spark_pi -ne 0 ]; then
   cd /ppml/trusted-big-data-ml

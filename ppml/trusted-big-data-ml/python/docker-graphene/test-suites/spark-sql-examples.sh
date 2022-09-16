@@ -9,7 +9,7 @@ status_5_scala_sql_UserDefinedScalar=1
 status_6_scala_sql_UserDefinedTypedAggregation=1
 status_7_scala_sql_UserDefinedUntypedAggregation=1
 status_8_scala_sql_SparkHiveExample=1
-LOCAL_IP=172.168.0.207
+LOCAL_IP=172.168.0.208
 
 if [ $status_2_scala_sql_example -ne 0 ]; then
 cd /ppml/trusted-big-data-ml

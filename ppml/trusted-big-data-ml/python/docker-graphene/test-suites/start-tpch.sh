@@ -2,7 +2,7 @@
 BASE_DIR=/ppml/trusted-big-data-ml
 WORK_DIR=$BASE_DIR/work
 TPCH_SPARK_DIR=$WORK_DIR/zoo-tutorials/tpch-spark
-LOCAL_IP=172.168.0.207
+LOCAL_IP=172.168.0.208
 
 cd $WORK_DIR
 
