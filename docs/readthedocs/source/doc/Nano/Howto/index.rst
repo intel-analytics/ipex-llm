@@ -26,6 +26,17 @@ PyTorch Lightning
     Training/PyTorchLightning/pytorch_lightning_training_bf16
     Training/PyTorchLightning/pytorch_lightning_cv_data_pipeline
 
+TensorFlow
+~~~~~~~~~~~~~~~~~~~~~~~~~
+* `How to accelerate a TensorFlow Keras application on training workloads through multiple instances <Training/TensorFlow/accelerate_tensorflow_training_multi_instance.html>`_
+
+.. toctree::
+    :maxdepth: 1
+    :hidden:
+
+    Training/TensorFlow/accelerate_tensorflow_training_multi_instance
+
+
 Inference Optimization
 -------------------------
 
