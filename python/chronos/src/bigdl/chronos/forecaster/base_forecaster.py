@@ -779,7 +779,7 @@ class BasePytorchForecaster(Forecaster):
         aggregate = 'mean' if multioutput == 'uniform_average' else None
         return Evaluator.evaluate(self.metrics, target, yhat, aggregate=aggregate)
 
-    def predict_interval(self, data, val_data=None, batch_size=None, repetition_times=5):
+    def predict_interval(self, data, val_data=None, batch_size=32, repetition_times=5):
         """
         Calculate confidence interval of data based on Monte Carlo dropout(MC dropout).
         Related paper : https://arxiv.org/abs/1709.01907
@@ -839,7 +839,7 @@ class BasePytorchForecaster(Forecaster):
         """
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
         from bigdl.orca.data.shard import SparkXShards
-
+        # TODO: how to judge fitted in distributed state?
         if not self.distributed and not self.fitted:
             invalidInputError(False,
                               "You must call fit or restore first before calling predict_interval!")
@@ -877,15 +877,18 @@ class BasePytorchForecaster(Forecaster):
                                                          feature_col=data.roll_feature,
                                                          target_col=data.roll_target,
                                                          shuffle=False)
+
             is_local_data = isinstance(val_data, (tuple, DataLoader))
             if not is_local_data and not self.distributed:
                 val_data = xshard_to_np(val_data, mode="fit")
+
             if isinstance(val_data, DataLoader):
-                input_data = data
+                input_data = val_data
                 target = np.concatenate(tuple(val[1] for val in val_data), axis=0)
             elif isinstance(val_data, SparkXShards):
                 input_data = val_data
-                target = np.concatenate([val_data[i]['y'] for i in range(len(val_data['y']))],
+                local_data = val_data.collect()
+                target = np.concatenate([local_data[i]['y'] for i in range(len(local_data))],
                                         axis=0)
             else:
                 input_data, target = val_data

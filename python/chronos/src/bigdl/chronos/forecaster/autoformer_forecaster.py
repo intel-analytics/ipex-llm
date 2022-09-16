@@ -161,6 +161,9 @@ class AutoformerForecaster(Forecaster):
         self.use_amp = False
         self.use_hpo = True
 
+        # Model preparation
+        self.fitted = False
+
         has_space = _config_has_search_space(
             config={**self.model_config, **self.optim_config,
                     **self.loss_config, **self.data_config})
@@ -350,6 +353,7 @@ class AutoformerForecaster(Forecaster):
                 self.internal = self.tune_internal._model_build(trial)
 
         self.trainer.fit(self.internal, data)
+        self.fitted = True
 
     def predict(self, data, batch_size=32):
         """
@@ -440,7 +444,7 @@ class AutoformerForecaster(Forecaster):
         """
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
 
-        if not self.fitted:
+        if self.fitted is not True:
             invalidInputError(False,
                               "You must call fit or restore first before calling predict_interval!")
 
