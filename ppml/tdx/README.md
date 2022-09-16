@@ -8,7 +8,34 @@ TDX-based Trusted Big Data ML allows the user to run end-to-end big data analyti
 ![image](https://user-images.githubusercontent.com/30695225/190289025-dfcb3d01-9eed-4676-9df5-8412bd845894.png)
 
 ## Prepare TDX CC Environment
-Need to install TDX environment.
+[`Confidential Containers`](https://github.com/confidential-containers/documentation/blob/main/Overview.md) (CC) is an open source community working to enable cloud native confidential computing by leveraging [`Trusted Execution Environments`](https://en.wikipedia.org/wiki/Trusted_execution_environment) (TEE) to protect containers and data.
+
+The TEE seeks to protect the application and data from outside threats, with the application owner having complete control of all communication across the TEE boundary. The application is considered a single complete entity and once supplied with the resources it requires, the TEE protects those resources (memory and CPU) from the infrastructure and all communication across the TEE boundary is under the control of the application owner. 
+
+Confidential Containers supports multiple TEE Technologies, such as Intel SGX and Intel TDX. [`Intel Trust Domain Extensions`](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-trust-domain-extensions.html) (Intel TDX) is introducing new, architectural elements to help deploy hardware-isolated, virtual machines (VMs) called trust domains (TDs). Intel TDX is designed to isolate VMs from the virtual-machine manager (VMM)/hypervisor and any other non-TD software on the platform to protect TDs from a broad range of software.
+
+Combining the advantages of Intel TDX and Confidential Container, TDX-CC provides transparent deployment of unmodified containers and allows cloud-native application owners to enforce application security requirements.
+
+To deploy an actual workload with TDX-CC, you need to prepare the environment in two parts, including **hardware environment** and **Kata CCv0**.
+
+### Hardware Environment
+1. Configure Hardware
+    CPU and firmware need to be upgraded to the latest release version. Some jumpers must be set to enable TDX work on Archer City or Vulcan City board. 
+2. Configure BIOS
+    TDX should be enabled in BIOS. This step is required to be performed every time BIOS is flashed.
+3. Build and install packages
+    Packages of host kernel, guest kernel, qemu, libvirt should be built first. 
+4. Setup TDX Guest Image
+    A proper guest image utilizing the guest kernel, grub, and shim should be built. 
+5. Launch TD Guests
+    It is time to launch TD guests. Section Launch TD Guest leads you step by step to create and launch TD guests.
+6. Verify statuses
+    The Verify TDX Status section provides guidance on how to verify whether TDX is initializing on both the host and guest.
+7. Test TDX
+    TDX tests are used to validate basic functionality of TDX software stack. The tests focus on TDVM lifecycle management and environment validation.
+###  **Kata CCv0**
+Refer to the [`ccv0.sh`](https://github.com/kata-containers/kata-containers/blob/CCv0/docs/how-to/ccv0.sh) to install kata ccv0.
+To ensure the successful creation of Kata confidential containers, please follow the [`how-to-build-and-test-ccv0`](https://github.com/kata-containers/kata-containers/blob/CCv0/docs/how-to/how-to-build-and-test-ccv0.md#using-kubernetes-for-end-to-end-provisioning-of-a-kata-confidential-containers-pod-with-an-unencrypted-image) to verify.
 
 ## Before running the code
 #### 1. Prepare the key
