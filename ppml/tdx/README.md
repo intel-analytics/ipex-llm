@@ -27,6 +27,27 @@ bash ppml/scripts/generate-password.sh used_password_when_generate_keys
 ```
 It will generate that in `./password`.
 
+## Run as Spark Local Mode
+Start the client pod
+```bash
+export KEYS_PATH=YOUR_LOCAL_KEYS_PATH
+export DOCKER_IMAGE=intelanalytics/bigdl-tdx-client:latest
+
+# modift tdx-client.yaml
+kubectl apply -f tdx-client.yaml
+```
+Run `kubectl exec -it YOUR_CLIENT_POD -- /bin/bash` to entry the client pod.
+
+The example for run Spark Pi:
+```bash
+bash spark-submit-with-ppml-tdx-local.sh \
+    --master local[4] \
+    --name spark-pi \
+    --class org.apache.spark.examples.SparkPi \
+    --conf spark.executor.instances=1 \
+    local:///opt/spark/examples/jars/spark-examples_2.12-3.1.2.jar
+```
+
 ## Run as Spark on Kubernetes Mode
 ### 1. Start the client container to run applications in spark K8s mode
 #### 1.1 Prepare the keys and password
@@ -65,20 +86,9 @@ kubectl apply -f tdx-client.yaml
 ```
 Run `kubectl exec -it YOUR_CLIENT_POD -- /bin/bash` to entry the client pod.
 
-## 2. Run as Spsrk Local Mode
-The example for run Spark Pi:
-```bash
-bash spark-submit-with-ppml-tdx-local.sh \
-    --master local[4] \
-    --name spark-pi \
-    --class org.apache.spark.examples.SparkPi \
-    --conf spark.executor.instances=1 \
-    local:///opt/spark/examples/jars/spark-examples_2.12-3.1.2.jar
-```
-
-### 3. Run application in spark K8S mode
-#### 3.1 Run application in K8S client mode
-
+### 2. Run application in spark K8S mode
+#### 2.1 Run application in K8S client mode
+Sample submit command for Simple Query example.
 ```bash
 export secure_password=.. && \
 bash spark-submit-with-ppml-tdx-k8s.sh \
@@ -93,8 +103,8 @@ bash spark-submit-with-ppml-tdx-k8s.sh \
 --conf spark.executor.instances=1 \
 --conf spark.cores.max=8 \
 --class com.intel.analytics.bigdl.ppml.examples.SimpleQuerySparkExample \
---jars /ppml/trusted-big-data-ml/work/data/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar \
-/ppml/trusted-big-data-ml/work/data/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar \
+--jars ${BIGDL_HOME}/jars/bigdl-ppml-spark_3.1.2-*-jar-with-dependencies.jar \
+${BIGDL_HOME}/jars/bigdl-ppml-spark_3.1.2-*-jar-with-dependencies.jar \
 --inputPath /people/encrypted \
 --outputPath /people/people_encrypted_output \
 --inputPartitionNum 8 \
@@ -107,7 +117,7 @@ bash spark-submit-with-ppml-tdx-k8s.sh \
 --simpleAPPID $simpleAPPID \
 --simpleAPPKEY $simpleAPPKEY
 ```
-#### 3.2 Run application in K8s cluster mode
+#### 2.2 Run application in K8s cluster mode
 
 ```bash
 export secure_password=.. && \
@@ -121,8 +131,8 @@ bash spark-submit-with-ppml-tdx-k8s.sh \
 --conf spark.executor.instances=1 \
 --conf spark.cores.max=8 \
 --class com.intel.analytics.bigdl.ppml.examples.SimpleQuerySparkExample \
---jars /ppml/trusted-big-data-ml/work/data/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar \
-/ppml/trusted-big-data-ml/work/data/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar \
+--jars ${BIGDL_HOME}/jars/bigdl-ppml-spark_3.1.2-*-jar-with-dependencies.jar \
+${BIGDL_HOME}/jars/bigdl-ppml-spark_3.1.2-*-jar-with-dependencies.jar \
 --inputPath /people/encrypted \
 --outputPath /people/people_encrypted_output \
 --inputPartitionNum 8 \
