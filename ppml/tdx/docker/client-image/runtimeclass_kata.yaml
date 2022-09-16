@@ -1,0 +1,11 @@
+# Copyright (c) 2020 Red Hat, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+# Define the "kata" runtime class
+---
+kind: RuntimeClass
+apiVersion: node.k8s.io/v1
+metadata:
+  name: kata-cc
+handler: kata

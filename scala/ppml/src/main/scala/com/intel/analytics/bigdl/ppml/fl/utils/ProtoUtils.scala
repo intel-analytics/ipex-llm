@@ -68,7 +68,7 @@ object ProtoUtils {
 
     (T.seq(outputs.values.head.toSeq), target)
   }
-  def protoTableMapToTensorIterableMap(inputMap: java.util.Map[String, FlBaseProto.TensorMap]):
+  def protoTableMapToTensorIterableMap(inputMap: java.util.Map[Integer, FlBaseProto.TensorMap]):
     Map[String, Iterable[Tensor[Float]]] = {
     inputMap.asScala.mapValues(_.getTensorMapMap).values
       .flatMap(_.asScala).groupBy(_._1)

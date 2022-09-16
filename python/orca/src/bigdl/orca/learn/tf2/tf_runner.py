@@ -35,6 +35,7 @@ import socket
 import shutil
 import tempfile
 import subprocess
+from copy import copy
 
 import ray
 import numpy as np
@@ -42,7 +43,8 @@ from contextlib import closing
 
 from bigdl.dllib.utils import log4Error
 from bigdl.orca.data.utils import ray_partitions_get_data_label, ray_partitions_get_tf_dataset
-from bigdl.orca.data.file import is_file, get_remote_file_to_local, get_remote_dir_to_local
+from bigdl.orca.data.file import is_file, get_remote_file_to_local, get_remote_dir_to_local, \
+    get_remote_files_with_prefix_to_local
 from bigdl.dllib.utils.log4Error import *
 
 logger = logging.getLogger(__name__)
@@ -333,7 +335,7 @@ class TFRunner:
              steps_per_epoch=None, validation_steps=None, validation_freq=1,
              data_config=None):
         """Runs a training epoch and updates the model parameters."""
-        config = self.config.copy()
+        config = copy(self.config)
         if data_config is not None:
             config.update(data_config)
         config["batch_size"] = batch_size
@@ -383,7 +385,7 @@ class TFRunner:
     def validate(self, data_creator, batch_size=32, verbose=1, sample_weight=None,
                  steps=None, callbacks=None, data_config=None):
         """Evaluates the model on the validation data set."""
-        config = self.config.copy()
+        config = copy(self.config)
         if data_config is not None:
             config.update(data_config)
         config["batch_size"] = batch_size
@@ -431,7 +433,7 @@ class TFRunner:
         return [stats]
 
     def predict(self, data_creator, batch_size, verbose, steps, callbacks, data_config):
-        config = self.config.copy()
+        config = copy(self.config)
         if data_config is not None:
             config.update(data_config)
 
@@ -522,6 +524,28 @@ class TFRunner:
                 shutil.rmtree(temp_path)
             else:
                 os.remove(temp_path)
+
+    def load_weights(self, filepath, by_name, skip_mismatch, options):
+        """Loads all layer weights from a TensorFlow or an HDF5 weight file."""
+        self.model.load_weights(filepath, by_name, skip_mismatch, options)
+
+    def load_remote_weights(self, filepath, by_name, skip_mismatch, options):
+        """Loads all layer weights from a remote weight file (Tensorflow or HDF5 format)."""
+        file_name = os.path.basename(filepath)
+        temp_dir = tempfile.mkdtemp()
+        if is_file(filepath):
+            # h5 format
+            temp_path = os.path.join(temp_dir, file_name)
+            get_remote_file_to_local(filepath, temp_path)
+        else:
+            # tensorflow format
+            prefix = os.path.basename(filepath)
+            get_remote_files_with_prefix_to_local(filepath, temp_dir)
+            temp_path = os.path.join(temp_dir, prefix)
+        try:
+            self.model.load_weights(temp_path, by_name, skip_mismatch, options)
+        finally:
+            shutil.rmtree(temp_dir)
 
     def shutdown(self):
         """Attempts to shut down the worker."""

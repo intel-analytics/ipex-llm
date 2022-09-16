@@ -30,8 +30,6 @@ sys.path.insert(0, os.path.abspath("../../../python/orca/src/"))
 sys.path.insert(0, os.path.abspath("../../../python/serving/src/"))
 sys.path.insert(0, os.path.abspath("../../../python/nano/src/"))
 
-
-
 # -- Project information -----------------------------------------------------
 import sphinx_rtd_theme
 html_theme = "sphinx_rtd_theme"
@@ -93,7 +91,8 @@ extensions = [
     'sphinx_design',
     'sphinx_external_toc',
     'sphinx_design',
-    'nbsphinx'
+    'nbsphinx',
+    'nbsphinx_link'
 ]
 
 # Add any paths that contain templates here, relative to this directory.

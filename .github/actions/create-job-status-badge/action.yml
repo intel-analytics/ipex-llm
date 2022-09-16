@@ -1,0 +1,72 @@
+name: 'Create Job Status Badge'
+description: 'In a workflow with multiple jobs, create a badge that can display the completion time and status of the job'
+inputs:
+  secret:
+    description: 'use to access gist'
+    required: true
+  gist-id:
+    description: 'gist-id'
+    required: true
+  file-name:
+    description: 'gist file name(.json)'
+    required: true
+  type:
+    description: 'workflow or job'
+    required: true
+  job-name:
+    description: 'job name'
+  is-self-hosted-runner:
+    description: 'If use self-hosted runner it will be true'
+    required: true
+    default: false
+  runner-hosted-on:
+    description: 'Select the region of the runner host to set the proxy'
+    required: true
+    default: ''
+runs:
+  using: "composite"
+  steps:
+    - name: print time
+      shell: bash
+      run: |
+        export NOW=$( date '+%F_%H:%M:%S' )
+        echo "TIME=${NOW}" >> $GITHUB_ENV
+        
+    - name: get job status
+      shell: bash
+      run: |
+        echo "JOB-STATUS=${{ job.status }}" >>$GITHUB_ENV
+    - name: set badge color
+      shell: bash
+      run: if [ ${{ env.JOB-STATUS }} == "success" ] ; then echo "COLOR=green" >> $GITHUB_ENV ; else echo "COLOR=red" >> $GITHUB_ENV; fi
+    
+    - name: Create job badge
+      if: ${{ inputs.type == 'job' && inputs.secret != '' }}
+      uses: analytics-zoo/dynamic-badges-action@master
+      with:
+        auth: ${{ inputs.secret }}
+        gistID: ${{ inputs.gist-id }}
+        isSelfHostedRunner: ${{ inputs.is-self-hosted-runner }}
+        filename: ${{ inputs.file-name }}
+        label: ${{ inputs.job-name }}
+        message: ${{ env.JOB-STATUS }}
+        color: ${{ env.COLOR }}
+        runnerHostedOn: ${{ inputs.runner-hosted-on }}
+        
+    - name: Create time badge
+      if: ${{ inputs.type == 'workflow' && inputs.secret != '' }}
+      uses: analytics-zoo/dynamic-badges-action@master
+      with:
+        auth: ${{ inputs.secret }}
+        gistID: ${{ inputs.gist-id }}
+        isSelfHostedRunner: ${{ inputs.is-self-hosted-runner }}
+        filename: ${{ inputs.file-name }}
+        label: Time is
+        message: ${{ env.TIME }}
+        runnerHostedOn: ${{ inputs.runner-hosted-on }}
+
+    - name: print error message
+      if: ${{ inputs.secret == '' }}
+      shell: bash
+      run: |
+        echo "Can not get secret! Please check out your workflow!(mainly caused by pr trigger)"

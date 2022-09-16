@@ -681,7 +681,7 @@ class TSDataset:
 
     def to_torch_data_loader(self,
                              batch_size=32,
-                             roll=False,
+                             roll=True,
                              lookback='auto',
                              horizon=None,
                              feature_col=None,
@@ -692,14 +692,14 @@ class TSDataset:
                              is_predict=False):
         """
         Convert TSDataset to a PyTorch DataLoader with or without rolling. We recommend to use
-        to_torch_data_loader(roll=True) if you don't need to output the rolled numpy array. It is
-        much more efficient than rolling separately, especially when the dataframe or lookback
+        to_torch_data_loader(default roll=True) if you don't need to output the rolled numpy array.
+        It is much more efficient than rolling separately, especially when the dataframe or lookback
         is large.
 
         :param batch_size: int, the batch_size for a Pytorch DataLoader. It defaults to 32.
         :param roll: Boolean. Whether to roll the dataframe before converting to DataLoader.
                If True, you must also specify lookback and horizon for rolling. If False, you must
-               have called tsdataset.roll() before calling to_torch_data_loader(). Default to False.
+               have called tsdataset.roll() before calling to_torch_data_loader(). Default to True.
         :param lookback: int, lookback value. Default to 'auto',
                the mode of time series' cycle length will be taken as the lookback.
         :param horizon: int or list,
@@ -722,9 +722,9 @@ class TSDataset:
                This parameter should be set to True only when you are using Autoformer model. This
                indicates the length of overlap area of output(y) and input(x) on time axis.
         :param is_predict: bool,
-               This parameter should be set to True only when you are using Autoformer model. This
-               indicates if the dataset will be sampled as a prediction dataset(without groud
-               truth).
+               This parameter should be set to True only when you are processing test data without
+               accuracy evaluation for Autoformer model. This indicates if the dataset will be
+               sampled as a prediction dataset(without groud truth).
 
         :return: A pytorch DataLoader instance.
 
@@ -742,14 +742,13 @@ class TSDataset:
         >>>                                                      "extra feature 2"])
         >>> horizon, lookback = 1, 1
         >>> data_loader = tsdataset.to_torch_data_loader(batch_size=32,
-        >>>                                              roll=True,
         >>>                                              lookback=lookback,
         >>>                                              horizon=horizon)
         >>> # or roll outside. That might be less efficient than the way above.
         >>> tsdataset.roll(lookback=lookback, horizon=horizon, id_sensitive=False)
         >>> x, y = tsdataset.to_numpy()
         >>> print(x, y) # x = [[[1.9, 1, 2 ]], [[2.3, 0, 9 ]]] y = [[[ 2.4 ]], [[ 2.6 ]]]
-        >>> data_loader = tsdataset.to_torch_data_loader(batch_size=32)
+        >>> data_loader = tsdataset.to_torch_data_loader(batch_size=32, roll=False)
 
         """
         from torch.utils.data import TensorDataset, DataLoader
@@ -758,7 +757,7 @@ class TSDataset:
         if roll:
             if horizon is None:
                 invalidInputError(False,
-                                  "You must input horizon if roll is True")
+                                  "You must input horizon if roll is True (default roll=True)!")
             from bigdl.chronos.data.utils.roll_dataset import RollDataset
             feature_col = _to_list(feature_col, "feature_col") if feature_col is not None \
                 else self.feature_col
@@ -808,7 +807,7 @@ class TSDataset:
             if self.numpy_x is None:
                 invalidInputError(False,
                                   "Please call 'roll' method before transforming a TSDataset to "
-                                  "torch DataLoader without rolling (default roll=False)!")
+                                  "torch DataLoader if roll is False!")
             x, y = self.to_numpy()
             return DataLoader(TensorDataset(torch.from_numpy(x).float(),
                                             torch.from_numpy(y).float()),

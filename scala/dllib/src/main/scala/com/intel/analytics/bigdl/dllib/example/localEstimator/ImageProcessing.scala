@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dllib.examples.localEstimator
+package com.intel.analytics.bigdl.dllib.example.localEstimator
 
 import java.awt.image.{BufferedImage, DataBufferByte}
 import java.nio.ByteBuffer

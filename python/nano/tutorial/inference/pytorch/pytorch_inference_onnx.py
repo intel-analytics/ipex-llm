@@ -21,7 +21,6 @@
 # ```
 
 import torch
-import torch
 from torchvision.models import resnet18
 
 if __name__ == "__main__":
@@ -35,17 +34,18 @@ if __name__ == "__main__":
     predictions = y_hat.argmax(dim=1)
     print(predictions)
 
-    # Accelerated Inference Using ONNX Runtime
-    from bigdl.nano.pytorch import Trainer
-    ort_model = Trainer.trace(model_ft,
-                              accelerator="onnxruntime",
-                              input_sample=torch.rand(1, 3, 224, 224))
+    # Accelerated Inference Using ONNXRuntime
+    from bigdl.nano.pytorch import InferenceOptimizer
+    ort_model = InferenceOptimizer.trace(model_ft,
+                                         accelerator="onnxruntime",
+                                         input_sample=torch.rand(1, 3, 224, 224))
 
     y_hat = ort_model(x)
     predictions = y_hat.argmax(dim=1)
     print(predictions)
 
     # Save Optimized Model
+    from bigdl.nano.pytorch import Trainer
     Trainer.save(ort_model, "./optimized_model")
 
     # Load the Optimized Model

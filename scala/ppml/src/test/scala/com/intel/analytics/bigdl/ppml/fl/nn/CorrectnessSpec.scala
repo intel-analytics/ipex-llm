@@ -40,14 +40,14 @@ class CorrectnessSpec extends FLSpec {
       flServer.build()
       flServer.start()
       val mockClient1 = new MockClient(
-        clientId = "1",
+        clientId = 1,
         dataPath = dataPath1,
         featureColumns = Array("Pregnancies", "Glucose", "BloodPressure", "SkinThickness"),
         labelColumns = Array("Outcome"),
         target = target
       )
       val mockClient2 = new MockClient(
-        clientId = "2",
+        clientId = 2,
         dataPath = dataPath2,
         featureColumns = Array("Insulin", "BMI", "DiabetesPedigreeFunction"),
         labelColumns = null,

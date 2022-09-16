@@ -18,6 +18,7 @@ import logging
 import os
 import tempfile
 import shutil
+from copy import copy
 
 import tensorflow as tf
 
@@ -271,7 +272,7 @@ class SparkRunner:
         runs a training epoch and updates the model parameters
         """
         with self.strategy.scope():
-            if exists(self._model_saved_path):
+            if self.model_dir is not None and exists(self._model_saved_path):
                 # for continous training
                 model = load_model(self._model_saved_path)
             else:
@@ -318,7 +319,7 @@ class SparkRunner:
         """
         Get model training results and new model.
         """
-        config = self.config.copy()
+        config = copy(self.config)
         if data_config is not None:
             config.update(data_config)
         config["batch_size"] = batch_size
@@ -336,7 +337,6 @@ class SparkRunner:
                                                      validation_steps=validation_steps,
                                                      validation_freq=validation_freq
                                                      )
-        weights = model.get_weights()
         if history is None:
             stats = {}
         else:
@@ -345,14 +345,19 @@ class SparkRunner:
             if self.model_dir is not None:
                 save_model(model, self._model_saved_path, save_format="h5")
                 model_state = {
-                    "weights": weights,
+                    "weights": model.get_weights(),
                     "optimizer_weights": model.optimizer.get_weights()
                 }
                 save_pkl(model_state, os.path.join(self.model_dir, "state.pkl"))
+            else:
+                weights = model.get_weights()
 
             if self.need_to_log_to_driver:
                 LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
-            return [stats]
+            if self.model_dir is not None:
+                return [stats]
+            else:
+                return [stats], weights
         else:
             temp_dir = tempfile.mkdtemp()
             try:
@@ -368,7 +373,7 @@ class SparkRunner:
         """
         Evaluates the model on the validation data set.
         """
-        config = self.config.copy()
+        config = copy(self.config)
         if data_config is not None:
             config.update(data_config)
         config["batch_size"] = batch_size
@@ -426,7 +431,7 @@ class SparkRunner:
             return []
 
     def predict(self, data_creator, batch_size, verbose, steps, callbacks, data_config):
-        config = self.config.copy()
+        config = copy(self.config)
         if data_config is not None:
             config.update(data_config)
 

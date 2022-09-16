@@ -7,8 +7,7 @@ if [ "$action" = "enroll" ]; then
 		cd /home/ehsm/out/ehsm-kms_enroll_app/
 		./ehsm-kms_enroll_app -a http://$EHSM_KMS_IP:$EHSM_KMS_PORT/ehsm/
 	elif [ "$KMS_TYPE" = "simple" ]; then
-		java -cp /home/spark-encrypt-io.jar \
-		com.intel.analytics.bigdl.ppml.examples.GenerateSimpleAppidAndAppkey
+		echo "Simple KMS is dummy. You can choose any appid and apikey. If you want to generate the corresponding primarykey and datakey, the appid must be 12 characters long."
 	elif [ "$KMS_TYPE" = "azure" ]; then
 	    keyVaultName=$2
 	    id=$3
@@ -21,7 +20,7 @@ if [ "$action" = "enroll" ]; then
 elif [ "$action" = "generatekeys" ]; then
 	if [ "$KMS_TYPE" = "ehsm" ]; then
 	    appid=$2
-	    appkey=$3
+	    apikey=$3
 		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.GenerateKeys \
 		--primaryKeyPath /home/key/ehsm_encrypted_primary_key \
@@ -30,17 +29,17 @@ elif [ "$action" = "generatekeys" ]; then
 		--kmsServerIP $EHSM_KMS_IP \
 		--kmsServerPort $EHSM_KMS_PORT \
 		--ehsmAPPID $appid \
-		--ehsmAPPKEY $appkey
+		--ehsmAPIKEY $apikey
 	elif [ "$KMS_TYPE" = "simple" ]; then
 	    appid=$2
-	    appkey=$3
+	    apikey=$3
 		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.GenerateKeys \
 		--primaryKeyPath /home/key/simple_encrypted_primary_key \
 		--dataKeyPath /home/key/simple_encrypted_data_key \
 		--kmsType SimpleKeyManagementService \
 		--simpleAPPID $appid \
-		--simpleAPPKEY $appkey
+		--simpleAPIKEY $apikey
 	elif [ "$KMS_TYPE" = "azure" ]; then
 	    keyVaultName=$2
 		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
@@ -55,11 +54,11 @@ elif [ "$action" = "generatekeys" ]; then
 	fi
 elif [ "$action" = "encrypt" ]; then
 	appid=$2
-	appkey=$3
+	apikey=$3
 	input_path=$4
 	if [ "$KMS_TYPE" = "ehsm" ]; then
 	    appid=$2
-	    appkey=$3
+	    apikey=$3
 		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.Encrypt \
 		--inputPath $input_path \
@@ -69,10 +68,10 @@ elif [ "$action" = "encrypt" ]; then
 		--kmsServerIP $EHSM_KMS_IP \
                 --kmsServerPort $EHSM_KMS_PORT \
                 --ehsmAPPID $appid \
-                --ehsmAPPKEY $appkey
+                --ehsmAPIKEY $apikey
 	elif [ "$KMS_TYPE" = "simple" ]; then
 	    appid=$2
-	    appkey=$3
+	    apikey=$3
 		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.Encrypt \
                 --inputPath $input_path \
@@ -80,7 +79,7 @@ elif [ "$action" = "encrypt" ]; then
                 --dataKeyPath /home/key/simple_encrypted_data_key \
                 --kmsType SimpleKeyManagementService \
 		--simpleAPPID $appid \
-                --simpleAPPKEY $appkey
+                --simpleAPIKEY $apikey
     elif [ "$KMS_TYPE" = "azure" ]; then
         keyVaultName=$2
 		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
@@ -97,7 +96,7 @@ elif [ "$action" = "encrypt" ]; then
 elif [ "$action" = "encryptwithrepartition" ]; then
 	if [ "$KMS_TYPE" = "ehsm" ]; then
 	    appid=$2
-            appkey=$3
+            apikey=$3
 	    input_path=$4
 	    output_path=$input_path.encrypted
 		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
@@ -113,10 +112,10 @@ elif [ "$action" = "encryptwithrepartition" ]; then
 		--kmsServerIP $EHSM_KMS_IP \
                 --kmsServerPort $EHSM_KMS_PORT \
                 --ehsmAPPID $appid \
-                --ehsmAPPKEY $appkey
+                --ehsmAPIKEY $apikey
 	elif [ "$KMS_TYPE" = "simple" ]; then
 	    appid=$2
-            appkey=$3
+            apikey=$3
 	    input_path=$4
 	    output_path=$input_path.encrypted
 		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
@@ -130,7 +129,7 @@ elif [ "$action" = "encryptwithrepartition" ]; then
                 --dataKeyPath /home/key/simple_encrypted_data_key \
 		--kmsType SimpleKeyManagementService \
                 --simpleAPPID $appid \
-                --simpleAPPKEY $appkey
+                --simpleAPIKEY $apikey
     elif [ "$KMS_TYPE" = "azure" ]; then
         keyVaultName=$2
         input_path=$3
@@ -153,7 +152,7 @@ elif [ "$action" = "encryptwithrepartition" ]; then
 elif [ "$action" = "decrypt" ]; then
 	if [ "$KMS_TYPE" = "ehsm" ]; then
 	appid=$2
-        appkey=$3
+        apikey=$3
         input_path=$4
 		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.Decrypt \
@@ -168,10 +167,10 @@ elif [ "$action" = "decrypt" ]; then
 		--kmsServerIP $EHSM_KMS_IP \
                 --kmsServerPort $EHSM_KMS_PORT \
                 --ehsmAPPID $appid \
-                --ehsmAPPKEY $appkey
+                --ehsmAPIKEY $apikey
 	elif [ "$KMS_TYPE" = "simple" ]; then
 	appid=$2
-        appkey=$3
+        apikey=$3
         input_path=$4
 		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.Decrypt \
@@ -184,7 +183,7 @@ elif [ "$action" = "decrypt" ]; then
                 --dataKeyPath /home/key/simple_encrypted_data_key \
                 --kmsType SimpleKeyManagementService \
                 --simpleAPPID $appid \
-                --simpleAPPKEY $appkey
+                --simpleAPIKEY $apikey
     elif [ "$KMS_TYPE" = "azure" ]; then
         keyVaultName=$2
         input_path=$3

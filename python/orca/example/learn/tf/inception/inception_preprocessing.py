@@ -21,6 +21,7 @@ from __future__ import print_function
 import tensorflow.compat.v1 as tf
 
 from tensorflow.python.ops import control_flow_ops
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 
 _R_MEAN = 123.68
@@ -88,10 +89,10 @@ def distorted_bounding_box_crop(image_buffer,
 
 def _mean_image_subtraction(image, means, num_channels):
     if image.get_shape().ndims != 3:
-        raise ValueError('Input must be of size [height, width, C>0]')
+        invalidInputError(False, 'Input must be of size [height, width, C>0]')
 
     if len(means) != num_channels:
-        raise ValueError('len(means) must match the number of channels')
+        invalidInputError(False, 'len(means) must match the number of channels')
 
     # We have a 1-D tensor of means; convert to 3-D.
     # means = tf.expand_dims(tf.expand_dims(means, 0), 0)

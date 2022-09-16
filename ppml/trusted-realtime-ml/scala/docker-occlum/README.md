@@ -35,7 +35,7 @@ You also need to store password you used for key generation, i.e., `generate-key
 For example:
 
 ```bash
-../../../scripts/generate-password.sh 1234qwer
+../../../scripts/generate-password.sh your_password
 ```
 
 ### Start Trusted Cluster Serving with PPML Docker image

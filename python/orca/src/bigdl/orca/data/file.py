@@ -517,7 +517,7 @@ def get_remote_dir_to_local(remote_dir, local_dir):
 def get_remote_files_with_prefix_to_local(remote_path_prefix, local_dir):
     prefix = os.path.basename(remote_path_prefix)
     if remote_path_prefix.startswith("hdfs"):  # hdfs://url:port/file_path
-        cmd = 'hdfs dfs -get -f {}* {}'.format(remote_path_prefix, local_dir)
+        cmd = 'hdfs dfs -get {}* {}'.format(remote_path_prefix, local_dir)
         process = subprocess.Popen(cmd, shell=True)
         return process.wait()
     elif remote_path_prefix.startswith("s3"):   # s3://bucket/file_path

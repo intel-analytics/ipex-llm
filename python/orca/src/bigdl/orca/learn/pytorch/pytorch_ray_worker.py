@@ -29,6 +29,7 @@
 # limitations under the License.
 
 import ray
+from copy import copy
 from bigdl.orca.learn.pytorch.utils import find_free_port
 from bigdl.orca.learn.pytorch.torch_runner import TorchRunner
 import torch.nn as nn
@@ -118,7 +119,7 @@ class PytorchRayWorker(TorchRunner):
 
     def predict(self, data_creator, batch_size=32, profile=False):
         """Evaluates the model on the validation data set."""
-        config = self.config.copy()
+        config = copy(self.config)
         self._toggle_profiling(profile=profile)
 
         shards_ref = data_creator(config, batch_size)

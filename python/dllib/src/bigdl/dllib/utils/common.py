@@ -71,6 +71,7 @@ class JavaCreator(SingletonMixin):
         "com.intel.analytics.bigdl.dllib.utils.python.api.PythonBigDLOnnx",
         "com.intel.analytics.bigdl.dllib.common.PythonZoo",
         "com.intel.analytics.bigdl.dllib.nnframes.python.PythonNNFrames",
+        "com.intel.analytics.bigdl.dllib.nnframes.python.PythonTreeModel",
         "com.intel.analytics.bigdl.dllib.feature.python.PythonImageFeature",
         "com.intel.analytics.bigdl.dllib.feature.python.PythonTextFeature",
         "com.intel.analytics.bigdl.dllib.feature.python.PythonFeatureSet",
@@ -702,6 +703,8 @@ def _py2java(gateway, obj):
         obj = obj._jdf
     elif isinstance(obj, SparkContext):
         obj = obj._jsc
+    elif isinstance(obj, SQLContext):
+        obj = obj._jsqlContext
     elif isinstance(obj, (list, tuple)):
         obj = ListConverter().convert([_py2java(gateway, x) for x in obj],
                                       gateway._gateway_client)

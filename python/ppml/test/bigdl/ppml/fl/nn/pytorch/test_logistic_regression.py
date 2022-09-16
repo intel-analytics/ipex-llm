@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import multiprocessing
 import threading
 from multiprocessing import Process
 import unittest
@@ -22,7 +23,7 @@ import pandas as pd
 import os
 
 import torch
-from bigdl.ppml.fl.nn.fl_client import FLClient
+from bigdl.ppml.fl.nn.fl_context import init_fl_context
 from bigdl.ppml.fl.nn.pytorch.utils import set_one_like_parameter
 from bigdl.ppml.fl.nn.fl_server import FLServer
 from torch import Tensor, nn
@@ -33,10 +34,10 @@ from bigdl.ppml.fl.utils import FLTest
 from typing import List
 
 
-
 resource_path = os.path.join(os.path.dirname(__file__), "../../resources")
 
 def mock_process(data_train, target, client_id, upload_server_model):
+    init_fl_context(client_id, target)
     # set new_fl_client to True will create a FLClient with new ID for multi-party test
     df_train = pd.read_csv(os.path.join(resource_path, data_train))
     if 'Outcome' in df_train:
@@ -54,11 +55,9 @@ def mock_process(data_train, target, client_id, upload_server_model):
     server_model = LogisticRegressionNetwork2() if upload_server_model else None
     logging.info("Creating FL Pytorch Estimator")
     ppl = Estimator.from_torch(client_model=model,
-                               client_id=client_id,
                                loss_fn=loss_fn,
                                optimizer_cls=torch.optim.SGD,
                                optimizer_args={'lr':1e-3},
-                               target=target,
                                server_model=server_model)
     logging.info("Starting training")
     response = ppl.fit(x, y)
@@ -69,7 +68,11 @@ def mock_process(data_train, target, client_id, upload_server_model):
 
 class TestLogisticRegression(FLTest):
     fmt = '%(asctime)s %(levelname)s {%(module)s:%(lineno)d} - %(message)s'
-    logging.basicConfig(format=fmt, level=logging.INFO)
+    logging.basicConfig(format=fmt, level=logging.DEBUG)
+    @classmethod
+    def setUpClass(cls) -> None:
+        multiprocessing.set_start_method('spawn')
+        
     def setUp(self) -> None:
         self.fl_server = FLServer(client_num=2)
         self.fl_server.set_port(self.port)
@@ -117,12 +120,12 @@ class TestLogisticRegression(FLTest):
                 print(f"loss: {loss:>7f}  [{current:>3d}/{size:>3d}]")
                 pytorch_loss_list.append(np.array(loss))
         
-        mock_party2 = threading.Thread(target=mock_process, 
-            args=('diabetes-vfl-2.csv', self.target, '2', False))
+        mock_party2 = Process(target=mock_process, 
+            args=('diabetes-vfl-2.csv', self.target, 2, False))
         mock_party2.start()
         ppl = mock_process(data_train='diabetes-vfl-1.csv',
                            target=self.target,
-                           client_id='1',
+                           client_id=1,
                            upload_server_model=True)
         mock_party2.join()
         assert np.allclose(pytorch_loss_list, ppl.loss_history), \

@@ -31,7 +31,7 @@ class OrcaContextMeta(type):
     def log_output(cls):
         """
         Whether to redirect Spark driver JVM's stdout and stderr to the current
-        python process. This is useful when running Analytics Zoo in jupyter notebook.
+        python process. This is useful when running BigDL in jupyter notebook.
         Default to be False. Needs to be set before initializing SparkContext.
         """
         return ZooContext.log_output
@@ -341,7 +341,7 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=None, memory="2g
                                   "spark-submit or bigdl-submit, "
                                   "but got: %s".format(cluster_mode))
         ray_args = {}
-        for key in ["redis_port", "password", "object_store_memory", "verbose", "env",
+        for key in ["redis_port", "redis_password", "object_store_memory", "verbose", "env",
                     "extra_params", "num_ray_nodes", "ray_node_cpu_cores", "include_webui",
                     "system_config"]:
             if key in kwargs:
