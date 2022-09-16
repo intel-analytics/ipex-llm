@@ -11,8 +11,8 @@ openssl x509 -req -days 9999 -in server.csr -signkey server.key -out server.crt
 # Use sudo on cat if necessary.
 # Changing from redirection to tee to elude permission denials.
 
-cat server.key | sudo tee server.pem
-cat server.crt | sudo tee -a server.pem
+cat server.key | tee server.pem
+cat server.crt | tee -a server.pem
 openssl pkcs12 -export -in server.pem -out keystore.pkcs12
 keytool -importkeystore -srckeystore keystore.pkcs12 -destkeystore keystore.jks -srcstoretype PKCS12 -deststoretype JKS
 openssl pkcs12 -in keystore.pkcs12 -nodes -out server.pem
