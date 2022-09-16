@@ -61,7 +61,6 @@ public class EncodeUtils {
         } finally {
             try {
                 bis.close();
-                in.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
