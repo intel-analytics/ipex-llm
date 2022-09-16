@@ -6,7 +6,11 @@ on:
   pull_request:
     branches: [ main ]
     paths:
-      - 'python/chronos/**'
+      - 'python/chronos/src/**'
+      - 'python/nano/src/**'
+      - 'python/orca/src/bigdl/orca/automl/**'
+      - 'python/orca/src/bigdl/orca/data/**'
+      - 'python/orca/src/bigdl/orca/learn/**'
       - '.github/workflows/chronos-prvn-python-spark-2.4-py37-onnxrt.yml'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
