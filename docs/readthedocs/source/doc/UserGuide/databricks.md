@@ -25,21 +25,21 @@ In the Databricks left panel, click **Compute** and select your cluster.
 
 ![](images/compute.png)
 
-Install BigDL java packages using **bigdl-assembly-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar** from [step 2](#2. Download BigDL Libraries). Click **Libraries > Install New > Library Source(Upload) > Library Type (Jar)**. Drop the jar on Databricks.
+Install BigDL java packages using **bigdl-assembly-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar** from [step 2](#2-download-bigdl-libraries). Click **Libraries > Install New > Library Source(Upload) > Library Type (Jar)**. Drop the jar on Databricks.
 
 ![](images/assembly-jar.png)
 
 After upload finishes, click **Install**.
 
-> Tips: if you find your upload process is really slow, try to use **Databricks CLI** to upload, see [Appendix B](#Appendix B) for details.
+> Tips: if you find your upload process is really slow, try to use **Databricks CLI** to upload, see [Appendix B](#appendix-b) for details.
 
 ### 4. Install BigDL Python libraries
 
-Install BigDL python environment using **bigdl-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip** from [step 2](#2. Download BigDL Libraries). However, Databricks can only upload **Jar**, **Python Egg** and **Python Whl**, but doesn't support **Zip**, so we can not simply upload the python api zip and install it like what we do in Step 3. You can upload and install the zip package in one of the following ways.
+Install BigDL python environment using **bigdl-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip** from [step 2](#2-download-bigdl-libraries). However, Databricks can only upload **Jar**, **Python Egg** and **Python Whl**, but doesn't support **Zip**, so we can not simply upload the python api zip and install it like what we do in Step 3. You can upload and install the zip package in one of the following ways.
 
 #### 4.1 Upload and Install through DBFS
 
-**First, upload the zip package to [DBFS](https://docs.databricks.com/dbfs/index.html).** In the left panel, click **Data > DBFS**, if your panel don't have DBFS, see [Appendix A](#Appendix A). then choose or create a folder and right click in the folder, choose **Upload here**.
+**First, upload the zip package to [DBFS](https://docs.databricks.com/dbfs/index.html).** In the left panel, click **Data > DBFS**, if your panel don't have DBFS, see [Appendix A](#appendix-a). then choose or create a folder and right click in the folder, choose **Upload here**.
 
 ![](images/upload.png)
 
@@ -136,7 +136,7 @@ Now, we can use Databricks CLI to upload file to DBFS. run command:
 dbfs cp /your/local/filepath/bigdl-assembly-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar dbfs:/FileStore/jars/stable/bigdl-assembly-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar
 ```
 
-After command finished, check DBFS in Databricks, in left panel, click **Data > DBFS > your upload directory**, if you do not see DBFS in your panel, see [Appendix A](#Appendix A).
+After command finished, check DBFS in Databricks, in left panel, click **Data > DBFS > your upload directory**, if you do not see DBFS in your panel, see [Appendix A](#appendix-a).
 
 **Install package from DBFS**
 
