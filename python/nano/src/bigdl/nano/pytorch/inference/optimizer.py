@@ -16,6 +16,7 @@
 
 from collections import namedtuple
 import torch
+import pytorch_lightning as pl
 from torch import nn
 import subprocess
 from importlib.util import find_spec
@@ -27,15 +28,13 @@ from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
 from bigdl.nano.pytorch.amp import BF16Model
-from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel, load_openvino_model
-from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, create_IPEXAccelerator_1_9, \
-    PytorchIPEXJITModel, PytorchIPEXJITBF16Model, load_ipexjit_model
-from bigdl.nano.deps.onnxruntime.onnxruntime_api import PytorchONNXRuntimeModel, \
-    load_onnxruntime_model
-from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model, quantize as inc_quantize
+from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel
+from bigdl.nano.deps.ipex.ipex_api import PytorchIPEXJITModel, PytorchIPEXJITBF16Model
+from bigdl.nano.deps.onnxruntime.onnxruntime_api import PytorchONNXRuntimeModel
+from bigdl.nano.deps.neural_compressor.inc_api import quantize as inc_quantize
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.utils.inference.pytorch.model_utils import get_forward_args, get_input_example
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, save_model, load_model
 import warnings
 # Filter out useless Userwarnings
 warnings.filterwarnings('ignore', category=UserWarning, module='pytorch_lightning')
@@ -620,6 +619,31 @@ class InferenceOptimizer:
             return PytorchIPEXJITModel(model, input_sample=input_sample, use_ipex=use_ipex,
                                        use_jit=use_jit, channels_last=channels_last)
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
+
+    @staticmethod
+    def save(model: pl.LightningModule, path):
+        """
+        Save the model to local file.
+
+        :param model: Any model of torch.nn.Module, including all models accelareted by
+               Trainer.trace/Trainer.quantize.
+        :param path: Path to saved model. Path should be a directory.
+        """
+        save_model(model, path)
+
+    @staticmethod
+    def load(path, model: pl.LightningModule = None):
+        """
+        Load a model from local.
+
+        :param path: Path to model to be loaded. Path should be a directory.
+        :param model: Required FP32 model to load pytorch model, it is needed if you accelerated
+               the model with accelerator=None by Trainer.trace/Trainer.quantize. model
+               should be set to None if you choose accelerator="onnxruntime"/"openvino"/"jit".
+        :return: Model with different acceleration(None/OpenVINO/ONNX Runtime/JIT) or
+                 precision(FP32/FP16/BF16/INT8).
+        """
+        load_model(path, model)
 
 
 def _inc_checker():
