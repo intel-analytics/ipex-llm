@@ -30,7 +30,9 @@ java $SBT_OPTS -jar /usr/local/sbt/bin/sbt-launch.jar package
 
 # run tpch
 cd $BASE_DIR
-SGX=1 ./pal_loader bash -c "export PYSPARK_PYTHON=/usr/bin/python && \
+cd /ppml/trusted-big-data-ml
+./clean.sh
+/graphene/Tools/argv_serializer bash -c "export PYSPARK_PYTHON=/usr/bin/python && \
         ${JAVA_HOME}/bin/java \
         -cp '/ppml/trusted-big-data-ml/work/zoo-tutorials/tpch-spark/target/scala-2.12/spark-tpc-h-queries_2.12-1.0.jar:/ppml/trusted-big-data-ml/work/zoo-tutorials/tpch-spark/dbgen/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
         -Xmx10g \
@@ -54,4 +56,6 @@ SGX=1 ./pal_loader bash -c "export PYSPARK_PYTHON=/usr/bin/python && \
         --driver-memory 10G \
         /ppml/trusted-big-data-ml/work/zoo-tutorials/tpch-spark/target/scala-2.12/spark-tpc-h-queries_2.12-1.0.jar \
         /ppml/trusted-big-data-ml/work/zoo-tutorials/tpch-spark/dbgen \
-        hdfs://$LOCAL_IP:9000/dbgen-query" 2>&1 | tee spark.local.tpc.h.sgx.log
+        hdfs://$LOCAL_IP:9000/dbgen-query" > /ppml/trusted-big-data-ml/secured-argvs
+./init.sh
+SGX=1 ./pal_loader bash 2>&1 | tee spark.local.tpc.h.sgx.log

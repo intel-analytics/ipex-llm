@@ -3,7 +3,9 @@ status_1_k8s_spark_pi=1
 SPARK_LOCAL_IP=$LOCAL_IP
 
 if [ $status_1_k8s_spark_pi -ne 0 ]; then
-  SGX=1 ./pal_loader bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
+  cd /ppml/trusted-big-data-ml
+./clean.sh
+/graphene/Tools/argv_serializer bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
   export SPARK_LOCAL_IP=$SPARK_LOCAL_IP && \
   /opt/jdk8/bin/java \
     -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
@@ -34,7 +36,9 @@ if [ $status_1_k8s_spark_pi -ne 0 ]; then
     --conf spark.kubernetes.sgx.jvm.mem=16g \
     --class org.apache.spark.examples.SparkPi \
     --verbose \
-    local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar" 2>&1 > k8s-spark-pi-sgx.log
+    local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar" > /ppml/trusted-big-data-ml/secured-argvs
+./init.sh
+SGX=1 ./pal_loader bash 2>&1 | tee k8s-spark-pi-sgx.log
 fi
 status_1_k8s_spark_pi=$(echo $?)
 
