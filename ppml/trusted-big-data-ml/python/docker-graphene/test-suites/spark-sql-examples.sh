@@ -9,7 +9,7 @@ status_5_scala_sql_UserDefinedScalar=1
 status_6_scala_sql_UserDefinedTypedAggregation=1
 status_7_scala_sql_UserDefinedUntypedAggregation=1
 status_8_scala_sql_SparkHiveExample=1
-LOCAL_IP=192.168.0.112
+LOCAL_IP=$LOCAL_IP
 
 if [ $status_2_scala_sql_example -ne 0 ]; then
 SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \

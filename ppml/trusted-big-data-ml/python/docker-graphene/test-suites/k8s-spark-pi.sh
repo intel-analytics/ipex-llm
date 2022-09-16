@@ -1,6 +1,6 @@
 #!/bin/bash
 status_1_k8s_spark_pi=1
-SPARK_LOCAL_IP=192.168.0.112
+SPARK_LOCAL_IP=$LOCAL_IP
 
 if [ $status_1_k8s_spark_pi -ne 0 ]; then
   SGX=1 ./pal_loader bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \

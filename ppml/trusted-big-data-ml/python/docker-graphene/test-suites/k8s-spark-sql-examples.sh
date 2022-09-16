@@ -2,7 +2,7 @@
 status_4_k8s_spark_sql_example=1
 status_5_k8s_spark_sql_e2e=1
 
-SPARK_LOCAL_IP=192.168.0.112
+SPARK_LOCAL_IP=$LOCAL_IP
 DB_PATH=/ppml/trusted-big-data-ml/work/data/sqlite_example/100w.db
 
 if [ $status_4_k8s_spark_sql_example -ne 0 ]; then
