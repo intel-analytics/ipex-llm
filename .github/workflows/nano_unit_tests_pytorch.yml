@@ -6,7 +6,7 @@ on:
   push:
     branches: [ main ]
   pull_request:
-    branches: [ main ]
+    branches: [ branch-2.1 ]
     paths:
       - 'python/nano/**'
       - '.github/workflows/nano_unit_tests_pytorch.yml'
