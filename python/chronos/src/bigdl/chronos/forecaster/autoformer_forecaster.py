@@ -15,7 +15,9 @@
 #
 
 import torch
+import numpy as np
 from bigdl.chronos.forecaster.abstract import Forecaster
+from bigdl.chronos.metric.forecast_metrics import Evaluator
 from bigdl.chronos.model.autoformer import model_creator, loss_creator
 from torch.utils.data import TensorDataset, DataLoader
 from bigdl.chronos.model.autoformer.Autoformer import AutoFormer, _transform_config_to_namedtuple
@@ -159,6 +161,9 @@ class AutoformerForecaster(Forecaster):
         self.quantize_available = False
         self.use_amp = False
         self.use_hpo = True
+
+        # Model preparation
+        self.fitted = False
 
         has_space = _config_has_search_space(
             config={**self.model_config, **self.optim_config,
@@ -349,6 +354,7 @@ class AutoformerForecaster(Forecaster):
                 self.internal = self.tune_internal._model_build(trial)
 
         self.trainer.fit(self.internal, data)
+        self.fitted = True
 
     def predict(self, data, batch_size=32):
         """
@@ -408,6 +414,99 @@ class AutoformerForecaster(Forecaster):
                               shuffle=False)
 
         return self.trainer.validate(self.internal, data)
+
+    def predict_interval(self, data, val_data=None, batch_size=32, repetition_times=5):
+        """
+        Calculate confidence interval of data based on Monte Carlo dropout(MC dropout).
+        Related paper : https://arxiv.org/abs/1709.01907
+
+        :param data: The data support following formats:
+
+               | 1. numpy ndarrays: generate from `TSDataset.roll`,
+                    be sure to set label_len > 0 and time_enc = True
+               | 2. pytorch dataloader: generate from `TSDataset.to_torch_data_loader`,
+                    be sure to set label_len > 0, time_enc = True and is_predict = True
+
+        :param val_data: The val_data support following formats:
+
+               | 1. numpy ndarrays: generate from `TSDataset.roll`,
+                    be sure to set label_len > 0 and time_enc = True
+               | 2. pytorch dataloader: generate from `TSDataset.to_torch_data_loader`,
+                    be sure to set label_len > 0, time_enc = True
+
+        :param batch_size: predict batch size. The value will not affect predict
+               result but will affect resources cost(e.g. memory and time).
+        :param repetition_times : Defines repeate how many times to calculate model
+                                  uncertainty based on MC Dropout.
+
+        :return: prediction and standard deviation which are both numpy array
+                 with shape (num_samples, horizon, target_dim)
+
+        """
+        from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
+
+        if self.fitted is not True:
+            invalidInputError(False,
+                              "You must call fit or restore first before calling predict_interval!")
+
+        # step1, according to validation dataset, calculate inherent noise
+        # which should be done during fit
+        if not hasattr(self, "data_noise"):
+            invalidInputError(val_data is not None,
+                              "When call predict_interval for the first time, you must pass in "
+                              "validation data to calculate data noise.")
+            # data transform
+            if isinstance(val_data, DataLoader):
+                target = np.concatenate(tuple(val[1] for val in val_data), axis=0)
+            else:
+                x, target, x_enc, y_enc = val_data
+
+            target = target[:, -self.internal.pred_len:, :]
+
+            _yhat = self.predict(val_data)
+            val_yhat = np.concatenate(_yhat, axis=0)
+            self.data_noise = Evaluator.evaluate(["mse"], target,
+                                                 val_yhat, aggregate=None)[0]  # 2d array
+
+        # step3: calculate model uncertainty based MC Dropout
+        def apply_dropout(m):
+            if type(m) == torch.nn.Dropout:
+                m.train()
+
+        # turn on dropout
+        self.internal.apply(apply_dropout)
+
+        def predict(data, model):
+            # manually implement predict to avoid .eval() in trainer.predict()
+            if isinstance(data, tuple):
+                data = DataLoader(TensorDataset(torch.from_numpy(data[0]),
+                                                torch.from_numpy(data[1]),
+                                                torch.from_numpy(data[2]),
+                                                torch.from_numpy(data[3]),),
+                                  batch_size=batch_size,
+                                  shuffle=False)
+            outputs_list = []
+            for batch in data:
+                batch_x, batch_y, batch_x_mark, batch_y_mark = map(lambda x: x.float(), batch)
+                outputs = model(batch_x, batch_x_mark, batch_y, batch_y_mark)
+                outputs = outputs[:, -model.pred_len:, -model.c_out:]
+                outputs_list.append(outputs.detach().numpy())
+            return outputs_list
+
+        y_hat_list = []
+        for i in range(repetition_times):
+            _yhat = predict(data, self.internal)
+            yhat = np.concatenate(_yhat, axis=0)
+            y_hat_list.append(yhat)
+        y_hat_mean = np.mean(np.stack(y_hat_list, axis=0), axis=0)
+
+        model_bias = np.zeros_like(y_hat_mean)  # 3d array
+        for i in range(repetition_times):
+            model_bias += (y_hat_list[i] - y_hat_mean)**2
+        model_bias /= repetition_times
+        std_deviation = np.sqrt(self.data_noise + model_bias)
+
+        return y_hat_mean, std_deviation
 
     def load(self, checkpoint_file):
         """
