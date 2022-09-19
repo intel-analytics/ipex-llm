@@ -504,7 +504,7 @@ class TFRunner:
         import tensorflow as tf
         if options:
             self.model = tf.keras.models.load_model(filepath, custom_objects, compile, options)
-        else:  # To support TensorFlow 2.1
+        else:  # To support older TensorFlow versions such as 2.1
             self.model = tf.keras.models.load_model(filepath, custom_objects, compile)
 
     def load_remote_model(self, filepath, custom_objects, compile, options):
@@ -521,7 +521,10 @@ class TFRunner:
                 os.makedirs(temp_path)
             get_remote_dir_to_local(filepath, temp_path)
         try:
-            self.model = tf.keras.models.load_model(temp_path, custom_objects, compile, options)
+            if options:
+                self.model = tf.keras.models.load_model(temp_path, custom_objects, compile, options)
+            else:  # To support older TensorFlow versions such as 2.1
+                self.model = tf.keras.models.load_model(temp_path, custom_objects, compile)
         finally:
             if os.path.isdir(temp_path):
                 shutil.rmtree(temp_path)
@@ -530,7 +533,10 @@ class TFRunner:
 
     def load_weights(self, filepath, by_name, skip_mismatch, options):
         """Loads all layer weights from a TensorFlow or an HDF5 weight file."""
-        self.model.load_weights(filepath, by_name, skip_mismatch, options)
+        if options:
+            self.model.load_weights(filepath, by_name, skip_mismatch, options)
+        else:  # To support older TensorFlow versions such as 2.1
+            self.model.load_weights(filepath, by_name, skip_mismatch)
 
     def load_remote_weights(self, filepath, by_name, skip_mismatch, options):
         """Loads all layer weights from a remote weight file (Tensorflow or HDF5 format)."""
@@ -546,7 +552,10 @@ class TFRunner:
             get_remote_files_with_prefix_to_local(filepath, temp_dir)
             temp_path = os.path.join(temp_dir, prefix)
         try:
-            self.model.load_weights(temp_path, by_name, skip_mismatch, options)
+            if options:
+                self.model.load_weights(temp_path, by_name, skip_mismatch, options)
+            else:  # To support older TensorFlow versions such as 2.1
+                self.model.load_weights(temp_path, by_name, skip_mismatch)
         finally:
             shutil.rmtree(temp_dir)
 
