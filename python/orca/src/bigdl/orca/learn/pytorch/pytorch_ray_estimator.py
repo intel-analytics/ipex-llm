@@ -73,7 +73,7 @@ def partition_refs_to_creator(partition_refs):
                 return get_size(self.y)
 
             def __getitem__(self, i):
-                return index_data(self.x, i), index_data(self.y, i)
+                return index_data(self.x, i, True), index_data(self.y, i)
 
         params = {"batch_size": batch_size, "shuffle": True}
         for arg in ["shuffle", "sampler", "batch_sampler", "num_workers", "collate_fn",

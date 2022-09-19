@@ -325,7 +325,7 @@ class TrainingOperator:
                 batch_info = {"batch_idx": batch_idx}
                 batch_info.update(info)
                 output, target, loss = self.forward_batch(batch, batch_info)
-                num_samples = target.size(0)
+                num_samples = get_batchsize(target)
                 total_samples += num_samples
                 losses.append(loss.item() * num_samples)
                 for metric in metrics.values():
