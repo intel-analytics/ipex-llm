@@ -502,7 +502,10 @@ class TFRunner:
     def load_model(self, filepath, custom_objects, compile, options):
         """Load the model from provided local filepath."""
         import tensorflow as tf
-        self.model = tf.keras.models.load_model(filepath, custom_objects, compile, options)
+        if options:
+            self.model = tf.keras.models.load_model(filepath, custom_objects, compile, options)
+        else:  # To support TensorFlow 2.1
+            self.model = tf.keras.models.load_model(filepath, custom_objects, compile)
 
     def load_remote_model(self, filepath, custom_objects, compile, options):
         """Load the model from provided remote filepath."""
