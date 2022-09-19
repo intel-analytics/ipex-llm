@@ -423,12 +423,12 @@ class SparkXShards(XShards):
             invalidInputError(False,
                               "Currently only support dedup() on XShards of Pandas DataFrame")
 
-    def sort_values(self, col_names=None, ascending=True, colease_into_one=True):
+    def sort_values(self, col_names=None, ascending=True, colease_into_one_partition=True):
         if self._get_class_name() == 'pandas.core.frame.DataFrame':
             import pandas as pd
             df = self.to_spark_df()
             sort_df = df.sort(col_names, ascending=ascending)
-            if colease_into_one:
+            if colease_into_one_partition:
                 sort_df = sort_df.coalesce(1)
             data_shards = spark_df_to_pd_sparkxshards(sort_df)
             return data_shards

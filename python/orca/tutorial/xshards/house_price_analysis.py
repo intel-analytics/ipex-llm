@@ -21,7 +21,7 @@ from bigdl.orca.data.transformer import *
 
 import numpy as np
 
-path = '/home/ding/data/house_price/train.csv'
+path = 'house_price/train.csv'
 data_shard = bigdl.orca.data.pandas.read_csv(path, nullValue="NA")
 
 null_cnt_shard = data_shard.get_null_sum()
@@ -61,7 +61,3 @@ def generate_HasBsmt(df):
     df.loc[df['HasBsmt'] == 1, 'TotalBsmtSF'] = np.log(df['TotalBsmtSF'])
     return df
 new_shards6 = new_shards5.transform_shard(generate_HasBsmt)
-
-#convert categorical variable into dummy
-# df_train = pd.get_dummies(df_train)
-t = 0
