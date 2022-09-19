@@ -1,7 +1,7 @@
 #!/bin/bash
 status_5_local_spark_basic_sql=1
 status_6_local_spark_arrow=1
-status_7_local_spark_hive=1
+status_7_local_spark_hive=0
 
 # entry /ppml/trusted-big-data-ml dir
 cd /ppml/trusted-big-data-ml
