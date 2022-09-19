@@ -28,7 +28,8 @@ from bigdl.chronos.data.utils.resample import resample_timeseries_dataframe
 from bigdl.chronos.data.utils.split import split_timeseries_dataframe
 from bigdl.chronos.data.utils.cycle_detection import cycle_length_est
 from bigdl.chronos.data.utils.utils import _to_list, _check_type,\
-    _check_col_within, _check_col_no_na, _check_is_aligned, _check_dt_is_sorted
+    _check_col_within, _check_col_no_na, _check_is_aligned, _check_dt_is_sorted,\
+    BooleanDescriptor, CycleDescriptor, IntDescriptor
 
 
 _DEFAULT_ID_COL_NAME = "id"
@@ -36,6 +37,10 @@ _DEFAULT_ID_PLACEHOLDER = "0"
 
 
 class TSDataset:
+    is_predict = BooleanDescriptor()
+    cycle_aggregate = CycleDescriptor()
+    top_k = IntDescriptor()
+
     def __init__(self, data, **schema):
         '''
         TSDataset is an abstract of time series dataset.
@@ -66,7 +71,6 @@ class TSDataset:
         self._freq_certainty = False
         self._freq = None
         self._is_pd_datetime = pd.api.types.is_datetime64_any_dtype(self.df[self.dt_col].dtypes)
-        self.is_predict = False
         if self._is_pd_datetime:
             if len(self.df[self.dt_col]) < 2:
                 self._freq = None
@@ -487,8 +491,7 @@ class TSDataset:
              target_col=None,
              id_sensitive=False,
              time_enc=False,
-             label_len=0,
-             is_predict=False):
+             label_len=0):
         '''
         Sampling by rolling for machine learning/deep learning models.
 
@@ -591,7 +594,6 @@ class TSDataset:
         # horizon_time is only for time_enc, the time_enc numpy ndarray won't have any
         # shape change when the dataset is for prediction.
         horizon_time = self.horizon
-        self.is_predict = is_predict
         if self.is_predict:
             self.horizon = 0
 
@@ -670,8 +672,7 @@ class TSDataset:
                              target_col=None,
                              shuffle=True,
                              time_enc=False,
-                             label_len=0,
-                             is_predict=False):
+                             label_len=0):
         """
         Convert TSDataset to a PyTorch DataLoader with or without rolling. We recommend to use
         to_torch_data_loader(default roll=True) if you don't need to output the rolled numpy array.
@@ -776,7 +777,6 @@ class TSDataset:
                                   "of lookback and horizon, while get lookback+horizon="
                                   f"{need_dflen} and the length of dataset is {len(self.df)}.")
 
-            self.is_predict = is_predict
             torch_dataset = RollDataset(self.df,
                                         dt_col=self.dt_col,
                                         freq=self._freq,
@@ -986,7 +986,8 @@ class TSDataset:
         if strict_check:
             _check_dt_is_sorted(self.df, self.dt_col)
 
-    def get_cycle_length(self, aggregate='mode', top_k=3):
+    @property
+    def get_cycle_length(self):
         """
         Calculate the cycle length of the time series in this TSDataset.
 
@@ -1000,34 +1001,27 @@ class TSDataset:
         Returns:
             Describe the value of the time period distribution.
         """
-        from bigdl.nano.utils.log4Error import invalidInputError
-        invalidInputError(isinstance(top_k, int),
-                          f"top_k type must be int, but found {type(top_k)}.")
-        invalidInputError(isinstance(aggregate, str),
-                          f"aggregate type must be str, but found {type(aggregate)}.")
-        invalidInputError(aggregate.lower().strip() in ['min', 'max', 'mode', 'median', 'mean'],
-                          f"We Only support 'min' 'max' 'mode' 'median' 'mean',"
-                          f" but found {aggregate}.")
 
         if len(self.target_col) == 1:
             res = self.df.groupby(self.id_col)\
-                         .apply(lambda x: (cycle_length_est(x[self.target_col[0]].values, top_k)))
+                         .apply(lambda x: (cycle_length_est(x[self.target_col[0]].values,
+                                                            self.top_k)))
         else:
             res = self.df.groupby(self.id_col)\
                          .apply(lambda x: pd.DataFrame({'cycle_length':
                                 [cycle_length_est(x[col].values,
-                                                  top_k)for col in self.target_col]}))
+                                                  self.top_k)for col in self.target_col]}))
             res = res.cycle_length
 
-        if aggregate.lower().strip() == 'mode':
+        if self.cycle_aggregate == 'mode':
             self.best_cycle_length = int(res.value_counts().index[0])
-        elif aggregate.lower().strip() == 'mean':
+        elif self.cycle_aggregate == 'mean':
             self.best_cycle_length = int(res.mean())
-        elif aggregate.lower().strip() == 'median':
+        elif self.cycle_aggregate == 'median':
             self.best_cycle_length = int(res.median())
-        elif aggregate.lower().strip() == 'min':
+        elif self.cycle_aggregate == 'min':
             self.best_cycle_length = int(res.min())
-        elif aggregate.lower().strip() == 'max':
+        elif self.cycle_aggregate == 'max':
             self.best_cycle_length = int(res.max())
 
         return self.best_cycle_length

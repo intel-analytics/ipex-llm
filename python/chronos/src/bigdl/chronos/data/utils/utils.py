@@ -15,6 +15,8 @@
 #
 
 
+from bigdl.nano.utils.log4Error import invalidInputError
+
 def _to_list(item, name, expect_type=str):
     if isinstance(item, list):
         return item
@@ -66,3 +68,48 @@ def _check_dt_is_sorted(df, dt_col):
                               f"{dt_col} must be sorted.")
     except (ValueError, TypeError):
         warnings.warn(f"{dt_col} may not be sorted.", Warning)
+
+class BooleanDescriptor:
+    def __init__(self):
+        self._is_predict = False
+
+    def __get__(self, instance, type):
+        if instance is None:
+            return self
+        return self._is_predict
+
+    def __set__(self, instance, value):
+        invalidInputError(isinstance(value, bool),
+                          "value must be boolean.")
+        self._is_predict = value
+
+class CycleDescriptor:
+    def __init__(self):
+        self._aggregate = "mode"
+    
+    def __get__(self, instance, type):
+        if instance is None:
+            return self
+        return self._aggregate
+
+    def __set__(self, instance, value: str):
+        invalidInputError(isinstance(value, str),
+                          f"value type must be str, but found {type(value)}")
+        invalidInputError(value.lower().strip() in ['min', 'max', 'mode', 'median', 'mean'],
+                          f"We Only support 'min' 'max' 'mode' 'median' 'mean',"
+                          f" but found {self._aggregate}.")
+        self._aggregate = value.lower().strip()
+
+class IntDescriptor:
+    def __init__(self, val: int=3):
+        self._value = val
+    
+    def __get__(self, instance, type):
+        if instance is None:
+            return self
+        return self._value
+    
+    def __set__(self, instance, value: int):
+        invalidInputError(instance(value, int),
+                          f"value type must be int, but found {type(value)}")
+        self._value = value
