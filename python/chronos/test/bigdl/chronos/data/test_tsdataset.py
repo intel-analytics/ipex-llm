@@ -355,16 +355,31 @@ class TestTSDataset(TestCase):
     def test_tsdata_roll_timeenc(self):
         horizon = random.randint(1, 9)
         lookback = random.randint(10, 20)
+
+        # single-id test
         for freq in ["D", "2D"]:
             df = get_int_target_df(freq=freq)
+            expected_sample_num = len(df) - horizon - lookback + 1
             tsdata = TSDataset.from_pandas(df, dt_col='datetime', target_col='value', id_col="id")
             x, y, x_time, y_time =\
                 tsdata.roll(lookback=lookback, horizon=horizon,
                             time_enc=True, label_len=lookback-horizon).to_numpy()
-            assert x.shape[1:] == (lookback, 1)
-            assert y.shape[1:] == (lookback, 1)
-            assert x_time.shape[1:] == (lookback, 3)
-            assert y_time.shape[1:] == (lookback, 3)
+            assert x.shape == (expected_sample_num, lookback, 1)
+            assert y.shape == (expected_sample_num, lookback, 1)
+            assert x_time.shape == (expected_sample_num, lookback, 3)
+            assert y_time.shape == (expected_sample_num, lookback, 3)
+
+        # multi-id test
+        df = get_multi_id_ts_df()
+        tsdata = TSDataset.from_pandas(df, dt_col='datetime', target_col='value', id_col="id")
+        x, y, x_time, y_time =\
+            tsdata.roll(lookback=lookback, horizon=horizon,
+                        time_enc=True, label_len=lookback-horizon).to_numpy()
+        assert x.shape[1:] == (lookback, 1)
+        assert y.shape[1:] == (lookback, 1)
+        assert x_time.shape[1:] == (lookback, 3)
+        assert y_time.shape[1:] == (lookback, 3)
+        assert x.shape[0] == y.shape[0] == x_time.shape[0] == y_time.shape[0]
 
     def test_tsdata_roll_timeenc_predict(self):
         horizon = 10
@@ -384,7 +399,9 @@ class TestTSDataset(TestCase):
     def test_tsdata_roll_timeenc_to_torch_data_loader(self):
         horizon = random.randint(1, 9)
         lookback = random.randint(10, 20)
-        df = get_int_target_df()
+
+        # single-id test
+        df = get_multi_id_ts_df()
         tsdata = TSDataset.from_pandas(df, dt_col='datetime', target_col='value', id_col="id")
         dataloader =\
             tsdata.to_torch_data_loader(lookback=lookback, horizon=horizon,
@@ -394,7 +411,23 @@ class TestTSDataset(TestCase):
         assert y.shape[1:] == (lookback, 1)
         assert x_time.shape[1:] == (lookback, 3)
         assert y_time.shape[1:] == (lookback, 3)
-    
+        # white box check
+        assert dataloader.dataset.data_stamp_arr.shape[0] == dataloader.dataset.arr.shape[0]
+
+        # multiple-id test
+        df = get_multi_id_ts_df()
+        tsdata = TSDataset.from_pandas(df, dt_col='datetime', target_col='value', id_col="id")
+        dataloader =\
+            tsdata.to_torch_data_loader(lookback=lookback, horizon=horizon,
+                        time_enc=True, label_len=lookback-horizon)
+        x, y, x_time, y_time = next(iter(dataloader))
+        assert x.shape[1:] == (lookback, 1)
+        assert y.shape[1:] == (lookback, 1)
+        assert x_time.shape[1:] == (lookback, 3)
+        assert y_time.shape[1:] == (lookback, 3)
+        # white box check
+        assert dataloader.dataset.data_stamp_arr.shape[0] == dataloader.dataset.arr.shape[0]
+
     def test_tsdata_roll_timeenc_to_torch_data_loader_predict(self):
         horizon = 10
         lookback = random.randint(10, 20)
