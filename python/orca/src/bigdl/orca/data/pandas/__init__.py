@@ -17,4 +17,3 @@
 from bigdl.orca.data.pandas.preprocessing import read_csv
 from bigdl.orca.data.pandas.preprocessing import read_json
 from bigdl.orca.data.pandas.preprocessing import read_parquet
-from bigdl.orca.data.pandas.preprocessing import merge
