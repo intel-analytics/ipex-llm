@@ -843,12 +843,6 @@ class BasePytorchForecaster(Forecaster):
             invalidInputError(False,
                               "You must call fit or restore first before calling predict_interval!")
 
-        def calculate(data, model):
-            yhat = _pytorch_fashion_inference(model=model,
-                                              input_data=data,
-                                              batch_size=batch_size)
-            return yhat
-
         # step1, according to validation dataset, calculate inherent noise
         # which should be done during fit
         if not hasattr(self, "data_noise"):
@@ -872,7 +866,9 @@ class BasePytorchForecaster(Forecaster):
             else:
                 input_data, target = val_data
             self.internal.eval()
-            val_yhat = calculate(input_data, self.internal)
+            val_yhat = _pytorch_fashion_inference(model=self.internal,
+                                                  input_data=input_data,
+                                                  batch_size=batch_size)
             self.data_noise = Evaluator.evaluate(["mse"], target,
                                                  val_yhat, aggregate=None)[0]  # 2d array
 
@@ -897,10 +893,11 @@ class BasePytorchForecaster(Forecaster):
 
         y_hat_list = []
         for i in range(repetition_times):
-            y_hat_list.append(calculate(data, self.internal))
+            _yhat = _pytorch_fashion_inference(model=self.internal,
+                                               input_data=data,
+                                               batch_size=batch_size)
+            y_hat_list.append(_yhat)
         y_hat_mean = np.mean(np.stack(y_hat_list, axis=0), axis=0)
-        invalidInputError(y_hat_mean.shape == y_hat_list[0].shape,
-                          "dismatch shape between y_hat_mean and y_hat")
 
         model_bias = np.zeros_like(y_hat_mean)  # 3d array
         for i in range(repetition_times):
