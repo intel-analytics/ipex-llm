@@ -127,7 +127,6 @@
                     <artifactId>protobuf-java</artifactId>
                 </exclusion>
             </exclusions>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
@@ -151,7 +150,6 @@
                     <groupId>com.google.protobuf</groupId>
                     <artifactId>protobuf-java</artifactId>
                 </exclusion>
-            </exclusions>
             </exclusions>
         </dependency>
         <dependency>
