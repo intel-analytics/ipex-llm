@@ -251,6 +251,24 @@ class TestSparkBackend(TestCase):
         scale = StandardScaler(inputCol="sale_price", outputCol="sale_price_scaled")
         transformed_data_shard = scale.fit_transform(data_shard)
 
+    def test_merge_shards(self):
+        from pyspark.sql import SparkSession, Row
+        spark = SparkSession.builder.getOrCreate()
+        df1=spark.createDataFrame([
+            Row(a=1, b=2.),
+            Row(a=2, b=3.),
+            Row(a=3, b=5.)
+            ])
+        df2=spark.createDataFrame([
+            Row(a=1, c=7),
+            Row(a=2, c=8),
+            Row(a=4, c=9)
+            ])
+        data_shard1 = spark_df_to_pd_sparkxshards(df1)
+        data_shard2 = spark_df_to_pd_sparkxshards(df2)
+        merged_shard = data_shard1.merge(data_shard2, on='a')
+        assert len(merged_shard)==2  
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
