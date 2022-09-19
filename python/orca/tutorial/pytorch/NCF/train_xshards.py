@@ -77,7 +77,7 @@ parser.add_argument("--test_num_ng",
     help="sample part of negative items for testing")
 parser.add_argument("--backend", 
     type=str, 
-    default="ray", 
+    default="spark", 
     help="backend used in estimator, ray or spark are supported")
 parser.add_argument("--user_num", 
     type=int, 
@@ -172,10 +172,10 @@ from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.metrics import Accuracy,AUC
 
 # create the estimator
-est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,loss=loss_function, metrics=[Accuracy(),AUC()],backend=args.backend)# backend="ray" or "spark"
+est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator, loss=loss_function, metrics=[Accuracy(),AUC()], backend=args.backend)# backend="ray" or "spark"
 
 # fit the estimator
-est.fit(data=train_shards, epochs=5,batch_size=args.batch_size,feature_cols=["x"],label_cols =["y"])
+est.fit(data=train_shards, epochs=5, batch_size=args.batch_size, feature_cols=["x"], label_cols =["y"])
 
 #Step 5: Evaluate and save the Model
 
