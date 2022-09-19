@@ -444,6 +444,7 @@ org.scala-lang.modules:scala-java8-compat_2.12
 org.scala-lang.modules:scala-xml_2.12
 xmlenc:xmlenc
 
+blas
 libwebp
 llvm
 re2
@@ -521,7 +522,6 @@ org.hdrhistogram:HdrHistogram
 org.latencyutils:LatencyUtils
 org.tukaani:xz
 
-blas
 sqlite3
 
 Zlib
@@ -558,6 +558,5 @@ libpng
 openssl
 ------------
 boringssl
-
 
 
