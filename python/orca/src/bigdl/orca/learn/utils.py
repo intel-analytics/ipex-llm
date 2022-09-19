@@ -458,6 +458,12 @@ def make_data_creator(refs):
 
     return data_creator
 
+def make_dataloader_list_wrapper(func):
+    def make_feature_list(batch):
+        batch=func(batch)
+        *features, target = batch
+        return features, target
+    return make_feature_list
 
 def data_length(data):
     x = data["x"]

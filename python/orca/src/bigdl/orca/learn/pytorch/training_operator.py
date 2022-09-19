@@ -268,16 +268,11 @@ class TrainingOperator:
 
         """
         # unpack features into list to support multiple inputs model
-        *features, target = batch
-        # If features is already a tuple, we don't give it an extra list dimension.
-        already_list = (isinstance(features[0], tuple) or isinstance(features[0], list))
-        isSingleListInput = len(features) == 1 and already_list
-        if isSingleListInput:
-            features = features[0]
+        features, target = batch
 
         # Compute output.
         with self.timers.record("fwd"):
-            output = self.model(*features) if not isSingleListInput else self.model(features)
+            output = self.model(*features)
             if isinstance(output, tuple) or isinstance(output, list):
                 # Then target is also assumed to be a tuple or list.
                 loss = self.criterion(*output, *target)
@@ -395,16 +390,11 @@ class TrainingOperator:
                 calculate averages.
         """
         # unpack features into list to support multiple inputs model
-        *features, target = batch
-        # If features is already a tuple, we don't give it an extra list dimension.
-        already_list = (isinstance(features[0], tuple) or isinstance(features[0], list))
-        isSingleListInput = len(features) == 1 and already_list
-        if isSingleListInput:
-            features = features[0]
+        features, target = batch
 
         # compute output
         with self.timers.record("eval_fwd"):
-            output = self.model(*features) if not isSingleListInput else self.model(features)
+            output = self.model(*features)
             loss = self.criterion(output, target)
 
         return output, target, loss

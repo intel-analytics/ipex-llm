@@ -26,7 +26,7 @@ from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch.pytorch_ray_worker import PytorchRayWorker
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
-    process_xshards_of_pandas_dataframe
+    process_xshards_of_pandas_dataframe, make_dataloader_list_wrapper
 from bigdl.orca.ray import OrcaRayContext
 from bigdl.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save
@@ -65,24 +65,14 @@ def partition_refs_to_creator(partition_refs):
 
         class NDArrayDataset(Dataset):
             def __init__(self, x, y):
-                self.data = None
-                self.x = x
-                self.y = y
-                if isinstance(x, (list, tuple)) or isinstance(y, (list,tuple)):
-                    self.data= list(x)
-                    self.data.append(y)
-                else:
-                    self.x = x  # features
-                    self.y = y  # labels
+                self.x = x  # features
+                self.y = y  # labels
 
             def __len__(self):
                 return get_size(self.y)
 
             def __getitem__(self, i):
-                if self.data:
-                    return index_data(self.data, i)
-                else:
-                    return index_data(self.x, i), index_data(self.y, i)
+                return index_data(self.x, i), index_data(self.y, i)
 
         params = {"batch_size": batch_size, "shuffle": True}
         for arg in ["shuffle", "sampler", "batch_sampler", "num_workers", "collate_fn",
@@ -369,8 +359,14 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                               " Ray Dataset or a callable function, but"
                               " got type: {}".format(type(data)))
 
-            params["data_creator"] = data
-            params["validation_data_creator"] = validation_data
+            def reload_dataloader_creator(config,batch_size):
+                dataloader = data(config, batch_size)
+                dataloader.collate_fn = make_dataloader_list_wrapper(dataloader.collate_fn)
+                return dataloader
+
+            params["data_creator"] = reload_dataloader_creator
+            params["validation_data_creator"] = reload_dataloader_creator
+
             success, worker_stats = self._train_epochs(**params)
 
         epoch_stats = list(map(list, zip(*worker_stats)))
@@ -512,8 +508,12 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             invalidInputError(isinstance(data, types.FunctionType),
                               "data should be either an instance of SparkXShards or a callable"
                               " function, but got type: {}".format(type(data)))
+            def reload_dataloader_creator(config,batch_size):
+                dataloader = data(config, batch_size)
+                dataloader.collate_fn = make_dataloader_list_wrapper(dataloader.collate_fn)
+                return dataloader
 
-            params = dict(data_creator=data, batch_size=batch_size, num_steps=num_steps,
+            params = dict(data_creator=reload_dataloader_creator, batch_size=batch_size, num_steps=num_steps,
                           profile=profile, info=info)
 
             worker_stats = ray.get([w.validate.remote(**params) for w in self.remote_workers])

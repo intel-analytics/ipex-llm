@@ -46,24 +46,14 @@ def partition_to_creator(partition):
 
         class NDArrayDataset(Dataset):
             def __init__(self, x, y):
-                self.data = None
-                self.x = x
-                self.y = y
-                if isinstance(x, (list, tuple)) or isinstance(y, (list,tuple)):
-                    self.data= list(x)
-                    self.data.append(y)
-                else:
-                    self.x = x  # features
-                    self.y = y  # labels
+                self.x = x  # features
+                self.y = y  # labels
 
             def __len__(self):
                 return get_size(self.y)
 
             def __getitem__(self, i):
-                if self.data:
-                    return index_data(self.data, i)
-                else:
-                    return index_data(self.x, i), index_data(self.y, i)
+                return index_data(self.x, i), index_data(self.y, i)
 
         params = {"batch_size": batch_size, "shuffle": True}
         for arg in ["shuffle", "sampler", "batch_sampler", "num_workers", "collate_fn",
