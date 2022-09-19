@@ -10,7 +10,6 @@ on:
       - 'python/nano/src/**'
       - 'python/orca/src/bigdl/orca/automl/**'
       - 'python/orca/src/bigdl/orca/data/**'
-      - 'python/orca/src/bigdl/orca/learn/**'
       - '.github/workflows/chronos-prvn-python-spark-3.1-py37-ray.yml'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
