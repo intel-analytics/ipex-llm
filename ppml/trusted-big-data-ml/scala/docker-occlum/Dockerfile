@@ -158,7 +158,7 @@ RUN cd /opt && \
     sed -i 's/2.4.0/3.1.2/g' tpch.sbt && \
     sbt package
 
-FROM occlum/occlum:0.28.1-ubuntu20.04 as ppml
+FROM ubuntu:20.04 as ppml
 
 ARG BIGDL_VERSION=2.1.0-SNAPSHOT
 ARG SPARK_VERSION
@@ -182,33 +182,27 @@ RUN echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
 COPY --from=tini /usr/local/bin/tini /sbin/tini
 
 # Install occlum from package
-# RUN apt-get update && \
-#     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
-#         build-essential ca-certificates openjdk-8-jdk \
-#         curl tzdata wget netcat gnupg2 jq make gdb libfuse-dev libtool \
-#         libprotobuf-c-dev protobuf-c-compiler libcurl4-openssl-dev libprotobuf-dev unzip
-# # Add 01.org & key
-# RUN echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu bionic main' | tee /etc/apt/sources.list.d/intelsgx.list && \
-#     wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add -
-
-# RUN echo 'deb [arch=amd64] https://occlum.io/occlum-package-repos/debian bionic main' | tee /etc/apt/sources.list.d/occlum.list && \
-#     wget -qO - https://occlum.io/occlum-package-repos/debian/public.key | apt-key add -
-
-# RUN apt-get update && \
-#     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
-#         build-essential ca-certificates openjdk-8-jdk curl wget netcat net-tools \
-#         gnupg2 vim jq make gdb libfuse-dev libtool \
-#         libsgx-dcap-ql libsgx-epid libsgx-urts libsgx-quote-ex libsgx-uae-service \
-#         libsgx-dcap-quote-verify-dev \
-#         occlum && \
-#     apt-get clean
-
-# RUN echo "source /etc/profile" >> $HOME/.bashrc 
-
 RUN apt-get update && \
     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
-        openjdk-8-jdk && \
+        build-essential ca-certificates openjdk-8-jdk git \
+        curl tzdata wget netcat gnupg2 jq make cmake gdb libtool \
+        libprotobuf-c-dev protobuf-c-compiler libcurl4-openssl-dev libssl-dev libprotobuf-dev unzip \
+        net-tools rsync vim autoconf automake libfuse-dev \
+        libsgx-dcap-ql libsgx-epid libsgx-urts libsgx-quote-ex libsgx-uae-service \
+        libsgx-dcap-quote-verify-dev && \
     apt-get clean
+
+# RUN echo "source /etc/profile" >> $HOME/.bashrc 
+RUN git clone https://github.com/occlum/occlum.git && \
+    cd occlum/tools/installer/deb && \
+    make -j 8 && \
+    apt install -y ./occlum-runtime*.deb && \
+    apt install -y ./occlum-pal*.deb && \
+    apt install -y ./occlum-sgx-tools*.deb && \
+    apt install -y ./occlum-toolchains-gcc*.deb && \
+    apt install -y ./occlum_*.deb && \
+    echo "source /etc/profile" >> $HOME/.bashrc && \
+    cd /root && rm -rf occlum
 
 # prepare Spark
 COPY --from=bigdl /opt/spark /opt/spark
