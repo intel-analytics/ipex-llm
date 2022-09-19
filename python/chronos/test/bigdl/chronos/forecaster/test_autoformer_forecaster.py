@@ -308,9 +308,11 @@ class TestChronosModelAutoformerForecaster(TestCase):
         forecaster = AutoformerForecaster.from_tsdataset(tsdata_train)
         forecaster.fit(train_loader, epochs=1, batch_size=32)
 
+        # conflict param
         with pytest.raises(RuntimeError):
             forecaster = AutoformerForecaster.from_tsdataset(tsdata_train, label_len=30)
-        
+
+        # no data infer
         tsdata_train, tsdata_val, tsdata_test =\
             TSDataset.from_pandas(df, dt_col="datetime", target_col=target,
                                 with_split=True, test_ratio=0.1, val_ratio=0.1)
