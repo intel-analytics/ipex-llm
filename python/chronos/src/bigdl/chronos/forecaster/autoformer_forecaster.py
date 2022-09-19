@@ -14,11 +14,13 @@
 # limitations under the License.
 #
 
+from cProfile import label
 import torch
 import numpy as np
 from pandas import Timedelta
 from bigdl.chronos.forecaster.abstract import Forecaster
 from bigdl.chronos.metric.forecast_metrics import Evaluator
+from bigdl.chronos.data.tsdataset import TSDataset
 from bigdl.chronos.model.autoformer import model_creator, loss_creator
 from torch.utils.data import TensorDataset, DataLoader
 from bigdl.chronos.model.autoformer.Autoformer import AutoFormer, _transform_config_to_namedtuple
@@ -314,6 +316,8 @@ class AutoformerForecaster(Forecaster):
                     be sure to set label_len > 0 and time_enc = True
                | 2. pytorch dataloader: generate from `TSDataset.to_torch_data_loader`,
                     be sure to set label_len > 0 and time_enc = True
+               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
+                    be sure to set label_len > 0 and time_enc = True
 
         :param epochs: Number of epochs you want to train. The value defaults to 1.
         :param batch_size: Number of batch size you want to train. The value defaults to 32.
@@ -334,6 +338,18 @@ class AutoformerForecaster(Forecaster):
                                             torch.from_numpy(data[3]),),
                               batch_size=batch_size,
                               shuffle=True)
+        # transform a TSDataset instance to dataloader
+        if isinstance(data, TSDataset):
+            _rolled = data.numpy_x is None
+            data = data.to_torch_data_loader(batch_size=batch_size,
+                                             roll=_rolled,
+                                             lookback=self.data_config['past_seq_len'],
+                                             horizon=self.data_config['future_seq_len'],
+                                             label_len=self.data_config['label_len'],
+                                             time_enc=True,
+                                             feature_col=data.roll_feature,
+                                             target_col=data.roll_target,
+                                             shuffle=True)
 
         from bigdl.chronos.pytorch import TSTrainer as Trainer
         # Trainer init and fitting
@@ -428,6 +444,7 @@ class AutoformerForecaster(Forecaster):
                     be sure to set label_len > 0 and time_enc = True
                | 2. pytorch dataloader: generate from `TSDataset.to_torch_data_loader`,
                     be sure to set label_len > 0, time_enc = True and is_predict = True
+               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance
 
         :param val_data: The val_data support following formats:
 
@@ -435,6 +452,7 @@ class AutoformerForecaster(Forecaster):
                     be sure to set label_len > 0 and time_enc = True
                | 2. pytorch dataloader: generate from `TSDataset.to_torch_data_loader`,
                     be sure to set label_len > 0, time_enc = True
+               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance
 
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time).
@@ -457,6 +475,18 @@ class AutoformerForecaster(Forecaster):
             invalidInputError(val_data is not None,
                               "When call predict_interval for the first time, you must pass in "
                               "validation data to calculate data noise.")
+            # transform a TSDataset instance to dataloader
+            if isinstance(val_data, TSDataset):
+                _rolled = val_data.numpy_x is None
+                val_data = val_data.to_torch_data_loader(batch_size=batch_size,
+                                                         roll=_rolled,
+                                                         lookback=self.data_config['past_seq_len'],
+                                                         horizon=self.data_config['future_seq_len'],
+                                                         label_len=self.data_config['label_len'],
+                                                         time_enc=True,
+                                                         feature_col=data.roll_feature,
+                                                         target_col=data.roll_target,
+                                                         shuffle=False)
             # data transform
             if isinstance(val_data, DataLoader):
                 target = np.concatenate(tuple(val[1] for val in val_data), axis=0)
@@ -477,6 +507,19 @@ class AutoformerForecaster(Forecaster):
 
         # turn on dropout
         self.internal.apply(apply_dropout)
+
+        # transform a TSDataset instance to dataloader
+        if isinstance(data, TSDataset):
+            _rolled = data.numpy_x is None
+            data = data.to_torch_data_loader(batch_size=batch_size,
+                                             roll=_rolled,
+                                             lookback=self.data_config['past_seq_len'],
+                                             horizon=self.data_config['future_seq_len'],
+                                             label_len=self.data_config['label_len'],
+                                             time_enc=True,
+                                             feature_col=data.roll_feature,
+                                             target_col=data.roll_target,
+                                             shuffle=False)
 
         def predict(data, model):
             # manually implement predict to avoid .eval() in trainer.predict()
