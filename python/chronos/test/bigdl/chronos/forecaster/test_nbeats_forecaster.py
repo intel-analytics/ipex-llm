@@ -494,3 +494,19 @@ class TestChronosNBeatsForecaster(TestCase):
                                       lr=0.01)
         val_loss = forecaster.fit((train_data[0], train_data[1]), val_data,
                                   validation_mode='best_epoch', epochs=10)
+
+    def test_predict_interval(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      stack_types=('generic', 'generic'),
+                                      nb_blocks_per_stack=3,
+                                      hidden_layer_units=256,
+                                      metrics=['mse'],
+                                      lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        y_pred, std = forecaster.predict_interval(data=test_data[0],
+                                                  val_data=val_data,
+                                                  repetition_times=5)
+        assert y_pred.shape == test_data[1].shape
+        assert y_pred.shape == std.shape
