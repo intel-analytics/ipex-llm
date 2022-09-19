@@ -275,7 +275,7 @@ def download(url, path, chunk_size):
     """
     from bigdl.nano.utils.log4Error import invalidInputError
     req = requests.get(url, stream=True)
-    file_size = bytests_convert(int(req.headers['content-length']))
+    file_size = bytes_convert(int(req.headers['content-length']))
     invalidInputError(req.status_code == 200, "download failure, please check the network.")
     file_name = url.split('/')[-1]
     logger.info(f"Start download {file_name.partition('.')[0]}, file size: {file_size}")
@@ -285,10 +285,11 @@ def download(url, path, chunk_size):
                 f.write(chunk)
                 f.flush()
 
-def bytests_convert(size: int):
+
+def bytes_convert(size: int):
     if size / 1024 < 1024:
         return f"{(size / 1024):<.2f}K"
-    if size / 1024 **2 < 1024:
+    if size / 1024 ** 2 < 1024:
         return f"{(size / 1024**2):<.2f}M"
     else:
         return f"{(size / 1024**3):<.2f}G"
