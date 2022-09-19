@@ -71,6 +71,6 @@ echo "#### example.6 Excepted result(arrow.py): |    time| id| v1| v2|"
 echo "---- example.6 Actual result: "
 cat test-sql-arrow-sgx.log | egrep -a '\|\s*time\|'
 
-echo "#### example.7 Excepted result(hive.py): |key| value|key| value|"
-echo "---- example.7 Actual result: "
-cat test-sql-hive-sgx.log | egrep -a '\|key\|.*value\|key\|.*value\|'
+#echo "#### example.7 Excepted result(hive.py): |key| value|key| value|"
+#echo "---- example.7 Actual result: "
+#cat test-sql-hive-sgx.log | egrep -a '\|key\|.*value\|key\|.*value\|'
