@@ -595,6 +595,10 @@ class AutoformerForecaster(Forecaster):
         if label_len is None:
             label_len = past_seq_len//2
 
+        invalidInputError(tsdataset.label_len == label_len,
+                          f"Expected label_len to be {tsdataset.label_len}, "
+                          f"but found {label_len}")
+
         invalidInputError(check_time_steps(tsdataset, past_seq_len, future_seq_len),
                           "tsdataset already has history time steps and "
                           "differs from the given past_seq_len and future_seq_len "
