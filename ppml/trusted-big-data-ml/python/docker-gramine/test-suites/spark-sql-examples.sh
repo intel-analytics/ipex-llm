@@ -8,7 +8,7 @@ status_4_scala_sql_SimpleTypedAggregator=1
 status_5_scala_sql_UserDefinedScalar=1
 status_6_scala_sql_UserDefinedTypedAggregation=1
 status_7_scala_sql_UserDefinedUntypedAggregation=1
-status_8_scala_sql_SparkHiveExample=1
+status_8_scala_sql_SparkHiveExample=0
 LOCAL_IP=$LOCAL_IP
 
 if [ $status_2_scala_sql_example -ne 0 ]; then
@@ -163,6 +163,6 @@ echo "example.7 status_7_scala_sql_UserDefinedUntypedAggregation"
 echo -e "Excepted Result: |average_salary| \n Actual Result:"
 cat test-scala-spark-sql-UserDefinedUntypedAggregation-sgx.log | egrep -a '\|average_salary\|'
 
-echo "example.8 status_8_scala_sql_SparkHiveExample"
-echo -e "Excepted Result: '|  value|key|' \n Actual Result:"
-cat test-scala-spark-sql-SparkHiveExample-sgx.log | egrep -a '\|  value\|key\|'
+#echo "example.8 status_8_scala_sql_SparkHiveExample"
+#echo -e "Excepted Result: '|  value|key|' \n Actual Result:"
+#cat test-scala-spark-sql-SparkHiveExample-sgx.log | egrep -a '\|  value\|key\|'

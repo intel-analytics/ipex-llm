@@ -261,3 +261,62 @@ class TestChronosModelAutoformerForecaster(TestCase):
         evaluate = forecaster.evaluate(val_loader)
         pred = forecaster.predict(test_loader)
         evaluate_list.append(evaluate)
+
+    def test_autoformer_forecaster_confidence_interval_with_loader(self):
+        train_loader, val_loader, test_loader = create_data(loader=True)
+        forecaster = AutoformerForecaster(past_seq_len=24,
+                                          future_seq_len=5,
+                                          input_feature_num=2,
+                                          output_feature_num=2,
+                                          label_len=12,
+                                          freq='s',
+                                          seed=0,
+                                          moving_avg=20) # even
+        forecaster.fit(train_loader, epochs=3, batch_size=32)
+        # only the first time needs val_data
+        y_pred, std = forecaster.predict_interval(data=test_loader,
+                                                  val_data=val_loader,
+                                                  repetition_times=5)
+        assert y_pred.shape == std.shape
+        y_pred, std = forecaster.predict_interval(data=test_loader)
+
+    def test_autoformer_forecaster_confidence_interval_with_numpy(self):
+        train_data, val_data, test_data = create_data(loader=False)
+        forecaster = AutoformerForecaster(past_seq_len=24,
+                                          future_seq_len=5,
+                                          input_feature_num=2,
+                                          output_feature_num=2,
+                                          label_len=12,
+                                          freq='s',
+                                          seed=0,
+                                          moving_avg=20) # even
+        forecaster.fit(train_data, epochs=3, batch_size=32)
+        # only the first time needs val_data
+        y_pred, std = forecaster.predict_interval(data=test_data,
+                                                  val_data=val_data,
+                                                  repetition_times=5)
+        assert y_pred.shape == std.shape
+        y_pred, std = forecaster.predict_interval(data=test_data)
+
+    def test_autoformer_forecaster_from_tsdataset(self):
+        df = get_ts_df()
+        target = ["value", "extra feature"]
+        tsdata_train, tsdata_val, tsdata_test =\
+            TSDataset.from_pandas(df, dt_col="datetime", target_col=target,
+                                with_split=True, test_ratio=0.1, val_ratio=0.1)
+        train_loader = tsdata_train.to_torch_data_loader(lookback=24, horizon=5, time_enc=True)
+        forecaster = AutoformerForecaster.from_tsdataset(tsdata_train)
+        forecaster.fit(train_loader, epochs=1, batch_size=32)
+
+        # conflict param
+        with pytest.raises(RuntimeError):
+            forecaster = AutoformerForecaster.from_tsdataset(tsdata_train, label_len=30)
+
+        # no data infer
+        tsdata_train, tsdata_val, tsdata_test =\
+            TSDataset.from_pandas(df, dt_col="datetime", target_col=target,
+                                with_split=True, test_ratio=0.1, val_ratio=0.1)
+        forecaster = AutoformerForecaster.from_tsdataset(tsdata_train,
+                                                         past_seq_len=24,
+                                                         future_seq_len=5)
+        forecaster.fit(train_loader, epochs=1, batch_size=32)

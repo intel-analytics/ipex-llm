@@ -455,3 +455,19 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                         n_trials=3, target_metric="mse",
                         direction="minimize")
         forecaster.fit(train_data, epochs=10)
+
+    def test_predict_interval(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = Seq2SeqForecaster(past_seq_len=24,
+                                       future_seq_len=5,
+                                       input_feature_num=1,
+                                       output_feature_num=1,
+                                       loss="mse",
+                                       metrics=["mse"],
+                                       lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        y_pred, std = forecaster.predict_interval(data=test_data[0],
+                                                  val_data=val_data,
+                                                  repetition_times=5)
+        assert y_pred.shape == test_data[1].shape
+        assert y_pred.shape == std.shape
