@@ -17,6 +17,7 @@
 import torch
 import numpy as np
 from bigdl.chronos.forecaster.abstract import Forecaster
+from bigdl.chronos.metric.forecast_metrics import Evaluator
 from bigdl.chronos.model.autoformer import model_creator, loss_creator
 from torch.utils.data import TensorDataset, DataLoader
 from bigdl.chronos.model.autoformer.Autoformer import AutoFormer, _transform_config_to_namedtuple
@@ -414,7 +415,7 @@ class AutoformerForecaster(Forecaster):
 
         return self.trainer.validate(self.internal, data)
 
-    def predict_interval(self, data, val_data=None, batch_size=None, repetition_times=5):
+    def predict_interval(self, data, val_data=None, batch_size=32, repetition_times=5):
         """
         Calculate confidence interval of data based on Monte Carlo dropout(MC dropout).
         Related paper : https://arxiv.org/abs/1709.01907
@@ -460,6 +461,8 @@ class AutoformerForecaster(Forecaster):
             else:
                 x, target, x_enc, y_enc = val_data
 
+            target = target[:, -self.internal.pred_len:, :]
+
             _yhat = self.predict(val_data)
             val_yhat = np.concatenate(_yhat, axis=0)
             self.data_noise = Evaluator.evaluate(["mse"], target,
@@ -472,9 +475,27 @@ class AutoformerForecaster(Forecaster):
 
         # turn on dropout
         self.internal.apply(apply_dropout)
+
+        def predict(data, model):
+            # manually implement predict to avoid .eval() in trainer.predict()
+            if isinstance(data, tuple):
+                data = DataLoader(TensorDataset(torch.from_numpy(data[0]),
+                                                torch.from_numpy(data[1]),
+                                                torch.from_numpy(data[2]),
+                                                torch.from_numpy(data[3]),),
+                                  batch_size=batch_size,
+                                  shuffle=False)
+            outputs_list = []
+            for batch in data:
+                batch_x, batch_y, batch_x_mark, batch_y_mark = map(lambda x: x.float(), batch)
+                outputs = model(batch_x, batch_x_mark, batch_y, batch_y_mark)
+                outputs = outputs[:, -model.pred_len:, -model.c_out:]
+                outputs_list.append(outputs.detach().numpy())
+            return outputs_list
+
         y_hat_list = []
         for i in range(repetition_times):
-            _yhat = self.predict(val_data)
+            _yhat = predict(data, self.internal)
             yhat = np.concatenate(_yhat, axis=0)
             y_hat_list.append(yhat)
         y_hat_mean = np.mean(np.stack(y_hat_list, axis=0), axis=0)
