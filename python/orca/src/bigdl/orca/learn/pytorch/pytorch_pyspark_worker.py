@@ -37,6 +37,7 @@ import logging
 from bigdl.orca.learn.utils import save_pkl
 import os
 import tempfile
+from copy import copy
 
 from pyspark import BarrierTaskContext, TaskContext
 from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file, get_rank
@@ -83,7 +84,6 @@ class PytorchPysparkWorker(TorchRunner):
         self.mode = mode
         self.backend = backend
         self.cluster_info = cluster_info
-        invalidInputError(model_dir, "model_dir cannot be null")
         self.model_dir = model_dir
         self.log_to_driver = log_to_driver
 
@@ -141,9 +141,13 @@ class PytorchPysparkWorker(TorchRunner):
             LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
 
         if self.rank == 0:
-            save_pkl(state_dict, os.path.join(self.model_dir, "state.pkl"))
+            if self.model_dir is not None:
+                save_pkl(state_dict, os.path.join(self.model_dir, "state.pkl"))
 
-        return [stats_list]
+        if self.model_dir is not None:
+            return [stats_list]
+        else:
+            return state_dict, [stats_list]
 
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
                  info=None, wrap_dataloader=None):
@@ -157,7 +161,7 @@ class PytorchPysparkWorker(TorchRunner):
 
     def predict(self, data_creator, batch_size=32, profile=False):
         """Evaluates the model on the validation data set."""
-        config = self.config.copy()
+        config = copy(self.config)
         self._toggle_profiling(profile=profile)
 
         partition = data_creator(config, batch_size)

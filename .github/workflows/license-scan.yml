@@ -13,7 +13,7 @@ on:
 
 jobs:
   fossa-scan:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, Bree]
     steps:
     - name: "Checkout Code"
       uses: actions/checkout@v3
@@ -28,10 +28,20 @@ jobs:
       with:
         api-key: ${{ secrets.FOSSAAPIKEY }}
         run-tests: true
-        
-    - name: "Filter the Dependency Tree"
+    
+    - name: Set up JDK8
+      if: ${{ failure() }}
+      uses: ./.github/actions/jdk-setup-action
+
+    - name: Set up maven
+      if: ${{ failure() }}
+      uses: ./.github/actions/maven-setup-action
+
+    - name: "Debug Failure"
       if: ${{ failure() }}
       run: |
+        ls
+        #spark3.1.2
         sed -i 's/<artifactId>${spark-version.project}<\/artifactId>/<artifactId>${spark-version.project}-${SPARK_PLATFORM}<\/artifactId>/' scala/dllib/pom.xml
         sed -i 's/<artifactId>3.0<\/artifactId>/<artifactId>3.0-${SPARK_PLATFORM}<\/artifactId>/' scala/common/spark-version/3.0/pom.xml
         sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/pom.xml
@@ -44,19 +54,25 @@ jobs:
         sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/serving/pom.xml
         sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/ppml/pom.xml
         sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/assembly/pom.xml
-        cd scala
-        mvn -P spark_3.x dependency:tree -Dspark.version=3.1.2 -DSPARK_PLATFORM=SPARK_3.1
-
+        mvn dependency:tree -Dhttp.proxyHost=${{ secrets.HTTP_PROXY_HOST_2 }} -Dhttp.proxyPort=${{ secrets.HTTP_PROXY_PORT_2 }} -Dhttps.proxyHost=${{ secrets.HTTP_PROXY_HOST_2 }} -Dhttps.proxyPort=${{ secrets.HTTP_PROXY_PORT_3 }} -Dspark.version=3.1.2 -DSPARK_PLATFORM=SPARK_3.1 -P spark_3.x --file scala/pom.xml
+        mvn clean package -Dhttp.proxyHost=${{ secrets.HTTP_PROXY_HOST_2 }} -Dhttp.proxyPort=${{ secrets.HTTP_PROXY_PORT_2 }} -Dhttps.proxyHost=${{ secrets.HTTP_PROXY_HOST_2 }} -Dhttps.proxyPort=${{ secrets.HTTP_PROXY_PORT_3 }} -DskipTests -Dspark.version=3.1.2 -DSPARK_PLATFORM=SPARK_3.1 -P spark_3.x --file scala/pom.xml
+        echo "ls -d scala/assembly/target/*"
+        ls -d scala/assembly/target/*
+        echo ""
+        echo "zipinfo -1 scala/assembly/target/bigdl-assembly-spark_3.1.2-2.1.0-SNAPSHOT-dist-all.zip 'jars/*.jar'"
+        zipinfo -1 scala/assembly/target/bigdl-assembly-spark_3.1.2-2.1.0-SNAPSHOT-dist-all.zip 'jars/*.jar'
+    
     - name: Create Job Badge
       if: ${{ always() }}
       uses: ./.github/actions/create-job-status-badge
       with:
         secret: ${{ secrets.GIST_SECRET }}
         gist-id: f91eb10af4d9dbe216ba0f0da71cace9
-        is-self-hosted-runner: false
+        is-self-hosted-runner: true
         file-name: fossa-scan.json
         type: job
         job-name: fossa-scan
+        runner-hosted-on: 'America'
          
 
   create-workflow-badge:

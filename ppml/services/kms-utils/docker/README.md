@@ -18,7 +18,7 @@ Folder --> set as host_data_folder_path when creating container
         file21.txt
 ```
 
-If image is ready, you can run the container and enroll by using `run-docker-container.sh` in order to get a appid and appkey pair like below:
+If image is ready, you can run the container and enroll by using `run-docker-container.sh` in order to get a appid and apikey pair like below:
 
 ```bash
 export KMS_TYPE=an_optional_kms_type # KMS_TYPE can be (1) ehsm, (2) simple
@@ -67,24 +67,25 @@ INFO [main.cpp(159) -> main]: ehsm-kms enroll app end.
 
 
 export appid=your_appid
-export appkey=your_apikey
+export apikey=your_apikey
 export container_input_file_path=mounted_address_of_host_input_file_path
 export container_input_folder_path=mounted_address_of_host_input_folder_path
 
 
 # Generatekeys
-docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh generatekeys $appid $appkey"
+docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh generatekeys $appid $apikey"
 
 # Encrypt a single data file
 # encrpted data is next to $container_input_file_path
-docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh $kms_type encrypt $appid $appkey $container_input_file_path"
+docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh encrypt $appid $apikey $container_input_file_path"
+
 
 # Decrypt a single data file
-docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh decrypt $appid $appkey $container_input_file_path"
+docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh decrypt $appid $apikey $container_input_file_path"
 
 # SplitAndEncrypt
 # encrpted data is in a directory next to $container_input_folder_path
-docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh encryptwithrepartition $appid $appkey $container_input_folder_path"
+docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh encryptwithrepartition $appid $apikey $container_input_folder_path"
 ```
 ## 4. Stop container:
 ```

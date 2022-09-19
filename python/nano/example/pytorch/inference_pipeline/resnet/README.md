@@ -1,7 +1,7 @@
 # Bigdl-nano InferenceOptimizer example on Cat vs. Dog dataset
 
 This example illustrates how to apply InferenceOptimizer to quickly find acceleration method with the minimum inference latency under specific restrictions or without restrictions for a trained model. 
-For the sake of this example, we first train the proposed network(by default, a ResNet18 is used) on the [cats and dogs dataset](https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip), which consists both [frozen and unfrozen stages](https://github.com/PyTorchLightning/pytorch-lightning/blob/495812878dfe2e31ec2143c071127990afbb082b/pl_examples/domain_templates/computer_vision_fine_tuning.py#L21-L35). Then, by calling `optimize()`, we can obtain all available accelaration combinations provided by BigDL-Nano for inference. By calling `get_best_mdoel()` , we could get an accelerated model whose inference is 7.5x times faster.
+For the sake of this example, we first train the proposed network(by default, a ResNet18 is used) on the [cats and dogs dataset](https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip), which consists both [frozen and unfrozen stages](https://github.com/PyTorchLightning/pytorch-lightning/blob/495812878dfe2e31ec2143c071127990afbb082b/pl_examples/domain_templates/computer_vision_fine_tuning.py#L21-L35). Then, by calling `optimize()`, we can obtain all available accelaration combinations provided by BigDL-Nano for inference. By calling `get_best_mdoel()` , we could get an accelerated model whose inference is 5x times faster.
 
 
 ## Prepare the environment
@@ -28,18 +28,23 @@ source bigdl-nano-init
 ``` 
 You may find environment variables set like follows:
 ```
+OpenMP library found...
 Setting OMP_NUM_THREADS...
 Setting OMP_NUM_THREADS specified for pytorch...
 Setting KMP_AFFINITY...
 Setting KMP_BLOCKTIME...
 Setting MALLOC_CONF...
+Setting LD_PRELOAD...
+nano_vars.sh already exists
 +++++ Env Variables +++++
-LD_PRELOAD=./../lib/libjemalloc.so
-MALLOC_CONF=oversize_threshold:1,background_thread:true,metadata_thp:auto,dirty_decay_ms:-1,muzzy_decay_ms:-1
+LD_PRELOAD=/opt/anaconda3/envs/nano/bin/../lib/libiomp5.so /opt/anaconda3/envs/nano/lib/python3.7/site-packages/bigdl/nano//libs/libtcmalloc.so
+MALLOC_CONF=
 OMP_NUM_THREADS=112
-KMP_AFFINITY=granularity=fine,compact,1,0
+KMP_AFFINITY=granularity=fine
 KMP_BLOCKTIME=1
-TF_ENABLE_ONEDNN_OPTS=
+TF_ENABLE_ONEDNN_OPTS=1
+ENABLE_TF_OPTS=1
+NANO_TF_INTER_OP=1
 +++++++++++++++++++++++++
 Complete.
 ```
@@ -56,23 +61,28 @@ python inference_pipeline.py
 ```
 
 ## Results
-
-It will take about 2 minutes to run inference optimization. Then you may find the result for inference as follows:
+It will take about 1 minute to run inference optimization. Then you may find the result for inference as follows:
 ```
 ==========================Optimization Results==========================
-accleration option: original, latency: 54.2669ms, accuracy: 0.9937
-accleration option: fp32_ipex, latency: 40.3075ms, accuracy: 0.9937
-accleration option: bf16_ipex, latency: 115.6182ms, accuracy: 0.9937
-accleration option: int8, latency: 14.4857ms, accuracy: 0.4750
-accleration option: jit_fp32, latency: 39.3361ms, accuracy: 0.9937
-accleration option: jit_fp32_ipex, latency: 39.2949ms, accuracy: 0.9937
-accleration option: jit_fp32_ipex_clast, latency: 24.5715ms, accuracy: 0.9937
-accleration option: openvino_fp32, latency: 14.5771ms, accuracy: 0.9937
-accleration option: openvino_int8, latency: 7.2186ms, accuracy: 0.9937
-accleration option: onnxruntime_fp32, latency: 44.3872ms, accuracy: 0.9937
-accleration option: onnxruntime_int8_qlinear, latency: 10.1866ms, accuracy: 0.9937
-accleration option: onnxruntime_int8_integer, latency: 18.8731ms, accuracy: 0.9875
-When accelerator is onnxruntime, the model with minimal latency is:  inc + onnxruntime + qlinear 
-When accuracy drop less than 5%, the model with minimal latency is:  openvino + pot 
-The model with minimal latency is:  openvino + pot 
+ -------------------------------- ---------------------- -------------- ----------------------
+|             method             |        status        | latency(ms)  |       accuracy       |
+ -------------------------------- ---------------------- -------------- ----------------------
+|            original            |      successful      |    43.688    |        0.969         |
+|           fp32_ipex            |      successful      |    33.383    |    not recomputed    |
+|              bf16              |   fail to forward    |     None     |         None         |
+|           bf16_ipex            |    early stopped     |   203.897    |         None         |
+|              int8              |      successful      |    10.74     |        0.969         |
+|            jit_fp32            |      successful      |    38.732    |    not recomputed    |
+|         jit_fp32_ipex          |      successful      |    35.205    |    not recomputed    |
+|  jit_fp32_ipex_channels_last   |      successful      |    19.327    |    not recomputed    |
+|         openvino_fp32          |      successful      |    10.215    |    not recomputed    |
+|         openvino_int8          |      successful      |    8.192     |        0.969         |
+|        onnxruntime_fp32        |      successful      |    20.931    |    not recomputed    |
+|    onnxruntime_int8_qlinear    |      successful      |    8.274     |        0.969         |
+|    onnxruntime_int8_integer    |   fail to convert    |     None     |         None         |
+ -------------------------------- ---------------------- -------------- ----------------------
+
+Optimization cost 64.3s at all.
+===========================Stop Optimization===========================
+When accuracy drop less than 5%, the model with minimal latency is:  openvino + int8
 ```

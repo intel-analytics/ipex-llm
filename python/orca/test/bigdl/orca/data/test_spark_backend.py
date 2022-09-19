@@ -26,6 +26,7 @@ from bigdl.orca import OrcaContext
 from bigdl.dllib.nncontext import *
 from bigdl.orca.data.image import write_tfrecord, read_tfrecord
 from bigdl.orca.data.utils import *
+from bigdl.orca.data.transformer import *
 
 
 class TestSparkBackend(TestCase):
@@ -222,6 +223,12 @@ class TestSparkBackend(TestCase):
         df = data_shard.to_spark_df()
         df.show()
 
+    def test_read_large_csv(self):
+        file_path = os.path.join(self.resource_path, "orca/data/10010.csv")
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
+        res = data_shard.collect()
+        assert len(res[0]) == 10009, "number of records should be 10009"
+
     def test_spark_df_to_shards(self):
         file_path = os.path.join(self.resource_path, "orca/data/csv")
         from pyspark.sql import SparkSession
@@ -230,6 +237,19 @@ class TestSparkBackend(TestCase):
             .config("spark.driver.memory", "6g").getOrCreate()
         df = spark.read.csv(file_path)
         data_shards = spark_df_to_pd_sparkxshards(df)
+
+    def test_minmaxscale_shards(self):
+        file_path = os.path.join(self.resource_path, "orca/data/csv")
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
+        scale = MinMaxScaler(inputCol=["sale_price"], outputCol="sale_price_scaled")
+        transformed_data_shard = scale.fit_transform(data_shard)
+
+    def test_standardscale_shards(self):
+        file_path = os.path.join(self.resource_path, "orca/data/csv")
+
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
+        scale = StandardScaler(inputCol="sale_price", outputCol="sale_price_scaled")
+        transformed_data_shard = scale.fit_transform(data_shard)
 
 
 if __name__ == "__main__":

@@ -173,7 +173,7 @@
         <junit.version>4.11</junit.version>
         <junit-jupyter.version>5.9.0</junit-jupyter.version>
         <commons-codec.version>1.9</commons-codec.version>
-        <commons-io.version>2.4</commons-io.version>
+        <commons-io.version>2.8.0</commons-io.version>
         <commons-lang.version>2.6</commons-lang.version>
         <commons-math.version>2.2</commons-math.version>
         <collections.version>3.2.1</collections.version>
@@ -185,6 +185,7 @@
         <bigdl.basedir>${project.basedir}</bigdl.basedir>
 	    <bigdl-core-all-scope>compile</bigdl-core-all-scope>
         <data-store-url>http://download.tensorflow.org</data-store-url>
+        <lightgbm.scope>provided</lightgbm.scope>
 
     </properties>
 
@@ -772,6 +773,7 @@
                 <scala.major.version>2.12</scala.major.version>
                 <scala.version>2.12.10</scala.version>
                 <scala.macros.version>2.1.0</scala.macros.version>
+                <lightgbm.scope>compile</lightgbm.scope>
                 <maven.compiler.source>${java.version}</maven.compiler.source>
                 <maven.compiler.target>${java.version}</maven.compiler.target>
             </properties>

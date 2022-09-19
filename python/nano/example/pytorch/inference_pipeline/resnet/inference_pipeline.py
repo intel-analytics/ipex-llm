@@ -45,18 +45,12 @@ if __name__ == "__main__":
                        validation_data=datamodule.val_dataloader(limit_num_samples=160),
                        metric=accuracy,
                        direction="max",
-                       cpu_num=1,
+                       thread_num=1,
                        latency_sample_num=30)
 
     # 4. Get the best model under specific restrictions or without restrictions
-    acc_model, option = optimizer.get_best_model(accelerator="onnxruntime")
-    print("When accelerator is onnxruntime, the model with minimal latency is: ", option)
-
     acc_model, option = optimizer.get_best_model(accuracy_criterion=0.05)
     print("When accuracy drop less than 5%, the model with minimal latency is: ", option)
-
-    acc_model, option = optimizer.get_best_model()
-    print("The model with minimal latency is: ", option)
 
     # 5. Inference with accelerated model
     x_input = next(iter(datamodule.train_dataloader(batch_size=1)))[0]

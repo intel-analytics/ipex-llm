@@ -40,6 +40,7 @@ from bigdl.nano.deps.ipex.ipex_api import load_ipexjit_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model
 from bigdl.nano.common import check_avx512
+from bigdl.nano.utils import deprecated
 
 distributed_backends = ["spawn", "ray", "subprocess"]
 
@@ -264,10 +265,13 @@ class Trainer(pl.Trainer):
         return self.hposearcher.search_summary()
 
     @staticmethod
+    @deprecated(func_name="bigdl.nano.pytorch.Trainer.trace",
+                message="Please use `bigdl.nano.pytorch.InferenceOptimizer.trace` instead.")
     def trace(model: nn.Module,
               input_sample=None,
               accelerator: str = None,
               use_ipex: bool = False,
+              thread_num: int = None,
               onnxruntime_session_options=None,
               logging: bool = True,
               **export_kwargs):
@@ -282,6 +286,9 @@ class Trainer(pl.Trainer):
         :param accelerator: The accelerator to use, defaults to None meaning staying in Pytorch
                             backend. 'openvino', 'onnxruntime' and 'jit' are supported for now.
         :param use_ipex: whether we use ipex as accelerator for inferencing. default: False.
+        :param thread_num: (optional) a int represents how many threads(cores) is needed for
+                           inference, only valid for accelerator='onnxruntime'
+                           or accelerator='openvino'.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
         :param logging: whether to log detailed information of model conversion, only valid when
@@ -293,16 +300,24 @@ class Trainer(pl.Trainer):
                          data to be channels last according to the setting. Defaultly, channels_last
                          will be set to True if use_ipex=True.
         :return: Model with different acceleration.
+
+        .. warning::
+             ``bigdl.nano.pytorch.Trainer.trace`` will be deprecated in future release.
+
+             Please use ``bigdl.nano.pytorch.InferenceOptimizer.trace`` instead.
         """
         return InferenceOptimizer.trace(model=model,
                                         input_sample=input_sample,
                                         accelerator=accelerator,
                                         use_ipex=use_ipex,
+                                        thread_num=thread_num,
                                         onnxruntime_session_options=onnxruntime_session_options,
                                         logging=logging,
                                         **export_kwargs)
 
     @staticmethod
+    @deprecated(func_name="bigdl.nano.pytorch.Trainer.quantize",
+                message="Please use `bigdl.nano.pytorch.InferenceOptimizer.quantize` instead.")
     def quantize(model: nn.Module,
                  precision: str = 'int8',
                  accelerator: str = None,
@@ -317,6 +332,7 @@ class Trainer(pl.Trainer):
                  timeout: int = None,
                  max_trials: int = None,
                  input_sample=None,
+                 thread_num: int = None,
                  onnxruntime_session_options=None,
                  logging: bool = True,
                  **export_kwargs):
@@ -361,12 +377,20 @@ class Trainer(pl.Trainer):
                             "timeout=0, max_trials=1" means it will try quantization only once and
                             return satisfying best model.
         :param input_sample:      An input example to convert pytorch model into ONNX/OpenVINO.
+        :param thread_num: (optional) a int represents how many threads(cores) is needed for
+                           inference, only valid for accelerator='onnxruntime'
+                           or accelerator='openvino'.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
         :param logging: whether to log detailed information of model conversion, only valid when
                         accelerator='openvino', otherwise will be ignored. default: True.
         :param **export_kwargs: will be passed to torch.onnx.export function.
         :return:            A accelerated Pytorch-Lightning Model if quantization is sucessful.
+
+        .. warning::
+             ``bigdl.nano.pytorch.Trainer.quantize`` will be deprecated in future release.
+
+             Please use ``bigdl.nano.pytorch.InferenceOptimizer.quantize`` instead.
         """
         return InferenceOptimizer.quantize(model=model,
                                            precision=precision,
@@ -382,6 +406,7 @@ class Trainer(pl.Trainer):
                                            timeout=timeout,
                                            max_trials=max_trials,
                                            input_sample=input_sample,
+                                           thread_num=thread_num,
                                            onnxruntime_session_options=onnxruntime_session_options,
                                            logging=logging,
                                            **export_kwargs)

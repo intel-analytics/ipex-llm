@@ -104,8 +104,46 @@ class MyNanoCorrectness(TorchNano):
                 self.backward(loss)
                 optimizer.step()
 
-        assert origin_model.fc1.weight.data == 0.25, \
-            f"wrong weights: {origin_model.fc1.weight.data}"
+        try:
+            assert model._module.fc1.weight.data == 0.25, \
+                f"wrong weights: {model._module.fc1.weight.data}"
+        except:
+            assert model._module.module.fc1.weight.data == 0.25, \
+                f"wrong weights: {model._module.module.fc1.weight.data}"
+
+
+class MyNanoLoadStateDict(TorchNano):
+    def train(self, lr):
+        dataset=TensorDataset(
+            torch.tensor([[0.0],[0.0],[1.0],[1.0]]),
+            torch.tensor([[0.0],[0.0],[0.0],[0.0]]),
+        )
+        train_loader = DataLoader(dataset=dataset, batch_size=2, shuffle=False)
+        loss_func = nn.MSELoss()
+        origin_model = LinearModel()
+        origin_optimizer = torch.optim.SGD(origin_model.parameters(), lr=lr)
+
+        def train_one_epoch(model, optimizer, loss_func, data_loader):
+            for X, y in data_loader:
+                optimizer.zero_grad()
+                loss = loss_func(model(X), y)
+                self.backward(loss)
+                optimizer.step()
+
+        model, optimizer, train_loader = self.setup(origin_model, origin_optimizer, train_loader)
+        model.train()
+        train_one_epoch(model, optimizer, loss_func, train_loader)
+        
+        # load state dict using original pytorch model
+        origin_model.load_state_dict(model.state_dict())
+        origin_optimizer.load_state_dict(optimizer.state_dict())
+
+        model, optimizer = self.setup(origin_model, origin_optimizer)
+        model.train()
+        train_one_epoch(model, optimizer, loss_func, train_loader)
+
+        assert model._module.fc1.weight.data == 0.25, \
+            f"wrong weights: {model._module.fc1.weight.data}"
 
 
 class TestLite(TestCase):
@@ -145,6 +183,9 @@ class TestLite(TestCase):
 
     def test_torch_nano_bf16_subprocess(self):
         MyNano(use_ipex=True, precision='bf16', num_processes=2, strategy="subprocess").train()
+
+    def test_torch_nano_load_state_dict(self):
+        MyNanoLoadStateDict(use_ipex=True).train(0.25)
 
 
 if __name__ == '__main__':

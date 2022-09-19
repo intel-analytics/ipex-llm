@@ -193,6 +193,11 @@
             <artifactId>${spark-version.project}</artifactId>
             <version>${project.version}</version>
     	</dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons-io.version}</version>
+        </dependency>
 	<dependency>
             <groupId>org.scalanlp</groupId>
             <artifactId>breeze_${scala.major.version}</artifactId>
@@ -336,6 +341,7 @@
             <groupId>com.microsoft.azure</groupId>
             <artifactId>synapseml-lightgbm_2.12</artifactId>
             <version>0.9.5</version>
+            <scope>${lightgbm.scope}</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.spark</groupId>
