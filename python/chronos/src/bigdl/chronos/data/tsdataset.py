@@ -606,7 +606,7 @@ class TSDataset:
         roll_feature_df = None if self.roll_feature_df is None \
             else self.roll_feature_df[additional_feature_col]
 
-        if time_enc and label_len==0:
+        if time_enc and label_len == 0:
             label_len = lookback // 2
 
         self.lookback, self.horizon, self.label_len = lookback, horizon, label_len
@@ -767,7 +767,7 @@ class TSDataset:
             target_col = _to_list(target_col, "target_col") if target_col is not None \
                 else self.target_col
 
-            if time_enc and label_len==0:
+            if time_enc and label_len == 0:
                 label_len = lookback // 2
 
             # set scaler index for unscale_numpy

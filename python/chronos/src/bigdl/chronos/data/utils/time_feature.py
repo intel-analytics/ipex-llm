@@ -156,17 +156,17 @@ def gen_time_enc_arr(df, dt_col, freq, horizon_time, is_predict, lookback, label
     df_stamp = pd.DataFrame(columns=[dt_col])
     if is_predict:
         pred_dates = pd.date_range(df[dt_col].values[-1],
-                                    periods=horizon_time + 1, freq=freq)
+                                   periods=horizon_time + 1, freq=freq)
         df_stamp.loc[:, dt_col] =\
             list(df[dt_col].values) + list(pred_dates[1:])
     else:
         df_stamp.loc[:, dt_col] = list(df[dt_col].values)
     data_stamp = time_features(pd.to_datetime(df_stamp[dt_col].values),
-                                freq=freq)
+                               freq=freq)
     data_stamp = data_stamp.transpose(1, 0)
     max_horizon = horizon_time if isinstance(horizon_time, int) else max(horizon_time)
     numpy_x_timeenc, _ = _roll_timeseries_ndarray(data_stamp[:-max_horizon],
-                                                        lookback)
+                                                  lookback)
     numpy_y_timeenc, _ = _roll_timeseries_ndarray(data_stamp[lookback-label_len:],
-                                                        horizon_time+label_len)
+                                                  horizon_time+label_len)
     return numpy_x_timeenc, numpy_y_timeenc
