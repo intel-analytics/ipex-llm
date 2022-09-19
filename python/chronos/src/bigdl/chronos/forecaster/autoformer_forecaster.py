@@ -634,14 +634,14 @@ def _str2metric(metric):
 
 def _timedelta_to_delta_str(offset):
     features_by_offsets = (
-        (Timedelta(seconds=60), 's'),  # 6 for second - minutes
-        (Timedelta(minutes=60), 't'),  # 5 for minutes - hour
-        (Timedelta(hours=24), 'h'),  # 4 for hour - day
-        (Timedelta(days=7), 'd'),  # 3 for day - week
-        (Timedelta(days=30), 'w'),  # 2 for week - month
-        (Timedelta(days=365), 'm'),  # 1 for month - year
+        (Timedelta(seconds=60), 's'),
+        (Timedelta(minutes=60), 't'),
+        (Timedelta(hours=24), 'h'),
+        (Timedelta(days=7), 'd'),
+        (Timedelta(days=30), 'w'),
+        (Timedelta(days=365), 'm'),
     )
     for offset_type, offset_str in features_by_offsets:
         if offset < offset_type:
             return offset_str
-    return 'a'  # freq larger than 1 year
+    return 'a'
