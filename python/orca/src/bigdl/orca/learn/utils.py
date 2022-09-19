@@ -458,20 +458,23 @@ def make_data_creator(refs):
 
     return data_creator
 
+
 def make_dataloader_list_wrapper(func):
     def make_feature_list(batch):
         if func is not None:
-            batch=func(batch)
+            batch = func(batch)
         *features, target = batch
         return features, target
     return make_feature_list
 
+
 def reload_dataloader_creator(dataloader_func):
-    def reload_dataloader(config,batch_size):
+    def reload_dataloader(config, batch_size):
         dataloader = dataloader_func(config, batch_size)
         dataloader.collate_fn = make_dataloader_list_wrapper(dataloader.collate_fn)
         return dataloader
     return reload_dataloader
+
 
 def data_length(data):
     x = data["x"]

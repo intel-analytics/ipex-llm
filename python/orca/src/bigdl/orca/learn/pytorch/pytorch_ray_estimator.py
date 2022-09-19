@@ -505,7 +505,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                               "data should be either an instance of SparkXShards or a callable"
                               " function, but got type: {}".format(type(data)))
 
-            params = dict(data_creator=reload_dataloader_creator(data), batch_size=batch_size, num_steps=num_steps,
+            params = dict(data_creator=reload_dataloader_creator(data),
+                          batch_size=batch_size, num_steps=num_steps,
                           profile=profile, info=info)
 
             worker_stats = ray.get([w.validate.remote(**params) for w in self.remote_workers])

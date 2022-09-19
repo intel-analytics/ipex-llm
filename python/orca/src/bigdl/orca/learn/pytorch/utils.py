@@ -281,6 +281,7 @@ def get_filesystem(filepath):
     fs, _ = url_to_fs(str(filepath))
     return fs
 
+
 def get_batchsize(input):
     if isinstance(input, (list, tuple)):
         return get_batchsize(input[0])
