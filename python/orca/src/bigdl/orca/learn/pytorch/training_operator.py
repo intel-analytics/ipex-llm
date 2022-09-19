@@ -37,7 +37,7 @@ import numpy as np
 
 from bigdl.orca.learn.metrics import Metric
 from bigdl.orca.learn.pytorch.utils import (TimerCollection, AverageMeterCollection,
-                                            NUM_SAMPLES)
+                                            NUM_SAMPLES, get_batchsize)
 from bigdl.orca.learn.pytorch.constants import (SCHEDULER_STEP_EPOCH, NUM_STEPS,
                                                 SCHEDULER_STEP_BATCH, SCHEDULER_STEP)
 from torch.nn.parallel import DistributedDataParallel as DDP
@@ -288,7 +288,7 @@ class TrainingOperator:
         with self.timers.record("apply"):
             self.optimizer.step()
 
-        return {"train_loss": loss.item(), NUM_SAMPLES: features[0].size(0)}
+        return {"train_loss": loss.item(), NUM_SAMPLES: get_batchsize(features[0])}
 
     def validate(self, val_iterator, info, metrics, num_steps=None):
         """Runs one standard validation pass over the val_iterator.
