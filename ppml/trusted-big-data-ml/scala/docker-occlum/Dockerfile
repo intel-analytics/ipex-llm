@@ -181,21 +181,29 @@ RUN echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
 
 COPY --from=tini /usr/local/bin/tini /sbin/tini
 
-# Install occlum from package
 RUN apt-get update && \
     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
         build-essential ca-certificates openjdk-8-jdk git \
-        curl tzdata wget netcat gnupg2 jq make cmake gdb libtool \
+        curl tzdata wget netcat gnupg2 jq make cmake gdb libtool && \
+    apt-get clean
+
+# Add 01.org & key
+RUN echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu focal main' | tee /etc/apt/sources.list.d/intelsgx.list && \
+    wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add -
+
+# Install occlum from package
+RUN apt-get update && \
+    DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
         libprotobuf-c-dev protobuf-c-compiler libcurl4-openssl-dev libssl-dev libprotobuf-dev unzip \
         net-tools rsync vim autoconf automake libfuse-dev \
+        debhelper ocaml ocamlbuild python protobuf-compiler \
         libsgx-dcap-ql libsgx-epid libsgx-urts libsgx-quote-ex libsgx-uae-service \
         libsgx-dcap-quote-verify-dev && \
     apt-get clean
 
 # RUN echo "source /etc/profile" >> $HOME/.bashrc 
-RUN git clone https://github.com/occlum/occlum.git && \
-    cd occlum/tools/installer/deb && \
-    make -j 8 && \
+RUN git clone https://github.com/occlum/occlum.git --recursive && \
+    cd occlum/tools/installer/deb && make -j 8 && \
     apt install -y ./occlum-runtime*.deb && \
     apt install -y ./occlum-pal*.deb && \
     apt install -y ./occlum-sgx-tools*.deb && \
