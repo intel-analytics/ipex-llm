@@ -19,7 +19,7 @@ import numpy as np
 import pytest
 import tensorflow as tf
 
-from bigdl.orca.test_zoo_utils import ZooTestCase
+from unittest import TestCase
 from bigdl.chronos.model.tf2.TCN_keras import model_creator, TemporalConvNet, TemporalBlock
 
 
@@ -40,7 +40,7 @@ def create_data():
     return train_data, test_data
 
 @pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf>2.0.0.")
-class TestTcnKeras(ZooTestCase):
+class TestTcnKeras(TestCase):
 
     train_data, test_data = create_data()
     model = model_creator(config={
