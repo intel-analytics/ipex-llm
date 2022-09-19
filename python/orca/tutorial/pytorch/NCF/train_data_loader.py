@@ -14,32 +14,72 @@ from model import NCF
 
 #Step 0: Parameters And Configuration
 
-Config={  
-    "dataset": "ml-1m",# dataset name    
-    "model": "NeuMF-end",# model name 
-    "main_path":"./NCF-Data/",# paths
-    "model_path" :  './models/',  
-    "out": True,# save model or not
-    "cluster_mode": "local",
-    "lr": 0.001,# learning rate
-    "dropout": 0.0,# dropout rate
-    "batch_size": 256,# batch size for training
-    "epochs": 20,# training epoches
-    "top_k": 10,# compute metrics@top_k
-    "factor_num": 32,# predictive factors numbers in the model
-    "num_layers": 3,# number of layers in MLP model
-    "num_ng": 4,# sample negative items for training
-    "test_num_ng": 0,# sample part of negative items for testing
-    "backend": "ray", # backend used in estimator, "ray" or "spark" are supported
-    "model_dir": "./model_dir/",
-}
-
-Config["train_rating"]=Config["main_path"]+ Config["dataset"]+".train.rating"
-Config["test_rating"]=Config["main_path"]+ Config["dataset"]+".test.rating"
-Config["test_negative"]=Config["main_path"]+ Config["dataset"]+".test.negative"
-Config["GMF_model_path"]=Config["main_path"]+ 'GMF.pth'
-Config["MLP_model_path"]=Config["main_path"]+ 'MLP.pth'
-Config["NeuMF_model_path"]=Config["main_path"]+ 'NeuMF.pth'
+parser = argparse.ArgumentParser()
+parser.add_argument("--dataset", 
+    type=str, 
+    default="ml-1m", 
+    help="dataset name")
+parser.add_argument("--model", 
+    type=str, 
+    default="NeuMF-end", 
+    help="model name")
+parser.add_argument("--main_path", 
+    type=str, 
+    default="./NCF-Data/", 
+    help="main path")
+parser.add_argument("--model_path", 
+    type=str, 
+    default="./models/", 
+    help="model path")
+parser.add_argument("--out", 
+    type=bool, 
+    default=True, 
+    help="save model or not")
+parser.add_argument("--cluster_mode", 
+    type=str, 
+    default="local", 
+    help="")
+parser.add_argument("--lr", 
+    type=float, 
+    default=0.001, 
+    help="learning rate")
+parser.add_argument("--dropout", 
+    type=float, 
+    default=0.0, 
+    help="dropout rate")
+parser.add_argument("--batch_size", 
+    type=int, 
+    default=256, 
+    help="batch size for training")
+parser.add_argument("--epochs", 
+    type=int, 
+    default=20, 
+    help="training epoches")
+parser.add_argument("--top_k", 
+    type=int, 
+    default=10, 
+    help="compute metrics@top_k")
+parser.add_argument("--factor_num", 
+    type=int, 
+    default=32, 
+    help="predictive factors numbers in the model")
+parser.add_argument("--num_layers", 
+    type=int, 
+    default=3, 
+    help="number of layers in MLP model")
+parser.add_argument("--num_ng", 
+    type=int, 
+    default=4, 
+    help="sample negative items for training")
+parser.add_argument("--test_num_ng", 
+    type=int, 
+    default=0, 
+    help="sample part of negative items for testing")
+parser.add_argument("--backend", 
+    type=str, 
+    default="ray", 
+    help="backend used in estimator, ray or spark are supported")
+args = parser.parse_args()
 
 #Step 1: Init Orca Context
 
@@ -53,7 +93,7 @@ from sklearn.model_selection import train_test_split
 def load_all():
     """ We load all the files here to save time in each epoch. """
     data_X = pd.read_csv(
-        Config["dataset"]+"/ratings.dat", 
+        args.dataset+"/ratings.dat", 
         sep="::", header=None, names=['user', 'item'], 
         usecols=[0, 1], dtype={0: np.int32, 1: np.int32})
     
@@ -67,7 +107,7 @@ def load_all():
     for x in data_X:
         train_mat[x[0], x[1]] = 1.0
         
-    train_data, test_data=train_test_split(data_X, test_size=0.1, random_state=100)
+    train_data, test_data = train_test_split(data_X, test_size=0.1, random_state=100)
     
     return train_data, test_data, user_num, item_num, train_mat
 
@@ -116,29 +156,29 @@ class NCFData(data.Dataset):
         return [user, item] ,label
 
 # prepare the train and test datasets
-train_data, test_data, Config["user_num"], Config["item_num"], train_mat = load_all()
+train_data, test_data, args.user_num, args.item_num, train_mat = load_all()
 
 # construct the train and test dataloader
 train_dataset = NCFData(
-        train_data, Config["item_num"], train_mat,Config["num_ng"], True)
+        train_data, args.item_num, train_mat,args.num_ng, True)
 test_dataset = NCFData(
-        test_data, Config["item_num"], train_mat, 0, False)
+        test_data, args.item_num, train_mat, 0, False)
 train_loader = data.DataLoader(train_dataset,
-        batch_size=Config["batch_size"], shuffle=True, num_workers=0)
+        batch_size=args.batch_size, shuffle=True, num_workers=0)
 test_loader = data.DataLoader(test_dataset,
-        batch_size=Config["test_num_ng"]+1, shuffle=False, num_workers=0)
+        batch_size=args.test_num_ng+1, shuffle=False, num_workers=0)
 
 #Step 3: Define the Model
 
 # create the model
 def model_creator(config):
-    model = NCF(Config["user_num"], Config["item_num"],Config["factor_num"], Config["num_layers"], Config["dropout"], Config["model"]) # a torch.nn.Module
+    model = NCF(args.user_num, args.item_num,args.factor_num, args.num_layers, args.dropout, args.model) # a torch.nn.Module
     model.train()
     return model
 
 #create the optimizer
 def optimizer_creator(model, config):
-    return optim.Adam(model.parameters(), lr= Config["lr"])
+    return optim.Adam(model.parameters(), lr= args.lr)
 
 #define the loss function
 loss_function = nn.BCEWithLogitsLoss()
@@ -149,7 +189,7 @@ from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.metrics import Accuracy
 
 # create the estimator
-est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,loss=loss_function, metrics=[Accuracy()],backend=Config["backend"])# backend="ray" or "spark"
+est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,loss=loss_function, metrics=[Accuracy()],backend=args.backend)# backend="ray" or "spark"
 
 def train_loader_func(config, batch_size):
     train_loader.dataset.ng_sample()# sample negative items for training datasets
