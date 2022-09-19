@@ -18,8 +18,15 @@ import re
 import zipfile
 import tarfile
 import requests
+import logging
 
-import tqdm
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+ch = logging.StreamHandler()
+formatter = logging.Formatter('%(asctime)s - %(message)s')
+ch.setFormatter(formatter)
+logger.addHandler(ch)
+
 import pandas as pd
 import numpy as np
 from bigdl.chronos.data.tsdataset import TSDataset
@@ -268,14 +275,20 @@ def download(url, path, chunk_size):
     """
     from bigdl.nano.utils.log4Error import invalidInputError
     req = requests.get(url, stream=True)
-    file_size = int(req.headers['content-length'])
+    file_size = bytests_convert(int(req.headers['content-length']))
     invalidInputError(req.status_code == 200, "download failure, please check the network.")
     file_name = url.split('/')[-1]
-    pbar = tqdm.tqdm(total=file_size, unit='B', unit_scale=True, desc=file_name)
+    logger.info(f"Start download {file_name.partition('.')[0]}, file size: {file_size}")
     with open(os.path.join(path, file_name), 'wb') as f:
         for chunk in req.iter_content(chunk_size):
             if chunk:
                 f.write(chunk)
-                pbar.update(chunk_size)
                 f.flush()
-    pbar.close()
+
+def bytests_convert(size: int):
+    if size / 1024 < 1024:
+        return f"{(size / 1024):<.2f}K"
+    if size / 1024 **2 < 1024:
+        return f"{(size / 1024**2):<.2f}M"
+    else:
+        return f"{(size / 1024**3):<.2f}G"
