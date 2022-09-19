@@ -13,8 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from torch.utils.data import Dataset, DataLoader
-import torch
+from bigdl.chronos.utils import LazyImport
+torch = LazyImport('torch')
+Dataset = LazyImport('torch.utils.data')
+DataLoader = LazyImport('torch.utils.data')
+RandomDataset = LazyImport('utils')
 import tensorflow as tf
 import numpy as np
 from unittest import TestCase
@@ -36,19 +39,6 @@ def get_x_y(size):
     x = np.random.randn(size, past_seq_len, input_feature_dim)
     y = np.random.randn(size, future_seq_len, output_feature_dim)
     return x.astype(np.float32), y.astype(np.float32)
-
-
-class RandomDataset(Dataset):
-    def __init__(self, size=1000):
-        x, y = get_x_y(size)
-        self.x = torch.from_numpy(x).float()
-        self.y = torch.from_numpy(y).float()
-
-    def __len__(self):
-        return self.x.shape[0]
-
-    def __getitem__(self, idx):
-        return self.x[idx], self.y[idx]
 
 
 def train_dataloader_creator(config):
