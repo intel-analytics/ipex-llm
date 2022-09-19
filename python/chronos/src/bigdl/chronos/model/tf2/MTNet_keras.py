@@ -298,9 +298,9 @@ class MTNetKeras:
         self.loss = config.get('loss', "mae")
         self.batch_size = config.get("batch_size", 64)
         self.lr = config.get('lr', 0.001)
-        self._check_configs()
+        self._check_hyperparameter()
 
-    def _check_configs(self):
+    def _check_hyperparameter(self):
         from bigdl.nano.utils.log4Error import invalidInputError
         invalidInputError(self.time_step >= 1,
                           "Invalid configuration value. 'time_step' must be larger than 1")
