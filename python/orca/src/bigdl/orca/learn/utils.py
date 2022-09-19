@@ -473,7 +473,7 @@ def reload_dataloader_creator(dataloader_func):
         dataloader = dataloader_func(config, batch_size)
         dataloader.collate_fn = make_dataloader_list_wrapper(dataloader.collate_fn)
         return dataloader
-    return reload_dataloader
+    return reload_dataloader if dataloader_func else None
 
 
 def data_length(data):
