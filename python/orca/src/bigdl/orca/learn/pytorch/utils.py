@@ -285,5 +285,7 @@ def get_filesystem(filepath):
 def get_batchsize(input):
     if isinstance(input, (list, tuple)):
         return get_batchsize(input[0])
+    elif isinstance(input, dict):
+        return get_batchsize(list(input.values())[0])
     else:
         return input.size(0)
