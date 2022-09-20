@@ -31,6 +31,19 @@ General
 Inference Optimization
 -------------------------
 
+OpenVINO
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* `How to run inference on OpenVINO model <Inference/OpenVINO/openvino_inference.html>`_
+* `How to run asynchronous inference on OpenVINO model <Inference/OpenVINO/openvino_inference_async.html>`_
+
+.. toctree::
+    :maxdepth: 1
+    :hidden:
+
+    Inference/OpenVINO/openvino_inference
+    Inference/OpenVINO/openvino_inference_async
+
 PyTorch
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
