@@ -7,6 +7,8 @@ on:
       - '.github/actions/friesian-scala-ut-action/action.yml'
       - 'scala/dllib/**'
       - '.github/actions/dllib-scala-ut-action/action.yml'
+      - 'scala/ppml/**'
+      - '.github/actions/ppml-scala-ut-action/action.yml'
       - 'python/orca/**'
       - '.github/actions/orca-ray-ctx-example-action/action.yml'
   pull_request:
@@ -16,6 +18,8 @@ on:
       - '.github/actions/friesian-scala-ut-action/action.yml'
       - 'scala/dllib/**'
       - '.github/actions/dllib-scala-ut-action/action.yml'
+      - 'scala/ppml/**'
+      - '.github/actions/ppml-scala-ut-action/action.yml'
       - 'python/orca/**'
       - '.github/actions/orca-ray-ctx-example-action/action.yml'
 
