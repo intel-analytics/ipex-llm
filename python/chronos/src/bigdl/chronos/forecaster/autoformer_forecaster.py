@@ -612,6 +612,14 @@ class AutoformerForecaster(Forecaster):
 
         return y_hat_mean, std_deviation
 
+    def get_model(self):
+        """
+        Returns the learned PyTorch Lightning model.
+
+        :return: a pytorch lightning model instance
+        """
+        return self.internal
+
     def load(self, checkpoint_file):
         """
         restore the forecaster.
