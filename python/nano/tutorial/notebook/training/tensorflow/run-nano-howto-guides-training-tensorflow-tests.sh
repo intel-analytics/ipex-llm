@@ -18,7 +18,8 @@ sed -i 's/!source bigdl-nano-init/#!source bigdl-nano-init/' $NANO_HOWTO_GUIDES_
 echo 'Start testing'
 start=$(date "+%s")
 
-python -m pytest -s --nbmake --nbmake-timeout=650 --nbmake-kernel=python3 ${NANO_HOWTO_GUIDES_TEST_DIR}/*.ipynb
+# use nbconvert to test here; nbmake may cause some errors
+jupyter nbconvert --ExecutePreprocessor.timeout=600 --to notebook --execute ${NANO_HOWTO_GUIDES_TEST_DIR}/*.ipynb
 
 now=$(date "+%s")
 time=$((now-start))

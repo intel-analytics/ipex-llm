@@ -119,7 +119,7 @@ jobs:
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false tensorflow
           source bigdl-nano-init
-          pip install pytest nbmake
+          pip install jupyter nbconvert
           pip install tensorflow-datasets
           bash python/nano/tutorial/notebook/training/tensorflow/run-nano-howto-guides-training-tensorflow-tests.sh
           source $CONDA/bin/deactivate
