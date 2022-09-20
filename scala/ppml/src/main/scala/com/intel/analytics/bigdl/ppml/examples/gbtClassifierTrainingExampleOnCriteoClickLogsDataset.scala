@@ -92,7 +92,7 @@ case class Params(
 
 object gbtClassifierTrainingExampleOnCriteoClickLogsDataset {
 
-  val featureNums = 39
+  val featureNum = 39
 
   def main(args: Array[String]): Unit = {
     val log: Logger = LoggerFactory.getLogger(this.getClass)
@@ -127,8 +127,8 @@ object gbtClassifierTrainingExampleOnCriteoClickLogsDataset {
     val processedRdd = csvDF.rdd.map(task.rowToLibsvm)
 
     // declare schema
-    var structFieldArray = new Array[StructField](featureNums + 1)
-    for (i <- 0 to featureNums) {
+    var structFieldArray = new Array[StructField](featureNum + 1)
+    for (i <- 0 to featureNum) {
       structFieldArray(i) = StructField("_c" + i.toString, LongType, true)
     }
     var schema = new StructType(structFieldArray)
@@ -136,7 +136,7 @@ object gbtClassifierTrainingExampleOnCriteoClickLogsDataset {
     // convert RDD to RDD[Row]
     val rowRDD = processedRdd.map(_.split(" ")).map(row => Row.fromSeq(
       for {
-        i <- 0 to featureNums
+        i <- 0 to featureNum
       } yield {
         row(i).toLong
       }
@@ -150,8 +150,8 @@ object gbtClassifierTrainingExampleOnCriteoClickLogsDataset {
       .fit(df)
     val labelTransformed = stringIndexer.transform(df).drop("_c0")
 
-    val inputCols = new Array[String](featureNums)
-    for (i <- 0 to featureNums - 1) {
+    val inputCols = new Array[String](featureNum)
+    for (i <- 0 to featureNum - 1) {
       inputCols(i) = "_c" + (i + 1).toString
     }
 
