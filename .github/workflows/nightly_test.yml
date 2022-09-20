@@ -328,6 +328,14 @@ jobs:
       uses: ./.github/actions/maven-setup-action
     - name: Run Test
       uses: ./.github/actions/ppml-occlum-exampletests-action
+      if: ${{ always() }}
+      with:
+        status_1_spark_pi: 1
+        status_2_bigdl_lenet_mnist: 1
+        status_3_bigdl_resnet_cifar10: 1
+        status_4_spark_tpch: 1
+        status_5_spark_ut: 0
+        status_6_spark_xgboost: 1
     - name: Create Job Badge
       uses: ./.github/actions/create-job-status-badge
       if: ${{ always() }}
