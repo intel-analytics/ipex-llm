@@ -68,7 +68,6 @@ runs:
         status_2_bigdl_lenet_mnist=$(echo $?)
         fi
 
-
         if [ $status_3_bigdl_resnet_cifar10 -ne 0 ]; then
         echo "################## start bigdl resnet cifar10"
         echo "example.3 bigdl resnet cifar10"
