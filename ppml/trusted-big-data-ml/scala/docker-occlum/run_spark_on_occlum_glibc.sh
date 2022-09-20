@@ -358,6 +358,28 @@ run_spark_xgboost() {
                 -i /host/data -s /host/data/model -t 2 -r 100 -d 2 -w 1
 }
 
+run_spark_gbt() {
+    init_instance spark
+    build_spark
+    echo -e "${BLUE}occlum run BigDL Spark GBT${NC}"
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
+                -XX:ActiveProcessorCount=4 \
+                -Divy.home="/tmp/.ivy" \
+                -Dos.name="Linux" \
+                -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
+                -Xmx10g -Xms10g org.apache.spark.deploy.SparkSubmit \
+                --master local[4] \
+                --conf spark.task.cpus=2 \
+                --class com.intel.analytics.bigdl.dllib.example.nnframes.gbt.gbtClassifierTrainingExampleOnCriteoClickLogsDataset \
+                --num-executors 2 \
+                --executor-cores 2 \
+                --executor-memory 9G \
+                --driver-memory 10G \
+                /bin/jars/bigdl-dllib-spark_3.1.2-2.1.0-SNAPSHOT.jar \
+                -i /host/data -s /host/data/model -I 100 -d 5
+}
+
 
 id=$([ -f "$pid" ] && echo $(wc -l < "$pid") || echo "0")
 
@@ -393,6 +415,10 @@ case "$arg" in
         ;;
     xgboost)
         run_spark_xgboost
+        cd ../
+        ;;
+    gbt)
+        run_spark_gbt
         cd ../
         ;;
 esac
