@@ -1,5 +1,21 @@
 {%- extends "sphinx_rtd_theme/breadcrumbs.html" %}
 
-<!--Remove "Edit on Github" button on top-right corner in every page-->
-{% block breadcrumbs_aside %}
-{% endblock %}
+<!--Change "Edit on Github" button on top-right corner to "Edit this page" in every page-->
+{%- block breadcrumbs_aside %}
+<li class="wy-breadcrumbs-aside">
+  {%- if hasdoc(pagename) and display_vcs_links %}
+    {%- if display_github %}
+      {%- if check_meta and 'github_url' in meta %}
+        <!-- User defined GitHub URL -->
+        <a href="{{ meta['github_url'] }}" class="fa fa-github"> {{ _('Edit this page') }}</a>
+      {%- else %}
+        <a href="https://{{ github_host|default("github.com") }}/{{ github_user }}/{{ github_repo }}/{{ theme_vcs_pageview_mode or "blob" }}/{{ github_version }}{{ conf_py_path }}{{ pagename }}{{ page_source_suffix }}" class="fa fa-github"> {{ _('Edit this page') }}</a>
+      {%- endif %}
+    {%- elif show_source and source_url_prefix %}
+      <a href="{{ source_url_prefix }}{{ pagename }}{{ page_source_suffix }}">{{ _('View page source') }}</a>
+    {%- elif show_source and has_source and sourcename %}
+      <a href="{{ pathto('_sources/' + sourcename, true)|e }}" rel="nofollow"> {{ _('View page source') }}</a>
+    {%- endif %}
+  {%- endif %}
+</li>
+{%- endblock %}
