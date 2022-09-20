@@ -1,28 +1,10 @@
 name: 'Run PPML Occlum ExampleTests'
 description: 'Run PPML Occlum ExampleTests'
-inputs:
-  status_1_spark_pi:
-    description: ''
-    required: true
-  status_2_bigdl_lenet_mnist:
-    description: ''
-    required: true
-  status_3_bigdl_resnet_cifar10:
-    description: ''
-    required: true
-  status_4_spark_tpch:
-    description: ''
-    required: true
-  status_5_spark_ut:
-    description: ''
-    required: true
-  status_6_spark_xgboost:
-    description: ''
-    required: true
+
 runs:
   using: "composite"
   steps:
-    - name: Set environment variables
+    - name: Run tests
       shell: bash
       run: |
         whoami
@@ -36,101 +18,90 @@ runs:
         export SECURE_PASSWORD_PATH=/home/icx/glorysdj/password
         export SGX_MEM_SIZE=30g
         export IMAGE=10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT
-    - name: Pull docker image
-      shell: bash
-      run: |
-        echo $IMAGE
-        #docker pull $IMAGE
 
-    - name: Remove old container
-      shell: bash
-      run: |
+        docker pull $IMAGE
+
         docker rm -f $CONTAINER_NAME
 
-    - name: Build container
-      shell: bash
-      run: |
         docker run -itd \
-          --net=host \
-          --cpuset-cpus=$CPUSET \
-          --oom-kill-disable \
-          --device=/dev/sgx/enclave \
-          --device=/dev/sgx/provision \
-          -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
-          -v $DATA_PATH:/opt/occlum_spark/data \
-          -v $KEYS_PATH:/opt/keys \
-          --name=$CONTAINER_NAME \
-          -e LOCAL_IP=$LOCAL_IP \
-          -e SGX_MEM_SIZE=$SGX_MEM_SIZE \
-          $IMAGE \
+            --net=host \
+            --cpuset-cpus=$CPUSET \
+            --oom-kill-disable \
+            --device=/dev/sgx/enclave \
+            --device=/dev/sgx/provision \
+            -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
+            -v $DATA_PATH:/opt/occlum_spark/data \
+            -v $KEYS_PATH:/opt/keys \
+            --name=$CONTAINER_NAME \
+            -e LOCAL_IP=$LOCAL_IP \
+            -e SGX_MEM_SIZE=$SGX_MEM_SIZE \
+            $IMAGE \
+            bash  -c "tail -f /dev/null"
 
-    - name: status_1_spark_pi 
-      if: ${{ inputs.status_1_spark_pi != 0 }}
-      shell: bash
-      run: |
+        status_1_spark_pi=1
+        status_2_bigdl_lenet_mnist=1
+        status_3_bigdl_resnet_cifar10=1
+        status_4_spark_tpch=1
+        status_5_spark_ut=0
+        status_6_spark_xgboost=1
+        status_7_spark_gbt=1
+
+        
+        if [ $status_1_spark_pi -ne 0 ]; then
         echo "################## start spark pi"
         echo "example.1 spark pi"
-        docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
-           bash run_spark_on_occlum_glibc.sh pi | tee test-spark-pi-sgx.log && \
-           cat test-spark-pi-sgx.log | egrep 'Pi is roughly 3'"
+        sudo docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
+             bash run_spark_on_occlum_glibc.sh pi | tee test-spark-pi-sgx.log && \
+             cat test-spark-pi-sgx.log | egrep 'Pi is roughly 3'"
         status_1_spark_pi=$(echo $?)
+        fi
 
-    - name: status_2_bigdl_lenet_mnist
-      if: ${{ inputs.status_2_bigdl_lenet_mnist != 0 }}
-      shell: bash
-      run: |
+        if [ $status_2_bigdl_lenet_mnist -ne 0 ]; then
         echo "################## start bigdl lenet mnist"
         echo "example.2 bigdl lenet mnist"
-        docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
-          sed -i 's#        run_spark_lenet_mnist#        run_spark_lenet_mnist -b 4 -e 1#g' run_spark_on_occlum_glibc.sh && \
-          bash run_spark_on_occlum_glibc.sh lenet -b 8 -e 1 | tee bigdl-lenet-mnist.log && \
-          cat bigdl-lenet-mnist.log | egrep 'records/second. Loss is'"
+        sudo docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
+             sed -i 's#        run_spark_lenet_mnist#        run_spark_lenet_mnist -b 4 -e 1#g' run_spark_on_occlum_glibc.sh && \
+             bash run_spark_on_occlum_glibc.sh lenet -b 8 -e 1 | tee bigdl-lenet-mnist.log && \
+             cat bigdl-lenet-mnist.log | egrep 'records/second. Loss is'"
         status_2_bigdl_lenet_mnist=$(echo $?)
+        fi
 
-    - name: status_3_bigdl_resnet_cifar10
-      if: ${{ inputs.status_3_bigdl_resnet_cifar10 != 0 }}
-      shell: bash
-      run: |
+
+        if [ $status_3_bigdl_resnet_cifar10 -ne 0 ]; then
         echo "################## start bigdl resnet cifar10"
         echo "example.3 bigdl resnet cifar10"
-        docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
-          sed -i 's#        run_spark_resnet_cifar#        run_spark_resnet_cifar --nEpochs 1#g' run_spark_on_occlum_glibc.sh && \
-          bash run_spark_on_occlum_glibc.sh resnet | tee bigdl-resnet-cifar10.log && \
-          cat bigdl-resnet-cifar10.log | egrep 'Current momentum is'"
+        sudo docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
+             sed -i 's#        run_spark_resnet_cifar#        run_spark_resnet_cifar --nEpochs 1#g' run_spark_on_occlum_glibc.sh && \
+             bash run_spark_on_occlum_glibc.sh resnet | tee bigdl-resnet-cifar10.log && \
+             cat bigdl-resnet-cifar10.log | egrep 'Current momentum is'"
         status_3_bigdl_resnet_cifar10=$(echo $?)
+        fi
 
-    - name: status_4_spark_tpc
-      if: ${{ inputs.status_4_spark_tpc != 0 }}
-      shell: bash
-      run: |
+        if [ $status_4_spark_tpch -ne 0 ]; then
         echo "################## start spark tpch"
         echo "example.4 spark tpch"
-        docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
-          sed -i 's#spark.driver.memory=12g#spark.driver.memory=2g#g' run_spark_on_occlum_glibc.sh && \
-          sed -i 's#spark.executor.instances=8#spark.executor.instances=2#g' run_spark_on_occlum_glibc.sh && \
-          sed -i 's#executor-memory 8G#executor-memory 2G#g' run_spark_on_occlum_glibc.sh && \
-          sed -i 's#-Xmx78g -Xms78g#-Xmx10g -Xms10g#g' run_spark_on_occlum_glibc.sh && \
-          sed -i 's#/host/data /host/data/output#/host/data/tpch /host/data/output 1#g' run_spark_on_occlum_glibc.sh && \
-          bash run_spark_on_occlum_glibc.sh tpch | tee spark-tpch.log && \
-          cat spark-tpch.log | egrep '1 finished'"
+        sudo docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
+             sed -i 's#spark.driver.memory=12g#spark.driver.memory=2g#g' run_spark_on_occlum_glibc.sh && \
+             sed -i 's#spark.executor.instances=8#spark.executor.instances=2#g' run_spark_on_occlum_glibc.sh && \
+             sed -i 's#executor-memory 8G#executor-memory 2G#g' run_spark_on_occlum_glibc.sh && \
+             sed -i 's#-Xmx78g -Xms78g#-Xmx10g -Xms10g#g' run_spark_on_occlum_glibc.sh && \
+             sed -i 's#/host/data /host/data/output#/host/data/tpch /host/data/output#g' run_spark_on_occlum_glibc.sh && \
+             bash run_spark_on_occlum_glibc.sh tpch | tee spark-tpch.log && \
+             cat spark-tpch.log | egrep '22 finished'"
         status_4_spark_tpch=$(echo $?)
+        fi
 
-    - name: status_5_spark_ut
-      if: ${{ inputs.status_5_spark_ut != 0 }}
-      shell: bash
-      run: |
+        if [ $status_5_spark_ut -ne 0 ]; then
         echo "################## start spark unit test"
         echo "example.5 spark unit test"
-        docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
-          sed -i 's#192.168.0.111#$LOCAL_IP#g' run_spark_on_occlum_glibc.sh && \
-          bash run_spark_on_occlum_glibc.sh ut | tee spark-unit-test.log && \
-          cat spark-unit-test.log | egrep 'FINISHED o.a.s.status.api.v1.sql.SqlResourceSuite:'"
+        sudo docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
+             sed -i 's#192.168.0.111#$LOCAL_IP#g' run_spark_on_occlum_glibc.sh && \
+             bash run_spark_on_occlum_glibc.sh ut | tee spark-unit-test.log && \
+             cat spark-unit-test.log | egrep 'FINISHED o.a.s.status.api.v1.sql.SqlResourceSuite:'"
         status_5_spark_ut=$(echo $?)
+        fi
 
-    - name: status_6_spark_xgboost
-      if: ${{ inputs.status_6_spark_xgboost != 0 }}
-      shell: bash
-      run: |
+        if [ $status_6_spark_xgboost -ne 0 ]; then
         echo "################## start spark xgboost"
         echo "example.6 spark xgboost"
         docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
@@ -138,11 +109,9 @@ runs:
           bash run_spark_on_occlum_glibc.sh xgboost | tee spark-xgboost.log && \
           cat spark-xgboost.log | egrep 'RabitTracker-akka.actor.default-dispatcher'"
         status_6_spark_xgboost=$(echo $?)
+        fi
 
-    - name: status_7_spark_gbt
-      if: ${{ inputs.status_7_spark_gbt != 0 }}
-      shell: bash
-      run: |
+        if [ $status_7_spark_gbt -ne 0 ]; then
         echo "################## start spark gbt"
         echo "example.7 spark gbt"
         exec -i $CONTAINER_NAME bash -c "cd /opt && \
@@ -150,10 +119,8 @@ runs:
           bash run_spark_on_occlum_glibc.sh gbt | tee spark-gbt.log && \
           cat spark-gbt.log | egrep 'RabitTracker-akka.actor.default-dispatcher'"
         status_7_spark_gbt=$(echo $?)
+        fi
 
-    - name: Get the return value
-      shell: bash
-      run: |
         echo "status_1_spark_pi $status_1_spark_pi"
         echo "status_2_bigdl_lenet_mnist $status_2_bigdl_lenet_mnist"
         echo "status_3_bigdl_resnet_cifar10 $status_3_bigdl_resnet_cifar10"
@@ -161,4 +128,3 @@ runs:
         #echo "status_5_spark_ut $status_5_spark_ut"
         echo "status_6_spark_xgboost $status_6_spark_xgboost"
         echo "status_7_spark_gbt $status_7_spark_gbt"
-
