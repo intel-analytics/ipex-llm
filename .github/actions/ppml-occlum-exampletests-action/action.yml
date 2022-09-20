@@ -63,7 +63,7 @@ runs:
           $IMAGE \
 
     - name: status_1_spark_pi 
-      if: ${{${inputs.status_1_spark_pi} != 0}}
+      if: ${{ inputs.status_1_spark_pi != 0}}
       shell: bash
       run: |
         echo "################## start spark pi"
