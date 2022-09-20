@@ -1,7 +1,7 @@
 name: Nightly Test
 
 on:
-  #pull_request:
+  pull_request:
   schedule:
     - cron: '0 13 * * *' # GMT time, 13:00 GMT == 21:00 China
   workflow_dispatch:
@@ -23,7 +23,7 @@ on:
         - Dllib-Scala-UT
         - Friesian-Scala-UT
         - PPML-Scala-UT
-        
+        - PPML-Occlum-ExampleTests        
 
 permissions:
   contents: read
@@ -315,3 +315,27 @@ jobs:
         gist-id: bc8a699b455bced4a1aef138ad5df07e
         file-name: nightly-test.json
         type: workflow
+  
+  PPML-Occlum-ExampleTests:
+#    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Occlum-ExampleTests' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, Wilwarin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Run Test
+      uses: ./.github/actions/ppml-occlum-exampletests-action
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: e065c0f7987e9d1c9d85dab9a014cf0a
+        is-self-hosted-runner: true
+        file-name: PPML-Occlum-ExampleTests.json
+        type: job
+        job-name: PPML-Occlum-ExampleTests
+        runner-hosted-on: 'Shanghai'
