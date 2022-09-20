@@ -46,7 +46,6 @@ runs:
         status_6_spark_xgboost=1
         status_7_spark_gbt=1
 
-        
         if [ $status_1_spark_pi -ne 0 ]; then
         echo "################## start spark pi"
         echo "example.1 spark pi"
