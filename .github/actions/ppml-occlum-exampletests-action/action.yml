@@ -6,7 +6,14 @@ runs:
     - name: Set environment variable
       shell: bash
       run: |
-        echo "WORKFLOW_VARIABLE=$(echo ${Env:LOCAL_VARIABLE})" >> $Env:GITHUB_ENV
+        echo "WORKFLOW_VARIABLE=$(echo ${Env:status_1_spark})" >> $Env:GITHUB_ENV
+        echo "WORKFLOW_VARIABLE=$(echo ${Env:status_2_bigdl_lenet_mnist})" >> $Env:GITHUB_ENV
+        echo "WORKFLOW_VARIABLE=$(echo ${Env:status_3_bigdl_resnet_cifar10})" >> $Env:GITHUB_ENV
+        echo "WORKFLOW_VARIABLE=$(echo ${Env:status_4_spark_tpch})" >> $Env:GITHUB_ENV
+        echo "WORKFLOW_VARIABLE=$(echo ${Env:status_5_spark_ut})" >> $Env:GITHUB_ENV
+        echo "WORKFLOW_VARIABLE=$(echo ${Env:status_6_spark_xgboost})" >> $Env:GITHUB_ENV
+        echo "WORKFLOW_VARIABLE=$(echo ${Env:status_7_spark_gbt})" >> $Env:GITHUB_ENV
+
       env:
         status_1_spark_pi: 1
         status_2_bigdl_lenet_mnist: 1
@@ -65,7 +72,7 @@ runs:
       run: echo $status_1_spark_pi
 
     - name: status_1_spark_pi 
-      if: ${{$status_1_spark_pi != 0}}
+      if: ${{$Env:status_1_spark_pi != 0}}
       shell: bash
       run: |
         echo "################## start spark pi"
@@ -146,7 +153,7 @@ runs:
         echo "################## start spark gbt"
         echo "example.7 spark gbt"
         sudo docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
-          sed -i 's#-i /host/data -s /host/data/model -t 2 -r 100 -d 2 -w 1#-i /host/data/gbt -s /host/data/gbt/model -I 100 -d 2#g' run_spark_on_occlum_glibc.sh && \
+          sed -i 's#-i /host/data -s /host/data/model -I 100 -d 2#-i /host/data/gbt -s /host/data/gbt/model -I 100 -d 2#g' run_spark_on_occlum_glibc.sh && \
           bash run_spark_on_occlum_glibc.sh gbt | tee spark-gbt.log && \
           cat spark-gbt.log | egrep 'RabitTracker-akka.actor.default-dispatcher'"
         status_7_spark_gbt=$(echo $?)
