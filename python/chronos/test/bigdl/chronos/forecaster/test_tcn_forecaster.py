@@ -729,9 +729,9 @@ class TestChronosModelTCNForecaster(TestCase):
                                    metrics=["mse"],
                                    lr=0.01)
         forecaster.fit(train_data, epochs=2)
-        # only the first time needs val_data
+        # only the first time needs validation_data
         y_pred, std = forecaster.predict_interval(data=test_data[0],
-                                                  val_data=val_data,
+                                                  validation_data=val_data,
                                                   repetition_times=5)
         assert y_pred.shape == test_data[1].shape
         assert y_pred.shape == std.shape
@@ -749,9 +749,9 @@ class TestChronosModelTCNForecaster(TestCase):
                                    metrics=["mse"],
                                    lr=0.01)
         forecaster.fit(train_loader, epochs=2)
-        # only the first time needs val_data
+        # only the first time needs validation_data
         y_pred, std = forecaster.predict_interval(data=test_loader,
-                                                  val_data=val_loader,
+                                                  validation_data=val_loader,
                                                   repetition_times=5)
         assert y_pred.shape == std.shape
         y_pred, std = forecaster.predict_interval(data=test_loader)
@@ -761,9 +761,9 @@ class TestChronosModelTCNForecaster(TestCase):
         forecaster = TCNForecaster.from_tsdataset(train,
                                            num_channels=[16]*3)
         forecaster.fit(train, epochs=2, batch_size=32)
-        # only the first time needs val_data
+        # only the first time needs validation_data
         y_pred, std = forecaster.predict_interval(data=test,
-                                                  val_data=val,
+                                                  validation_data=val,
                                                   repetition_times=5)
         assert y_pred.shape == std.shape
         y_pred, std = forecaster.predict_interval(data=test)
