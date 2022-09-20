@@ -272,7 +272,17 @@ class TrainingOperator:
 
         # Compute output.
         with self.timers.record("fwd"):
-            output = self.model(*features) if not isinstance(input, dict) else self.model(**features)
+            if torch.is_tensor(features):
+                output = self.model(features)
+            elif isinstance(features, dict):
+                output = self.model(**features)
+            elif isinstance(features, (tuple, list)):
+                output = self.model(*features)
+            else:
+                invalidInputError(False,
+                    "Features should either be tensor, list/tuple or dict, "
+                    "but got {}".format(type(features)))
+
             if isinstance(output, tuple) or isinstance(output, list):
                 # Then target is also assumed to be a tuple or list.
                 loss = self.criterion(*output, *target)
@@ -394,7 +404,17 @@ class TrainingOperator:
 
         # compute output
         with self.timers.record("eval_fwd"):
-            output = self.model(*features) if not isinstance(input, dict) else self.model(**features)
+            if torch.is_tensor(features):
+                output = self.model(features)
+            elif isinstance(features, dict):
+                output = self.model(**features)
+            elif isinstance(features, (tuple, list)):
+                output = self.model(*features)
+            else:
+                invalidInputError(False,
+                    "Features should either be tensor, list/tuple or dict, "
+                    "but got {}".format(type(features)))
+
             loss = self.criterion(output, target)
 
         return output, target, loss

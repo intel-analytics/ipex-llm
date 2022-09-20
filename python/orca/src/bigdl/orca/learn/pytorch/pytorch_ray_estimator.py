@@ -73,7 +73,7 @@ def partition_refs_to_creator(partition_refs):
                 return get_size(self.y)
 
             def __getitem__(self, i):
-                return index_data(self.x, i, True), index_data(self.y, i)
+                return index_data(self.x, i), index_data(self.y, i)
 
         params = {"batch_size": batch_size, "shuffle": True}
         for arg in ["shuffle", "sampler", "batch_sampler", "num_workers", "collate_fn",
@@ -362,7 +362,6 @@ class PyTorchRayEstimator(OrcaRayEstimator):
 
             params["data_creator"] = reload_dataloader_creator(data)
             params["validation_data_creator"] = reload_dataloader_creator(validation_data)
-
             success, worker_stats = self._train_epochs(**params)
 
         epoch_stats = list(map(list, zip(*worker_stats)))

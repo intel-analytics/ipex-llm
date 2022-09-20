@@ -345,9 +345,9 @@ def process_spark_xshards(spark_xshards, num_workers):
     return ray_xshards
 
 
-def index_data(x, i, make_list=False):
+def index_data(x, i):
     if isinstance(x, np.ndarray):
-        return x[i] if not make_list else [x[i]]
+        return x[i]
     elif isinstance(x, dict):
         res = {}
         for k, v in x.items():
