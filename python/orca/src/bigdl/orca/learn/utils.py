@@ -461,6 +461,7 @@ def make_data_creator(refs):
 
 def make_dataloader_list_wrapper(func):
     import torch
+
     def make_feature_list(batch):
         if func is not None:
             batch = func(batch)
