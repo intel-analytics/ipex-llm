@@ -400,13 +400,14 @@ class BasePytorchForecaster(Forecaster):
                 if isinstance(validation_data, TSDataset):
                     _rolled = validation_data.numpy_x is None
                     validation_data =\
-                    validation_data.to_torch_data_loader(batch_size=batch_size,
-                                                         roll=_rolled,
-                                                         lookback=self.data_config['past_seq_len'],
-                                                         horizon=self.data_config['future_seq_len'],
-                                                         feature_col=validation_data.roll_feature,
-                                                         target_col=validation_data.roll_target,
-                                                         shuffle=False)
+                        validation_data.to_torch_data_loader(
+                            batch_size=batch_size,
+                            roll=_rolled,
+                            lookback=self.data_config['past_seq_len'],
+                            horizon=self.data_config['future_seq_len'],
+                            feature_col=validation_data.roll_feature,
+                            target_col=validation_data.roll_target,
+                            shuffle=False)
                 if isinstance(validation_data, tuple):
                     validation_data = np_to_dataloader(validation_data, batch_size,
                                                        self.num_processes)
