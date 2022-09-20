@@ -45,19 +45,20 @@ def create_data(loader=False, extra_feature=False):
     tsdata_train, tsdata_val, tsdata_test =\
         TSDataset.from_pandas(df, dt_col="datetime", target_col=target, extra_feature_col=extra,
                               with_split=True, test_ratio=0.1, val_ratio=0.1)
-    if loader:
-        train_loader = tsdata_train.to_torch_data_loader(lookback=24, horizon=5,
+    if loader is True:
+        train_loader = tsdata_train.to_torch_data_loader(lookback=24, horizon=5, roll=True,
                                                         time_enc=True, label_len=12)
-        val_loader = tsdata_val.to_torch_data_loader(lookback=24, horizon=5,
+        val_loader = tsdata_val.to_torch_data_loader(lookback=24, horizon=5, roll=True,
                                                     time_enc=True, label_len=12, shuffle=False)
-        test_loader = tsdata_test.to_torch_data_loader(lookback=24, horizon=5,
+        test_loader = tsdata_test.to_torch_data_loader(lookback=24, horizon=5, roll=True,
                                                     time_enc=True, label_len=12, shuffle=False,
                                                     is_predict=True)
         return train_loader, val_loader, test_loader
     else:
         train_data = tsdata_train.roll(lookback=24, horizon=5, time_enc=True, label_len=12).to_numpy()
         val_data = tsdata_val.roll(lookback=24, horizon=5, time_enc=True, label_len=12).to_numpy()
-        test_data = tsdata_test.roll(lookback=24, horizon=5, time_enc=True, label_len=12).to_numpy()
+        test_data = tsdata_test.roll(lookback=24, horizon=5, time_enc=True, label_len=12,
+                                     is_predict=True).to_numpy()
         train_data = tuple(map(lambda x: x.astype(np.float32), train_data))
         val_data = tuple(map(lambda x: x.astype(np.float32), val_data))
         test_data = tuple(map(lambda x: x.astype(np.float32), test_data))
@@ -291,8 +292,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
                                           output_feature_num=2,
                                           label_len=12,
                                           freq='s',
-                                          seed=0,
-                                          moving_avg=20) # even
+                                          seed=0)
         forecaster.fit(train_loader, epochs=3, batch_size=32)
         # only the first time needs val_data
         y_pred, std = forecaster.predict_interval(data=test_loader,
@@ -309,8 +309,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
                                           output_feature_num=2,
                                           label_len=12,
                                           freq='s',
-                                          seed=0,
-                                          moving_avg=20) # even
+                                          seed=0)
         forecaster.fit(train_data, epochs=3, batch_size=32)
         # only the first time needs val_data
         y_pred, std = forecaster.predict_interval(data=test_data,
@@ -359,3 +358,37 @@ class TestChronosModelAutoformerForecaster(TestCase):
                                                          past_seq_len=24,
                                                          future_seq_len=5)
         forecaster.fit(train_loader, epochs=1, batch_size=32)
+        
+    def test_autoformer_forecaster_fit_val(self):
+        train_data, val_data, _ = create_data()
+        forecaster = AutoformerForecaster(past_seq_len=24,
+                                          future_seq_len=5,
+                                          input_feature_num=2,
+                                          output_feature_num=2,
+                                          label_len=12,
+                                          freq='s',
+                                          seed=0)
+        val_loss = forecaster.fit(train_data, val_data, epochs=10)
+
+    def test_autoformer_forecaster_fit_loader_val(self):
+        train_loader, val_loader, _ = create_data(loader=True)
+        forecaster = AutoformerForecaster(past_seq_len=24,
+                                          future_seq_len=5,
+                                          input_feature_num=2,
+                                          output_feature_num=2,
+                                          label_len=12,
+                                          freq='s',
+                                          seed=0)
+        val_loss = forecaster.fit(train_loader, val_loader, epochs=10)
+
+    def test_autoformer_forecaster_fit_val_best_epoch(self):
+        train_loader, val_loader, _ = create_data(loader=True)
+        forecaster = AutoformerForecaster(past_seq_len=24,
+                                          future_seq_len=5,
+                                          input_feature_num=2,
+                                          output_feature_num=2,
+                                          label_len=12,
+                                          freq='s',
+                                          seed=0)
+        val_loss = forecaster.fit(train_loader, val_loader, epochs=10,
+                                  validation_mode='best_epoch')

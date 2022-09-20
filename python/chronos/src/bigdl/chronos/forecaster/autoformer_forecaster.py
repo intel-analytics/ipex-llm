@@ -18,6 +18,7 @@ import torch
 import numpy as np
 from pandas import Timedelta
 from bigdl.chronos.forecaster.abstract import Forecaster
+from bigdl.chronos.forecaster.utils import *
 from bigdl.chronos.metric.forecast_metrics import Evaluator
 from bigdl.chronos.model.autoformer import model_creator, loss_creator
 from torch.utils.data import TensorDataset, DataLoader
@@ -379,12 +380,7 @@ class AutoformerForecaster(Forecaster):
                                              shuffle=True)
 
         from bigdl.chronos.pytorch import TSTrainer as Trainer
-        # Trainer init and fitting
-        if not self.use_hpo:
-            self.trainer = Trainer(logger=False, max_epochs=epochs,
-                                   checkpoint_callback=self.checkpoint_callback, num_processes=1,
-                                   use_ipex=self.use_ipex, distributed_backend="spawn")
-        else:
+        if self.use_hpo is True:
             # check whether the user called the tune function
             invalidOperationError(hasattr(self, "trainer"), "There is no trainer, and you "
                                   "should call .tune() before .fit()")
@@ -398,8 +394,49 @@ class AutoformerForecaster(Forecaster):
                 trial = self.trainer.hposearcher.study.trials[use_trial_id]
                 self.internal = self.tune_internal._model_build(trial)
 
-        self.trainer.fit(self.internal, data)
-        self.fitted = True
+        from pytorch_lightning.loggers import CSVLogger
+        logger = False if validation_data is None else CSVLogger(".",
+                                                                 flush_logs_every_n_steps=10,
+                                                                 name="forecaster_tmp_log")
+        from pytorch_lightning.callbacks import EarlyStopping
+        early_stopping = EarlyStopping('val_loss', patience=earlystop_patience)
+        from pytorch_lightning.callbacks import ModelCheckpoint
+        checkpoint_callback = ModelCheckpoint(monitor="val_loss", dirpath='validation',
+                                              filename='best', save_on_train_epoch_end=True)
+        if validation_mode == 'earlystop':
+            callbacks = [early_stopping]
+        elif validation_mode == 'best_epoch':
+            callbacks = [checkpoint_callback]
+        else:
+            callbacks = None
+
+        # Trainer init
+        self.trainer = Trainer(logger=logger, max_epochs=epochs, callbacks=callbacks,
+                               enable_checkpointing=self.checkpoint_callback,
+                               num_processes=self.num_processes, use_ipex=self.use_ipex,
+                               log_every_n_steps=10)
+
+        # fitting
+        if not validation_data:
+            self.trainer.fit(self.internal, data)
+            self.fitted = True
+        else:
+            if isinstance(validation_data, tuple):
+                validation_data = DataLoader(
+                    TensorDataset(torch.from_numpy(validation_data[0]),
+                                  torch.from_numpy(validation_data[1]),
+                                  torch.from_numpy(validation_data[2]),
+                                  torch.from_numpy(validation_data[3])),
+                    batch_size=batch_size,
+                    shuffle=False)
+            self.trainer.fit(self.internal, data, validation_data)
+            self.fitted = True
+            fit_out = read_csv('./forecaster_tmp_log/version_0/metrics.csv', loss_name='val_loss')
+            delete_folder("./forecaster_tmp_log")
+            if validation_mode == 'best_epoch':
+                self.load('validation/best.ckpt')
+                delete_folder("./validation")
+            return fit_out
 
     def predict(self, data, batch_size=32):
         """

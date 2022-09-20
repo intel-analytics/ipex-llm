@@ -156,14 +156,14 @@ def np_to_dataloader(data, batch_size, num_processes):
                       shuffle=True)
 
 
-def read_csv(filename):
+def read_csv(filename, loss_name='val/loss'):
     import codecs
     import csv
     fit_out = {}
     with codecs.open(filename, encoding='utf-8-sig') as f:
         for row in csv.DictReader(f, skipinitialspace=True):
-            if row['val/loss']:
-                fit_out[row['epoch']] = {'val_loss': row['val/loss']}
+            if row[loss_name]:
+                fit_out[row['epoch']] = {'val_loss': row[loss_name]}
     return fit_out
 
 
