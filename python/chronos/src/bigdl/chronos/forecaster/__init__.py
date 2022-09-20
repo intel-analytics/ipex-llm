@@ -57,6 +57,7 @@ if torch_available:
     TCNForecaster = LazyImport(PREFIXNAME+'tcn_forecaster.TCNForecaster')
     Seq2SeqForecaster = LazyImport(PREFIXNAME+'seq2seq_forecaster.Seq2SeqForecaster')
     NBeatsForecaster = LazyImport(PREFIXNAME+'nbeats_forecaster.NBeatsForecaster')
+    AutoformerForecaster = LazyImport(PREFIXNAME+'autoformer_forecaster.AutoformerForecaster')
     if orca_available:
         TCMFForecaster = LazyImport(PREFIXNAME+'tcmf_forecaster.TCMFForecaster')
 if tf_available and orca_available:

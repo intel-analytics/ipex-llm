@@ -20,10 +20,23 @@ We use [Diabetes](https://www.kaggle.com/competitions/house-prices-advanced-regr
 
 The code is available in projects, including [Client 1 code](fgboost_regression_party_1.py) and [Client 2 code](fgboost_regression_party_2.py). You could directly start two different terminals are run them respectively to start a federated learning, and the order of start does not matter. Following is the detailed step-by-step tutorial to introduce how the code works.
 
-### 2.1 Private Set Intersection
-// TODO: add this section after Python version of PSI is done
+### 2.1 Initialize FL Context
+We first need to initialize the FL Context by
+```python
+from bigdl.ppml.fl.nn.fl_context import init_fl_context
+init_fl_context(client_id, target)
+```
+The target is the URL of FL Server and is `localhost:8980` by default.
+### 2.2 Private Set Intersection
+Then get the intersection of datasets across parties by Private Set Intersection algorithm.
+```python
+df_train['ID'] = df_train['ID'].astype(str)
+psi = PSI()
+intersection = psi.get_intersection(list(df_train['ID']))
+df_train = df_train[df_train['ID'].isin(intersection)]
+```
 
-### 2.2 Data Preprocessing
+### 2.3 Data Preprocessing
 Since one party owns label data while another not, different operations should be done before training.
 
 For example, in party 1:
@@ -36,7 +49,7 @@ y = np.expand_dims(df_y.to_numpy(dtype="float32"), axis=1)
 ```
 
 
-### 2.3 Create Model
+### 2.4 Create Model
 We create the following model for both clients, but with different number of inputs 
 ```python
 class LocalModel(nn.Module):
@@ -66,50 +79,75 @@ class ServerModel(nn.Module):
 
 server_model = ServerModel()
 ```
-### 2.4 Create Estimator
+### 2.5 Create Estimator
 Then, create Estimator and pass the arguments
 
 ```python
 ppl = Estimator.from_torch(client_model=model,
-                           client_id=client_id,
                            loss_fn=loss_fn,
                            optimizer_cls=torch.optim.SGD,
-                           optimizer_args={'lr':1e-3},
-                           target='localhost:8980',
-                           server_model=server_model)
-                           # if you want to upload server model from this estimator, pass server_model
-                           # otherwise, ignore this argument
-
+                           optimizer_args={'lr':1e-4},
+                           server_model=server_model,
+                           server_model_path=/path/to/model/on/server,
+                           client_model_path=/path/to/model/on/client)
 ```
+Note that
+* If you want to upload server model from this estimator, provide `server_model` argument.
+* If you want server to automatically trigger model autosave, provide `server_model_path` with the path for server to save the model.
+* If you want client to automatically trigger model autosave, provide `client_model_path` with the path for client to save the model.
+We will also show how to use the saved model to resume training or predict in [2.8](#28-saveload)
 
-### 2.5 Training
+### 2.6 Training
 Then call `fit` method to train
 
 ```python
-response = ppl.fit(x, y)
+response = ppl.fit(x, y, epoch=5)
 ```
+
 ### 2.7 Predict
 ```python
 result = ppl.predict(x)
 ```
 
+### 2.8 Save/Load
+In [2.5](#25-create-estimator) we provided the model paths while creating estimator. Thus, client model and server model would both be automatically saved.
+
+You can also call save explicitly by
+```python
+torch.save(ppl.model, model_path) # save client model on local
+ppl.save_server_model(server_model_path) # save server model on server
+```
+To start a new application to resume training or predict
+```python
+client_model = torch.load(model_path) # load client model first
+
+# create estimator using the loaded client model
+# the server_model_path should be consistant with the one in 2.4
+# because server would load model from this path if model exists
+ppl = Estimator.from_torch(client_model=model,
+                           loss_fn=loss_fn,
+                           optimizer_cls=torch.optim.SGD,
+                           optimizer_args={'lr':1e-4},
+                           server_model_path=/path/to/model/on/server,
+                           client_model_path=/path/to/model/on/client)
+ppl.load_server_model(server_model_path) # trigger model loading on server
+
+# Then you can use the loaded model to resume training or predict
+ppl.fit(x, y, epoch=5)
+result = ppl.predict(x)
+```
 ## 3 Run FGBoost
 FL Server is required before running any federated applications. Check [Start FL Server]() section for details.
 ### 3.1 Start FL Server in SGX
-// TODO: add this section after running FL Server in SGX succesfully in this example.
 
-Modify the config file `ppml-conf.yaml`
-```yaml
-# the port server gRPC uses
-serverPort: 8980
-
-# the number of clients in this federated learning application
-clientNum: 2
-```
-Then start the FL Server
+#### 3.1.1 Start the container
+Before running FL Server in SGX, please prepare keys and start the BigDL PPML container first. Check  [3.1 BigDL PPML Hello World](https://github.com/intel-analytics/BigDL/tree/main/ppml#31-bigdl-ppml-hello-world) for details.
+#### 3.1.2 Run FL Server in SGX
+You can run FL Server in SGX with the following command:
 ```bash
-python BigDL/python/ppml/src/bigdl/ppml/fl/nn/fl_server.py
+docker exec -it YOUR_DOCKER bash /ppml/trusted-big-data-ml/work/start-scripts/start-python-fl-server-sgx.sh -p 8980 -c 2
 ```
+You can set port with `-p` and set client number with `-c`  while the default settings are `port=8980` and `client-num=2`.
 ### 3.2 Start FGBoost Clients
 Modify the config file `ppml-conf.yaml`
 ```yaml
@@ -135,3 +173,26 @@ The first 5 predict results are printed
  [1.2120417e-23]
  [0.0000000e+00]]
 ```
+### 3.4 Incremental Training
+Incremental training is supported, we just need to use the same configurations and start FL Server again.
+
+In SGX container, start FL Server
+```
+./ppml/scripts/start-fl-server.sh 
+```
+For client applications, we change from creating model to directly loading. This is already implemented in example code, we just need to run client applications with an argument
+
+```bash
+# run following commands in 2 different terminals
+python pytorch_nn_lr_1.py true
+python pytorch_nn_lr_2.py true
+```
+The result based on new boosted trees are printed
+```
+[[1.8799074e-36]
+ [1.7512805e-25]
+ [4.6501680e-30]
+ [1.4828590e-27]
+ [0.0000000e+00]]
+```
+and you can see the loss continues to drop from the log of [Section 3.3](#33-get-results)

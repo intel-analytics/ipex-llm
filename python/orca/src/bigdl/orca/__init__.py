@@ -25,5 +25,6 @@ JavaCreator.add_creator_class("com.intel.analytics.bigdl.orca.tfpark.python.Pyth
 JavaCreator.add_creator_class("com.intel.analytics.bigdl.orca.net.python.PythonZooNet")
 JavaCreator.add_creator_class("com.intel.analytics.bigdl.orca.python.PythonOrca")
 JavaCreator.add_creator_class("com.intel.analytics.bigdl.orca.inference.PythonInferenceModel")
+JavaCreator.add_creator_class("com.intel.analytics.bigdl.orca.python.PythonOrcaSQLUtils")
 for clz in creator_classes:
     JavaCreator.add_creator_class(clz)

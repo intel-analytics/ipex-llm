@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import Any
+from typing import Any, Sequence
 from bigdl.nano.pytorch.lightning import LightningModule
 import inspect
 from torch.utils.data import DataLoader
@@ -29,10 +29,11 @@ def get_forward_args(model):
     return forward_args
 
 
-def get_input_example(model, input_sample):
+def get_input_example(model, input_sample, forward_args):
     if isinstance(input_sample, DataLoader):
-        # TODO: This assumpe the last output is y
-        input_sample = tuple(next(iter(input_sample))[:-1])
+        input_sample = next(iter(input_sample))
+        if isinstance(input_sample, Sequence):
+            input_sample = tuple(list(input_sample)[:len(forward_args)])
     elif input_sample is None:
         if getattr(model, "example_input_array", None) is not None:
             input_sample = model.example_input_array
@@ -43,8 +44,9 @@ def get_input_example(model, input_sample):
                                   model.val_dataloader]:
                 try:
                     dataloader = dataloader_fn()
-                    # TODO: This assumpe the last output is y
-                    input_sample = tuple(next(iter(dataloader)))[:-1]
+                    input_sample = next(iter(input_sample))
+                    if isinstance(input_sample, Sequence):
+                        input_sample = tuple(list(input_sample)[:len(forward_args)])
                     break
                 except Exception as _e:
                     pass
@@ -73,13 +75,13 @@ def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axe
     :param dynamic_axes: If we set the first dim of each input as a dynamic batch_size
     :param **kwargs: will be passed to torch.onnx.export function.
     '''
-    input_sample = get_input_example(model, input_sample)
+    forward_args = get_forward_args(model)
+    input_sample = get_input_example(model, input_sample, forward_args)
     invalidInputError(input_sample is not None,
                       'You should implement at least one of model.test_dataloader, '
                       'model.train_dataloader, model.val_dataloader and '
                       'model.predict_dataloader, '
                       'or set one of input_sample and model.example_input_array')
-    forward_args = get_forward_args(model)
     if dynamic_axes:
         dynamic_axes = {}
         for arg in forward_args:

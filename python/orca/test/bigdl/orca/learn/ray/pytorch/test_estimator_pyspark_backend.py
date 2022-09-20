@@ -22,6 +22,9 @@ import pytest
 import torch
 import torch.nn as nn
 
+from pyspark.sql import SparkSession
+from pyspark.sql.types import FloatType, ArrayType, StructType, StructField
+
 from bigdl.orca import OrcaContext
 from bigdl.orca.data.pandas import read_csv
 from bigdl.orca.learn.metrics import Accuracy
@@ -138,7 +141,7 @@ class CustomCallback(Callback):
         assert self.model
 
     def on_epoch_end(self, epoch, logs=None):
-        assert "train_loss" in logs 
+        assert "train_loss" in logs
         assert "val_loss" in logs
         assert self.model
 
@@ -171,7 +174,7 @@ def get_optimizer(model, config):
 
 
 def get_estimator(workers_per_node=1, model_fn=get_model, sync_stats=False,
-                  log_level=logging.INFO, model_dir=None):
+                  log_level=logging.INFO):
     estimator = Estimator.from_torch(model=model_fn,
                                      optimizer=get_optimizer,
                                      loss=nn.BCELoss(),
@@ -180,8 +183,7 @@ def get_estimator(workers_per_node=1, model_fn=get_model, sync_stats=False,
                                      workers_per_node=workers_per_node,
                                      backend="spark",
                                      sync_stats=sync_stats,
-                                     log_level=log_level,
-                                     model_dir=model_dir)
+                                     log_level=log_level)
     return estimator
 
 
@@ -193,7 +195,7 @@ class TestPyTorchEstimator(TestCase):
         shutil.rmtree(self.model_dir)
 
     def test_data_creator_convergence(self):
-        estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir)
+        estimator = get_estimator(workers_per_node=2)
         start_val_stats = estimator.evaluate(val_data_loader, batch_size=64)
         print(start_val_stats)
         train_stats = estimator.fit(train_data_loader, epochs=4, batch_size=128,
@@ -215,7 +217,7 @@ class TestPyTorchEstimator(TestCase):
     def test_spark_xshards(self):
         from bigdl.dllib.nncontext import init_nncontext
         from bigdl.orca.data import SparkXShards
-        estimator = get_estimator(workers_per_node=1, model_dir=self.model_dir)
+        estimator = get_estimator(workers_per_node=1)
         sc = init_nncontext()
         x_rdd = sc.parallelize(np.random.rand(4000, 1, 50).astype(np.float32))
         # torch 1.7.1+ requires target size same as output size, which is (batch, 1)
@@ -233,12 +235,19 @@ class TestPyTorchEstimator(TestCase):
     def test_dataframe_train_eval(self):
 
         sc = init_nncontext()
+        spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(0, 100)
-        df = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
-                                [int(np.random.randint(0, 2, size=()))])
-                     ).toDF(["feature", "label"])
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+                                  [float(np.random.randint(0, 2, size=()))])
+                       )
+        schema = StructType([
+            StructField("feature", ArrayType(FloatType()), True),
+            StructField("label", ArrayType(FloatType()), True)
+        ])
 
-        estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir)
+        df = spark.createDataFrame(data=data, schema=schema)
+
+        estimator = get_estimator(workers_per_node=2)
         estimator.fit(df, batch_size=4, epochs=2,
                       validation_data=df,
                       feature_cols=["feature"],
@@ -246,17 +255,24 @@ class TestPyTorchEstimator(TestCase):
         estimator.evaluate(df, batch_size=4,
                            feature_cols=["feature"],
                            label_cols=["label"])
+        estimator.shutdown()
 
     def test_dataframe_shard_size_train_eval(self):
         from bigdl.orca import OrcaContext
         OrcaContext._shard_size = 30
         sc = init_nncontext()
+        spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(0, 100)
-        df = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
-                                [int(np.random.randint(0, 2, size=()))])
-                     ).toDF(["feature", "label"])
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+                                  [float(np.random.randint(0, 2, size=()))])
+                       )
+        schema = StructType([
+            StructField("feature", ArrayType(FloatType()), True),
+            StructField("label", ArrayType(FloatType()), True)
+        ])
+        df = spark.createDataFrame(data=data, schema=schema)
 
-        estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir)
+        estimator = get_estimator(workers_per_node=2)
         estimator.fit(df, batch_size=4, epochs=2,
                       feature_cols=["feature"],
                       label_cols=["label"])
@@ -266,12 +282,19 @@ class TestPyTorchEstimator(TestCase):
 
     def test_partition_num_less_than_workers(self):
         sc = init_nncontext()
+        spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(200, numSlices=1)
-        df = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
-                                [int(np.random.randint(0, 2, size=()))])
-                     ).toDF(["feature", "label"])
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+                                  [float(np.random.randint(0, 2, size=()))])
+                       )
+        schema = StructType([
+            StructField("feature", ArrayType(FloatType()), True),
+            StructField("label", ArrayType(FloatType()), True)
+        ])
 
-        estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir)
+        df = spark.createDataFrame(data=data, schema=schema)
+
+        estimator = get_estimator(workers_per_node=2)
         assert df.rdd.getNumPartitions() < estimator.num_workers
 
         estimator.fit(df, batch_size=4, epochs=2,
@@ -292,8 +315,7 @@ class TestPyTorchEstimator(TestCase):
                      ).toDF(["feature", "label"])
 
         estimator = get_estimator(workers_per_node=2,
-                                  model_fn=lambda config: IdentityNet(),
-                                  model_dir=self.model_dir)
+                                  model_fn=lambda config: IdentityNet())
         result = estimator.predict(df, batch_size=4,
                                    feature_cols=["feature"])
         expr = "sum(cast(feature <> to_array(prediction) as int)) as error"
@@ -302,13 +324,12 @@ class TestPyTorchEstimator(TestCase):
     def test_xshards_predict_save_load(self):
 
         sc = init_nncontext()
-        rdd = sc.range(0, 110).map(lambda x: np.array([x]*50))
+        rdd = sc.range(0, 110).map(lambda x: np.array([x] * 50))
         shards = rdd.mapPartitions(lambda iter: chunks(iter, 5)).map(lambda x: {"x": np.stack(x)})
         shards = SparkXShards(shards)
 
         estimator = get_estimator(workers_per_node=2,
-                                  model_fn=lambda config: IdentityNet(),
-                                  model_dir=self.model_dir)
+                                  model_fn=lambda config: IdentityNet())
         result_shards = estimator.predict(shards, batch_size=4)
         result_before = np.concatenate([shard["prediction"] for shard in result_shards.collect()])
         expected_result = np.concatenate([shard["x"] for shard in result_shards.collect()])
@@ -351,14 +372,20 @@ class TestPyTorchEstimator(TestCase):
         rdd = sc.parallelize(range(100))
 
         from pyspark.sql import SparkSession
-        spark = SparkSession(sc)
-        df = rdd.map(lambda x: ([float(x)] * 25, [float(x)] * 25,
-                                [int(np.random.randint(0, 2, size=()))])
-                     ).toDF(["f1", "f2", "label"])
+        spark = SparkSession.builder.getOrCreate()
+        data = rdd.map(lambda x: ([float(x)] * 25, [float(x)] * 25,
+                                  [float(np.random.randint(0, 2, size=()))])
+                       )
+        schema = StructType([
+            StructField("f1", ArrayType(FloatType()), True),
+            StructField("f2", ArrayType(FloatType()), True),
+            StructField("label", ArrayType(FloatType()), True)
+        ])
+
+        df = spark.createDataFrame(data=data, schema=schema)
 
         estimator = get_estimator(workers_per_node=2,
-                                  model_fn=lambda config: MultiInputNet(),
-                                  model_dir=self.model_dir)
+                                  model_fn=lambda config: MultiInputNet())
         estimator.fit(df, batch_size=4, epochs=2,
                       validation_data=df,
                       feature_cols=["f1", "f2"],
@@ -372,6 +399,7 @@ class TestPyTorchEstimator(TestCase):
 
     def test_data_parallel_sgd_correctness(self):
         sc = init_nncontext()
+        spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(0, 100).repartition(2)
 
         # partition 0: [(0, 0), (0, 0)]
@@ -389,8 +417,12 @@ class TestPyTorchEstimator(TestCase):
         #    partition 1 loss: 0.25
         #    avg_grad = avg([0, 0, 1, 1]) = 0.5
         #    weight = 0.5 - 0.5 * avg_grad = 0.25
-        df = rdd.mapPartitionsWithIndex(lambda idx, iter: [([float(idx)], [0.0]) for _ in iter][:2]
-                        ).toDF(["feature", "label"])
+        data = rdd.mapPartitionsWithIndex(lambda idx, iter: [([float(idx)], [0.0]) for _ in iter][:2])
+        schema = StructType([
+            StructField("feature", ArrayType(FloatType()), True),
+            StructField("label", ArrayType(FloatType()), True)
+        ])
+        df = spark.createDataFrame(data=data, schema=schema)
 
         def get_optimizer(model, config):
             return torch.optim.SGD(model.parameters(), lr=0.5)
@@ -402,8 +434,7 @@ class TestPyTorchEstimator(TestCase):
                                          config={},
                                          workers_per_node=2,
                                          backend="spark",
-                                         sync_stats=False,
-                                         model_dir=self.model_dir)
+                                         sync_stats=False)
 
         stats = estimator.fit(df, batch_size=4, epochs=2,
                               validation_data=df,
@@ -417,15 +448,20 @@ class TestPyTorchEstimator(TestCase):
     def test_checkpoint_callback(self):
         from bigdl.orca.learn.pytorch.callbacks.model_checkpoint import ModelCheckpoint
         sc = OrcaContext.get_spark_context()
+        spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(0, 100)
         epochs = 2
-        df = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
-                                [int(np.random.randint(0, 2, size=()))])
-                     ).toDF(["feature", "label"])
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+                                  [float(np.random.randint(0, 2, size=()))])
+                       )
+        schema = StructType([
+            StructField("feature", ArrayType(FloatType()), True),
+            StructField("label", ArrayType(FloatType()), True)
+        ])
+        df = spark.createDataFrame(data=data, schema=schema)
         df = df.cache()
 
-        estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir,
-                                  log_level=logging.DEBUG)
+        estimator = get_estimator(workers_per_node=2, log_level=logging.DEBUG)
 
         callbacks = [
             ModelCheckpoint(filepath=os.path.join(self.model_dir, "test-{epoch}"),
@@ -445,8 +481,8 @@ class TestPyTorchEstimator(TestCase):
         latest_checkpoint_path = Estimator.latest_checkpoint(self.model_dir)
         assert os.path.isfile(latest_checkpoint_path)
         estimator.shutdown()
-        new_estimator = get_estimator(workers_per_node=2,  model_dir=self.model_dir,
-                                      log_level=logging.DEBUG)
+
+        new_estimator = get_estimator(workers_per_node=2, log_level=logging.DEBUG)
         new_estimator.load_checkpoint(latest_checkpoint_path)
         eval_after = new_estimator.evaluate(df, batch_size=4,
                                             feature_cols=["feature"],
@@ -458,15 +494,21 @@ class TestPyTorchEstimator(TestCase):
 
     def test_manual_ckpt(self):
         sc = OrcaContext.get_spark_context()
+        spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(0, 100)
         epochs = 2
-        df = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
-                                [int(np.random.randint(0, 2, size=()))])
-                     ).toDF(["feature", "label"])
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+                                  [float(np.random.randint(0, 2, size=()))])
+                       )
+        schema = StructType([
+            StructField("feature", ArrayType(FloatType()), True),
+            StructField("label", ArrayType(FloatType()), True)
+        ])
+
+        df = spark.createDataFrame(data=data, schema=schema)
         df = df.cache()
 
-        estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir,
-                                  log_level=logging.DEBUG)
+        estimator = get_estimator(workers_per_node=2, log_level=logging.DEBUG)
         estimator.fit(df, batch_size=4, epochs=epochs,
                       feature_cols=["feature"],
                       label_cols=["label"])
@@ -479,8 +521,7 @@ class TestPyTorchEstimator(TestCase):
             ckpt_file = os.path.join(temp_dir, "manual.ckpt")
             estimator.save_checkpoint(ckpt_file)
             estimator.shutdown()
-            new_estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir,
-                                          log_level=logging.DEBUG)
+            new_estimator = get_estimator(workers_per_node=2, log_level=logging.DEBUG)
             new_estimator.load_checkpoint(ckpt_file)
             eval_after = new_estimator.evaluate(df, batch_size=4,
                                                 feature_cols=["feature"],
@@ -491,9 +532,9 @@ class TestPyTorchEstimator(TestCase):
             shutil.rmtree(temp_dir)
 
     def test_custom_callback(self):
-        estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir)
+        estimator = get_estimator(workers_per_node=2)
         callbacks = [CustomCallback()]
-        estimator.fit(train_data_loader, epochs=4, batch_size=128, 
+        estimator.fit(train_data_loader, epochs=4, batch_size=128,
                       validation_data=val_data_loader, callbacks=callbacks)
 
 

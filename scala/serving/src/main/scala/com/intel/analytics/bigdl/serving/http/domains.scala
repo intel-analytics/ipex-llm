@@ -1155,7 +1155,7 @@ case class ClusterServingMetaData(modelName: String,
                                   tokensPerSecond: Int = 100,
                                   redisSecureEnabled: Boolean = false,
                                   redisTrustStorePath: String = null,
-                                  redisTrustStoreToken: String = "1234qwer",
+                                  redisTrustStoreToken: String = null,
                                   inputCompileType: String = "direct",
                                   features: Array[String])
   extends ModelMetaData(modelName, modelVersion, features)

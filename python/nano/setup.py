@@ -22,7 +22,14 @@ from setuptools import setup
 import urllib.request
 import os
 import stat
-import sys
+
+long_description = '''
+BigDL Nano automatically accelerates TensorFlow and PyTorch pipelines 
+by applying modern CPU optimizations.
+
+See [here](https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html) 
+for more information.
+'''
 
 exclude_patterns = ["*__pycache__*", "lightning_logs", "recipe", "setup.py"]
 nano_home = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
@@ -32,9 +39,9 @@ VERSION = open(os.path.join(BIGDL_PYTHON_HOME, 'version.txt'), 'r').read().strip
 
 
 lib_urls = [
-    "https://github.com/yangw1234/jemalloc/releases/download/v5.2.1-binary/libjemalloc.so",
-    "https://github.com/leonardozcm/libjpeg-turbo/releases/download/2.1.1/libturbojpeg.so.0.2.0",
-    "https://github.com/leonardozcm/tcmalloc/releases/download/v1/libtcmalloc.so"
+    "https://github.com/analytics-zoo/jemalloc/releases/download/v5.3.0/libjemalloc.so",
+    "https://github.com/analytics-zoo/libjpeg-turbo/releases/download/v2.1.4/libturbojpeg.so.0.2.0",
+    "https://github.com/analytics-zoo/tcmalloc/releases/download/v1/libtcmalloc.so"
 ]
 
 
@@ -98,6 +105,8 @@ def setup_package():
         name='bigdl-nano',
         version=VERSION,
         description='High-performance scalable acceleration components for intel.',
+        long_description=long_description,
+        long_description_content_type="text/markdown",
         author='BigDL Authors',
         author_email='bigdl-user-group@googlegroups.com',
         url='https://github.com/intel-analytics/BigDL',

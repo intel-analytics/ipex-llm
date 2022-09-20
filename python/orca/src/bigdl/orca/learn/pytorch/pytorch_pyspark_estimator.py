@@ -19,6 +19,7 @@ import logging
 import numbers
 import torch
 import numpy as np
+from copy import copy
 
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch.pytorch_pyspark_worker import PytorchPysparkWorker
@@ -31,7 +32,7 @@ from bigdl.orca.learn.base_estimator import BaseEstimator
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, \
     get_remote_file_to_local
 from bigdl.dllib.utils.common import get_node_and_core_number
-from bigdl.orca.learn.log_monitor import start_log_server
+from bigdl.orca.learn.log_monitor import start_log_server, stop_log_server
 
 from bigdl.orca.learn.utils import find_free_port, find_ip_and_free_port
 from bigdl.dllib.utils.utils import get_node_ip
@@ -113,9 +114,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             invalidInputError(False,
                               "If a loss_creator is not provided, you must "
                               "provide a custom training operator.")
-        if not model_dir:
-            invalidInputError(False,
-                              "Please specify model directory when using spark backend")
+
         self.model_dir = model_dir
 
         self.model_creator = model_creator
@@ -135,7 +134,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         is_local = sc.master.startswith("local")
         self.need_to_log_to_driver = (not is_local) and log_to_driver
         if self.need_to_log_to_driver:
-            start_log_server(self.ip, self.log_port)
+            self.log_server_thread = start_log_server(self.ip, self.log_port)
         self.tcp_store_port = find_free_port()
 
         self.worker_init_params = dict(
@@ -146,7 +145,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             training_operator_cls=training_operator_cls,
             scheduler_step_freq=scheduler_step_freq,
             use_tqdm=use_tqdm,
-            config=self.config.copy(),
+            config=copy(self.config),
             metrics=metrics,
             size=self.num_workers,
             cores_per_worker=self.cores_per_worker,
@@ -297,8 +296,12 @@ class PyTorchPySparkEstimator(BaseEstimator):
             res = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
 
-        self.state_dict = PyTorchPySparkEstimator._get_state_dict_from_remote(self.model_dir)
-        worker_stats = res
+        if self.model_dir is not None:
+            self.state_dict = PyTorchPySparkEstimator._get_state_dict_from_remote(self.model_dir)
+            worker_stats = res
+        else:
+            self.state_dict = res[0]
+            worker_stats = res[1]
 
         epoch_stats = list(map(list, zip(*worker_stats)))
         if reduce_results:
@@ -562,4 +565,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
         return stats
 
     def shutdown(self):
-        pass
+        """
+        Shutdown estimator and release resources.
+        """
+        if self.need_to_log_to_driver:
+            stop_log_server(self.log_server_thread, self.ip, self.port)

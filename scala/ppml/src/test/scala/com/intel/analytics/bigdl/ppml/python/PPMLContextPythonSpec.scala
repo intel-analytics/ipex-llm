@@ -31,7 +31,7 @@ class PPMLContextPythonSpec extends DataFrameHelper{
   val ppmlArgs: Map[String, String] = Map(
     "spark.bigdl.kms.type" -> "SimpleKeyManagementService",
     "spark.bigdl.kms.simple.id" -> appid,
-    "spark.bigdl.kms.simple.key" -> appkey,
+    "spark.bigdl.kms.simple.key" -> apikey,
     "spark.bigdl.kms.key.primary" -> primaryKeyPath,
     "spark.bigdl.kms.key.data" -> dataKeyPath
   )

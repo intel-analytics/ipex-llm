@@ -14,10 +14,11 @@
 # limitations under the License.
 #
 
-from bigdl.orca import init_orca_context, stop_orca_context
 import os
 import argparse
 import tensorflow as tf
+from bigdl.dllib.utils.log4Error import invalidInputError
+from bigdl.orca import init_orca_context, stop_orca_context
 
 _DEFAULT_IMAGE_SIZE = 224
 _NUM_CHANNELS = 3
@@ -82,10 +83,10 @@ def _central_crop(image, crop_height, crop_width):
 
 def _mean_image_subtraction(image, means, num_channels):
     if image.get_shape().ndims != 3:
-        raise ValueError('Input must be of size [height, width, C>0]')
+        invalidInputError(False, 'Input must be of size [height, width, C>0]')
 
     if len(means) != num_channels:
-        raise ValueError('len(means) must match the number of channels')
+        invalidInputError(False, 'len(means) must match the number of channels')
 
     # We have a 1-D tensor of means; convert to 3-D.
     # means = tf.expand_dims(tf.expand_dims(means, 0), 0)
@@ -361,8 +362,10 @@ parser.add_argument("--use_dummy_data", action='store_true', default=False,
                     help="Whether to use dummy data")
 parser.add_argument("--benchmark", action='store_true', default=False)
 parser.add_argument("--enable_numa_binding", action='store_true', default=False)
-parser.add_argument("--num_images_train", type=int, default=1281167, help="the num of training images")
-parser.add_argument("--num_images_validation", type=int, default=50000, help="the num of validation images")
+parser.add_argument("--num_images_train", type=int, default=1281167,
+                    help="the num of training images")
+parser.add_argument("--num_images_validation", type=int, default=50000,
+                    help="the num of validation images")
 parser.add_argument("--epochs", type=int, default=18, help=" epochs.")
 if __name__ == "__main__":
 
@@ -372,11 +375,12 @@ if __name__ == "__main__":
     else:
         num_nodes = 1 if args.cluster_mode == "local" else args.worker_num
         init_orca_context(cluster_mode=args.cluster_mode, cores=args.cores, num_nodes=num_nodes,
-                        memory=args.memory, init_ray_on_spark=True,
-                        enable_numa_binding=args.enable_numa_binding)
+                          memory=args.memory, init_ray_on_spark=True,
+                          enable_numa_binding=args.enable_numa_binding)
 
     if not args.use_dummy_data:
-        assert args.data_dir is not None, "--data_dir must be provided if not using dummy data"
+        invalidInputError(args.data_dir is not None,
+                          "--data_dir must be provided if not using dummy data")
 
     if not os.path.exists(args.log_dir):
         os.mkdir(args.log_dir)
@@ -434,3 +438,4 @@ if __name__ == "__main__":
             )
             epoch += args.epochs
         trainer.save(os.path.join(args.log_dir, f"model-{epoch}.pkl"))
+    stop_orca_context()

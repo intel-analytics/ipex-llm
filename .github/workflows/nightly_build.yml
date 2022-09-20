@@ -1,0 +1,426 @@
+name: Nightly Build
+
+on:
+  schedule:
+    - cron: '0 12 * * *' # GMT time, 12:00 GMT == 20:00 China
+  workflow_dispatch:
+    inputs:
+      artifact:
+        description: 'select which job to run("all" will make all jobs run)'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - scala-build
+        - python-build
+        - python-sourceforge-build
+        - docker-bigdl-build
+      tag:
+        description: 'docker image tag (e.g. 2.1.0-SNAPSHOT)'
+        required: true
+        default: 'latest'
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+
+  scala-build:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'scala-build' || github.event.inputs.artifact == 'docker-bigdl-build' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Linux, Bree]
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+
+    - uses: actions/cache@v2
+      with:
+        path: ~/.m2/repository
+        key: maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: maven-
+
+    - name: Set up Maven
+      uses: stCarolas/setup-maven@v4.4
+      with:
+        maven-version: 3.8.2
+
+    - name: Set up Maven Settings
+      uses: s4u/maven-settings-action@v2.6.0
+      with:
+        sonatypeSnapshots: true
+        apacheSnapshots: true
+        servers: |
+          [{
+            "id": "central",
+            "configuration": {
+              "httpConfiguration": {
+                "all": {
+                  "connectionTimeout": "3600000",
+                  "readTimeout": "3600000"
+                  }    
+                }
+              }
+          },{
+            "id": "ossrh",
+            "username": "${{ secrets.OSSRH_USERNAME }}",
+            "password": "${{ secrets.OSSRH_PASSWORD }}",
+            "configuration": {
+              "timeout": "3600000"
+            }
+          }]
+          
+    - name: Build with Maven
+      run: |
+          ls
+          #spark3.1.2
+          cp scala/pom.xml scala/pom.xml.origin
+          cp scala/common/spark-version/pom.xml scala/common/spark-version/pom.xml.origin
+          cp scala/common/spark-version/3.0/pom.xml scala/common/spark-version/3.0/pom.xml.origin
+          cp scala/dllib/pom.xml scala/dllib/pom.xml.origin
+          cp scala/orca/pom.xml scala/orca/pom.xml.origin
+          cp scala/friesian/pom.xml scala/friesian/pom.xml.origin
+          cp scala/grpc/pom.xml scala/grpc/pom.xml.origin
+          cp scala/serving/pom.xml scala/serving/pom.xml.origin
+          cp scala/ppml/pom.xml scala/ppml/pom.xml.origin
+          cp scala/assembly/pom.xml scala/assembly/pom.xml.origin
+
+          sed -i 's/<artifactId>${spark-version.project}<\/artifactId>/<artifactId>${spark-version.project}-${SPARK_PLATFORM}<\/artifactId>/' scala/dllib/pom.xml
+          sed -i 's/<artifactId>3.0<\/artifactId>/<artifactId>3.0-${SPARK_PLATFORM}<\/artifactId>/' scala/common/spark-version/3.0/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/common/spark-version/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/common/spark-version/3.0/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/dllib/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/orca/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/friesian/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/grpc/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/serving/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/ppml/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.2<\/artifactId>/' scala/assembly/pom.xml
+          mvn -Dhttp.proxyHost=${{ secrets.HTTP_PROXY_HOST_2 }} -Dhttp.proxyPort=${{ secrets.HTTP_PROXY_PORT_2 }} -Dhttps.proxyHost=${{ secrets.HTTP_PROXY_HOST_2 }} -Dhttps.proxyPort=${{ secrets.HTTP_PROXY_PORT_3 }} clean deploy -DskipTests -Dspark.version=3.1.2 -DSPARK_PLATFORM=SPARK_3.1 -P spark_3.x --file scala/pom.xml
+      
+          mv scala/pom.xml.origin scala/pom.xml
+          mv scala/common/spark-version/pom.xml.origin scala/common/spark-version/pom.xml
+          mv scala/common/spark-version/3.0/pom.xml.origin scala/common/spark-version/3.0/pom.xml
+          mv scala/dllib/pom.xml.origin scala/dllib/pom.xml
+          mv scala/orca/pom.xml.origin scala/orca/pom.xml
+          mv scala/friesian/pom.xml.origin scala/friesian/pom.xml
+          mv scala/grpc/pom.xml.origin scala/grpc/pom.xml
+          mv scala/serving/pom.xml.origin scala/serving/pom.xml
+          mv scala/ppml/pom.xml.origin scala/ppml/pom.xml
+          mv scala/assembly/pom.xml.origin scala/assembly/pom.xml
+
+          #spark2.4.6          
+          cp scala/pom.xml scala/pom.xml.origin
+          cp scala/common/spark-version/pom.xml scala/common/spark-version/pom.xml.origin
+          cp scala/common/spark-version/2.0/pom.xml scala/common/spark-version/2.0/pom.xml.origin
+          cp scala/dllib/pom.xml scala/dllib/pom.xml.origin
+          cp scala/orca/pom.xml scala/orca/pom.xml.origin
+          cp scala/friesian/pom.xml scala/friesian/pom.xml.origin
+          cp scala/grpc/pom.xml scala/grpc/pom.xml.origin
+          cp scala/serving/pom.xml scala/serving/pom.xml.origin
+          cp scala/ppml/pom.xml scala/ppml/pom.xml.origin
+          cp scala/assembly/pom.xml scala/assembly/pom.xml.origin
+
+          sed -i 's/<artifactId>${spark-version.project}<\/artifactId>/<artifactId>${spark-version.project}-${SPARK_PLATFORM}<\/artifactId>/' scala/dllib/pom.xml
+          sed -i 's/<artifactId>2.0<\/artifactId>/<artifactId>2.0-${SPARK_PLATFORM}<\/artifactId>/' scala/common/spark-version/2.0/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_2.4.6<\/artifactId>/' scala/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_2.4.6<\/artifactId>/' scala/common/spark-version/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_2.4.6<\/artifactId>/' scala/common/spark-version/2.0/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_2.4.6<\/artifactId>/' scala/dllib/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_2.4.6<\/artifactId>/' scala/orca/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_2.4.6<\/artifactId>/' scala/friesian/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_2.4.6<\/artifactId>/' scala/grpc/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_2.4.6<\/artifactId>/' scala/serving/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_2.4.6<\/artifactId>/' scala/ppml/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_2.4.6<\/artifactId>/' scala/assembly/pom.xml
+          mvn -Dhttp.proxyHost=${{ secrets.HTTP_PROXY_HOST_2 }} -Dhttp.proxyPort=${{ secrets.HTTP_PROXY_PORT_2 }} -Dhttps.proxyHost=${{ secrets.HTTP_PROXY_HOST_2 }} -Dhttps.proxyPort=${{ secrets.HTTP_PROXY_PORT_3 }} clean deploy -DskipTests -Dspark.version=2.4.6 -DSPARK_PLATFORM=SPARK_2.4 -P spark_2.x --file scala/pom.xml
+     
+          mv scala/pom.xml.origin scala/pom.xml
+          mv scala/common/spark-version/pom.xml.origin scala/common/spark-version/pom.xml
+          mv scala/common/spark-version/2.0/pom.xml.origin scala/common/spark-version/2.0/pom.xml
+          mv scala/dllib/pom.xml.origin scala/dllib/pom.xml
+          mv scala/orca/pom.xml.origin scala/orca/pom.xml
+          mv scala/friesian/pom.xml.origin scala/friesian/pom.xml
+          mv scala/grpc/pom.xml.origin scala/grpc/pom.xml
+          mv scala/serving/pom.xml.origin scala/serving/pom.xml
+          mv scala/ppml/pom.xml.origin scala/ppml/pom.xml
+          mv scala/assembly/pom.xml.origin scala/assembly/pom.xml
+
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: 7495dccc42118020c12de5a095cfa2a6
+        is-self-hosted-runner: true
+        file-name: nb-scala-build.json
+        type: job
+        job-name: scala-build
+        runner-hosted-on: 'America'
+
+  docker-build-bigdl:
+    needs: scala-build
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'docker-bigdl-build' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, Shire]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: set env
+      env:
+        DEFAULT_TAG: 'latest'
+      run: |
+        echo "TAG=${{ github.event.inputs.bigdlTag || env.DEFAULT_TAG }} " >> $GITHUB_ENV
+    - name: docker login
+      run: |
+        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+    - name: docker deploy bigdl
+      run: |
+        export IMAGE=intelanalytics/bigdl
+        cd docker/bigdl
+        echo "########################################"
+        echo "################# bigdl 3.1.2 #######"
+        echo "########################################"
+        docker build \
+          --build-arg http_proxy=${HTTP_PROXY} \
+          --build-arg https_proxy=${HTTPS_PROXY} \
+          --build-arg SPARK_VERSION=3.1.2 \
+          --build-arg JDK_VERSION=8u192 \
+          --build-arg JDK_URL=${JDK_URL} \
+          --build-arg no_proxy=${NO_PROXY} \
+          --rm --no-cache -t $IMAGE-spark-3.1.2:${TAG} .
+        docker push ${IMAGE}-spark-3.1.2:${TAG}
+        docker tag ${IMAGE}-spark-3.1.2:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${TAG}
+        docker push 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${TAG}
+        docker rmi -f ${IMAGE}-spark-3.1.2:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${TAG}
+    - name: docker deploy bigdl-k8s
+      run: |
+        cd docker/bigdl-k8s
+        export IMAGE=intelanalytics/bigdl-k8s
+        echo "########################################"
+        echo "################# bigdl-k8s 3.1.2 #######"
+        echo "########################################"
+        docker build \
+        --build-arg http_proxy=${HTTP_PROXY} \
+        --build-arg https_proxy=${HTTPS_PROXY} \
+        --build-arg SPARK_VERSION=3.1.2 \
+        --build-arg JDK_VERSION=8u192 \
+        --build-arg JDK_URL=${JDK_URL} \
+        --build-arg no_proxy=${NO_PROXY} \
+        --rm --no-cache -t ${IMAGE}-spark-3.1.2:${TAG} .
+        docker push ${IMAGE}-spark-3.1.2:${TAG}
+        docker tag ${IMAGE}-spark-3.1.2:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${TAG}
+        docker push 10.239.45.10/arda/${IMAGE}-spark-3.1.2:${TAG}
+        docker rmi -f ${IMAGE}-spark-3.1.2:${TAG}
+
+    - name: Create Job Badge
+      if: ${{ always() }}
+      uses: ./.github/actions/create-job-status-badge
+      with:
+        secret: ${{ secrets.GIST_SECRET }}
+        gist-id: aaee1abb17ed9aad37e19256787c52b2
+        is-self-hosted-runner: true
+        file-name: nb-docker-build-bigdl.json
+        type: job
+        job-name: docker-build-bigdl
+        runner-hosted-on: 'America'
+  
+    
+  python-build:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'python-build' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, ubuntu-20.04-lts, Bree]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+
+    - name: Set up Python 
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build
+        pip install wheel
+        pip install twine
+    
+    - name: Build package
+      run: |
+        export TIMESTAMP=`date '+%Y%m%d'`
+        export PYPI_VERSION=2.1.0
+        nb_version=${PYPI_VERSION}b${TIMESTAMP}
+        echo ${nb_version}
+
+        ## windows ##
+        bash python/dev/release_default_windows.sh ${nb_version} false true
+
+        ## linux ##
+        bash python/dev/release_default_linux.sh ${nb_version} true
+
+        ## mac ##
+        bash python/dev/release_default_mac.sh ${nb_version} true
+
+    - name: Create Job Badge
+      if: ${{ always() }}
+      uses: ./.github/actions/create-job-status-badge
+      with:
+        secret: ${{ secrets.GIST_SECRET }}
+        gist-id: 983672c70e351381418fdf6f9076637a
+        is-self-hosted-runner: true
+        file-name: nb-python-build.json
+        type: job
+        job-name: python-build
+        runner-hosted-on: 'America'
+
+  python-sourceforge-build:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'python-sourceforge-build' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted,alpha,Bree,ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Set up Python 
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build
+        pip install wheel
+        pip install twine
+    
+    - name: Build package
+      run: |
+        export TIMESTAMP=`date '+%Y%m%d'`
+        export PYPI_VERSION=2.1.0
+        nb_version=${PYPI_VERSION}b${TIMESTAMP}
+        echo ${nb_version}
+        apt-get update
+        apt-get install sshpass
+        #spark2
+        ## linux ##
+        bash python/dev/release_default_linux_spark246.sh ${nb_version} false false
+ 
+        # upload
+        sshpass -p 'abcd1234!@#$QWER' \
+        scp ./python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl \
+        intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/dllib-py
+
+        sshpass -p 'abcd1234!@#$QWER' \
+        scp ./python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl \
+        intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/orca-py
+
+        sshpass -p 'abcd1234!@#$QWER' \
+        scp ./python/friesian/src/dist/bigdl_friesian*-py3-none-manylinux1_x86_64.whl \
+        intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/friesian-py
+
+        sshpass -p 'abcd1234!@#$QWER' \
+        scp ./python/chronos/src/dist/bigdl_chronos*-py3-none-manylinux1_x86_64.whl \
+        intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/chronos-py
+
+        #sshpass -p 'abcd1234!@#$QWER' \
+        #scp ./python/serving/src/dist/bigdl_serving*-py2.py3-none-any.whl \
+        #intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/cluster-serving-py
+
+        ## mac ##
+        bash python/dev/release_default_mac_spark246.sh ${nb_version} false false
+
+        # upload
+        sshpass -p 'abcd1234!@#$QWER' \
+        scp ./python/dllib/src/dist/bigdl_dllib*-py3-none-macosx_10_11_x86_64.whl \
+        intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/dllib-py
+
+        sshpass -p 'abcd1234!@#$QWER' \
+        scp ./python/orca/src/dist/bigdl_orca*-py3-none-macosx_10_11_x86_64.whl \
+        intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/orca-py
+
+        sshpass -p 'abcd1234!@#$QWER' \
+        scp ./python/friesian/src/dist/bigdl_friesian*-py3-none-macosx_10_11_x86_64.whl \
+        intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/friesian-py
+
+        sshpass -p 'abcd1234!@#$QWER' \
+        scp ./python/chronos/src/dist/bigdl_chronos*-py3-none-macosx_10_11_x86_64.whl \
+        intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/chronos-py
+
+        #spark3
+        ## linux ##
+        bash python/dev/release_default_linux_spark312.sh ${nb_version} false false
+        # upload
+        sshpass -p 'abcd1234!@#$QWER' \
+        scp ./python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl \
+        intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/dllib-py-spark3
+
+        sshpass -p 'abcd1234!@#$QWER' \
+        scp ./python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl \
+        intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/orca-py-spark3
+
+        sshpass -p 'abcd1234!@#$QWER' \
+        scp ./python/friesian/src/dist/bigdl_friesian*-py3-none-manylinux1_x86_64.whl \
+        intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/friesian-py-spark3
+
+        sshpass -p 'abcd1234!@#$QWER' \
+        scp ./python/chronos/src/dist/bigdl_chronos*-py3-none-manylinux1_x86_64.whl \
+        intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/chronos-py-spark3
+
+        ## mac ##
+        bash python/dev/release_default_mac_spark312.sh ${nb_version} false false
+        # upload
+        sshpass -p 'abcd1234!@#$QWER' \
+        scp ./python/dllib/src/dist/bigdl_dllib*-py3-none-macosx_10_11_x86_64.whl \
+        intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/dllib-py-spark3
+
+        sshpass -p 'abcd1234!@#$QWER' \
+        scp ./python/orca/src/dist/bigdl_orca*-py3-none-macosx_10_11_x86_64.whl \
+        intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/orca-py-spark3
+
+        sshpass -p 'abcd1234!@#$QWER' \
+        scp ./python/friesian/src/dist/bigdl_friesian*-py3-none-macosx_10_11_x86_64.whl \
+        intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/friesian-py-spark3
+
+        sshpass -p 'abcd1234!@#$QWER' \
+        scp ./python/chronos/src/dist/bigdl_chronos*-py3-none-macosx_10_11_x86_64.whl \
+        intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/chronos-py-spark3
+
+    - name: Create Job Badge
+      if: ${{ always() }}
+      uses: ./.github/actions/create-job-status-badge
+      with:
+        secret: ${{ secrets.GIST_SECRET }}
+        gist-id: 6d878630c0c8f50c388bb7e196354ca8
+        is-self-hosted-runner: true
+        file-name: nb-python-sourceforge-build.json
+        type: job
+        job-name: python-build-sourceforge
+        runner-hosted-on: 'America'
+
+  create-workflow-badge:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: create workflow badge
+      if: ${{ always() }}
+      uses: ./.github/actions/create-job-status-badge
+      with:
+        secret: ${{ secrets.GIST_SECRET }}
+        gist-id: 48dbd87983219d4fe264adfea701815a
+        file-name: nightly-build.json
+        type: workflow
+
+
+
+
+

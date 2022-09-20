@@ -85,6 +85,7 @@ class BasePytorchForecaster(Forecaster):
             self.onnxruntime_fp32 = None  # onnxruntime session for fp32 precision
             self.openvino_fp32 = None  # placeholader openvino session for fp32 precision
             self.onnxruntime_int8 = None  # onnxruntime session for int8 precision
+            self.openvino_int8 = None  # placeholader openvino session for int8 precision
             self.pytorch_int8 = None  # pytorch model for int8 precision
 
     def _build_automodel(self, data, validation_data=None, batch_size=32, epochs=1):
@@ -209,7 +210,7 @@ class BasePytorchForecaster(Forecaster):
     def search_summary(self):
         # add tuning check
         invalidOperationError(self.use_hpo, "No search summary when HPO is disabled.")
-        return self.trainer.search_summary()
+        return self.tune_trainer.search_summary()
 
     def fit(self, data, validation_data=None, epochs=1, batch_size=32, validation_mode='output',
             earlystop_patience=1, use_trial_id=None):
@@ -554,7 +555,7 @@ class BasePytorchForecaster(Forecaster):
                                               input_data=data,
                                               batch_size=batch_size)
 
-    def predict_with_openvino(self, data, batch_size=32):
+    def predict_with_openvino(self, data, batch_size=32, quantize=False):
         """
         Predict using a trained forecaster with openvino. The method can only be
         used when forecaster is a non-distributed version.
@@ -571,6 +572,7 @@ class BasePytorchForecaster(Forecaster):
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time). Defaults
                to 32. None for all-data-single-time inference.
+        :param quantize: if use the quantized openvino model to predict.
 
         :return: A numpy array with shape (num_samples, horizon, target_dim).
         """
@@ -585,24 +587,29 @@ class BasePytorchForecaster(Forecaster):
         if not self.fitted:
             invalidInputError(False,
                               "You must call fit or restore first before calling predict!")
-        if self.openvino_fp32 is None:
-            self.build_openvino()
-        return _pytorch_fashion_inference(model=self.openvino_fp32,
-                                          input_data=data,
-                                          batch_size=batch_size)
+        if quantize:
+            return _pytorch_fashion_inference(model=self.openvino_int8,
+                                              input_data=data,
+                                              batch_size=batch_size)
+        else:
+            if self.openvino_fp32 is None:
+                self.build_openvino()
+            return _pytorch_fashion_inference(model=self.openvino_fp32,
+                                              input_data=data,
+                                              batch_size=batch_size)
 
     def evaluate(self, data, batch_size=32, multioutput="raw_values", quantize=False):
         """
         Evaluate using a trained forecaster.
 
-        Please note that evaluate result is calculated by scaled y and yhat. If you scaled
-        your data (e.g. use .scale() on the TSDataset) please follow the following code
-        snap to evaluate your result if you need to evaluate on unscaled data.
-
-        if you want to evaluate on a single node(which is common practice), please call
+        If you want to evaluate on a single node(which is common practice), please call
         .to_local().evaluate(data, ...)
 
-        >>> from bigdl.orca.automl.metrics import Evaluator
+        Please note that evaluate result is calculated by scaled y and yhat. If you scaled
+        your data (e.g. use .scale() on the TSDataset), please follow the following code
+        snap to evaluate your result if you need to evaluate on unscaled data.
+
+        >>> from bigdl.chronos.metric.forecast_metrics import Evaluator
         >>> y_hat = forecaster.predict(x)
         >>> y_hat_unscaled = tsdata.unscale_numpy(y_hat) # or other customized unscale methods
         >>> y_unscaled = tsdata.unscale_numpy(y) # or other customized unscale methods
@@ -699,8 +706,8 @@ class BasePytorchForecaster(Forecaster):
         your data (e.g. use .scale() on the TSDataset) please follow the following code
         snap to evaluate your result if you need to evaluate on unscaled data.
 
-        >>> from bigdl.orca.automl.metrics import Evaluator
-        >>> y_hat = forecaster.predict(x)
+        >>> from bigdl.chronos.metric.forecast_metrics import Evaluator
+        >>> y_hat = forecaster.predict_with_onnx(x)
         >>> y_hat_unscaled = tsdata.unscale_numpy(y_hat) # or other customized unscale methods
         >>> y_unscaled = tsdata.unscale_numpy(y) # or other customized unscale methods
         >>> Evaluator.evaluate(metric=..., y_unscaled, y_hat_unscaled, multioutput=...)
@@ -771,6 +778,134 @@ class BasePytorchForecaster(Forecaster):
 
         aggregate = 'mean' if multioutput == 'uniform_average' else None
         return Evaluator.evaluate(self.metrics, target, yhat, aggregate=aggregate)
+
+    def predict_interval(self, data, val_data=None, batch_size=32, repetition_times=5):
+        """
+        Calculate confidence interval of data based on Monte Carlo dropout(MC dropout).
+        Related paper : https://arxiv.org/abs/1709.01907
+
+        :param data: The data support following formats:
+
+               | 1. a numpy ndarray x:
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | 2. pytorch dataloader:
+               | the dataloader needs to return at least x in each iteration
+               | with the shape as following:
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | If returns x and y only get x.
+               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
+               | Forecaster will automatically process the TSDataset.
+               | By default, TSDataset will be transformed to a pytorch dataloader,
+               | which is memory-friendly while a little bit slower.
+               | Users may call `roll` on the TSDataset before calling `fit`
+               | Then the training speed will be faster but will consume more memory.
+
+        :param val_data: The val_data support following formats:
+
+               | 1. a numpy ndarray tuple (x, y):
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
+               | should be the same as future_seq_len and output_feature_num.
+               | 2. pytorch dataloader:
+               | the dataloader should return x, y in each iteration with the shape as following:
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
+               | should be the same as future_seq_len and output_feature_num.
+               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
+               | Forecaster will automatically process the TSDataset.
+               | By default, TSDataset will be transformed to a pytorch dataloader,
+               | which is memory-friendly while a little bit slower.
+               | Users may call `roll` on the TSDataset before calling `fit`
+               | Then the training speed will be faster but will consume more memory.
+
+        :param batch_size: predict batch size. The value will not affect predict
+               result but will affect resources cost(e.g. memory and time).
+        :param repetition_times : Defines repeate how many times to calculate model
+                                  uncertainty based on MC Dropout.
+
+        :return: prediction and standard deviation which are both numpy array
+                 with shape (num_samples, horizon, target_dim)
+
+        """
+        from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
+
+        if self.distributed:
+            invalidInputError(False,
+                              "predict interval has not been supported for distributed "
+                              "forecaster. You can call .to_local() to transform the "
+                              "forecaster to a non-distributed version.")
+
+        if not self.fitted:
+            invalidInputError(False,
+                              "You must call fit or restore first before calling predict_interval!")
+
+        # step1, according to validation dataset, calculate inherent noise
+        # which should be done during fit
+        if not hasattr(self, "data_noise"):
+            invalidInputError(val_data is not None,
+                              "When call predict_interval for the first time, you must pass in "
+                              "validation data to calculate data noise.")
+            # data transform
+            if isinstance(val_data, TSDataset):
+                _rolled = val_data.numpy_x is None
+                val_data = val_data.to_torch_data_loader(batch_size=batch_size,
+                                                         roll=_rolled,
+                                                         lookback=self.data_config['past_seq_len'],
+                                                         horizon=self.data_config['future_seq_len'],
+                                                         feature_col=data.roll_feature,
+                                                         target_col=data.roll_target,
+                                                         shuffle=False)
+
+            if isinstance(val_data, DataLoader):
+                input_data = val_data
+                target = np.concatenate(tuple(val[1] for val in val_data), axis=0)
+            else:
+                input_data, target = val_data
+            self.internal.eval()
+            val_yhat = _pytorch_fashion_inference(model=self.internal,
+                                                  input_data=input_data,
+                                                  batch_size=batch_size)
+            self.data_noise = Evaluator.evaluate(["mse"], target,
+                                                 val_yhat, aggregate=None)[0]  # 2d array
+
+        # step2: data preprocess
+        if isinstance(data, TSDataset):
+            _rolled = data.numpy_x is None
+            data = data.to_torch_data_loader(batch_size=batch_size,
+                                             roll=_rolled,
+                                             lookback=self.data_config['past_seq_len'],
+                                             horizon=self.data_config['future_seq_len'],
+                                             feature_col=data.roll_feature,
+                                             target_col=data.roll_target,
+                                             shuffle=False)
+
+        # step3: calculate model uncertainty based MC Dropout
+        def apply_dropout(m):
+            if type(m) == torch.nn.Dropout:
+                m.train()
+
+        # turn on dropout
+        self.internal.apply(apply_dropout)
+
+        y_hat_list = []
+        for i in range(repetition_times):
+            _yhat = _pytorch_fashion_inference(model=self.internal,
+                                               input_data=data,
+                                               batch_size=batch_size)
+            y_hat_list.append(_yhat)
+        y_hat_mean = np.mean(np.stack(y_hat_list, axis=0), axis=0)
+
+        model_bias = np.zeros_like(y_hat_mean)  # 3d array
+        for i in range(repetition_times):
+            model_bias += (y_hat_list[i] - y_hat_mean)**2
+        model_bias /= repetition_times
+        std_deviation = np.sqrt(self.data_noise + model_bias)
+
+        return y_hat_mean, std_deviation
 
     def save(self, checkpoint_file, quantize_checkpoint_file=None):
         """
@@ -881,6 +1016,7 @@ class BasePytorchForecaster(Forecaster):
         self.onnxruntime_fp32 = None  # onnxruntime session for fp32 precision
         self.openvino_fp32 = None  # openvino session for fp32 precision
         self.onnxruntime_int8 = None  # onnxruntime session for int8 precision
+        self.openvino_int8 = None  # openvino session for int8 precision
         self.pytorch_int8 = None  # pytorch model for int8 precision
         return self
 
@@ -1007,10 +1143,12 @@ class BasePytorchForecaster(Forecaster):
                quantization. You may choose from "mse", "mae", "rmse", "r2", "mape", "smape".
         :param conf: A path to conf yaml file for quantization. Default to None,
                using default config.
-        :param framework: string or list, [{'pytorch'|'pytorch_fx'|'pytorch_ipex'},
-               {'onnxrt_integerops'|'onnxrt_qlinearops'}]. Default: 'pytorch_fx'.
-               Consistent with Intel Neural Compressor.
+        :param framework: string or list. [{'pytorch_fx'|'pytorch_ipex'},
+               {'onnxrt_integerops'|'onnxrt_qlinearops'}, {'openvino'}]
+               Default: 'pytorch_fx'. Consistent with Intel Neural Compressor.
         :param approach: str, 'static' or 'dynamic'. Default to 'static'.
+               OpenVINO supports static mode only, if set to 'dynamic',
+               it will be replaced with 'static'.
         :param tuning_strategy: str, 'bayesian', 'basic', 'mse' or 'sigopt'. Default to 'bayesian'.
         :param relative_drop: Float, tolerable ralative accuracy drop. Default to None,
                e.g. set to 0.1 means that we accept a 10% increase in the metrics error.
@@ -1067,9 +1205,15 @@ class BasePytorchForecaster(Forecaster):
         framework = [framework] if isinstance(framework, str) else framework
         temp_quantized_model = None
         for framework_item in framework:
-            accelerator, method = framework_item.split('_')
+            if '_' in framework_item:
+                accelerator, method = framework_item.split('_')
+            else:
+                accelerator = framework_item
             if accelerator == 'pytorch':
                 accelerator = None
+            elif accelerator == 'openvino':
+                method = None
+                approach = "static"
             else:
                 accelerator = 'onnxruntime'
                 method = method[:-3]
@@ -1088,6 +1232,8 @@ class BasePytorchForecaster(Forecaster):
                                             onnxruntime_session_options=sess_options)
             if accelerator == 'onnxruntime':
                 self.onnxruntime_int8 = q_model
+            if accelerator == 'openvino':
+                self.openvino_int8 = q_model
             if accelerator is None:
                 self.pytorch_int8 = q_model
 
@@ -1096,7 +1242,7 @@ class BasePytorchForecaster(Forecaster):
         """
         Build a Forecaster Model.
 
-        :param tsdataset: A bigdl.chronos.data.tsdataset.TSDataset instance.
+        :param tsdataset: Train tsdataset, a bigdl.chronos.data.tsdataset.TSDataset instance.
         :param past_seq_len: int or "auto", Specify the history time steps (i.e. lookback).
                Do not specify the 'past_seq_len' if your tsdataset has called
                the 'TSDataset.roll' method or 'TSDataset.to_torch_data_loader'.
@@ -1151,6 +1297,11 @@ class BasePytorchForecaster(Forecaster):
                           fixMsg="Do not specify past_seq_len and future seq_len "
                           "or call tsdataset.roll method again and specify time step")
 
+        if tsdataset.id_sensitive:
+            _id_list_len = len(tsdataset.id_col)
+            input_feature_num *= _id_list_len
+            output_feature_num *= _id_list_len
+
         return cls(past_seq_len=past_seq_len,
                    future_seq_len=future_seq_len,
                    input_feature_num=input_feature_num,
@@ -1161,6 +1312,13 @@ class BasePytorchForecaster(Forecaster):
 def _str2metric(metric):
     # map metric str to function
     if isinstance(metric, str):
-        from bigdl.chronos.metric.forecast_metrics import TORCHMETRICS_REGRESSION_MAP
-        metric = TORCHMETRICS_REGRESSION_MAP[metric]
+        metric_name = metric
+        from bigdl.chronos.metric.forecast_metrics import REGRESSION_MAP
+        metric_func = REGRESSION_MAP[metric_name]
+
+        def metric(y_label, y_predict):
+            y_label = y_label.numpy()
+            y_predict = y_predict.numpy()
+            return metric_func(y_label, y_predict)
+        metric.__name__ = metric_name
     return metric

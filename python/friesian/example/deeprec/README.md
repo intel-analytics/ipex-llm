@@ -1,7 +1,7 @@
 # Run DeepRec with BigDL
 Here we demonstrate how to integrate [DeepRec](https://github.com/alibaba/DeepRec) into BigDL so as to easily build end-to-end recommendation pipelines for Spark data processing and DeepRec model training.
 
-See [here](https://github.com/alibaba/DeepRec/tree/main/modelzoo/WDL) for the original Wide & Deep training example in DeepRec. This BigDL example uses BigDL Friesian for distribtued feature engineering and BigDL Orca for launching DeepRec distributed training on the Kubernetes cluster.
+See [here](https://github.com/alibaba/DeepRec/tree/main/modelzoo/wide_and_deep) for the original Wide & Deep training example in DeepRec. This BigDL example uses BigDL Friesian for distribtued feature engineering and BigDL Orca for launching DeepRec distributed training on the Kubernetes cluster.
 
 ## 1. Environment Preparation
 1. Enter the client node of the k8s cluster.
@@ -49,7 +49,7 @@ pip install tensorflow-1.15.5+deeprec2204-220614+glibc-cp37-cp37m-linux_x86_64.w
 8. Run the program `wdl.py`. You may need to change the NFS configurations in `init_orca_context` according to your cluster settings.
 
 ## 2. Data Preparation
-Please refer to the [README](https://github.com/alibaba/DeepRec/tree/main/modelzoo/WDL/data) of DeepRec's WDL example to download the dataset. Put `train.csv` and `eval.csv` under the same folder. The files should be accessible to all nodes in the cluster (e.g. in NFS).
+Please refer to the [README](https://github.com/alibaba/DeepRec/tree/main/modelzoo/wide_and_deep/data) of DeepRec's WDL example to download the dataset. Put `train.csv` and `eval.csv` under the same folder. The files should be accessible to all nodes in the cluster (e.g. in NFS).
 
 ## 3. Train DeepRec WDL
 - Local mode:
@@ -61,7 +61,8 @@ python wdl.py \
     --ev True \
     --ev_filter counter \
     --smartstaged False \
-    --emb_fusion False
+    --emb_fusion False \
+    --optimizer adam
 ```
 - K8s mode:
 ```bash
@@ -74,7 +75,8 @@ python wdl.py \
     --ev True \
     --ev_filter counter \
     --smartstaged False \
-    --emb_fusion False
+    --emb_fusion False \
+    --optimizer adam
 ```
 
 For DeepRec related arguments, please refer to the original example for more description.

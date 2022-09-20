@@ -29,7 +29,7 @@ If you want to read/write encrypted files, then you need to provide more informa
 if the `kms_type` is `SimpleKeyManagementService`, then need
 
 - `simple_app_id`: the appId your KMS generated
-- `simple_app_key`: the appKey  your KMS generated
+- `simple_api_key`: the apiKey  your KMS generated
 - `primary_key_path`: the path of your primaryKey
 - `data_key_path`:  the path of your dataKey
 
@@ -38,11 +38,18 @@ if the `kms_type` is `EHSMKeyManagementService`, then need
 - `kms_server_ip`: the server ip of your KMS
 - `kms_server_port`: the server port of your KMS
 - `ehsm_app_id`: the appId your KMS generated
-- `ehsm_app_key`:  the appKey  your KMS generated
+- `ehsm_api_key`:  the apiKey  your KMS generated
 - `primary_key_path`: the path of your primaryKey
 - `data_key_path`:  the path of your dataKey
 
-> How to generate appId, appKey, primaryKey and dataKey, please refer to [this](https://github.com/intel-analytics/BigDL/blob/main/ppml/services/kms-utils/docker/README.md)
+if the `kms_type` is `AzureKeyManagementService`, then need
+
+- `azure_vault`: your azure vault name
+- `azure_client_id(not necessary)`: your azure client id, default is empty.
+- `primary_key_path`: the path of your primaryKey
+- `data_key_path`:  the path of your dataKey
+
+> How to generate appId, apiKey, primaryKey and dataKey, please refer to [this](https://github.com/intel-analytics/BigDL/blob/main/ppml/services/kms-utils/docker/README.md)
 
 Example
 

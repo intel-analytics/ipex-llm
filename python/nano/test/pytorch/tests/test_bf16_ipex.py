@@ -19,7 +19,8 @@ import torch
 from bigdl.nano.pytorch import Trainer
 from torchvision.models.resnet import resnet18
 from unittest.mock import MagicMock, Mock, PropertyMock, patch
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_12
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11
+from bigdl.nano.common import check_avx512
 
 
 class Pytorch1_9:
@@ -35,11 +36,28 @@ class Pytorch1_9:
             trainer.quantize(model, precision='bf16', use_ipex=True)
 
 
-class Pytorch1_12:
-    def test_bf16_common(self):
-        """
-        Debug mode. Allow run bf16 forward without bf16 instruction support.
-        """
+class CaseWithoutAVX512:
+    def test_unsupported_HW_or_OS(self):
+        trainer = Trainer(max_epochs=1)
+        model = resnet18(num_classes=10)
+
+        with pytest.raises(RuntimeError,
+                           match="Applying IPEX BF16 optimization needs the cpu support avx512."):
+            bf16_model = trainer.quantize(model, precision='bf16', use_ipex=True)
+
+
+class Pytorch1_11:
+    @patch('bigdl.nano.deps.ipex.ipex_inference_bf16_model.PytorchIPEXJITBF16Model._check_cpu_isa', new_callable=PropertyMock)
+    def test_unsupported_HW_or_OS(self, mocked_check_cpu_isa):
+        mocked_check_cpu_isa.return_value = False
+        trainer = Trainer(max_epochs=1)
+        model = resnet18(num_classes=10)
+
+        with pytest.raises(RuntimeError,
+                           match="Applying IPEX BF16 optimization needs the cpu support avx512."):
+            bf16_model = trainer.quantize(model, precision='bf16', use_ipex=True)
+
+    def test_bf16_with_avx512_core(self):
         trainer = Trainer(max_epochs=1)
         model = resnet18(num_classes=10)
 
@@ -47,18 +65,22 @@ class Pytorch1_12:
         y = torch.ones((10,), dtype=torch.long)
 
         bf16_model = trainer.quantize(model, precision='bf16', use_ipex=True)
-        # Debug mode to test functionality, make sure forward is called sucessfully
         y_hat = bf16_model(x)
+
         assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
 
 
-TORCH_VERSION_CLS = Pytorch1_12
+TORCH_VERSION_CLS = Pytorch1_11
 
 if TORCH_VERSION_LESS_1_10:
+    print("ipex 1.9")
     TORCH_VERSION_CLS = Pytorch1_9
+elif not check_avx512():
+    print("IPEX Inference Model Without AVX512")
+    TORCH_VERSION_CLS = CaseWithoutAVX512
 
 
-class TestBF16(TORCH_VERSION_CLS, TestCase):
+class TestIPEXBF16(TORCH_VERSION_CLS, TestCase):
     pass
 
 

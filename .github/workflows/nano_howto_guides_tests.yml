@@ -1,0 +1,112 @@
+name: Nano Unit Tests for How-To Guides Notebooks
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ main ]
+    paths:
+      - 'python/nano/**'
+      - '.github/workflows/nano_howto_guides_tests.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'python/nano/**'
+      - '.github/workflows/nano_howto_guides_tests.yml'
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  nano-howto-guides-inference-test:
+    # The type of runner that the job will run on
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-20.04"]
+        python-version: ["3.7"]
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools==58.0.4
+          python -m pip install --upgrade wheel
+      
+      - name: Run unit tests for Inference PyTorch (ONNXRuntime) how-to guides
+        shell: bash
+        run: |
+          $CONDA/bin/conda create -n howto-guides-inference-pytorch-onnx -y python==3.7.10 setuptools=58.0.4
+          source $CONDA/bin/activate howto-guides-inference-pytorch-onnx
+          $CONDA/bin/conda info
+          bash python/nano/dev/build_and_install.sh linux default false pytorch
+          source bigdl-nano-init
+          pip install pytest nbmake
+          pip install neural-compressor==1.11.0
+          pip install onnx onnxruntime onnxruntime-extensions
+          bash python/nano/tutorial/notebook/inference/pytorch/run-nano-howto-guides-inference-pytorch-tests.sh onnx
+          source $CONDA/bin/deactivate
+          $CONDA/bin/conda remove -n howto-guides-inference-pytorch-onnx --all
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Run unit tests for Inference PyTorch (OpenVINO) how-to guides
+        shell: bash
+        run: |
+          $CONDA/bin/conda create -n howto-guides-inference-pytorch-openvino -y python==3.7.10 setuptools=58.0.4
+          source $CONDA/bin/activate howto-guides-inference-pytorch-openvino
+          $CONDA/bin/conda info
+          bash python/nano/dev/build_and_install.sh linux default false pytorch
+          source bigdl-nano-init
+          pip install pytest nbmake
+          pip install ipykernel==5.5.6
+          pip install openvino-dev
+          bash python/nano/tutorial/notebook/inference/pytorch/run-nano-howto-guides-inference-pytorch-tests.sh openvino
+          source $CONDA/bin/deactivate
+          $CONDA/bin/conda remove -n howto-guides-inference-pytorch-openvino --all
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+  nano-howto-guides-training-test:
+    # The type of runner that the job will run on
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-20.04"]
+        python-version: ["3.7"]
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools==58.0.4
+          python -m pip install --upgrade wheel
+      
+      - name: Run unit tests for Training PyTorch Lightning how-to guides
+        shell: bash
+        run: |
+          $CONDA/bin/conda create -n howto-guides-training-pytorch-lightning -y python==3.7.10 setuptools=58.0.4
+          source $CONDA/bin/activate howto-guides-training-pytorch-lightning
+          $CONDA/bin/conda info
+          bash python/nano/dev/build_and_install.sh linux default false pytorch
+          source bigdl-nano-init
+          pip install pytest nbmake
+          bash python/nano/tutorial/notebook/training/pytorch-lightning/run-nano-howto-guides-training-pytorch-lightning-tests.sh
+          source $CONDA/bin/deactivate
+          $CONDA/bin/conda remove -n howto-guides-training-pytorch-lightning --all
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

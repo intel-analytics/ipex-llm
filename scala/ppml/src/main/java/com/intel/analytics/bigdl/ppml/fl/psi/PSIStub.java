@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceGrpc;
 import com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.*;
 
 import io.grpc.Channel;
+import io.grpc.Internal;
 import io.grpc.StatusRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,10 +33,11 @@ import java.util.UUID;
 public class PSIStub {
     private static final Logger logger = LoggerFactory.getLogger(PSIStub.class);
     private PSIServiceGrpc.PSIServiceBlockingStub stub;
-    public PSIStub(Channel channel) {
+    Integer clientID;
+    public PSIStub(Channel channel, Integer clientID) {
+        this.clientID = clientID;
         stub = PSIServiceGrpc.newBlockingStub(channel);
     }
-    protected String clientID = UUID.randomUUID().toString();
     protected String salt;
     protected int splitSize = 1000000;
 

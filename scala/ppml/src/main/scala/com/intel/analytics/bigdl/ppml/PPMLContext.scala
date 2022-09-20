@@ -205,12 +205,12 @@ object PPMLContext{
         val ip = conf.get("spark.bigdl.kms.ehs.ip")
         val port = conf.get("spark.bigdl.kms.ehs.port")
         val appId = conf.get("spark.bigdl.kms.ehs.id")
-        val appKey = conf.get("spark.bigdl.kms.ehs.key")
-        new EHSMKeyManagementService(ip, port, appId, appKey)
+        val apiKey = conf.get("spark.bigdl.kms.ehs.key")
+        new EHSMKeyManagementService(ip, port, appId, apiKey)
       case KMS_CONVENTION.MODE_SIMPLE_KMS =>
         val id = conf.get("spark.bigdl.kms.simple.id", defaultValue = "simpleAPPID")
         // println(id + "=-------------------")
-        val key = conf.get("spark.bigdl.kms.simple.key", defaultValue = "simpleAPPKEY")
+        val key = conf.get("spark.bigdl.kms.simple.key", defaultValue = "simpleAPIKEY")
         // println(key + "=-------------------")
         SimpleKeyManagementService(id, key)
       case KMS_CONVENTION.MODE_AZURE_KMS =>
@@ -251,12 +251,12 @@ object PPMLContext{
         val ip = conf.get("spark.bigdl.kms.ehs.ip", defaultValue = "0.0.0.0")
         val port = conf.get("spark.bigdl.kms.ehs.port", defaultValue = "5984")
         val appId = conf.get("spark.bigdl.kms.ehs.id", defaultValue = "ehsmAPPID")
-        val appKey = conf.get("spark.bigdl.kms.ehs.key", defaultValue = "ehsmAPPKEY")
-        new EHSMKeyManagementService(ip, port, appId, appKey)
+        val apiKey = conf.get("spark.bigdl.kms.ehs.key", defaultValue = "ehsmAPIKEY")
+        new EHSMKeyManagementService(ip, port, appId, apiKey)
       case KMS_CONVENTION.MODE_SIMPLE_KMS =>
         val id = conf.get("spark.bigdl.kms.simple.id", defaultValue = "simpleAPPID")
         // println(id + "=-------------------")
-        val key = conf.get("spark.bigdl.kms.simple.key", defaultValue = "simpleAPPKEY")
+        val key = conf.get("spark.bigdl.kms.simple.key", defaultValue = "simpleAPIKEY")
         // println(key + "=-------------------")
         SimpleKeyManagementService(id, key)
       case KMS_CONVENTION.MODE_AZURE_KMS =>

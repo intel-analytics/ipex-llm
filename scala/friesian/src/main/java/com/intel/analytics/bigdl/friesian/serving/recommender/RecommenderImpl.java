@@ -33,9 +33,9 @@ public class RecommenderImpl {
     private static final Logger logger = LogManager.getLogger(RecommenderImpl.class.getName());
     private static RecommenderImpl instance = null;
     private MetricRegistry metrics = new MetricRegistry();
-    private RecallGrpc.RecallBlockingStub recallStub;
-    private FeatureGrpc.FeatureBlockingStub featureStub;
-    private RankingGrpc.RankingBlockingStub rankingStub;
+    private final RecallGrpc.RecallBlockingStub recallStub;
+    private final FeatureGrpc.FeatureBlockingStub featureStub;
+    private final RankingGrpc.RankingBlockingStub rankingStub;
     Timer overallTimer = metrics.timer("recommend.overall");
     Timer recallTimer = metrics.timer("recommend.recall");
     Timer itemFeatureTimer = metrics.timer("recommend.feature.item");
@@ -101,8 +101,9 @@ public class RecommenderImpl {
             candidates = this.searchCandidates(id, canK);
         } catch (StatusRuntimeException e) {
             e.printStackTrace();
-            return new IDProbList(Status.Code.UNAVAILABLE, "recall service unavailable: "
-                    + e.getMessage());
+            return new IDProbList(Status.Code.UNAVAILABLE,
+                    "recall service unavailable cause: " + e.getCause().toString() +
+                            ", message: " + e.getMessage());
         }
 
         FeatureProto.Features userFeature;
@@ -110,8 +111,9 @@ public class RecommenderImpl {
             userFeature = this.getUserFeature(id);
         } catch (StatusRuntimeException e) {
             e.printStackTrace();
-            return new IDProbList(Status.Code.UNAVAILABLE, "feature service unavailable: "
-                    + e.getMessage());
+            return new IDProbList(Status.Code.UNAVAILABLE,
+                    "feature service unavailable cause: " + e.getCause().toString() +
+                    ", message: " + e.getMessage());
         }
 
         FeatureProto.Features itemFeature;
@@ -119,8 +121,9 @@ public class RecommenderImpl {
             itemFeature = this.getItemFeatures(candidates);
         } catch (StatusRuntimeException e) {
             e.printStackTrace();
-            return new IDProbList(Status.Code.UNAVAILABLE, "feature service unavailable: "
-                    + e.getMessage());
+            return new IDProbList(Status.Code.UNAVAILABLE,
+                    "feature service unavailable cause: " + e.getCause().toString() +
+                    ", message: " + e.getMessage());
         }
 
         Tuple2<int[], Table[]> itemInputTuple;
@@ -136,8 +139,9 @@ public class RecommenderImpl {
             idProbList = this.inferenceAndRanking(itemInputTuple, k);
         } catch (StatusRuntimeException e) {
             e.printStackTrace();
-            return new IDProbList(Status.Code.UNAVAILABLE, "ranking service unavailable: "
-                    + e.getMessage());
+            return new IDProbList(Status.Code.UNAVAILABLE,
+                    "ranking service unavailable cause: " + e.getCause().toString() +
+                    ", message: " + e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
             return new IDProbList(Status.Code.UNAVAILABLE, e.getMessage());
@@ -191,7 +195,8 @@ public class RecommenderImpl {
         return itemFeature;
     }
 
-    private Tuple2<int[], Table[]> buildRankingInput(FeatureProto.Features userFeature, FeatureProto.Features itemFeature) {
+    private Tuple2<int[], Table[]> buildRankingInput(FeatureProto.Features userFeature,
+                                                     FeatureProto.Features itemFeature) {
         Timer.Context preprocessContext = preprocessTimer.time();
         Tuple2<int[], Table[]> itemInputTuple;
         try {
@@ -260,20 +265,26 @@ public class RecommenderImpl {
     }
 
     public String getClientMetrics() {
-        Empty request = Empty.newBuilder().build();
-        StringBuilder sb = new StringBuilder();
-        String vecMetrics = recallStub.getMetrics(request).getStr();
-        recallStub.resetMetrics(request);
-        sb.append("Recall Service backend metrics:\n");
-        sb.append(vecMetrics).append("\n\n");
-        String feaMetrics = featureStub.getMetrics(request).getStr();
-        featureStub.resetMetrics(request);
-        sb.append("Feature Service backend metrics:\n");
-        sb.append(feaMetrics).append("\n\n");
-        String infMetrics = rankingStub.getMetrics(request).getStr();
-        rankingStub.resetMetrics(request);
-        sb.append("Inference Service backend metrics:\n");
-        sb.append(infMetrics).append("\n\n");
-        return sb.toString();
+        try {
+            Empty request = Empty.newBuilder().build();
+            StringBuilder sb = new StringBuilder();
+            String vecMetrics = recallStub.getMetrics(request).getStr();
+            recallStub.resetMetrics(request);
+            sb.append("Recall Service backend metrics:\n");
+            sb.append(vecMetrics).append("\n\n");
+            String feaMetrics = featureStub.getMetrics(request).getStr();
+            featureStub.resetMetrics(request);
+            sb.append("Feature Service backend metrics:\n");
+            sb.append(feaMetrics).append("\n\n");
+            String infMetrics = rankingStub.getMetrics(request).getStr();
+            rankingStub.resetMetrics(request);
+            sb.append("Inference Service backend metrics:\n");
+            sb.append(infMetrics).append("\n\n");
+            return sb.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.warn("GetClientMetrics encounter an error: "+ e.getMessage());
+            return "{'errorMessage': " + e.getCause().toString() + "}";
+        }
     }
 }

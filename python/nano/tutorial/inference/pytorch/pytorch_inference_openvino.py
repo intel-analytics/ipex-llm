@@ -21,7 +21,6 @@
 # ```
 
 import torch
-import torch
 from torchvision.models import resnet18
 
 if __name__ == "__main__":
@@ -35,15 +34,16 @@ if __name__ == "__main__":
     print(predictions)
 
     # Accelerated Inference Using OpenVINO
-    from bigdl.nano.pytorch import Trainer
-    ov_model = Trainer.trace(model_ft,
-                             accelerator="openvino",
-                             input_sample=torch.rand(1, 3, 224, 224))
+    from bigdl.nano.pytorch import InferenceOptimizer
+    ov_model = InferenceOptimizer.trace(model_ft,
+                                        accelerator="openvino",
+                                        input_sample=torch.rand(1, 3, 224, 224))
     y_hat = ov_model(x)
     predictions = y_hat.argmax(dim=1)
     print(predictions)
 
     # Save Optimized Model
+    from bigdl.nano.pytorch import Trainer
     Trainer.save(ov_model, "./optimized_model")
 
     # Load the Optimized Model

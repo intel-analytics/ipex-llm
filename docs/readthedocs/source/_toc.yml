@@ -29,8 +29,9 @@ subtrees:
       - file: doc/Nano/QuickStart/tensorflow_train
       - file: doc/Nano/QuickStart/tensorflow_inference
       - file: doc/Nano/QuickStart/hpo
-      - file: doc/Nano/Overview/known_issues
       - file: doc/Nano/QuickStart/index
+      - file: doc/Nano/Howto/index
+      - file: doc/Nano/Overview/known_issues
 
   - caption: DLlib
     entries:
@@ -52,13 +53,11 @@ subtrees:
   - caption: Chronos
     entries:
       - file: doc/Chronos/Overview/chronos
-      - file: doc/Chronos/Overview/windows_guide
       - file: doc/Chronos/Overview/quick-tour
-      - file: doc/Chronos/Overview/deep_dive
       - file: doc/Chronos/Howto/index
       - file: doc/Chronos/QuickStart/index
+      - file: doc/Chronos/Overview/deep_dive
       - file: doc/Chronos/Overview/chronos_known_issue
-
 
   - caption: PPML
     entries:

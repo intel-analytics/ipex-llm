@@ -3,13 +3,54 @@
 ### **1. Overview**
 _BigDL-Chronos_ (_Chronos_ for short) is an application framework for building a fast, accurate and scalable time series analysis application.
 
-You can use _Chronos_ to do:
+You can use _Chronos_ to:
 
-- **Data pre/post-processing and feature generation** (using [TSDataset](./data_processing_feature_engineering.html))
-- **Time Series Forecasting** (using [Standalone Forecasters](./forecasting.html#use-standalone-forecaster-pipeline), [Auto Models](./forecasting.html#use-auto-forecasting-model) (with HPO) or [AutoTS](./forecasting.html#use-autots-pipeline) (full AutoML enabled pipelines))
-- **Anomaly Detection** (using [Anomaly Detectors](./anomaly_detection.html#anomaly-detection))
-- **Synthetic Data Generation** (using [Simulators](./simulation.html#generate-synthetic-data))
-- **Speed up or tune your customized time-series model** (using TSTrainer and [AutoTS](./forecasting.html#use-autots-pipeline))
+```eval_rst
+.. grid:: 3
+    :gutter: 1
+
+    .. grid-item-card::
+        :class-footer: sd-bg-light
+
+        **Forecasting**
+        ^^^
+
+        .. image:: ../Image/forecasting.svg
+            :width: 200
+            :alt: Alternative text
+
+        +++
+
+        Predict future using history data.
+
+    .. grid-item-card::
+        :class-footer: sd-bg-light
+
+        **Anomaly Detection**
+        ^^^
+
+        .. image:: ../Image/anomaly_detection.svg
+            :width: 200
+            :alt: Alternative text
+
+        +++
+
+        Discover unexpected items in data.
+    
+    .. grid-item-card::
+        :class-footer: sd-bg-light
+
+        **Simulation**
+        ^^^
+
+        .. image:: ../Image/simulation.svg
+            :width: 200
+            :alt: Alternative text
+
+        +++
+
+        Generate similar data as history data.
+```
 
 ---
 ### **2. Install**
@@ -20,58 +61,68 @@ You can use _Chronos_ to do:
     <link rel="stylesheet" type="text/css" href="../../../_static/css/chronos_installation_guide.css" />
 
     <div class="displayed">
-        <table id="table-1" style="margin:auto">
-            <thead>
-                <th>AI Framework</th>
-                <th colspan="1"><button id="pytorch"
-                        title="Use PyTorch as deep learning models' backend. Most of the model support and works better under PyTorch.">PyTorch</br>(Recommended)</button>
-                </th>
-                <th colspan="1"><button id="tensorflow"
-                        title="Use Tensorflow as deep learning models' backend.">Tensorflow</button></th>
-                <th colspan="1"><button id="prophet" title="For Prophet model.">Prophet</button></th>
-                <th colspan="1"><button id="pmdarima" title="For ARIMA model.">ARIMA</button></th>
-            </thead>
+    
+        <table id="table-1">
             <tbody>
-
                 <tr>
-                    <td>OS</td>
+                    <td colspan="1">Functionality</td>
+                    <td colspan="1"><button id="Forecasting">Forecasting</button></td>
+                    <td colspan="2"><button id="Anomaly" style="font-size: 15px">Anomaly Detection</button></td>
+                    <td colspan="1"><button id="Simulation">Simulation</button></td>
+                </tr>
+                <tr id="model">
+                    <td colspan="1">Model</td>
+                    <td colspan="1"><button id="Deep_learning_models" style="font-size: 13px;">Deep learning models</button></td>
+                    <td colspan="2"><button id="Prophet">Prophet</button></td>
+                    <td colspan="1"><button id="ARIMA">ARIMA</button></td>
+                </tr>
+                <tr>
+                    <td colspan="1">DL<br>framework</td>
+                    <td colspan="2"><button id="pytorch"
+                            title="Use PyTorch as deep learning models' backend. Most of the model support and works better under PyTorch.">PyTorch (Recommended)</button>
+                    </td>
+                    <td colspan="2"><button id="tensorflow"
+                            title="Use Tensorflow as deep learning models' backend.">Tensorflow</button></td>
+                </tr>
+                <tr>
+                    <td colspan="1">OS</td>
                     <td colspan="2"><button id="linux" title="Ubuntu/CentOS is recommended">Linux</button></td>
                     <td colspan="2"><button id="win" title="WSL is needed for Windows users">Windows</button></td>
                 </tr>
 
                 <tr>
-                    <td>Auto Tuning</td>
+                    <td colspan="1">Auto Tuning</td>
                     <td colspan="2" title="I don't need any hyperparameter auto tuning feature."><button
-                            id="automlno">No need</button></td>
+                            id="automlno">No</button></td>
                     <td colspan="2" title="I need chronos to help me tune the hyperparameters."><button
-                            id="automlyes">Needed</button></td>
+                            id="automlyes">Yes</button></td>
                 </tr>
 
 
                 <tr>
-                    <td>Hardware</td>
+                    <td colspan="1">Hardware</td>
                     <td colspan="2"><button id="singlenode" title="For users use laptop/single node server.">Single
                             node</button></td>
                     <td colspan="2"><button id="cluster" title="For users use K8S/Yarn Cluster.">Cluster</button></td>
                 </tr>
 
                 <tr>
-                    <td>Release</td>
+                    <td colspan="1">Package</td>
                     <td colspan="2"><button id="pypi" title="For users use pip to install chronos.">Pip</button></td>
                     <td colspan="2"><button id="docker" title="For users use docker image.">Docker</button></td>
                 </tr>
 
                 <tr>
-                    <td>Build</td>
-                    <td colspan="2"><button id="stable"
-                            title="For users would like to deploy chronos in their production">Stable (2.0.0)</button>
-                    </td>
+                    <td colspan="1">Version</td>
                     <td colspan="2"><button id="nightly"
-                            title="For users would like to try chronos's latest feature">Nightly (2.1.0b)</button></td>
+                            title="For users would like to try chronos's latest feature">Nightly (2.1.0b)</button>
+                    </td>
+                    <td colspan="2"><button id="stable"
+                            title="For users would like to deploy chronos in their production">Stable (2.0.0)</button></td>
                 </tr>
 
                 <tr>
-                    <td>Install CMD</td>
+                    <td colspan="1">Install CMD</td>
                     <td colspan="4">
                         <div id="cmd" style="text-align: left;">NA</div>
                     </td>
@@ -90,15 +141,17 @@ When you install `bigdl-chronos` from PyPI. We recommend to install with a conda
 ```bash
 conda create -n my_env python=3.7 setuptools=58.0.4
 conda activate my_env
+# click the installation panel above to find which installation option to use
 pip install --pre --upgrade bigdl-chronos[pytorch]  # or other options you may want to use
-source bigdl-nano-init
+source bigdl-nano-init  # accelerate the conda env
 ```
+
 #### **2.2 Tensorflow backend**
 Tensorflow is one of the supported backend of Chronos in nightly release version, while it can not work alone without pytorch in Chronos for now. We will fix it soon. If you want to use tensorflow backend, please
 ```bash
 pip install --pre --upgrade bigdl-nano[tensorflow]
 ```
-after you install the pytorch backend chronos.
+**after you install the pytorch backend chronos.**
 
 #### **2.3 OS and Python version requirement**
 
@@ -145,7 +198,7 @@ after you install the pytorch backend chronos.
 
         +++
 
-        `Data process <./data_processing_feature_engineering.html>`_ / 
+        `Data <./data_processing_feature_engineering.html>`_ / 
         `Forecast <./forecasting.html>`_ / 
         `Detect <./anomaly_detection.html>`_ / 
         `Simulate <./simulation.html>`_
@@ -156,14 +209,15 @@ after you install the pytorch backend chronos.
     .. grid-item-card::
         :class-footer: sd-bg-light
 
-        **How-to-Guide**
+        **How-to-Guide** / **Example**
         ^^^
 
         If you are meeting with some specific problems during the usage, how-to guides are good place to be checked.
+        Examples provides short, high quality use case that users can emulated in their own works.
 
         +++
 
-        Work In Progress
+        `How-to-Guide <../Howto/index.html>`_ / `Example <../QuickStart/index.html>`_
 
     .. grid-item-card::
         :class-footer: sd-bg-light
@@ -178,51 +232,3 @@ after you install the pytorch backend chronos.
         `API Document <../../PythonAPI/Chronos/index.html>`_
 
 ```
-
----
-
-### **4. Examples and Demos**
-- Quickstarts
-    - [Use AutoTSEstimator for Time-Series Forecasting](../QuickStart/chronos-autotsest-quickstart.html)
-    - [Use TSDataset and Forecaster for Time-Series Forecasting](../QuickStart/chronos-tsdataset-forecaster-quickstart.html)
-    - [Use Anomaly Detector for Unsupervised Anomaly Detection](../QuickStart/chronos-anomaly-detector.html)
-- Examples
-    - [Use AutoLSTM on nyc taxi dataset][autolstm_nyc_taxi]
-    - [Use AutoProphet on nyc taxi dataset][autoprophet_nyc_taxi]
-    - [High dimension time series forecasting with Chronos TCMFForecaster][run_electricity]
-    - [Use distributed training with Chronos Seq2SeqForecaster][distributed_training_network_traffic]
-    - [Use ONNXRuntime to accelerate the inference of AutoTSEstimator][onnx_autotsestimator_nyc_taxi]
-    - [Use ONNXRuntime to accelerate the inference of Seq2SeqForecaster][onnx_forecaster_network_traffic]
-    - [Generate synthetic data with DPGANSimulator in a data-driven fashion][simulator]
-    - [Quantizate your forecaster to speed up inference][quantization]
-- Use cases
-    - [Unsupervised Anomaly Detection][AIOps_anomaly_detect_unsupervised]
-    - [Unsupervised Anomaly Detection based on Forecasts][AIOps_anomaly_detect_unsupervised_forecast_based]
-    - [Stock Price Prediction with LSTM][stock_prediction]
-    - [Stock Price Prediction with ProphetForecaster and AutoProphet][stock_prediction_prophet]
-    - [Network Traffic Forecasting with AutoTSEstimator][network_traffic_autots_forecasting]
-    - [Network Traffic Forecasting (using multivariate time series data)][network_traffic_model_forecasting]
-    - [Network Traffic Forecasting (using multistep time series data)][network_traffic_multivariate_multistep_tcnforecaster]
-    - [Network Traffic Forecasting with Customized Model][network_traffic_autots_customized_model]
-    - [Help pytorch-forecasting improve the training speed of DeepAR model][pytorch_forecasting_deepar]
-    - [Help pytorch-forecasting improve the training speed of TFT model][pytorch_forecasting_tft]
-
-<!--Reference links in article-->
-[autolstm_nyc_taxi]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/example/auto_model/autolstm_nyc_taxi.py>
-[autoprophet_nyc_taxi]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/example/auto_model/autoprophet_nyc_taxi.py>
-[run_electricity]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/example/tcmf/run_electricity.py>
-[distributed_training_network_traffic]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/example/distributed/distributed_training_network_traffic.py>
-[onnx_autotsestimator_nyc_taxi]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/example/onnx/onnx_autotsestimator_nyc_taxi.py>
-[onnx_forecaster_network_traffic]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/example/onnx/onnx_forecaster_network_traffic.py>
-[simulator]: <https://github.com/intel-analytics/BigDL/tree/main/python/chronos/example/simulator>
-[AIOps_anomaly_detect_unsupervised]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.ipynb>
-[AIOps_anomaly_detect_unsupervised_forecast_based]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.ipynb>
-[stock_prediction]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/fsi/stock_prediction.ipynb>
-[stock_prediction_prophet]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/fsi/stock_prediction_prophet.ipynb>
-[network_traffic_autots_forecasting]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting.ipynb>
-[network_traffic_model_forecasting]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.ipynb>
-[network_traffic_multivariate_multistep_tcnforecaster]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.ipynb>
-[network_traffic_autots_customized_model]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_autots_customized_model.ipynb>
-[quantization]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/example/quantization/quantization_tcnforecaster_nyc_taxi.py>
-[pytorch_forecasting_deepar]: <https://github.com/intel-analytics/BigDL/tree/main/python/chronos/use-case/pytorch-forecasting/DeepAR>
-[pytorch_forecasting_tft]: <https://github.com/intel-analytics/BigDL/tree/main/python/chronos/use-case/pytorch-forecasting/TFT>
