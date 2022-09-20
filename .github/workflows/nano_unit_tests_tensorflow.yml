@@ -11,8 +11,9 @@ on:
   pull_request:
     branches: [ main ]
     paths:
-      - 'python/nano/**'
-      - '.github/workflows/nano_unit_tests_tensorflow.yml'
+      #- 'python/nano/**'
+      #- '.github/workflows/nano_unit_tests_tensorflow.yml'
+      - 'app/**'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
