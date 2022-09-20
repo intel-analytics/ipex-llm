@@ -2,16 +2,19 @@ name: 'Run PPML Occlum ExampleTests'
 description: 'Run PPML Occlum ExampleTests'
 runs:
   using: "composite"
-  env:
-    status_1_spark_pi: 1
-    status_2_bigdl_lenet_mnist: 1
-    status_3_bigdl_resnet_cifar10: 1
-    status_4_spark_tpch: 1
-    status_5_spark_ut: 0
-    status_6_spark_xgboost: 0
-    status_7_spark_gbt: 1
-
   steps:
+    - name: Set environment variable
+      run: |
+        echo "WORKFLOW_VARIABLE=$(echo ${Env:LOCAL_VARIABLE})" >> $Env:GITHUB_ENV
+      env:
+        status_1_spark_pi: 1
+        status_2_bigdl_lenet_mnist: 1
+        status_3_bigdl_resnet_cifar10: 1
+        status_4_spark_tpch: 1
+        status_5_spark_ut: 0
+        status_6_spark_xgboost: 1
+        status_7_spark_gbt: 1
+
     - name: Set environment variables
       shell: bash
       run: |
@@ -53,7 +56,7 @@ runs:
           $IMAGE \
 
     - name: status_1_spark_pi 
-      if: ${{status_1_spark_pi != 0}}
+      if: ${{$Env:GITHUB_ENV.status_1_spark_pi != 0}}
       shell: bash
       run: |
         echo "################## start spark pi"
@@ -64,7 +67,7 @@ runs:
         status_1_spark_pi=$(echo $?)
 
     - name: status_2_bigdl_lenet_mnist
-      if: ${{status_2_bigdl_lenet_mnist != 0}}
+      if: ${{$Env:GITHUB_ENV.status_2_bigdl_lenet_mnist != 0}}
       shell: bash
       run: |
         echo "################## start bigdl lenet mnist"
@@ -76,7 +79,7 @@ runs:
         status_2_bigdl_lenet_mnist=$(echo $?)
 
     - name: status_3_bigdl_resnet_cifar10
-      if: ${{status_3_bigdl_resnet_cifar10 != 0}}
+      if: ${{$Env:GITHUB_ENV.status_3_bigdl_resnet_cifar10 != 0}}
       shell: bash
       run: |
         echo "################## start bigdl resnet cifar10"
@@ -88,7 +91,7 @@ runs:
        status_3_bigdl_resnet_cifar10=$(echo $?)
 
     - name: status_4_spark_tpc
-      if: ${{status_4_spark_tpc != 0}}
+      if: ${{$Env:GITHUB_ENV.status_4_spark_tpc != 0}}
       shell: bash
       run: |
         echo "################## start spark tpch"
@@ -104,7 +107,7 @@ runs:
         status_4_spark_tpch=$(echo $?)
 
     - name: status_5_spark_ut
-      if: ${{status_5_spark_ut != 0}}
+      if: ${{$Env:GITHUB_ENV.status_5_spark_ut != 0}}
       shell: bash
       run: |
         echo "################## start spark unit test"
@@ -116,7 +119,7 @@ runs:
         status_5_spark_ut=$(echo $?)
 
     - name: status_6_spark_xgboost
-      if: ${{status_6_spark_xgboost != 0}}
+      if: ${{$Env:GITHUB_ENV.status_6_spark_xgboost != 0}}
       shell: bash
       run: |
         echo "################## start spark xgboost"
@@ -128,7 +131,7 @@ runs:
         status_6_spark_xgboost=$(echo $?)
 
     - name: status_7_spark_gbt
-      if: ${{status_7_spark_gbt != 0}}
+      if: ${{$Env:GITHUB_ENV.status_7_spark_gbt != 0}}
       shell: bash
       run: |
         echo "################## start spark gbt"
@@ -147,6 +150,6 @@ runs:
         echo "status_3_bigdl_resnet_cifar10 $status_3_bigdl_resnet_cifar10"
         echo "status_4_spark_tpch $status_4_spark_tpch"
         #echo "status_5_spark_ut $status_5_spark_ut"
-        #echo "status_6_spark_xgboost $status_6_spark_xgboost"
+        echo "status_6_spark_xgboost $status_6_spark_xgboost"
         echo "status_7_spark_gbt $status_7_spark_gbt"
 
