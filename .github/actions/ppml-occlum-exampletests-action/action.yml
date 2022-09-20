@@ -40,7 +40,7 @@ runs:
       shell: bash
       run: |
         echo $IMAGE
-        docker pull $IMAGE
+        #docker pull $IMAGE
 
     - name: Remove old container
       shell: bash
