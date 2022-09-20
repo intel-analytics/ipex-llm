@@ -74,7 +74,7 @@ curl -v -k -G "https://<kms_ip>:9000/ehsm?Action=Enroll"
 
 #### 3.3 Attest EHSM Server
 
-##### 3.3.1 Start a Standalone BigDL container
+##### 3.3.1 Start a BigDL client container
 
 First, start a bigdl container, which uses the bigdl base image build before.
 
