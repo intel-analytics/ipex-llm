@@ -229,7 +229,7 @@ You can change the configuration in [start-spark-local.sh](https://github.com/in
 -i /host/data        // -i means inputpath of training data
 -s /host/data/model  // -s means savepath of model
 -t 2                 // -t means threads num
--r 100               // -r means Roudnd num
+-r 100               // -r means Round num
 -d 2                 // -d means maxDepth
 -w 1                 // -w means Workers num
 ```
