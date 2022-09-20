@@ -4,6 +4,7 @@ runs:
   using: "composite"
   steps:
     - name: Set environment variable
+      shell: bash
       run: |
         echo "WORKFLOW_VARIABLE=$(echo ${Env:LOCAL_VARIABLE})" >> $Env:GITHUB_ENV
       env:
@@ -20,7 +21,7 @@ runs:
       run: |
         whoami
 
-        export LOCAL_IP=172.168.0.208
+        export LOCAL_IP=172.168.0.207
         export CPUSET="12-16"
         export CONTAINER_NAME="spark-occlum-jenkins"
 
@@ -56,7 +57,7 @@ runs:
           $IMAGE \
 
     - name: status_1_spark_pi 
-      if: ${{$Env:GITHUB_ENV.status_1_spark_pi != 0}}
+      if: ${{status_1_spark_pi != 0}}
       shell: bash
       run: |
         echo "################## start spark pi"
@@ -67,7 +68,7 @@ runs:
         status_1_spark_pi=$(echo $?)
 
     - name: status_2_bigdl_lenet_mnist
-      if: ${{$Env:GITHUB_ENV.status_2_bigdl_lenet_mnist != 0}}
+      if: ${{status_2_bigdl_lenet_mnist != 0}}
       shell: bash
       run: |
         echo "################## start bigdl lenet mnist"
@@ -79,7 +80,7 @@ runs:
         status_2_bigdl_lenet_mnist=$(echo $?)
 
     - name: status_3_bigdl_resnet_cifar10
-      if: ${{$Env:GITHUB_ENV.status_3_bigdl_resnet_cifar10 != 0}}
+      if: ${{status_3_bigdl_resnet_cifar10 != 0}}
       shell: bash
       run: |
         echo "################## start bigdl resnet cifar10"
@@ -91,7 +92,7 @@ runs:
        status_3_bigdl_resnet_cifar10=$(echo $?)
 
     - name: status_4_spark_tpc
-      if: ${{$Env:GITHUB_ENV.status_4_spark_tpc != 0}}
+      if: ${{status_4_spark_tpc != 0}}
       shell: bash
       run: |
         echo "################## start spark tpch"
@@ -107,7 +108,7 @@ runs:
         status_4_spark_tpch=$(echo $?)
 
     - name: status_5_spark_ut
-      if: ${{$Env:GITHUB_ENV.status_5_spark_ut != 0}}
+      if: ${{status_5_spark_ut != 0}}
       shell: bash
       run: |
         echo "################## start spark unit test"
@@ -119,7 +120,7 @@ runs:
         status_5_spark_ut=$(echo $?)
 
     - name: status_6_spark_xgboost
-      if: ${{$Env:GITHUB_ENV.status_6_spark_xgboost != 0}}
+      if: ${{status_6_spark_xgboost != 0}}
       shell: bash
       run: |
         echo "################## start spark xgboost"
@@ -131,7 +132,7 @@ runs:
         status_6_spark_xgboost=$(echo $?)
 
     - name: status_7_spark_gbt
-      if: ${{$Env:GITHUB_ENV.status_7_spark_gbt != 0}}
+      if: ${{status_7_spark_gbt != 0}}
       shell: bash
       run: |
         echo "################## start spark gbt"
