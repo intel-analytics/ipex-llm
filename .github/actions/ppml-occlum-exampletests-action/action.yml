@@ -72,7 +72,7 @@ runs:
       run: echo $status_1_spark_pi
 
     - name: status_1_spark_pi 
-      if: ${{$Env:status_1_spark_pi != 0}}
+      if: ${{${Env:status_1_spark_pi} != 0}}
       shell: bash
       run: |
         echo "################## start spark pi"
