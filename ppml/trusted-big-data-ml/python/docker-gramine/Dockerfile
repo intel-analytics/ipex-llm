@@ -251,6 +251,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     chmod a+x /ppml/trusted-big-data-ml/init.sh && \
     chmod a+x /ppml/trusted-big-data-ml/clean.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/* && \
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/*.sh && \
 # Add spark test-jars and test-classes
     cd /opt && \
     wget https://github.com/apache/spark/archive/refs/tags/v$SPARK_VERSION.zip && \
