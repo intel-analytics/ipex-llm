@@ -300,11 +300,15 @@ class AutoformerForecaster(Forecaster):
             self.trainer.reset_train_val_dataloaders(self.internal)
 
     def search_summary(self):
+        """
+        Return search summary of HPO.
+        """
         # add tuning check
         invalidOperationError(self.use_hpo, "No search summary when HPO is disabled.")
         return self.trainer.search_summary()
 
-    def fit(self, data, epochs=1, batch_size=32, use_trial_id=None):
+    def fit(self, data, validation_data=None, epochs=1, batch_size=32, validation_mode='output',
+            earlystop_patience=1, use_trial_id=None):
         """
         Fit(Train) the forecaster.
 
@@ -316,10 +320,36 @@ class AutoformerForecaster(Forecaster):
                     be sure to set label_len > 0 and time_enc = True
                | 3. A bigdl.chronos.data.tsdataset.TSDataset instance
 
+        :param validation_data: Validation sample for validation loop. Defaults to 'None'.
+               If you do not input data for 'validation_data', the validation_step will be skipped.
+               The validation_data support following formats:
+
+               | 1. numpy ndarrays: generate from `TSDataset.roll`,
+                    be sure to set label_len > 0 and time_enc = True
+               | 2. pytorch dataloader: generate from `TSDataset.to_torch_data_loader`,
+                    be sure to set label_len > 0 and time_enc = True
+
         :param epochs: Number of epochs you want to train. The value defaults to 1.
         :param batch_size: Number of batch size you want to train. The value defaults to 32.
                if you input a pytorch dataloader for `data`, the batch_size will follow the
                batch_size setted in `data`.
+        :param validation_mode:  A str represent the operation mode while having 'validation_data'.
+               Defaults to 'output'. The validation_mode includes the following types:
+
+               | 1. output:
+               | If you choose 'output' for validation_mode, it will return a dict that records the
+               | average validation loss of each epoch.
+               |
+               | 2. earlystop:
+               | Monitor the val_loss and stop training when it stops improving.
+               |
+               | 3. best_epoch:
+               | Monitor the val_loss. And load the checkpoint of the epoch with the smallest
+               | val_loss after the training.
+
+        :param earlystop_patience: Number of checks with no improvement after which training will
+               be stopped. It takes effect when 'validation_mode' is 'earlystop'. Under the default
+               configuration, one check happens after every training epoch.
         :param use_trail_id: choose a internal according to trial_id, which is used only
                in multi-objective search.
         """

@@ -208,6 +208,9 @@ class BasePytorchForecaster(Forecaster):
             self.tune_trainer.reset_train_val_dataloaders(self.internal)
 
     def search_summary(self):
+        """
+        Return search summary of HPO.
+        """
         # add tuning check
         invalidOperationError(self.use_hpo, "No search summary when HPO is disabled.")
         return self.tune_trainer.search_summary()
