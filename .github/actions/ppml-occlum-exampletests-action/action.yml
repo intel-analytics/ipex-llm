@@ -56,6 +56,14 @@ runs:
           -e SGX_MEM_SIZE=$SGX_MEM_SIZE \
           $IMAGE \
 
+    - name: test the env
+      shell: bash
+      run: env
+
+    - name: print status 1
+      shell: bash
+      run: echo $status_1_spark_pi
+
     - name: status_1_spark_pi 
       if: ${{$status_1_spark_pi != 0}}
       shell: bash
@@ -102,9 +110,9 @@ runs:
           sed -i 's#spark.executor.instances=8#spark.executor.instances=2#g' run_spark_on_occlum_glibc.sh && \
           sed -i 's#executor-memory 8G#executor-memory 2G#g' run_spark_on_occlum_glibc.sh && \
           sed -i 's#-Xmx78g -Xms78g#-Xmx10g -Xms10g#g' run_spark_on_occlum_glibc.sh && \
-          sed -i 's#/host/data /host/data/output#/host/data/tpch /host/data/output#g' run_spark_on_occlum_glibc.sh && \
+          sed -i 's#/host/data /host/data/output#/host/data/tpch /host/data/output 1#g' run_spark_on_occlum_glibc.sh && \
           bash run_spark_on_occlum_glibc.sh tpch | tee spark-tpch.log && \
-          cat spark-tpch.log | egrep '22 finished'"
+          cat spark-tpch.log | egrep '1 finished'"
         status_4_spark_tpch=$(echo $?)
 
     - name: status_5_spark_ut
