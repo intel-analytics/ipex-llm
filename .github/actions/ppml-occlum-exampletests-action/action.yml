@@ -50,7 +50,7 @@ runs:
         if [ $status_1_spark_pi -ne 0 ]; then
         echo "################## start spark pi"
         echo "example.1 spark pi"
-        sudo docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
+        docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
              bash run_spark_on_occlum_glibc.sh pi | tee test-spark-pi-sgx.log && \
              cat test-spark-pi-sgx.log | egrep 'Pi is roughly 3'"
         status_1_spark_pi=$(echo $?)
@@ -59,7 +59,7 @@ runs:
         if [ $status_2_bigdl_lenet_mnist -ne 0 ]; then
         echo "################## start bigdl lenet mnist"
         echo "example.2 bigdl lenet mnist"
-        sudo docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
+        docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
              sed -i 's#        run_spark_lenet_mnist#        run_spark_lenet_mnist -b 4 -e 1#g' run_spark_on_occlum_glibc.sh && \
              bash run_spark_on_occlum_glibc.sh lenet -b 8 -e 1 | tee bigdl-lenet-mnist.log && \
              cat bigdl-lenet-mnist.log | egrep 'records/second. Loss is'"
@@ -70,7 +70,7 @@ runs:
         if [ $status_3_bigdl_resnet_cifar10 -ne 0 ]; then
         echo "################## start bigdl resnet cifar10"
         echo "example.3 bigdl resnet cifar10"
-        sudo docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
+        docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
              sed -i 's#        run_spark_resnet_cifar#        run_spark_resnet_cifar --nEpochs 1#g' run_spark_on_occlum_glibc.sh && \
              bash run_spark_on_occlum_glibc.sh resnet | tee bigdl-resnet-cifar10.log && \
              cat bigdl-resnet-cifar10.log | egrep 'Current momentum is'"
@@ -80,7 +80,7 @@ runs:
         if [ $status_4_spark_tpch -ne 0 ]; then
         echo "################## start spark tpch"
         echo "example.4 spark tpch"
-        sudo docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
+        docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
              sed -i 's#spark.driver.memory=12g#spark.driver.memory=2g#g' run_spark_on_occlum_glibc.sh && \
              sed -i 's#spark.executor.instances=8#spark.executor.instances=2#g' run_spark_on_occlum_glibc.sh && \
              sed -i 's#executor-memory 8G#executor-memory 2G#g' run_spark_on_occlum_glibc.sh && \
@@ -94,7 +94,7 @@ runs:
         if [ $status_5_spark_ut -ne 0 ]; then
         echo "################## start spark unit test"
         echo "example.5 spark unit test"
-        sudo docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
+        docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
              sed -i 's#192.168.0.111#$LOCAL_IP#g' run_spark_on_occlum_glibc.sh && \
              bash run_spark_on_occlum_glibc.sh ut | tee spark-unit-test.log && \
              cat spark-unit-test.log | egrep 'FINISHED o.a.s.status.api.v1.sql.SqlResourceSuite:'"
