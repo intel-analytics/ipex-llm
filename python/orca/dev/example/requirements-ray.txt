@@ -22,3 +22,6 @@ argparse
 Pillow
 pyarrow==4.0.1
 h5py==2.10.0
+fsspec==2021.9.0
+scikit-optimize==0.8.1
+pandas==1.1.5
