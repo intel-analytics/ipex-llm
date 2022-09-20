@@ -82,6 +82,7 @@ First, start a bigdl container, which uses the bigdl base image build before.
 export SPARK_SECURITY_KEYS_PATH=YOUR_LOCAL_SSL_KEYS_FOLDER_PATH
 export LOCAL_IP=YOUR_LOCAL_IP
 export BIGDL_BASE_IMAGE=YOUR_BIGDL_BASE_IMAGE_BUILT_BEFORE
+export PCCS_URL=YOUR_PCCS_URL # format like https://1.2.3.4:xxxx, obtained from KMS services or a self-deployed one
 
 sudo docker run -itd \
     --privileged \
@@ -92,6 +93,7 @@ sudo docker run -itd \
     -v $SPARK_SECURITY_KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
     --name=gramine-verify-worker \
     -e LOCAL_IP=$LOCAL_IP \
+    -e PCCS_URL=$PCCS_URL \
     $BIGDL_BASE_IMAGE bash
 ```
 

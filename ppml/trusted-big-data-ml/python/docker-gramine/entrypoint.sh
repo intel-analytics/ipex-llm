@@ -27,6 +27,12 @@ set +e
 uidentry=$(getent passwd $myuid)
 set -e
 
+# Set PCCS conf
+if [ "$PCCS_URL" != "" ]
+    echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v3/' >> /etc/sgx_default_qcnl.conf
+    echo 'USE_SECURE_CERT=FALSE' >> /etc/sgx_default_qcnl.conf
+fi
+
 # If there is no passwd entry for the container UID, attempt to create one
 if [ -z "$uidentry" ] ; then
     if [ -w /etc/passwd ] ; then
