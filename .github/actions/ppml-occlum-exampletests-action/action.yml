@@ -63,7 +63,7 @@ runs:
           $IMAGE \
 
     - name: status_1_spark_pi 
-      if: ${{ inputs.status_1_spark_pi != 0}}
+      if: ${{ inputs.status_1_spark_pi != 0 }}
       shell: bash
       run: |
         echo "################## start spark pi"
@@ -74,7 +74,7 @@ runs:
         status_1_spark_pi=$(echo $?)
 
     - name: status_2_bigdl_lenet_mnist
-      if: ${{inputs.status_2_bigdl_lenet_mnist != 0}}
+      if: ${{ inputs.status_2_bigdl_lenet_mnist != 0 }}
       shell: bash
       run: |
         echo "################## start bigdl lenet mnist"
@@ -86,7 +86,7 @@ runs:
         status_2_bigdl_lenet_mnist=$(echo $?)
 
     - name: status_3_bigdl_resnet_cifar10
-      if: ${{inputs.status_3_bigdl_resnet_cifar10 != 0}}
+      if: ${{ inputs.status_3_bigdl_resnet_cifar10 != 0 }}
       shell: bash
       run: |
         echo "################## start bigdl resnet cifar10"
@@ -95,10 +95,10 @@ runs:
           sed -i 's#        run_spark_resnet_cifar#        run_spark_resnet_cifar --nEpochs 1#g' run_spark_on_occlum_glibc.sh && \
           bash run_spark_on_occlum_glibc.sh resnet | tee bigdl-resnet-cifar10.log && \
           cat bigdl-resnet-cifar10.log | egrep 'Current momentum is'"
-       status_3_bigdl_resnet_cifar10=$(echo $?)
+        status_3_bigdl_resnet_cifar10=$(echo $?)
 
     - name: status_4_spark_tpc
-      if: ${{inputs.status_4_spark_tpc != 0}}
+      if: ${{ inputs.status_4_spark_tpc != 0 }}
       shell: bash
       run: |
         echo "################## start spark tpch"
@@ -114,7 +114,7 @@ runs:
         status_4_spark_tpch=$(echo $?)
 
     - name: status_5_spark_ut
-      if: ${{inputs.status_5_spark_ut != 0}}
+      if: ${{ inputs.status_5_spark_ut != 0 }}
       shell: bash
       run: |
         echo "################## start spark unit test"
@@ -126,7 +126,7 @@ runs:
         status_5_spark_ut=$(echo $?)
 
     - name: status_6_spark_xgboost
-      if: ${{inputs.status_6_spark_xgboost != 0}}
+      if: ${{ inputs.status_6_spark_xgboost != 0 }}
       shell: bash
       run: |
         echo "################## start spark xgboost"
@@ -138,7 +138,7 @@ runs:
         status_6_spark_xgboost=$(echo $?)
 
     - name: status_7_spark_gbt
-      if: ${{inputs.status_7_spark_gbt != 0}}
+      if: ${{ inputs.status_7_spark_gbt != 0 }}
       shell: bash
       run: |
         echo "################## start spark gbt"
