@@ -4,12 +4,14 @@ on:
   #pull_request:
   schedule:
     - cron: '0 13 * * *' # GMT time, 13:00 GMT == 21:00 China
+  pull_request:
+    branch: [main]
   workflow_dispatch:
     inputs:
       artifact:
         description: 'select which job to run("all" will make all jobs run)'
         required: true
-        default: 'all'
+        default: 'PPML-Spark-PySpark-Sql-UT'
         type: choice
         options:
         - all
@@ -23,6 +25,7 @@ on:
         - Dllib-Scala-UT
         - Friesian-Scala-UT
         - PPML-Scala-UT
+        - PPML-Spark-PySpark-Sql-UT
         
 
 permissions:
@@ -302,6 +305,18 @@ jobs:
         job-name: Orca-Ray-Ctx-Example
         runner-hosted-on: 'Shanghai'
     
+  PPML-Spark-PySpark-Sql-UT:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Spark-PySpark-Sql-UT' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, Gondolin-resources, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Run test
+      uses: ./.github/actions/ppml-spark-pyspark-sql-ut-on-gramine-action
 
   create-workflow-badge:
     runs-on: ubuntu-latest

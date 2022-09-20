@@ -1,0 +1,34 @@
+name: 'PPML-Spark-PySpark-UT-Tests-on-Gramine'
+description: 'PPML-Spark-PySpark-UT-Tests-on-Gramine'
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3
+    - name: Set Variable
+      shell: bash
+      env:
+        DEFAULT_IMAGE: 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine:devel
+      run: |
+        echo "CONTAINER_NAME=spark-pyspark-ut-test-gramine" >> $GITHUB_ENV
+        echo "IMAGE=${{ env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
+    - name: Start Container
+      shell: bash
+      run: |
+        set -x
+        docker pull ${IMAGE}
+        docker rm -f ${CONTAINER_NAME}
+        docker run -id \
+        --privileged \
+        --net=host \
+        --name ${CONTAINER_NAME} \
+        --cpuset-cpus=$CPUSET \
+        --oom-kill-disable \
+        --device=/dev/sgx/enclave \
+        --device=/dev/sgx/provision \
+        -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
+        -v $ENCLAVE_KEY:/root/.config/gramine/enclave-key.pem \
+        $IMAGE bash
+    - name: Spark Examples Test
+      shell: bash
+      run: |
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/test.sh"
