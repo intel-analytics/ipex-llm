@@ -352,7 +352,7 @@ def index_data(x, i, make_list=False):
         res = {}
         for k, v in x.items():
             res[k] = v[i]
-        return res if not make_list else [res]
+        return res
     elif isinstance(x, tuple):
         return tuple(item[i] for item in x)
     elif isinstance(x, list):

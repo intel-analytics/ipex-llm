@@ -272,7 +272,7 @@ class TrainingOperator:
 
         # Compute output.
         with self.timers.record("fwd"):
-            output = self.model(*features)
+            output = self.model(*features) if not isinstance(input, dict) else self.model(**features)
             if isinstance(output, tuple) or isinstance(output, list):
                 # Then target is also assumed to be a tuple or list.
                 loss = self.criterion(*output, *target)
@@ -288,7 +288,7 @@ class TrainingOperator:
         with self.timers.record("apply"):
             self.optimizer.step()
 
-        return {"train_loss": loss.item(), NUM_SAMPLES: get_batchsize(features[0])}
+        return {"train_loss": loss.item(), NUM_SAMPLES: get_batchsize(features)}
 
     def validate(self, val_iterator, info, metrics, num_steps=None):
         """Runs one standard validation pass over the val_iterator.
@@ -394,7 +394,7 @@ class TrainingOperator:
 
         # compute output
         with self.timers.record("eval_fwd"):
-            output = self.model(*features)
+            output = self.model(*features) if not isinstance(input, dict) else self.model(**features)
             loss = self.criterion(output, target)
 
         return output, target, loss
