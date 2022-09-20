@@ -176,6 +176,11 @@ ARG HTTP_PROXY_PORT
 ARG HTTPS_PROXY_HOST
 ARG HTTPS_PROXY_PORT
 
+
+# Install SGX PSW
+ARG PSW_VERSION=2.17.100.3
+ARG DCAP_VERSION=1.14.100.3
+
 RUN echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
     chgrp root /etc/passwd && chmod ug+rw /etc/passwd 
 
@@ -184,7 +189,7 @@ COPY --from=tini /usr/local/bin/tini /sbin/tini
 RUN apt-get update && \
     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
         build-essential ca-certificates openjdk-8-jdk git \
-        curl tzdata wget netcat gnupg2 jq make cmake gdb libtool && \
+        curl tzdata wget netcat gnupg2 jq make cmake gdb libtool aptitude sudo && \
     apt-get clean
 
 # Add 01.org & key
@@ -195,22 +200,84 @@ RUN echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu foc
 RUN apt-get update && \
     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
         libprotobuf-c-dev protobuf-c-compiler libcurl4-openssl-dev libssl-dev libprotobuf-dev unzip \
-        net-tools rsync vim autoconf automake libfuse-dev \
+        net-tools rsync vim autoconf automake libfuse-dev gawk bison python \
         debhelper ocaml ocamlbuild python protobuf-compiler \
         libsgx-dcap-ql libsgx-epid libsgx-urts libsgx-quote-ex libsgx-uae-service \
         libsgx-dcap-quote-verify-dev && \
     apt-get clean
 
-# RUN echo "source /etc/profile" >> $HOME/.bashrc 
-RUN git clone https://github.com/occlum/occlum.git --recursive && \
-    cd occlum/tools/installer/deb && make -j 8 && \
-    apt install -y ./occlum-runtime*.deb && \
-    apt install -y ./occlum-pal*.deb && \
-    apt install -y ./occlum-sgx-tools*.deb && \
-    apt install -y ./occlum-toolchains-gcc*.deb && \
-    apt install -y ./occlum_*.deb && \
-    echo "source /etc/profile" >> $HOME/.bashrc && \
-    cd /root && rm -rf occlum
+# Install Intel SGX SDK
+# Install SGX SDK
+WORKDIR /tmp
+RUN git clone -b sgx_2.17.1_for_occlum https://github.com/occlum/linux-sgx && \
+    mkdir /etc/init && \
+    cd linux-sgx && \
+    make preparation && \
+    ./compile_and_install.sh no_mitigation USE_OPT_LIBS=3 && \
+    echo 'source /opt/intel/sgxsdk/environment' >> /root/.bashrc && \
+    rm -rf /tmp/linux-sgx
+
+# Install Rust
+ENV PATH="/root/.cargo/bin:$PATH"
+ENV OCCLUM_RUST_VERSION=nightly-2022-02-23
+RUN curl https://sh.rustup.rs -sSf | \
+        sh -s -- --default-toolchain ${OCCLUM_RUST_VERSION} -y && \
+    rm -rf /root/.cargo/registry && rm -rf /root/.cargo/git && \
+    cargo -V
+
+RUN apt-get update && aptitude install -y \
+        libsgx-launch-dev=$PSW_VERSION-focal1 \
+        libsgx-epid-dev=$PSW_VERSION-focal1 \
+        libsgx-quote-ex-dev=$PSW_VERSION-focal1 \
+        libsgx-urts=$PSW_VERSION-focal1 \
+        libsgx-enclave-common=$PSW_VERSION-focal1 \
+        libsgx-uae-service=$PSW_VERSION-focal1 \
+        libsgx-ae-epid=$PSW_VERSION-focal1 \
+        libsgx-ae-le=$PSW_VERSION-focal1 \
+        libsgx-ae-pce=$PSW_VERSION-focal1 \
+        libsgx-aesm-launch-plugin=$PSW_VERSION-focal1 \
+        sgx-aesm-service=$PSW_VERSION-focal1 \
+        libsgx-aesm-launch-plugin=$PSW_VERSION-focal1 \
+        libsgx-aesm-pce-plugin=$PSW_VERSION-focal1 \
+        libsgx-aesm-ecdsa-plugin=$PSW_VERSION-focal1 \
+        libsgx-aesm-epid-plugin=$PSW_VERSION-focal1 \
+        libsgx-aesm-quote-ex-plugin=$PSW_VERSION-focal1 \
+        libsgx-ae-id-enclave=$DCAP_VERSION-focal1 \
+        libsgx-ae-qe3=$DCAP_VERSION-focal1 \
+        libsgx-ae-qve=$DCAP_VERSION-focal1 \
+        libsgx-dcap-quote-verify=$DCAP_VERSION-focal1 \
+        libsgx-dcap-quote-verify-dev=$DCAP_VERSION-focal1 \
+        libsgx-dcap-ql=$DCAP_VERSION-focal1 \
+        libsgx-dcap-ql-dev=$DCAP_VERSION-focal1 \
+        libsgx-epid=$PSW_VERSION-focal1 \
+        libsgx-quote-ex=$PSW_VERSION-focal1 \
+        libsgx-pce-logic=$DCAP_VERSION-focal1 \
+        libsgx-qe3-logic=$DCAP_VERSION-focal1 \
+        libsgx-launch=$PSW_VERSION-focal1 \
+        libsgx-dcap-default-qpl=$DCAP_VERSION-focal1 \
+        && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    ln -s /usr/lib/x86_64-linux-gnu/libsgx_enclave_common.so.1 /usr/lib/x86_64-linux-gnu/libsgx_enclave_common.so
+
+# Download the Occlum source
+WORKDIR /root
+RUN git clone https://github.com/occlum/occlum.git && \
+    cp -r /root/occlum/tools/toolchains/* /tmp/ && mkdir -p /opt/occlum/ && \
+    cp /root/occlum/tools/docker/start_aesm.sh /opt/occlum/
+
+# Install glibc
+WORKDIR /tmp
+RUN cd glibc && ./build.sh && rm -rf /tmp/glibc
+
+WORKDIR /root
+RUN cd occlum && \
+    source /opt/intel/sgxsdk/environment && \
+    make submodule && \
+    OCCLUM_RELEASE_BUILD=1 make && \
+    make install && \
+    cp -r demos /root/demos && \
+    rm -rf /root/occlum
 
 # prepare Spark
 COPY --from=bigdl /opt/spark /opt/spark
