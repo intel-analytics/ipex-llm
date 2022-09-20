@@ -1,17 +1,22 @@
 #!/bin/bash
-mkdir -p /ppml/trusted-big-data-ml/logs/pyspark/sql
+mkdir -p /ppml/trusted-big-data-ml/logs/runtime
+mkdir -p /ppml/trusted-big-data-ml/logs/reporter
 
-for suite in `cat pyNativeSuccessSuites`
+cd /ppml/trusted-big-data-ml
+
+./clean.sh
+for suite in `cat /ppml/trusted-big-data-ml/work/test-suites/sparkSqlSuites.txt`
 do
-    gramine-argv-serializer bash -c "/opt/jdk8/bin/java -cp \
-    '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
-    -Xmx1g org.apache.spark.deploy.SparkSubmit --master 'local[4]' --conf spark.network.timeout=10000000 \
-    --conf spark.executor.heartbeatInterval=10000000 --conf spark.python.use.daemon=false \
-    --conf spark.python.worker.reuse=false \
-    /ppml/trusted-big-data-ml/work/spark-3.1.2/python/pyspark/sql/tests/$suite" > secured_argvs
-    gramine-sgx bash 2>&1 | tee /ppml/trusted-big-data-ml/logs/pyspark/sql/$suite.log
-    if [ -n "$(grep "FAILED" /ppml/trusted-big-data-ml/logs/pyspark/sql/$suite.log -H -o)" ]; then
+    gramine-argv-serializer bash -c "/opt/jdk8/bin/java -cp '$SPARK_HOME/conf/:$SPARK_HOME/jars/*:$SPARK_HOME/test-jars/*:$SPARK_HOME/test-classes/' \
+                                    -Xmx8g -Dspark.testing=true -Djdk.lang.Process.launchMechanism=posix_spawn -XX:MaxMetaspaceSize=256m -Dos.name='Linux' \
+                                    -Dspark.test.home=/ppml/trusted-big-data-ml/work/spark-3.1.2 -Dspark.python.use.daemon=false -Dspark.python.worker.reuse=false \
+                                    -Dspark.driver.host=127.0.0.1 org.scalatest.tools.Runner -s ${suite} -fF /ppml/trusted-big-data-ml/logs/reporter/${suite}.txt" \
+                                    > /ppml/trusted-big-data-ml/secured_argvs
+    ./init.sh
+    gramine-sgx bash 2>&1 | tee /ppml/trusted-big-data-ml/logs/runtime/${suite}.log
+    if [ -z "$(grep "All tests passed" /ppml/trusted-big-data-ml/logs/reporter/${suite}.txt)" ]
+    then
         echo "failed"
-        exit
+        exit 1
     fi
 done
