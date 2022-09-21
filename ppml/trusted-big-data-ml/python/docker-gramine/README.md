@@ -128,6 +128,8 @@ bash verify-attestation-service.sh
 Upload the metadata of your MREnclave obtained above to EHSM, and then only registerd MREnclave can pass the runtime verification in the following. You can register the MREnclave through running a python script:
 
 ```bash
+exit # Exit from container and go back to BigDL/ppml/trusted-big-data-ml/python/docker-gramine on host
+
 python ../../../python/ppml.scripts/register-mrenclave.py --appid <your_appid> --apikey <your_apikey> --url https://<kms_ip>:9000 --mr_enclave <your_mrenclave_hash_value> --mr_signer <your_mrensigner_hash_value>
 ```
 
