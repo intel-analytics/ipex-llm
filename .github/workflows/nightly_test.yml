@@ -307,7 +307,7 @@ jobs:
     
   PPML-PySpark-K8S-EXAMPLE:
     # if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-PySpark-K8S-EXAMPLE' || github.event.inputs.artifact == 'all' }} 
-    runs-on: [self-hosted, SGX, Vilvarin]
+    runs-on: [self-hosted, Vilvarin]
 
     steps:
     - uses: actions/checkout@v3
