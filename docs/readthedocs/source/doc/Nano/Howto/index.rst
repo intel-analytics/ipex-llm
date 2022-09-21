@@ -29,12 +29,17 @@ PyTorch Lightning
 TensorFlow
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 * `How to accelerate a TensorFlow Keras application on training workloads through multiple instances <Training/TensorFlow/accelerate_tensorflow_training_multi_instance.html>`_
+* |tensorflow_training_embedding_sparseadam_link|_
+
+.. |tensorflow_training_embedding_sparseadam_link| replace:: How to optimize your model with a sparse ``Embedding`` layer and ``SparseAdam`` optimizer
+.. _tensorflow_training_embedding_sparseadam_link: Training/TensorFlow/tensorflow_training_embedding_sparseadam.html
 
 .. toctree::
     :maxdepth: 1
     :hidden:
 
     Training/TensorFlow/accelerate_tensorflow_training_multi_instance
+    Training/TensorFlow/tensorflow_training_embedding_sparseadam
 
 
 Inference Optimization
