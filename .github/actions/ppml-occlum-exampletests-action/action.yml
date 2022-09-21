@@ -16,7 +16,7 @@ runs:
         export DATA_PATH=/home/icx/glorysdj/data
         export KEYS_PATH=/home/icx/glorysdj/keys
         export SECURE_PASSWORD_PATH=/home/icx/glorysdj/password
-        export SGX_MEM_SIZE=30GB
+        export SGX_MEM_SIZE=60GB
         export IMAGE=10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT
 
         docker pull $IMAGE
@@ -118,7 +118,7 @@ runs:
         if [ $status_7_spark_gbt -ne 0 ]; then
         echo "################## start spark gbt"
         echo "example.7 spark gbt"
-        exec -i $CONTAINER_NAME bash -c "cd /opt && \
+        docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
           sed -i 's#-i /host/data -s /host/data/model -I 100 -d 2#-i /host/data/gbt -s /host/data/gbt/model -I 100 -d 2#g' run_spark_on_occlum_glibc.sh && \
           bash run_spark_on_occlum_glibc.sh gbt | tee spark-gbt.log && \
           cat spark-gbt.log | egrep 'RabitTracker-akka.actor.default-dispatcher'"
