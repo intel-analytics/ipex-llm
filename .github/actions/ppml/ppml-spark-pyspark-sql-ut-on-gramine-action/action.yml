@@ -57,7 +57,6 @@ runs:
         wget https://repo1.maven.org/maven2/org/apache/spark/spark-sql_2.12/3.1.2/spark-sql_2.12-3.1.2-tests.jar
         jar xvf spark-sql_2.12-$SPARK_VERSION-tests.jar
         rm spark-sql_2.12-$SPARK_VERSION-tests.jar
-
     - name: Spark Examples Test
       shell: bash
       run: |
