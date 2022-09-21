@@ -425,7 +425,7 @@ Enter `BigDL/ppml/trusted-big-data-ml/python/docker-graphene` directory.
    ./init.sh
    ```
 
-##### 2.3.2.2 Run Your PySpark Application with BigDL PPML on SGX
+##### 2.3.2.2 Run Your PySpark Applications with BigDL PPML on SGX
 
 To run your PySpark application, you need to prepare your PySpark application and put it under the trusted directory in SGX  `/ppml/trusted-big-data-ml/work`. Then run with `bigdl-ppml-submit.sh` using the command:
 
