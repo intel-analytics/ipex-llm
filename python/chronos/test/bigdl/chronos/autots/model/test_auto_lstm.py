@@ -13,11 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 from bigdl.chronos.utils import LazyImport
 torch = LazyImport('torch')
-Dataset = LazyImport('torch.utils.data')
-DataLoader = LazyImport('torch.utils.data')
-RandomDataset = LazyImport('utils')
+train_dataloader_creator = LazyImport('bigdl.chronos.autots.model.utils.train_dataloader_creator')
+valid_dataloader_creator = LazyImport('bigdl.chronos.autots.model.utils.valid_dataloader_creator')
 import tensorflow as tf
 import numpy as np
 from unittest import TestCase
@@ -39,18 +39,6 @@ def get_x_y(size):
     x = np.random.randn(size, past_seq_len, input_feature_dim)
     y = np.random.randn(size, future_seq_len, output_feature_dim)
     return x.astype(np.float32), y.astype(np.float32)
-
-
-def train_dataloader_creator(config):
-    return DataLoader(RandomDataset(size=1000),
-                      batch_size=config["batch_size"],
-                      shuffle=True)
-
-
-def valid_dataloader_creator(config):
-    return DataLoader(RandomDataset(size=400),
-                      batch_size=config["batch_size"],
-                      shuffle=True)
 
 
 def get_auto_estimator(backend='torch'):
@@ -110,6 +98,8 @@ class TestAutoLSTM(TestCase):
         assert 1 <= best_config['layer_num'] < 3
 
     def test_fit_data_creator(self):
+        from bigdl.chronos.autots.model.utils import train_dataloader_creator
+        from bigdl.chronos.autots.model.utils import valid_dataloader_creator
         auto_lstm = get_auto_estimator()
         auto_lstm.fit(data=train_dataloader_creator,
                       epochs=1,

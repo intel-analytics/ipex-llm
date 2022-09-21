@@ -19,10 +19,7 @@ import pytest
 
 from bigdl.chronos.utils import LazyImport
 torch = LazyImport('torch')
-nn = LazyImport('torch.nn')
-TensorDataset = LazyImport('torch.utils.data')
-DataLoader = LazyImport('torch.utils.data')
-CustomizedNet = LazyImport('utils')
+model_creator_pytorch = LazyImport('bigdl.chronos.autots.model.utils.model_creator_pytorch')
 import numpy as np
 from bigdl.chronos.autots import AutoTSEstimator, TSPipeline
 from bigdl.chronos.data import TSDataset
@@ -55,6 +52,8 @@ def get_tsdataset():
 def get_data_creator(backend="torch"):
     if backend == "torch":
         def data_creator(config):
+            import torch
+            from torch.utils.data import TensorDataset, DataLoader
             tsdata = get_tsdataset()
             x, y = tsdata.roll(lookback=7, horizon=1).to_numpy()
             return DataLoader(TensorDataset(torch.from_numpy(x).float(),
@@ -69,17 +68,6 @@ def get_data_creator(backend="torch"):
             return tsdata.to_tf_dataset(batch_size=config["batch_size"],
                                         shuffle=True)
         return data_creator
-
-
-def model_creator_pytorch(config):
-    '''
-    Pytorch customized model creator
-    '''
-    return CustomizedNet(dropout=config["dropout"],
-                         input_size=config["past_seq_len"],
-                         input_feature_num=config["input_feature_num"],
-                         hidden_dim=config["hidden_dim"],
-                         output_size=config["output_feature_num"])
 
 
 def model_creator_keras(config):
@@ -111,6 +99,7 @@ class TestAutoTrainer(TestCase):
         stop_orca_context()
 
     def test_fit_third_party_feature(self):
+        from bigdl.chronos.autots.model.utils import model_creator_pytorch
         from sklearn.preprocessing import StandardScaler
         scaler = StandardScaler()
         tsdata_train = get_tsdataset().gen_dt_feature().scale(scaler, fit=True)
@@ -195,6 +184,7 @@ class TestAutoTrainer(TestCase):
         assert config["past_seq_len"] == 7
 
     def test_fit_third_party_data_creator(self):
+        from bigdl.chronos.autots.model.utils import model_creator_pytorch
         input_feature_dim = 4
         output_feature_dim = 2  # 2 targets are generated in get_tsdataset
 
@@ -249,6 +239,7 @@ class TestAutoTrainer(TestCase):
         assert config["past_seq_len"] == 7
 
     def test_fit_customized_metrics(self):
+        import torch
         from sklearn.preprocessing import StandardScaler
         from torchmetrics.functional import mean_squared_error
         import random

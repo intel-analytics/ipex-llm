@@ -14,11 +14,43 @@
 # limitations under the License.
 #
 
-from bigdl.chronos.utils import LazyImport
-torch = LazyImport('torch')
-nn = LazyImport('torch.nn')
-TensorDataset = LazyImport('torch.utils.data')
-DataLoader = LazyImport('torch.utils.data')
+import torch
+from torch.utils.data import Dataset, DataLoader
+import torch.nn as nn
+import numpy as np
+
+input_feature_dim = 10
+output_feature_dim = 2
+past_seq_len = 5
+future_seq_len = 1
+
+
+def get_x_y(size):
+    x = np.random.randn(size, past_seq_len, input_feature_dim)
+    y = np.random.randn(size, future_seq_len, output_feature_dim)
+    return x.astype(np.float32), y.astype(np.float32)
+
+class RandomDataset(Dataset):
+    def __init__(self, size=1000):
+        x, y = get_x_y(size)
+        self.x = torch.from_numpy(x).float()
+        self.y = torch.from_numpy(y).float()
+
+    def __len__(self):
+        return self.x.shape[0]
+
+    def __getitem__(self, idx):
+        return self.x[idx], self.y[idx]
+
+def train_dataloader_creator(config):
+    return DataLoader(RandomDataset(size=1000),
+                      batch_size=config["batch_size"],
+                      shuffle=True)
+
+def valid_dataloader_creator(config):
+    return DataLoader(RandomDataset(size=400),
+                      batch_size=config["batch_size"],
+                      shuffle=True)
 
 class CustomizedNet(nn.Module):
     def __init__(self,
@@ -47,3 +79,13 @@ class CustomizedNet(nn.Module):
         x = torch.unsqueeze(x, 1)
         # x.shape = (num_sample, 1, output_size)
         return x
+
+def model_creator_pytorch(config):
+    '''
+    Pytorch customized model creator
+    '''
+    return CustomizedNet(dropout=config["dropout"],
+                         input_size=config["past_seq_len"],
+                         input_feature_num=config["input_feature_num"],
+                         hidden_dim=config["hidden_dim"],
+                         output_size=config["output_feature_num"])
