@@ -248,12 +248,14 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 ADD ./spark-executor-template.yaml /ppml/trusted-big-data-ml/spark-executor-template.yaml
 ADD ./spark-driver-template.yaml /ppml/trusted-big-data-ml/spark-driver-template.yaml
 ADD ./entrypoint.sh /opt/entrypoint.sh
+ADD ./verify-attestation-service.sh /ppml/trusted-big-data-ml/verify-attestation-service.sh
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     wget -P $SPARK_HOME/jars https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.8.0/okhttp-3.8.0.jar && \
     wget -P $SPARK_HOME/jars https://github.com/xerial/sqlite-jdbc/releases/download/3.36.0.1/sqlite-jdbc-3.36.0.1.jar && \
     chmod +x /opt/entrypoint.sh && \
     chmod +x /sbin/tini && \
+    chmod +x /ppml/trusted-big-data-ml/verify-attestation-service.sh && \
     cp /sbin/tini /usr/bin/tini && \
     gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && export _SPARK_AUTH_SECRET=$_SPARK_AUTH_SECRET && $spark_commnd' > /ppml/trusted-big-data-ml/secured_argvs
 

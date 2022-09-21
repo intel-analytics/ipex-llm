@@ -29,7 +29,7 @@ set -e
 
 # Set PCCS conf
 if [ "$PCCS_URL" != "" ] ; then
-    echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v3/' >> /etc/sgx_default_qcnl.conf
+    echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v3/' > /etc/sgx_default_qcnl.conf
     echo 'USE_SECURE_CERT=FALSE' >> /etc/sgx_default_qcnl.conf
 fi
 
