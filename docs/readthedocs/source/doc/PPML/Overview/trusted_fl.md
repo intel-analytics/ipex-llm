@@ -1,17 +1,17 @@
 # Trusted FL (Federated Learning)
 
-[Federated Learning](https://en.wikipedia.org/wiki/Federated_learning) is a new tool in PPML (Privacy Preserving Machine Learning), which empowers multi-parities to build united model across different parties without compromising privacy, even if these parities have different datasets or features. In FL training stage, sensitive data will be kept locally, only temp gradients or weights will be safely aggregated by a trusted third-parity. In our design, this trusted third-parity is fully protected by Intel SGX.
+[Federated Learning](https://en.wikipedia.org/wiki/Federated_learning) is a new tool in PPML (Privacy Preserving Machine Learning), which empowers multi-parities to build a united model across different parties without compromising privacy, even if these parties have different datasets or features. In FL training stage, sensitive data will be kept locally, and only temp gradients or weights will be safely aggregated by a trusted third-party. In our design, this trusted third-parity is fully protected by Intel SGX.
 
-A number of FL tools or frameworks have been proposed to enable FL in different areas, i.e., OpenFL, TensorFlow Federated, FATE, Flower and PySyft etc. However, none of them is designed for Big Data scenario. To enable FL in big data ecosystem, BigDL PPML provides a SGX-based End-to-end Trusted FL platform. With this platform, data scientist and developers can easily setup FL applications upon distributed large scale datasets with a few clicks. To achieve this goal, we provides following features:
+A number of FL tools or frameworks have been proposed to enable FL in different areas, i.e., OpenFL, TensorFlow Federated, FATE, Flower and PySyft etc. However, none of them is designed for Big Data scenarios. To enable FL in big data ecosystem, BigDL PPML provides a SGX-based End-to-end Trusted FL platform. With this platform, data scientists and developers can easily setup FL applications upon distributed large-scale datasets with a few clicks. To achieve this goal, we provide the following features:
 
- * ID & feature align: figure out portions of local data that will participate in training stage
- * Horizontal FL: training across multi-parties with same features and different entities
- * Vertical FL: training across multi-parties with same entries and different features.
+ * ID & feature align: figure out portions of local data that will participate in the training stage
+ * Horizontal FL: training across multi-parties with the same features and different entities
+ * Vertical FL: training across multi-parties with the same entries and different features.
 
-To ensure sensitive data are fully protected in training and inference stages, we make sure:
+To ensure sensitive data are fully protected in the training and inference stages, we make sure:
 
- * Sensitive data and weights are kept local, only temp gradients or weights will be safely aggregated by a trusted third-parity
- * Trusted third-parity, i.e., FL Server, is protected by SGX Enclaves
+ * Sensitive data and weights are kept local, only temp gradients or weights will be safely aggregated by a trusted third-party
+ * Trusted third-party, i.e., FL Server, is protected by SGX Enclaves
  * Local training environment is protected by SGX Enclaves (recommended but not enforced)
  * Network communication and Storage (e.g., data and model) protected by encryption and Transport Layer Security (TLS)](https://en.wikipedia.org/wiki/Transport_Layer_Security)
 
@@ -25,7 +25,7 @@ Please ensure SGX is properly enabled, and SGX driver is installed. If not, plea
 
 1. Generate the signing key for SGX Enclaves
 
-   Generate the enclave key using the command below, keep it safely for future remote attestations and to start SGX Enclaves more securely. It will generate a file `enclave-key.pem` in the current working directory, which will be the  enclave key. To store the key elsewhere, modify the output file path.
+   Generate the enclave key using the command below, keep it safely for future remote attestations and to start SGX Enclaves more securely. It will generate a file `enclave-key.pem` in the current working directory, which will be the enclave key. To store the key elsewhere, modify the output file path.
 
     ```bash
     cd scripts/
@@ -74,7 +74,7 @@ If Dockerhub is not accessible, you can build docker image. Modify your `http_pr
 
 ## Start FLServer
 
-Before starting any local training client or worker, we need to start a Trusted third-parity, i.e., FL Server, for secure aggregation. In current design, this FL Server is running in SGX with help of Graphene or Occlum. Local workers/Clients can verify its integrity with SGX Remote Attestation.
+Before starting any local training client or worker, we need to start a Trusted third-parity, i.e., FL Server, for secure aggregation. In our design, this FL Server is running in SGX with help of Graphene or Occlum. Local workers/Clients can verify its integrity with SGX Remote Attestation.
 
 Running this command will start a docker container and initialize the SGX environment.
 
@@ -92,7 +92,7 @@ In container, run:
 
 The fl-server will start and listen on 8980 port. Both horizontal fl-demo and vertical fl-demo need two clients. You can change the listening port and client number by editing `BigDL/scala/ppml/demo/ppml-conf.yaml`'s `serverPort` and `clientNum`.  
 
-Note that we skip ID & Feature for simplify demo. In practice, before we start Federated Learning, we need to align ID & Feature, and figure out portions of local data that will participate in later training stage. In horizontal FL, feature align is required to ensure each party is training on the same features. In vertical FL, both ID and feature align are required to ensure each party training on different features of the same record.
+Note that we skip ID & Feature for simplifying demo. In practice, before we start Federated Learning, we need to align ID & Feature, and figure out portions of local data that will participate in later training stages. In horizontal FL, feature alignment is required to ensure each party is training on the same features. In vertical FL, both ID and feature alignment are required to ensure each party training on different features of the same record.
 
 ## HFL Logistic Regression
 
