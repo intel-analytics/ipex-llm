@@ -17,7 +17,7 @@ from bigdl.orca.automl.model.abstract import BaseModel, ModelBuilder
 import numpy as np
 from bigdl.orca.automl.metrics import Evaluator
 import pickle
-from copy import copy
+import copy
 import tensorflow as tf
 from tensorflow.keras import backend as K
 import types
@@ -88,7 +88,7 @@ class KerasBaseModel(BaseModel):
             update_config()
             self.build(config)
         else:
-            tmp_config = copy(self.config)
+            tmp_config = copy.copy(self.config)
             tmp_config.update(config)
             self._check_config(**tmp_config)
             self.config.update(config)
