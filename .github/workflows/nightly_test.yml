@@ -11,7 +11,7 @@ on:
       artifact:
         description: 'select which job to run("all" will make all jobs run)'
         required: true
-        default: 'PPML-Spark-PySpark-Sql-UT'
+        default: 'all'
         type: choice
         options:
         - all
