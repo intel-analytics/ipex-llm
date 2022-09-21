@@ -27,16 +27,16 @@ import org.apache.spark.sql.types.{DoubleType, StringType, StructField, StructTy
 object xgbClassifierTrainingExample {
   def main(args: Array[String]): Unit = {
     if (args.length < 4) {
-      println("Usage: program input_path num_threads num_round modelsave_path")
+      println("Usage: program inputPath numThreads numRound modelsavePath")
       sys.exit(1)
     }
     val sc = NNContext.initNNContext()
     val spark = SQLContext.getOrCreate(sc)
 
-    val input_path = args(0) // path to iris.data
-    val num_threads = args(1).toInt
-    val num_round = args(2).toInt
-    val modelsave_path = args(3) // save model to this path
+    val inputPath = args(0) // path to iris.data
+    val numThreads = args(1).toInt
+    val numRound = args(2).toInt
+    val modelsavePath = args(3) // save model to this path
 
     val schema = new StructType(Array(
       StructField("sepal length", DoubleType, true),
@@ -44,7 +44,7 @@ object xgbClassifierTrainingExample {
       StructField("petal length", DoubleType, true),
       StructField("petal width", DoubleType, true),
       StructField("class", StringType, true)))
-    val df = spark.read.schema(schema).csv(input_path)
+    val df = spark.read.schema(schema).csv(inputPath)
 
     val stringIndexer = new StringIndexer()
       .setInputCol("class")
@@ -69,14 +69,14 @@ object xgbClassifierTrainingExample {
     xgbClassifier.setNumClass(3)
     xgbClassifier.setMaxDepth(2)
     xgbClassifier.setNumWorkers(1)
-    xgbClassifier.setNthread(num_threads)
-    xgbClassifier.setNumRound(num_round)
+    xgbClassifier.setNthread(numThreads)
+    xgbClassifier.setNumRound(numRound)
     xgbClassifier.setTreeMethod("auto")
     xgbClassifier.setObjective("multi:softprob")
     xgbClassifier.setTimeoutRequestWorkers(180000L)
 
     val xgbClassificationModel = xgbClassifier.fit(train)
-    xgbClassificationModel.save(modelsave_path)
+    xgbClassificationModel.save(modelsavePath)
 
     sc.stop()
   }
