@@ -15,9 +15,13 @@ do
                                     > secured_argvs
     ./init.sh
     gramine-sgx bash 2>&1 | tee /ppml/trusted-big-data-ml/logs/pyspark/sql/$suite.log
+    echo "##########$suite Test:"
     if [ -n "$(grep "FAILED" /ppml/trusted-big-data-ml/logs/pyspark/sql/$suite.log -H -o)" ]
     then
         echo "failed"
         exit 1
+    else
+        echo "pass"
     fi
+    echo "##########$suite Test Done"
 done
