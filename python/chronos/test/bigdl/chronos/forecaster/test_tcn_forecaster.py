@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+from symbol import test_nocond
 import numpy as np
 import tempfile
 import os
@@ -317,6 +318,52 @@ class TestChronosModelTCNForecaster(TestCase):
             ckpt_name = os.path.join(tmp_dir_name, "fp32_openvino")
             ckpt_name_q = os.path.join(tmp_dir_name, "int_openvino")
             forecaster.export_openvino_file(dirname=ckpt_name, quantized_dirname=ckpt_name_q)
+
+    def test_tcn_forecaster_openvino_methods_loader(self):
+        train_loader, val_loader, test_loader = create_data(loader=True)
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=4,
+                                   num_channels=[16, 16],
+                                   lr=0.01)
+        forecaster.fit(train_loader, epochs=2)
+        try:
+            pred = forecaster.predict(test_loader)
+            pred_openvino = forecaster.predict_with_openvino(test_loader)
+            np.testing.assert_almost_equal(pred, pred_openvino, decimal=5)
+        except ImportError:
+            pass
+
+        forecaster.quantize(calib_data=train_loader,
+                            framework="openvino")
+        openvino_yhat = forecaster.predict_with_openvino(test_loader)
+        q_openvino_yhat = forecaster.predict_with_openvino(test_loader, quantize=True)
+        assert openvino_yhat.shape == q_openvino_yhat.shape
+
+    def test_tcn_forecaster_openvino_methods_tsdataset(self):
+        train, val, test = create_tsdataset(roll=True, horizon=5, val_ratio=0.1)
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=4,
+                                   num_channels=[16, 16],
+                                   lr=0.01)
+        forecaster.fit(train, epochs=2)
+        try:
+            pred = forecaster.predict(test)
+            pred_openvino = forecaster.predict_with_openvino(test)
+            np.testing.assert_almost_equal(pred, pred_openvino, decimal=5)
+        except ImportError:
+            pass
+
+        forecaster.quantize(calib_data=train,
+                            framework="openvino")
+        openvino_yhat = forecaster.predict_with_openvino(test)
+        q_openvino_yhat = forecaster.predict_with_openvino(test_nocond, quantize=True)
+        assert openvino_yhat.shape == q_openvino_yhat.shape
 
     def test_tcn_forecaster_quantization_dynamic(self):
         train_data, val_data, test_data = create_data()
