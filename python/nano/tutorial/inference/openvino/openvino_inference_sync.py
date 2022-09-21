@@ -16,32 +16,26 @@
 
 # Required Dependecies
 
+# Install OpenVINO
 # ```bash
 # pip install openvino-dev
 # ```
+# Download model
+# The following command is recommended to be executed in same directory as this script
+# ```bash
+# omz_downloader --name resnet18-xnor-binary-onnx-0001 -o ./model
+# ```
 
-from openvino.runtime import Core
 import numpy as np
 
 if __name__ == "__main__":
     # use resnet18 model pretrained on ImageNet dataset for example
-    model_path = "model/resnet18-xnor-binary-onnx-0001.xml"
+    model_path = "model/intel/resnet18-xnor-binary-onnx-0001/FP16-INT1/resnet18-xnor-binary-onnx-0001.xml"
 
     # prepare input data
     x = np.random.randn(1,3,224,224)
 
-    # Inference using OpenVINO API
-    ie = Core()
-
-    model = ie.read_model(model=model_path)
-    compiled_model = ie.compile_model(model, device_name="CPU")
-
-    output_layer_ir = compiled_model.output(0)
-    y_hat = compiled_model([x])[output_layer_ir]
-    predictions = y_hat.argmax(axis=1)
-    print(predictions)
-
-    # Inference using Nano
+    # inference using Nano
     from bigdl.nano.openvino import OpenVINOModel
     ov_model = OpenVINOModel(model=model_path)
     y_hat = ov_model(x)

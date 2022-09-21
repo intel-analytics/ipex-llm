@@ -16,43 +16,24 @@
 
 # Required Dependecies
 
+# Install OpenVINO
 # ```bash
 # pip install openvino-dev
 # ```
+# Download model
+# The following command is recommended to be executed in same directory as this script
+# ```bash
+# omz_downloader --name resnet18-xnor-binary-onnx-0001 -o ./model
+# ```
 
-from openvino.runtime import Core, AsyncInferQueue
 import numpy as np
 
 if __name__ == "__main__":
     # use resnet18 model pretrained on ImageNet dataset for example
-    model_path = "model/resnet18-xnor-binary-onnx-0001.xml"
+    model_path = "model/intel/resnet18-xnor-binary-onnx-0001/FP16-INT1/resnet18-xnor-binary-onnx-0001.xml"
 
     # prepare input data
     x = [np.random.randn(1,3,224,224) for i in range(5)]
-
-    # async inference using OpenVINO API
-    ie = Core()
-    model = ie.read_model(model=model_path)
-    compiled_model = ie.compile_model(model, device_name="CPU")
-
-    # add placeholder for each result
-    async_results = [np.zeros(1) for _ in range(5)]
-    def call_back(requests, idx):
-        async_results[idx] = requests.results
-
-    infer_queue = AsyncInferQueue(compiled_model, jobs=5)
-    infer_queue.set_callback(call_back)
-
-    for id, model_input in enumerate(x):
-        infer_queue.start_async([model_input], userdata=id)
-
-    infer_queue.wait_all()
-
-    for res in async_results:
-        output_array = list(res.values())[0]
-        print(output_array.argmax(axis=1))
-
-    print("\n")
 
     # async inference using Nano
     from bigdl.nano.openvino import OpenVINOModel
