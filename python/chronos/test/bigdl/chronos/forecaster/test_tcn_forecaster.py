@@ -88,27 +88,6 @@ def create_tsdataset(roll=True, horizon=5, val_ratio=0):
         return train, val, test
 
 
-def create_tsdataset_val(roll=True, horizon=5):
-    from bigdl.chronos.data import TSDataset
-    import pandas as pd
-    timeseries = pd.date_range(start='2020-01-01', freq='D', periods=1000)
-    df = pd.DataFrame(np.random.rand(1000, 2),
-                      columns=['value1', 'value2'],
-                      index=timeseries,
-                      dtype=np.float32)
-    df.reset_index(inplace=True)
-    df.rename(columns={'index': 'timeseries'}, inplace=True)
-    train, val, test = TSDataset.from_pandas(df=df,
-                                             dt_col='timeseries',
-                                             target_col=['value1', 'value2'],
-                                             with_split=True,
-                                             val_ratio = 0.1)
-    if roll:
-        for tsdata in [train, test]:
-            tsdata.roll(lookback=24, horizon=horizon)
-    return train, val, test
-
-
 class TestChronosModelTCNForecaster(TestCase):
 
     def setUp(self):
@@ -343,11 +322,11 @@ class TestChronosModelTCNForecaster(TestCase):
         assert openvino_yhat.shape == q_openvino_yhat.shape
 
     def test_tcn_forecaster_openvino_methods_tsdataset(self):
-        train, val, test = create_tsdataset(roll=True, horizon=5, val_ratio=0.1)
+        train, test = create_tsdataset(roll=True, horizon=5)
         forecaster = TCNForecaster(past_seq_len=24,
                                    future_seq_len=5,
-                                   input_feature_num=1,
-                                   output_feature_num=1,
+                                   input_feature_num=2,
+                                   output_feature_num=2,
                                    kernel_size=4,
                                    num_channels=[16, 16],
                                    lr=0.01)
@@ -831,7 +810,7 @@ class TestChronosModelTCNForecaster(TestCase):
             y_pred, std = forecaster.predict_interval(data=test_data[0],
                                                       repetition_times=5)
     def test_forecaster_fit_val_from_tsdataset(self):
-        train, val, test = create_tsdataset_val()
+        train, val, test = create_tsdataset(val_ratio=0.1)
         tcn = TCNForecaster.from_tsdataset(train,
                                            num_channels=[16]*3)
         tcn.fit(train, val,
@@ -844,7 +823,8 @@ class TestChronosModelTCNForecaster(TestCase):
         assert yhat.shape == y_test.shape
 
         del tcn
-        train, val, test = create_tsdataset_val(roll=False, horizon=[1, 3, 5])
+        train, val, test = create_tsdataset(roll=False, horizon=[1, 3, 5],
+                                            val_ratio=0.1)
         tcn = TCNForecaster.from_tsdataset(train,
                                            past_seq_len=24,
                                            future_seq_len=5,
