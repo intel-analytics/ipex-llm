@@ -109,7 +109,7 @@ runs:
         echo "################## start spark xgboost"
         echo "example.6 spark xgboost"
         docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
-          sed -i 's#-i /host/data -s /host/data/model -t 2 -r 100 -d 2 -w 1#-i /host/data/xgboost -s /host/data/xgboost/model -t 2 -r 100 -d 2 -w 1#g' run_spark_on_occlum_glibc.sh && \
+          sed -i 's#-i /host/data -s /host/data/model -t 2 -r 100 -d 2 -w 1#-i /host/data/xgboost -s /host/data/xgboost/model -t 2 -r 10 -d 2 -w 1#g' run_spark_on_occlum_glibc.sh && \
           bash run_spark_on_occlum_glibc.sh xgboost | tee spark-xgboost.log && \
           cat spark-xgboost.log | egrep 'RabitTracker-akka.actor.default-dispatcher'"
         status_6_spark_xgboost=$(echo $?)
@@ -119,7 +119,7 @@ runs:
         echo "################## start spark gbt"
         echo "example.7 spark gbt"
         docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
-          sed -i 's#-i /host/data -s /host/data/model -I 100 -d 5#-i /host/data/gbt -s /host/data/gbt/model -I 100 -d 5#g' run_spark_on_occlum_glibc.sh && \
+          sed -i 's#-i /host/data -s /host/data/model -I 100 -d 5#-i /host/data/gbt -s /host/data/gbt/model -I 10 -d 5#g' run_spark_on_occlum_glibc.sh && \
           bash run_spark_on_occlum_glibc.sh gbt | tee spark-gbt.log && \
           cat spark-gbt.log | egrep '--end-to-end time is'"
         status_7_spark_gbt=$(echo $?)
