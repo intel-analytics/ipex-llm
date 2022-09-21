@@ -177,7 +177,6 @@ class InferenceOptimizer:
 
         forward_args = get_forward_args(model)
         input_sample = get_input_example(model, training_data, forward_args)
-        print(type(input_sample))
         st = time.perf_counter()
         try:
             with torch.no_grad():
