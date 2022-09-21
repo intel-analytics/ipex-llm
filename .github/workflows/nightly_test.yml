@@ -307,7 +307,7 @@ jobs:
     
   PPML-Spark-PySpark-Sql-UT:
     # if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Spark-PySpark-Sql-UT' || github.event.inputs.artifact == 'all' }} 
-    runs-on: [self-hosted, Gondolin-resources, ubuntu-20.04-lts]
+    runs-on: [self-hosted, SGX, Wilwarin]
 
     steps:
     - uses: actions/checkout@v3
