@@ -4,7 +4,6 @@ mkdir -p /ppml/trusted-big-data-ml/logs/reporter
 
 cd /ppml/trusted-big-data-ml
 
-./clean.sh
 for suite in `cat /ppml/trusted-big-data-ml/work/test-suites/testSuites.txt`
 do
     gramine-argv-serializer bash -c "/opt/jdk8/bin/java -cp '$SPARK_HOME/conf/:$SPARK_HOME/jars/*:$SPARK_HOME/test-jars/*:$SPARK_HOME/test-classes/' \
