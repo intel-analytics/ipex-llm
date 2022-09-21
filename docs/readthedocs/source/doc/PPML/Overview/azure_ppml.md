@@ -3,7 +3,7 @@
 ## 1. Introduction
 Protecting privacy and confidentiality is critical for large-scale data analysis and machine learning. BigDL ***PPML*** combines various low-level hardware and software security technologies (e.g., [Intel® Software Guard Extensions (Intel® SGX)](https://www.intel.com/content/www/us/en/architecture-and-technology/software-guard-extensions.html), [Library Operating System (LibOS)](https://events19.linuxfoundation.org/wp-content/uploads/2017/12/Library-OS-is-the-New-Container-Why-is-Library-OS-A-Better-Option-for-Compatibility-and-Sandboxing-Chia-Che-Tsai-UC-Berkeley.pdf) such as [Graphene](https://github.com/gramineproject/graphene) and [Occlum](https://github.com/occlum/occlum), [Federated Learning](https://en.wikipedia.org/wiki/Federated_learning), etc.), so that users can continue to apply standard Big Data and AI technologies (such as Apache Spark, Apache Flink, Tensorflow, PyTorch, etc.) without sacrificing privacy.
 
-BigDL PPML on Azure solution integrate BigDL ***PPML*** technology with Azure Services(Azure Kubernetes Service, Azure Storage Account, Azure Key Vault, etc.) to faciliate Azure customer to create Big Data and AI applications while getting high privacy and confidentiality protection.
+BigDL PPML on Azure solution integrate BigDL ***PPML*** technology with Azure Services(Azure Kubernetes Service, Azure Storage Account, Azure Key Vault, etc.) to facilitate Azure customer to create Big Data and AI applications while getting high privacy and confidentiality protection.
 
 ### Overall Architecture
 ![](../images/ppml_azure_latest.png)
@@ -15,7 +15,7 @@ BigDL PPML on Azure solution integrate BigDL ***PPML*** technology with Azure Se
 ### 2.1 Install Azure CLI
 Before you setup your environment, please install Azure CLI on your machine according to [Azure CLI guide](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli).
 
-Then run `az login` to login to Azure system before you run following Azure commands.
+Then run `az login` to login to Azure system before you run the following Azure commands.
 
 ### 2.2 Create Azure VM for hosting BigDL PPML image
 #### 2.2.1 Create Resource Group
@@ -33,10 +33,10 @@ For size of the VM, please choose DC-V3 Series VM with more than 4 vCPU cores.
 
 #### 2.2.3 Pull BigDL PPML image and run on Linux client
 * Go to Azure Marketplace, search "BigDL PPML" and find `BigDL PPML: Secure Big Data AI on Intel SGX` product. Click "Create" button which will lead you to `Subscribe` page.
-On `Subscribe` page, input your subscription, your Azure container registry, your resource group, location. Then click `Subscribe` to subscribe BigDL PPML to your container registry.
+On `Subscribe` page, input your subscription, your Azure container registry, your resource group and your location. Then click `Subscribe` to subscribe BigDL PPML to your container registry.
 
 * Go to your Azure container regsitry, check `Repostirories`, and find `intel_corporation/bigdl-ppml-trusted-big-data-ml-python-graphene`
-* Login to the created VM. Then login to your Azure container registry, pull BigDL PPML image using such command:
+* Login to the created VM. Then login to your Azure container registry, pull BigDL PPML image using this command:
 ```bash
 docker pull myContainerRegistry/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-graphene
 ```
@@ -67,7 +67,7 @@ Create AKS or use existing AKS with Intel SGX support.
 
 In your BigDL PPML container, you can run `/ppml/trusted-big-data-ml/azure/create-aks.sh` to create AKS with confidential computing support.
 
-Note: Please use same VNet information of your client to create AKS. And use DC-Series VM size(i.e.Standard_DC8ds_v3) to create AKS.
+Note: Please use the same VNet information of your client to create AKS. And use DC-Series VM size(i.e.Standard_DC8ds_v3) to create AKS.
 ```bash
 /ppml/trusted-big-data-ml/azure/create-aks.sh \
 --resource-group myResourceGroup \
@@ -79,13 +79,13 @@ Note: Please use same VNet information of your client to create AKS. And use DC-
 --node-count myAKSInitNodeCount
 
 ```
-You can check the information by run:
+You can check the information by running:
 ```bash
 /ppml/trusted-big-data-ml/azure/create-aks.sh --help
 ```
 
 ## 2.4 Create Azure Data Lake Store Gen 2
-### 2.4.1 Create Data Lake Storage account or use existing one.
+### 2.4.1 Create Data Lake Storage account or use an existing one.
 The example command to create Data Lake store is as below:
 ```bash
 az dls account create --account myDataLakeAccount --location myLocation --resource-group myResourceGroup
@@ -113,16 +113,16 @@ az storage fs directory upload -f myFS --account-name myDataLakeAccount -s "path
 You can access Data Lake Storage in Hadoop filesytem by such URI:  ```abfs[s]://file_system@account_name.dfs.core.windows.net/<path>/<path>/<file_name>```
 #### Authentication
 The ABFS driver supports two forms of authentication so that the Hadoop application may securely access resources contained within a Data Lake Storage Gen2 capable account.
-- Shared Key: This permits users access to ALL resources in the account. The key is encrypted and stored in Hadoop configuration.
+- Shared Key: This permits users to access to ALL resources in the account. The key is encrypted and stored in Hadoop configuration.
 
 - Azure Active Directory OAuth Bearer Token: Azure AD bearer tokens are acquired and refreshed by the driver using either the identity of the end user or a configured Service Principal. Using this authentication model, all access is authorized on a per-call basis using the identity associated with the supplied token and evaluated against the assigned POSIX Access Control List (ACL).
 
 By default, in our solution, we use shared key authentication.
-- Get Access key list of storage account:
+- Get Access key list of the storage account:
 ```bash
 az storage account keys list -g MyResourceGroup -n myDataLakeAccount
 ``` 
-Use one of the keys in authentication.
+Use one of the keys for authentication.
 
 ## 2.5 Create Azure Key Vault
 ### 2.5.1 Create or use an existing Azure Key Vault
@@ -245,16 +245,16 @@ Run such scripts to generate keys:
 When entering the passphrase or password, you could input the same password by yourself; and these passwords could also be used for the next step of generating other passwords. Password should be longer than 6 bits and contain numbers and letters, and one sample password is "3456abcd". These passwords would be used for future remote attestations and to start SGX enclaves more securely.
 
 ### 3.3 Generate password
-Run such script to save password to Azure Key Vault
+Run such script to save the password to Azure Key Vault
 ```bash
 /ppml/trusted-big-data-ml/azure/generate-password-az.sh myKeyVault used_password_when_generate_keys
 ```
-### 3.4 Save kube config to secret
+### 3.4 Save kubeconfig to secret
 Login to AKS use such command:
 ```bash
 az aks get-credentials --resource-group  myResourceGroup --name myAKSCluster
 ```
-Run such script to save kube config to secret
+Run such script to save kubeconfig to secret
 ```bash
 /ppml/trusted-big-data-ml/azure/kubeconfig-secret.sh
 ```
@@ -351,19 +351,21 @@ export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
 ```
 
 ## 4. Run TPC-H example
-TPC-H queries implemented in Spark using the DataFrames API running with BigDL PPML.
+TPC-H queries are implemented using Spark DataFrames API running with BigDL PPML.
 
 ### 4.1 Generating tables
 
 Go to [TPC Download](https://www.tpc.org/tpc_documents_current_versions/current_specifications5.asp) site, choose `TPC-H` source code, then download the TPC-H toolkits.
-After you download the tpc-h tools zip and uncompressed the zip file. Go to `dbgen` directory, and create a makefile based on `makefile.suite`, and run `make`.
+After you download the TPC-h tools zip and uncompressed the zip file. Go to `dbgen` directory and create a makefile based on `makefile.suite`, and run `make`.
 
-This should generate an executable called `dbgen`
+This should generate an executable called `dbgen`.
+
 ```
 ./dbgen -h
 ```
 
-gives you the various options for generating the tables. The simplest case is running:
+`dbgen` gives you various options for generating the tables. The simplest case is running:
+
 ```
 ./dbgen
 ```
@@ -376,7 +378,7 @@ will generate roughly 10GB of input data.
 ### 4.2 Generate primary key and data key
 Generate primary key and data key, then save to file system.
 
-The example code of generate primary key and data key is like below:
+The example code for generating the primary key and data key is like below:
 ```
 java -cp '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/* \
    -Xmx10g \
@@ -390,7 +392,7 @@ java -cp '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/*:/ppml/trust
 ### 4.3 Encrypt Data
 Encrypt data with specified BigDL `AzureKeyManagementService`
 
-The example code of encrypt data is like below:
+The example code of encrypting data is like below:
 ```
 java -cp '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/* \
    -Xmx10g \
@@ -406,13 +408,14 @@ java -cp '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/*:/ppml/trust
 After encryption, you may upload encrypted data to Azure Data Lake store.
 
 The example script is like below:
+
 ```bash
 az storage fs directory upload -f myFS --account-name myDataLakeAccount -s xxx/dbgen-encrypted -d myDirectory --recursive
 ```
 
 ### 4.4 Running
 Make sure you set the INPUT_DIR and OUTPUT_DIR in `TpchQuery` class before compiling to point to the
-location the of the input data and where the output should be saved.
+location of the input data and where the output should be saved.
 
 The example script to run a query is like:
 
@@ -499,7 +502,7 @@ export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
     $INPUT_DIR $OUTPUT_DIR aes_cbc_pkcs5padding plain_text [QUERY]
 ```
 
-INPUT_DIR is the tpch's data dir.
+INPUT_DIR is the TPC-H's data dir.
 OUTPUT_DIR is the dir to write the query result.
 The optional parameter [QUERY] is the number of the query to run e.g 1, 2, ..., 22
 
