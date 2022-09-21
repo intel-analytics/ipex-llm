@@ -27,8 +27,8 @@ echo $BIGDL_DIR
 
 if (( $# < 3)); then
   echo "Usage: release_default_mac_spark312.sh version quick_build upload suffix mvn_parameters"
-  echo "Usage example: bash release_default_mac_spark313.sh default false true true"
-  echo "Usage example: bash release_default_mac_spark313.sh 0.14.0.dev1 false false true"
+  echo "Usage example: bash release_default_mac_spark312.sh default false true true"
+  echo "Usage example: bash release_default_mac_spark312.sh 0.14.0.dev1 false false true"
   echo "Usage example: bash release_default_mac_spark246.sh 0.14.0.dev1 false false false -Ddata-store-url=.."
   exit -1
 fi
@@ -44,4 +44,4 @@ else
   profiles=${*:5}
 fi
 
-bash ${RUN_SCRIPT_DIR}/release_default_spark.sh mac ${version} ${quick} ${upload} 3.1.3 ${suffix} ${profiles}
+bash ${RUN_SCRIPT_DIR}/release_default_spark.sh mac ${version} ${quick} ${upload} 3.1.2 ${suffix} ${profiles}
