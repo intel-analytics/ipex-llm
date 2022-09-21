@@ -38,7 +38,7 @@ gramine-argv-serializer bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
     --conf spark.kubernetes.sgx.mem=32g \
     --conf spark.kubernetes.sgx.jvm.mem=16g \
     --verbose \
-    /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/basic.py" > /ppml/trusted-big-data-ml/secured-argvs
+    /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/basic.py" > /ppml/trusted-big-data-ml/secured_argvs
 ./init.sh
 gramine-sgx bash 2>&1 | tee k8s-pyspark-sql-basic-sgx.log
 fi
@@ -76,7 +76,7 @@ gramine-argv-serializer bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
     --conf spark.kubernetes.sgx.jvm.mem=16g \
     --verbose \
     local:///ppml/trusted-big-data-ml/work/examples/customer_profile.py \
-    --db_path $DB_PATH" > /ppml/trusted-big-data-ml/secured-argvs
+    --db_path $DB_PATH" > /ppml/trusted-big-data-ml/secured_argvs
 ./init.sh
 gramine-sgx bash 2>&1 | tee k8s-pyspark-sql-e2e-100w-sgx.log
 fi
