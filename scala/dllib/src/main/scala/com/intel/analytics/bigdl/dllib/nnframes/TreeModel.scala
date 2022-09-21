@@ -21,6 +21,7 @@ import org.apache.spark.sql.SparkSession
 import ml.dmlc.xgboost4j.scala.spark._
 import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.SparkContext
 import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMClassificationModel => MLightGBMClassificationModel}
 import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMClassifier => MLightGBMClassifier}
 import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMRegressionModel => MLightGBMRegressionModel}
