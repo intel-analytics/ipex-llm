@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-from symbol import test_nocond
 import numpy as np
 import tempfile
 import os
@@ -341,7 +340,7 @@ class TestChronosModelTCNForecaster(TestCase):
         forecaster.quantize(calib_data=train,
                             framework="openvino")
         openvino_yhat = forecaster.predict_with_openvino(test)
-        q_openvino_yhat = forecaster.predict_with_openvino(test_nocond, quantize=True)
+        q_openvino_yhat = forecaster.predict_with_openvino(test, quantize=True)
         assert openvino_yhat.shape == q_openvino_yhat.shape
 
     def test_tcn_forecaster_quantization_dynamic(self):

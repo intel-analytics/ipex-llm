@@ -1219,9 +1219,44 @@ class BasePytorchForecaster(Forecaster):
         """
         Quantize the forecaster.
 
-        :param calib_data: A torch.utils.data.dataloader.DataLoader object for calibration.
-               Required for static quantization.
-        :param val_data: A torch.utils.data.dataloader.DataLoader object for evaluation.
+        :param calib_data: Required for static quantization. Support following formats:
+               | 1. a numpy ndarray tuple (x, y):
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
+               | should be the same as future_seq_len and output_feature_num.
+               | 2. pytorch dataloader:
+               | the dataloader should return x, y in each iteration with the shape as following:
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
+               | should be the same as future_seq_len and output_feature_num.
+               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
+               | Forecaster will automatically process the TSDataset.
+               | By default, TSDataset will be transformed to a pytorch dataloader,
+               | which is memory-friendly while a little bit slower.
+               | Users may call `roll` on the TSDataset before calling `fit`
+               | Then the training speed will be faster but will consume more memory.
+
+        :param val_data: for evaluation. Support following formats:
+               | 1. a numpy ndarray tuple (x, y):
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
+               | should be the same as future_seq_len and output_feature_num.
+               | 2. pytorch dataloader:
+               | the dataloader should return x, y in each iteration with the shape as following:
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
+               | should be the same as future_seq_len and output_feature_num.
+               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
+               | Forecaster will automatically process the TSDataset.
+               | By default, TSDataset will be transformed to a pytorch dataloader,
+               | which is memory-friendly while a little bit slower.
+               | Users may call `roll` on the TSDataset before calling `fit`
+               | Then the training speed will be faster but will consume more memory.
+
         :param metric: A str represent the metrics for tunning the quality of
                quantization. You may choose from "mse", "mae", "rmse", "r2", "mape", "smape".
         :param conf: A path to conf yaml file for quantization. Default to None,
@@ -1264,6 +1299,28 @@ class BasePytorchForecaster(Forecaster):
             invalidInputError(False, "You must set a `calib_data` for static quantization.")
         if approach == 'dynamic' and calib_data is not None:
             invalidInputError(False, "You must not set a `calib_data` for dynamic quantization.")
+
+        # change tsdataset to dataloader
+        if isinstance(calib_data, TSDataset):
+            _rolled = calib_data.numpy_x is None
+            calib_data = calib_data.to_torch_data_loader(
+                batch_size=1,
+                roll=_rolled,
+                lookback=self.data_config['past_seq_len'],
+                horizon=self.data_config['future_seq_len'],
+                feature_col=calib_data.roll_feature,
+                target_col=calib_data.roll_target,
+                shuffle=False)
+        if isinstance(val_data, TSDataset):
+            _rolled = val_data.numpy_x is None
+            val_data = val_data.to_torch_data_loader(
+                batch_size=1,
+                roll=_rolled,
+                lookback=self.data_config['past_seq_len'],
+                horizon=self.data_config['future_seq_len'],
+                feature_col=val_data.roll_feature,
+                target_col=val_data.roll_target,
+                shuffle=False)
 
         # change data tuple to dataloader
         if isinstance(calib_data, tuple):
