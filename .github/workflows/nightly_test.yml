@@ -316,7 +316,7 @@ jobs:
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
     - name: Run test
-      uses: ./.github/actions/ppml-spark-pyspark-sql-ut-on-gramine-action
+      uses: ./.github/actions/ppml/ppml-spark-pyspark-sql-ut-on-gramine-action
 
   create-workflow-badge:
     runs-on: ubuntu-latest
