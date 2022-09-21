@@ -14,18 +14,18 @@
 # limitations under the License.
 #
 
+import sys
 import time
-import numpy as np
-import tensorflow as tf
 import os
+
+import tensorflow as tf
+from tensorflow import keras
 
 from bigdl.orca import OrcaContext, init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf2 import Estimator
 
 
 def model_creator(config):
-    import tensorflow as tf
-    from tensorflow import keras
     embedding_size=16
     user = keras.layers.Input(dtype=tf.int32, shape=(None,))
     item = keras.layers.Input(dtype=tf.int32, shape=(None,))
@@ -51,25 +51,23 @@ def model_creator(config):
     with tf.name_scope("concatenation"):
         concatenation = tf.concat([GMF, layer3_MLP], axis=-1)
         outputs = keras.layers.Dense(1, activation='sigmoid')(concatenation)
-    
+
     model = keras.Model(inputs=[user, item], outputs=outputs)
     model.compile(optimizer= "adam",
                   loss= "binary_crossentropy",
                   metrics=['accuracy'])
     return model
 
-     
-
-cluster_mode = "local"
+cluster_mode = str(sys.argv[1])
 # cluster_mode = "k8s"
 if cluster_mode == "local":
-    sc = init_orca_context(memory="20g")
+    sc = init_orca_context(memory=str(sys.argv[2]))
 elif cluster_mode == "standalone":
-    sc = init_orca_context("standalone", master="spark://...", cores=8, num_nodes=4, memory="10g")
+    sc = init_orca_context("standalone", cores=int(sys.argv[3]), num_nodes=int(sys.argv[4]), memory=str(sys.argv[2]))
 elif cluster_mode == "yarn":
-    sc = init_orca_context("yarn", cores=8, num_nodes=4, memory="10g")
+    sc = init_orca_context("yarn", cores=int(sys.argv[3]), num_nodes=int(sys.argv[4]), memory=str(sys.argv[2]))
 elif cluster_mode == "k8s":
-    sc = init_orca_context(cluster_mode="k8s", cores=8, num_nodes=4, memory="20g",
+    sc = init_orca_context(cluster_mode="k8s", cores=int(sys.argv[3]), num_nodes=int(sys.argv[4]), memory=str(sys.argv[2]),
                            master="k8s://https://172.16.0.200:6443",
                            container_image="10.239.45.10/arda/intelanalytics/bigdl-k8s-spark-3.1.2:0.14.0-SNAPSHOT",
                            conf={"spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName": "nfsvolumeclaim",
@@ -80,14 +78,12 @@ elif cluster_mode == "spark-submit":  # To test k8s using spark-submit
     sc = init_orca_context(cluster_mode="spark-submit")
 
 
-# data_path = "/home/kai/Downloads"
 data_path = "./bigdl2.0/data"
 data_type = "ml-1m"
-# data_type = "ml-25m"
 # Need spark3 to support delimiter with more than one character.
 start = time.time()
 spark= OrcaContext.get_spark_session()
-from pyspark.sql.types import StructField, StructType, StringType, IntegerType
+from pyspark.sql.types import StructField, StructType, IntegerType
 
 schema = StructType(
     [
@@ -142,17 +138,12 @@ stats = est.fit(train_df,
                 batch_size=batch_size,
                 feature_cols=['user', 'item'],
                 label_cols=['label'],
-                steps_per_epoch=int(800000 // batch_size),
+                steps_per_epoch=int(0.8*num_sample // batch_size),
                 validation_data=test_df,
-                validation_steps =int(200000 // batch_size))
+                validation_steps =int(0.2*num_sample // batch_size))
 
 checkpoint_path = os.path.join(model_dir, "NCF.ckpt")
 est.save_checkpoint(checkpoint_path)
-
-
-# checkpoint_path = os.path.join(model_dir, "NCF.ckpt")
-# est.save_checkpoint(checkpoint_path)
-# print(model.get_weights())
 
 
 # evaluate with Estimator
