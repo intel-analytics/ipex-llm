@@ -30,6 +30,7 @@ def get_x_y(size):
     y = np.random.randn(size, future_seq_len, output_feature_dim)
     return x.astype(np.float32), y.astype(np.float32)
 
+
 class RandomDataset(Dataset):
     def __init__(self, size=1000):
         x, y = get_x_y(size)
@@ -42,15 +43,18 @@ class RandomDataset(Dataset):
     def __getitem__(self, idx):
         return self.x[idx], self.y[idx]
 
+
 def train_dataloader_creator(config):
     return DataLoader(RandomDataset(size=1000),
                       batch_size=config["batch_size"],
                       shuffle=True)
 
+
 def valid_dataloader_creator(config):
     return DataLoader(RandomDataset(size=400),
                       batch_size=config["batch_size"],
                       shuffle=True)
+
 
 class CustomizedNet(nn.Module):
     def __init__(self,
@@ -79,6 +83,7 @@ class CustomizedNet(nn.Module):
         x = torch.unsqueeze(x, 1)
         # x.shape = (num_sample, 1, output_size)
         return x
+
 
 def model_creator_pytorch(config):
     '''
