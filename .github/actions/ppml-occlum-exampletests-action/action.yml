@@ -61,8 +61,10 @@ runs:
         echo "example.2 bigdl lenet mnist"
         docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
              sed -i 's#        run_spark_lenet_mnist#        run_spark_lenet_mnist -b 4 -e 1#g' run_spark_on_occlum_glibc.sh && \
+             sed -i 's#                -f /host/data#                -f /host/data/lenet#g' run_spark_on_occlum_glibc.sh && \
              bash run_spark_on_occlum_glibc.sh lenet -b 8 -e 1 | tee bigdl-lenet-mnist.log && \
-             cat bigdl-lenet-mnist.log | egrep 'records/second. Loss is'"
+             cat bigdl-lenet-mnist.log | egrep 'records/second. Loss is' && \
+             sed -i 's#                -f /host/data/lenet#                -f /host/data#g' run_spark_on_occlum_glibc.sh"
         status_2_bigdl_lenet_mnist=$(echo $?)
         fi
 
@@ -72,8 +74,10 @@ runs:
         echo "example.3 bigdl resnet cifar10"
         docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
              sed -i 's#        run_spark_resnet_cifar#        run_spark_resnet_cifar --nEpochs 1#g' run_spark_on_occlum_glibc.sh && \
+             sed -i 's#                -f /host/data#                -f /host/data/cifar#g' run_spark_on_occlum_glibc.sh && \
              bash run_spark_on_occlum_glibc.sh resnet | tee bigdl-resnet-cifar10.log && \
-             cat bigdl-resnet-cifar10.log | egrep 'Current momentum is'"
+             cat bigdl-resnet-cifar10.log | egrep 'Current momentum is '&& \
+             sed -i 's#                -f /host/data/cifar#                -f /host/data#g' run_spark_on_occlum_glibc.sh"
         status_3_bigdl_resnet_cifar10=$(echo $?)
         fi
 
