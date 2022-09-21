@@ -614,7 +614,7 @@ class TSDataset:
         self.numpy_x = np.concatenate([rolling_result[i][0]
                                        for i in self._id_list],
                                       axis=concat_axis).astype(np.float32)
-        if horizon != 0 or time_enc:
+        if (horizon != 0 and is_predict is False) or time_enc:
             self.numpy_y = np.concatenate([rolling_result[i][1]
                                            for i in self._id_list],
                                           axis=concat_axis).astype(np.float32)

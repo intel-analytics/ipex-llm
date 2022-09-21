@@ -1092,3 +1092,31 @@ class TestTSDataset(TestCase):
                                        dt_col='datetime')
         with pytest.raises(RuntimeError):
             tsdata.get_cycle_length(aggregate='min', top_k=3)
+
+    def test_is_predict_of_roll(self):
+        df = get_ts_df()
+        horizon = random.randint(1, 10)
+        lookback = random.randint(1, 20)
+
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+
+        with pytest.raises(RuntimeError):
+            tsdata.to_torch_data_loader(roll=False)
+
+        # for BaseForecaster
+        data = tsdata.roll(lookback=lookback, horizon=horizon, is_predict=True).to_numpy()
+        _, y = data
+        assert y is None
+        
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+
+        with pytest.raises(RuntimeError):
+            tsdata.to_torch_data_loader(roll=False)
+
+        # for AutoformerForecaster
+        data = tsdata.roll(lookback=lookback, horizon=horizon, time_enc=True, is_predict=True).to_numpy()
+        assert len(data) == 4
+        assert data[1].shape[1] == lookback // 2
+        assert data[3].shape[1] == lookback // 2 + horizon
