@@ -20,7 +20,7 @@ import logging
 import numbers
 import torch
 import numpy as np
-from copy import copy
+import copy
 
 from bigdl.orca.data.ray_xshards import RayXShards
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
@@ -149,7 +149,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
 
         self.initialization_hook = initialization_hook
         self.config = {} if config is None else config
-        worker_config = copy(self.config)
+        worker_config = copy.copy(self.config)
         params = dict(
             model_creator=self.model_creator,
             optimizer_creator=self.optimizer_creator,
