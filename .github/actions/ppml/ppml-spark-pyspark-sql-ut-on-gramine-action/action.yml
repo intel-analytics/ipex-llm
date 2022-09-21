@@ -30,7 +30,7 @@ runs:
         $IMAGE bash
     - name: Prepare Spark Test-jars and Test-classes
       shell: bash
-      run： |
+      run: |
         cd /opt
         wget https://github.com/apache/spark/archive/refs/tags/v$SPARK_VERSION.zip
         unzip -q v$SPARK_VERSION.zip
