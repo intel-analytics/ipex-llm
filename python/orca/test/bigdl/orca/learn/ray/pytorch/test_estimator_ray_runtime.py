@@ -40,8 +40,33 @@ class LinearDataset(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.x)
 
+class SingleListDataset(torch.utils.data.Dataset):
+    def __init__(self, size) -> None:
+        super().__init__()
+        self.size = size
+        X1_1 = torch.rand(self.size // 2, 1)
+        X1_2 = torch.rand(self.size // 2, 1) + 1.5
+        self.X1 = torch.cat([X1_1, X1_2], dim=0)
+
+        X2_1 = torch.rand(self.size // 2, 1) + 1.5
+        X2_2 = torch.rand(self.size // 2, 1) + 3.0
+        self.X2 = torch.cat([X2_1, X2_2], dim=0)
+
+        Y1 = torch.zeros(self.size // 2, 1)
+        Y2 = torch.ones(self.size // 2, 1)
+        self.Y = torch.cat([Y1, Y2], dim=0)
+
+    def __getitem__(self, index):
+        return [self.X1[index], self.X2[index]], self.Y[index]
+    
+    def __len__(self):
+        return self.size
+
+DataSetMap = {"LinearDataset": LinearDataset,
+              "SingleListDataset": SingleListDataset}
+
 def train_data_loader(config, batch_size):
-    train_dataset = LinearDataset(size=config.get("data_size", 1000))
+    train_dataset = DataSetMap[config.get("dataset", "LinearDataset")](size=config.get("data_size", 1000))
     train_loader = torch.utils.data.DataLoader(
         train_dataset,
         batch_size=batch_size
@@ -49,7 +74,7 @@ def train_data_loader(config, batch_size):
     return train_loader
 
 def val_data_loader(config, batch_size):
-    val_dataset = LinearDataset(size=config.get("val_size", 400))
+    val_dataset = DataSetMap[config.get("dataset", "LinearDataset")](size=config.get("val_size", 400))
     validation_loader = torch.utils.data.DataLoader(
         val_dataset,
         batch_size=batch_size
@@ -78,9 +103,24 @@ class Net(nn.Module):
         y = self.out_act(a3)
         return y
 
+class SingleListInputModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.fc = nn.Linear(2, 1)
+        self.out_act = nn.Sigmoid()
+
+    def forward(self, input_list):
+        x = torch.cat(input_list, dim=1)
+        x = self.fc(x)
+        x = self.out_act(x)
+        return x
+
+ModelMap = {"Net": Net,
+            "SingleListInputModel": SingleListInputModel}
+
 def get_model(config):
     torch.manual_seed(0)
-    return Net()
+    return ModelMap[config.get("model", "Net")]()
 
 def get_optimizer(model, config):
     return torch.optim.SGD(model.parameters(), lr=config.get("lr", 1e-2))
@@ -105,6 +145,35 @@ class TestPytorchEstimator(TestCase):
         start_val_stats = estimator.evaluate(val_data_loader, batch_size=32)
         print(start_val_stats)
 
+        train_stats = estimator.fit(train_data_loader, epochs=1, batch_size=32)
+        print(train_stats)
+
+        end_val_stats = estimator.evaluate(val_data_loader, batch_size=32)
+        print(end_val_stats)
+
+        assert 0 < end_val_stats["Accuracy"] < 1
+        assert estimator.get_model()
+
+        # sanity check that training worked
+        dloss = end_val_stats["val_loss"] - start_val_stats["val_loss"]
+        dacc = (end_val_stats["Accuracy"] - start_val_stats["Accuracy"])
+        print(f"dLoss: {dloss}, dAcc: {dacc}")
+        assert dloss < 0 < dacc, "training sanity check failed. loss increased!"
+    
+    def test_singlelist_input(self):
+        estimator = Estimator.from_torch(model=get_model,
+                                        optimizer=get_optimizer,
+                                        loss=nn.BCELoss(),
+                                        metrics=Accuracy(),
+                                        config={"lr": 1e-2,
+                                                "model": "SingleListInputModel",
+                                                "dataset": "SingleListDataset"},
+                                        workers_per_node=2,
+                                        backend="ray",
+                                        sync_stats=True)
+        start_val_stats = estimator.evaluate(val_data_loader, batch_size=32)
+        print(start_val_stats)
+        
         train_stats = estimator.fit(train_data_loader, epochs=1, batch_size=32)
         print(train_stats)
 
