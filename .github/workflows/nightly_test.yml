@@ -1,7 +1,7 @@
 name: Nightly Test
 
 on:
-  pull_request:
+  #pull_request:
   schedule:
     - cron: '0 13 * * *' # GMT time, 13:00 GMT == 21:00 China
   workflow_dispatch:
@@ -317,7 +317,7 @@ jobs:
         type: workflow
   
   PPML-Occlum-ExampleTests:
-#    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Occlum-ExampleTests' || github.event.inputs.artifact == 'all' }} 
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Occlum-ExampleTests' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Wilwarin, ubuntu-20.04-lts]
 
     steps:
