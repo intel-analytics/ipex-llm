@@ -280,7 +280,7 @@ class TrainingOperator:
                 output = self.model(*features)
             else:
                 invalidInputError(False,
-                                  "Features should either be tensor, list/tuple or dict, "
+                                  "Features should be tensor, list/tuple or dict, "
                                   "but got {}".format(type(features)))
 
             if isinstance(output, tuple) or isinstance(output, list):
@@ -412,7 +412,7 @@ class TrainingOperator:
                 output = self.model(*features)
             else:
                 invalidInputError(False,
-                                  "Features should either be tensor, list/tuple or dict, "
+                                  "Features should be tensor, list/tuple or dict, "
                                   "but got {}".format(type(features)))
 
             loss = self.criterion(output, target)
