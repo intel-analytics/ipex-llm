@@ -15,12 +15,9 @@ import os
 import click
 import fnmatch
 import sys
-print("asdf")
 
 for files in os.listdir('/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/'):
-    print(files)
     if fnmatch.fnmatch(files, 'bigdl-ppml-*-python-api.zip'):
-        print("find api.zip")
         sys.path.append('/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/' + files)
         sys.path.append('/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/' + files + '/bigdl/ppml/fl/nn/generated')
 
