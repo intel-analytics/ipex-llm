@@ -512,6 +512,30 @@ class TestChronosModelTCNForecaster(TestCase):
             distributed_eval = forecaster.evaluate(val_data)
         stop_orca_context()
 
+    def test_tcn_forecaster_xshard_input_of_validation_data(self):
+        from bigdl.orca import init_orca_context, stop_orca_context
+        train_data, val_data, test_data = create_data()
+        init_orca_context(cores=4, memory="2g")
+        from bigdl.orca.data import XShards
+
+        def transform_to_dict(data):
+            return {'x': data[0], 'y': data[1]}
+
+        def transform_to_dict_x(data):
+            return {'x': data[0]}
+        train_data = XShards.partition(train_data).transform_shard(transform_to_dict)
+        val_data = XShards.partition(val_data).transform_shard(transform_to_dict)
+        test_data = XShards.partition(test_data).transform_shard(transform_to_dict_x)
+        forecaster = TCNForecaster(past_seq_len=24,
+                                    future_seq_len=5,
+                                    input_feature_num=1,
+                                    output_feature_num=1,
+                                    kernel_size=3,
+                                    lr=0.01,
+                                    distributed=False)
+        forecaster.fit(train_data, val_data, epochs=2)
+        stop_orca_context()
+
     @op_all
     @op_onnxrt16
     def test_tcn_forecaster_distributed(self):

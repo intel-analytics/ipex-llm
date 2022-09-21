@@ -254,14 +254,18 @@ class BasePytorchForecaster(Forecaster):
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
                |
-               | 2. pytorch dataloader:
+               | 2. a xshard item:
+               | each partition can be a dictionary of {'x': x, 'y': y}, where x and y's shape
+               | should follow the shape stated before.
+               |
+               | 3. pytorch dataloader:
                | the dataloader should return x, y in each iteration with the shape as following:
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
                |
-               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
+               | 4. A bigdl.chronos.data.tsdataset.TSDataset instance:
                | Forecaster will automatically process the TSDataset.
                | By default, TSDataset will be transformed to a pytorch dataloader,
                | which is memory-friendly while a little bit slower.
@@ -314,6 +318,10 @@ class BasePytorchForecaster(Forecaster):
                 warnings.warn("Xshards is collected to local since the "
                               "forecaster is non-distribued.")
                 data = xshard_to_np(data)
+            if isinstance(validation_data, SparkXShards) and not self.distributed:
+                warnings.warn("Xshards is collected to local since the "
+                              "forecaster is non-distribued.")
+                validation_data = xshard_to_np(validation_data)
         except ImportError:
             pass
 
