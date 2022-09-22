@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import logging
 from typing import List
 import numpy as np
 import pandas as pd
@@ -22,7 +23,11 @@ import click
 import torch
 from torch import Tensor, nn
 from bigdl.ppml.fl.estimator import Estimator
+from bigdl.ppml.fl.nn.fl_context import init_fl_context
+from bigdl.ppml.fl.psi.psi_client import PSI
 
+fmt = '%(asctime)s %(levelname)s {%(module)s:%(lineno)d} - %(message)s'
+logging.basicConfig(format=fmt, level=logging.INFO)
 
 class LocalModel(nn.Module):
     def __init__(self, num_feature) -> None:
@@ -49,17 +54,15 @@ class ServerModel(nn.Module):
 
 @click.command()
 @click.option('--load_model', default=False)
-def run_client(load_model):
-    # fl_server = FLServer(2)
-    # fl_server.build()
-    # fl_server.start()
-    df_train = pd.read_csv('.data/diabetes-vfl-1.csv')    
+@click.option('--data_path', default="./data/diabetes-vfl-1.csv")
+def run_client(load_model, data_path):
+    init_fl_context(1)
+    df_train = pd.read_csv(data_path)   
     
-    # this should wait for the merge of 2 FLServer (Py4J Java gRPC and Python gRPC)
-    # df_train['ID'] = df_train['ID'].astype(str)
-    # psi = PSI()
-    # intersection = psi.get_intersection(list(df_train['ID']))
-    # df_train = df_train[df_train['ID'].isin(intersection)]
+    df_train['ID'] = df_train['ID'].astype(str)
+    psi = PSI()
+    intersection = psi.get_intersection(list(df_train['ID']))
+    df_train = df_train[df_train['ID'].isin(intersection)]
 
     df_x = df_train.drop('Outcome', 1)
     df_y = df_train['Outcome']
@@ -72,11 +75,9 @@ def run_client(load_model):
     if load_model:
         model = torch.load('/tmp/pytorch_client_model_1.pt')
         ppl = Estimator.from_torch(client_model=model,
-                                   client_id='1',
                                    loss_fn=loss_fn,
                                    optimizer_cls=torch.optim.SGD,
-                                   optimizer_args={'lr':1e-5},
-                                   target='localhost:8980',
+                                   optimizer_args={'lr':1e-4},
                                    server_model_path='/tmp/pytorch_server_model',
                                    client_model_path='/tmp/pytorch_client_model_1.pt')
         ppl.load_server_model('/tmp/pytorch_server_model')
@@ -86,11 +87,9 @@ def run_client(load_model):
         
         server_model = ServerModel()
         ppl = Estimator.from_torch(client_model=model,
-                                   client_id='1',
                                    loss_fn=loss_fn,
                                    optimizer_cls=torch.optim.SGD,
-                                   optimizer_args={'lr':1e-5},
-                                   target='localhost:8980',
+                                   optimizer_args={'lr':1e-4},
                                    server_model=server_model,
                                    server_model_path='/tmp/pytorch_server_model',
                                    client_model_path='/tmp/pytorch_client_model_1.pt')

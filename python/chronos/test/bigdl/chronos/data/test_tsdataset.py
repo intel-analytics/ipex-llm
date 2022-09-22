@@ -355,16 +355,31 @@ class TestTSDataset(TestCase):
     def test_tsdata_roll_timeenc(self):
         horizon = random.randint(1, 9)
         lookback = random.randint(10, 20)
+
+        # single-id test
         for freq in ["D", "2D"]:
             df = get_int_target_df(freq=freq)
+            expected_sample_num = len(df) - horizon - lookback + 1
             tsdata = TSDataset.from_pandas(df, dt_col='datetime', target_col='value', id_col="id")
             x, y, x_time, y_time =\
                 tsdata.roll(lookback=lookback, horizon=horizon,
                             time_enc=True, label_len=lookback-horizon).to_numpy()
-            assert x.shape[1:] == (lookback, 1)
-            assert y.shape[1:] == (lookback, 1)
-            assert x_time.shape[1:] == (lookback, 3)
-            assert y_time.shape[1:] == (lookback, 3)
+            assert x.shape == (expected_sample_num, lookback, 1)
+            assert y.shape == (expected_sample_num, lookback, 1)
+            assert x_time.shape == (expected_sample_num, lookback, 3)
+            assert y_time.shape == (expected_sample_num, lookback, 3)
+
+        # multi-id test
+        df = get_multi_id_ts_df()
+        tsdata = TSDataset.from_pandas(df, dt_col='datetime', target_col='value', id_col="id")
+        x, y, x_time, y_time =\
+            tsdata.roll(lookback=lookback, horizon=horizon,
+                        time_enc=True, label_len=lookback-horizon).to_numpy()
+        assert x.shape[1:] == (lookback, 1)
+        assert y.shape[1:] == (lookback, 1)
+        assert x_time.shape[1:] == (lookback, 3)
+        assert y_time.shape[1:] == (lookback, 3)
+        assert x.shape[0] == y.shape[0] == x_time.shape[0] == y_time.shape[0]
 
     def test_tsdata_roll_timeenc_predict(self):
         horizon = 10
@@ -384,24 +399,42 @@ class TestTSDataset(TestCase):
     def test_tsdata_roll_timeenc_to_torch_data_loader(self):
         horizon = random.randint(1, 9)
         lookback = random.randint(10, 20)
-        df = get_int_target_df()
+
+        # single-id test
+        df = get_multi_id_ts_df()
         tsdata = TSDataset.from_pandas(df, dt_col='datetime', target_col='value', id_col="id")
         dataloader =\
-            tsdata.to_torch_data_loader(roll=True, lookback=lookback, horizon=horizon,
+            tsdata.to_torch_data_loader(lookback=lookback, horizon=horizon,
                         time_enc=True, label_len=lookback-horizon)
         x, y, x_time, y_time = next(iter(dataloader))
         assert x.shape[1:] == (lookback, 1)
         assert y.shape[1:] == (lookback, 1)
         assert x_time.shape[1:] == (lookback, 3)
         assert y_time.shape[1:] == (lookback, 3)
-    
+        # white box check
+        assert dataloader.dataset.data_stamp_arr.shape[0] == dataloader.dataset.arr.shape[0]
+
+        # multiple-id test
+        df = get_multi_id_ts_df()
+        tsdata = TSDataset.from_pandas(df, dt_col='datetime', target_col='value', id_col="id")
+        dataloader =\
+            tsdata.to_torch_data_loader(lookback=lookback, horizon=horizon,
+                        time_enc=True, label_len=lookback-horizon)
+        x, y, x_time, y_time = next(iter(dataloader))
+        assert x.shape[1:] == (lookback, 1)
+        assert y.shape[1:] == (lookback, 1)
+        assert x_time.shape[1:] == (lookback, 3)
+        assert y_time.shape[1:] == (lookback, 3)
+        # white box check
+        assert dataloader.dataset.data_stamp_arr.shape[0] == dataloader.dataset.arr.shape[0]
+
     def test_tsdata_roll_timeenc_to_torch_data_loader_predict(self):
         horizon = 10
         lookback = random.randint(10, 20)
         df = get_int_target_df()
         tsdata = TSDataset.from_pandas(df, dt_col='datetime', target_col='value', id_col="id")
         dataloader =\
-            tsdata.to_torch_data_loader(roll=True, lookback=lookback, horizon=horizon,
+            tsdata.to_torch_data_loader(lookback=lookback, horizon=horizon,
                         time_enc=True, label_len=5, is_predict=True, batch_size=len(df))
         x, y, x_time, y_time = next(iter(dataloader))
         assert x.shape[1:] == (lookback, 1)
@@ -423,7 +456,6 @@ class TestTSDataset(TestCase):
 
             # train
             torch_loader = tsdata.to_torch_data_loader(batch_size=batch_size,
-                                                       roll=True,
                                                        lookback=lookback,
                                                        horizon=horizon)
             for x_batch, y_batch in torch_loader:
@@ -433,7 +465,6 @@ class TestTSDataset(TestCase):
 
             # test
             torch_loader = tsdata.to_torch_data_loader(batch_size=batch_size,
-                                                       roll=True,
                                                        lookback=lookback,
                                                        horizon=0)
             for x_batch in torch_loader:
@@ -442,7 +473,6 @@ class TestTSDataset(TestCase):
 
             # specify feature_col
             torch_loader = tsdata.to_torch_data_loader(batch_size=batch_size,
-                                                       roll=True,
                                                        lookback=lookback,
                                                        horizon=horizon,
                                                        feature_col=[])
@@ -454,7 +484,6 @@ class TestTSDataset(TestCase):
             # Non-subset relationship
             with pytest.raises(ValueError):
                 tsdata.to_torch_data_loader(batch_size=batch_size,
-                                            roll=True,
                                             lookback=lookback,
                                             horizon=horizon,
                                             target_col=['value', 'extra feature'])
@@ -462,7 +491,6 @@ class TestTSDataset(TestCase):
             # specify horizon_list
             horizon_list = [1, 3, 5]
             torch_loader = tsdata.to_torch_data_loader(batch_size=batch_size,
-                                                       roll=True,
                                                        lookback=lookback,
                                                        horizon=horizon_list)
             for x_batch, y_batch in torch_loader:
@@ -474,7 +502,6 @@ class TestTSDataset(TestCase):
             tsdata = TSDataset.from_pandas(df, dt_col="datetime",
                                            target_col=["value", "extra feature"], id_col="id")
             torch_loader = tsdata.to_torch_data_loader(batch_size=batch_size,
-                                                       roll=True,
                                                        lookback=lookback,
                                                        horizon=horizon)
             for x_batch, y_batch in torch_loader:
@@ -492,10 +519,11 @@ class TestTSDataset(TestCase):
                                        extra_feature_col=["extra feature"], id_col="id")
 
         with pytest.raises(RuntimeError):
-            tsdata.to_torch_data_loader()
+            tsdata.to_torch_data_loader(roll=False)
 
         tsdata.roll(lookback=lookback, horizon=horizon)
         loader = tsdata.to_torch_data_loader(batch_size=batch_size,
+                                             roll=False,
                                              lookback=lookback,
                                              horizon=horizon)
         for x_batch, y_batch in loader:
@@ -510,7 +538,7 @@ class TestTSDataset(TestCase):
         df.insert(0, "datetime", pd.date_range(start="2022-7-22", periods=100, freq="H"))
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="target")
         with pytest.raises(RuntimeError):
-            tsdata.to_torch_data_loader(roll=True, lookback=lookback, horizon=horizon)
+            tsdata.to_torch_data_loader(lookback=lookback, horizon=horizon)
 
 
     def test_tsdata_multi_unscale_numpy_torch_load(self):
@@ -536,7 +564,6 @@ class TestTSDataset(TestCase):
             tsdata.scale(stand, fit=tsdata is tsdata_train)
 
         test_loader = tsdata_test.to_torch_data_loader(batch_size=batch_size,
-                                                       roll=True,
                                                        lookback=lookback,
                                                        horizon=horizon)
         import torch

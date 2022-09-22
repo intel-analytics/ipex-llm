@@ -1,0 +1,43 @@
+name: 'Run Orca Ray Ctx Example'
+description: 'Run Orca Ray Ctx Example'
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Env
+      shell: bash
+      run: |
+        apt-get update
+        apt-get install wget
+    
+    - name: Set up Python 
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7.11'
+    
+    - name: Install dependencies
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install --upgrade setuptools==58.0.4
+
+        pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-friesian bigdl-friesian-spark3
+        pip uninstall -r python/orca/dev/example/requirements-ray.txt -y
+        pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r python/orca/dev/example/requirements-ray.txt 
+        pip install pytest
+
+        pip install cmake==3.16.3
+        pip install tensorflow==2.3.0
+        HOROVOD_WITH_TENSORFLOW=1; HOROVOD_WITH_GLOO=1; pip install --no-cache-dir horovod==0.19.2
+
+        pip install ray==1.11.0
+        pip install --pre --upgrade bigdl-orca
+        
+    - name: Run Test
+      shell: bash
+      run: |
+        export SPARK_LOCAL_HOSTNAME=localhost
+        chmod a+x python/orca/dev/example/run-example-test-ray-runtime.sh
+        python/orca/dev/example/run-example-test-ray-runtime.sh
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

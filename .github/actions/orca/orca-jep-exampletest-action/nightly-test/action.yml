@@ -1,0 +1,24 @@
+name: 'Run Orca Jep ExampleTest'
+description: 'Run Orca Jep ExampleTest'
+runs:
+  using: "composite"
+  steps:
+    - name: Run Test
+      shell: bash
+      run: |
+        source activate py37
+        export SPARK_LOCAL_HOSTNAME=localhost
+        chmod a+x python/orca/dev/example/run-example-tests-jep.sh
+        chmod a+x apps/run-app-tests-pytorch-pip.sh
+        if [ -f /root/.cache/torch/hub/checkpoints/celebaHQ16_december_s7_i96000-9c72988c.pth ]
+        then
+          rm /root/.cache/torch/hub/checkpoints/celebaHQ16_december_s7_i96000-9c72988c.pth
+        fi
+        wget -P /root/.cache/torch/hub/checkpoints/ $HTTP_URI/analytics-zoo-models/face-generation/celebaHQ16_december_s7_i96000-9c72988c.pth
+
+        bash python/orca/dev/example/run-example-tests-jep.sh
+        bash apps/run-app-tests-pytorch-pip.sh
+        source deactivate
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

@@ -46,7 +46,7 @@ class NNSpec extends FLSpec {
       .csv(this.getClass.getClassLoader.getResource("diabetes-test.csv").getPath)
     val testDf = trainDf.drop("Outcome")
     trainDf.show()
-    FLContext.initFLContext("1", target)
+    FLContext.initFLContext(1, target)
     val lr = new HFLLogisticRegression(trainDf.columns.size - 1)
     lr.fitDataFrame(trainDf, valData = trainDf)
     lr.evaluateDataFrame(trainDf)

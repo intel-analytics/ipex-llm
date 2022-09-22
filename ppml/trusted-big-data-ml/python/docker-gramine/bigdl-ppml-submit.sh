@@ -1,5 +1,6 @@
 #!/bin/bash
 SGX_ENABLED=false
+LOG_FILE="bigdl-ppml-submit.log"
 application_args=""
 input_args=""
 
@@ -40,6 +41,11 @@ while [[ $# -gt 0 ]]; do
     --verbose)
       input_args="$input_args $1"
       shift # past argument
+      ;;
+    --log-file)
+      LOG_FILE="$2"
+      shift
+      shift
       ;;
     -*|--*)
       input_args="$input_args $1 $2"
@@ -125,7 +131,7 @@ set -x
 spark_submit_command="${spark_submit_command} ${input_args} ${application_args}"
 echo "spark_submit_command $spark_submit_command"
 if [ "$SGX_ENABLED" == "true" ] && [ "$DEPLOY_MODE" != "cluster" ]; then
-    gramine-sgx bash 2>&1 | tee bigdl-ppml-submit.log
+    gramine-sgx bash 2>&1 | tee $LOG_FILE
 else
-    $spark_submit_command 2>&1 | tee bigdl-ppml-submit.log
+    $spark_submit_command 2>&1 | tee $LOG_FILE
 fi

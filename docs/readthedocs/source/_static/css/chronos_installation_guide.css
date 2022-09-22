@@ -1,51 +1,49 @@
-/* Border styles */
-#table-1 tr, #table-1 td, #table-1 th  {
+.displayed {
+    display: block;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#table-1 {
+    border-bottom-width: 0px;
+    margin:auto;
+}
+
+#table-1 tr, td{
+    background-color: rgb(240, 241, 245);
+    height: 30px;
     border-width: 2px;
     border-style: solid;
     border-color: white ;
     padding: 5px;
-    }
+}
 
-    #table-1 {
-    border-bottom-width: 0px;
-    }
-    
-    /* Padding and font style */
-    #table-1 td, #table-1 th {
+#table-1 tr td:first-child{
+    font-weight: 600;
+}
+
+#table-1 td{
     font-size: 16px;
     font-family: Verdana;
     color: rgb(15, 24, 33);
-    }
-    
-    /* Alternating background colors */
-    #table-1 tr, td{
-        background-color: rgb(240, 241, 245);
-        height: 30px;
-    }
-    
-    .displayed {
-        display: block;
-        text-align: center;
-        margin-left: auto;
-        margin-right: auto }
+    text-align: center;
+    /* height: 56px;
+    line-height: 56px; */
+    width: 160px;
+}
 
-    /* setting div id=cmd width */
-    #cmd {
-        width: 450px;
-        height: 35px;
-        overflow:unset;
-    }
+#table-1 button {
+    font-size: 16px;
+    border-color: transparent;
+    width: 100%;
+    height: 100%;
+    background-color: transparent;
+    cursor: pointer;
+}
 
-    td, th {
-        text-align: center;
-    }
-
-    #table-1 button {
-        border-color: transparent;
-        width: 100%;
-        height: 100%;
-        background-color: transparent;
-        cursor: pointer;
-        font-size: 16px;
-    }
-
+#cmd {
+    width: auto;
+    height: 35px;
+    overflow:unset;
+}

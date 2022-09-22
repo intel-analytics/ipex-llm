@@ -100,6 +100,15 @@ The examples are run in the docker container. Attach it and see the results (`do
 
 Download the Cifar-10 dataset (CIFAR-10 binary version) from [here](https://www.cs.toronto.edu/~kriz/cifar.html). The dataset contains 5 files, i.e, `data_batch_1.bin`, `data_batch_2.bin`, `data_batch_3.bin`, `data_batch_4.bin`, `data_batch_5.bin` and `test_batch.bin`. Put all the files in `data` directory.
 
+You can enlarge the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+``` bash
+#start-spark-local.sh
+-e SGX_MEM_SIZE=30GB \
+-e SGX_THREAD=1024 \
+-e SGX_HEAP=1GB \
+-e SGX_KERNEL_HEAP=4GB \
+```
+
 To run BigDL ResNet CIFAR-10 example, start the docker container with:
 
 ``` bash
@@ -121,7 +130,7 @@ The examples are run in the docker container. Attach it and see the results (`do
 You can change the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
 ``` bash
 #start-spark-local.sh
--e SGX_MEM_SIZE=16GB \
+-e SGX_MEM_SIZE=24GB \
 -e SGX_THREAD=1024 \
 -e SGX_HEAP=1GB \
 -e SGX_KERNEL_HEAP=1GB \
@@ -155,6 +164,16 @@ You will find `output` folder under `/path/to/zoo-tutorials/tpch-spark/dbgen` wh
 ## Spark SQL Scala Unit Tests
 
 ### Run Spark SQl Scala Unit Tests
+
+You can enlarge the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+``` bash
+#start-spark-local.sh
+-e SGX_MEM_SIZE=60GB \
+-e SGX_THREAD=1024 \
+-e SGX_HEAP=1GB \
+-e SGX_KERNEL_HEAP=1GB \
+```
+
 To run Spark Sql Scala Unit Tests, start the docker container with:
 ```
 bash start-spark-local.sh ut
@@ -190,15 +209,15 @@ And the log files will be saved to `data/olog` folder.
 ## BigDL XGBoost Example
 
 ### Download data
-You can download the criteo-1tb-click-logs-dataset from [here](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/). Split 10g data from the dataset and put it into a folder. Then mount `/path/to/data/10g_data` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
+You can download the criteo-1tb-click-logs-dataset from [here](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/). Split 1g data from the dataset and put it into a folder. Then mount `/path/to/data/1g_data` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
 ```
--v /path/to/data/10g_data:/opt/occlum_spark/data
+-v /path/to/data/1g_data:/opt/occlum_spark/data
 ```
 
 You can enlarge the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
 ``` bash
 #start-spark-local.sh
--e SGX_MEM_SIZE=60GB \
+-e SGX_MEM_SIZE=30GB \
 -e SGX_THREAD=1024 \
 -e SGX_HEAP=1GB \
 -e SGX_KERNEL_HEAP=1GB \
@@ -211,7 +230,7 @@ You can change the configuration in [start-spark-local.sh](https://github.com/in
 -s /host/data/model  // -s means savepath of model
 -t 2                 // -t means threads num
 -r 100               // -r means Round num
--d 2                 // -d means maxdepth
+-d 2                 // -d means maxDepth
 -w 1                 // -w means Workers num
 ```
 
@@ -232,6 +251,47 @@ You can find XGBoost model under folder `/path/to/data/`.
 /path/to/data/
 ├── data
 │   └── XGBoostClassificationModel
+└── metadata
+    ├── part-00000
+    └── _SUCCESS
+```
+
+## BigDL GBT Example
+
+### Download data
+You can download the criteo-1tb-click-logs-dataset from [here](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/). Split 1g data from the dataset and put it into a folder. Then mount `/path/to/data/1g_data` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
+```
+-v /path/to/data/1g_data:/opt/occlum_spark/data
+```
+
+You can enlarge the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+``` bash
+#start-spark-local.sh
+-e SGX_MEM_SIZE=30GB \
+-e SGX_THREAD=1024 \
+-e SGX_HEAP=1GB \
+-e SGX_KERNEL_HEAP=1GB \
+```
+
+You can change the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+``` bash
+#start-spark-local.sh
+-i /host/data        // -i means inputpath of training data
+-s /host/data/model  // -s means savepath of model
+-I 100               // -r means maxInter
+-d 5                 // -d means maxDepth
+```
+
+Start run BigDL Spark GBT example:
+```
+bash start-spark-local.sh gbt
+```
+
+You can find GBT result under folder `/path/to/data/`.
+```
+/path/to/data/
+├── data
+├── treesMetadata
 └── metadata
     ├── part-00000
     └── _SUCCESS

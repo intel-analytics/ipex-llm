@@ -25,7 +25,7 @@ class DummyAttestationServiceSpec extends FlatSpec with Matchers {
     val logger: Logger = dummyAttestationService.logger
 
     "Get Quote " should "work" in {
-        val quote = dummyAttestationService.getQuoteFromServer()
+        val quote = dummyAttestationService.getQuoteFromServer("")
         quote shouldNot equal ("")
         logger.info(quote)
     }

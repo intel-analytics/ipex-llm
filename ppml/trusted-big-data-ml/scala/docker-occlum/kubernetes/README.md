@@ -24,6 +24,7 @@ bash build-docker-image.sh
 2. Download [Spark 3.1.2](https://archive.apache.org/dist/spark/spark-3.1.2/spark-3.1.2-bin-hadoop2.7.tgz), and setup `SPARK_HOME`.
 3. `export kubernetes_master_url=your_k8s_master` or replace `${kubernetes_master_url}` with your k8s master url in `run_spark_xxx.sh`.
 4. Modify `driver.yaml` and `executor.yaml` for your applications.
+   In our demo example, we mount SGX devices into container or pod. Mount device requires privileged: true. In production deployment, please use K8S SGX device plugin with device-plugin setting in yaml.
 
 ## Examples
 
@@ -73,18 +74,18 @@ bash build-docker-image.sh
     - name: DRIVER_MEMORY
       value: "2g"
     - name: SGX_MEM_SIZE
-      value: "4GB"
+      value: "20GB"
     - name: SGX_THREAD
-      value: "128"
+      value: "512"
 ```
 
 ```yaml
 #executor.yaml
     env:
     - name: SGX_MEM_SIZE
-      value: "4GB"
+      value: "10GB"
     - name: SGX_THREAD
-      value: "128"
+      value: "512"
 ```
 
 ### Spark ML GradientBoostedTreeClassifier example
@@ -99,82 +100,32 @@ bash build-docker-image.sh
 ./run_spark_sql.sh
 ```
 
-### Run Spark XGBoost example
-
-#### UCI dataset [iris.data](https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data)
-
-Prepare UCI dataset `iris.data` and put this file in folder `/tmp/xgboost_data`. 
-You can change the path to iris.data via change mount path `data-exchange` in `executor.yaml`.
-Then:
-```bash
-./run_spark_xgboost.sh
-```
-Parameters:
-
-* path_to_iris.data : String.
-
-  For example, yout host path to iris.data is `/tmp/xgboost_data/iris.data` then this parameter in `run_spark_xgboost.sh` is `/host/data/xgboost_data`.
-* num_threads : Int
-* num_round : Int
-* path_to_model_to_be_saved : String.
-
-After training, you can find xgboost model in folder `/tmp/path_to_model_to_be_saved`.
+### Run Spark GBTClassifier example using CriteoClickLogsDataset
 
 #### Criteo 1TB Click Logs [dataset](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/)
 
-Split 50G data from this dataset and put it into `/tmp/xgboost_data`. 
-Then change the `class` in [script](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/kubernetes/run_spark_xgboost.sh#L7) to
-`com.intel.analytics.bigdl.dllib.examples.nnframes.xgboost.xgbClassifierTrainingExampleOnCriteoClickLogsDataset`.
-
-Add these configurations to [script](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/kubernetes/run_spark_xgboost.sh):
-
-```bash
-    --conf spark.driver.extraClassPath=local:///opt/spark/jars/* \
-    --conf spark.executor.extraClassPath=local:///opt/spark/jars/* \
-    --conf spark.cores.max=64 \
-    --conf spark.task.cpus=32 \
-    --conf spark.kubernetes.driverEnv.DRIVER_MEMORY=10g \
-    --conf spark.kubernetes.driverEnv.SGX_MEM_SIZE="40GB" \
-    --conf spark.kubernetes.driverEnv.META_SPACE=1024m \
-    --conf spark.kubernetes.driverEnv.SGX_HEAP="10GB" \
-    --conf spark.kubernetes.driverEnv.SGX_KERNEL_HEAP="4GB" \
-    --conf spark.executorEnv.SGX_MEM_SIZE="178GB" \
-    --conf spark.executorEnv.SGX_KERNEL_HEAP="4GB" \
-    --conf spark.executorEnv.SGX_HEAP="150GB" \
-    --executor-cores 32 \
-    --executor-memory 10g \
-    --driver-memory 10g
-```
-
-Change the `parameters` to:
-
-```commandline
--i /host/data/xgboost_data -s /host/data/xgboost_criteo_model -t 32 -r 100 -d 10 -w 2
-```
-
+Split 1g dataset and put it into folder `/tmp/gbt_data`. 
+You can change the path to data via change mount path `data-exchange` in `executor.yaml`.
 Then:
-
 ```bash
-./run_spark_xgboost.sh
+./run_spark_gbt_criteo.sh
 ```
+
 Parameters:
 
-* -i means inputpath_to_Criteo_data : String.
+* -i means input_path : String.
 
-    For example, yout host path to Criteo dateset is `/tmp/xgboost_data/criteo` then this parameter in `run_spark_xgboost.sh` is `/host/data/xgboost_data`.
-* -s means savepath_to_model_to_be_saved : String.
+    For example, yout host path to Criteo dateset is `/tmp/gbt_data/criteo` then this parameter in `run_spark_gbt_criteo.sh` is `/host/data/gbt_data`.
+* -s means save_path : String.
 
-    After training, you can find xgboost model in folder `/tmp/path_to_model_to_be_saved`.
+    After training, you can find gbt result in folder `/tmp/path_to_save`.
 
-* -t means num_threads : Int
-* -r means num_round : Int
+* -I means max_Iter : Int
 * -d means max_depth: Int.
-* -w means num_workers: Int.
-
-**Note: make sure num_threads is no larger than spark.task.cpus.**
+We recommend to use hdfs to read input-data and write output-result instead of mouting data.
 
 #### Source code
-You can find source code [here](https://github.com/intel-analytics/BigDL/tree/main/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/nnframes/xgboost).
+You can find source code [here](https://github.com/intel-analytics/BigDL/tree/main/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/nnframes/gbt/gbtClassifierTrainingExampleOnCriteoClickLogsDataset).
 
 ### Run Spark TPC-H example
 
@@ -246,6 +197,85 @@ Then run the script.
 ./run_spark_tpch.sh
 ```
 
+### [Deprecated] Spark XGBoost example
+
+> Warning: Running XGBoost in distributed mode is not safe due to the fact that Rabit's network (contains gradient, split, and env) is not protected.
+
+#### UCI dataset [iris.data](https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data)
+
+Prepare UCI dataset `iris.data` and put this file in folder `/tmp/xgboost_data`. 
+You can change the path to iris.data via change mount path `data-exchange` in `executor.yaml`.
+Then:
+```bash
+./run_spark_xgboost.sh
+```
+Parameters:
+
+* path_to_iris.data : String.
+
+  For example, yout host path to iris.data is `/tmp/xgboost_data/iris.data` then this parameter in `run_spark_xgboost.sh` is `/host/data/xgboost_data`.
+* num_threads : Int
+* num_round : Int
+* path_to_model_to_be_saved : String.
+
+After training, you can find xgboost model in folder `/tmp/path_to_model_to_be_saved`.
+
+#### Criteo 1TB Click Logs [dataset](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/)
+
+Split 1G data from this dataset and put it into `/tmp/xgboost_data`. 
+Then change the `class` in [script](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/kubernetes/run_spark_xgboost.sh#L7) to
+`com.intel.analytics.bigdl.dllib.example.nnframes.xgboost.xgbClassifierTrainingExampleOnCriteoClickLogsDataset`.
+
+Add these configurations to [script](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/kubernetes/run_spark_xgboost.sh):
+
+```bash
+    --conf spark.driver.extraClassPath=local:///opt/spark/jars/* \
+    --conf spark.executor.extraClassPath=local:///opt/spark/jars/* \
+    --conf spark.task.cpus=6 \
+    --conf spark.cores.max=12 \
+    --conf spark.executor.instances=2 \
+    --conf spark.kubernetes.driverEnv.DRIVER_MEMORY=1g \
+    --conf spark.kubernetes.driverEnv.SGX_MEM_SIZE="12GB" \
+    --conf spark.kubernetes.driverEnv.META_SPACE=1024m \
+    --conf spark.kubernetes.driverEnv.SGX_HEAP="1GB" \
+    --conf spark.kubernetes.driverEnv.SGX_KERNEL_HEAP="2GB" \
+    --conf spark.executorEnv.SGX_MEM_SIZE="10GB" \
+    --conf spark.executorEnv.SGX_KERNEL_HEAP="1GB" \
+    --conf spark.executorEnv.SGX_HEAP="1GB" \
+    --executor-cores 6 \
+    --executor-memory 3g \
+    --driver-memory 1g \
+    --conf spark.executorEnv.SGX_EXECUTOR_JVM_MEM_SIZE_NO="3G" \
+    --conf spark.kubernetes.driverEnv.SGX_DRIVER_JVM_MEM_SIZE="1G" 
+```
+
+Change the `parameters` to:
+
+```commandline
+-i /host/data/xgboost_data -s /host/data/xgboost_criteo_model -t 32 -r 100 -d 10 -w 2
+```
+
+Then:
+
+```bash
+./run_spark_xgboost.sh
+```
+Parameters:
+
+* -i means inputpath_to_Criteo_data : String.
+
+    For example, yout host path to Criteo dateset is `/tmp/xgboost_data/criteo` then this parameter in `run_spark_xgboost.sh` is `/host/data/xgboost_data`.
+* -s means savepath_to_model_to_be_saved : String.
+
+    After training, you can find xgboost model in folder `/tmp/path_to_model_to_be_saved`.
+
+* -t means num_threads : Int
+* -r means num_round : Int
+* -d means max_depth: Int.
+* -w means num_workers: Int.
+
+**Note: make sure num_threads is no larger than spark.task.cpus.**
+
 ## How to debug
 
-Modify the `--conf spark.kubernetes.sgx.log.level=off \` to one of `off, error, warn, debug, info, and trace` in `run_spark_xx.sh`.
+Modify the `--conf spark.kubernetes.sgx.log.level=off \` to one of `debug or trace` in `run_spark_xx.sh`.

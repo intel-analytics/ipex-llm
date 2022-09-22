@@ -159,13 +159,13 @@ class TFEstimator(object):
                     else:
                         sess.run(tf.global_variables_initializer())
 
-                    zoo_ckpt_path = os.path.join(self._model_dir, "analytics-zoo")
+                    ckpt_path = os.path.join(self._model_dir, "bigdl-tfpark")
 
                     opt = TFOptimizer.from_train_op(spec.train_op,
                                                     spec.loss,
                                                     sess=sess,
                                                     dataset=result,
-                                                    model_dir=zoo_ckpt_path,
+                                                    model_dir=ckpt_path,
                                                     session_config=session_config)
 
                     start_step = sess.run(global_step_tensor)

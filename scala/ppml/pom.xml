@@ -64,7 +64,17 @@
                     <groupId>org.apache.parquet</groupId>
                     <artifactId>parquet-hadoop</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-compress</artifactId>
+                </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.21</version>
+            <scope>${spark-scope}</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.parquet</groupId>
@@ -150,7 +160,7 @@
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
-            <version>3.15.8</version>
+            <version>3.19.2</version>
         </dependency>
         <dependency>
             <groupId>com.google.protobuf</groupId>
@@ -179,6 +189,12 @@
             <groupId>com.intel.analytics.bigdl</groupId>
             <artifactId>bigdl-dllib-spark_${spark.version}</artifactId>
             <version>2.1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.intel.analytics.bigdl.core.dist</groupId>
+            <artifactId>all</artifactId>
+            <version>2.1.0-SNAPSHOT</version>
+            <scope>${bigdl-core-all-scope}</scope>
         </dependency>
         <dependency>
             <groupId>com.intel.analytics.bigdl</groupId>
@@ -418,4 +434,20 @@
             </plugin>
         </plugins>
     </build>
+
+     <profiles>
+        <profile>
+            <id>linux</id>
+            <properties>
+              <bigdl-core-all-scope>provided</bigdl-core-all-scope>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>mac</id>
+            <properties>
+              <bigdl-core-all-scope>provided</bigdl-core-all-scope>
+            </properties>
+        </profile>
+    </profiles>
 </project>

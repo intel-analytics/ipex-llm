@@ -189,9 +189,9 @@ Please refer to the API doc [`roll`](../../PythonAPI/Chronos/tsdataset.html#bigd
 .. note:: 
     **Difference between `roll` and `to_torch_data_loader`**:
     
-    `.roll(...)` performs the rolling before RR forecasters/auto models training while `.to_torch_data_loader(roll=True, ...)` performs rolling during the training.
+    `.roll(...)` performs the rolling before RR forecasters/auto models training while `.to_torch_data_loader(...)` performs rolling during the training.
     
-    It is fine to use either of them when you have a relatively small dataset (less than 1G). `.to_torch_data_loader(roll=True, ...)` is recommended when you have a large dataset (larger than 1G) to save memory usage.
+    It is fine to use either of them when you have a relatively small dataset (less than 1G). `.to_torch_data_loader(...)` is recommended when you have a large dataset (larger than 1G) to save memory usage.
 ```
 
 ```eval_rst
@@ -251,7 +251,7 @@ Built-in Dataset supports the function of data downloading, preprocessing, and r
 
 Specify the `name`, the raw data file will be saved in the specified `path` (defaults to ~/.chronos/dataset). `redownload` can help you re-download the files you need.
 
-When `with_split` is set to True, the length of the data set will be divided according to the specified `val_ratio` and `test_ratio`, and three `TSDataset` will be returned. `with_split` defaults to False, that is, only one `TSDataset` is returned.
+When `with_split` is set to True, the length of the data set will be divided according to the specified `val_ratio` and `test_ratio`, and three `TSDataset` will be returned. `with_split` defaults to True, `val_ratio` and `test_ratio` defaults to **0.1**. If you need only one `TSDataset`, just specify `with_split` to False.
 About `TSDataset`, more details, please refer to [here](../../PythonAPI/Chronos/tsdataset.html).
 
 ```python

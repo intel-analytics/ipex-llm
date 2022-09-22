@@ -1,8 +1,9 @@
 name: Nightly Test
 
 on:
+  #pull_request:
   schedule:
-    - cron: '0 15 * * *'
+    - cron: '0 13 * * *' # GMT time, 13:00 GMT == 21:00 China
   workflow_dispatch:
     inputs:
       artifact:
@@ -12,13 +13,17 @@ on:
         type: choice
         options:
         - all
+        - Orca-Python-Ray-Py37-Spark3
+        - Orca-Python-Py37-Spark3
+        - Orca-Ray-Ctx-Example
+        - Orca-Python-Horovod-Tf2-Py37-Spark3
+        - Orca-Jep-ExampleTest-Py37-Spark2
         - Orca-Python-ExampleTest-Py37-Spark3
         - Orca-Python-ExampleTest-Ray-Py37-Spark3
-        - Orca-Jep-ExampleTest-Py37-Spark2
-        - Scala-App
         - Dllib-Scala-UT
         - Friesian-Scala-UT
         - PPML-Scala-UT
+        - PPML-Occlum-ExampleTests        
 
 permissions:
   contents: read
@@ -26,93 +31,66 @@ permissions:
 
 jobs:
   Orca-Python-ExampleTest-Py37-Spark3:
-    if: ${{ github.event.inputs.artifact == 'Orca-Python-ExampleTest-Py37-Spark3' || github.event.inputs.artifact == 'all' }} 
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-ExampleTest-Py37-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
     - uses: actions/checkout@v3
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
-
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
-
-    - name: Setup Env
-      run: |
-        apt-get update
-        apt-get install wget
-
-    - name: Set up Python 
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.7.6'
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install --upgrade setuptools==58.0.4
-        pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-friesian bigdl-friesian-spark3
-        pip uninstall -r python/orca/dev/example/requirements-ray.txt -y
-        pip install -i https://pypi.org/simple --pre --upgrade bigdl-orca-spark3
-        pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r python/orca/dev/example/requirements-ray.txt 
-        pip uninstall -y opencv-python-headless
-        pip install opencv-python-headless
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-spark3
     - name: Run Test
-      run: |
-        export MAVEN_OPTS="-XX:MaxPermSize=3G -Xmx100G -XX:ReservedCodeCacheSize=512m"
-        export _JAVA_OPTIONS="-Xmx100G -XX:MaxPermSize=3G"
-        export SPARK_LOCAL_HOSTNAME=localhost
-        chmod a+x python/orca/dev/example/run-example-tests.sh
-        python/orca/dev/example/run-example-tests.sh
-      env:
-        BIGDL_ROOT: ${{ github.workspace }}
-        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+      uses: ./.github/actions/orca/orca-python-exampletest-action/nightly-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: 746dcada5746912c8d6808d71bd6c35b
+        is-self-hosted-runner: true
+        file-name: Orca-Python-ExampleTest-Py37-Spark3.json
+        type: job
+        job-name: Orca-Python-ExampleTest-Py37-Spark3
+        runner-hosted-on: 'Shanghai'
+
 
   Orca-Python-ExampleTest-Ray-Py37-Spark3:
-    if: ${{ github.event.inputs.artifact == 'Orca-Python-ExampleTest-Ray-Py37-Spark3' || github.event.inputs.artifact == 'all' }} 
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-ExampleTest-Ray-Py37-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
     - uses: actions/checkout@v3
-
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
-
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
-
-    - name: Setup Env
-      run: |
-        apt-get update
-        apt-get install wget
-
-    - name: Set up Python 
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.7'
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install --upgrade setuptools==58.0.4
-        pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-friesian bigdl-friesian-spark3
-        pip uninstall -r python/orca/dev/example/requirements-ray.txt -y
-        pip install -i https://pypi.org/simple --pre --upgrade bigdl-orca-spark3
-        pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r python/orca/dev/example/requirements-ray.txt 
-        pip uninstall -y opencv-python-headless
-        pip install opencv-python-headless
-
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-spark3
     - name: Run Test
-      run: |
-        export SPARK_LOCAL_HOSTNAME=localhost
-        chmod a+x python/orca/dev/example/run-example-test-ray.sh
-        python/orca/dev/example/run-example-test-ray.sh
-      env:
-        BIGDL_ROOT: ${{ github.workspace }}
-        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+      uses: ./.github/actions/orca/orca-python-exampletest-ray-action/nightly-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: 93d483f54b60396d8bbe7ab7a9317c4e
+        is-self-hosted-runner: true
+        file-name: Orca-Python-ExampleTest-Ray-Py37-Spark3.json
+        type: job
+        job-name: Orca-Python-ExampleTest-Ray-Py37-Spark3
+        runner-hosted-on: 'Shanghai'
 
   Orca-Jep-ExampleTest-Py37-Spark2:
-    if: ${{ github.event.inputs.artifact == 'Orca-Jep-ExampleTest-Py37-Spark2' || github.event.inputs.artifact == 'all' }} 
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Jep-ExampleTest-Py37-Spark2' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -121,45 +99,27 @@ jobs:
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
-
-    - name: Setup Env
-      run: |
-        apt-get update
-        apt-get install wget
-    - name: Set up Python 
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.7'
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install --upgrade setuptools==58.0.4
-        pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-friesian bigdl-friesian-spark3
-        pip uninstall -r python/orca/dev/example/requirements-jep.txt -y
-        pip install -i https://pypi.org/simple --pre --upgrade bigdl-orca
-        pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r python/orca/dev/example/requirements-jep.txt
-        pip uninstall -y opencv-python-headless
-        pip install opencv-python-headless
-
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-jep-exampletest-py37
     - name: Run Test
-      run: |
-        export SPARK_LOCAL_HOSTNAME=localhost
-        chmod a+x python/orca/dev/example/run-example-tests-jep.sh
-        chmod a+x apps/run-app-tests-pytorch-pip.sh
-        if [ -f /root/.cache/torch/hub/checkpoints/celebaHQ16_december_s7_i96000-9c72988c.pth ]
-        then
-          rm /root/.cache/torch/hub/checkpoints/celebaHQ16_december_s7_i96000-9c72988c.pth
-        fi
-        wget -P /root/.cache/torch/hub/checkpoints/ $HTTP_URI/analytics-zoo-models/face-generation/celebaHQ16_december_s7_i96000-9c72988c.pth
+      uses: ./.github/actions/orca/orca-jep-exampletest-action/nightly-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: 89232c5854a99a723765c3d5593f3bfe
+        is-self-hosted-runner: true
+        file-name: Orca-Jep-ExampleTest-Py37-Spark2.json
+        type: job
+        job-name: Orca-Jep-ExampleTest-Py37-Spark2
+        runner-hosted-on: 'Shanghai'
 
-        bash python/orca/dev/example/run-example-tests-jep.sh
-        bash apps/run-app-tests-pytorch-pip.sh
-      env:
-        BIGDL_ROOT: ${{ github.workspace }}
-        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-
-  Scala-App:
-    if: ${{ github.event.inputs.artifact == 'Scala-App' || github.event.inputs.artifact == 'all' }} 
+  Orca-Python-Ray-Py37-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Ray-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -168,133 +128,214 @@ jobs:
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
-
-    - name: Set up Python 
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.7'
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install numpy
-        pip install tensorflow==1.15.0
-        pip install jupyter
-        apt-get update
-        apt-get install wget 
-
-        wget https://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz
-        gunzip scala-2.11.8.tgz
-        tar -xf scala-2.11.8.tar -C /opt
-        rm scala-2.11.8.tar
-        ln -s /opt/scala-2.11.8 /opt/scala
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-spark3
     - name: Run Test
-      run: |
-          export SCALA_HOME=/opt/scala
-          chmod a+x apps/run-scala-app-test.sh
-          apps/run-scala-app-test.sh
+      uses: ./.github/actions/orca/orca-python-ray-py37-spark3-action/nightly-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: b9d4492a7eeaf4c2564ce4ef295d36f5
+        is-self-hosted-runner: true
+        file-name: Orca-Python-Ray-Py37-Spark3.json
+        type: job
+        job-name: Orca-Python-Ray-Py37-Spark3
+        runner-hosted-on: 'Shanghai'
 
+  Orca-Python-Py37-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-spark3
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-python-py37-spark3-action/nightly-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: 10a49ea64c5e1d06eea5518dc24712cd
+        is-self-hosted-runner: true
+        file-name: Orca-Python-Py37-Spark3.json
+        type: job
+        job-name: Orca-Python-Py37-Spark3
+        runner-hosted-on: 'Shanghai'
+
+  Orca-Python-Horovod-Tf2-Py37-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-Horovod-Tf2-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action 
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-horovod-tf2-py37
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-python-horovod-tf2-py37-spark3-action/nightly-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: 2778d46ee325dfcf27262bb5587c08fa
+        is-self-hosted-runner: true
+        file-name: Orca-Python-Horovod-Tf2-Py37-Spark3.json
+        type: job
+        job-name: Orca-Python-Horovod-Tf2-Py37-Spark3
+        runner-hosted-on: 'Shanghai'
+
+      
   Dllib-Scala-UT:
-    if: ${{ github.event.inputs.artifact == 'Dllib-Scala-UT' || github.event.inputs.artifact == 'all' }} 
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Dllib-Scala-UT' || github.event.inputs.artifact == 'all' }} 
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up JDK8
-        uses: ./.github/actions/jdk-setup-action
-      - name: Set up maven
-        uses: ./.github/actions/maven-setup-action
-
-      - name: Run tests
-        run: |
-          export SPARK_LOCAL_HOSTNAME=localhost
-          export KERAS_BACKEND=tensorflow
-          cd scala
-          mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.optim" "-Dtest=com.intel.analytics.bigdl.dllib.optim.*Test" test -P spark_3.x -Dspark.version=3.1.2 
-          mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.models" "-Dtest=com.intel.analytics.bigdl.dllib.models.*Test" test -P spark_3.x -Dspark.version=3.1.2 
-          mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.estimator" "-Dtest=com.intel.analytics.bigdl.dllib.estimator.*Test" test -P spark_3.x -Dspark.version=3.1.2  
-          mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.nnframes" "-Dtest=com.intel.analytics.bigdl.dllib.nnframes.*Test" test -P spark_3.x -Dspark.version=3.1.2 
-          mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.feature" "-Dtest=com.intel.analytics.bigdl.dllib.feature.*Test" test -P spark_3.x -Dspark.version=3.1.2
-          mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.utils.intermediate" "-Dtest=com.intel.analytics.bigdl.dllib.utils.intermediate.*Test" test -P spark_3.x -Dspark.version=3.1.2
-          mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.utils.tf" "-Dtest=com.intel.analytics.bigdl.dllib.utils.tf.*Test" test -P spark_3.x -Dspark.version=3.1.2
-          mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.utils.python.api" "-Dtest=com.intel.analytics.bigdl.dllib.utils.python.api.*Test" test -P spark_3.x -Dspark.version=3.1.2
-          #need python requirements
-          #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.keras" "-Dtest=com.intel.analytics.bigdl.dllib.keras.*Test" test -P spark_3.x -Dspark.version=3.1.2 
-          #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.nn.mkldnn" "-Dtest=com.intel.analytics.bigdl.dllib.nn.mkldnn.*Test" test -P spark_3.x -Dspark.version=3.1.2 
-
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Run test
+      uses: ./.github/actions/dllib-scala-ut-action
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: c52229602fb85cc8b6d757c04d565da8
+        is-self-hosted-runner: true
+        file-name: Dllib-Scala-UT.json
+        type: job
+        job-name: Dllib-Scala-UT
+        runner-hosted-on: 'Shanghai'
+      
   Friesian-Scala-UT:
-    if: ${{ github.event.inputs.artifact == 'Friesian-Scala-UT' || github.event.inputs.artifact == 'all' }} 
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Friesian-Scala-UT' || github.event.inputs.artifact == 'all' }} 
     runs-on: [ self-hosted, ubuntu-20.04-lts, CLX, AVX512, Ettenmoors ]
 
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up JDK8
-        uses: ./.github/actions/jdk-setup-action
-      - name: Set up maven
-        uses: ./.github/actions/maven-setup-action
-
-      - name: Set up redis
-        run: |
-          sudo mkdir -p /usr/share/keyrings
-          curl -fsSL https://packages.redis.io/gpg | sudo -E gpg --yes --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
-          echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
-          sudo -E apt-get update
-          sudo -E apt-get install -y redis redis-tools
-          redis-server --daemonize yes
-          redis-cli ping
-
-      - name: Set up mkl
-        run: |
-          cd /tmp
-          curl -O http://10.239.45.10:8081/repository/raw/analytics-zoo-data/faiss-lib.zip
-          sudo unzip -o faiss-lib.zip -d /lib
-          sudo ln -fs /lib/libmkl_core.so /lib/libmkl_core.so.2
-          sudo ln -fs /lib/libmkl_gnu_thread.so /lib/libmkl_gnu_thread.so.2
-          sudo ln -fs /lib/libmkl_intel_lp64.so /lib/libmkl_intel_lp64.so.2
-
-      - name: Prepare data
-        run: |
-          mkdir -p /tmp/friesian-unittest
-          cd /tmp/friesian-unittest
-          curl -O http://10.239.45.10:8081/repository/raw/analytics-zoo-data/friesian-serving-upload.tar.gz 
-          tar -zxf friesian-serving-upload.tar.gz
-
-      - name: Run tests
-        run: |
-          export SPARK_LOCAL_HOSTNAME=localhost
-          export KERAS_BACKEND=tensorflow
-          cd scala
-          mvn "-DwildcardSuites=com.intel.analytics.bigdl.friesian" "-Dtest=com.intel.analytics.bigdl.friesian.*Test" test -P spark_2.x -Dspark.version=2.4.6 "-Dspark.master=local[*]"
-          mvn "-DwildcardSuites=com.intel.analytics.bigdl.friesian" "-Dtest=com.intel.analytics.bigdl.friesian.*Test" test -P spark_3.x -Dspark.version=3.1.2 "-Dspark.master=local[*]"
-
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Run test
+      uses: ./.github/actions/friesian-scala-ut-action
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: 9fa4633899a08528f35ed51a11963a1e
+        is-self-hosted-runner: true
+        file-name: Friesian-Scala-UT.json
+        type: job
+        job-name: Friesian-Scala-UT
+        runner-hosted-on: 'Shanghai'
+      
   PPML-Scala-UT:
-    if: ${{ github.event.inputs.artifact == 'PPML-Scala-UT' || github.event.inputs.artifact == 'all' }} 
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Scala-UT' || github.event.inputs.artifact == 'all' }} 
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up JDK8
-        uses: ./.github/actions/jdk-setup-action
-      - name: Set up maven
-        uses: ./.github/actions/maven-setup-action
-      - name: Run tests
-        run: |
-          export SPARK_LOCAL_HOSTNAME=localhost
-          export KERAS_BACKEND=tensorflow
-          cd scala
-          mvn "-DwildcardSuites=com.intel.analytics.bigdl.ppml" "-Dtest=com.intel.analytics.bigdl.ppml.*Test" test -P spark_3.x -Dspark.version=3.1.2 -Ddata-store-url=http://10.239.45.10:8081/repository/raw
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Run test
+      uses: ./.github/actions/ppml-scala-ut-action
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: 6bcf97ad277d77344b88ddbefa2dd4ad
+        is-self-hosted-runner: true
+        file-name: PPML-Scala-UT.json
+        type: job
+        job-name: PPML-Scala-UT
+        runner-hosted-on: 'Shanghai'
 
+  Orca-Ray-Ctx-Example:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Ray-Ctx-Example' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, Gondolin-resources, ubuntu-20.04-lts]
 
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Run test
+      uses: ./.github/actions/orca-ray-ctx-example-action
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: 98707847d2ca0e2aff40547673e9f7ab
+        is-self-hosted-runner: true
+        file-name: Orca-Ray-Ctx-Example.json
+        type: job
+        job-name: Orca-Ray-Ctx-Example
+        runner-hosted-on: 'Shanghai'
+    
 
+  create-workflow-badge:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: create workflow badge
+      if: ${{ always() }}
+      uses: ./.github/actions/create-job-status-badge
+      with:
+        secret: ${{ secrets.GIST_SECRET }}
+        gist-id: bc8a699b455bced4a1aef138ad5df07e
+        file-name: nightly-test.json
+        type: workflow
+  
+  PPML-Occlum-ExampleTests:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Occlum-ExampleTests' || github.event.inputs.artifact == 'all' }} 
+    runs-on: [self-hosted, Wilwarin, ubuntu-20.04-lts]
 
-
-
-
-
-
-
-
-
-
-
-
-
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Run Test
+      uses: ./.github/actions/ppml-occlum-exampletests-action
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: e065c0f7987e9d1c9d85dab9a014cf0a
+        is-self-hosted-runner: true
+        file-name: PPML-Occlum-ExampleTests.json
+        type: job
+        job-name: PPML-Occlum-ExampleTests
+        runner-hosted-on: 'Shanghai'

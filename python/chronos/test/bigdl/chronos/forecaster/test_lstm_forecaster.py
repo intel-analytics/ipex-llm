@@ -22,11 +22,7 @@ import torch
 from bigdl.chronos.forecaster.lstm_forecaster import LSTMForecaster
 from unittest import TestCase
 import pytest
-import onnxruntime
-
-_onnxrt_ver = onnxruntime.__version__ != '1.6.0' #  Jenkins requires 1.6.0(chronos)
-skip_onnxrt = pytest.mark.skipif(_onnxrt_ver, reason="Only runs when onnxrt is 1.6.0")
-
+from .. import op_all, op_onnxrt16
 
 def create_data(loader=False):
     num_train_samples = 1000
@@ -79,6 +75,26 @@ def create_tsdataset(roll=True, horizon=1):
     return train, test
 
 
+def create_tsdataset_val(roll=True, horizon=1):
+    from bigdl.chronos.data import TSDataset
+    import pandas as pd
+    timeseries = pd.date_range(start='2020-01-01', freq='D', periods=1000)
+    df = pd.DataFrame(np.random.rand(1000, 2),
+                      columns=['value1', 'value2'],
+                      index=timeseries)
+    df.reset_index(inplace=True)
+    df.rename(columns={'index': 'timeseries'}, inplace=True)
+    train, val, test = TSDataset.from_pandas(df=df,
+                                             dt_col='timeseries',
+                                             target_col=['value1', 'value2'],
+                                             with_split=True,
+                                             val_ratio = 0.1)
+    if roll:
+        for tsdata in [train, test]:
+            tsdata.roll(lookback=24, horizon=horizon)
+    return train, val, test
+
+
 class TestChronosModelLSTMForecaster(TestCase):
 
     def setUp(self):
@@ -103,7 +119,8 @@ class TestChronosModelLSTMForecaster(TestCase):
         test_mse = forecaster.evaluate(test_data)
         assert test_mse[0].shape == test_data[1].shape[1:]
 
-    @skip_onnxrt
+    @op_all
+    @op_onnxrt16
     def test_lstm_forecaster_fit_loader(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
         forecaster = LSTMForecaster(past_seq_len=24,
@@ -127,7 +144,8 @@ class TestChronosModelLSTMForecaster(TestCase):
         forecaster.evaluate_with_onnx(test_loader)
         forecaster.evaluate_with_onnx(test_loader, batch_size=32, quantize=True)
 
-    @skip_onnxrt
+    @op_all
+    @op_onnxrt16
     def test_lstm_forecaster_onnx_methods(self):
         train_data, val_data, test_data = create_data()
         forecaster = LSTMForecaster(past_seq_len=24,
@@ -204,7 +222,8 @@ class TestChronosModelLSTMForecaster(TestCase):
         np.testing.assert_almost_equal(test_pred_save, test_pred_load)
         np.testing.assert_almost_equal(test_pred_save_q, test_pred_load_q)
 
-    @skip_onnxrt
+    @op_all
+    @op_onnxrt16  
     def test_lstm_forecaster_quantization_onnx(self):
         train_data, val_data, test_data = create_data()
         forecaster = LSTMForecaster(past_seq_len=24,
@@ -218,7 +237,8 @@ class TestChronosModelLSTMForecaster(TestCase):
         pred_q = forecaster.predict_with_onnx(test_data[0], quantize=True)
         eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
 
-    @skip_onnxrt
+    @op_all
+    @op_onnxrt16
     def test_lstm_forecaster_quantization_onnx_tuning(self):
         train_data, val_data, test_data = create_data()
         forecaster = LSTMForecaster(past_seq_len=24,
@@ -307,7 +327,8 @@ class TestChronosModelLSTMForecaster(TestCase):
             distributed_eval = forecaster.evaluate(val_data)
         stop_orca_context()
 
-    @skip_onnxrt
+    @op_all
+    @op_onnxrt16
     def test_lstm_forecaster_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_data, val_data, test_data = create_data()
@@ -447,16 +468,15 @@ class TestChronosModelLSTMForecaster(TestCase):
         _, y_test = test.to_numpy()
         assert yhat.shape == y_test.shape
 
-    @skip_onnxrt
+    @op_all
+    @op_onnxrt16
     def test_forecaster_from_tsdataset_data_loader_onnx(self):
         train, test = create_tsdataset(roll=False)
         train.gen_dt_feature(one_hot_features=['WEEK'])
         test.gen_dt_feature(one_hot_features=['WEEK'])
-        loader = train.to_torch_data_loader(roll=True,
-                                            lookback=24,
+        loader = train.to_torch_data_loader(lookback=24,
                                             horizon=1)
-        test_loader = test.to_torch_data_loader(roll=True,
-                                                lookback=24,
+        test_loader = test.to_torch_data_loader(lookback=24,
                                                 horizon=1)
         lstm = LSTMForecaster.from_tsdataset(train)
  
@@ -528,3 +548,50 @@ class TestChronosModelLSTMForecaster(TestCase):
                         n_trials=3, target_metric="mse",
                         direction="minimize")
         forecaster.fit(train_data, epochs=10)
+
+    def test_predict_interval(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = LSTMForecaster(past_seq_len=24,
+                                    input_feature_num=2,
+                                    output_feature_num=2,
+                                    hidden_dim=16,
+                                    layer_num=1,
+                                    dropout=0.1,
+                                    loss="mae",
+                                    metrics=["mse"],
+                                    lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        y_pred, std = forecaster.predict_interval(data=test_data[0],
+                                                  val_data=val_data,
+                                                  repetition_times=5)
+        assert y_pred.shape == test_data[1].shape
+        assert y_pred.shape == std.shape
+
+    def test_forecaster_fit_val_from_tsdataset(self):
+        train, val, test = create_tsdataset_val()
+        lstm = LSTMForecaster.from_tsdataset(train,
+                                             hidden_dim=16,
+                                             layer_num=2)
+        lstm.fit(train, val,
+                 epochs=2,
+                 batch_size=32)
+        yhat = lstm.predict(test, batch_size=32)
+        test.roll(lookback=lstm.data_config['past_seq_len'],
+                  horizon=lstm.data_config['future_seq_len'])
+        _, y_test = test.to_numpy()
+        assert yhat.shape == y_test.shape
+
+        del lstm
+        train, val, test = create_tsdataset_val(roll=False, horizon=[1, 3, 5])
+        lstm = LSTMForecaster.from_tsdataset(train,
+                                             past_seq_len=24,
+                                             hidden_dim=16,
+                                             layer_num=2)
+        lstm.fit(train, val,
+                 epochs=2,
+                 batch_size=32)
+        yhat = lstm.predict(test, batch_size=None)
+        test.roll(lookback=lstm.data_config['past_seq_len'],
+                  horizon=lstm.data_config['future_seq_len'])
+        _, y_test = test.to_numpy()
+        assert yhat.shape == y_test.shape

@@ -1,5 +1,7 @@
 # XGBoost Example
 
+> Warning: Running XGBoost in distributed mode is not safe due to the fact that Rabit's network (contains gradient, split, and env) is not protected.
+
 ## Install or download BigDL
 Follow the instructions [here](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/python.html#install) to install bigdl via __pip__ or __download the prebuilt package__.
 

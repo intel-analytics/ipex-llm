@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dllib.examples.nnframes.xgboost
+package com.intel.analytics.bigdl.dllib.example.nnframes.xgboost
 
 import com.intel.analytics.bigdl.dllib.NNContext
 import com.intel.analytics.bigdl.dllib.nnframes.XGBClassifier
@@ -34,12 +34,12 @@ import org.slf4j.{Logger, LoggerFactory}
 */
 class Task extends Serializable {
 
-  val default_missing_value = "-999"
+  val defaultMissingValue = "-999"
 
   def rowToLibsvm(row: Row): String = {
     0 until row.length flatMap {
       case 0 => Some(row(0).toString)
-      case i if row(i) == null => Some(default_missing_value)
+      case i if row(i) == null => Some(defaultMissingValue)
       case i => Some((if (i < 14) row(i)
       else java.lang.Long.parseLong(row(i).toString, 16)).toString)
     } mkString " "
@@ -49,7 +49,7 @@ class Task extends Serializable {
 case class Params(
                    trainingDataPath: String = "/host/data",
                    modelSavePath: String = "/host/data/model",
-                   numThreads: Int = 2,
+                   numThread: Int = 2,
                    numRound: Int = 100,
                    maxDepth: Int = 2,
                    numWorkers: Int = 1
@@ -57,7 +57,7 @@ case class Params(
 
 object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
 
-  val feature_nums = 39
+  val featureNum = 39
 
   def main(args: Array[String]): Unit = {
     val log: Logger = LoggerFactory.getLogger(this.getClass)
@@ -68,7 +68,7 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
     val params = parser.parse(args, new Params).get
     val trainingDataPath = params.trainingDataPath // path to data
     val modelSavePath = params.modelSavePath // save model to this path
-    val numThreads = params.numThreads // xgboost threads
+    val numThread = params.numThread // xgboost threads
     val numRound = params.numRound //  train round
     val maxDepth = params.maxDepth // tree max depth
     val numWorkers = params.numWorkers //  Workers num
@@ -89,8 +89,8 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
     val processedRdd = df.rdd.map(task.rowToLibsvm)
 
     // declare schema
-    var structFieldArray = new Array[StructField](feature_nums + 1)
-    for (i <- 0 to feature_nums) {
+    var structFieldArray = new Array[StructField](featureNum + 1)
+    for (i <- 0 to featureNum) {
       structFieldArray(i) = StructField("_c" + i.toString, LongType, true)
     }
     var schema = new StructType(structFieldArray)
@@ -98,7 +98,7 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
     // convert RDD to RDD[Row]
     val rowRDD = processedRdd.map(_.split(" ")).map(row => Row.fromSeq(
       for {
-        i <- 0 to feature_nums
+        i <- 0 to featureNum
       } yield {
         row(i).toLong
       }
@@ -112,8 +112,8 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
       .fit(df)
     val labelTransformed = stringIndexer.transform(df).drop("_c0")
 
-    var inputCols = new Array[String](feature_nums)
-    for (i <- 0 to feature_nums - 1) {
+    var inputCols = new Array[String](featureNum)
+    for (i <- 0 to featureNum - 1) {
       inputCols(i) = "_c" + (i + 1).toString
     }
 
@@ -143,7 +143,7 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
     xgbClassifier.setNumClass(2)
     xgbClassifier.setNumWorkers(numWorkers)
     xgbClassifier.setMaxDepth(maxDepth)
-    xgbClassifier.setNthread(numThreads)
+    xgbClassifier.setNthread(numThread)
     xgbClassifier.setNumRound(numRound)
     xgbClassifier.setTreeMethod("auto")
     xgbClassifier.setObjective("multi:softprob")
@@ -177,9 +177,9 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
       .action((v, p) => p.copy(modelSavePath = v))
       .required()
 
-    opt[Int]('t', "numThreads")
+    opt[Int]('t', "numThread")
       .text("threads num")
-      .action((v, p) => p.copy(numThreads = v))
+      .action((v, p) => p.copy(numThread = v))
 
     opt[Int]('r', "numRound")
       .text("Round num")

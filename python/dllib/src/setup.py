@@ -19,8 +19,15 @@
 import os
 import sys
 from shutil import copyfile, copytree, rmtree
-
 from setuptools import setup
+
+long_description = '''
+BigDL DLlib is a distributed deep learning library for Apache Spark 
+with Keras-style API and Spark ML pipeline support.
+
+See [here](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/dllib.html) 
+for more information.
+'''
 
 TEMP_PATH = "bigdl/share/dllib"
 dllib_src_path = os.path.abspath(__file__ + "/..")
@@ -90,6 +97,8 @@ def setup_package():
         name='bigdl-dllib',
         version=VERSION,
         description='Distributed Deep Learning Library for Apache Spark',
+        long_description=long_description,
+        long_description_content_type="text/markdown",
         author='BigDL Authors',
         author_email='bigdl-user-group@googlegroups.com',
         license='Apache License, Version 2.0',
@@ -98,7 +107,7 @@ def setup_package():
         scripts=scripts,
         install_requires=[
             'numpy>=1.19.5', 'pyspark==2.4.6', 'conda-pack==0.3.1',
-            'six>=1.10.0', 'bigdl-core=='+VERSION],
+            'six>=1.10.0', 'bigdl-core==2.2.0.dev0'],
         dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],
         include_package_data=True,
         package_data={"bigdl.share.dllib": ['lib/bigdl-dllib*.jar', 'conf/*',

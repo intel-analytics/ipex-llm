@@ -58,7 +58,7 @@ class EHSMKeyManagementService(
       kmsServerIP: String,
       kmsServerPort: String,
       ehsmAPPID: String,
-      ehsmAPPKEY: String)extends KeyManagementService {
+      ehsmAPIKEY: String)extends KeyManagementService {
 
   val keyReaderWriter = new KeyReaderWriter
 
@@ -82,7 +82,7 @@ class EHSMKeyManagementService(
     val action: String = EHSM_CONVENTION.ACTION_CREATE_KEY
     val currentTime = System.currentTimeMillis() // ms
     val timestamp = s"$currentTime"
-    val ehsmParams = new EHSMParams(ehsmAPPID, ehsmAPPKEY, timestamp)
+    val ehsmParams = new EHSMParams(ehsmAPPID, ehsmAPIKEY, timestamp)
     ehsmParams.addPayloadElement(EHSM_CONVENTION.PAYLOAD_KEYSPEC,
       EHSM_CONVENTION.KEYSPEC_EH_AES_GCM_128)
     ehsmParams.addPayloadElement(EHSM_CONVENTION.PAYLOAD_ORIGIN,
@@ -107,7 +107,7 @@ class EHSMKeyManagementService(
     val encryptedPrimaryKey: String = keyReaderWriter.readKeyFromFile(primaryKeyPath, config)
     val currentTime = System.currentTimeMillis() // ms
     val timestamp = s"$currentTime"
-    val ehsmParams = new EHSMParams(ehsmAPPID, ehsmAPPKEY, timestamp)
+    val ehsmParams = new EHSMParams(ehsmAPPID, ehsmAPIKEY, timestamp)
     ehsmParams.addPayloadElement(EHSM_CONVENTION.PAYLOAD_AAD, "test")
     ehsmParams.addPayloadElement(EHSM_CONVENTION.PAYLOAD_KEY_ID, encryptedPrimaryKey)
     ehsmParams.addPayloadElement(EHSM_CONVENTION.PAYLOAD_KEY_LENGTH, "32")
@@ -133,7 +133,7 @@ class EHSMKeyManagementService(
     val encryptedDataKey: String = keyReaderWriter.readKeyFromFile(dataKeyPath, config)
     val currentTime = System.currentTimeMillis() // ms
     val timestamp = s"$currentTime"
-    val ehsmParams = new EHSMParams(ehsmAPPID, ehsmAPPKEY, timestamp)
+    val ehsmParams = new EHSMParams(ehsmAPPID, ehsmAPIKEY, timestamp)
     ehsmParams.addPayloadElement(EHSM_CONVENTION.PAYLOAD_AAD, "test")
     ehsmParams.addPayloadElement(EHSM_CONVENTION.PAYLOAD_CIPHER_TEXT, encryptedDataKey)
     ehsmParams.addPayloadElement(EHSM_CONVENTION.PAYLOAD_KEY_ID, encryptedPrimaryKey)

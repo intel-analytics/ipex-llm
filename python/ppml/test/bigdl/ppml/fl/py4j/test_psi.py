@@ -34,13 +34,13 @@ class TestPSI(FLTest):
    
         
     def test_psi_get_salt(self):        
-        init_fl_context("1", self.target)
+        init_fl_context(1, self.target)
         psi = PSI()
         salt = psi.get_salt()
         assert (isinstance(salt, str))
 
     def test_psi_pipeline(self):
-        init_fl_context("1", self.target)
+        init_fl_context(1, self.target)
         psi = PSI()
         salt = psi.get_salt()
         key = ["k1", "k2"]

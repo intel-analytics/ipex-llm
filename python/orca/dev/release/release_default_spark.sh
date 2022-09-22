@@ -61,4 +61,4 @@ else
     bash ${DEV_DIR}/remove_spark_suffix.sh ${RUN_SCRIPT_DIR}/release.sh
 fi
 
-bash ${RUN_SCRIPT_DIR}/release.sh ${platform} ${version} ${quick} ${upload} -Dspark.version=${spark_version} -P spark_${spark_first_version}.x
+bash ${RUN_SCRIPT_DIR}/release.sh ${platform} ${version} ${quick} ${upload} -Dspark.version=${spark_version} -P spark_${spark_first_version}.x -U

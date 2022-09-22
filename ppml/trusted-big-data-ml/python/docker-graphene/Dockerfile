@@ -244,17 +244,15 @@ RUN apt install software-properties-common -y && \
     add-apt-repository ppa:deadsnakes/ppa -y && \
     apt-get install -y python3-minimal build-essential python3.7-distutils python3-apt python3.7 python3-setuptools python3-dev python3-pip libpython3.7 && \
     rm /usr/bin/python3 && \
-    pip install six --target=/usr/lib/python3.7/dist-packages && \
-    rm -rf /usr/lib/python3/dist-packages/protobuf-3.6.1.egg-info && \
-    ln -s /usr/lib/x86_64-linux-gnu/libtinfo.so.6 /usr/lib/x86_64-linux-gnu/libtinfo.so.5 && \
-    pip install pyyaml && \
     ln -s /usr/bin/python3.7 /usr/bin/python3 && \
     pip3 install --upgrade pip && \
     pip install setuptools==58.4.0 && \
+    rm -rf /usr/lib/python3/dist-packages/protobuf-3.6.1.egg-info && \
+    rm -rf /usr/lib/python3/dist-packages/google/protobuf && \
     pip install --no-cache-dir numpy scipy && \
     pip install --no-cache-dir pandas && \
-    pip install --no-cache-dir scikit-learn matplotlib seaborn jupyter wordcloud moviepy requests h5py opencv-python tensorflow==1.15 protobuf==3.19.0 && \
-    pip install --no-cache-dir torch==1.8.1 torchvision==0.9.1 -f https://download.pytorch.org/whl/torch_stable.html && \
+    pip install --no-cache-dir scikit-learn matplotlib seaborn jupyter wordcloud moviepy requests h5py opencv-python protobuf==3.19.0 tensorflow==1.15 && \
+    pip install --no-cache-dir torch==1.5.0 torchvision==0.6.0 -f https://download.pytorch.org/whl/torch_stable.html && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     #Fix tornado await process
     pip uninstall -y -q tornado && \
@@ -266,7 +264,9 @@ RUN apt install software-properties-common -y && \
     pip install --no-cache-dir psutil && \
     pip install --no-cache-dir dill==0.3.4 && \
     python3 -m pip install toml==0.10.2 click jinja2 && \
-    python3 -m ipykernel.kernelspec
+    python3 -m ipykernel.kernelspec && \
+    ln -s /usr/lib/x86_64-linux-gnu/libtinfo.so.6 /usr/lib/x86_64-linux-gnu/libtinfo.so.5 && \
+    pip install --no-cache-dir pyyaml
 
 ADD ./bash.manifest.template /ppml/trusted-big-data-ml/bash.manifest.template
 ADD ./Makefile /ppml/trusted-big-data-ml/Makefile
@@ -325,7 +325,15 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
 
 # Azure support
 RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+RUN apt-get install bsdmainutils
 ADD azure /ppml/trusted-big-data-ml/azure
+RUN chmod a+x /ppml/trusted-big-data-ml/azure/create-aks.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/azure/deploy-local-spark-sgx.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/azure/generate-enclave-key-az.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/azure/generate-keys.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/azure/generate-password-az.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/azure/kubeconfig-secret.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/azure/submit-spark-sgx-az.sh
 
 WORKDIR /ppml/trusted-big-data-ml
 

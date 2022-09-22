@@ -22,6 +22,7 @@ from numpy import ndarray
 from bigdl.dllib.utils.log4Error import invalidInputError
 
 from bigdl.ppml.fl.nn.fl_client import FLClient
+from bigdl.ppml.fl.nn.nn_client import NNClient
 from bigdl.ppml.fl.nn.utils import file_chunk_generate, print_file_size_in_dir, tensor_map_to_ndarray_map
 
 import tensorflow as tf
@@ -35,9 +36,7 @@ class TensorflowEstimator:
                  loss_fn, 
                  optimizer_cls,
                  optimizer_args,
-                 client_id,
                  bigdl_type="float", 
-                 target="localhost:8980", 
                  fl_client=None,
                  server_model=None):
         self.bigdl_type = bigdl_type
@@ -46,7 +45,7 @@ class TensorflowEstimator:
         self.optimizer = optimizer_cls(**optimizer_args)
         self.version = 0
         self.fl_client = fl_client if fl_client is not None \
-            else FLClient(client_id=client_id, aggregator='tf', target=target)
+            else NNClient(aggregator='tf')
         self.loss_history = []
         if server_model is not None:
             self.__add_server_model(server_model, loss_fn, optimizer_cls, optimizer_args)

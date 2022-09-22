@@ -46,10 +46,19 @@ init_instance() {
         .metadata.debuggable = "ENABLE_SGX_DEBUG" |
         .resource_limits.kernel_space_heap_size="SGX_KERNEL_HEAP" |
         .entry_points = [ "/usr/lib/jvm/java-8-openjdk-amd64/bin" ] |
-        .env.untrusted = [ "DMLC_TRACKER_URI", "SPARK_DRIVER_URL", "SPARK_TESTING" ] |
+        .env.untrusted = [ "DMLC_TRACKER_URI", "SPARK_DRIVER_URL", "SPARK_TESTING" , "_SPARK_AUTH_SECRET" ] |
         .env.default = [ "LD_LIBRARY_PATH=/usr/lib/jvm/java-8-openjdk-amd64/lib/server:/usr/lib/jvm/java-8-openjdk-amd64/lib:/usr/lib/jvm/java-8-openjdk-amd64/../lib:/lib","SPARK_CONF_DIR=/opt/spark/conf","SPARK_ENV_LOADED=1","PYTHONHASHSEED=0","SPARK_HOME=/opt/spark","SPARK_SCALA_VERSION=2.12","SPARK_JARS_DIR=/opt/spark/jars","LAUNCH_CLASSPATH=/bin/jars/*",""]' Occlum.json)" && \
     echo "${new_json}" > Occlum.json
     echo "SGX_MEM_SIZE ${SGX_MEM_SIZE}"
+
+    # enable tmp hostfs
+    # --conf spark.executorEnv.USING_TMP_HOSTFS=true \
+    if [[ $USING_TMP_HOSTFS == "true" ]]; then
+        echo "use tmp hostfs"
+        mkdir ./shuffle
+        edit_json="$(cat Occlum.json | jq '.mount+=[{"target": "/tmp","type": "hostfs","source": "./shuffle"}]')" && \
+        echo "${edit_json}" > Occlum.json
+    fi
 
     if [[ -z "$META_SPACE" ]]; then
         echo "META_SPACE not set, using default value 256m"
@@ -333,20 +342,42 @@ run_spark_xgboost() {
     echo -e "${BLUE}occlum run BigDL Spark XGBoost${NC}"
     occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
                 -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
-                -XX:ActiveProcessorCount=8 \
+                -XX:ActiveProcessorCount=4 \
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
                 -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
-                -Xmx18g -Xms18g org.apache.spark.deploy.SparkSubmit \
-                --master local[16] \
-                --conf spark.task.cpus=8 \
-                --class com.intel.analytics.bigdl.dllib.examples.nnframes.xgboost.xgbClassifierTrainingExampleOnCriteoClickLogsDataset \
+                -Xmx10g -Xms10g org.apache.spark.deploy.SparkSubmit \
+                --master local[4] \
+                --conf spark.task.cpus=2 \
+                --class com.intel.analytics.bigdl.dllib.example.nnframes.xgboost.xgbClassifierTrainingExampleOnCriteoClickLogsDataset \
                 --num-executors 2 \
                 --executor-cores 2 \
                 --executor-memory 9G \
-                --driver-memory 2G \
+                --driver-memory 10G \
                 /bin/jars/bigdl-dllib-spark_3.1.2-2.1.0-SNAPSHOT.jar \
                 -i /host/data -s /host/data/model -t 2 -r 100 -d 2 -w 1
+}
+
+run_spark_gbt() {
+    init_instance spark
+    build_spark
+    echo -e "${BLUE}occlum run BigDL Spark GBT${NC}"
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
+                -XX:ActiveProcessorCount=4 \
+                -Divy.home="/tmp/.ivy" \
+                -Dos.name="Linux" \
+                -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
+                -Xmx10g -Xms10g org.apache.spark.deploy.SparkSubmit \
+                --master local[4] \
+                --conf spark.task.cpus=2 \
+                --class com.intel.analytics.bigdl.dllib.example.nnframes.gbt.gbtClassifierTrainingExampleOnCriteoClickLogsDataset \
+                --num-executors 2 \
+                --executor-cores 2 \
+                --executor-memory 9G \
+                --driver-memory 10G \
+                /bin/jars/bigdl-dllib-spark_3.1.2-2.1.0-SNAPSHOT.jar \
+                -i /host/data -s /host/data/model -I 100 -d 5
 }
 
 
@@ -384,6 +415,10 @@ case "$arg" in
         ;;
     xgboost)
         run_spark_xgboost
+        cd ../
+        ;;
+    gbt)
+        run_spark_gbt
         cd ../
         ;;
 esac
