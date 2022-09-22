@@ -297,8 +297,8 @@ class InferenceOptimizer:
         self._optimize_result = _format_optimize_result(self.optimized_model_dict,
                                                         self._calculate_accuracy)
         # save time cost to self._optimize_result
-        time_cost_str = "Optimization cost {:.3}s at all.".format(
-            time.perf_counter() - start_time)
+        time_cost = time.perf_counter() - start_time
+        time_cost_str = f"Optimization cost {time_cost:.1f}s in total."
         self._optimize_result += time_cost_str
         print(self._optimize_result)
         print("===========================Stop Optimization===========================")
