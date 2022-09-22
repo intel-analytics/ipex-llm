@@ -27,6 +27,8 @@ runs:
         --device=/dev/sgx/provision \
         -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
         -v $ENCLAVE_KEY:/root/.config/gramine/enclave-key.pem \
+        -e http_proxy=$HTTP_PROXY \
+        -e https_proxy=$HTTPS_PROXY \
         $IMAGE bash
     - name: Prepare Spark Test-jars and Test-classes
       shell: bash
