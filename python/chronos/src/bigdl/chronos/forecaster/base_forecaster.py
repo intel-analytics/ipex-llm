@@ -1143,7 +1143,7 @@ class BasePytorchForecaster(Forecaster):
                               "forecaster to a non-distributed version.")
         if quantized_dirname and self.onnxruntime_int8:
             Trainer.save(self.onnxruntime_int8, dirname)
-        if dirname and self.onnxruntime_fp32:
+        if dirname:
             if self.onnxruntime_fp32 is None:
                 self.build_onnx()
             Trainer.save(self.onnxruntime_fp32, dirname)
@@ -1165,7 +1165,7 @@ class BasePytorchForecaster(Forecaster):
                               "forecaster to a non-distributed version.")
         if quantized_dirname and self.openvino_int8:
             Trainer.save(self.openvino_int8, dirname)
-        if dirname and self.openvino_fp32:
+        if dirname:
             if self.openvino_fp32 is None:
                 self.build_openvino()
             Trainer.save(self.openvino_fp32, dirname)
