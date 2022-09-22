@@ -45,44 +45,60 @@ def create_data():
 
 @pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf > 2.0.0.")
 class TestVanillaLSTM(TestCase):
-    train_data, val_data, test_data = create_data()
-    model = model_creator(config={
-        'input_feature_num': 4,
-        'output_feature_num': test_data[-1].shape[-1]
-    })
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
 
     def test_lstm_fit_predict_evaluate(self):
-        self.model.fit(self.train_data[0],
-                       self.train_data[1],
+        train_data, val_data, test_data = create_data()
+        model = model_creator(config={
+            'input_feature_num': 4,
+            'output_feature_num': test_data[-1].shape[-1]
+        })
+        model.fit(train_data[0],
+                       train_data[1],
                        epochs=2,
-                       validation_data=self.val_data)
-        yhat = self.model.predict(self.test_data[0])
-        self.model.evaluate(self.test_data[0], self.test_data[1])
-        assert yhat.shape == self.test_data[1].shape
+                       validation_data=val_data)
+        yhat = model.predict(test_data[0])
+        model.evaluate(test_data[0], test_data[1])
+        assert yhat.shape == test_data[1].shape
 
     def test_lstm_save_load(self):
-        self.model.fit(self.train_data[0],
-                       self.train_data[1],
-                       epochs=2,
-                       validation_data=self.val_data)
+        train_data, val_data, test_data = create_data()
+        model = model_creator(config={
+            'input_feature_num': 4,
+            'output_feature_num': test_data[-1].shape[-1]
+        })
+
+        model.fit(train_data[0],
+                  train_data[1],
+                  epochs=2,
+                  validation_data=val_data)
         with tempfile.TemporaryDirectory() as tmp_dir_file:
-            self.model.save(tmp_dir_file)
+            model.save(tmp_dir_file)
             import keras
             restore_model = keras.models.load_model(tmp_dir_file,
                                                     custom_objects={"LSTMModel": LSTMModel})
-        model_res = self.model.evaluate(self.test_data[0], self.test_data[1])
-        restore_model_res = restore_model.evaluate(self.test_data[0], self.test_data[1])
+        model_res = model.evaluate(test_data[0], test_data[1])
+        restore_model_res = restore_model.evaluate(test_data[0], test_data[1])
         np.testing.assert_almost_equal(model_res, restore_model_res, decimal=5)        
         assert isinstance(restore_model, LSTMModel)
 
     def test_lstm_freeze_training(self):
         # freeze dropout in layers
-        _freeze_yhat = self.model(self.test_data[0], training=False)
-        freeze_yhat = self.model(self.test_data[0], training=False)
+        train_data, val_data, test_data = create_data()
+        model = model_creator(config={
+            'input_feature_num': 4,
+            'output_feature_num': test_data[-1].shape[-1]
+        })
+        _freeze_yhat = model(test_data[0], training=False)
+        freeze_yhat = model(test_data[0], training=False)
         assert np.all(_freeze_yhat == freeze_yhat)
 
-        _unfreeze_yhat = self.model(self.test_data[0], training=True)
-        unfreeze_yhat = self.model(self.test_data[0], training=True)
+        _unfreeze_yhat = model(test_data[0], training=True)
+        unfreeze_yhat = model(test_data[0], training=True)
         assert np.any(_unfreeze_yhat != unfreeze_yhat)
 
 if __name__ == '__main__':
