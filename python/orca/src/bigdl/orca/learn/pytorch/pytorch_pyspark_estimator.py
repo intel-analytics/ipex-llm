@@ -569,4 +569,4 @@ class PyTorchPySparkEstimator(BaseEstimator):
         Shutdown estimator and release resources.
         """
         if self.need_to_log_to_driver:
-            stop_log_server(self.log_server_thread, self.ip, self.port)
+            stop_log_server(self.log_server_thread, self.ip, self.log_port)
