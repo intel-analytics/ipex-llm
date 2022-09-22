@@ -129,11 +129,11 @@ RUN apt-get update --fix-missing && \
 RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2.0/docker/hyperzoo/download-bigdl.sh && \
     chmod a+x ./download-bigdl.sh
 RUN ./download-bigdl.sh && \
-    rm bigdl*.zip && \
-    sed -i 's#unzip bigdl-assembly-spark_$SPARK_VERSION-$NIGHTLY_VERSION.zip -d $BIGDL_HOME#mv bigdl-ppml-spark_$SPARK_VERSION-$NIGHTLY_VERSION-jar-with-dependencies.jar $BIGDL_HOME/jars/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION-jar-with-dependencies.jar#g' download-bigdl.sh && \
-    sed -i 's#assembly#ppml#g' download-bigdl.sh && \
-    sed -i 's#.zip#-jar-with-dependencies.jar#g' download-bigdl.sh && \
-    ./download-bigdl.sh
+    rm bigdl*.zip
+RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2.0/docker/hyperzoo/download-ppml.sh && \
+    chmod a+x ./download-ppml.sh && \
+    ./download-ppml.sh
+
 
 
 # Stage.3 PPML
