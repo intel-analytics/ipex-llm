@@ -1,7 +1,7 @@
 name: Nightly Test
 
 on:
-  pull_request:
+  #pull_request:
   schedule:
     - cron: '0 13 * * *' # GMT time, 13:00 GMT == 21:00 China
   workflow_dispatch:
@@ -121,7 +121,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Orca-Python-ExampleTest-Horovod-Pytorch-Py37-Spark3:
-    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-ExampleTest-Horovod-Pytorch-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Python-ExampleTest-Horovod-Pytorch-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -142,7 +142,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: 
+        gist-id: 2345324d7d79e955c378e627f265d20f
         is-self-hosted-runner: true
         file-name: Orca-Python-ExampleTest-Horovod-Pytorch-Py37-Spark3.json
         type: job
