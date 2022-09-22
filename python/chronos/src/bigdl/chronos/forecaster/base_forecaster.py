@@ -1127,7 +1127,7 @@ class BasePytorchForecaster(Forecaster):
                                            accelerator="openvino",
                                            thread_num=thread_num)
 
-    def export_onnx_file(self, dirname="fp32_onnx", quantized_dirname="quantized_onnx"):
+    def export_onnx_file(self, dirname="fp32_onnx", quantized_dirname=None):
         """
         Save the onnx model file to the disk.
 
@@ -1149,7 +1149,7 @@ class BasePytorchForecaster(Forecaster):
             Trainer.save(self.onnxruntime_fp32, dirname)
 
     def export_openvino_file(self, dirname="fp32_openvino",
-                             quantized_dirname="quantized_openvino"):
+                             quantized_dirname=None):
         """
         Save the openvino model file to the disk.
 
