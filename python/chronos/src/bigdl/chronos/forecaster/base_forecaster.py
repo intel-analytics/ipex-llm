@@ -1127,11 +1127,12 @@ class BasePytorchForecaster(Forecaster):
                                            accelerator="openvino",
                                            thread_num=thread_num)
 
-    def export_onnx_file(self, dirname="model.onnx", quantized_dirname="qmodel.onnx"):
+    def export_onnx_file(self, dirname="fp32_onnx", quantized_dirname="quantized_onnx"):
         """
         Save the onnx model file to the disk.
 
         :param dirname: The dir location you want to save the onnx file.
+        :param quantized_dirname: The dir location you want to save the quantized onnx file.
         """
         from bigdl.chronos.pytorch import TSTrainer as Trainer
         from bigdl.nano.utils.log4Error import invalidInputError
@@ -1140,14 +1141,34 @@ class BasePytorchForecaster(Forecaster):
                               "export_onnx_file has not been supported for distributed "
                               "forecaster. You can call .to_local() to transform the "
                               "forecaster to a non-distributed version.")
-        dummy_input = torch.rand(1, self.data_config["past_seq_len"],
-                                 self.data_config["input_feature_num"])
         if quantized_dirname:
             Trainer.save(self.onnxruntime_int8, dirname)
         if dirname:
             if self.onnxruntime_fp32 is None:
                 self.build_onnx()
             Trainer.save(self.onnxruntime_fp32, dirname)
+
+    def export_openvino_file(self, dirname="fp32_openvino",
+                             quantized_dirname="quantized_openvino"):
+        """
+        Save the openvino model file to the disk.
+
+        :param dirname: The dir location you want to save the openvino file.
+        :param quantized_dirname: The dir location you want to save the quantized openvino file.
+        """
+        from bigdl.chronos.pytorch import TSTrainer as Trainer
+        from bigdl.nano.utils.log4Error import invalidInputError
+        if self.distributed:
+            invalidInputError(False,
+                              "export_openvino_file has not been supported for distributed "
+                              "forecaster. You can call .to_local() to transform the "
+                              "forecaster to a non-distributed version.")
+        if quantized_dirname:
+            Trainer.save(self.openvino_int8, dirname)
+        if dirname:
+            if self.openvino_fp32 is None:
+                self.build_openvino()
+            Trainer.save(self.openvino_fp32, dirname)
 
     def quantize(self, calib_data=None,
                  val_data=None,
