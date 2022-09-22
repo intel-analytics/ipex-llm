@@ -63,7 +63,7 @@ class EHSMKeyManagementService(
   val keyReaderWriter = new KeyReaderWriter
 
   Log4Error.invalidInputError(ehsmAPPID != "", s"ehsmAPPID should not be empty string.")
-  Log4Error.invalidInputError(ehsmAPPKEY != "", s"ehsmAPPKEY should not be empty string.")
+  Log4Error.invalidInputError(ehsmAPPKEY != "", s"ehsmAPIKEY should not be empty string.")
   
   val sslConSocFactory = {
     val sslContext: SSLContext = SSLContext.getInstance("SSL")
