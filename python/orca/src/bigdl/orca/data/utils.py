@@ -466,11 +466,17 @@ def to_pandas(df, squeeze=False, index_col=None, dtype=None, index_map=None, bat
             import pyarrow as pa
             ser = ArrowStreamSerializer()
             with open(fileName, "rb") as stream:
-                batches = ser.load_stream(stream)
-                table = pa.Table.from_batches(batches)
-                pd_df = table.to_pandas()
-                pd_df = set_pandas_df_type_index(pd_df, squeeze, index_col, dtype, index_map)
-                yield pd_df
+                batches = list(ser.load_stream(stream))
+                if len(batches) > 0:
+                    table = pa.Table.from_batches(batches)
+                    pd_df = table.to_pandas()
+                    pd_df = set_pandas_df_type_index(pd_df, squeeze, index_col, dtype, index_map)
+                    yield pd_df
+                else:
+                    invalidInputError(False,
+                                      "Find empty partition. Please ensure there is no empty"
+                                      " partition for spark dataframe")
+
 
     sqlContext = get_spark_sql_context(get_spark_context())
 
