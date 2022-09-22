@@ -30,16 +30,17 @@ if __name__ == "__main__":
     model_ft.eval()
     
     # Accelerated Inference Using ONNX Runtime
-    from bigdl.nano.pytorch import Trainer
-    ort_model = Trainer.trace(model_ft,
-                              accelerator="onnxruntime",
-                              input_sample=torch.rand(1, 3, 224, 224))
+    from bigdl.nano.pytorch import InferenceOptimizer
+    ort_model = InferenceOptimizer.trace(model_ft,
+                                         accelerator="onnxruntime",
+                                         input_sample=torch.rand(1, 3, 224, 224))
 
     y_hat = ort_model(x)
     predictions = y_hat.argmax(dim=1)
     print(predictions)
 
     # Save Optimized Model
+    from bigdl.nano.pytorch import Trainer
     Trainer.save(ort_model, "./optimized_model_ort")
 
     # Load the Optimized Model
