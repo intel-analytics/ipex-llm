@@ -23,6 +23,7 @@ import torch
 from torch import nn
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
+from torch.nn.parallel.distributed import DistributedDataParallel
 from pytorch_lightning.lite import LightningLite
 from pytorch_lightning.lite.wrappers import _LiteModule, _LiteOptimizer
 
@@ -36,17 +37,31 @@ from bigdl.nano.pytorch.strategies import create_IPEXStrategy, DDPSpawnStrategy,
 
 class _TorchNanoModule(_LiteModule):
     def state_dict(self, *args, **kwargs):
-        return self._module.state_dict(*args, **kwargs)
+        if isinstance(self.module, DistributedDataParallel):
+            return self.module.module.state_dict(*args, **kwargs)
+        else:
+            return self.module.state_dict(*args, **kwargs)
 
     def load_state_dict(self, *args, **kwargs):
         invalidInputError(False, "TorchNano doesn't support loading state dict, "
                           "please load it using original pytorch model")
 
     def __getattr__(self, name: str):
-        # automatically unwrap attributes access of _LiteModule
+        # automatically unwrap attributes access of _LiteModule,
+        # always raise a single-level exception when the attribute doesn't exist
+        # for a more user-friendly exception message
         try:
             return super().__getattr__(name)
         except AttributeError:
+            pass
+
+        if isinstance(self.module, DistributedDataParallel):
+            try:
+                return getattr(self.module, name)
+            except AttributeError:
+                pass
+            return getattr(self.module.module, name)
+        else:
             return getattr(self.module, name)
 
 
