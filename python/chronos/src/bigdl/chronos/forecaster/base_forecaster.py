@@ -1141,9 +1141,9 @@ class BasePytorchForecaster(Forecaster):
                               "export_onnx_file has not been supported for distributed "
                               "forecaster. You can call .to_local() to transform the "
                               "forecaster to a non-distributed version.")
-        if quantized_dirname:
+        if quantized_dirname and self.onnxruntime_int8:
             Trainer.save(self.onnxruntime_int8, dirname)
-        if dirname:
+        if dirname and self.onnxruntime_fp32:
             if self.onnxruntime_fp32 is None:
                 self.build_onnx()
             Trainer.save(self.onnxruntime_fp32, dirname)
@@ -1163,9 +1163,9 @@ class BasePytorchForecaster(Forecaster):
                               "export_openvino_file has not been supported for distributed "
                               "forecaster. You can call .to_local() to transform the "
                               "forecaster to a non-distributed version.")
-        if quantized_dirname:
+        if quantized_dirname and self.openvino_int8:
             Trainer.save(self.openvino_int8, dirname)
-        if dirname:
+        if dirname and self.openvino_fp32:
             if self.openvino_fp32 is None:
                 self.build_openvino()
             Trainer.save(self.openvino_fp32, dirname)
