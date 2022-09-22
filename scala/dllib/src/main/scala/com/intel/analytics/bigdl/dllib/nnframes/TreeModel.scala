@@ -21,6 +21,7 @@ import org.apache.spark.sql.SparkSession
 import ml.dmlc.xgboost4j.scala.spark._
 import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.SparkContext
 import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMClassificationModel => MLightGBMClassificationModel}
 import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMClassifier => MLightGBMClassifier}
 import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMRegressionModel => MLightGBMRegressionModel}
@@ -28,7 +29,7 @@ import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMRegressor => MLightGBMRe
 
 
 class XGBClassifier (val xgboostParams: Map[String, Any] = Map()) {
-  val sc = SparkSession.active.sparkContext
+  val sc = SparkContext.getOrCreate()
   sc.getConf.set("spark.task.cpus", Engine.coreNumber().toString)
   private val estimator = new XGBoostClassifier(xgboostParams)
   estimator.setNthread(Engine.coreNumber())
@@ -430,7 +431,7 @@ object XGBRegressorModel {
  */
 class LightGBMClassifier (val lgbmParams: Map[String, Any] = Map()) {
 
-  val sc = SparkSession.active.sparkContext
+  val sc = SparkContext.getOrCreate()
   sc.getConf.set("spark.task.cpus", Engine.coreNumber().toString)
 
   private val estimator = new MLightGBMClassifier()
@@ -617,7 +618,7 @@ object LightGBMClassifierModel {
  */
 class LightGBMRegressor (val lgbmParams: Map[String, Any] = Map()) {
 
-  val sc = SparkSession.active.sparkContext
+  val sc = SparkContext.getOrCreate()
   sc.getConf.set("spark.task.cpus", Engine.coreNumber().toString)
 
   private val estimator = new MLightGBMRegressor()

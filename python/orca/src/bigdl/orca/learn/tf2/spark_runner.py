@@ -18,7 +18,7 @@ import logging
 import os
 import tempfile
 import shutil
-from copy import copy
+import copy
 
 import tensorflow as tf
 
@@ -319,7 +319,7 @@ class SparkRunner:
         """
         Get model training results and new model.
         """
-        config = copy(self.config)
+        config = copy.copy(self.config)
         if data_config is not None:
             config.update(data_config)
         config["batch_size"] = batch_size
@@ -373,7 +373,7 @@ class SparkRunner:
         """
         Evaluates the model on the validation data set.
         """
-        config = copy(self.config)
+        config = copy.copy(self.config)
         if data_config is not None:
             config.update(data_config)
         config["batch_size"] = batch_size
@@ -431,7 +431,7 @@ class SparkRunner:
             return []
 
     def predict(self, data_creator, batch_size, verbose, steps, callbacks, data_config):
-        config = copy(self.config)
+        config = copy.copy(self.config)
         if data_config is not None:
             config.update(data_config)
 

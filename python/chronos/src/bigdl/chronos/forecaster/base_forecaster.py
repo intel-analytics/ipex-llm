@@ -260,6 +260,13 @@ class BasePytorchForecaster(Forecaster):
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
+               |
+               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
+               | Forecaster will automatically process the TSDataset.
+               | By default, TSDataset will be transformed to a pytorch dataloader,
+               | which is memory-friendly while a little bit slower.
+               | Users may call `roll` on the TSDataset before calling `fit`
+               | Then the training speed will be faster but will consume more memory.
 
         :param epochs: Number of epochs you want to train. The value defaults to 1.
         :param batch_size: Number of batch size you want to train. The value defaults to 32.
@@ -390,6 +397,17 @@ class BasePytorchForecaster(Forecaster):
                 self.trainer.fit(self.internal, data)
                 self.fitted = True
             else:
+                if isinstance(validation_data, TSDataset):
+                    _rolled = validation_data.numpy_x is None
+                    validation_data =\
+                        validation_data.to_torch_data_loader(
+                            batch_size=batch_size,
+                            roll=_rolled,
+                            lookback=self.data_config['past_seq_len'],
+                            horizon=self.data_config['future_seq_len'],
+                            feature_col=validation_data.roll_feature,
+                            target_col=validation_data.roll_target,
+                            shuffle=False)
                 if isinstance(validation_data, tuple):
                     validation_data = np_to_dataloader(validation_data, batch_size,
                                                        self.num_processes)
@@ -1080,10 +1098,19 @@ class BasePytorchForecaster(Forecaster):
                                               accelerator="onnxruntime",
                                               onnxruntime_session_options=sess_options)
 
-    def build_openvino(self):
+    def build_openvino(self, thread_num=None):
         '''
         Build openvino model to speed up inference and reduce latency.
         The method is Not required to call before predict_with_openvino.
+
+        It is recommended to use when you want to:
+
+        | 1. Strictly control the thread to be used during inferencing.
+        | 2. Alleviate the cold start problem when you call predict_with_openvino
+             for the first time.
+
+        :param thread_num: int, the num of thread limit. The value is set to None by
+               default where no limit is set.
         '''
         from bigdl.chronos.pytorch import TSTrainer as Trainer
         from bigdl.nano.utils.log4Error import invalidInputError
@@ -1097,7 +1124,8 @@ class BasePytorchForecaster(Forecaster):
                                  self.data_config["input_feature_num"])
         self.openvino_fp32 = Trainer.trace(self.internal,
                                            input_sample=dummy_input,
-                                           accelerator="openvino")
+                                           accelerator="openvino",
+                                           thread_num=thread_num)
 
     def export_onnx_file(self, dirname="model.onnx", quantized_dirname="qmodel.onnx"):
         """
