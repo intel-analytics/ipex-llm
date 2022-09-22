@@ -8,6 +8,7 @@ runs:
       run: |
         source activate py37
         export SPARK_LOCAL_HOSTNAME=localhost
+        pip install -i https://pypi.org/simple --pre --upgrade bigdl-orca-spark3
         chmod a+x python/orca/dev/test/run-pytests-horovod-pytorch.sh
         python/orca/dev/test/run-pytests-horovod-pytorch.sh
         ray stop
