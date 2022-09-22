@@ -43,5 +43,4 @@ else
   suffix=$4
   profiles=${*:5}
 fi
-
 bash ${RUN_SCRIPT_DIR}/release_default_spark.sh mac ${version} ${quick} ${upload} 3.1.3 ${suffix} ${profiles}
