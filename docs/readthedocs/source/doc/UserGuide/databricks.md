@@ -12,7 +12,7 @@ You can run BigDL program on the [Databricks](https://databricks.com/) cluster a
 
 ### 2. Generate initialization script
 
-[Init script](https://learn.microsoft.com/en-us/azure/databricks/clusters/init-scripts) is used to Install BigDL or other libraries. First, you need to put the **init script** to [DBFS](https://docs.databricks.com/dbfs/index.html), you can use one of the following ways.
+[Init script](https://learn.microsoft.com/en-us/azure/databricks/clusters/init-scripts) is used to Install BigDL or other libraries. First, you need to put the **init script** into [DBFS](https://docs.databricks.com/dbfs/index.html), you can use one of the following ways.
 
 **a. Generate init script in Databricks notebook**
 
