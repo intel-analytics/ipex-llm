@@ -13,7 +13,7 @@ do
                                     > /ppml/trusted-big-data-ml/secured_argvs
     ./init.sh
     gramine-sgx bash 2>&1 | tee /ppml/trusted-big-data-ml/logs/runtime/${suite}.log
-    echo "##########$suite Test:"
+    echo "###########$suite Test:"
     if [ -z "$(grep "All tests passed" /ppml/trusted-big-data-ml/logs/reporter/${suite}.txt)" ]
     then
         echo "failed"
