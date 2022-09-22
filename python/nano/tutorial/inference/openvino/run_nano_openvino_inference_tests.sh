@@ -6,6 +6,10 @@ export NANO_TUTORIAL_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/tutorial/inferen
 
 set -e
 
+# Download model
+
+omz_downloader --name resnet18-xnor-binary-onnx-0001 -o ./model
+
 python $NANO_TUTORIAL_TEST_DIR/openvino_inference_sync.py
 
 python $NANO_TUTORIAL_TEST_DIR/openvino_inference_async.py
