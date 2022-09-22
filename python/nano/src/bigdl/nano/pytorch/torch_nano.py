@@ -48,7 +48,7 @@ class _TorchNanoModule(_LiteModule):
 
     def __getattr__(self, name: str):
         # automatically unwrap attributes access of _LiteModule,
-        # always raise a single-level exception when the attribute doesn't exist
+        # always throw a single-level exception when the attribute doesn't exist
         # for a more user-friendly exception message
         try:
             return super().__getattr__(name)
