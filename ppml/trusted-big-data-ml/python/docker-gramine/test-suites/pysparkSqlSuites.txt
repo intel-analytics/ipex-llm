@@ -11,9 +11,6 @@ test_pandas_cogrouped_map.py
 test_pandas_map.py
 test_pandas_udf.py
 test_pandas_udf_grouped_agg.py
-test_pandas_udf_scalar.py
-test_pandas_udf_typehints.py
-test_pandas_udf_window.py
 test_readwriter.py
 test_serde.py
 test_session.py
