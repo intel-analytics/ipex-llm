@@ -44,7 +44,7 @@ runs:
         -e RUNTIME_DRIVER_CORES=4 \
         -e RUNTIME_DRIVER_MEMORY=10g \
         $IMAGE bash
-    - name: PySpark K8s Examples Test
+    - name: PySpark K8S Examples Test
       shell: bash
       run: |
         docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/test-suites/k8s-pyspark-sql-examples.sh"
