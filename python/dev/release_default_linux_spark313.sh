@@ -26,10 +26,10 @@ BIGDL_DIR="$(cd ${RUN_SCRIPT_DIR}/../..; pwd)"
 echo $BIGDL_DIR
 
 if (( $# < 3)); then
-  echo "Usage: release_default_linux_spark313.sh version quick_build upload suffix mvn_pa                    rameters"
+  echo "Usage: release_default_linux_spark313.sh version quick_build upload suffix mvn_parameters"
   echo "Usage example: bash release_default_linux_spark313.sh default false true true"
-  echo "Usage example: bash release_default_linux_spark313.sh 0.14.0.dev1 false false tru                    e"
-  echo "Usage example: bash release_default_linux_spark313.sh 0.14.0.dev1 false false fal                    se -Ddata-store-url=.."
+  echo "Usage example: bash release_default_linux_spark313.sh 0.14.0.dev1 false false true"
+  echo "Usage example: bash release_default_linux_spark313.sh 0.14.0.dev1 false false false -Ddata-store-url=.."
   exit -1
 fi
 
@@ -44,4 +44,4 @@ else
   profiles=${*:5}
 fi
 
-bash ${RUN_SCRIPT_DIR}/release_default_spark.sh linux ${version} ${quick} ${upload} 3.1.3                     ${suffix} ${profiles}
+bash ${RUN_SCRIPT_DIR}/release_default_spark.sh linux ${version} ${quick} ${upload} 3.1.3 ${suffix} ${profiles}
