@@ -30,6 +30,9 @@ class OrcaRayContext(object):
                  cores=2,
                  num_nodes=1,
                  **kwargs):
+        import sys
+        if not hasattr(sys.stdout, 'fileno'):
+            sys.stdout.fileno = lambda: 1
 
         self.runtime = runtime
         self.initialized = False
