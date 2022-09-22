@@ -165,7 +165,12 @@ RUN apt-get update --fix-missing && \
 RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2.0/docker/hyperzoo/download-bigdl.sh && \
     chmod a+x ./download-bigdl.sh
 RUN ./download-bigdl.sh && \
-    rm bigdl*.zip
+    rm bigdl*.zip && \
+    sed -i 's#unzip bigdl-assembly-spark_$SPARK_VERSION-$NIGHTLY_VERSION.zip -d $BIGDL_HOME#mv bigdl-ppml-spark_$SPARK_VERSION-$NIGHTLY_VERSION-jar-with-dependencies.jar $BIGDL_HOME/jars/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION-jar-with-dependencies.jar#g' download-bigdl.sh && \
+    sed -i 's#assembly#ppml#g' download-bigdl.sh && \
+    sed -i 's#.zip#-jar-with-dependencies.jar#g' download-bigdl.sh && \
+    ./download-bigdl.sh
+
 
 # stage.4 ppml
 FROM ubuntu:20.04
@@ -238,6 +243,7 @@ RUN apt-get update --fix-missing && \
     mkdir -p /ppml/trusted-big-data-ml/fl
 
 COPY --from=bigdl /bigdl-${BIGDL_VERSION}/python/start-fl-server.py /ppml/trusted-big-data-ml/fl
+COPY --from=bigdl /bigdl-${BIGDL_VERSION}/python/start-fgboost-server.py /ppml/trusted-big-data-ml/fl
 
 #python
 RUN apt install software-properties-common -y && \

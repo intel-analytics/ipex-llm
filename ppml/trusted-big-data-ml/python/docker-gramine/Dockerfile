@@ -129,7 +129,12 @@ RUN apt-get update --fix-missing && \
 RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2.0/docker/hyperzoo/download-bigdl.sh && \
     chmod a+x ./download-bigdl.sh
 RUN ./download-bigdl.sh && \
-    rm bigdl*.zip
+    rm bigdl*.zip && \
+    sed -i 's#unzip bigdl-assembly-spark_$SPARK_VERSION-$NIGHTLY_VERSION.zip -d $BIGDL_HOME#mv bigdl-ppml-spark_$SPARK_VERSION-$NIGHTLY_VERSION-jar-with-dependencies.jar $BIGDL_HOME/jars/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION-jar-with-dependencies.jar#g' download-bigdl.sh && \
+    sed -i 's#assembly#ppml#g' download-bigdl.sh && \
+    sed -i 's#.zip#-jar-with-dependencies.jar#g' download-bigdl.sh && \
+    ./download-bigdl.sh
+
 
 # Stage.3 PPML
 FROM ubuntu:20.04
@@ -175,6 +180,7 @@ RUN mkdir -p /ppml/trusted-big-data-ml/work && \
     mkdir -p /ppml/trusted-big-data-ml/fl
 
 COPY --from=bigdl /bigdl-${BIGDL_VERSION}/python/start-fl-server.py /ppml/trusted-big-data-ml/fl
+COPY --from=bigdl /bigdl-${BIGDL_VERSION}/python/start-fgboost-server.py /ppml/trusted-big-data-ml/fl
 COPY --from=spark /opt/jdk  /opt/jdk8
 COPY --from=spark /opt/scala-2.11.8  /opt/scala-2.11.8
 COPY --from=spark /opt/spark-${SPARK_VERSION} /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}
@@ -219,6 +225,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     pip install --no-cache-dir ninja meson && \
     pip install --no-cache-dir psutil && \
     pip install --no-cache-dir dill==0.3.4 && \
+    pip install --no-cache-dir pyspark && \
     python3 -m pip install toml==0.10.2 click jinja2 && \
     python3 -m ipykernel.kernelspec && \
     ln -s /usr/lib/x86_64-linux-gnu/libtinfo.so.6 /usr/lib/x86_64-linux-gnu/libtinfo.so.5 && \
