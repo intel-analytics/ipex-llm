@@ -27,7 +27,6 @@ if __name__ == "__main__":
     model_ft = resnet18(pretrained=True)
 
     x = torch.rand(2, 3, 224, 224)
-    model_ft.eval()
 
     # Accelerated Inference Using OpenVINO
     from bigdl.nano.pytorch import InferenceOptimizer
@@ -40,11 +39,10 @@ if __name__ == "__main__":
     print(predictions)
 
     # Save Optimized Model
-    from bigdl.nano.pytorch import Trainer
-    Trainer.save(ov_model, "./optimized_model_ov")
+    InferenceOptimizer.save(ov_model, "./optimized_model_ov")
 
     # Load the Optimized Model
-    loaded_model = Trainer.load("./optimized_model_ov")
+    loaded_model = InferenceOptimizer.load("./optimized_model_ov")
 
     # Inference with the Loaded Model
     y_hat = loaded_model(x)
