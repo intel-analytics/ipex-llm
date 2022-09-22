@@ -180,7 +180,10 @@ class InferenceOptimizer:
         st = time.perf_counter()
         try:
             with torch.no_grad():
-                model(*input_sample)
+                if isinstance(input_sample, Dict):
+                    model(input_sample)
+                else:
+                    model(*input_sample)
         except Exception:
             invalidInputError(False,
                               "training_data is incompatible with your model input.")
@@ -252,14 +255,17 @@ class InferenceOptimizer:
 
                 def func_test(model, input_sample):
                     with torch.no_grad():
-                        model(*input_sample)
+                        if isinstance(input_sample, Dict):
+                            model(input_sample)
+                        else:
+                            model(*input_sample)
 
                 torch.set_num_threads(thread_num)
                 try:
                     result_map[method]["latency"], status =\
                         _throughput_calculate_helper(latency_sample_num, baseline_time,
                                                      func_test, acce_model, input_sample)
-                    if status is False:
+                    if status is False and method != "original":
                         result_map[method]["status"] = "early stopped"
                         torch.set_num_threads(default_threads)
                         continue
@@ -290,8 +296,11 @@ class InferenceOptimizer:
 
         self._optimize_result = _format_optimize_result(self.optimized_model_dict,
                                                         self._calculate_accuracy)
+        # save time cost to self._optimize_result
+        time_cost_str = "Optimization cost {:.3}s at all.".format(
+            time.perf_counter() - start_time)
+        self._optimize_result += time_cost_str
         print(self._optimize_result)
-        print("Optimization cost {:.3}s at all.".format(time.perf_counter() - start_time))
         print("===========================Stop Optimization===========================")
 
     def summary(self):
@@ -673,7 +682,7 @@ def _openvino_checker():
     '''
     check if openvino-dev is installed
     '''
-    return not find_spec("openvino-dev") is None
+    return not find_spec("openvino") is None
 
 
 def _bf16_checker():

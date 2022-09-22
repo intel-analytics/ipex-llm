@@ -1098,10 +1098,19 @@ class BasePytorchForecaster(Forecaster):
                                               accelerator="onnxruntime",
                                               onnxruntime_session_options=sess_options)
 
-    def build_openvino(self):
+    def build_openvino(self, thread_num=None):
         '''
         Build openvino model to speed up inference and reduce latency.
         The method is Not required to call before predict_with_openvino.
+
+        It is recommended to use when you want to:
+
+        | 1. Strictly control the thread to be used during inferencing.
+        | 2. Alleviate the cold start problem when you call predict_with_openvino
+             for the first time.
+
+        :param thread_num: int, the num of thread limit. The value is set to None by
+               default where no limit is set.
         '''
         from bigdl.chronos.pytorch import TSTrainer as Trainer
         from bigdl.nano.utils.log4Error import invalidInputError
@@ -1115,7 +1124,8 @@ class BasePytorchForecaster(Forecaster):
                                  self.data_config["input_feature_num"])
         self.openvino_fp32 = Trainer.trace(self.internal,
                                            input_sample=dummy_input,
-                                           accelerator="openvino")
+                                           accelerator="openvino",
+                                           thread_num=thread_num)
 
     def export_onnx_file(self, dirname="model.onnx", quantized_dirname="qmodel.onnx"):
         """
