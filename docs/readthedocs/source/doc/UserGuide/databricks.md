@@ -8,73 +8,91 @@ You can run BigDL program on the [Databricks](https://databricks.com/) cluster a
 - Create either an [AWS Databricks](https://docs.databricks.com/getting-started/try-databricks.html) workspace or an [Azure Databricks](https://docs.microsoft.com/en-us/azure/azure-databricks/) workspace. 
 - Create a Databricks [cluster](https://docs.databricks.com/clusters/create.html) using the UI. Choose Databricks runtime version. This guide is tested on Runtime 9.1 LTS (includes Apache Spark 3.1.2, Scala 2.12).
 
-### 2. Download BigDL Libraries
+![](images/create-cluster.png)
 
-Download the BigDL package from [here](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.2/2.1.0-SNAPSHOT/), scroll down to the bottom, choose the **latest** release **bigdl-assembly-spark_3.1.2-2.1.0-*-fat-jars.zip**.
+### 2. Generate initialization script
 
-![](images/fat-jars.png)
+[Init script](https://learn.microsoft.com/en-us/azure/databricks/clusters/init-scripts) is used to Install BigDL or other libraries. First, you need to put the **init script** to [DBFS](https://docs.databricks.com/dbfs/index.html), you can use one of the following ways.
 
-Unzip the zip file, we only need two files:
+**a. Generate init script in Databricks notebook**
 
-- jars/**bigdl-assembly-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar**
-- python/**bigdl-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip**
+Create a Databricks notebook and execute
 
-### 3. Install BigDL Java dependencies
+```python
+init_script = """
+#!/bin/bash
 
-In the Databricks left panel, click **Compute** and select your cluster.
+# install bigdl-orca, add other bigdl modules if you need
+/databricks/python/bin/pip install pip install --pre --upgrade bigdl-orca-spark3
 
-![](images/compute.png)
+# install other necessary libraries, here we install libraries needed in this tutorial
+/databricks/python/bin/pip install ray[default]
+/databricks/python/bin/pip install tensorflow==2.9.1
+/databricks/python/bin/pip install pyarrow==8.0.0
+/databricks/python/bin/pip install psutil
 
-Install BigDL java packages using **bigdl-assembly-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar** from [step 2](#2-download-bigdl-libraries). Click **Libraries > Install New > Library Source(Upload) > Library Type (Jar)**. Drop the jar on Databricks.
+# copy bigdl jars to databricks
+cp /databricks/python/lib/python3.8/site-packages/bigdl/share/*/lib/*.jar /databricks/jars
+"""
 
-![](images/assembly-jar.png)
+# Change the first parameter to your DBFS path
+dbutils.fs.put("dbfs:/FileStore/scripts/init.sh", init_script, True)
+```
 
-After upload finishes, click **Install**.
+To make sure the init script is in DBFS, in the left panel, click **Data > DBFS > check your script save path**.
 
-> Tips: if you find your upload process is really slow, try to use **Databricks CLI** to upload, see [Appendix B](#appendix-b) for details.
+> if you do not see DBFS in your panel, see [Appendix A](#appendix-a).
 
-### 4. Install BigDL Python libraries
+**b. Create init script in local and upload to DBFS**
 
-Install BigDL python environment using **bigdl-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip** from [step 2](#2-download-bigdl-libraries). However, Databricks can only upload **Jar**, **Python Egg** and **Python Whl**, but doesn't support **Zip**, so we can not simply upload the python api zip and install it like what we do in [step 3](#3-install-bigdl-java-dependencies). You can upload and install the zip package in one of the following ways.
+Create a file **init.sh**(or any other filename) in your computer, the file content is
 
-#### 4.1 Upload and Install through DBFS
+```bash
+#!/bin/bash
 
-**First, upload the zip package to [DBFS](https://docs.databricks.com/dbfs/index.html).** In the left panel, click **Data > DBFS**, if your panel don't have DBFS, see [Appendix A](#appendix-a). then choose or create a folder and right click in the folder, choose **Upload here**.
+# install bigdl-orca, add other bigdl modules if you need
+/databricks/python/bin/pip install pip install --pre --upgrade bigdl-orca-spark3
 
-![](images/upload.png)
+# install other necessary libraries, here we install libraries needed in this tutorial
+/databricks/python/bin/pip install ray[default]
+/databricks/python/bin/pip install tensorflow==2.9.1
+/databricks/python/bin/pip install pyarrow==8.0.0
+/databricks/python/bin/pip install psutil
 
-Upload your zip package.
+# copy bigdl jars to databricks
+cp /databricks/python/lib/python3.8/site-packages/bigdl/share/*/lib/*.jar /databricks/jars
+```
 
-![](images/upload-success.png)
+Then upload **init.sh** to DBFS.  In Databricks left panel, click **Data > DBFS > Choose or create upload directory > Right click > Upload here**.
 
-Right click the uploaded zip package and choose **Copy path**, copy the **Spark API Format** path.
+![](images/upload-init-script.png)
 
-![](images/copy-path.png)
+Now the init script is in DBFS, right click the init.sh and choose **Copy path**, copy the **Spark API Format** path.
 
-**Then install the zip package from DBFS.** In the left panel, click **Compute > choose your cluster > Libraries > Install new > Library Source(DBFS/ADLS) > Library Type(Python Egg) > paste the path > Install**
+![](images/copy-script-path.png)
 
-![](images/install-zip.png)
-
-#### 4.2 Change the File Extension Name
-
-You can simply change the **bigdl-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip** extension name(**.zip**) to **.egg**, since Egg is essentially a zip format package. Then in the left panel, click **Compute > choose your cluster > Libraries > Install new > Library Source(Upload) > Library Type(Python Egg) > Install**
-
-![](images/egg.png)
-
-### **5. Set Spark configuration**
+### 3. Set Spark configuration
 
 On the cluster configuration page, click the **Advanced Options** toggle. Click the **Spark** tab. You can provide custom [Spark configuration properties](https://spark.apache.org/docs/latest/configuration.html) in a cluster configuration. Please set it according to your cluster resource and program needs.
 
 ![](images/Databricks5.PNG)
 
-See below for an example of Spark config setting needed by BigDL. Here it sets 2 core per executor. Note that "spark.cores.max" needs to be properly set below.
+See below for an example of Spark config setting **needed** by BigDL. Here it sets 2 core per executor. Note that "spark.cores.max" needs to be properly set below.
 
 ```
 spark.executor.cores 2
 spark.cores.max 4
 ```
 
-### **6. Run BigDL on Databricks**
+### 4. Install BigDL Libraries
+
+Use init script from [step 2](#2-generate-initialization-script) to install BigDL libraries. In the left panel, click **Compute > Choose your cluster > edit > Advanced options > Init Scripts > Paste init script path > Add > Restart cluster**.
+
+![](images/config-init-script.png)
+
+After restart the cluster, the needed libraries is all installed.
+
+### **5. Run BigDL on Databricks**
 
 Open a new notebook, and call `init_orca_context` at the beginning of your code (with `cluster_mode` set to "spark-submit").
 
@@ -87,10 +105,144 @@ Output on Databricks:
 
 ![](images/init-orca-context.png)
 
+**Run ncf_train example on Databricks**
 
-### **7. Install other third-party libraries on Databricks if necessary**
+create a notebook and run the following example.
 
-If you want to use other third-party libraries, check related Databricks documentation of [libraries for AWS Databricks](https://docs.databricks.com/libraries/index.html) and [libraries for Azure Databricks](https://docs.microsoft.com/en-us/azure/databricks/libraries/).
+```python
+import math
+import argparse
+import os
+
+from bigdl.orca import init_orca_context, stop_orca_context
+from bigdl.orca.learn.tf2.estimator import Estimator
+
+
+def build_model(num_users, num_items, class_num, layers=[20, 10], include_mf=True, mf_embed=20):
+    import tensorflow as tf
+    from tensorflow.keras.layers import Input, Embedding, Dense, Flatten, concatenate, multiply
+
+    num_layer = len(layers)
+    user_input = Input(shape=(1,), dtype='int32', name='user_input')
+    item_input = Input(shape=(1,), dtype='int32', name='item_input')
+
+    mlp_embed_user = Embedding(input_dim=num_users, output_dim=int(layers[0] / 2),
+                               input_length=1)(user_input)
+    mlp_embed_item = Embedding(input_dim=num_items, output_dim=int(layers[0] / 2),
+                               input_length=1)(item_input)
+
+    user_latent = Flatten()(mlp_embed_user)
+    item_latent = Flatten()(mlp_embed_item)
+
+    mlp_latent = concatenate([user_latent, item_latent], axis=1)
+    for idx in range(1, num_layer):
+        layer = Dense(layers[idx], activation='relu',
+                      name='layer%d' % idx)
+        mlp_latent = layer(mlp_latent)
+
+    if include_mf:
+        mf_embed_user = Embedding(input_dim=num_users,
+                                  output_dim=mf_embed,
+                                  input_length=1)(user_input)
+        mf_embed_item = Embedding(input_dim=num_users,
+                                  output_dim=mf_embed,
+                                  input_length=1)(item_input)
+        mf_user_flatten = Flatten()(mf_embed_user)
+        mf_item_flatten = Flatten()(mf_embed_item)
+
+        mf_latent = multiply([mf_user_flatten, mf_item_flatten])
+        concated_model = concatenate([mlp_latent, mf_latent], axis=1)
+        prediction = Dense(class_num, activation='softmax', name='prediction')(concated_model)
+    else:
+        prediction = Dense(class_num, activation='softmax', name='prediction')(mlp_latent)
+
+    model = tf.keras.Model([user_input, item_input], prediction)
+    return model
+
+
+if __name__ == '__main__':
+    executor_cores = 2
+    lr = 0.001
+    epochs = 5
+    batch_size = 8000
+    model_dir = "/dbfs/FileStore/model/ncf/"
+    backend = "spark" # ray or spark
+    data_dir = './'
+    
+    sc = init_orca_context(cluster_mode="spark-submit",extra_params={"dashboard-port": "11280", "min-worker-port": "30000", "max-worker-port": "33333", "metrics-export-port": "10010"}, verbose=True)
+
+    if backend == "ray":
+        save_path = model_dir + "ncf.ckpt"
+    elif backend == "spark":
+        save_path = model_dir + "ncf.h5"
+    else:
+        raise Exception("backend should be either 'tf2' or 'spark', but got " + backend)
+
+    import random
+    from pyspark.sql.types import StructType, StructField, IntegerType
+    from bigdl.orca import OrcaContext
+
+    spark = OrcaContext.get_spark_session()
+
+    num_users, num_items = 6000, 3000
+    rdd = sc.range(0, 50000).map(
+        lambda x: [random.randint(0, num_users - 1), random.randint(0, num_items - 1), random.randint(0, 4)])
+    schema = StructType([StructField("user", IntegerType(), False),
+                         StructField("item", IntegerType(), False),
+                         StructField("label", IntegerType(), False)])
+    data = spark.createDataFrame(rdd, schema)
+    train, test = data.randomSplit([0.8, 0.2], seed=1)
+
+    config = {"lr": lr, "inter_op_parallelism": 4, "intra_op_parallelism": executor_cores}
+
+
+    def model_creator(config):
+        import tensorflow as tf
+
+        model = build_model(num_users, num_items, 5)
+        print(model.summary())
+        optimizer = tf.keras.optimizers.Adam(config["lr"])
+        model.compile(optimizer=optimizer,
+                      loss='sparse_categorical_crossentropy',
+                      metrics=['sparse_categorical_crossentropy', 'accuracy'])
+        return model
+
+
+    steps_per_epoch = math.ceil(train.count() / batch_size)
+    val_steps = math.ceil(test.count() / batch_size)
+
+    estimator = Estimator.from_keras(model_creator=model_creator,
+                                     verbose=False,
+                                     config=config,
+                                     backend=backend,
+                                     model_dir=model_dir)
+    estimator.fit(train,
+                  batch_size=batch_size,
+                  epochs=epochs,
+                  feature_cols=['user', 'item'],
+                  label_cols=['label'],
+                  steps_per_epoch=steps_per_epoch,
+                  validation_data=test,
+                  validation_steps=val_steps)
+
+    predictions = estimator.predict(test,
+                                    batch_size=batch_size,
+                                    feature_cols=['user', 'item'],
+                                    steps=val_steps)
+    print("Predictions on validation dataset:")
+    predictions.show(5, truncate=False)
+
+    print("Saving model to: ", save_path)
+    estimator.save(save_path)
+
+    # load with estimator.load(args.save_path)
+
+    stop_orca_context()
+```
+
+### **6. Other ways to install third-party libraries on Databricks if necessary**
+
+If you want to use other ways to install third-party libraries, check related Databricks documentation of [libraries for AWS Databricks](https://docs.databricks.com/libraries/index.html) and [libraries for Azure Databricks](https://docs.microsoft.com/en-us/azure/databricks/libraries/).
 
 ### Appendix A
 
@@ -100,7 +252,7 @@ If there is no DBFS in your panel,  go to **User profile > Admin Console > Works
 
 ### Appendix B
 
-Use **Databricks CLI** to upload file to DBFS.
+Use **Databricks CLI** to upload file to DBFS. When you upload a large file to DBFS, using Databricks CLI could be faster than using UI.
 
 **Install and config Azure Databricks CLI**
 
