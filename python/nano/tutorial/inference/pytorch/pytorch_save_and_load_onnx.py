@@ -39,6 +39,10 @@ if __name__ == "__main__":
     print(predictions)
 
     # Save Optimized Model
+    # The saved model files will be saved at "./optimized_model_ort" directory
+    # There are 2 files in optimized_model_ort:
+    #   nano_model_meta.yml: meta information of the saved model checkpoint
+    #   onnx_saved_model.onnx: model checkpoint for general use, describes model structure
     InferenceOptimizer.save(ort_model, "./optimized_model_ort")
 
     # Load the Optimized Model
