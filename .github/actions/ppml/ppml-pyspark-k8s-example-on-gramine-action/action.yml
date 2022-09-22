@@ -12,6 +12,8 @@ runs:
         echo "CONTAINER_NAME=pyspark-exmaples-test-gramine" >> $GITHUB_ENV
         echo "SGX_MEM_SIZE=${{ env.DEFAULT_SGX_MEM_SIZE }}" >> $GITHUB_ENV
         echo "IMAGE=${{ env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
+        echo "KUBECONFIG_PATH=~/glorysdj/kuberconfig" >> $GITHUB_ENV
+        echo "NFS_INPUT_PATH=/mnt/sdb/disk1/nfsdata/default-nfsvolumeclaim-pvc-28b604cf-058a-490b-af6e-684c2e166a0c" >> $GITHUB_ENV
     - name: Start Container
       shell: bash
       run: |
@@ -26,23 +28,32 @@ runs:
         --oom-kill-disable \
         --device=/dev/sgx/enclave \
         --device=/dev/sgx/provision \
-        -v ~/glorysdj/kuberconfig:/root/.kube/config \
         -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
         -v $ENCLAVE_KEY:/root/.config/gramine/enclave-key.pem \
-        -v $DATA_PATH:/ppml/trusted-big-data-ml/work/data \
         -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
+        -v $SECURE_PASSWORD_PATH:/ppml/trusted-big-data-ml/work/password \
+        -v $KUBECONFIG_PATH:/root/.kube/config \
+        -v $NFS_INPUT_PATH:/ppml/trusted-big-data-ml/work/data \
+        -e RUNTIME_SPARK_MASTER=k8s://https://$LOCAL_IP:6443 \
+        -e RUNTIME_K8S_SERVICE_ACCOUNT=spark \
         -e LOCAL_IP=$LOCAL_IP \
         -e SGX_MEM_SIZE=32G \
-        -e RUNTIME_K8S_SERVICE_ACCOUNT=spark \
         -e RUNTIME_K8S_SPARK_IMAGE=$IMAGE \
         -e RUNTIME_DRIVER_HOST=$LOCAL_IP \
         -e RUNTIME_DRIVER_PORT=54321 \
-        -e RUNTIME_EXECUTOR_INSTANCES=1 \
+        -e RUNTIME_EXECUTOR_INSTANCES=2 \
         -e RUNTIME_EXECUTOR_CORES=4 \
-        -e RUNTIME_EXECUTOR_MEMORY=80g \
+        -e RUNTIME_EXECUTOR_MEMORY=20g \
         -e RUNTIME_TOTAL_EXECUTOR_CORES=4 \
         -e RUNTIME_DRIVER_CORES=4 \
         -e RUNTIME_DRIVER_MEMORY=10g \
+        -e SGX_MEM_SIZE=64G \
+        -e SGX_DRIVER_MEM=64g \
+        -e SGX_DRIVER_JVM_MEM=12g \
+        -e SGX_EXECUTOR_MEM=64g \
+        -e SGX_EXECUTOR_JVM_MEM=12g \
+        -e SGX_ENABLED=true \
+        -e SGX_LOG_LEVEL=error \
         $IMAGE bash
     - name: PySpark K8S Examples Test
       shell: bash
