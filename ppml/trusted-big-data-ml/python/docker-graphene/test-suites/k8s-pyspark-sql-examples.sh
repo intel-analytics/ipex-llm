@@ -2,11 +2,13 @@
 status_2_k8s_pyspark_sql_basic=1
 status_3_k8s_pyspark_sql_e2e=1
 
-SPARK_LOCAL_IP=192.168.0.112
+SPARK_LOCAL_IP=$LOCAL_IP
 DB_PATH=/ppml/trusted-big-data-ml/work/data/sqlite_example/100w.db
 
 if [ $status_2_k8s_pyspark_sql_basic -ne 0 ]; then
-SGX=1 ./pal_loader bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
+cd /ppml/trusted-big-data-ml
+./clean.sh
+/graphene/Tools/argv_serializer bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
   export SPARK_LOCAL_IP=$SPARK_LOCAL_IP && \
   /opt/jdk8/bin/java \
     -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
@@ -36,12 +38,16 @@ SGX=1 ./pal_loader bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
     --conf spark.kubernetes.sgx.mem=32g \
     --conf spark.kubernetes.sgx.jvm.mem=16g \
     --verbose \
-    /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/basic.py" 2>&1 > k8s-pyspark-sql-basic-sgx.log
+    /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/basic.py" > /ppml/trusted-big-data-ml/secured-argvs
+./init.sh
+SGX=1 ./pal_loader bash 2>&1 | tee k8s-pyspark-sql-basic-sgx.log
 fi
 status_2_k8s_pyspark_sql_basic=$(echo $?)
 
 if [ $status_3_k8s_pyspark_sql_e2e -ne 0 ]; then
-SGX=1 ./pal_loader bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
+cd /ppml/trusted-big-data-ml
+./clean.sh
+/graphene/Tools/argv_serializer bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
   export SPARK_LOCAL_IP=$SPARK_LOCAL_IP && \
   /opt/jdk8/bin/java \
     -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' -Xmx10g \
@@ -70,7 +76,9 @@ SGX=1 ./pal_loader bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
     --conf spark.kubernetes.sgx.jvm.mem=16g \
     --verbose \
     local:///ppml/trusted-big-data-ml/work/examples/customer_profile.py \
-    --db_path $DB_PATH" 2>&1 > k8s-pyspark-sql-e2e-100w-sgx.log
+    --db_path $DB_PATH" > /ppml/trusted-big-data-ml/secured-argvs
+./init.sh
+SGX=1 ./pal_loader bash 2>&1 | tee k8s-pyspark-sql-e2e-100w-sgx.log
 fi
 status_3_k8s_pyspark_sql_e2e=$(echo $?)
 

@@ -21,8 +21,8 @@ import functools
 from bigdl.chronos.data.utils.feature import generate_dt_features, generate_global_features
 from bigdl.chronos.data.utils.impute import impute_timeseries_dataframe
 from bigdl.chronos.data.utils.deduplicate import deduplicate_timeseries_dataframe
-from bigdl.chronos.data.utils.roll import roll_timeseries_dataframe, _roll_timeseries_ndarray
-from bigdl.chronos.data.utils.time_feature import time_features
+from bigdl.chronos.data.utils.roll import roll_timeseries_dataframe
+from bigdl.chronos.data.utils.time_feature import time_features, gen_time_enc_arr
 from bigdl.chronos.data.utils.scale import unscale_timeseries_numpy
 from bigdl.chronos.data.utils.resample import resample_timeseries_dataframe
 from bigdl.chronos.data.utils.split import split_timeseries_dataframe
@@ -51,6 +51,7 @@ class TSDataset:
         self.numpy_y = None
         self.lookback = None  # lookback stated by users if they called roll, to_torch_data_loader
         self.horizon = None  # horizon stated by users if they called roll, to_torch_data_loader
+        self.label_len = None
         self.roll_feature = None  # contains feature_col requested by roll/to_torch_data_loader
         self.roll_target = None  # contains target_col requested by roll/to_torch_data_loader
         self.roll_feature_df = None
@@ -605,7 +606,10 @@ class TSDataset:
         roll_feature_df = None if self.roll_feature_df is None \
             else self.roll_feature_df[additional_feature_col]
 
-        self.lookback, self.horizon = lookback, horizon
+        if time_enc and label_len == 0:
+            label_len = lookback // 2
+
+        self.lookback, self.horizon, self.label_len = lookback, horizon, label_len
         # horizon_time is only for time_enc, the time_enc numpy ndarray won't have any
         # shape change when the dataset is for prediction.
         horizon_time = self.horizon
@@ -638,22 +642,21 @@ class TSDataset:
 
         # time_enc
         if time_enc:
-            df_stamp = pd.DataFrame(columns=[self.dt_col])
-            if is_predict:
-                pred_dates = pd.date_range(self.df[self.dt_col].values[-1],
-                                           periods=horizon_time + 1, freq=self._freq)
-                df_stamp.loc[:, self.dt_col] =\
-                    list(self.df[self.dt_col].values) + list(pred_dates[1:])
-            else:
-                df_stamp.loc[:, self.dt_col] = list(self.df[self.dt_col].values)
-            data_stamp = time_features(pd.to_datetime(df_stamp[self.dt_col].values),
-                                       freq=self._freq)
-            self.data_stamp = data_stamp.transpose(1, 0)
-            max_horizon = horizon_time if isinstance(horizon_time, int) else max(horizon_time)
-            self.numpy_x_timeenc, _ = _roll_timeseries_ndarray(self.data_stamp[:-max_horizon],
-                                                               lookback)
-            self.numpy_y_timeenc, _ = _roll_timeseries_ndarray(self.data_stamp[lookback-label_len:],
-                                                               horizon_time+label_len)
+            time_enc_arr = \
+                self.df.groupby([self.id_col]) \
+                    .apply(lambda df: gen_time_enc_arr(df=df,
+                                                       dt_col=self.dt_col,
+                                                       freq=self._freq,
+                                                       horizon_time=horizon_time,
+                                                       is_predict=is_predict,
+                                                       lookback=lookback,
+                                                       label_len=label_len))
+            self.numpy_x_timeenc = np.concatenate([time_enc_arr[i][0]
+                                                   for i in self._id_list],
+                                                  axis=0).astype(np.float32)
+            self.numpy_y_timeenc = np.concatenate([time_enc_arr[i][1]
+                                                   for i in self._id_list],
+                                                  axis=0).astype(np.float32)
         else:
             self.numpy_x_timeenc = None
             self.numpy_y_timeenc = None
@@ -764,9 +767,12 @@ class TSDataset:
             target_col = _to_list(target_col, "target_col") if target_col is not None \
                 else self.target_col
 
+            if time_enc and label_len == 0:
+                label_len = lookback // 2
+
             # set scaler index for unscale_numpy
             self.scaler_index = [self.target_col.index(t) for t in target_col]
-            self.lookback, self.horizon = lookback, horizon
+            self.lookback, self.horizon, self.label_len = lookback, horizon, label_len
 
             if self.lookback == 'auto':
                 self.lookback = self.get_cycle_length('mode', top_k=3)

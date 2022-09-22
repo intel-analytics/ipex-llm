@@ -15,13 +15,17 @@
 #
 
 import torch
+import numpy as np
+from pandas import Timedelta
 from bigdl.chronos.forecaster.abstract import Forecaster
+from bigdl.chronos.metric.forecast_metrics import Evaluator
 from bigdl.chronos.model.autoformer import model_creator, loss_creator
 from torch.utils.data import TensorDataset, DataLoader
 from bigdl.chronos.model.autoformer.Autoformer import AutoFormer, _transform_config_to_namedtuple
 from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
 from bigdl.chronos.forecaster.utils import check_transformer_data
 from bigdl.chronos.pytorch import TSTrainer as Trainer
+from bigdl.chronos.data import TSDataset
 from bigdl.nano.automl.hpo.space import Space
 from bigdl.chronos.forecaster.utils_hpo import GenericTSTransformerLightningModule, \
     _config_has_search_space
@@ -36,8 +40,8 @@ class AutoformerForecaster(Forecaster):
                  future_seq_len,
                  input_feature_num,
                  output_feature_num,
-                 label_len,
                  freq,
+                 label_len=None,
                  output_attention=False,
                  moving_avg=25,
                  d_model=128,
@@ -66,9 +70,9 @@ class AutoformerForecaster(Forecaster):
         :param future_seq_len: Specify the output time steps (i.e. horizon).
         :param input_feature_num: Specify the feature dimension.
         :param output_feature_num: Specify the output dimension.
-        :param label_len: Start token length of AutoFormer decoder.
         :param freq: Freq for time features encoding. You may choose from "s",
                "t","h","d","w","m" for second, minute, hour, day, week or month.
+        :param label_len: Start token length of AutoFormer decoder.
         :param optimizer: Specify the optimizer used for training. This value
                defaults to "Adam".
         :param loss: str or pytorch loss instance, Specify the loss function
@@ -107,11 +111,11 @@ class AutoformerForecaster(Forecaster):
             "future_seq_len": future_seq_len,
             "input_feature_num": input_feature_num,
             "output_feature_num": output_feature_num,
-            "label_len": label_len
+            "label_len": past_seq_len//2 if label_len is None else label_len
         }
         self.model_config = {
             "seq_len": past_seq_len,
-            "label_len": label_len,
+            "label_len": past_seq_len//2 if label_len is None else label_len,
             "pred_len": future_seq_len,
             "output_attention": output_attention,
             "moving_avg": moving_avg,
@@ -159,6 +163,9 @@ class AutoformerForecaster(Forecaster):
         self.quantize_available = False
         self.use_amp = False
         self.use_hpo = True
+
+        # Model preparation
+        self.fitted = False
 
         has_space = _config_has_search_space(
             config={**self.model_config, **self.optim_config,
@@ -349,6 +356,7 @@ class AutoformerForecaster(Forecaster):
                 self.internal = self.tune_internal._model_build(trial)
 
         self.trainer.fit(self.internal, data)
+        self.fitted = True
 
     def predict(self, data, batch_size=32):
         """
@@ -409,6 +417,99 @@ class AutoformerForecaster(Forecaster):
 
         return self.trainer.validate(self.internal, data)
 
+    def predict_interval(self, data, val_data=None, batch_size=32, repetition_times=5):
+        """
+        Calculate confidence interval of data based on Monte Carlo dropout(MC dropout).
+        Related paper : https://arxiv.org/abs/1709.01907
+
+        :param data: The data support following formats:
+
+               | 1. numpy ndarrays: generate from `TSDataset.roll`,
+                    be sure to set label_len > 0 and time_enc = True
+               | 2. pytorch dataloader: generate from `TSDataset.to_torch_data_loader`,
+                    be sure to set label_len > 0, time_enc = True and is_predict = True
+
+        :param val_data: The val_data support following formats:
+
+               | 1. numpy ndarrays: generate from `TSDataset.roll`,
+                    be sure to set label_len > 0 and time_enc = True
+               | 2. pytorch dataloader: generate from `TSDataset.to_torch_data_loader`,
+                    be sure to set label_len > 0, time_enc = True
+
+        :param batch_size: predict batch size. The value will not affect predict
+               result but will affect resources cost(e.g. memory and time).
+        :param repetition_times : Defines repeate how many times to calculate model
+                                  uncertainty based on MC Dropout.
+
+        :return: prediction and standard deviation which are both numpy array
+                 with shape (num_samples, horizon, target_dim)
+
+        """
+        from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
+
+        if self.fitted is not True:
+            invalidInputError(False,
+                              "You must call fit or restore first before calling predict_interval!")
+
+        # step1, according to validation dataset, calculate inherent noise
+        # which should be done during fit
+        if not hasattr(self, "data_noise"):
+            invalidInputError(val_data is not None,
+                              "When call predict_interval for the first time, you must pass in "
+                              "validation data to calculate data noise.")
+            # data transform
+            if isinstance(val_data, DataLoader):
+                target = np.concatenate(tuple(val[1] for val in val_data), axis=0)
+            else:
+                x, target, x_enc, y_enc = val_data
+
+            target = target[:, -self.internal.pred_len:, :]
+
+            _yhat = self.predict(val_data)
+            val_yhat = np.concatenate(_yhat, axis=0)
+            self.data_noise = Evaluator.evaluate(["mse"], target,
+                                                 val_yhat, aggregate=None)[0]  # 2d array
+
+        # step3: calculate model uncertainty based MC Dropout
+        def apply_dropout(m):
+            if type(m) == torch.nn.Dropout:
+                m.train()
+
+        # turn on dropout
+        self.internal.apply(apply_dropout)
+
+        def predict(data, model):
+            # manually implement predict to avoid .eval() in trainer.predict()
+            if isinstance(data, tuple):
+                data = DataLoader(TensorDataset(torch.from_numpy(data[0]),
+                                                torch.from_numpy(data[1]),
+                                                torch.from_numpy(data[2]),
+                                                torch.from_numpy(data[3]),),
+                                  batch_size=batch_size,
+                                  shuffle=False)
+            outputs_list = []
+            for batch in data:
+                batch_x, batch_y, batch_x_mark, batch_y_mark = map(lambda x: x.float(), batch)
+                outputs = model(batch_x, batch_x_mark, batch_y, batch_y_mark)
+                outputs = outputs[:, -model.pred_len:, -model.c_out:]
+                outputs_list.append(outputs.detach().numpy())
+            return outputs_list
+
+        y_hat_list = []
+        for i in range(repetition_times):
+            _yhat = predict(data, self.internal)
+            yhat = np.concatenate(_yhat, axis=0)
+            y_hat_list.append(yhat)
+        y_hat_mean = np.mean(np.stack(y_hat_list, axis=0), axis=0)
+
+        model_bias = np.zeros_like(y_hat_mean)  # 3d array
+        for i in range(repetition_times):
+            model_bias += (y_hat_list[i] - y_hat_mean)**2
+        model_bias /= repetition_times
+        std_deviation = np.sqrt(self.data_noise + model_bias)
+
+        return y_hat_mean, std_deviation
+
     def load(self, checkpoint_file):
         """
         restore the forecaster.
@@ -434,6 +535,91 @@ class AutoformerForecaster(Forecaster):
             self.trainer.model = self.trainer.model.model
         self.trainer.save_checkpoint(checkpoint_file)
 
+    @classmethod
+    def from_tsdataset(cls,
+                       tsdataset,
+                       past_seq_len=None,
+                       future_seq_len=None,
+                       label_len=None,
+                       freq=None,
+                       **kwargs):
+        """
+        Build a Forecaster Model.
+
+        :param tsdataset: A bigdl.chronos.data.tsdataset.TSDataset instance.
+        :param past_seq_len: int or "auto", Specify the history time steps (i.e. lookback).
+               Do not specify the 'past_seq_len' if your tsdataset has called
+               the 'TSDataset.roll' method or 'TSDataset.to_torch_data_loader'.
+               If "auto", the mode of time series' cycle length will be taken as the past_seq_len.
+        :param future_seq_len: int or list, Specify the output time steps (i.e. horizon).
+               Do not specify the 'future_seq_len' if your tsdataset has called
+               the 'TSDataset.roll' method or 'TSDataset.to_torch_data_loader'.
+        :param kwargs: Specify parameters of Forecaster,
+               e.g. loss and optimizer, etc.
+               More info, please refer to Forecaster.__init__ methods.
+
+        :return: A Forecaster Model.
+        """
+        from bigdl.nano.utils.log4Error import invalidInputError
+        invalidInputError(isinstance(tsdataset, TSDataset),
+                          f"We only supports input a TSDataset, but get{type(tsdataset)}.")
+
+        def check_time_steps(tsdataset, past_seq_len, future_seq_len):
+            if tsdataset.lookback is not None and past_seq_len is not None:
+                future_seq_len = future_seq_len if isinstance(future_seq_len, int)\
+                    else max(future_seq_len)
+                return tsdataset.lookback == past_seq_len and tsdataset.horizon == future_seq_len
+            return True
+
+        invalidInputError(not tsdataset._has_generate_agg_feature,
+                          "We will add support for 'gen_rolling_feature' method later.")
+
+        if tsdataset.lookback is not None:  # called roll or to_torch_data_loader
+            past_seq_len = tsdataset.lookback
+            future_seq_len = tsdataset.horizon if isinstance(tsdataset.horizon, int) \
+                else max(tsdataset.horizon)
+            output_feature_num = len(tsdataset.roll_target)
+            input_feature_num = len(tsdataset.roll_feature) + output_feature_num
+        elif past_seq_len is not None and future_seq_len is not None:  # initialize only
+            past_seq_len = past_seq_len if isinstance(past_seq_len, int)\
+                else tsdataset.get_cycle_length()
+            future_seq_len = future_seq_len if isinstance(future_seq_len, int) \
+                else max(future_seq_len)
+            output_feature_num = len(tsdataset.target_col)
+            input_feature_num = len(tsdataset.feature_col) + output_feature_num
+        else:
+            invalidInputError(False,
+                              "Forecaster requires 'past_seq_len' and 'future_seq_len' to specify "
+                              "the history time step and output time step.")
+
+        if label_len is None:
+            label_len = past_seq_len//2
+
+        invalidInputError(tsdataset.label_len == label_len or tsdataset.label_len is None,
+                          f"Expected label_len to be {tsdataset.label_len}, "
+                          f"but found {label_len}")
+
+        invalidInputError(check_time_steps(tsdataset, past_seq_len, future_seq_len),
+                          "tsdataset already has history time steps and "
+                          "differs from the given past_seq_len and future_seq_len "
+                          "Expected past_seq_len and future_seq_len to be "
+                          f"{tsdataset.lookback, tsdataset.horizon}, "
+                          f"but found {past_seq_len, future_seq_len}.",
+                          fixMsg="Do not specify past_seq_len and future seq_len "
+                          "or call tsdataset.roll method again and specify time step")
+
+        if tsdataset._freq is not None:
+            infer_freq_str = _timedelta_to_delta_str(tsdataset._freq)
+            freq = infer_freq_str
+
+        return cls(past_seq_len=past_seq_len,
+                   future_seq_len=future_seq_len,
+                   input_feature_num=input_feature_num,
+                   output_feature_num=output_feature_num,
+                   freq=freq,
+                   label_len=label_len,
+                   **kwargs)
+
 
 def _str2metric(metric):
     # map metric str to function
@@ -448,3 +634,18 @@ def _str2metric(metric):
             return metric_func(y_label, y_predict)
         metric.__name__ = metric_name
     return metric
+
+
+def _timedelta_to_delta_str(offset):
+    features_by_offsets = (
+        (Timedelta(seconds=60), 's'),
+        (Timedelta(minutes=60), 't'),
+        (Timedelta(hours=24), 'h'),
+        (Timedelta(days=7), 'd'),
+        (Timedelta(days=30), 'w'),
+        (Timedelta(days=365), 'm'),
+    )
+    for offset_type, offset_str in features_by_offsets:
+        if offset < offset_type:
+            return offset_str
+    return 'a'

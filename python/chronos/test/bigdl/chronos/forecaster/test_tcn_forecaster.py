@@ -56,7 +56,7 @@ def create_data(loader=False):
         return train_data, val_data, test_data
 
 
-def create_tsdataset(roll=True, horizon=5):
+def create_tsdataset(roll=True, horizon=5, val_ratio=0):
     from bigdl.chronos.data import TSDataset
     import pandas as pd
     timeseries = pd.date_range(start='2020-01-01', freq='D', periods=1000)
@@ -66,14 +66,46 @@ def create_tsdataset(roll=True, horizon=5):
                       dtype=np.float32)
     df.reset_index(inplace=True)
     df.rename(columns={'index': 'timeseries'}, inplace=True)
-    train, _, test = TSDataset.from_pandas(df=df,
-                                           dt_col='timeseries',
-                                           target_col=['value1', 'value2'],
-                                           with_split=True)
+    if val_ratio == 0:
+        train, _, test = TSDataset.from_pandas(df=df,
+                                            dt_col='timeseries',
+                                            target_col=['value1', 'value2'],
+                                            with_split=True)
+        if roll:
+            for tsdata in [train, test]:
+                tsdata.roll(lookback=24, horizon=horizon)
+        return train, test
+    else:
+        train, val, test = TSDataset.from_pandas(df=df,
+                                            dt_col='timeseries',
+                                            target_col=['value1', 'value2'],
+                                            with_split=True,
+                                            val_ratio=val_ratio)
+        if roll:
+            for tsdata in [train, val, test]:
+                tsdata.roll(lookback=24, horizon=horizon)
+        return train, val, test
+
+
+def create_tsdataset_val(roll=True, horizon=5):
+    from bigdl.chronos.data import TSDataset
+    import pandas as pd
+    timeseries = pd.date_range(start='2020-01-01', freq='D', periods=1000)
+    df = pd.DataFrame(np.random.rand(1000, 2),
+                      columns=['value1', 'value2'],
+                      index=timeseries,
+                      dtype=np.float32)
+    df.reset_index(inplace=True)
+    df.rename(columns={'index': 'timeseries'}, inplace=True)
+    train, val, test = TSDataset.from_pandas(df=df,
+                                             dt_col='timeseries',
+                                             target_col=['value1', 'value2'],
+                                             with_split=True,
+                                             val_ratio = 0.1)
     if roll:
         for tsdata in [train, test]:
             tsdata.roll(lookback=24, horizon=horizon)
-    return train, test
+    return train, val, test
 
 
 class TestChronosModelTCNForecaster(TestCase):
@@ -678,3 +710,97 @@ class TestChronosModelTCNForecaster(TestCase):
             forecaster.load(ckpt_name)
             test_pred_load = forecaster.predict(test_data[0])
         np.testing.assert_almost_equal(test_pred_save, test_pred_load)
+
+    def test_predict_interval_with_numpy(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=4,
+                                   num_channels=[16, 16, 16],
+                                   loss="mse",
+                                   metrics=["mse"],
+                                   lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        # only the first time needs val_data
+        y_pred, std = forecaster.predict_interval(data=test_data[0],
+                                                  val_data=val_data,
+                                                  repetition_times=5)
+        assert y_pred.shape == test_data[1].shape
+        assert y_pred.shape == std.shape
+        y_pred, std = forecaster.predict_interval(data=test_data[0])
+    
+    def test_predict_interval_with_loader(self):
+        train_loader, val_loader, test_loader = create_data(loader=True)
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=4,
+                                   num_channels=[16, 16, 16],
+                                   loss="mse",
+                                   metrics=["mse"],
+                                   lr=0.01)
+        forecaster.fit(train_loader, epochs=2)
+        # only the first time needs val_data
+        y_pred, std = forecaster.predict_interval(data=test_loader,
+                                                  val_data=val_loader,
+                                                  repetition_times=5)
+        assert y_pred.shape == std.shape
+        y_pred, std = forecaster.predict_interval(data=test_loader)
+
+    def test_predict_interval_with_tsdataset(self):
+        train, val, test = create_tsdataset(roll=True, horizon=5, val_ratio=0.1)
+        forecaster = TCNForecaster.from_tsdataset(train,
+                                           num_channels=[16]*3)
+        forecaster.fit(train, epochs=2, batch_size=32)
+        # only the first time needs val_data
+        y_pred, std = forecaster.predict_interval(data=test,
+                                                  val_data=val,
+                                                  repetition_times=5)
+        assert y_pred.shape == std.shape
+        y_pred, std = forecaster.predict_interval(data=test)
+
+    def test_predict_interval_without_validation_data(self):
+        train_data, _, test_data = create_data()
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=4,
+                                   num_channels=[16, 16, 16],
+                                   loss="mse",
+                                   metrics=["mse"],
+                                   lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        with pytest.raises(RuntimeError):
+            y_pred, std = forecaster.predict_interval(data=test_data[0],
+                                                      repetition_times=5)
+    def test_forecaster_fit_val_from_tsdataset(self):
+        train, val, test = create_tsdataset_val()
+        tcn = TCNForecaster.from_tsdataset(train,
+                                           num_channels=[16]*3)
+        tcn.fit(train, val,
+                epochs=2,
+                batch_size=32)
+        yhat = tcn.predict(test, batch_size=32)
+        test.roll(lookback=tcn.data_config['past_seq_len'],
+                  horizon=tcn.data_config['future_seq_len'])
+        _, y_test = test.to_numpy()
+        assert yhat.shape == y_test.shape
+
+        del tcn
+        train, val, test = create_tsdataset_val(roll=False, horizon=[1, 3, 5])
+        tcn = TCNForecaster.from_tsdataset(train,
+                                           past_seq_len=24,
+                                           future_seq_len=5,
+                                           num_channels=[16]*3)
+        tcn.fit(train, val,
+                epochs=2,
+                batch_size=32)
+        yhat = tcn.predict(test, batch_size=None)
+        test.roll(lookback=tcn.data_config['past_seq_len'],
+                  horizon=tcn.data_config['future_seq_len'])
+        _, y_test = test.to_numpy()
+        assert yhat.shape == y_test.shape

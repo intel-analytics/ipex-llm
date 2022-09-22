@@ -198,7 +198,8 @@ Then run the script.
 ```
 
 ### [Deprecated] Spark XGBoost example
-Distributed XGBoost it doesn't support....due to lack of network proteciton.
+
+> Warning: Running XGBoost in distributed mode is not safe due to the fact that Rabit's network (contains gradient, split, and env) is not protected.
 
 #### UCI dataset [iris.data](https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data)
 

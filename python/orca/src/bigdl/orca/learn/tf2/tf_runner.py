@@ -35,7 +35,7 @@ import socket
 import shutil
 import tempfile
 import subprocess
-from copy import copy
+import copy
 
 import ray
 import numpy as np
@@ -335,7 +335,7 @@ class TFRunner:
              steps_per_epoch=None, validation_steps=None, validation_freq=1,
              data_config=None):
         """Runs a training epoch and updates the model parameters."""
-        config = copy(self.config)
+        config = copy.copy(self.config)
         if data_config is not None:
             config.update(data_config)
         config["batch_size"] = batch_size
@@ -385,7 +385,7 @@ class TFRunner:
     def validate(self, data_creator, batch_size=32, verbose=1, sample_weight=None,
                  steps=None, callbacks=None, data_config=None):
         """Evaluates the model on the validation data set."""
-        config = copy(self.config)
+        config = copy.copy(self.config)
         if data_config is not None:
             config.update(data_config)
         config["batch_size"] = batch_size
@@ -433,7 +433,7 @@ class TFRunner:
         return [stats]
 
     def predict(self, data_creator, batch_size, verbose, steps, callbacks, data_config):
-        config = copy(self.config)
+        config = copy.copy(self.config)
         if data_config is not None:
             config.update(data_config)
 
@@ -502,7 +502,10 @@ class TFRunner:
     def load_model(self, filepath, custom_objects, compile, options):
         """Load the model from provided local filepath."""
         import tensorflow as tf
-        self.model = tf.keras.models.load_model(filepath, custom_objects, compile, options)
+        if options:
+            self.model = tf.keras.models.load_model(filepath, custom_objects, compile, options)
+        else:  # To support older TensorFlow versions such as 2.1
+            self.model = tf.keras.models.load_model(filepath, custom_objects, compile)
 
     def load_remote_model(self, filepath, custom_objects, compile, options):
         """Load the model from provided remote filepath."""
@@ -518,7 +521,10 @@ class TFRunner:
                 os.makedirs(temp_path)
             get_remote_dir_to_local(filepath, temp_path)
         try:
-            self.model = tf.keras.models.load_model(temp_path, custom_objects, compile, options)
+            if options:
+                self.model = tf.keras.models.load_model(temp_path, custom_objects, compile, options)
+            else:  # To support older TensorFlow versions such as 2.1
+                self.model = tf.keras.models.load_model(temp_path, custom_objects, compile)
         finally:
             if os.path.isdir(temp_path):
                 shutil.rmtree(temp_path)
@@ -527,7 +533,10 @@ class TFRunner:
 
     def load_weights(self, filepath, by_name, skip_mismatch, options):
         """Loads all layer weights from a TensorFlow or an HDF5 weight file."""
-        self.model.load_weights(filepath, by_name, skip_mismatch, options)
+        if options:
+            self.model.load_weights(filepath, by_name, skip_mismatch, options)
+        else:  # To support older TensorFlow versions such as 2.1
+            self.model.load_weights(filepath, by_name, skip_mismatch)
 
     def load_remote_weights(self, filepath, by_name, skip_mismatch, options):
         """Loads all layer weights from a remote weight file (Tensorflow or HDF5 format)."""
@@ -543,7 +552,10 @@ class TFRunner:
             get_remote_files_with_prefix_to_local(filepath, temp_dir)
             temp_path = os.path.join(temp_dir, prefix)
         try:
-            self.model.load_weights(temp_path, by_name, skip_mismatch, options)
+            if options:
+                self.model.load_weights(temp_path, by_name, skip_mismatch, options)
+            else:  # To support older TensorFlow versions such as 2.1
+                self.model.load_weights(temp_path, by_name, skip_mismatch)
         finally:
             shutil.rmtree(temp_dir)
 

@@ -42,6 +42,7 @@ import numpy as np
 import pandas as pd
 from pandas import Timedelta
 from pandas.tseries.frequencies import to_offset
+from bigdl.chronos.data.utils.roll import _roll_timeseries_ndarray
 
 
 class TimeFeature:
@@ -127,18 +128,18 @@ def time_features_from_frequency_str(offset) -> List[TimeFeature]:
             HourOfDay,
             DayOfWeek,
             DayOfMonth,
-            DayOfYear]),
+            DayOfYear]),  # 6 for second - minutes
         (Timedelta(minutes=60), [
             MinuteOfHour,
             HourOfDay,
             DayOfWeek,
             DayOfMonth,
             DayOfYear,
-        ]),
-        (Timedelta(hours=24), [HourOfDay, DayOfWeek, DayOfMonth, DayOfYear]),
-        (Timedelta(days=7), [DayOfWeek, DayOfMonth, DayOfYear]),
-        (Timedelta(days=30), [DayOfMonth, WeekOfYear]),
-        (Timedelta(days=365), [MonthOfYear]),
+        ]),  # 5 for minutes - hour
+        (Timedelta(hours=24), [HourOfDay, DayOfWeek, DayOfMonth, DayOfYear]),  # 4 for hour - day
+        (Timedelta(days=7), [DayOfWeek, DayOfMonth, DayOfYear]),  # 3 for day - week
+        (Timedelta(days=30), [DayOfMonth, WeekOfYear]),  # 2 for week - month
+        (Timedelta(days=365), [MonthOfYear]),  # 1 for month - year
     )
 
     for offset_type, feature_classes in features_by_offsets:
@@ -149,3 +150,23 @@ def time_features_from_frequency_str(offset) -> List[TimeFeature]:
 
 def time_features(dates, freq='h'):
     return np.vstack([feat(dates) for feat in time_features_from_frequency_str(freq)])
+
+
+def gen_time_enc_arr(df, dt_col, freq, horizon_time, is_predict, lookback, label_len):
+    df_stamp = pd.DataFrame(columns=[dt_col])
+    if is_predict:
+        pred_dates = pd.date_range(df[dt_col].values[-1],
+                                   periods=horizon_time + 1, freq=freq)
+        df_stamp.loc[:, dt_col] =\
+            list(df[dt_col].values) + list(pred_dates[1:])
+    else:
+        df_stamp.loc[:, dt_col] = list(df[dt_col].values)
+    data_stamp = time_features(pd.to_datetime(df_stamp[dt_col].values),
+                               freq=freq)
+    data_stamp = data_stamp.transpose(1, 0)
+    max_horizon = horizon_time if isinstance(horizon_time, int) else max(horizon_time)
+    numpy_x_timeenc, _ = _roll_timeseries_ndarray(data_stamp[:-max_horizon],
+                                                  lookback)
+    numpy_y_timeenc, _ = _roll_timeseries_ndarray(data_stamp[lookback-label_len:],
+                                                  horizon_time+label_len)
+    return numpy_x_timeenc, numpy_y_timeenc
