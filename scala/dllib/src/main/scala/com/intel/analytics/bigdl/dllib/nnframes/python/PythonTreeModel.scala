@@ -117,9 +117,9 @@ class PythonTreeModel[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
     model.transform(dataset)
   }
 
-  def getXGBRegressor(): XGBRegressor = {
-    val model = new XGBRegressor()
-    model
+  def getXGBRegressor(xgbparamsin: JMap[String, Any]): XGBRegressor = {
+    val xgbparams = if (xgbparamsin == null) Map[String, Any]() else xgbparamsin.asScala.toMap
+    new XGBRegressor(xgbparams)
   }
 
   def setXGBRegressorNthread(model: XGBRegressor, value: Int): Unit = {

@@ -95,7 +95,8 @@ class TestTreeModel():
             assembledf = vecasembler.transform(df).select("features", "label").cache()
             assembledf.printSchema()
             testdf = vecasembler.transform(df).select("features", "label").cache()
-            xgbRf0 = XGBRegressor()
+            params = {"eta": 0.2, "max_depth": 4, "max_leaf_nodes": 8}
+            xgbRf0 = XGBRegressor(params)
             xgbRf0.setNthread(1)
             xgbRf0.setNumRound(10)
             xgbmodel = xgbRf0.fit(assembledf)
