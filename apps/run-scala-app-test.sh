@@ -199,7 +199,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --master local[4] \
   --conf spark.task.cpus=2  \
   --class com.intel.analytics.bigdl.dllib.examples.nnframes.xgboost.xgbClassifierTrainingExample \
-  ${BIGDL_ROOT}/scala/dllib/target/bigdl-dllib-spark_2.4.6-2.1.0-SNAPSHOT-jar-with-dependencies.jar \
+  ${BIGDL_ROOT}/scala/dllib/target/bigdl-dllib-spark_2.4.6-2.1.0-jar-with-dependencies.jar \
   /tmp/data/iris.data 2 200 /tmp/data/xgboost_model
 now=$(date "+%s")
 time9=$((now-start))
@@ -212,7 +212,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --master local[4] \
   --conf spark.task.cpus=2  \
   --class com.intel.analytics.bigdl.dllib.examples.nnframes.xgboost.xgbClassifierPredictExample \
-  ${BIGDL_ROOT}/scala/dllib/target/bigdl-dllib-spark_2.4.6-2.1.0-SNAPSHOT-jar-with-dependencies.jar \
+  ${BIGDL_ROOT}/scala/dllib/target/bigdl-dllib-spark_2.4.6-2.1.0-jar-with-dependencies.jar \
   /tmp/data/iris.data  /tmp/data/xgboost_model
 now=$(date "+%s")
 time10=$((now-start))
