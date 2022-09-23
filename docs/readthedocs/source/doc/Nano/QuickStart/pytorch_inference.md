@@ -4,7 +4,21 @@ BigDL-Nano provides several APIs which can help users easily apply optimizations
 
 For runtime acceleration, BigDL-Nano has enabled three kinds of runtime for users in `InferenceOptimizer.trace()`, ONNXRuntime, OpenVINO and jit.
 
+```eval_rst
+.. warning::
+    ``bigdl.nano.pytorch.Trainer.trace`` will be deprecated in future release.
+
+    Please use ``bigdl.nano.pytorch.InferenceOptimizer.trace`` instead.
+```
+
 For quantization, BigDL-Nano provides only post-training quantization in `InferenceOptimizer.quantize()` for users to infer with models of 8-bit precision or 16-bit precision. Quantization-aware training is not available for now. Model conversion to 16-bit like BF16 is supported now.
+
+```eval_rst
+.. warning::
+    ``bigdl.nano.pytorch.Trainer.quantize`` will be deprecated in future release.
+
+    Please use ``bigdl.nano.pytorch.InferenceOptimizer.quantize`` instead.
+```
 
 Before you go ahead with these APIs, you have to make sure BigDL-Nano is correctly installed for PyTorch. If not, please follow [this](../Overview/nano.md) to set up your environment.
 
