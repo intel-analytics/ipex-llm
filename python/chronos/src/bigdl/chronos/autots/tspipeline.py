@@ -219,7 +219,7 @@ class TSPipeline:
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
         from bigdl.nano.utils.log4Error import invalidInputError
         if isinstance(data, TSDataset):
-            x, _ = self._tsdataset_to_numpy(data, is_predict=True)
+            x = self._tsdataset_to_numpy(data, is_predict=True)
             if quantize:
                 yhat = _pytorch_fashion_inference(model=self._pytorch_int8,
                                                   input_data=x,
@@ -265,7 +265,7 @@ class TSPipeline:
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
         from bigdl.nano.utils.log4Error import invalidInputError
         if isinstance(data, TSDataset):
-            x, _ = self._tsdataset_to_numpy(data, is_predict=True)
+            x = self._tsdataset_to_numpy(data, is_predict=True)
             yhat = None
             if quantize:
                 yhat = _pytorch_fashion_inference(model=self._onnxruntime_int8,
@@ -565,11 +565,12 @@ class TSPipeline:
     def _tsdataset_to_numpy(self, data, is_predict=False):
         self._check_mixed_data_type_usage()
         lookback = self._best_config["past_seq_len"]
-        horizon = 0 if is_predict else self._best_config["future_seq_len"]
+        horizon = self._best_config["future_seq_len"]
         selected_features = self._best_config["selected_features"]
         data.roll(lookback=lookback,
                   horizon=horizon,
-                  feature_col=selected_features)
+                  feature_col=selected_features,
+                  is_predict=is_predict)
         return data.to_numpy()
 
     def _check_mixed_data_type_usage(self):

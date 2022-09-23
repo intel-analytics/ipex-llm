@@ -171,7 +171,7 @@ class TestAutoTrainer(TestCase):
         tsdata_valid.roll(lookback=best_config["past_seq_len"],
                           horizon=0,
                           feature_col=best_config["selected_features"])
-        x_valid, y_valid = tsdata_valid.to_numpy()
+        x_valid = tsdata_valid.to_numpy()
         y_pred_raw = best_model.predict(x_valid)
         y_pred_raw = tsdata_valid.unscale_numpy(y_pred_raw)
 
@@ -341,7 +341,7 @@ class TestAutoTrainer(TestCase):
         tsdata_valid.roll(lookback=best_config["past_seq_len"],
                           horizon=0,
                           feature_col=best_config["selected_features"])
-        x_valid, y_valid = tsdata_valid.to_numpy()
+        x_valid = tsdata_valid.to_numpy()
         y_pred_raw = best_model.predict(x_valid)
         y_pred_raw = tsdata_valid.unscale_numpy(y_pred_raw)
 
@@ -410,7 +410,7 @@ class TestAutoTrainer(TestCase):
         tsdata_valid.roll(lookback=best_config["past_seq_len"],
                           horizon=0,
                           feature_col=best_config["selected_features"])
-        x_valid, y_valid = tsdata_valid.to_numpy()
+        x_valid = tsdata_valid.to_numpy()
         y_pred_raw = best_model.predict(x_valid)
         y_pred_raw = tsdata_valid.unscale_numpy(y_pred_raw)
 
@@ -479,7 +479,7 @@ class TestAutoTrainer(TestCase):
         tsdata_valid.roll(lookback=best_config["past_seq_len"],
                           horizon=0,
                           feature_col=best_config["selected_features"])
-        x_valid, y_valid = tsdata_valid.to_numpy()
+        x_valid = tsdata_valid.to_numpy()
         y_pred_raw = best_model.predict(x_valid)
         y_pred_raw = tsdata_valid.unscale_numpy(y_pred_raw)
 
