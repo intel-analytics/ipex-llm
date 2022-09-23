@@ -9,6 +9,7 @@ status_5_scala_sql_UserDefinedScalar=1
 status_6_scala_sql_UserDefinedTypedAggregation=1
 status_7_scala_sql_UserDefinedUntypedAggregation=1
 status_8_scala_sql_SparkHiveExample=0
+
 LOCAL_IP=$LOCAL_IP
 
 if [ $status_2_scala_sql_example -ne 0 ]; then
@@ -106,37 +107,37 @@ gramine-sgx bash 2>&1 | tee test-scala-spark-sql-UserDefinedUntypedAggregation-s
 fi
 status_7_scala_sql_UserDefinedUntypedAggregation=$(echo $?)
 
-if [ $status_8_scala_sql_SparkHiveExample -ne 0 ]; then
-rm -rf metastore_db && \
-rm -rf /tmp/parquet_data && \
-./clean.sh
-gramine-argv-serializer bash -c "
-    rm -rf pair.parquet && \
-    /opt/jdk8/bin/java \
-        -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
-        -Xmx10g \
-        -XX:ActiveProcessorCount=24 \
-        org.apache.spark.deploy.SparkSubmit \
-        --master 'local[4]' \
-        --conf spark.driver.port=10027 \
-        --conf spark.scheduler.maxRegisteredResourcesWaitingTime=5000000 \
-        --conf spark.worker.timeout=600 \
-        --conf spark.starvation.timeout=250000 \
-        --conf spark.rpc.askTimeout=600 \
-        --conf spark.blockManager.port=10025 \
-        --conf spark.driver.host=127.0.0.1 \
-        --conf spark.driver.blockManager.port=10026 \
-        --conf spark.io.compression.codec=lz4 \
-        --conf spark.hadoop.hive.hmshandler.retry.interval=200000ms \
-        --class org.apache.spark.examples.sql.hive.SparkHiveExample \
-        --executor-cores 4 \
-        --total-executor-cores 4 \
-        --executor-memory 10G \
-        /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar hdfs://$LOCAL_IP:9000/spark-warehouse" > secured_argvs
-./init.sh
-gramine-sgx bash 2>&1 | tee test-scala-spark-sql-SparkHiveExample-sgx.log
-fi
-status_8_scala_sql_SparkHiveExample=$(echo $?)
+#if [ $status_8_scala_sql_SparkHiveExample -ne 0 ]; then
+#rm -rf metastore_db && \
+#rm -rf /tmp/parquet_data && \
+#./clean.sh
+#gramine-argv-serializer bash -c "
+#    rm -rf pair.parquet && \
+#    /opt/jdk8/bin/java \
+#        -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+#        -Xmx10g \
+#        -XX:ActiveProcessorCount=24 \
+#        org.apache.spark.deploy.SparkSubmit \
+#        --master 'local[4]' \
+#        --conf spark.driver.port=10027 \
+#        --conf spark.scheduler.maxRegisteredResourcesWaitingTime=5000000 \
+#        --conf spark.worker.timeout=600 \
+#        --conf spark.starvation.timeout=250000 \
+#        --conf spark.rpc.askTimeout=600 \
+#        --conf spark.blockManager.port=10025 \
+#        --conf spark.driver.host=127.0.0.1 \
+#        --conf spark.driver.blockManager.port=10026 \
+#        --conf spark.io.compression.codec=lz4 \
+#        --conf spark.hadoop.hive.hmshandler.retry.interval=200000ms \
+#        --class org.apache.spark.examples.sql.hive.SparkHiveExample \
+#        --executor-cores 4 \
+#        --total-executor-cores 4 \
+#        --executor-memory 10G \
+#        /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar hdfs://$LOCAL_IP:9000/spark-warehouse" > secured_argvs
+#./init.sh
+#gramine-sgx bash 2>&1 | tee test-scala-spark-sql-SparkHiveExample-sgx.log
+#fi
+#status_8_scala_sql_SparkHiveExample=$(echo $?)
 
 # echo Results
 echo "example.2 status_2_scala_sql_example"
