@@ -18,6 +18,11 @@ import os
 import warnings
 if platform.system() != "Darwin":
     import tensorflow as tf
+
+    from tensorflow.python.eager import context
+
+    context._context = None
+    context._create_context()
     if "NANO_TF_INTER_OP" in os.environ:
         tf.config.threading.set_inter_op_parallelism_threads(int(os.environ["NANO_TF_INTER_OP"]))
     else:
