@@ -41,6 +41,16 @@ TensorFlow
     Training/TensorFlow/accelerate_tensorflow_training_multi_instance
     Training/TensorFlow/tensorflow_training_embedding_sparseadam
 
+General
+~~~~~~~~~~~~~~~~~~~~~~~~~
+* `How to choose the number of processes for multi-instance training <Training/General/choose_num_processes_training.html>`_
+
+.. toctree::
+    :maxdepth: 1
+    :hidden:
+
+    Training/General/choose_num_processes_training
+
 
 Inference Optimization
 -------------------------
