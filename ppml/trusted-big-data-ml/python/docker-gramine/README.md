@@ -26,7 +26,7 @@ It will generate a file `enclave-key.pem` in your present working directory, whi
 
 Then, use the `enclave-key.pem` and the bigdl base image to build your own custom image. Change the `IMAGE_MODE` to `custom_image` and run `build-docker-image.sh` again. In the process, SGX MREnclave will be made and signed without saving the sensitive encalve key inside the final image, which is safer.
 
-The docker build console will also output `mr_enclave` and `mr_enclave` like below, which are hash values and used to  register your MREnclave in the following.
+The docker build console will also output `mr_enclave` and `mr_signer` like below, which are hash values and used to  register your MREnclave in the following.
 
 ````bash
 ......
