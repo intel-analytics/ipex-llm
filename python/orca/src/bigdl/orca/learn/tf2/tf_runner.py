@@ -45,6 +45,7 @@ from bigdl.dllib.utils import log4Error
 from bigdl.orca.data.utils import ray_partitions_get_data_label, ray_partitions_get_tf_dataset
 from bigdl.orca.data.file import is_file, get_remote_file_to_local, get_remote_dir_to_local, \
     get_remote_files_with_prefix_to_local
+from bigdl.orca.learn.utils import process_tensorboard_in_callbacks
 from bigdl.dllib.utils.log4Error import *
 
 logger = logging.getLogger(__name__)
@@ -364,6 +365,9 @@ class TFRunner:
             if self.strategy.cluster_resolver.task_id != 0:
                 verbose = 0
 
+        if callbacks:
+            replaced_log_dir = process_tensorboard_in_callbacks(callbacks, "fit", self.rank)
+
         history = self.model.fit(train_dataset,
                                  epochs=self.epoch + epochs,
                                  verbose=verbose,
@@ -374,6 +378,10 @@ class TFRunner:
                                  steps_per_epoch=steps_per_epoch,
                                  validation_steps=validation_steps,
                                  validation_freq=validation_freq)
+        if callbacks:
+            if replaced_log_dir and os.path.exists(replaced_log_dir):
+                shutil.rmtree(replaced_log_dir)
+
         if history is None:
             stats = {}
         else:
@@ -407,6 +415,9 @@ class TFRunner:
             if self.strategy.cluster_resolver.task_id != 0:
                 verbose = 0
 
+        if callbacks:
+            replaced_log_dir = process_tensorboard_in_callbacks(callbacks, "evaluate", self.rank)
+
         params = dict(
             verbose=verbose,
             sample_weight=sample_weight,
@@ -429,6 +440,10 @@ class TFRunner:
             }
         else:
             stats = {"results": results}
+
+        if callbacks:
+            if replaced_log_dir and os.path.exists(replaced_log_dir):
+                shutil.rmtree(replaced_log_dir)
 
         return [stats]
 
