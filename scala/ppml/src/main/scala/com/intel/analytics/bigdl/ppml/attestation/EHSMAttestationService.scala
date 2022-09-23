@@ -84,7 +84,7 @@ class EHSMAttestationService(kmsServerIP: String, kmsServerPort: String,
     ehsmParams.addPayloadElement(PAYLOAD_CHALLENGE, challenge)
     val postResult: JSONObject = timing("EHSMKeyManagementService request for GenerateQuote") {
       val postString: String = ehsmParams.getPostJSONString()
-      postRequest(constructUrl(action), postString)
+      postRequest(constructUrl(action), sslConSocFactory, postString)
     }
     if (challenge != postResult.getString(RES_CHALLENGE)) {
       Log4Error.invalidOperationError(false, "Challenge not matched")
