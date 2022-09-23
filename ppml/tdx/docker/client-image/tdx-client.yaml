@@ -6,7 +6,7 @@ spec:
   runtimeClassName: kata-cc
   containers:
   - name: spark-local-k8s-client-kata-cc
-    image: intelanalytics/bigdl-tdx-client-spark-3.1.2:2.1.0-SNAPSHOT
+    image: intelanalytics/bigdl-tdx-client-spark-3.1.3:2.1.0-SNAPSHOT
     imagePullPolicy: Always
     securityContext:
        privileged: true
@@ -33,7 +33,7 @@ spec:
     - name: RUNTIME_K8S_SERVICE_ACCOUNT
       value: "spark"
     - name: RUNTIME_K8S_SPARK_IMAGE
-      value: "intelanalytics/bigdl-tdx-client-spark-3.1.2:2.1.0-SNAPSHOT"
+      value: "intelanalytics/bigdl-tdx-client-spark-3.1.3:2.1.0-SNAPSHOT"
     - name: RUNTIME_DRIVER_HOST
       value: "x.x.x.x"
     - name: RUNTIME_DRIVER_PORT

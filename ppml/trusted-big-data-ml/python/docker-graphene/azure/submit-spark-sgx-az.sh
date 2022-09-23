@@ -18,7 +18,7 @@ secure_password=`az keyvault secret show --name "key-pass" --vault-name $KEY_VAU
 
 export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
   /opt/jdk8/bin/java \
-    -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+    -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
     -Xmx12g \
     org.apache.spark.deploy.SparkSubmit \
     --master $RUNTIME_SPARK_MASTER \
@@ -29,8 +29,8 @@ export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
     --conf spark.executor.cores=2 \
     --conf spark.executor.memory=24g \
     --conf spark.executor.instances=1 \
-    --conf spark.driver.defaultJavaOptions="-Dlog4j.configuration=/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/log4j2.xml" \
-    --conf spark.executor.defaultJavaOptions="-Dlog4j.configuration=/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/log4j2.xml" \
+    --conf spark.driver.defaultJavaOptions="-Dlog4j.configuration=/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/log4j2.xml" \
+    --conf spark.executor.defaultJavaOptions="-Dlog4j.configuration=/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/log4j2.xml" \
     --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
     --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT \
     --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/azure/spark-driver-template-az.yaml \

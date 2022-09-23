@@ -5,7 +5,7 @@ secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/k
 export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
   export SPARK_LOCAL_IP=$LOCAL_IP && \
   /opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*:ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/*' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*:ppml/trusted-big-data-ml/work/spark-3.1.3/examples/jars/*' \
     -Xmx8g \
     org.apache.spark.deploy.SparkSubmit \
     --master $RUNTIME_SPARK_MASTER \
@@ -53,5 +53,5 @@ export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
     --conf spark.ssl.trustStoreType=JKS \
     --class org.apache.spark.examples.SparkPi \
     --verbose \
-    --jars local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar \
-    local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000 2>&1 | tee spark-pi-cluster-sgx.log
+    --jars local:///ppml/trusted-big-data-ml/work/spark-3.1.3/examples/jars/spark-examples_2.12-3.1.3.jar \
+    local:///ppml/trusted-big-data-ml/work/spark-3.1.3/examples/jars/spark-examples_2.12-3.1.3.jar 3000 2>&1 | tee spark-pi-cluster-sgx.log

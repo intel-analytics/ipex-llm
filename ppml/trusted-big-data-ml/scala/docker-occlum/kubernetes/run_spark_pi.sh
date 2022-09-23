@@ -16,4 +16,4 @@ ${SPARK_HOME}/bin/spark-submit \
     --executor-memory 512m \
     --conf spark.kubernetes.driverEnv.SGX_DRIVER_JVM_MEM_SIZE="512m" \
     --conf spark.executorEnv.SGX_EXECUTOR_JVM_MEM_SIZE="512m" \
-    local:/opt/spark/examples/jars/spark-examples_2.12-3.1.2.jar
+    local:/opt/spark/examples/jars/spark-examples_2.12-3.1.3.jar

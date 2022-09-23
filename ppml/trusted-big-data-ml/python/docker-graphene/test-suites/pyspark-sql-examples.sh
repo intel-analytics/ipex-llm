@@ -12,12 +12,12 @@ cd /ppml/trusted-big-data-ml
 ./clean.sh
 /graphene/Tools/argv_serializer bash -c "export PYSPARK_PYTHON=/usr/bin/python && \
   /opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
   -Xmx1g org.apache.spark.deploy.SparkSubmit \
   --master 'local[4]' \
   --conf spark.python.use.daemon=false \
   --conf spark.python.worker.reuse=false \
-  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/basic.py" > /ppml/trusted-big-data-ml/secured-argvs
+  /ppml/trusted-big-data-ml/work/spark-3.1.3/examples/src/main/python/sql/basic.py" > /ppml/trusted-big-data-ml/secured-argvs
 ./init.sh
 SGX=1 ./pal_loader bash 2>&1 | tee test-sql-basic-sgx.log && \
   cat test-sql-basic-sgx.log | egrep '\+\-|Name:' -A10
@@ -31,7 +31,7 @@ cd /ppml/trusted-big-data-ml
 /graphene/Tools/argv_serializer bash -c "export PYSPARK_PYTHON=/usr/bin/python && \
   export ARROW_PRE_0_15_IPC_FORMAT=0 && \
   /opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
   -Xmx2g org.apache.spark.deploy.SparkSubmit \
   --master 'local[4]' \
   --conf spark.python.use.daemon=false \
@@ -39,7 +39,7 @@ cd /ppml/trusted-big-data-ml
   --conf spark.sql.execution.arrow.enabled=true \
   --conf spark.driver.memory=2g \
   --executor-memory 2g \
-  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/arrow.py" > /ppml/trusted-big-data-ml/secured-argvs
+  /ppml/trusted-big-data-ml/work/spark-3.1.3/examples/src/main/python/sql/arrow.py" > /ppml/trusted-big-data-ml/secured-argvs
 ./init.sh
 SGX=1 ./pal_loader bash 2>&1 | tee test-sql-arrow-sgx.log
 status_6_local_spark_arrow=$(echo $?)
@@ -51,7 +51,7 @@ cd /ppml/trusted-big-data-ml
 ./clean.sh
 /graphene/Tools/argv_serializer bash -c "export PYSPARK_PYTHON=/usr/bin/python && \
   /opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
   -Xmx2g org.apache.spark.deploy.SparkSubmit \
   --master 'local[4]' \
   --conf spark.python.use.daemon=false \
@@ -59,7 +59,7 @@ cd /ppml/trusted-big-data-ml
   --conf spark.driver.memory=2g \
   --conf spark.sql.broadcastTimeout=30000 \
   --executor-memory 2g \
-  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/hive.py" > /ppml/trusted-big-data-ml/secured-argvs
+  /ppml/trusted-big-data-ml/work/spark-3.1.3/examples/src/main/python/sql/hive.py" > /ppml/trusted-big-data-ml/secured-argvs
 ./init.sh
 SGX=1 ./pal_loader bash 2>&1 | tee test-sql-hive-sgx.log
 status_7_local_spark_hive=$(echo $?)

@@ -6,7 +6,7 @@ def sql_catalog_example(spark):
     catalog = Catalog(spark)
     
     # createTable 
-    table_df = catalog.createTable("table", "/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/resources/people.txt", "text")
+    table_df = catalog.createTable("table", "/ppml/trusted-big-data-ml/work/spark-3.1.3/examples/src/main/resources/people.txt", "text")
     table_df.show()
     print("createTable API finished")
 
@@ -16,7 +16,7 @@ def sql_catalog_example(spark):
     print("currentDatabase API finished")
 
     # createTable
-    catalog.createTable("table3", "/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/resources/people.txt", "text")
+    catalog.createTable("table3", "/ppml/trusted-big-data-ml/work/spark-3.1.3/examples/src/main/resources/people.txt", "text")
     spark.sql("select * from table3").show()
     print("createTable API finished")
     

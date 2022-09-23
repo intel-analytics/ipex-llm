@@ -10,7 +10,7 @@ THIS_DIR ?= /ppml/trusted-big-data-ml
 WORK_DIR ?= $(THIS_DIR)/work
 JDK_HOME ?= /opt/jdk8
 PYTHON_HOME ?= /usr/lib/python3.8
-SPARK_HOME ?= $(THIS_DIR)/work/spark-3.1.2
+SPARK_HOME ?= $(THIS_DIR)/work/spark-3.1.3
 SPARK_USER ?= root
 SPARK_LOCAL_IP ?= 127.0.0.1
 

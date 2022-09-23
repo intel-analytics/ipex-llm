@@ -7,12 +7,12 @@ echo "example.3 local spark, pi"
 cd /ppml/trusted-big-data-ml
 ./clean.sh
 /graphene/Tools/argv_serializer bash -c "/opt/jdk8/bin/java \
-   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
    -Xmx1g org.apache.spark.deploy.SparkSubmit \
    --master 'local[4]' \
    --conf spark.python.use.daemon=false \
    --conf spark.python.worker.reuse=false \
-   /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/pi.py" > /ppml/trusted-big-data-ml/secured-argvs
+   /ppml/trusted-big-data-ml/work/spark-3.1.3/examples/src/main/python/pi.py" > /ppml/trusted-big-data-ml/secured-argvs
 ./init.sh
 SGX=1 ./pal_loader bash 2>&1 | tee test-pi-sgx.log && \
    cat test-pi-sgx.log | egrep 'roughly'
@@ -25,12 +25,12 @@ echo "example.4 local spark, test-wordcount"
 cd /ppml/trusted-big-data-ml
 ./clean.sh
 /graphene/Tools/argv_serializer bash -c "export PYSPARK_PYTHON=/usr/bin/python && /opt/jdk8/bin/java \
-   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
    -Xmx1g org.apache.spark.deploy.SparkSubmit \
    --master 'local[4]' \
    --conf spark.python.use.daemon=false \
    --conf spark.python.worker.reuse=false \
-   /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/wordcount.py \
+   /ppml/trusted-big-data-ml/work/spark-3.1.3/examples/src/main/python/wordcount.py \
    /ppml/trusted-big-data-ml/work/examples/helloworld.py" > /ppml/trusted-big-data-ml/secured-argvs
 ./init.sh
 SGX=1 ./pal_loader bash 2>&1 | tee test-wordcount-sgx.log && \
