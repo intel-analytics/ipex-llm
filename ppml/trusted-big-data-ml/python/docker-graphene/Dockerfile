@@ -166,9 +166,6 @@ RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2
     chmod a+x ./download-bigdl.sh
 RUN ./download-bigdl.sh && \
     rm bigdl*.zip
-RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2.0/docker/hyperzoo/download-ppml.sh && \
-    chmod a+x ./download-ppml.sh && \
-    ./download-ppml.sh
 
 # stage.4 ppml
 FROM ubuntu:20.04
