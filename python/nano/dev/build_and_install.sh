@@ -24,6 +24,8 @@ if (( $# < 4)); then
   echo "Usage: build_and_install.sh platform version upload framework pip_install_options[optional]"
   echo "Usage example: bash build_and_install.sh linux default true pytorch --force-reinstall"
   echo "Usage example: bash build_and_install.sh mac 0.14.0.dev1 false tensorflow"
+  echo "To install Nano without any framework, specify framework to basic"
+  echo "Usage example: bash build_and_install.sh linux default true basic"
   exit -1
 fi
 
@@ -37,6 +39,11 @@ bash ${RUN_SCRIPT_DIR}/release.sh ${platform} ${version} ${upload}
 
 cd ${WHL_DIR}
 whl_name=`ls dist`
-pip install $install_options dist/${whl_name}[${framework}]
-
-
+if [ $framework == "basic" ];
+then
+  # when framework is specified to "basic", nano will be installed without
+  # any framework like Pytorch and TensorFlow
+  pip install $install_options dist/${whl_name}
+else
+  pip install $install_options dist/${whl_name}[${framework}]
+fi
