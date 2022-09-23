@@ -324,7 +324,7 @@ class TFRunner:
         with self.strategy.scope():
             self.model = self.model_creator(self.config)
             if not self.model._is_compiled:
-                self.model.compile(**compile_args_creator(self.config))
+                self.model.compile(**self.compile_args_creator(self.config))
 
         # For use in model.evaluate()
         self.local_model = None
