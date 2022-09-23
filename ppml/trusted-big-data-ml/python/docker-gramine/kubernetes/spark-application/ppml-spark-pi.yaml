@@ -1,0 +1,151 @@
+apiVersion: "sparkoperator.k8s.io/v1beta2"
+kind: SparkApplication
+metadata:
+  name: ppml-spark-pi
+  namespace: ppml-spark-app
+spec:
+  type: Scala
+  mode: client # client or cluster
+  image: "${RUNTIME_K8S_SPARK_IMAGE}"
+  imagePullPolicy: IfNotPresent
+  mainClass: org.apache.spark.examples.SparkPi
+  sparkConfigMap: spark-conf
+  deps:
+    jars:
+     - local:///ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*
+     - local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/*
+     - local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar
+     - local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar
+  sparkVersion: "3.1.2"
+  batchScheduler: "volcano"
+  restartPolicy:
+    type: Never
+  sparkConf:
+    "spark.cores.max": 32
+    "spark.kubernetes.executor.deleteOnTermination": "false"
+    "spark.python.use.daemon": "false"
+    "spark.python.worker.reuse": "false"
+    "spark.kubernetes.sgx.enabled": "true"
+    "spark.kubernetes.sgx.executor.mem": "64g"
+    "spark.kubernetes.sgx.executor.jvm.mem": "12g"
+    "spark.kubernetes.sgx.log.level": "error"
+    "spark.authenticate": "true"
+    "spark.authenticate.secret": "${secure_password}"
+    "spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET": "spark-secret:secret"
+    "spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET": "spark-secret:secret"
+    "spark.authenticate.enableSaslEncryption": "true"
+    "spark.network.crypto.enabled": "true"
+    "spark.network.crypto.keyLength": 128
+    "spark.network.crypto.keyFactoryAlgorithm": "PBKDF2WithHmacSHA1"
+    "spark.io.encryption.enabled": "true"
+    "spark.io.encryption.keySizeBits": 128
+    "spark.io.encryption.keygen.algorithm": "HmacSHA1"
+    "spark.ssl.enabled": "true"
+    "spark.ssl.port": "8043"
+    "spark.ssl.keyPassword": "${secure_password}"
+    "spark.ssl.keyStore": "/ppml/trusted-big-data-ml/work/keys/keystore.jks"
+    "spark.ssl.keyStorePassword": "${secure_password}"
+    "spark.ssl.keyStoreType": "JKS"
+    "spark.ssl.trustStore": "/ppml/trusted-big-data-ml/work/keys/keystore.jks"
+    "spark.ssl.trustStorePassword": "${secure_password}"
+    "spark.ssl.trustStoreType": "JKS"
+  driver:
+    host: ${LOCAL_IP}
+    port: "54321"       
+    labels:
+      version: 3.1.2
+    serviceAccount: spark
+    securityContext:
+      privileged: true
+    volumeMounts:
+      - name: "enclave-key"
+        mountPath: "/graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem"
+        subPath: "enclave-key.pem"
+      - name: "device-plugin"
+        mountPath: "/var/lib/kubelet/device-plugins"
+      - name: "aesm-socket"
+        mountPath: "/var/run/aesmd/aesm.socket"
+      - name: "nfs-storage"
+        mountPath: "/ppml/trusted-big-data-ml/work/data"
+      - name: "nfs-storage"
+        mountPath: "/root/.kube/config"
+        subPath: "kubeconfig"
+    volumes:
+      - name: "enclave-key"
+        secret:
+          secretName: "enclave-key"
+      - name: "device-plugin"
+        hostPath:
+          path: "/var/lib/kubelet/device-plugins"
+      - name: "aesm-socket"
+        hostPath:
+          path: "/var/run/aesmd/aesm.socket"
+      - name: "nfs-storage"
+        persistentVolumeClaim:
+          claimName: "nfsvolumeclaim"    
+    env:
+      - name: ATTESTATION
+        value: "false"
+      - name: ATTESTATION_URL
+        value: ${ATTESTATION_URL}
+      #- name: ATTESTATION_ID
+      #  valueFrom:
+      #    secretKeyRef:
+      #      name: kms-secret
+      #      key: app_id
+      #- name: ATTESTATION_KEY
+      #  valueFrom:
+      #    secretKeyRef:
+      #      name: kms-secret
+      #      key: app_key
+  executor:
+    cores: 8
+    memory: "32g"
+    instances: 2
+    memory: "512m"    
+    labels:
+      version: 3.1.2
+    serviceAccount: spark
+    securityContext:
+      privileged: true
+    volumeMounts:
+      - name: "enclave-key"
+        mountPath: "/graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem"
+        subPath: "enclave-key.pem"
+      - name: "device-plugin"
+        mountPath: "/var/lib/kubelet/device-plugins"
+      - name: "aesm-socket"
+        mountPath: "/var/run/aesmd/aesm.socket"
+      - name: "nfs-storage"
+        mountPath: "/ppml/trusted-big-data-ml/work/data"
+      - name: "nfs-storage"
+        mountPath: "/root/.kube/config"
+        subPath: "kubeconfig"
+    volumes:
+      - name: "enclave-key"
+        secret:
+          secretName: "enclave-key"
+      - name: "device-plugin"
+        hostPath:
+          path: "/var/lib/kubelet/device-plugins"
+      - name: "aesm-socket"
+        hostPath:
+          path: "/var/run/aesmd/aesm.socket"
+      - name: "nfs-storage"
+        persistentVolumeClaim:
+          claimName: "nfsvolumeclaim"    
+    env:
+      - name: ATTESTATION
+        value: "false"
+      - name: ATTESTATION_URL
+        value: ${ATTESTATION_URL}
+      #- name: ATTESTATION_ID
+      #  valueFrom:
+      #    secretKeyRef:
+      #      name: kms-secret
+      #      key: app_id
+      #- name: ATTESTATION_KEY
+      #  valueFrom:
+      #    secretKeyRef:
+      #      name: kms-secret
+      #      key: app_key
