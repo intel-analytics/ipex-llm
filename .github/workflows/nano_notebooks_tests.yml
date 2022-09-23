@@ -137,8 +137,6 @@ jobs:
             whl_name=`ls python/nano/dist`
             pip install python/nano/dist/${whl_name}
             source bigdl-nano-init
-            pip install pytest nbmake
-            pip install ipykernel==5.5.6
             pip install openvino-dev
             bash python/nano/tutorial/inference/openvino/run_nano_openvino_inference_tests.sh
             source $CONDA/bin/deactivate
