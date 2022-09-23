@@ -220,7 +220,7 @@ Similar to INC, we can run quantization like:
 from torchmetrics.classification import Accuracy
 InferenceOptimizer.quantize(model,
                             precision='int8',
-                            accelerator=`openvino`,
+                            accelerator='openvino',
                             calib_dataloader= dataloader,
                             metric=Accuracy()
                             accuracy_criterion={'relative': 0.01, 'higher_is_better': True},
