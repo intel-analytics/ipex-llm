@@ -14,7 +14,7 @@ export SBT_OPTS="-Xms512M -Xmx1536M -Xss1M -XX:+CMSClassUnloadingEnabled -XX:Max
 git clone https://github.com/intel-analytics/zoo-tutorials.git
 cd $TPCH_SPARK_DIR
 sed -i 's/2.11.7/2.12.1/g' tpch.sbt
-sed -i 's/2.4.0/3.1.2/g' tpch.sbt
+sed -i 's/2.4.0/3.1.3/g' tpch.sbt
 
 wget -P /usr/local https://github.com/sbt/sbt/releases/download/v1.5.5/sbt-1.5.5.tgz
 tar -xvf /usr/local/sbt-1.5.5.tgz -C /usr/local/
@@ -34,7 +34,7 @@ cd /ppml/trusted-big-data-ml
 ./clean.sh
 /graphene/Tools/argv_serializer bash -c "export PYSPARK_PYTHON=/usr/bin/python && \
         ${JAVA_HOME}/bin/java \
-        -cp '/ppml/trusted-big-data-ml/work/zoo-tutorials/tpch-spark/target/scala-2.12/spark-tpc-h-queries_2.12-1.0.jar:/ppml/trusted-big-data-ml/work/zoo-tutorials/tpch-spark/dbgen/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+        -cp '/ppml/trusted-big-data-ml/work/zoo-tutorials/tpch-spark/target/scala-2.12/spark-tpc-h-queries_2.12-1.0.jar:/ppml/trusted-big-data-ml/work/zoo-tutorials/tpch-spark/dbgen/*:/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
         -Xmx10g \
         -Dbigdl.mklNumThreads=1 \
         -XX:ActiveProcessorCount=24 \

@@ -2,7 +2,7 @@
 cd /ppml/trusted-big-data-ml
 
 SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java -cp \
-  '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+  '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
   -Xmx2g \
   org.apache.spark.deploy.SparkSubmit \
   --master 'local[4]' \

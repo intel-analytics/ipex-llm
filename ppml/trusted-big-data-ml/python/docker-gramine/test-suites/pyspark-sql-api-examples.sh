@@ -20,7 +20,7 @@ if [ $status_1_pyspark_sql_api_DataFrame -ne 0 ]; then
 echo "pysaprk sql api example.1 --- DataFrame"
 ./clean.sh
 gramine-argv-serializer bash -c "/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master 'local[4]' \
@@ -37,7 +37,7 @@ if [ $status_2_pyspark_sql_api_SQLContext -ne 0 ]; then
 echo "pysaprk sql api example.2 --- SQLContext"
 ./clean.sh
 gramine-argv-serializer bash -c "/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master 'local[4]' \
@@ -54,7 +54,7 @@ if [ $status_3_pyspark_sql_api_UDFRegistration -ne 0 ]; then
 echo "pysaprk sql api example.3 --- UDFRegistration"
 ./clean.sh
 gramine-argv-serializer bash -c "/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/spark-sql_2.12-3.1.2.jar' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/spark-sql_2.12-3.1.3.jar' \
   -Xmx1g \
     org.apache.spark.deploy.SparkSubmit \
     --master 'local[4]' \
@@ -70,7 +70,7 @@ if [ $status_4_pyspark_sql_api_GroupedData -ne 0 ]; then
 echo "pysaprk sql api example.4 --- GroupedData"
 ./clean.sh
 gramine-argv-serializer bash -c "/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master 'local[4]' \
@@ -86,7 +86,7 @@ if [ $status_5_pyspark_sql_api_Column -ne 0 ]; then
 echo "pysaprk sql api example.5 --- Column"
 ./clean.sh
 gramine-argv-serializer bash -c "/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master 'local[4]' \
@@ -102,7 +102,7 @@ if [ $status_6_pyspark_sql_api_Row_and_DataFrameNaFunctions -ne 0 ]; then
 echo "pysaprk sql api example.6 --- Row_and_DataFrameNaFunctions"
 ./clean.sh
 gramine-argv-serializer bash -c "/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master 'local[4]' \
@@ -118,7 +118,7 @@ if [ $status_7_pyspark_sql_api_Window -ne 0 ]; then
 echo "pysaprk sql api example.7 --- Window"
 ./clean.sh
 gramine-argv-serializer bash -c "/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master 'local[4]' \
@@ -134,7 +134,7 @@ if [ $status_8_pyspark_sql_api_DataframeReader -ne 0 ]; then
 echo "pysaprk sql api example.8 --- DataframeReader"
 ./clean.sh
 gramine-argv-serializer bash -c "/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master 'local[4]' \
@@ -150,7 +150,7 @@ if [ $status_9_pyspark_sql_api_DataframeWriter -ne 0 ]; then
 echo "pysaprk sql api example.9 --- DataframeWriter"
 ./clean.sh
 gramine-argv-serializer bash -c "/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master 'local[4]' \
@@ -166,7 +166,7 @@ if [ $status_10_pyspark_sql_api_HiveContext -ne 0 ]; then
 echo "pysaprk sql api example.10 --- HiveContext"
 ./clean.sh
 gramine-argv-serializer bash -c "/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master 'local[4]' \
@@ -182,7 +182,7 @@ if [ $status_11_pyspark_sql_api_Catalog -ne 0 ]; then
 echo "pysaprk sql api example.11 --- Catalog"
 ./clean.sh
 gramine-argv-serializer bash -c "/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master 'local[4]' \
@@ -198,7 +198,7 @@ if [ $status_12_pyspark_sql_types_module -ne 0 ]; then
 echo "pysaprk sql api example.12 --- types module"
 ./clean.sh
 gramine-argv-serializer bash -c "/opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master 'local[4]' \
@@ -216,7 +216,7 @@ echo "pysaprk sql api example.13 --- pyspark api functions"
   do
     ./clean.sh
 gramine-argv-serializer bash -c "/opt/jdk8/bin/java \
-      -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+      -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
       -Xmx1g \
       org.apache.spark.deploy.SparkSubmit \
         --master 'local[4]' \

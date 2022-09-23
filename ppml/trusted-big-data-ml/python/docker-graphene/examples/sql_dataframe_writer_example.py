@@ -45,7 +45,7 @@ def sql_dataframe_writer_api(spark):
     print("mode API finished")
     
     # orc
-    orc_df = spark.read.orc('/ppml/trusted-big-data-ml/work/spark-3.1.2/python/test_support/sql/orc_partitioned')
+    orc_df = spark.read.orc('/ppml/trusted-big-data-ml/work/spark-3.1.3/python/test_support/sql/orc_partitioned')
     orc_df.write.orc(os.path.join(tempfile.mkdtemp(), 'data'))
     print("orc API finished")
 

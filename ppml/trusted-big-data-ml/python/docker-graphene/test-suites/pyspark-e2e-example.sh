@@ -9,7 +9,7 @@ echo "example.8 local spark, Custom profile"
 cd /ppml/trusted-big-data-ml
 ./clean.sh
 /graphene/Tools/argv_serializer bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && export SPARK_LOCAL_IP=$SPARK_LOCAL_IP && /opt/jdk8/bin/java \
-  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+  -cp '/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/*' \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master 'local[4]' \
