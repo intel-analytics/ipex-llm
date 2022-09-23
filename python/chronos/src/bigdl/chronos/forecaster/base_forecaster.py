@@ -246,6 +246,7 @@ class BasePytorchForecaster(Forecaster):
 
         :param validation_data: Validation sample for validation loop. Defaults to 'None'.
                If you do not input data for 'validation_data', the validation_step will be skipped.
+               Validation data will be ignored under distributed mode.
                The validation_data support following formats:
 
                | 1. a numpy ndarray tuple (x, y):
