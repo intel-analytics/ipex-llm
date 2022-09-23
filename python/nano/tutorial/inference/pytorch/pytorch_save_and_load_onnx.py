@@ -25,6 +25,7 @@ from torchvision.models import resnet18
 
 if __name__ == "__main__":
     model_ft = resnet18(pretrained=True)
+    model_ft.eval()
 
     x = torch.rand(2, 3, 224, 224)
     
