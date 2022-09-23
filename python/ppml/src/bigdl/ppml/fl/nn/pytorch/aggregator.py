@@ -37,8 +37,8 @@ class Aggregator(object):
         self._lock = threading.Lock()
         self.optimizer_cls = None
         self.optimizer_args = None
-        self.secret_key = conf['secretKey'] if ['secretKey'] in conf.keys() else None
-        self.salt = conf['salt'] if ['salt'] in conf.keys() else None
+        self.secret_key = conf['secretKey'] if 'secretKey' in conf.keys() else None
+        self.salt = conf['salt'] if 'salt' in conf.keys() else None
         logging.info(f"Initialized Pytorch aggregator [client_num: {self.client_num}]")
 
     def set_meta(self, loss_fn, optimizer):
