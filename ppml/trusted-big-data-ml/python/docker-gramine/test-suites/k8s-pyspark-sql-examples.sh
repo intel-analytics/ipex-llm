@@ -82,7 +82,7 @@ gramine-sgx bash 2>&1 | tee k8s-pyspark-sql-e2e-100w-sgx.log
 fi
 status_3_k8s_pyspark_sql_e2e=$(echo $?)
 
-echo "#### example.2 Excepted result(k8s-pyspark-sql-basic): 8"
+echo "##### example.2 Excepted result(k8s-pyspark-sql-basic): 8"
 echo "---- example.2 Actual result: "
 cat k8s-pyspark-sql-basic-sgx.log | egrep -a 'Justin' | wc -l
 
