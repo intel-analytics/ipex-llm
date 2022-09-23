@@ -477,7 +477,6 @@ def to_pandas(df, squeeze=False, index_col=None, dtype=None, index_map=None, bat
                                       "Find empty partition. Please ensure there is no empty"
                                       " partition for spark dataframe")
 
-
     sqlContext = get_spark_sql_context(get_spark_context())
 
     batch_size = -1 if not batch_size else batch_size
