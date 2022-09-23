@@ -80,9 +80,7 @@ class TSDataset:
                     extra_feature_col=None,
                     with_split=False,
                     val_ratio=0,
-                    test_ratio=0.1,
-                    largest_look_back=0,
-                    largest_horizon=1):
+                    test_ratio=0.1):
         '''
         Initialize tsdataset(s) from pandas dataframe.
 
@@ -103,11 +101,6 @@ class TSDataset:
                with_split is set to True. The value defaults to 0.
         :param test_ratio: (optional) float, test ratio. Only effective when with_split
                is set to True. The value defaults to 0.1.
-        :param largest_look_back: (optional) int, the largest length to look back.
-               Only effective when with_split is set to True. The value defaults to 0.
-        :param largest_horizon: (optional) int, the largest num of steps to look
-               forward. Only effective when with_split is set to True. The value defaults
-               to 1.
 
         :return: a TSDataset instance when with_split is set to False,
                  three TSDataset instances when with_split is set to True.
@@ -140,9 +133,7 @@ class TSDataset:
             tsdataset_dfs = split_timeseries_dataframe(df=tsdataset_df,
                                                        id_col=id_col,
                                                        val_ratio=val_ratio,
-                                                       test_ratio=test_ratio,
-                                                       look_back=largest_look_back,
-                                                       horizon=largest_horizon)
+                                                       test_ratio=test_ratio)
             return [TSDataset(data=tsdataset_dfs[i],
                               id_col=id_col,
                               dt_col=dt_col,
@@ -164,8 +155,6 @@ class TSDataset:
                      with_split=False,
                      val_ratio=0,
                      test_ratio=0.1,
-                     largest_look_back=0,
-                     largest_horizon=1,
                      **kwargs):
         """
         Initialize tsdataset(s) from path of parquet file.
@@ -190,11 +179,6 @@ class TSDataset:
                with_split is set to True. The value defaults to 0.
         :param test_ratio: (optional) float, test ratio. Only effective when with_split
                is set to True. The value defaults to 0.1.
-        :param largest_look_back: (optional) int, the largest length to look back.
-               Only effective when with_split is set to True. The value defaults to 0.
-        :param largest_horizon: (optional) int, the largest num of steps to look
-               forward. Only effective when with_split is set to True. The value defaults
-               to 1.
         :param kwargs: Any additional kwargs are passed to the pd.read_parquet
                and pyarrow.parquet.read_table.
 
@@ -227,10 +211,7 @@ class TSDataset:
                                      extra_feature_col=extra_feature_col,
                                      with_split=with_split,
                                      val_ratio=val_ratio,
-                                     test_ratio=test_ratio,
-                                     largest_look_back=largest_look_back,
-                                     largest_horizon=largest_horizon,
-                                     )
+                                     test_ratio=test_ratio)
 
     def impute(self, mode="last", const_num=0):
         '''

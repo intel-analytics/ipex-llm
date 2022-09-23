@@ -150,8 +150,7 @@ class TestXShardsTSDataset(TestCase):
         tsdata_train, tsdata_valid, tsdata_test =\
             XShardsTSDataset.from_xshards(shards_multiple, dt_col="datetime", target_col="value",
                                           extra_feature_col=["extra feature"], id_col="id",
-                                          with_split=True, val_ratio=0.1, test_ratio=0.1,
-                                          largest_look_back=5, largest_horizon=2)
+                                          with_split=True, val_ratio=0.1, test_ratio=0.1)
 
         tsdata_train.feature_col.append("new extra feature")
         assert len(tsdata_train.feature_col) == 2
