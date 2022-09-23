@@ -190,6 +190,12 @@ class TestChronosModelLSTMForecaster(TestCase):
         except ImportError:
             pass
 
+        # test exporting the openvino
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            ckpt_name = os.path.join(tmp_dir_name, "fp32_openvino")
+            ckpt_name_q = os.path.join(tmp_dir_name, "int_openvino")
+            forecaster.export_openvino_file(dirname=ckpt_name, quantized_dirname=ckpt_name_q)
+
     def test_lstm_forecaster_quantization(self):
         train_data, val_data, test_data = create_data()
         forecaster = LSTMForecaster(past_seq_len=24,
@@ -254,8 +260,8 @@ class TestChronosModelLSTMForecaster(TestCase):
         pred_q = forecaster.predict_with_onnx(test_data[0], quantize=True)
         eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
-            ckpt_name = os.path.join(tmp_dir_name, "ckpt")
-            ckpt_name_q = os.path.join(tmp_dir_name, "ckpt.q")
+            ckpt_name = os.path.join(tmp_dir_name, "fp32_onnx")
+            ckpt_name_q = os.path.join(tmp_dir_name, "int_onnx")
             forecaster.export_onnx_file(dirname=ckpt_name, quantized_dirname=ckpt_name_q)
 
     def test_lstm_forecaster_save_load(self):
