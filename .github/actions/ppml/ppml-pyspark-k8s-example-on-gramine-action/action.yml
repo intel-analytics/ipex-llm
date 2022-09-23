@@ -12,8 +12,6 @@ runs:
         echo "CONTAINER_NAME=pyspark-exmaples-test-gramine" >> $GITHUB_ENV
         echo "SGX_MEM_SIZE=${{ env.DEFAULT_SGX_MEM_SIZE }}" >> $GITHUB_ENV
         echo "IMAGE=${{ env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
-        echo "KUBECONFIG_PATH=/home/icx/glorysdj/kuberconfig" >> $GITHUB_ENV
-        echo "NFS_INPUT_PATH=/mnt/sdb/disk1/nfsdata/default-nfsvolumeclaim-pvc-28b604cf-058a-490b-af6e-684c2e166a0c" >> $GITHUB_ENV
     - name: Start Container
       shell: bash
       run: |
